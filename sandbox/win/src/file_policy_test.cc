@@ -9,7 +9,6 @@
 #include <winioctl.h>
 
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox.h"
@@ -300,8 +299,9 @@ TEST(FilePolicyTest, AllowNtCreateCalc) {
 
 TEST(FilePolicyTest, AllowNtCreateWithNativePath) {
   std::wstring calc = MakePathToSys(L"calc.exe", false);
-  std::wstring nt_path;
-  ASSERT_TRUE(GetNtPathFromWin32Path(calc, &nt_path));
+  auto opt_nt_path = GetNtPathFromWin32Path(calc);
+  ASSERT_TRUE(opt_nt_path);
+  std::wstring nt_path = opt_nt_path.value();
 
   TestRunner runner;
   runner.AddFsRule(Semantics::kFilesAllowReadonly, nt_path.c_str());
@@ -368,8 +368,9 @@ TEST(FilePolicyTest, AllowImplicitDeviceName) {
 
   std::wstring path(temp_file_name);
   EXPECT_TRUE(ConvertToLongPath(&path));
-  EXPECT_TRUE(GetNtPathFromWin32Path(path, &path));
-  path = path.substr(sandbox::kNTDevicePrefixLen);
+  auto opt_nt_path = GetNtPathFromWin32Path(path);
+  EXPECT_TRUE(opt_nt_path);
+  path = opt_nt_path->substr(sandbox::kNTDevicePrefixLen);
 
   wchar_t command[MAX_PATH + 20] = {};
   wsprintf(command, L"File_Create Read \"\\\\.\\%ls\"", path.c_str());
@@ -715,11 +716,6 @@ TEST(FilePolicyTest, CheckMissingNTPrefixEscape) {
 }
 
 TEST(FilePolicyTest, TestCopyFile) {
-  // Check if the test is running Win8 or newer since
-  // MITIGATION_STRICT_HANDLE_CHECKS is not supported on older systems.
-  if (base::win::GetVersion() < base::win::Version::WIN8)
-    return;
-
   TestRunner runner;
   runner.SetTimeout(2000);
 

@@ -16,9 +16,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_path_override.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_controller.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limits_policy_builder.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/policy/status_collector/child_status_collector.h"
@@ -46,11 +47,11 @@
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/ash/components/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -149,7 +150,7 @@ void CallAndroidStatusReceiver(
 
 bool GetEmptyAndroidStatus(StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver), "", ""));
   return true;
@@ -159,7 +160,7 @@ bool GetFakeAndroidStatus(const std::string& status,
                           const std::string& droid_guard_info,
                           StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
                                 status, droid_guard_info));
   return true;
@@ -198,6 +199,13 @@ class ChildStatusCollectorTest : public testing::Test {
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     env->SetVar("TZ", "UTC");
 
+    // This pref registration is temporarily added because crrev/c/4076557 makes
+    // SystemWebAppManager (which is instantiated during creation of a
+    // TestProfile) dependent on the kDemoModeConfig pref.
+    // TODO(b/260117078): Delete this line after the DemoModeConfig pref is
+    // deprecated.
+    ash::DemoSetupController::RegisterLocalStatePrefs(local_state_.registry());
+
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // Use FakeUpdateEngineClient.
@@ -206,13 +214,13 @@ class ChildStatusCollectorTest : public testing::Test {
     ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
 
     MockChildUser(AccountId::FromUserEmail("user0@gmail.com"));
   }
 
   ~ChildStatusCollectorTest() override {
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     ash::SeneschalClient::Shutdown();
     // |testing_profile_| must be destructed while ConciergeClient is alive.

@@ -9,7 +9,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chromecast/browser/cast_content_browser_client.h"
-#include "chromecast/cast_core/runtime/browser/runtime_application_dispatcher.h"
 #include "components/cast_receiver/browser/public/application_client.h"
 
 namespace gfx {
@@ -26,7 +25,7 @@ class RuntimeApplication;
 
 namespace chromecast {
 
-class RuntimeApplicationDispatcher;
+class RuntimeServiceImpl;
 
 class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
  public:
@@ -53,6 +52,13 @@ class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
                                       int child_process_id) override;
   bool IsBufferingEnabled() override;
   void OnWebContentsCreated(content::WebContents* web_contents) override;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      content::BrowserContext* browser_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override;
 
  protected:
   void InitializeCoreComponents(CastWebService* web_service);
@@ -93,7 +99,7 @@ class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
 
   // Wrapper around the observers used with the cast_receiver component.
   ApplicationClientObservers application_client_observers_;
-  std::unique_ptr<RuntimeApplicationDispatcher> app_dispatcher_;
+  std::unique_ptr<RuntimeServiceImpl> runtime_service_;
 };
 
 }  // namespace chromecast

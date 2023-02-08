@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,14 +18,14 @@ namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
     : IndexedDBCallbacks(nullptr,
-                         storage::BucketLocator(),
+                         absl::nullopt,
                          mojo::NullAssociatedRemote(),
-                         base::SequencedTaskRunnerHandle::Get()) {}
+                         base::SequencedTaskRunner::GetCurrentDefault()) {}
 MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
     : IndexedDBCallbacks(nullptr,
-                         storage::BucketLocator(),
+                         absl::nullopt,
                          mojo::NullAssociatedRemote(),
-                         base::SequencedTaskRunnerHandle::Get()),
+                         base::SequencedTaskRunner::GetCurrentDefault()),
       expect_connection_(expect_connection) {}
 
 MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {

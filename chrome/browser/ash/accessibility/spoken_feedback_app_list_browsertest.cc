@@ -16,13 +16,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ash/accessibility/spoken_feedback_browsertest.h"
+#include "chrome/browser/ash/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ash/app_list/search/search_controller_impl.h"
+#include "chrome/browser/ash/app_list/search/search_provider.h"
+#include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/search_controller_impl.h"
-#include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,6 +41,7 @@
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
+
 namespace {
 
 void SendKeyPressWithShiftAndControl(ui::KeyboardCode key) {
@@ -132,7 +133,7 @@ void InitializeTestSearchProviders(
     TestSearchProvider** web_provider_ptr) {
   std::unique_ptr<TestSearchProvider> apps_provider =
       std::make_unique<TestSearchProvider>(
-          "app", ChromeSearchResult::DisplayType::kTile,
+          "app", ChromeSearchResult::DisplayType::kList,
           ChromeSearchResult::Category::kApps,
           ChromeSearchResult::ResultType::kInstalledApp);
   *apps_provider_ptr = apps_provider.get();
@@ -167,7 +168,7 @@ class SpokenFeedbackAppListBaseTest : public LoggedInSpokenFeedbackTest {
             ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
     // Disable the app list nudge in the spoken feedback app list test.
-    ash::AppListTestApi().DisableAppListNudge(true);
+    AppListTestApi().DisableAppListNudge(true);
 
     LoggedInSpokenFeedbackTest::SetUp();
   }
@@ -220,7 +221,7 @@ class SpokenFeedbackAppListBaseTest : public LoggedInSpokenFeedbackTest {
     sm_.ExpectSpeech("Button");
 
     int test_item_index = 0;
-    ash::AppListItem* test_item = FindItemByName("app 0", &test_item_index);
+    AppListItem* test_item = FindItemByName("app 0", &test_item_index);
     EXPECT_TRUE(test_item);
 
     // Skip over apps that were installed before the test item.
@@ -234,19 +235,6 @@ class SpokenFeedbackAppListBaseTest : public LoggedInSpokenFeedbackTest {
     return test_item_index;
   }
 
-  std::vector<std::string> GetPublishedSuggestionChips() {
-    std::vector<std::string> chips;
-    std::vector<ChromeSearchResult*> published_results =
-        AppListClientImpl::GetInstance()
-            ->GetModelUpdaterForTest()
-            ->GetPublishedSearchResultsForTest();
-    for (auto* result : published_results) {
-      if (result->display_type() == SearchResultDisplayType::kChip)
-        chips.push_back(base::UTF16ToUTF8(result->title()));
-    }
-    return chips;
-  }
-
   AppListItem* FindItemByName(const std::string& name, int* index) {
     AppListModel* const model = AppListModelProvider::Get()->model();
     AppListItemList* item_list = model->top_level_item_list();
@@ -258,6 +246,15 @@ class SpokenFeedbackAppListBaseTest : public LoggedInSpokenFeedbackTest {
       }
     }
     return nullptr;
+  }
+
+  void ReadWindowTitle() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
+        browser()->profile(), extension_misc::kChromeVoxExtensionId,
+        "import('/chromevox/background/"
+        "command_handler_interface.js').then(module => "
+        "module.CommandHandlerInterface.instance.onCommand('readCurrentTitle'))"
+        ";");
   }
 
  private:
@@ -374,7 +371,7 @@ IN_PROC_BROWSER_TEST_P(NotificationSpokenFeedbackAppListTest,
   PopulateApps(1);
 
   int test_item_index = 0;
-  ash::AppListItem* test_item = FindItemByName("app 0", &test_item_index);
+  AppListItem* test_item = FindItemByName("app 0", &test_item_index);
   ASSERT_TRUE(test_item);
   test_item->UpdateNotificationBadgeForTesting(true);
 
@@ -412,7 +409,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   PopulateApps(1);
 
   int test_item_index = 0;
-  ash::AppListItem* test_item = FindItemByName("app 0", &test_item_index);
+  AppListItem* test_item = FindItemByName("app 0", &test_item_index);
   ASSERT_TRUE(test_item);
   test_item->UpdateAppStatusForTesting(AppStatus::kPaused);
 
@@ -451,7 +448,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   PopulateApps(1);
 
   int test_item_index = 0;
-  ash::AppListItem* test_item = FindItemByName("app 0", &test_item_index);
+  AppListItem* test_item = FindItemByName("app 0", &test_item_index);
   ASSERT_TRUE(test_item);
   test_item->UpdateAppStatusForTesting(AppStatus::kBlocked);
 
@@ -526,12 +523,13 @@ IN_PROC_BROWSER_TEST_P(
   sm_.Replay();
 }
 
+// TODO(https://crbug.com/1393235): Update this browser test to test recent
+// apps.
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, ClamshellLauncher) {
-  std::vector<std::string> suggestion_chips = GetPublishedSuggestionChips();
   PopulateApps(3);
 
   int test_item_index = 0;
-  ash::AppListItem* test_item = FindItemByName("app 0", &test_item_index);
+  AppListItem* test_item = FindItemByName("app 0", &test_item_index);
   ASSERT_TRUE(test_item);
 
   EnableChromeVox();
@@ -549,18 +547,12 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, ClamshellLauncher) {
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
   sm_.ExpectSpeechPattern("Search your *");
   sm_.ExpectSpeech("Edit text");
+  sm_.ExpectSpeech("Launcher, all apps");
+  sm_.Call([this]() { ReadWindowTitle(); });
+  sm_.ExpectSpeech("Launcher");
 
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
   sm_.ExpectSpeech("Button");
-
-  // Move focus over recent apps, which are currently populated using suggestion
-  // chip results.
-  // TODO(https://crbug.com/1260427): Traverse over all recent apps when the
-  // linked issue is fixed.
-  if (!suggestion_chips.empty()) {
-    sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_DOWN); });
-    sm_.ExpectSpeech("Button");
-  }
 
   // Skip over apps that were installed before the test item.
   // This selects the first app installed by the test.
@@ -716,7 +708,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   // Show the context menu for the AppsGridView.
   sm_.Call([]() {
-    AppsGridView* grid_view = ash::AppListTestApi().GetTopLevelAppsGridView();
+    AppsGridView* grid_view = AppListTestApi().GetTopLevelAppsGridView();
     EXPECT_TRUE(grid_view);
     grid_view->ShowContextMenu(grid_view->GetBoundsInScreen().CenterPoint(),
                                ui::MENU_SOURCE_KEYBOARD);
@@ -736,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   // Show the context menu for the AppsGridView.
   sm_.Call([]() {
-    AppsGridView* grid_view = ash::AppListTestApi().GetTopLevelAppsGridView();
+    AppsGridView* grid_view = AppListTestApi().GetTopLevelAppsGridView();
     EXPECT_TRUE(grid_view);
     grid_view->ShowContextMenu(grid_view->GetBoundsInScreen().CenterPoint(),
                                ui::MENU_SOURCE_KEYBOARD);
@@ -763,6 +755,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchTest, LauncherSearch) {
 
   sm_.ExpectSpeechPattern("Search your *");
   sm_.ExpectSpeech("Edit text");
+  sm_.Call([this]() { ReadWindowTitle(); });
+  sm_.ExpectSpeech("Launcher");
 
   sm_.Call([this]() {
     apps_provider_->set_best_match_count(2);
@@ -876,7 +870,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchTest,
   // be "app 2").
   sm_.Call([clock_ptr, generator_ptr]() {
     views::View* target_view =
-        ash::AppListTestApi().GetVisibleSearchResultView(/*index=*/2);
+        AppListTestApi().GetVisibleSearchResultView(/*index=*/2);
     ASSERT_TRUE(target_view);
 
     gfx::Point touch_point = target_view->GetBoundsInScreen().CenterPoint();

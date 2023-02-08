@@ -290,7 +290,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     protected TabModelSelectorProfileSupplier mTabModelProfileSupplier =
             new TabModelSelectorProfileSupplier(mTabModelSelectorSupplier);
-    protected ObservableSupplierImpl<BookmarkModel> mBookmarkModelSupplier =
+    protected final ObservableSupplierImpl<BookmarkModel> mBookmarkModelSupplier =
             new ObservableSupplierImpl<>();
     protected ObservableSupplierImpl<TabBookmarker> mTabBookmarkerSupplier =
             new ObservableSupplierImpl<>();
@@ -474,9 +474,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // There's no corresponding call to removeObserver() for this addObserver() because
         // mTabModelProfileSupplier has the same lifecycle as this activity.
         mTabModelProfileSupplier.addObserver((profile) -> {
-            BookmarkModel oldBridge = mBookmarkModelSupplier.get();
-            if (oldBridge != null) oldBridge.destroy();
-            mBookmarkModelSupplier.set(profile == null ? null : new BookmarkModel(profile));
+            mBookmarkModelSupplier.set(
+                    profile == null ? null : BookmarkModel.getForProfile(profile));
         });
 
         super.performPreInflationStartup();
@@ -817,7 +816,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public final void initializeTabModels() {
-        if (mTabModelOrchestrator.areTabModelsInitialized()) return;
+        if (areTabModelsInitialized()) return;
 
         createTabModels();
         TabModelSelector tabModelSelector = mTabModelOrchestrator.getTabModelSelector();
@@ -1114,13 +1113,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
     }
 
-    /**
-     * Records an appropriate status via UMA given the current sync status.
-     */
+    /** Records an appropriate status via UMA given the current sync status. */
     private static void reportSyncStatus(@Nullable SyncService syncService) {
         if (syncService == null || !syncService.isEngineInitialized()) {
             ContextReporter.reportStatus(ContextReporter.STATUS_SYNC_NOT_INITIALIZED);
-        } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)) {
+        } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)
+                && !syncService.getActiveDataTypes().contains(ModelType.HISTORY)) {
             ContextReporter.reportStatus(ContextReporter.STATUS_SYNC_NOT_SYNCING_URLS);
         } else if (syncService.getPassphraseType() != PassphraseType.KEYSTORE_PASSPHRASE
                 && syncService.getPassphraseType() != PassphraseType.TRUSTED_VAULT_PASSPHRASE) {
@@ -1132,30 +1130,19 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onResumeWithNative() {
-        // TODO(b/182286787): Clean-up once fixed session resume order is verified.
-        final boolean useFixedUmaSessionResumeOrder =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.FIXED_UMA_SESSION_RESUME_ORDER);
-        if (useFixedUmaSessionResumeOrder) {
-            // First, update the activity type in order to have it properly captured in
-            // markSessionResume; stage the activity type value such that it can be picked up when
-            // the new UMA record is opened as a part of the subsequent session resume.
-            //
-            // TODO(b/182286787): Move this inside markSessionResume, plumb through to UMA session
-            // resumption.
-            ChromeSessionState.setActivityType(getActivityType());
+        // First, update the activity type in order to have it properly captured in
+        // markSessionResume; stage the activity type value such that it can be picked up when
+        // the new UMA record is opened as a part of the subsequent session resume.
+        ChromeSessionState.setActivityType(getActivityType());
 
-            // Close the current UMA record and start a new UMA one.
-            markSessionResume();
+        // Close the current UMA record and start a new UMA one.
+        markSessionResume();
 
-            // Inform the actity lifecycle observers. Among other things, the observers record
-            // metrics pertaining to the "resumed" activity. This needs to happens after
-            // markSessionResume has closed the old UMA record, pertaining to the previous
-            // (backgrounded) activity, and opened a new one pertaining to the "resumed" activity.
-            super.onResumeWithNative();
-        } else {
-            super.onResumeWithNative();
-            markSessionResume();
-        }
+        // Inform the actity lifecycle observers. Among other things, the observers record
+        // metrics pertaining to the "resumed" activity. This needs to happens after
+        // markSessionResume has closed the old UMA record, pertaining to the previous
+        // (backgrounded) activity, and opened a new one pertaining to the "resumed" activity.
+        super.onResumeWithNative();
 
         // Resume the ChromeActivity...
 
@@ -1169,11 +1156,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             // For picture-in-picture mode / auto-darken web contents.
             if (webContents != null) webContents.notifyRendererPreferenceUpdate();
-        }
-
-        // TODO(b/182286787): Remove once fixed session resume order is verified.
-        if (!useFixedUmaSessionResumeOrder) {
-            ChromeSessionState.setActivityType(getActivityType());
         }
 
         ChromeSessionState.setIsInMultiWindowMode(
@@ -1261,7 +1243,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void onStopWithNative() {
-        if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
+        if (GSAState.getInstance().isGsaAvailable() && !SysUtils.isLowEndDevice()) {
             if (mGSAAccountChangeListener != null) mGSAAccountChangeListener.disconnect();
         }
         if (mSyncStateChangedListener != null) {
@@ -1354,7 +1336,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             recordDisplayDimensions();
-            int playServicesVersion = PlayServicesVersionInfo.getApkVersionNumber(this);
+            int playServicesVersion = PlayServicesVersionInfo.getApkVersionNumber();
             RecordHistogram.recordBooleanHistogram(
                     "Android.PlayServices.Installed", playServicesVersion > 0);
             RecordHistogram.recordSparseHistogram(
@@ -1373,7 +1355,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (!SysUtils.isLowEndDevice()) {
             if (isActivityFinishingOrDestroyed()) return;
             DeferredStartupHandler.getInstance().addDeferredTask(() -> {
-                if (!GSAState.getInstance(this).isGsaAvailable()) {
+                if (!GSAState.getInstance().isGsaAvailable()) {
                     ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
                     return;
                 }
@@ -1477,7 +1459,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    @RequiresApi(Build.VERSION_CODES.M)
     public void onProvideAssistContent(AssistContent outContent) {
         Tab tab = getActivityTab();
         boolean inOverviewMode = isInOverviewMode();
@@ -1599,11 +1580,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         destroyTabModels();
 
-        if (mBookmarkModelSupplier != null) {
-            BookmarkModel bookmarkModel = mBookmarkModelSupplier.get();
-            if (bookmarkModel != null) bookmarkModel.destroy();
-            mBookmarkModelSupplier = null;
-        }
+        mBookmarkModelSupplier.set(null);
 
         if (mShareDelegateSupplier != null) {
             mShareDelegateSupplier.destroy();
@@ -1873,7 +1850,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether the tab models have been fully initialized.
      */
     public boolean areTabModelsInitialized() {
-        return mTabModelOrchestrator.areTabModelsInitialized();
+        return mTabModelOrchestrator != null && mTabModelOrchestrator.areTabModelsInitialized();
     }
 
     /**
@@ -1884,7 +1861,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Deprecated
     public TabModelSelector getTabModelSelector() {
-        if (!mTabModelOrchestrator.areTabModelsInitialized()) {
+        if (!areTabModelsInitialized()) {
             throw new IllegalStateException(
                     "Attempting to access TabModelSelector before initialization");
         }
@@ -1929,7 +1906,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public TabCreator getTabCreator(boolean incognito) {
-        if (!mTabModelOrchestrator.areTabModelsInitialized()) {
+        if (!areTabModelsInitialized()) {
             throw new IllegalStateException(
                     "Attempting to access TabCreator before initialization");
         }
@@ -1999,7 +1976,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * null if the Tab does not exist or the system is not initialized.
      */
     public Tab getActivityTab() {
-        if (!mTabModelOrchestrator.areTabModelsInitialized()) {
+        if (!areTabModelsInitialized()) {
             return null;
         }
         return TabModelUtils.getCurrentTab(getCurrentTabModel());
@@ -2010,7 +1987,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *         WebContents.
      */
     public WebContents getCurrentWebContents() {
-        if (!mTabModelOrchestrator.areTabModelsInitialized()) {
+        if (!areTabModelsInitialized()) {
             return null;
         }
         return TabModelUtils.getCurrentWebContents(getCurrentTabModel());
@@ -2518,8 +2495,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         if (id == R.id.delete_from_reading_list_menu_id) {
+            assert mBookmarkModelSupplier.hasValue();
             ReadingListUtils.deleteFromReadingList(
-                    new BookmarkModel(), mSnackbarManager, /*activity=*/this, currentTab);
+                    mBookmarkModelSupplier.get(), mSnackbarManager, /*activity=*/this, currentTab);
             RecordUserAction.record("MobileMenuDeleteFromReadingList");
             return true;
         }

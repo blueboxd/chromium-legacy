@@ -122,7 +122,7 @@ class SynthesizedClip : private cc::ContentLayerClient {
 
  private:
   scoped_refptr<cc::PictureLayer> layer_;
-  GeometryMapper::Translation2DOrMatrix translation_2d_or_matrix_;
+  gfx::Transform projection_;
   bool rrect_is_local_ = false;
   SkRRect rrect_;
   absl::optional<Path> path_;
@@ -147,7 +147,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   struct ViewportProperties {
     const TransformPaintPropertyNode* overscroll_elasticity_transform = nullptr;
-    const EffectPaintPropertyNode* overscroll_elasticity_effect = nullptr;
     const TransformPaintPropertyNode* page_scale = nullptr;
     const TransformPaintPropertyNode* inner_scroll_translation = nullptr;
     const ClipPaintPropertyNode* outer_clip = nullptr;

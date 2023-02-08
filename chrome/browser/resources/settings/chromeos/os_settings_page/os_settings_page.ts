@@ -19,37 +19,31 @@ import '../os_privacy_page/os_privacy_page.js';
 import '../os_printing_page/os_printing_page.js';
 import '../os_search_page/os_search_page.js';
 import '../personalization_page/personalization_page.js';
-import '../../settings_page/settings_section.js';
-import '../../settings_page_styles.css.js';
+import '../os_settings_page/os_settings_section.js';
+import '../os_settings_page_styles.css.js';
 import '../device_page/device_page.js';
 import '../internet_page/internet_page.js';
 import '../kerberos_page/kerberos_page.js';
 import '../multidevice_page/multidevice_page.js';
 import '../os_bluetooth_page/os_bluetooth_page.js';
-import '../os_icons.js';
+import '../os_settings_icons.html.js';
 
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {beforeNextRender, microTask, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {beforeNextRender, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {castExists} from '../assert_extras.js';
-import {MainPageBehavior, MainPageBehaviorInterface} from '../main_page_behavior.js';
+import {MainPageMixin} from '../main_page_mixin.js';
 import {AndroidAppsBrowserProxyImpl, AndroidAppsInfo} from '../os_apps_page/android_apps_browser_proxy.js';
 import {OSPageVisibility} from '../os_page_visibility.js';
 import {routes} from '../os_route.js';
-import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {getTemplate} from './os_settings_page.html.js';
-import {SettingsIdleLoadElement} from './settings_idle_load.js';
 
-const OsSettingsPageElementBase = mixinBehaviors(
-                                      [MainPageBehavior, RouteObserverBehavior],
-                                      WebUiListenerMixin(PolymerElement)) as {
-  new (): PolymerElement & WebUiListenerMixinInterface &
-      MainPageBehaviorInterface & RouteObserverBehaviorInterface,
-};
+const OsSettingsPageElementBase =
+    MainPageMixin(WebUiListenerMixin(PolymerElement));
 
 class OsSettingsPageElement extends OsSettingsPageElementBase {
   static get is() {
@@ -94,18 +88,6 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
       isGuestMode_: {
         type: Boolean,
         value: loadTimeData.getBoolean('isGuest'),
-      },
-
-      /**
-       * Whether Accessibility OS Settings visibility improvements are enabled.
-       */
-      isAccessibilityOSSettingsVisibilityEnabled_: {
-        type: Boolean,
-        readOnly: true,
-        value() {
-          return loadTimeData.getBoolean(
-              'isAccessibilityOSSettingsVisibilityEnabled');
-        },
       },
 
       /**
@@ -190,7 +172,7 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
     this.allowCrostini_ = loadTimeData.valueExists('allowCrostini') &&
         loadTimeData.getBoolean('allowCrostini');
 
-    this.addWebUIListener(
+    this.addWebUiListener(
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
     AndroidAppsBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
   }
@@ -212,7 +194,8 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
       assert(!this.hasExpandedSection_);
     }
 
-    MainPageBehavior.currentRouteChanged.call(this, newRoute, oldRoute);
+    // MainPageMixin#currentRouteChanged() should be the super class method
+    super.currentRouteChanged(newRoute, oldRoute);
   }
 
   override containsRoute(route: Route) {
@@ -252,11 +235,6 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
     this.hasExpandedSection_ = true;
   }
 
-  private getAdvancedPageTemplate_(): SettingsIdleLoadElement {
-    return castExists(this.shadowRoot!.querySelector<SettingsIdleLoadElement>(
-        '#advancedPageTemplate'));
-  }
-
   /**
    * Render the advanced page now (don't wait for idle).
    */
@@ -268,7 +246,7 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
     // In Polymer2, async() does not wait long enough for layout to complete.
     // beforeNextRender() must be used instead.
     beforeNextRender(this, () => {
-      this.getAdvancedPageTemplate_().get();
+      this.loadAdvancedPage();
     });
   }
 
@@ -284,7 +262,7 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
     if (!this.advancedToggleExpanded) {
       this.advancedToggleExpanded = true;
       microTask.run(() => {
-        this.getAdvancedPageTemplate_().get().then(() => {
+        this.loadAdvancedPage().then(() => {
           const event = new CustomEvent('scroll-to-top', {
             bubbles: true,
             composed: true,

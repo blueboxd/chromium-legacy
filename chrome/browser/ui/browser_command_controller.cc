@@ -57,6 +57,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/lens/lens_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -943,6 +944,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 #endif
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    case IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH:
+      ExecLensRegionSearch(browser_);
+      break;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
@@ -985,33 +992,6 @@ void BrowserCommandController::OnSigninAllowedPrefChange() {
 }
 
 // BrowserCommandController, TabStripModelObserver implementation:
-
-void BrowserCommandController::OnTabStripModelChanged(
-    TabStripModel* tab_strip_model,
-    const TabStripModelChange& change,
-    const TabStripSelectionChange& selection) {
-  std::vector<content::WebContents*> new_contents;
-  std::vector<content::WebContents*> old_contents;
-
-  switch (change.type()) {
-    case TabStripModelChange::kInserted:
-      for (const auto& contents : change.GetInsert()->contents)
-        new_contents.push_back(contents.contents);
-      break;
-    case TabStripModelChange::kReplaced: {
-      auto* replace = change.GetReplace();
-      new_contents.push_back(replace->new_contents);
-      old_contents.push_back(replace->old_contents);
-      break;
-    }
-    case TabStripModelChange::kRemoved:
-      for (const auto& contents : change.GetRemove()->contents)
-        old_contents.push_back(contents.contents);
-      break;
-    default:
-      break;
-  }
-}
 
 void BrowserCommandController::TabBlockedStateChanged(
     content::WebContents* contents,
@@ -1237,6 +1217,14 @@ void BrowserCommandController::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_DEBUG_PRINT_VIEW_TREE_DETAILS,
                                           true);
   }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (base::FeatureList::IsEnabled(
+          lens::features::kEnableRegionSearchKeyboardShortcut)) {
+    command_updater_.UpdateCommandEnabled(
+        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, true);
+  }
+#endif
 
   // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();
@@ -1492,9 +1480,8 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
       IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY, main_not_fullscreen);
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  command_updater_.UpdateCommandEnabled(
-      IDC_RUN_SCREEN_AI_VISUAL_ANNOTATIONS,
-      features::IsScreenAIVisualAnnotationsEnabled());
+  command_updater_.UpdateCommandEnabled(IDC_RUN_SCREEN_AI_VISUAL_ANNOTATIONS,
+                                        features::IsLayoutExtractionEnabled());
 #endif
 
   // Show various bits of UI

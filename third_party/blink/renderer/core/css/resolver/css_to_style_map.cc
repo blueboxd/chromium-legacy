@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/style/border_image_length_box.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -288,12 +289,6 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
   }
 }
 
-double CSSToStyleMap::MapAnimationDelay(const CSSValue& value) {
-  if (value.IsInitialValue())
-    return CSSTimingData::InitialDelay();
-  return To<CSSPrimitiveValue>(value).ComputeSeconds();
-}
-
 namespace {
 
 Timing::Delay MapAnimationTimingDelay(const CSSValue& value) {
@@ -342,9 +337,14 @@ Timing::PlaybackDirection CSSToStyleMap::MapAnimationDirection(
   }
 }
 
-double CSSToStyleMap::MapAnimationDuration(const CSSValue& value) {
+absl::optional<double> CSSToStyleMap::MapAnimationDuration(
+    const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSTimingData::InitialDuration();
+  if (auto* identifier = DynamicTo<CSSIdentifierValue>(value);
+      identifier && identifier->GetValueID() == CSSValueID::kAuto) {
+    return absl::nullopt;
+  }
   return To<CSSPrimitiveValue>(value).ComputeSeconds();
 }
 
@@ -386,7 +386,9 @@ AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
   return CSSAnimationData::InitialName();
 }
 
-StyleTimeline CSSToStyleMap::MapAnimationTimeline(const CSSValue& value) {
+StyleTimeline CSSToStyleMap::MapAnimationTimeline(
+    const ScopedCSSValue& scoped_value) {
+  const CSSValue& value = scoped_value.GetCSSValue();
   if (value.IsInitialValue())
     return CSSAnimationData::InitialTimeline();
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
@@ -395,12 +397,12 @@ StyleTimeline CSSToStyleMap::MapAnimationTimeline(const CSSValue& value) {
     return StyleTimeline(ident->GetValueID());
   }
   if (auto* custom_ident = DynamicTo<CSSCustomIdentValue>(value)) {
-    return StyleTimeline(
-        StyleName(custom_ident->Value(), StyleName::Type::kCustomIdent));
+    return StyleTimeline(MakeGarbageCollected<ScopedCSSName>(
+        custom_ident->Value(), scoped_value.GetTreeScope()));
   }
   if (auto* string_value = DynamicTo<CSSStringValue>(value)) {
-    return StyleTimeline(StyleName(AtomicString(string_value->Value()),
-                                   StyleName::Type::kString));
+    return StyleTimeline(MakeGarbageCollected<ScopedCSSName>(
+        AtomicString(string_value->Value()), scoped_value.GetTreeScope()));
   }
   const auto& scroll_value = To<cssvalue::CSSScrollValue>(value);
   const auto* axis_value = DynamicTo<CSSIdentifierValue>(scroll_value.Axis());

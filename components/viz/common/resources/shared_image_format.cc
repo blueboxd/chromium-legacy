@@ -6,6 +6,8 @@
 
 #include <type_traits>
 
+#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 
@@ -104,15 +106,76 @@ bool SharedImageFormat::IsBitmapFormatSupported() const {
 int SharedImageFormat::NumberOfPlanes() const {
   if (is_single_plane())
     return 1;
-  if (is_multi_plane()) {
-    switch (plane_config()) {
-      case PlaneConfig::kY_V_U:
-        return 3;
-      case PlaneConfig::kY_UV:
-        return 2;
-      case PlaneConfig::kY_UV_A:
-        return 3;
-    }
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+      return 3;
+    case PlaneConfig::kY_UV:
+      return 2;
+    case PlaneConfig::kY_UV_A:
+      return 3;
+  }
+}
+
+bool SharedImageFormat::IsValidPlaneIndex(int plane_index) const {
+  return plane_index >= 0 && plane_index < NumberOfPlanes();
+}
+
+gfx::Size SharedImageFormat::GetPlaneSize(int plane_index,
+                                          const gfx::Size& size) const {
+  DCHECK(IsValidPlaneIndex(plane_index));
+  if (is_single_plane())
+    return size;
+
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+      if (plane_index == 0) {
+        return size;
+      } else {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      }
+    case PlaneConfig::kY_UV:
+      if (plane_index == 1) {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      } else {
+        return size;
+      }
+    case PlaneConfig::kY_UV_A:
+      if (plane_index == 1) {
+        DCHECK_EQ(subsampling(), Subsampling::k420);
+        return gfx::ScaleToCeiledSize(size, 0.5);
+      } else {
+        return size;
+      }
+  }
+}
+
+// For multiplanar formats.
+int SharedImageFormat::NumChannelsInPlane(int plane_index) const {
+  DCHECK(IsValidPlaneIndex(plane_index));
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+      return 1;
+    case PlaneConfig::kY_UV:
+      return plane_index == 1 ? 2 : 1;
+    case PlaneConfig::kY_UV_A:
+      return plane_index == 1 ? 2 : 1;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// For multiplanar formats.
+int SharedImageFormat::MultiplanarBitDepth() const {
+  switch (channel_format()) {
+    case ChannelFormat::k8:
+      return 8;
+    case ChannelFormat::k10:
+      return 10;
+    case ChannelFormat::k16:
+    case ChannelFormat::k16F:
+      return 16;
   }
   NOTREACHED();
   return 0;
@@ -129,6 +192,48 @@ std::string SharedImageFormat::ToString() const {
                                 PlaneConfigToString(plane_config()),
                                 SubsamplingToString(subsampling()),
                                 ChannelFormatToString(channel_format()));
+  }
+}
+
+bool SharedImageFormat::HasAlpha() const {
+  if (is_single_plane()) {
+    switch (resource_format()) {
+      case ResourceFormat::RGBA_8888:
+      case ResourceFormat::RGBA_4444:
+      case ResourceFormat::BGRA_8888:
+      case ResourceFormat::ALPHA_8:
+      case ResourceFormat::RGBA_F16:
+      case ResourceFormat::YUVA_420_TRIPLANAR:
+        return true;
+      default:
+        return false;
+    }
+  }
+  switch (plane_config()) {
+    case PlaneConfig::kY_V_U:
+    case PlaneConfig::kY_UV:
+      return false;
+    case PlaneConfig::kY_UV_A:
+      return true;
+  }
+}
+
+bool SharedImageFormat::IsCompressed() const {
+  return is_single_plane() && resource_format() == ResourceFormat::ETC1;
+}
+
+bool SharedImageFormat::IsLegacyMultiplanar() const {
+  if (!is_single_plane())
+    return false;
+
+  switch (resource_format()) {
+    case ResourceFormat::YVU_420:
+    case ResourceFormat::YUV_420_BIPLANAR:
+    case ResourceFormat::YUVA_420_TRIPLANAR:
+    case ResourceFormat::P010:
+      return true;
+    default:
+      return false;
   }
 }
 

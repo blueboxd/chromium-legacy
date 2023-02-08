@@ -259,6 +259,7 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
   void RunBatteryHealthRoutine(
       RunBatteryHealthRoutineCallback callback) override;
   void RunSmartctlCheckRoutine(
+      mojom::NullableUint32Ptr percentage_used_threshold,
       RunSmartctlCheckRoutineCallback callback) override;
   void RunAcPowerRoutine(mojom::AcPowerStatusEnum expected_status,
                          const absl::optional<std::string>& expected_power_type,
@@ -319,6 +320,19 @@ class FakeCrosHealthd final : public mojom::CrosHealthdServiceFactory,
   void RunArcPingRoutine(RunArcPingRoutineCallback callback) override;
   void RunArcDnsResolutionRoutine(
       RunArcDnsResolutionRoutineCallback callback) override;
+  void RunSensitiveSensorRoutine(
+      RunSensitiveSensorRoutineCallback callback) override;
+  void RunFingerprintRoutine(RunFingerprintRoutineCallback callback) override;
+  void RunFingerprintAliveRoutine(
+      RunFingerprintAliveRoutineCallback callback) override;
+  void RunPrivacyScreenRoutine(
+      bool target_state,
+      RunPrivacyScreenRoutineCallback callback) override;
+  void RunLedLitUpRoutine(
+      mojom::LedName name,
+      mojom::LedColor color,
+      mojo::PendingRemote<mojom::LedLitUpRoutineReplier> replier,
+      RunLedLitUpRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void AddBluetoothObserver(

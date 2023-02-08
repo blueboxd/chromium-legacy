@@ -4652,6 +4652,39 @@ TEST_F(DelegatedTest, ForwardMultipleBasic) {
   }
 }
 
+// Transparent colors are important for delegating overlays. Overlays that have
+// an alpha channel but are required to be drawn as opaque will have solid black
+// placed behind them. This solid black can interfer with overlay
+// promotion/blend optimizations.
+TEST_F(DelegatedTest, ForwardBackgroundColor) {
+  auto pass = CreateRenderPass();
+
+  auto* quad = CreateCandidateQuadAt(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
+      kOverlayRect);
+  quad->background_color = SkColors::kTransparent;
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+  AggregatedRenderPassList pass_list;
+  // AggregatedRenderPass* main_pass = pass.get();
+  SurfaceDamageRectList surface_damage_rect_list;
+  // Simplify by adding full root damage.
+  surface_damage_rect_list.push_back(pass->output_rect);
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_backdrop_filters,
+      std::move(surface_damage_rect_list),
+      overlay_processor_->GetDefaultPrimaryPlane(), &candidate_list,
+      &damage_rect_, &content_bounds_);
+
+  EXPECT_RECTF_EQ(gfx::RectF(kOverlayRect), candidate_list[0].display_rect);
+  EXPECT_EQ(SkColors::kTransparent, candidate_list[0].color.value());
+}
+
 TEST_F(DelegatedTest, DoNotDelegateCopyRequest) {
   auto pass = CreateRenderPass();
   CreateCandidateQuadAt(resource_provider_.get(),
@@ -4785,6 +4818,43 @@ TEST_F(DelegatedTest, TestClipComputed) {
   EXPECT_RECTF_NEAR(gfx::RectF(expected_rect), candidate_list[0].display_rect,
                     0.01f);
   EXPECT_RECTF_NEAR(uv_rect, candidate_list[0].uv_rect, 0.01f);
+}
+
+TEST_F(DelegatedTest, TestClipAggregateRenderPass) {
+  auto pass = CreateRenderPass();
+  const auto kSmallCandidateRect = gfx::Rect(5, 10, 128, 64);
+  const auto kTestClip = gfx::Rect(0, 15, 70, 64);
+
+  AggregatedRenderPassId render_pass_id{3};
+  AggregatedRenderPassDrawQuad* quad =
+      pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
+  quad->SetNew(pass->shared_quad_state_list.back(), kSmallCandidateRect,
+               kSmallCandidateRect, render_pass_id, kInvalidResourceId,
+               gfx::RectF(), gfx::Size(), gfx::Vector2dF(1, 1), gfx::PointF(),
+               gfx::RectF(), false, 1.0f);
+
+  pass->shared_quad_state_list.back()->clip_rect = kTestClip;
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+  OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+  AggregatedRenderPassList pass_list;
+  // AggregatedRenderPass* main_pass = pass.get();
+  SurfaceDamageRectList surface_damage_rect_list;
+  // Simplify by adding full root damage.
+  surface_damage_rect_list.push_back(pass->output_rect);
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_backdrop_filters,
+      std::move(surface_damage_rect_list),
+      overlay_processor_->GetDefaultPrimaryPlane(), &candidate_list,
+      &damage_rect_, &content_bounds_);
+
+  EXPECT_EQ(1U, candidate_list.size());
+  EXPECT_RECTF_NEAR(gfx::RectF(kSmallCandidateRect),
+                    candidate_list[0].display_rect, 0.01f);
+  EXPECT_EQ(kTestClip, candidate_list[0].clip_rect.value());
 }
 
 TEST_F(DelegatedTest, TestClipWithPrimary) {
@@ -4997,7 +5067,7 @@ TEST_F(DelegatedTestNonDelegated, TileQuadNearest) {
   TestExpectCandidateFailure(std::move(pass));
 }
 
-#endif  // USE_OZONE
+#endif  // BUILDFLAG(IS_OZONE)
 
 TEST_F(MultiUnderlayTest, DamageWhenDemotingTwoUnderlays) {
   constexpr gfx::Rect kTopLeft(0, 0, 128, 128);

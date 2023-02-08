@@ -12,22 +12,32 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/embedder_support/switches.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 
 namespace web_app {
+
+namespace {
+
+constexpr char kLaunchHandlerHistogram[] =
+    "Launch.WebAppLaunchHandlerClientMode";
+
+}  // namespace
 
 using ClientMode = LaunchHandler::ClientMode;
 
@@ -74,7 +84,7 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
   }
 
   const WebApp* GetWebApp(const AppId& app_id) {
-    return WebAppProvider::GetForTest(profile())->registrar().GetAppById(
+    return WebAppProvider::GetForTest(profile())->registrar_unsafe().GetAppById(
         app_id);
   }
 
@@ -111,29 +121,54 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
 
   void ExpectNavigateExistingBehaviour(const AppId& app_id,
                                        const GURL& start_url) {
+    base::HistogramTester histogram_tester;
     EXPECT_EQ(GetLaunchHandler(app_id),
               (LaunchHandler{ClientMode::kNavigateExisting}));
 
-    Browser* browser_1 = LaunchWebAppBrowserAndWait(profile(), app_id);
-    content::WebContents* web_contents =
-        browser_1->tab_strip_model()->GetActiveWebContents();
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_1), start_url.spec());
+    // Create first web app browser window.
+    Browser* app_browser = LaunchWebAppBrowserAndWait(profile(), app_id);
+    content::WebContents* app_web_contents =
+        app_browser->tab_strip_model()->GetActiveWebContents();
+    EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
+    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
 
     // Navigate window away from start_url to check that the next launch navs to
     // start_url again.
-    GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
-    NavigateToURLAndWait(browser_1, alt_url);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), alt_url);
+    {
+      GURL alt_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+      NavigateToURLAndWait(app_browser, alt_url);
+      EXPECT_EQ(app_web_contents->GetLastCommittedURL(), alt_url);
 
-    Browser* browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
-    EXPECT_EQ(browser_1, browser_2);
-    EXPECT_EQ(web_contents->GetLastCommittedURL(), start_url);
-    EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url.spec());
+      Browser* app_browser_2 = LaunchWebAppBrowserAndWait(profile(), app_id);
+      EXPECT_EQ(app_browser, app_browser_2);
+      EXPECT_EQ(app_web_contents->GetLastCommittedURL(), start_url);
+      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser_2),
+                start_url.spec());
+    }
+
+    // Reparent an in scope browser tab and check that it navigates the existing
+    // web app window.
+    {
+      content::TestNavigationObserver observer(
+          app_web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
+
+      chrome::NewTab(browser());
+      EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
+      NavigateToURLAndWait(browser(), start_url);
+      ReparentWebAppForActiveTab(browser());
+      EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+
+      observer.WaitForNavigationFinished();
+      EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(app_browser), start_url.spec());
+    }
+
+    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                        ClientMode::kNavigateExisting, 3);
   }
 
   void ExpectFocusExistingBehaviour(const AppId& app_id,
                                     const GURL& start_url) {
+    base::HistogramTester histogram_tester;
     EXPECT_EQ(GetLaunchHandler(app_id),
               (LaunchHandler{ClientMode::kFocusExisting}));
 
@@ -196,6 +231,9 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
       EXPECT_TRUE(
           EvalJs(web_contents, "window.thisIsTheSamePage").ExtractBool());
     }
+
+    histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                        ClientMode::kFocusExisting, 4);
   }
 
  private:
@@ -205,6 +243,7 @@ class WebAppLaunchHandlerBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
+  base::HistogramTester histogram_tester;
   AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
   EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
@@ -212,9 +251,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeEmpty) {
   Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
   Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?launch_handler_client_mode_auto.json");
   EXPECT_EQ(GetLaunchHandler(app_id), (LaunchHandler{ClientMode::kAuto}));
@@ -228,9 +271,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeAuto) {
   EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
 
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_new.json");
@@ -246,6 +293,9 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, ClientModeNavigateNew) {
   EXPECT_EQ(AwaitNextLaunchParamsTargetUrl(browser_2), start_url);
 
   EXPECT_NE(browser_1, browser_2);
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateNew, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
@@ -271,6 +321,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        ClientModeFocusExistingMultipleLaunches) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_focus_existing.json");
@@ -304,10 +355,14 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(),
             base::StrCat({start_url.spec(), "|", start_url.spec(), "|",
                           start_url.spec()}));
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kFocusExisting, 3);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        ClientModeNavigateExistingMultipleLaunches) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_existing.json");
@@ -339,10 +394,14 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
       });
     )";
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), start_url.spec());
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateExisting, 3);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
                        LaunchNavigationInterruptedByOutOfScopeNavigation) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallTestWebApp(
       "/web_apps/get_manifest.html?"
       "launch_handler_client_mode_navigate_new.json");
@@ -372,9 +431,13 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest,
       });
     )";
   EXPECT_EQ(EvalJs(web_contents, script).ExtractString(), "");
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kNavigateNew, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
+  base::HistogramTester histogram_tester;
   AppId app_id =
       InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
 
@@ -385,6 +448,30 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, GlobalLaunchQueue) {
   EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
   EXPECT_TRUE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
   EXPECT_TRUE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+
+  histogram_tester.ExpectUniqueSample(kLaunchHandlerHistogram,
+                                      ClientMode::kAuto, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerBrowserTest, SelectActiveBrowser) {
+  AppId app_id =
+      InstallTestWebApp("/web_apps/basic.html", /*await_metric=*/false);
+  EXPECT_EQ(GetLaunchHandler(app_id), absl::nullopt);
+
+  Browser* browser_1 = LaunchWebAppBrowser(profile(), app_id);
+  Browser* browser_2 = LaunchWebAppBrowser(profile(), app_id);
+  EXPECT_NE(browser_1, browser_2);
+
+  {
+    ScopedRegistryUpdate update(
+        &WebAppProvider::GetForTest(profile())->sync_bridge());
+    WebApp* web_app = update->UpdateApp(app_id);
+    web_app->SetLaunchHandler(LaunchHandler{ClientMode::kFocusExisting});
+  }
+
+  Browser* browser_3 = LaunchWebAppBrowser(profile(), app_id);
+  // Select the most recently opened app window.
+  EXPECT_EQ(browser_3, browser_2);
 }
 
 class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
@@ -412,6 +499,7 @@ class WebAppLaunchHandlerDisabledBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
+  base::HistogramTester histogram_tester;
   AppId app_id = InstallWebAppFromPage(
       browser(), embedded_test_server()->GetURL("/web_apps/basic.html"));
 
@@ -422,6 +510,8 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerDisabledBrowserTest, NoLaunchQueue) {
   EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchQueue").ExtractBool());
   EXPECT_FALSE(EvalJs(web_contents, "!!window.launchQueue").ExtractBool());
   EXPECT_FALSE(EvalJs(web_contents, "!!window.LaunchParams").ExtractBool());
+
+  histogram_tester.ExpectTotalCount(kLaunchHandlerHistogram, 0);
 }
 
 class WebAppLaunchHandlerOriginTrialBrowserTest : public InProcessBrowserTest {
@@ -530,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerOriginTrialBrowserTest, OriginTrial) {
 
   // Origin trial should grant the app access.
   WebAppProvider& provider = *WebAppProvider::GetForTest(browser()->profile());
-  EXPECT_EQ(provider.registrar().GetAppById(app_id)->launch_handler(),
+  EXPECT_EQ(provider.registrar_unsafe().GetAppById(app_id)->launch_handler(),
             (LaunchHandler{ClientMode::kFocusExisting}));
 
   // Open the page again with the token missing.
@@ -545,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerOriginTrialBrowserTest, OriginTrial) {
 
   // The app should update to no longer have launch_handler defined without the
   // origin trial.
-  EXPECT_EQ(provider.registrar().GetAppById(app_id)->launch_handler(),
+  EXPECT_EQ(provider.registrar_unsafe().GetAppById(app_id)->launch_handler(),
             absl::nullopt);
 }
 

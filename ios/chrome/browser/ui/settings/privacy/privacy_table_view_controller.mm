@@ -105,10 +105,10 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   TableViewDetailIconItem* _handoffDetailItem;
   // Safe Browsing item.
   TableViewDetailIconItem* _safeBrowsingDetailItem;
-}
 
-// Browser.
-@property(nonatomic, readonly) Browser* browser;
+  // Whether Settings have been dismissed.
+  BOOL _settingsAreDismissed;
+}
 
 // Accessor for the incognito reauth pref.
 @property(nonatomic, strong) PrefBackedBoolean* incognitoReauthPref;
@@ -143,15 +143,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
   self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
-    _browser = browser;
     _reauthModule = reauthModule;
     _browserState = browser->GetBrowserState();
-    if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-      self.title = l10n_util::GetNSString(IDS_IOS_SETTINGS_PRIVACY_TITLE);
-    } else {
-      self.title =
-          l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
-    }
+    self.title = l10n_util::GetNSString(IDS_IOS_SETTINGS_PRIVACY_TITLE);
 
     PrefService* prefService = _browserState->GetPrefs();
 
@@ -206,12 +200,12 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
 - (void)loadModel {
   [super loadModel];
+  if (_settingsAreDismissed)
+    return;
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierPrivacyContent];
-  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-    [model addSectionWithIdentifier:SectionIdentifierSafeBrowsing];
-  }
+  [model addSectionWithIdentifier:SectionIdentifierSafeBrowsing];
 
   if (base::FeatureList::IsEnabled(
           security_interstitials::features::kHttpsOnlyMode)) {
@@ -231,18 +225,13 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       toSectionWithIdentifier:SectionIdentifierPrivacyContent];
 
   // Privacy Safe Browsing item.
-  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-    [model addItem:[self safeBrowsingDetailItem]
-        toSectionWithIdentifier:SectionIdentifierSafeBrowsing];
-    [model setFooter:[self showPrivacyFooterItem]
-        forSectionWithIdentifier:base::FeatureList::IsEnabled(
-                                     kIOS3PIntentsInIncognito)
-                                     ? SectionIdentifierIncognitoInterstitial
-                                     : SectionIdentifierIncognitoAuth];
-  } else {
-    [model setFooter:[self showPrivacyFooterItem]
-        forSectionWithIdentifier:SectionIdentifierPrivacyContent];
-  }
+  [model addItem:[self safeBrowsingDetailItem]
+      toSectionWithIdentifier:SectionIdentifierSafeBrowsing];
+  [model setFooter:[self showPrivacyFooterItem]
+      forSectionWithIdentifier:base::FeatureList::IsEnabled(
+                                   kIOS3PIntentsInIncognito)
+                                   ? SectionIdentifierIncognitoInterstitial
+                                   : SectionIdentifierIncognitoAuth];
 
   // Web Services item.
   [model addItem:[self handoffDetailItem]
@@ -428,6 +417,32 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   base::RecordAction(base::UserMetricsAction("MobilePrivacySettingsBack"));
 }
 
+- (void)settingsWillBeDismissed {
+  DCHECK(!_settingsAreDismissed);
+
+  // Stop observable prefs.
+  [_incognitoReauthPref stop];
+  _incognitoReauthPref.observer = nil;
+  _incognitoReauthPref = nil;
+  [_HTTPSOnlyModePref stop];
+  _HTTPSOnlyModePref.observer = nil;
+  _HTTPSOnlyModePref = nil;
+  [_incognitoInterstitialPref stop];
+  _incognitoInterstitialPref.observer = nil;
+  _incognitoInterstitialPref = nil;
+
+  // Remove pref changes registrations.
+  _prefChangeRegistrar.RemoveAll();
+
+  // Remove observer bridges.
+  _prefObserverBridge.reset();
+
+  // Clear C++ ivars.
+  _browserState = nullptr;
+
+  _settingsAreDismissed = YES;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (UIView*)tableView:(UITableView*)tableView
@@ -515,23 +530,23 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
+  if (_settingsAreDismissed)
+    return;
+
   if (preferenceName == prefs::kIosHandoffToOtherDevices) {
-    NSString* detailText =
-        _browserState->GetPrefs()->GetBoolean(prefs::kIosHandoffToOtherDevices)
-            ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-            : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+    NSString* detailText = _browserState->GetPrefs()->GetBoolean(preferenceName)
+                               ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                               : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     _handoffDetailItem.detailText = detailText;
     [self reconfigureCellsForItems:@[ _handoffDetailItem ]];
     return;
   }
 
-  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-    DCHECK(_safeBrowsingDetailItem);
-    if (preferenceName == prefs::kSafeBrowsingEnabled ||
-        preferenceName == prefs::kSafeBrowsingEnhanced) {
-      _safeBrowsingDetailItem.detailText = [self safeBrowsingDetailText];
-      [self reconfigureCellsForItems:@[ _safeBrowsingDetailItem ]];
-    }
+  DCHECK(_safeBrowsingDetailItem);
+  if (preferenceName == prefs::kSafeBrowsingEnabled ||
+      preferenceName == prefs::kSafeBrowsingEnhanced) {
+    _safeBrowsingDetailItem.detailText = [self safeBrowsingDetailText];
+    [self reconfigureCellsForItems:@[ _safeBrowsingDetailItem ]];
   }
 }
 
@@ -569,7 +584,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   [super view:nil didTapLinkURL:[[CrURL alloc] initWithNSURL:URL]];
 }
 
-#pragma mark - private
+#pragma mark - Private
 
 // Called when the user taps on the information button of the disabled Incognito
 // reauth setting's UI cell.

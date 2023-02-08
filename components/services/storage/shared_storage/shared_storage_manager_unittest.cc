@@ -222,8 +222,7 @@ class MockAsyncSharedStorageDatabase : public AsyncSharedStorageDatabase {
                             bool perform_storage_cleanup = false) override {
     Run(std::move(callback));
   }
-  void PurgeStaleOrigins(
-      base::OnceCallback<void(OperationResult)> callback) override {
+  void PurgeStale(base::OnceCallback<void(OperationResult)> callback) override {
     Run(std::move(callback));
   }
   void FetchOrigins(base::OnceCallback<
@@ -400,11 +399,11 @@ class SharedStorageManagerTest : public testing::Test {
         {blink::features::kSharedStorageAPI},
         // Set these intervals to be long enough not to interfere with the
         // basic tests.
-        {{"SharedStorageStaleOriginPurgeInitialInterval",
+        {{"SharedStorageStalePurgeInitialInterval",
           TimeDeltaToString(base::Hours(kInitialPurgeIntervalHours))},
-         {"SharedStorageStaleOriginPurgeRecurringInterval",
+         {"SharedStorageStalePurgeRecurringInterval",
           TimeDeltaToString(base::Hours(kRecurringPurgeIntervalHours))},
-         {"SharedStorageOriginStalenessThreshold",
+         {"SharedStorageStalenessThreshold",
           TimeDeltaToString(base::Hours(kThresholdHours))},
          {"SharedStorageBitBudget", base::NumberToString(kBitBudget)},
          {"SharedStorageBudgetInterval",
@@ -414,7 +413,7 @@ class SharedStorageManagerTest : public testing::Test {
   // Return the relative file path in the "storage/" subdirectory of test data
   // for the SQL file from which to initialize an async shared storage database
   // instance.
-  virtual const char* GetRelativeFilePath() { return nullptr; }
+  virtual std::string GetRelativeFilePath() { return nullptr; }
 
   virtual DBType GetType() { return DBType::kInMemory; }
 
@@ -770,7 +769,7 @@ class SharedStorageManagerTest : public testing::Test {
 
     auto callback = receiver_->MakeBoolCallback(
         DBOperation(
-            Type::DB_OVERRIDE_TIME, context_origin,
+            Type::DB_OVERRIDE_TIME_ORIGIN, context_origin,
             {TestDatabaseOperationReceiver::SerializeTime(new_creation_time)}),
         out_success);
     GetManager()->OverrideCreationTimeForTesting(
@@ -838,15 +837,17 @@ class SharedStorageManagerTest : public testing::Test {
   bool memory_trimmed_ = false;
 };
 
-class SharedStorageManagerFromFileV1Test : public SharedStorageManagerTest {
+class SharedStorageManagerFromFileTest : public SharedStorageManagerTest {
  public:
   DBType GetType() override { return DBType::kFileBackedFromExisting; }
 
-  const char* GetRelativeFilePath() override { return "shared_storage.v1.sql"; }
+  std::string GetRelativeFilePath() override {
+    return GetTestFileNameForCurrentVersion();
+  }
 };
 
-// Test loading version 1 database.
-TEST_F(SharedStorageManagerFromFileV1Test, Version1_LoadFromFile) {
+// Test loading current version database.
+TEST_F(SharedStorageManagerFromFileTest, CurrentVersion_LoadFromFile) {
   url::Origin google_com = url::Origin::Create(GURL("http://google.com/"));
   EXPECT_EQ(GetSync(google_com, u"key1").data, u"value1");
   EXPECT_EQ(GetSync(google_com, u"key2").data, u"value2");
@@ -974,9 +975,9 @@ TEST_F(SharedStorageManagerFromFileV1Test, Version1_LoadFromFile) {
 }
 
 class SharedStorageManagerFromFileV1NoBudgetTableTest
-    : public SharedStorageManagerFromFileV1Test {
+    : public SharedStorageManagerFromFileTest {
  public:
-  const char* GetRelativeFilePath() override {
+  std::string GetRelativeFilePath() override {
     return "shared_storage.v1.no_budget_table.sql";
   }
 };
@@ -1401,20 +1402,23 @@ TEST_P(SharedStorageManagerParamTest, DevTools) {
   EXPECT_DOUBLE_EQ(kBitBudget, origin3_metadata.remaining_budget);
 }
 
-TEST_P(SharedStorageManagerParamTest, AdvanceTime_StaleOriginsPurged) {
+TEST_P(SharedStorageManagerParamTest, AdvanceTime_StalePurged) {
   url::Origin kOrigin1 = url::Origin::Create(GURL("http://www.example1.test"));
   EXPECT_EQ(OperationResult::kSet, SetSync(kOrigin1, u"key1", u"value1"));
   EXPECT_FALSE(FetchOriginsSync().empty());
 
-  // Initial interval for checking origin staleness is
-  // `kInitialPurgeIntervalHours` hours for this test.
+  // Initial interval for checking staleness is `kInitialPurgeIntervalHours`
+  // hours for this test.
   task_environment_.FastForwardBy(base::Hours(kInitialPurgeIntervalHours));
   EXPECT_FALSE(FetchOriginsSync().empty());
+  EXPECT_LE(GetSync(kOrigin1, u"key1").last_used_time,
+            base::Time::Now() - base::Hours(kInitialPurgeIntervalHours));
   EXPECT_LE(GetCreationTimeSync(kOrigin1).time,
             base::Time::Now() - base::Hours(kInitialPurgeIntervalHours));
 
   // Subsequent intervals are `kRecurringPurgeIntervalHours` hours each.
   task_environment_.FastForwardBy(base::Hours(kRecurringPurgeIntervalHours));
+  EXPECT_EQ(GetSync(kOrigin1, u"key1").data, u"value1");
   EXPECT_FALSE(FetchOriginsSync().empty());
 
   // We have set the staleness threshold to `kThresholdHours` hours for this
@@ -1464,7 +1468,7 @@ TEST_P(SharedStorageManagerParamTest, SyncMakeBudgetWithdrawal) {
   EXPECT_EQ(3, GetTotalNumBudgetEntriesSync());
 
   // Advance partway through the lookback window, to the point where the first
-  // call to `PurgeStaleOrigins()` happens.
+  // call to `PurgeStale()` happens.
   task_environment_.FastForwardBy(base::Hours(kInitialPurgeIntervalHours));
 
   // Remaining budgets continue to take into account the withdrawals above, as
@@ -1484,16 +1488,16 @@ TEST_P(SharedStorageManagerParamTest, SyncMakeBudgetWithdrawal) {
   EXPECT_EQ(4, GetTotalNumBudgetEntriesSync());
 
   // Advance further through the lookback window, to the point where the second
-  // call to `PurgeStaleOrigins()` happens.
+  // call to `PurgeStale()` happens.
   task_environment_.FastForwardBy(base::Hours(kRecurringPurgeIntervalHours));
   // Advance further through the lookback window, to the point where the third
-  // call to `PurgeStaleOrigins()` happens.
+  // call to `PurgeStale()` happens.
   task_environment_.FastForwardBy(base::Hours(kRecurringPurgeIntervalHours));
   // Advance further through the lookback window, to the point where the fourth
-  // call to `PurgeStaleOrigins()` happens.
+  // call to `PurgeStale()` happens.
   task_environment_.FastForwardBy(base::Hours(kRecurringPurgeIntervalHours));
 
-  // After `PurgeStaleOrigins()` runs via the timer, there will only be the most
+  // After `PurgeStale()` runs via the timer, there will only be the most
   // recent debit left in the budget table.
   EXPECT_DOUBLE_EQ(kBitBudget - 1.0, GetRemainingBudgetSync(kOrigin1).bits);
   EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin2).bits);
@@ -1987,7 +1991,7 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
   base::Time threshold2 = base::Time::Now() + base::Days(1);
   base::Time override_time1 = threshold2 + base::Milliseconds(5);
   operation_list.push(DBOperation(
-      Type::DB_OVERRIDE_TIME, kOrigin1,
+      Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin1,
       {TestDatabaseOperationReceiver::SerializeTime(override_time1)}));
 
   size_t matcher_id2 =
@@ -2012,12 +2016,12 @@ TEST_P(SharedStorageManagerPurgeMatchingOriginsParamTest, SinceThreshold) {
 
   base::Time threshold3 = threshold2 + base::Days(1);
   operation_list.push(
-      DBOperation(Type::DB_OVERRIDE_TIME, kOrigin3,
+      DBOperation(Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin3,
                   {TestDatabaseOperationReceiver::SerializeTime(threshold3)}));
 
   base::Time threshold4 = threshold3 + base::Seconds(100);
   operation_list.push(
-      DBOperation(Type::DB_OVERRIDE_TIME, kOrigin5,
+      DBOperation(Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin5,
                   {TestDatabaseOperationReceiver::SerializeTime(threshold4)}));
 
   size_t matcher_id3 = matcher_utility.RegisterMatcherFunction(

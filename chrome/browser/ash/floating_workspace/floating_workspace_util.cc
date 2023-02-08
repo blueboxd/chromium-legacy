@@ -16,10 +16,10 @@
 namespace ash {
 
 namespace {
+
 PrefService* GetPrimaryUserPrefService() {
   auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
-  auto* user_profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  auto* user_profile = ProfileHelper::Get()->GetProfileByUser(primary_user);
   return user_profile->GetPrefs();
 }
 
@@ -29,23 +29,40 @@ namespace floating_workspace_util {
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFloatingWorkspaceEnabled, false);
+  registry->RegisterBooleanPref(prefs::kFloatingWorkspaceV2Enabled, false);
 }
 
-bool IsFloatingWorkspaceEnabled() {
+bool IsFloatingWorkspaceV1Enabled() {
   PrefService* pref_service = GetPrimaryUserPrefService();
   DCHECK(pref_service);
 
   const PrefService::Preference* floating_workspace_pref =
-      pref_service->FindPreference(ash::prefs::kFloatingWorkspaceEnabled);
+      pref_service->FindPreference(prefs::kFloatingWorkspaceEnabled);
 
   DCHECK(floating_workspace_pref);
 
   if (floating_workspace_pref->IsManaged()) {
     // If there is a policy managing the pref, return what is set by policy.
-    return pref_service->GetBoolean(ash::prefs::kFloatingWorkspaceEnabled);
+    return pref_service->GetBoolean(prefs::kFloatingWorkspaceEnabled);
   }
   // If the policy is not set, return feature flag status.
   return features::IsFloatingWorkspaceEnabled();
+}
+
+bool IsFloatingWorkspaceV2Enabled() {
+  PrefService* pref_service = GetPrimaryUserPrefService();
+  DCHECK(pref_service);
+
+  const PrefService::Preference* floating_workspace_v2_pref =
+      pref_service->FindPreference(ash::prefs::kFloatingWorkspaceV2Enabled);
+
+  DCHECK(floating_workspace_v2_pref);
+
+  if (floating_workspace_v2_pref->IsManaged()) {
+    // If there is a policy managing the pref, return what is set by policy.
+    return pref_service->GetBoolean(ash::prefs::kFloatingWorkspaceV2Enabled);
+  }
+  return features::IsFloatingWorkspaceV2Enabled();
 }
 
 }  // namespace floating_workspace_util

@@ -33,6 +33,10 @@ source_set("base") {
     visibility += [ "//media/base/mac" ]
   }
 
+  if (is_win) {
+    visibility += [ "//media/base/win:color_space_util_win" ]
+  }
+
   if (is_android) {
     visibility +=
         [ "//gpu/command_buffer/service:android_texture_owner_unittests" ]
@@ -67,6 +71,8 @@ source_set("base") {
     "audio_encoder.h",
     "audio_fifo.cc",
     "audio_fifo.h",
+    "audio_glitch_info.cc",
+    "audio_glitch_info.h",
     "audio_hash.cc",
     "audio_hash.h",
     "audio_power_monitor.cc",
@@ -564,6 +570,7 @@ source_set("unit_tests") {
     "audio_converter_unittest.cc",
     "audio_discard_helper_unittest.cc",
     "audio_fifo_unittest.cc",
+    "audio_glitch_info_unittest.cc",
     "audio_hash_unittest.cc",
     "audio_latency_unittest.cc",
     "audio_parameters_unittest.cc",

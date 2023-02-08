@@ -10,10 +10,12 @@
 #include "ash/public/cpp/audio_config_service.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/public/cpp/esim_manager.h"
+#include "ash/public/cpp/hotspot_config_service.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/personalization_app/search/search_handler.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
@@ -80,7 +82,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   OsSettingsManager* manager = OsSettingsManagerFactory::GetForProfile(profile);
   manager->AddHandlers(web_ui);
   manager->AddLoadTimeData(html_source);
-  html_source->DisableTrustedTypesCSP();
 
   // TODO(khorimoto): Move to DeviceSection::AddHandler() once |html_source|
   // parameter is removed.
@@ -91,6 +92,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
       IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML);
+  html_source->DisableTrustedTypesCSP();
 
   ManagedUIHandler::Initialize(web_ui, html_source);
 
@@ -216,6 +218,11 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<hotspot_config::mojom::CrosHotspotConfig> receiver) {
+  GetHotspotConfigService(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<audio_config::mojom::CrosAudioConfig> receiver) {
   DCHECK(features::IsAudioSettingsPageEnabled());
   GetAudioConfigService(std::move(receiver));
@@ -223,12 +230,14 @@ void OSSettingsUI::BindInterface(
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
-  auth::BindToAuthFactorConfig(std::move(receiver));
+  auth::BindToAuthFactorConfig(std::move(receiver),
+                               quick_unlock::QuickUnlockFactory::GetDelegate());
 }
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
-  auth::BindToRecoveryFactorEditor(std::move(receiver));
+  auth::BindToRecoveryFactorEditor(
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)

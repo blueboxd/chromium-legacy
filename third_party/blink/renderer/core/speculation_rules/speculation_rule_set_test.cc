@@ -4,28 +4,29 @@
 
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rule_set.h"
 
-#include "base/bind.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-blink.h"
-#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_urlpatterninit_usvstring.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
@@ -35,7 +36,7 @@
 #include "third_party/blink/renderer/core/url_pattern/url_pattern.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -114,10 +115,18 @@ class SpeculationRuleSetTest : public ::testing::Test {
     execution_context_->NotifyContextDestroyed();
   }
 
+  SpeculationRuleSet* CreateRuleSet(const String& source_text,
+                                    const KURL& base_url,
+                                    ExecutionContext* context,
+                                    String* parse_error = nullptr) {
+    return SpeculationRuleSet::Parse(
+        MakeGarbageCollected<SpeculationRuleSet::Source>(source_text, base_url),
+        context, parse_error);
+  }
+
   SpeculationRuleSet* CreateSpeculationRuleSetWithTargetHint(
       const char* target_hint) {
-    return SpeculationRuleSet::Parse(
-        String::Format(R"({
+    return CreateRuleSet(String::Format(R"({
         "prefetch": [{
           "source": "list",
           "urls": ["https://example.com/hint.html"],
@@ -134,28 +143,32 @@ class SpeculationRuleSetTest : public ::testing::Test {
           "target_hint": "%s"
         }]
       })",
-                       target_hint, target_hint, target_hint),
-        KURL("https://example.com/"), execution_context_);
+                                        target_hint, target_hint, target_hint),
+                         KURL("https://example.com/"), execution_context_);
   }
 
-  ExecutionContext* execution_context() { return execution_context_.Get(); }
+  NullExecutionContext* execution_context() {
+    return static_cast<NullExecutionContext*>(execution_context_.Get());
+  }
 
  private:
   ScopedSpeculationRulesPrefetchProxyForTest enable_prefetch_{true};
+  ScopedSpeculationRulesRelativeToDocumentForTest enable_relative_to_{true};
   ScopedPrerender2ForTest enable_prerender2_{true};
   Persistent<ExecutionContext> execution_context_;
 };
 
 TEST_F(SpeculationRuleSetTest, Empty) {
-  auto* rule_set = SpeculationRuleSet::Parse("{}", KURL("https://example.com/"),
-                                             execution_context());
+  auto* rule_set = CreateRuleSet(
+
+      "{}", KURL("https://example.com/"), execution_context());
   ASSERT_TRUE(rule_set);
   EXPECT_THAT(rule_set->prefetch_rules(), ElementsAre());
   EXPECT_THAT(rule_set->prefetch_with_subresources_rules(), ElementsAre());
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrefetchRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -172,7 +185,8 @@ TEST_F(SpeculationRuleSetTest, SimplePrefetchRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrerenderRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
+
       R"({
         "prerender": [{
           "source": "list",
@@ -189,7 +203,7 @@ TEST_F(SpeculationRuleSetTest, SimplePrerenderRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, SimplePrefetchWithSubresourcesRule) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch_with_subresources": [{
           "source": "list",
@@ -206,7 +220,7 @@ TEST_F(SpeculationRuleSetTest, SimplePrefetchWithSubresourcesRule) {
 }
 
 TEST_F(SpeculationRuleSetTest, ResolvesURLs) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -226,8 +240,34 @@ TEST_F(SpeculationRuleSetTest, ResolvesURLs) {
                   "https://example.org/", "http://example.net/")));
 }
 
+TEST_F(SpeculationRuleSetTest, ResolvesURLsWithRelativeTo) {
+  // Document base URL.
+  execution_context()->SetURL(KURL("https://document.com/foo/"));
+
+  // "relative_to" only affects relative URLs: "bar" and "/baz".
+  auto* rule_set = CreateRuleSet(
+      R"({
+        "prefetch": [{
+          "source": "list",
+          "urls": [
+            "bar",
+            "/baz",
+            "//example.org/",
+            "http://example.net/"
+          ],
+          "relative_to": "document"
+        }]
+      })",
+      KURL("https://example.com/foo/"), execution_context());
+  ASSERT_TRUE(rule_set);
+  EXPECT_THAT(rule_set->prefetch_rules(),
+              ElementsAre(MatchesListOfURLs(
+                  "https://document.com/foo/bar", "https://document.com/baz",
+                  "https://example.org/", "http://example.net/")));
+}
+
 TEST_F(SpeculationRuleSetTest, RequiresAnonymousClientIPWhenCrossOrigin) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "list",
@@ -250,23 +290,22 @@ TEST_F(SpeculationRuleSetTest, RequiresAnonymousClientIPWhenCrossOrigin) {
 
 TEST_F(SpeculationRuleSetTest, RejectsInvalidJSON) {
   String parse_error;
-  auto* rule_set =
-      SpeculationRuleSet::Parse("[invalid]", KURL("https://example.com"),
-                                execution_context(), &parse_error);
+  auto* rule_set = CreateRuleSet("[invalid]", KURL("https://example.com"),
+                                 execution_context(), &parse_error);
   EXPECT_FALSE(rule_set);
   EXPECT_TRUE(parse_error.Contains("Syntax error"));
 }
 
 TEST_F(SpeculationRuleSetTest, RejectsNonObject) {
   String parse_error;
-  auto* rule_set = SpeculationRuleSet::Parse("42", KURL("https://example.com"),
-                                             execution_context(), &parse_error);
+  auto* rule_set = CreateRuleSet("42", KURL("https://example.com"),
+                                 execution_context(), &parse_error);
   EXPECT_FALSE(rule_set);
   EXPECT_TRUE(parse_error.Contains("must be an object"));
 }
 
 TEST_F(SpeculationRuleSetTest, IgnoresUnknownOrDifferentlyTypedTopLevelKeys) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "unrecognized_key": true,
         "prefetch": 42,
@@ -282,7 +321,7 @@ TEST_F(SpeculationRuleSetTest, DropUnrecognizedRules) {
   ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
       true};
 
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({"prefetch": [)"
 
       // A rule that doesn't elaborate on its source.
@@ -309,6 +348,16 @@ TEST_F(SpeculationRuleSetTest, DropUnrecognizedRules) {
 
       // A rule with a legacy value for referrer_policy.
       R"({"source": "list", "urls": ["/"], "referrer_policy": "never"},)"
+
+      // Invalid value of "relative_to".
+      R"({"source": "list",
+          "urls": ["/no-source.html"],
+          "relative_to": 2022},)"
+
+      // Invalid string value of "relative_to".
+      R"({"source": "list",
+          "urls": ["/no-source.html"],
+          "relative_to": "not_document"},)"
 
       // Invalid URLs within a list rule should be discarded.
       // This includes totally invalid ones and ones with unacceptable schemes.
@@ -428,8 +477,8 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
   ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
       true};
 
-  auto* rule_set = SpeculationRuleSet::Parse(
-      R"({
+  auto* rule_set =
+      CreateRuleSet(R"({
         "prefetch": [{
           "source": "list",
           "urls": ["https://example.com/index2.html"],
@@ -439,7 +488,7 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
           "urls": ["https://example.com/index3.html"]
         }]
       })",
-      KURL("https://example.com/"), execution_context());
+                    KURL("https://example.com/"), execution_context());
   ASSERT_TRUE(rule_set);
   EXPECT_THAT(
       rule_set->prefetch_rules(),
@@ -447,6 +496,28 @@ TEST_F(SpeculationRuleSetTest, ReferrerPolicy) {
                         ReferrerPolicyIs(
                             network::mojom::ReferrerPolicy::kStrictOrigin)),
                   AllOf(MatchesListOfURLs("https://example.com/index3.html"),
+                        Not(SetsReferrerPolicy()))));
+}
+
+TEST_F(SpeculationRuleSetTest, EmptyReferrerPolicy) {
+  ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
+      true};
+
+  // If an empty string is used for referrer_policy, treat this as if the key
+  // were omitted.
+  auto* rule_set = CreateRuleSet(
+      R"({
+        "prefetch": [{
+          "source": "list",
+          "urls": ["https://example.com/index2.html"],
+          "referrer_policy": ""
+        }]
+      })",
+      KURL("https://example.com/"), execution_context());
+  ASSERT_TRUE(rule_set);
+  EXPECT_THAT(
+      rule_set->prefetch_rules(),
+      ElementsAre(AllOf(MatchesListOfURLs("https://example.com/index2.html"),
                         Not(SetsReferrerPolicy()))));
 }
 
@@ -514,6 +585,22 @@ void PropagateRulesToStubSpeculationHost(DummyPageHolder& page_holder,
   run_loop.Run();
 
   broker.SetBinderForTesting(mojom::blink::SpeculationHost::Name_, {});
+}
+
+// Same as above method except it performs a microtask checkpoint (and therefore
+// runs any queued microtasks) immediately after executing the functor.
+template <typename F>
+void PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+    DummyPageHolder& page_holder,
+    StubSpeculationHost& speculation_host,
+    const F& functor) {
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
+    auto* script_state = ToScriptStateForMainWorld(&page_holder.GetFrame());
+    v8::MicrotasksScope microtasks_scope(script_state->GetIsolate(),
+                                         ToMicrotaskQueue(script_state),
+                                         v8::MicrotasksScope::kRunMicrotasks);
+    functor();
+  });
 }
 
 // This function adds a speculationrules script to the given page, and simulates
@@ -790,7 +877,7 @@ TEST_F(SpeculationRuleSetTest, ConsoleWarning) {
 }
 
 TEST_F(SpeculationRuleSetTest, RejectsWhereClause) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1006,15 +1093,19 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
   DocumentRulePredicate* CreatePredicate(
       String where_text,
       KURL base_url = KURL("https://example.com/")) {
+    // clang-format off
     auto* rule_set =
-        SpeculationRuleSet::Parse(String::Format(R"({
-        "prefetch": [{
-          "source": "document",
-          "where": {%s}
-        }]
-      })",
-                                                 where_text.Latin1().c_str()),
-                                  base_url, execution_context());
+        CreateRuleSet(
+          String::Format(
+            R"({
+              "prefetch": [{
+                "source": "document",
+                "where": {%s}
+              }]
+            })",
+            where_text.Latin1().c_str()), base_url, execution_context()
+        );
+    // clang-format on
     DCHECK(!rule_set->prefetch_rules().empty()) << "Invalid predicate.";
     return rule_set->prefetch_rules()[0]->predicate();
   }
@@ -1024,7 +1115,7 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
 };
 
 TEST_F(DocumentRulesTest, ParseAnd) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1041,7 +1132,7 @@ TEST_F(DocumentRulesTest, ParseAnd) {
 }
 
 TEST_F(DocumentRulesTest, ParseOr) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1058,7 +1149,7 @@ TEST_F(DocumentRulesTest, ParseOr) {
 }
 
 TEST_F(DocumentRulesTest, ParseNot) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1075,7 +1166,7 @@ TEST_F(DocumentRulesTest, ParseNot) {
 }
 
 TEST_F(DocumentRulesTest, ParseHref) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document",
@@ -1136,8 +1227,46 @@ TEST_F(DocumentRulesTest, HrefMatchesWithBaseURL) {
   EXPECT_THAT(with_base_specified, Href({URLPattern("http://bar.com/hello")}));
 }
 
+// Testing on http://bar.com requesting a ruleset from http://foo.com.
+TEST_F(DocumentRulesTest, HrefMatchesWithBaseURLAndRelativeTo) {
+  execution_context()->SetURL(KURL{"http://bar.com"});
+
+  auto* with_relative_to = CreatePredicate(
+      R"(
+        "href_matches": "/hello",
+        "relative_to": "document"
+      )",
+      KURL("http://foo.com"));
+  EXPECT_THAT(with_relative_to, Href({URLPattern("http://bar.com/hello")}));
+
+  auto* relative_to_no_effect = CreatePredicate(
+      R"(
+        "href_matches": {"pathname": "/hello", "baseURL": "http://buz.com"},
+        "relative_to": "document"
+      )",
+      KURL("http://foo.com"));
+  EXPECT_THAT(relative_to_no_effect,
+              Href({URLPattern("http://buz.com/hello")}));
+
+  auto* nested_relative_to = CreatePredicate(
+      R"(
+        "or": [
+          {
+            "href_matches": {"pathname": "/hello"},
+            "relative_to": "document"
+          },
+          {"not": {"href_matches": "/world"}}
+        ]
+      )",
+      KURL("http://foo.com/"));
+
+  EXPECT_THAT(nested_relative_to,
+              Or({Href({URLPattern("http://bar.com/hello")}),
+                  Neg(Href({URLPattern("http://foo.com/world")}))}));
+}
+
 TEST_F(DocumentRulesTest, DropInvalidRules) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({"prefetch": [)"
 
       // A rule that doesn't elaborate on its source.
@@ -1193,6 +1322,39 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
       R"({"source": "document",
           "where": {"href_matches": {"protocol": "::"}}},)"
 
+      // Invalid key pairs.
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello.html",
+                    "invalid_key": "invalid_val"}
+        },)"
+
+      // Invalid values of "relative_to".
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello.html",
+                    "relative_to": 2022}
+        },)"
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello.html",
+                    "relative_to": "not_document"}
+        },)"
+
+      // "relative_to" appears at speculation rule level instead of the
+      // "href_matches" clause.
+      R"({
+          "source": "document",
+          "where": {"href_matches": "/hello"},
+          "relative_to": "document"
+        },)"
+
+      // Currently the spec does not allow three keys.
+      R"({"source": "document",
+          "where":{"href_matches": "/hello.html",
+                   "relative_to": "document",
+                   "world-cup": "2022"}},)"
+
       // valid document rule.
       R"({"source": "document",
           "where": {"and": [
@@ -1209,7 +1371,7 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
 }
 
 TEST_F(DocumentRulesTest, DefaultPredicate) {
-  auto* rule_set = SpeculationRuleSet::Parse(
+  auto* rule_set = CreateRuleSet(
       R"({
         "prefetch": [{
           "source": "document"
@@ -1222,7 +1384,7 @@ TEST_F(DocumentRulesTest, DefaultPredicate) {
 TEST_F(DocumentRulesTest, EvaluateCombinators) {
   DummyPageHolder page_holder;
   Document& document = page_holder.GetDocument();
-  Element* link = MakeGarbageCollected<HTMLAnchorElement>(document);
+  HTMLAnchorElement* link = MakeGarbageCollected<HTMLAnchorElement>(document);
 
   auto* empty_and = CreatePredicate(R"("and": [])");
   EXPECT_THAT(empty_and, And());
@@ -1296,6 +1458,654 @@ TEST_F(DocumentRulesTest, EvaluateHrefMatches) {
   auto* pass_fail = CreatePredicate(
       R"("href_matches": ["https://foo.com/bar.html?*", "https://bar.com/*"])");
   EXPECT_TRUE(pass_fail->Matches(*link));
+}
+
+// Matches a SpeculationCandidatePtr list with a KURL list (without requiring
+// candidates to be in a specific order).
+template <typename... Matchers>
+auto HasURLs(Matchers&&... urls) {
+  return ::testing::ResultOf(
+      "urls",
+      [](const auto& candidates) {
+        Vector<KURL> urls;
+        base::ranges::transform(
+            candidates.begin(), candidates.end(), std::back_inserter(urls),
+            [](const auto& candidate) { return candidate->url; });
+        return urls;
+      },
+      ::testing::UnorderedElementsAre(urls...));
+}
+
+// Matches a SpeculationCandidatePtr with a KURL.
+auto HasURL(::testing::Matcher<KURL> matcher) {
+  return ::testing::Pointee(::testing::Field(
+      "url", &mojom::blink::SpeculationCandidate::url, matcher));
+}
+
+// Matches a SpeculationCandidatePtr with a SpeculationAction.
+auto HasAction(::testing::Matcher<mojom::blink::SpeculationAction> matcher) {
+  return ::testing::Pointee(::testing::Field(
+      "action", &mojom::blink::SpeculationCandidate::action, matcher));
+}
+
+// Matches a SpeculationCandidatePtr with a ReferrerPolicy.
+auto HasReferrerPolicy(
+    ::testing::Matcher<network::mojom::ReferrerPolicy> matcher) {
+  return ::testing::Pointee(::testing::Field(
+      "referrer", &mojom::blink::SpeculationCandidate::referrer,
+      ::testing::Pointee(::testing::Field(
+          "policy", &mojom::blink::Referrer::policy, matcher))));
+}
+
+HTMLAnchorElement* AddAnchor(ContainerNode& parent, const String& href) {
+  HTMLAnchorElement* link =
+      MakeGarbageCollected<HTMLAnchorElement>(parent.GetDocument());
+  link->setHref(href);
+  parent.appendChild(link);
+  return link;
+}
+
+HTMLAreaElement* AddAreaElement(ContainerNode& parent, const String& href) {
+  HTMLAreaElement* area =
+      MakeGarbageCollected<HTMLAreaElement>(parent.GetDocument());
+  area->setHref(href);
+  parent.appendChild(area);
+  return area;
+}
+
+// Tests that speculation candidates based of existing links are reported after
+// a document rule is inserted.
+TEST_F(DocumentRulesTest, SpeculationCandidatesReportedAfterInitialization) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  AddAnchor(*document.body(), "https://foo.com/doc.html");
+  AddAnchor(*document.body(), "https://bar.com/doc.html");
+  AddAnchor(*document.body(), "https://foo.com/doc2.html");
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/doc.html"),
+                                  KURL("https://foo.com/doc2.html")));
+}
+
+// Tests that a new speculation candidate is reported after different
+// modifications to a link.
+TEST_F(DocumentRulesTest, SpeculationCandidatesUpdatedAfterLinkModifications) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_TRUE(candidates.empty());
+  HTMLAnchorElement* link = nullptr;
+
+  // Add link with href that matches.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        link = AddAnchor(*document.body(), "https://foo.com/action.html");
+      });
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_EQ(candidates[0]->url, KURL("https://foo.com/action.html"));
+
+  // Update link href to URL that doesn't match.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link->setHref("https://bar.com/document.html"); });
+  EXPECT_TRUE(candidates.empty());
+
+  // Update link href to URL that matches.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link->setHref("https://foo.com/document.html"); });
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_EQ(candidates[0]->url, KURL("https://foo.com/document.html"));
+
+  // Remove link.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() { link->remove(); });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Tests that a new list of speculation candidates is reported after a rule set
+// is added/removed.
+TEST_F(DocumentRulesTest, SpeculationCandidatesUpdatedAfterRuleSetsChanged) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  KURL url_1 = KURL("https://foo.com/abc");
+  KURL url_2 = KURL("https://foo.com/xyz");
+  AddAnchor(*document.body(), url_1);
+  AddAnchor(*document.body(), url_2);
+
+  String speculation_script_1 = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script_1);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(url_1, url_2));
+
+  // Add a new rule set; the number of candidates should double.
+  String speculation_script_2 = R"(
+    {"prerender": [
+      {"source": "document", "where": {"not":
+        {"href_matches": {"protocol": "https", "hostname": "bar.com"}}
+      }}
+    ]}
+  )";
+  HTMLScriptElement* script_el = nullptr;
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
+    script_el = InsertSpeculationRules(document, speculation_script_2);
+  });
+  EXPECT_THAT(candidates, HasURLs(url_1, url_1, url_2, url_2));
+  EXPECT_THAT(candidates, ::testing::UnorderedElementsAre(
+                              HasAction(mojom::SpeculationAction::kPrefetch),
+                              HasAction(mojom::SpeculationAction::kPrefetch),
+                              HasAction(mojom::SpeculationAction::kPrerender),
+                              HasAction(mojom::SpeculationAction::kPrerender)));
+
+  // Remove the recently added rule set, the number of candidates should be
+  // halved.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() { script_el->remove(); });
+  ASSERT_EQ(candidates.size(), 2u);
+  EXPECT_THAT(candidates, HasURLs(url_1, url_2));
+  EXPECT_THAT(candidates,
+              ::testing::Each(HasAction(mojom::SpeculationAction::kPrefetch)));
+}
+
+// Tests that list and document speculation rules work in combination correctly.
+TEST_F(DocumentRulesTest, ListRuleCombinedWithDocumentRule) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  AddAnchor(*document.body(), "https://foo.com/bar");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document"},
+      {"source": "list", "urls": ["https://bar.com/foo"]}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar"),
+                                  KURL("https://bar.com/foo")));
+}
+
+// Tests that candidates created for document rules are correct when
+// "anonyomour-client-ip-when-origin" is specified.
+TEST_F(DocumentRulesTest, RequiresAnonymousClientIPWhenCrossOrigin) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  AddAnchor(*document.body(), "https://foo.com/bar");
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "requires": ["anonymous-client-ip-when-cross-origin"]
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_TRUE(candidates[0]->requires_anonymous_client_ip_when_cross_origin);
+}
+
+// Tests that a link inside a shadow tree is included when creating
+// document-rule based speculation candidates. Also tests that an "unslotted"
+// link (link inside shadow host that isn't assigned to a slot) is included.
+TEST_F(DocumentRulesTest, LinkInShadowTreeIncluded) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+  ShadowRoot& shadow_root =
+      document.body()->AttachShadowRootInternal(ShadowRootType::kOpen);
+  auto* link_1 = AddAnchor(shadow_root, "https://foo.com/bar.html");
+  auto* link_2 = AddAnchor(*document.body(), "https://foo.com/fizz.html");
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar.html"),
+                                  KURL("https://foo.com/fizz.html")));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        link_1->setHref("https://bar.com/foo.html");
+        link_2->remove();
+      });
+  EXPECT_TRUE(candidates.empty());
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link_1 = AddAnchor(shadow_root, "https://foo.com/buzz"); });
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_EQ(candidates[0]->url, KURL("https://foo.com/buzz"));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() { link_1->remove(); });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Tests that an anchor element with no href attribute is handled correctly.
+TEST_F(DocumentRulesTest, LinkWithNoHrefAttribute) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  auto* link = MakeGarbageCollected<HTMLAnchorElement>(document);
+  document.body()->appendChild(link);
+  ASSERT_FALSE(link->FastHasAttribute(html_names::kHrefAttr));
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_TRUE(candidates.empty());
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link->setHref("https://foo.com/bar"); });
+  ASSERT_EQ(candidates.size(), 1u);
+  ASSERT_EQ(candidates[0]->url, "https://foo.com/bar");
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link->removeAttribute(html_names::kHrefAttr); });
+  ASSERT_TRUE(candidates.empty());
+
+  // Just to test that no DCHECKs are hit.
+  link->remove();
+}
+
+// Tests a couple of edge cases:
+// 1) Removing a link that doesn't match any rules
+// 2) Adding and removing a link before running microtasks (i.e. before calling
+// UpdateSpeculationCandidates).
+TEST_F(DocumentRulesTest, RemovingUnmatchedAndPendingLinks) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  auto* unmatched_link = AddAnchor(*document.body(), "https://bar.com/foo");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_TRUE(candidates.empty());
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        auto* pending_link = AddAnchor(*document.body(), "https://foo.com/bar");
+        unmatched_link->remove();
+        pending_link->remove();
+      });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Tests if things still work if we use <area> instead of <a>.
+TEST_F(DocumentRulesTest, AreaElement) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+  HTMLAreaElement* area =
+      AddAreaElement(*document.body(), "https://foo.com/action.html");
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_EQ(candidates[0]->url, KURL("https://foo.com/action.html"));
+
+  // Update area href to URL that doesn't match.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { area->setHref("https://bar.com/document.html"); });
+  EXPECT_TRUE(candidates.empty());
+
+  // Update area href to URL that matches.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { area->setHref("https://foo.com/document.html"); });
+  ASSERT_EQ(candidates.size(), 1u);
+  EXPECT_EQ(candidates[0]->url, KURL("https://foo.com/document.html"));
+
+  // Remove area.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() { area->remove(); });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Test that adding a link to an element that isn't connected doesn't DCHECK.
+TEST_F(DocumentRulesTest, DisconnectedLink) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_TRUE(candidates.empty());
+
+  HTMLDivElement* div = nullptr;
+  HTMLAnchorElement* link = nullptr;
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        div = MakeGarbageCollected<HTMLDivElement>(document);
+        link = AddAnchor(*div, "https://foo.com/blah.html");
+        document.body()->AppendChild(div);
+      });
+  EXPECT_EQ(candidates.size(), 1u);
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        div->remove();
+        link->remove();
+      });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Similar to test above, but now inside a shadow tree.
+TEST_F(DocumentRulesTest, DisconnectedLinkInShadowTree) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  ASSERT_TRUE(candidates.empty());
+
+  HTMLDivElement* div = nullptr;
+  HTMLAnchorElement* link = nullptr;
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        div = MakeGarbageCollected<HTMLDivElement>(document);
+        ShadowRoot& shadow_root =
+            div->AttachShadowRootInternal(ShadowRootType::kOpen);
+        link = AddAnchor(shadow_root, "https://foo.com/blah.html");
+        document.body()->AppendChild(div);
+      });
+  EXPECT_EQ(candidates.size(), 1u);
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        div->remove();
+        link->remove();
+      });
+  EXPECT_TRUE(candidates.empty());
+}
+
+// Tests that a document rule's specified referrer policy is used.
+TEST_F(DocumentRulesTest, ReferrerPolicy) {
+  ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
+      true};
+
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  auto* link_with_referrer = AddAnchor(*document.body(), "https://foo.com/abc");
+  link_with_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                   "same-origin");
+  auto* link_with_rel_no_referrer =
+      AddAnchor(*document.body(), "https://foo.com/def");
+  link_with_rel_no_referrer->setAttribute(html_names::kRelAttr, "noreferrer");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"href_matches": "https://foo.com/*"},
+      "referrer_policy": "strict-origin"
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, ::testing::Each(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kStrictOrigin)));
+}
+
+// Tests that a link's referrer-policy value is used if one is not specified
+// in the document rule.
+TEST_F(DocumentRulesTest, LinkReferrerPolicy) {
+  // This test does not use the "referrer_policy" key itself. This is used to
+  // disable a temporary workaround related to the use of a lax policy. See
+  // https://crbug.com/1398772.
+  ScopedSpeculationRulesReferrerPolicyKeyForTest enable_referrer_policy_key{
+      true};
+
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+  page_holder.GetFrame().DomWindow()->SetReferrerPolicy(
+      network::mojom::ReferrerPolicy::kStrictOrigin);
+
+  auto* link_with_referrer = AddAnchor(*document.body(), "https://foo.com/abc");
+  link_with_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                   "same-origin");
+  auto* link_with_no_referrer =
+      AddAnchor(*document.body(), "https://foo.com/xyz");
+  auto* link_with_rel_noreferrer =
+      AddAnchor(*document.body(), "https://foo.com/mno");
+  link_with_rel_noreferrer->setAttribute(html_names::kRelAttr, "noreferrer");
+  auto* link_with_invalid_referrer =
+      AddAnchor(*document.body(), "https://foo.com/pqr");
+  link_with_invalid_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                           "invalid");
+  auto* link_with_disallowed_referrer =
+      AddAnchor(*document.body(), "https://foo.com/aaa");
+  link_with_disallowed_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                              "unsafe-url");
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(
+      candidates,
+      ::testing::UnorderedElementsAre(
+          ::testing::AllOf(
+              HasURL(link_with_referrer->HrefURL()),
+              HasReferrerPolicy(network::mojom::ReferrerPolicy::kSameOrigin)),
+          ::testing::AllOf(
+              HasURL(link_with_rel_noreferrer->HrefURL()),
+              HasReferrerPolicy(network::mojom::ReferrerPolicy::kNever)),
+          ::testing::AllOf(
+              HasURL(link_with_no_referrer->HrefURL()),
+              HasReferrerPolicy(network::mojom::ReferrerPolicy::kStrictOrigin)),
+          ::testing::AllOf(
+              HasURL(link_with_invalid_referrer->HrefURL()),
+              HasReferrerPolicy(
+                  network::mojom::ReferrerPolicy::kStrictOrigin))));
+
+  // Console message should have been logged for
+  // |link_with_disallowed_referrer|.
+  const auto& console_message_storage =
+      page_holder.GetPage().GetConsoleMessageStorage();
+  EXPECT_EQ(console_message_storage.size(), 1u);
+  EXPECT_EQ(console_message_storage.at(0)->Nodes()[0],
+            DOMNodeIds::IdForNode(link_with_disallowed_referrer));
+}
+
+// Tests that changing the "referrerpolicy" attribute results in the
+// corresponding speculation candidate updating.
+TEST_F(DocumentRulesTest, ReferrerPolicyAttributeChangeCausesLinkInvalidation) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  auto* link_with_referrer = AddAnchor(*document.body(), "https://foo.com/abc");
+  link_with_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                   "same-origin");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kSameOrigin)));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        link_with_referrer->setAttribute(html_names::kReferrerpolicyAttr,
+                                         "strict-origin");
+      });
+  EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kStrictOrigin)));
+}
+
+// Tests that changing the "rel" attribute results in the corresponding
+// speculation candidate updating. Also tests that "rel=noreferrer" overrides
+// the referrerpolicy attribute.
+TEST_F(DocumentRulesTest, RelAttributeChangeCausesLinkInvalidation) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  auto* link = AddAnchor(*document.body(), "https://foo.com/abc");
+  link->setAttribute(html_names::kReferrerpolicyAttr, "same-origin");
+
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kSameOrigin)));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { link->setAttribute(html_names::kRelAttr, "noreferrer"); });
+  EXPECT_THAT(
+      candidates,
+      ElementsAre(HasReferrerPolicy(network::mojom::ReferrerPolicy::kNever)));
+}
+
+TEST_F(DocumentRulesTest, ReferrerMetaChangeShouldInvalidateCandidates) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  AddAnchor(*document.body(), "https://foo.com/abc");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "https://foo.com/*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(
+      candidates,
+      ElementsAre(HasReferrerPolicy(
+          network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin)));
+
+  auto* meta =
+      MakeGarbageCollected<HTMLMetaElement>(document, CreateElementFlags());
+  meta->setAttribute(html_names::kNameAttr, "referrer");
+  meta->setAttribute(html_names::kContentAttr, "strict-origin");
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { document.head()->appendChild(meta); });
+  EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kStrictOrigin)));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { meta->setAttribute(html_names::kContentAttr, "same-origin"); });
+  EXPECT_THAT(candidates, ElementsAre(HasReferrerPolicy(
+                              network::mojom::ReferrerPolicy::kSameOrigin)));
+}
+
+TEST_F(DocumentRulesTest, BaseURLChanged) {
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+  document.SetBaseURLOverride(KURL("https://foo.com"));
+
+  AddAnchor(*document.body(), "https://foo.com/bar");
+  AddAnchor(*document.body(), "/bart");
+  String speculation_script = R"(
+    {"prefetch": [
+      {"source": "document", "where": {"href_matches": "/bar*"}}
+    ]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar"),
+                                  KURL("https://foo.com/bart")));
+
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { document.SetBaseURLOverride(KURL("https://bar.com")); });
+  // After the base URL changes, "https://foo.com/bar" is matched against
+  // "https://bar.com/bar*" and doesn't match. "/bart" is resolved to
+  // "https://bar.com/bart" and matches with "https://bar.com/bar*".
+  EXPECT_THAT(candidates, HasURLs("https://bar.com/bart"));
 }
 
 }  // namespace

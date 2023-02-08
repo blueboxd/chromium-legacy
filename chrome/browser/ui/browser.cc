@@ -28,7 +28,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -70,6 +69,7 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
+#include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -77,7 +77,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
-#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/app_session_service.h"
 #include "chrome/browser/sessions/app_session_service_factory.h"
@@ -433,7 +432,7 @@ Browser::CreationStatus Browser::GetCreationStatusForProfile(Profile* profile) {
   if (!IncognitoModePrefs::CanOpenBrowser(profile) ||
       (profile->IsGuestSession() && !profile->IsOffTheRecord()) ||
       !profile->AllowsBrowserWindows() ||
-      ProfileManager::IsProfileDirectoryMarkedForDeletion(profile->GetPath())) {
+      IsProfileDirectoryMarkedForDeletion(profile->GetPath())) {
     return CreationStatus::kErrorProfileUnsuitable;
   }
 
@@ -2603,7 +2602,7 @@ void Browser::ScheduleUIUpdate(WebContents* source, unsigned changed_flags) {
 
   if (!chrome_updater_factory_.HasWeakPtrs()) {
     // No task currently scheduled, start another.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Browser::ProcessPendingUIUpdates,
                        chrome_updater_factory_.GetWeakPtr()),
@@ -2691,10 +2690,10 @@ void Browser::RemoveScheduledUpdatesFor(WebContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-  // In kiosk and exclusive app mode we want to always hide the status bubble.
+  // In web apps, and in kiosk and exclusive app mode we want to always hide the
+  // status bubble.
   if (chrome::IsRunningInAppMode() ||
-      (base::FeatureList::IsEnabled(features::kRemoveStatusBarInWebApps) &&
-       web_app::AppBrowserController::IsWebApp(this))) {
+      web_app::AppBrowserController::IsWebApp(this)) {
     return nullptr;
   }
 

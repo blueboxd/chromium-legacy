@@ -72,6 +72,9 @@ BASE_DECLARE_FEATURE(kSplitTabStrip);
 BASE_DECLARE_FEATURE(kTabScrollingButtonPosition);
 extern const char kTabScrollingButtonPositionParameterName[];
 
+BASE_DECLARE_FEATURE(kScrollableTabStripOverflow);
+extern const char kScrollableTabStripOverflowModeName[];
+
 // TODO(pbos): Once kReadLater is cleaned up on Desktop, move definition into
 // ui_features.cc. This is currently temporarily in reading_list_switches.h.
 BASE_DECLARE_FEATURE(kSidePanelImprovedClobbering);
@@ -91,9 +94,12 @@ BASE_DECLARE_FEATURE(kClobberAllSideSearchSidePanels);
 BASE_DECLARE_FEATURE(kSideSearchAutoTriggering);
 extern const base::FeatureParam<int> kSideSearchAutoTriggeringReturnCount;
 
+BASE_DECLARE_FEATURE(kTabGroupsCollapseFreezing);
+
 BASE_DECLARE_FEATURE(kTabGroupsNewBadgePromo);
 
 BASE_DECLARE_FEATURE(kTabGroupsSave);
+extern const base::FeatureParam<bool> kTabGroupsSaveSyncIntegration;
 
 BASE_DECLARE_FEATURE(kTabHoverCardImages);
 

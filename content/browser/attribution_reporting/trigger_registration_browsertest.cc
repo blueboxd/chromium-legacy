@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/test_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -27,6 +29,8 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
+using ::blink::mojom::AttributionRegistrationType;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::Pointee;
@@ -86,7 +90,8 @@ IN_PROC_BROWSER_TEST_F(AttributionTriggerRegistrationBrowserTest,
   base::RunLoop loop;
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillOnce(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
+              AttributionRegistrationType) {
             data_host = GetRegisteredDataHost(std::move(host));
             loop.Quit();
           });
@@ -104,12 +109,14 @@ IN_PROC_BROWSER_TEST_F(AttributionTriggerRegistrationBrowserTest,
   const auto& trigger_data = data_host->trigger_data();
 
   EXPECT_EQ(trigger_data.size(), 1u);
-  EXPECT_EQ(trigger_data.front()->reporting_origin,
-            url::Origin::Create(register_url));
+  EXPECT_EQ(trigger_data.front().reporting_origin,
+            *SuitableOrigin::Create(register_url));
   EXPECT_THAT(
-      trigger_data.front()->event_triggers,
-      ElementsAre(Pointee(Field(&blink::mojom::EventTriggerData::data, 1)),
-                  Pointee(Field(&blink::mojom::EventTriggerData::data, 2))));
+      trigger_data.front().event_triggers,
+      EventTriggerDataListMatches(EventTriggerDataListMatcherConfig(ElementsAre(
+          EventTriggerDataMatches(EventTriggerDataMatcherConfig(/*data=*/1)),
+          EventTriggerDataMatches(
+              EventTriggerDataMatcherConfig(/*data=*/2))))));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -123,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(
   base::RunLoop loop;
   EXPECT_CALL(mock_attribution_host(), RegisterDataHost)
       .WillRepeatedly(
-          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
+              AttributionRegistrationType) {
             data_hosts.push_back(GetRegisteredDataHost(std::move(host)));
             if (data_hosts.size() == 2)
               loop.Quit();
@@ -142,21 +150,23 @@ IN_PROC_BROWSER_TEST_F(
   const auto& trigger_data1 = data_hosts.front()->trigger_data();
 
   EXPECT_EQ(trigger_data1.size(), 1u);
-  EXPECT_EQ(trigger_data1.front()->reporting_origin,
-            url::Origin::Create(register_url));
-  EXPECT_THAT(
-      trigger_data1.front()->event_triggers,
-      ElementsAre(Pointee(Field(&blink::mojom::EventTriggerData::data, 5))));
+  EXPECT_EQ(trigger_data1.front().reporting_origin,
+            *SuitableOrigin::Create(register_url));
+  EXPECT_THAT(trigger_data1.front().event_triggers,
+              EventTriggerDataListMatches(EventTriggerDataListMatcherConfig(
+                  ElementsAre(EventTriggerDataMatches(
+                      EventTriggerDataMatcherConfig(/*data=*/5))))));
 
   data_hosts.back()->WaitForTriggerData(/*num_trigger_data=*/1);
   const auto& trigger_data2 = data_hosts.back()->trigger_data();
 
   EXPECT_EQ(trigger_data2.size(), 1u);
-  EXPECT_EQ(trigger_data2.front()->reporting_origin,
-            url::Origin::Create(register_url));
-  EXPECT_THAT(
-      trigger_data2.front()->event_triggers,
-      ElementsAre(Pointee(Field(&blink::mojom::EventTriggerData::data, 7))));
+  EXPECT_EQ(trigger_data2.front().reporting_origin,
+            *SuitableOrigin::Create(register_url));
+  EXPECT_THAT(trigger_data2.front().event_triggers,
+              EventTriggerDataListMatches(EventTriggerDataListMatcherConfig(
+                  ElementsAre(EventTriggerDataMatches(
+                      EventTriggerDataMatcherConfig(/*data=*/7))))));
 }
 
 }  // namespace content

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
@@ -61,6 +62,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSamplingOptions.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/color_space.h"
@@ -68,6 +70,7 @@
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/progress_reporter.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -373,6 +376,8 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
     GrFlushInfo flush_info = {};
     gpu::AddVulkanCleanupTaskForSkiaFlush(context_state_->vk_context_provider(),
                                           &flush_info);
+    gl::ScopedProgressReporter scoped_process_reporter(
+        context_state_->progress_reporter());
     gr_context()->flush(flush_info);
     gr_context()->submit(true);
   }
@@ -453,6 +458,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   // for CopyOutput().
   scoped_output_device_paint_ = output_device_->BeginScopedPaint();
   if (!scoped_output_device_paint_) {
+    // For debugging: http://crbug.com/1364756
+    // We want to figure out why beginning a write access can fail.
+    base::debug::DumpWithoutCrashing();
     MarkContextLost(ContextLostReason::CONTEXT_LOST_BEGIN_PAINT_FAILED);
     return;
   }
@@ -479,12 +487,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
     // Draw will only fail if the SkSurface and SkDDL are incompatible.
     bool draw_success = scoped_output_device_paint_->Draw(ddl);
-#if BUILDFLAG(IS_OZONE)
-    if (!draw_success)
-      DLOG(ERROR) << "output_sk_surface()->draw() failed.";
-#else
     DCHECK(draw_success);
-#endif  // USE_OZONE
 
     destroy_after_swap_.emplace_back(std::move(ddl));
 
@@ -697,6 +700,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       gpu::AddCleanupTaskForSkiaFlush(std::move(on_finished), &flush_info);
     }
 
+    gl::ScopedProgressReporter scoped_process_reporter(
+        context_state_->progress_reporter());
     auto end_state = scoped_access->TakeEndState();
     auto result = surface->flush(flush_info, end_state.get());
     if (result != GrSemaphoresSubmitted::kYes &&
@@ -923,6 +928,8 @@ bool SkiaOutputSurfaceImplOnGpu::FlushSurface(
   flush_info.fFinishedProc = finished_proc;
   flush_info.fFinishedContext = finished_context;
   gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_, &flush_info);
+  gl::ScopedProgressReporter scoped_process_reporter(
+      context_state_->progress_reporter());
   GrSemaphoresSubmitted flush_result =
       surface->flush(flush_info, end_state.get());
   return flush_result == GrSemaphoresSubmitted::kYes || end_semaphores.empty();
@@ -1578,8 +1585,8 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
     // Texture parameters can be modified by concurrent reads so reset them
     // before compositing from the texture. See https://crbug.com/1092080.
     if (is_gl && context->maybe_concurrent_reads()) {
-      auto* promise_texture = context->promise_image_texture();
-      if (promise_texture) {
+      for (SkPromiseImageTexture* promise_texture :
+           context->promise_image_textures()) {
         GrBackendTexture backend_texture = promise_texture->backendTexture();
         backend_texture.glTextureParametersModified();
       }
@@ -1589,10 +1596,12 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 
 void SkiaOutputSurfaceImplOnGpu::ResetStateOfImages() {
   for (auto& context : image_contexts_with_end_access_state_) {
-    if (!gr_context()->setBackendTextureState(
-            context.first->promise_image_texture()->backendTexture(),
-            *context.second)) {
-      DLOG(ERROR) << "setBackendTextureState() failed.";
+    for (SkPromiseImageTexture* promise_texture :
+         context.first->promise_image_textures()) {
+      if (!gr_context()->setBackendTextureState(
+              promise_texture->backendTexture(), *context.second)) {
+        DLOG(ERROR) << "setBackendTextureState() failed.";
+      }
     }
   }
   image_contexts_with_end_access_state_.clear();
@@ -1947,6 +1956,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
       gpu::ShouldVulkanSyncCpuForSkiaSubmit(vulkan_context_provider_);
 
   ResetStateOfImages();
+  gl::ScopedProgressReporter scoped_process_reporter(
+      context_state_->progress_reporter());
   output_device_->Submit(
       sync_cpu, base::BindOnce(&SkiaOutputSurfaceImplOnGpu::PostSubmit,
                                base::Unretained(this), std::move(frame)));
@@ -2299,15 +2310,30 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
     gpu::Mailbox mailbox,
     const SkColor4f& color,
     const gfx::ColorSpace& color_space) {
-  // Create a 1x1 pixel span of the colour in RGBA format.
+#if BUILDFLAG(IS_OZONE)
+  auto preferred_solid_color_format = ui::OzonePlatform::GetInstance()
+                                          ->GetSurfaceFactoryOzone()
+                                          ->GetPreferredFormatForSolidColor();
+  if (preferred_solid_color_format)
+    solid_color_image_format_ =
+        GetResourceFormat(preferred_solid_color_format.value());
+#endif
+  DCHECK(solid_color_image_format_ == RGBA_8888 ||
+         solid_color_image_format_ == BGRA_8888);
+  // Create a 1x1 pixel span of the colour in |solid_color_image_format_|.
   gfx::Size size(1, 1);
-  SharedImageFormat si_format = SharedImageFormat::SinglePlane(RGBA_8888);
+  SharedImageFormat si_format =
+      SharedImageFormat::SinglePlane(solid_color_image_format_);
   // Premultiply the SkColor4f to support transparent quads.
   SkColor4f premul{color[0] * color[3], color[1] * color[3],
                    color[2] * color[3], color[3]};
   const uint32_t premul_rgba_bytes = premul.toBytes_RGBA();
+  uint32_t premul_bytes = premul_rgba_bytes;
+  if (solid_color_image_format_ == BGRA_8888) {
+    SkSwapRB(&premul_bytes, &premul_rgba_bytes, 1);
+  }
   auto pixel_span = base::make_span(
-      reinterpret_cast<const uint8_t*>(&premul_rgba_bytes), sizeof(uint32_t));
+      reinterpret_cast<const uint8_t*>(&premul_bytes), sizeof(uint32_t));
 
   // TODO(crbug.com/1360538) Some work is needed to properly support F16 format.
   shared_image_factory_->CreateSharedImage(

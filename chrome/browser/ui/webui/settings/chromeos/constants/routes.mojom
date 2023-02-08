@@ -44,6 +44,7 @@ enum Subpage {
   kTetherDetails = 6,
   kVpnDetails = 7,
   kApn = 8,
+  kHotspotDetails = 9,
 
   // Bluetooth section.
   kBluetoothDevices = 100,
@@ -52,7 +53,8 @@ enum Subpage {
 
   // MultiDevice section.
   kMultiDeviceFeatures = 200,
-  kSmartLock = 201,
+  // Note: Value 201 was for deprecated SmartLock subpage - see b/227674947.
+  // Do not reuse.
   kNearbyShare = 202,
 
   // People section.
@@ -113,6 +115,7 @@ enum Subpage {
   kCrostiniExtraContainers = 806,
   kBruschettaDetails = 850,
   kBruschettaUsbPreferences = 851,
+  kBruschettaManageSharedFolders = 852,
 
   // Note: Deprecated Plugin VM section has no subpages.
 
@@ -146,12 +149,13 @@ enum Subpage {
   kManageAccessibility = 1500,
   kTextToSpeech = 1502,
   kSwitchAccessOptions = 1503,
-  kCaptions = 1504,
+  // 1504 was used for kCaptions. Do not reuse.
   kTextToSpeechPage = 1505,
   kDisplayAndMagnification = 1506,
   kKeyboardAndTextInput = 1507,
   kCursorAndTouchpad = 1508,
   kAudioAndCaptions = 1509,
+  kSelectToSpeak = 1510,
 
   // Note: Reset section has no subpages.
 
@@ -175,6 +179,7 @@ const string kCellularDetailsSubpagePath = "networkDetail";
 const string kTetherDetailsSubpagePath = "networkDetail";
 const string kVpnDetailsSubpagePath = "networkDetail";
 const string kApnSubpagePath = "apn";
+const string kHotspotSubpagePath = "hotspotDetail";
 
 // Bluetooth section.
 const string kBluetoothSectionPath = "bluetooth";
@@ -239,6 +244,8 @@ const string kCrostiniExtraContainersSubpagePath = "crostini/extraContainers";
 const string kBruschettaDetailsSubpagePath = "bruschetta/details";
 const string kBruschettaUsbPreferencesSubpagePath =
      "bruschetta/sharedUsbDevices";
+const string kBruschettaManageSharedFoldersSubpagePath =
+     "bruschetta/sharedPaths";
 
 // Date and Time section.
 const string kDateAndTimeSectionPath = "dateTime";
@@ -277,11 +284,11 @@ const string kTextToSpeechPagePath = "textToSpeech";
 const string kDisplayAndMagnificationSubpagePath = "displayAndMagnification";
 const string kKeyboardAndTextInputSubpagePath = "keyboardAndTextInput";
 const string kCursorAndTouchpadSubpagePath = "cursorAndTouchpad";
+const string kSelectToSpeakSubpagePath = "textToSpeech/selectToSpeak";
 const string kAudioAndCaptionsSubpagePath = "audioAndCaptions";
 const string kTextToSpeechSubpagePath = "manageAccessibility/tts";
 const string kSwitchAccessOptionsSubpagePath =
     "manageAccessibility/switchAccess";
-const string kCaptionsSubpagePath = "manageAccessibility/captions";
 
 // Reset section.
 const string kResetSectionPath = "osReset";

@@ -156,12 +156,14 @@ void PrivacySandboxService::PromptActionOccurred(
   InformSentimentService(action);
   switch (action) {
     case (PromptAction::kNoticeShown): {
-      DCHECK_EQ(PromptType::kNotice, GetRequiredPromptType());
-      // The new Privacy Sandbox pref can be enabled when the notice has been
-      // shown. Note that a notice will not have been shown if the user disabled
-      // the old Privacy Sandbox pref.
-      pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
-      pref_service_->SetBoolean(prefs::kPrivacySandboxNoticeDisplayed, true);
+      // TODO(crbug.com/1378703): Handle new prompt types.
+      if (PromptType::kNotice == GetRequiredPromptType()) {
+        // The new Privacy Sandbox pref can be enabled when the notice has been
+        // shown. Note that a notice will not have been shown if the user
+        // disabled the old Privacy Sandbox pref.
+        pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
+        pref_service_->SetBoolean(prefs::kPrivacySandboxNoticeDisplayed, true);
+      }
       base::RecordAction(
           base::UserMetricsAction("Settings.PrivacySandbox.Notice.Shown"));
       break;
@@ -222,6 +224,13 @@ void PrivacySandboxService::PromptActionOccurred(
           base::UserMetricsAction("Settings.PrivacySandbox.Notice.LearnMore"));
       break;
     }
+    case (PromptAction::kNoticeMoreInfoOpened): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.Notice.LearnMoreExpanded"));
+      break;
+    }
+    // TODO(crbug.com/1378703): Clean up PromptAction and remove
+    // *LearnMoreClosed or add use actions metrics for those prompt actions.
     default:
       break;
   }
@@ -270,17 +279,10 @@ void PrivacySandboxService::SetPromptDisabledForTests(bool disabled) {
 }
 
 bool PrivacySandboxService::IsPrivacySandboxEnabled() {
-  return base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)
-             ? pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2)
-             : pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled);
+  return pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2);
 }
 
 bool PrivacySandboxService::IsPrivacySandboxManaged() {
-  if (!base::FeatureList::IsEnabled(
-          privacy_sandbox::kPrivacySandboxSettings3)) {
-    return pref_service_->IsManagedPreference(
-        prefs::kPrivacySandboxApisEnabled);
-  }
   return pref_service_->IsManagedPreference(
       prefs::kPrivacySandboxApisEnabledV2);
 }
@@ -290,11 +292,7 @@ bool PrivacySandboxService::IsPrivacySandboxRestricted() {
 }
 
 void PrivacySandboxService::SetPrivacySandboxEnabled(bool enabled) {
-  pref_service_->SetBoolean(
-      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)
-          ? prefs::kPrivacySandboxManuallyControlledV2
-          : prefs::kPrivacySandboxManuallyControlled,
-      true);
+  pref_service_->SetBoolean(prefs::kPrivacySandboxManuallyControlledV2, true);
   privacy_sandbox_settings_->SetPrivacySandboxEnabled(enabled);
 }
 
@@ -481,9 +479,7 @@ void PrivacySandboxService::LogPrivacySandboxState() {
   RecordFirstPartySetsStateHistogram(fps_status);
 
   // Start by recording any metrics for Privacy Sandbox 3.
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
-    RecordPrivacySandbox3StartupMetrics();
-  }
+  RecordPrivacySandbox3StartupMetrics();
 
   // Check policy status first.
   std::string default_cookie_setting_provider;
@@ -732,18 +728,25 @@ PrivacySandboxService::GetRequiredPromptTypeInternal(
   if (!IsRegularProfile(profile_type))
     return PromptType::kNone;
 
-  // If the release 3 feature is not enabled, no prompt is required.
-  if (!base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3))
-    return PromptType::kNone;
-
   // Forced testing feature parameters override everything.
-  if (privacy_sandbox::kPrivacySandboxSettings3DisablePromptForTesting.Get())
-    return PromptType::kNone;
-
   if (base::FeatureList::IsEnabled(
           privacy_sandbox::kDisablePrivacySandboxPrompts)) {
     return PromptType::kNone;
   }
+
+  if (privacy_sandbox::kPrivacySandboxSettings4ForceShowConsentForTesting.Get())
+    return PromptType::kM1Consent;
+
+  if (privacy_sandbox::kPrivacySandboxSettings4ForceShowNoticeRowForTesting
+          .Get())
+    return PromptType::kM1NoticeROW;
+
+  if (privacy_sandbox::kPrivacySandboxSettings4ForceShowNoticeEeaForTesting
+          .Get())
+    return PromptType::kM1NoticeEEA;
+
+  if (privacy_sandbox::kPrivacySandboxSettings3DisablePromptForTesting.Get())
+    return PromptType::kNone;
 
   if (privacy_sandbox::kPrivacySandboxSettings3ForceShowConsentForTesting.Get())
     return PromptType::kConsent;

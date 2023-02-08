@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -116,8 +117,8 @@ std::string Read(mojo::ScopedDataPipeConsumerHandle readable) {
         readable->ReadData(buffer, &size, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_SHOULD_WAIT) {
       base::RunLoop run_loop;
-      base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                       run_loop.QuitClosure());
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, run_loop.QuitClosure());
       run_loop.Run();
       continue;
     }
@@ -378,8 +379,8 @@ class WebTransportTest : public testing::TestWithParam<base::StringPiece> {
 
   void RunPendingTasks() {
     base::RunLoop run_loop;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     run_loop.QuitClosure());
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -608,51 +609,6 @@ TEST_F(WebTransportTest, EchoOnUnidirectionalStreams) {
       net_log_observer().GetEntriesWithType(
           net::NetLogEventType::QUIC_SESSION_RST_STREAM_FRAME_SENT);
   EXPECT_EQ(0u, resets_sent.size());
-}
-
-TEST_F(WebTransportTest, DeleteClientWithStreamsOpen) {
-  base::RunLoop run_loop_for_handshake;
-  mojo::PendingRemote<mojom::WebTransportHandshakeClient> handshake_client;
-  TestHandshakeClient test_handshake_client(
-      handshake_client.InitWithNewPipeAndPassReceiver(),
-      run_loop_for_handshake.QuitClosure());
-
-  CreateWebTransport(GetURL("/echo"),
-                     url::Origin::Create(GURL("https://example.org/")),
-                     std::move(handshake_client));
-
-  run_loop_for_handshake.Run();
-
-  ASSERT_TRUE(test_handshake_client.has_seen_connection_establishment());
-
-  TestClient client(test_handshake_client.PassClientReceiver());
-  mojo::Remote<mojom::WebTransport> transport_remote(
-      test_handshake_client.PassTransport());
-
-  constexpr int kNumStreams = 10;
-  auto writable_for_outgoing =
-      std::make_unique<mojo::ScopedDataPipeProducerHandle[]>(kNumStreams);
-  for (int i = 0; i < kNumStreams; i++) {
-    const MojoCreateDataPipeOptions options = {
-        sizeof(options), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1, 4 * 1024};
-    mojo::ScopedDataPipeConsumerHandle readable_for_outgoing;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              mojo::CreateDataPipe(&options, writable_for_outgoing[i],
-                                   readable_for_outgoing));
-    base::RunLoop run_loop_for_stream_creation;
-    bool stream_created;
-    transport_remote->CreateStream(
-        std::move(readable_for_outgoing),
-        /*writable=*/{},
-        base::BindLambdaForTesting([&](bool b, uint32_t /*id*/) {
-          stream_created = b;
-          run_loop_for_stream_creation.Quit();
-        }));
-    run_loop_for_stream_creation.Run();
-    ASSERT_TRUE(stream_created);
-  }
-
-  // Keep the streams open so that they are closed via destructor.
 }
 
 // crbug.com/1129847: disabled because it is flaky.

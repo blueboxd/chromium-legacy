@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_wrapper.gni")
@@ -10,14 +9,14 @@ import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
 web_component_files = [
-  "emoji_button.js",
-  "emoji_category_button.js",
-  "emoji_group.js",
+  "emoji_button.ts",
+  "emoji_category_button.ts",
+  "emoji_group.ts",
   "emoji_group_button.ts",
-  "emoji_picker.js",
-  "emoji_search.js",
-  "emoji_variants.js",
-  "text_group_button.js",
+  "emoji_picker.ts",
+  "emoji_search.ts",
+  "emoji_variants.ts",
+  "text_group_button.ts",
 ]
 
 # Files that are passed as input to html_to_wrapper().
@@ -31,15 +30,15 @@ foreach(f, html_files) {
   html_wrapper_files += [ f + ".ts" ]
 }
 
-non_component_js_files = [
-  "constants.js",
-  "emoji_picker_api_proxy.js",
-  "events.js",
-  "metadata_extension.js",
-  "prefix_search.js",
-  "store.js",
-  "structs/trie.js",
-  "types.js",
+non_component_ts_files = [
+  "constants.ts",
+  "emoji_picker_api_proxy.ts",
+  "events.ts",
+  "metadata_extension.ts",
+  "prefix_search.ts",
+  "store.ts",
+  "structs/trie.ts",
+  "types.ts",
 ]
 
 mojo_js_files = [ "emoji_picker.mojom-webui.js" ]
@@ -62,6 +61,11 @@ copy("copy_mojo") {
 copy("copy_fuse") {
   sources = [ "//third_party/fusejs/dist/fuse.basic.esm.min.js" ]
   outputs = [ "$preprocessed_folder/fuse.js" ]
+}
+
+copy("copy_fuse_dts") {
+  sources = [ "//third_party/fusejs/dist/fuse.d.ts" ]
+  outputs = [ "$preprocessed_folder/fuse.d.ts" ]
 }
 
 grit("resources") {
@@ -188,139 +192,13 @@ copy("symbol_test_data") {
   outputs = [ "$target_gen_dir/symbol_test_ordering.json" ]
 }
 
-js_library("emoji_picker") {
-  deps = [
-    ":constants",
-    ":emoji_group",
-    ":emoji_picker_api_proxy",
-    ":emoji_search",
-    ":events",
-    ":metadata_extension",
-    ":store",
-    ":text_group_button",
-    ":trie",
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/js:assert",
-  ]
-  externs_list = [ "$externs_path/chrome_send.js" ]
-}
-
-js_library("emoji_picker_api_proxy") {
-  deps = [
-    "//ash/webui/common/resources:cr_deprecated",
-    "//chrome/browser/ui/webui/ash/emoji:mojo_bindings_webui_js",
-  ]
-}
-
-js_library("emoji_category_button") {
-  deps = [
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("emoji_group") {
-  deps = [
-    ":emoji_button",
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("emoji_button") {
-  deps = [
-    ":emoji_variants",
-    ":events",
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("emoji_variants") {
-  # technically depends on :emoji_button, but that causes circular dependency.
-  deps = [
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-}
-
-js_library("emoji_search") {
-  deps = [
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-
-  externs_list = [ "//ui/webui/resources/cr_elements/cr_search_field/cr_search_field_externs.js" ]
-}
-
-js_library("types") {
-}
-
-js_library("constants") {
-}
-
-js_library("events") {
-}
-
-js_library("trie") {
-  sources = [ "./structs/trie.js" ]
-}
-
-js_library("prefix_search") {
-  sources = [ "./prefix_search.js" ]
-  deps = [ ":trie" ]
-}
-
-js_library("metadata_extension") {
-  deps = [ ":types" ]
-}
-
-js_library("store") {
-  deps = [ ":types" ]
-}
-
-js_library("text_group_button") {
-  deps = [
-    ":events",
-    ":types",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-  ]
-  externs_list =
-      [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
-}
-
-js_type_check("closure_compile") {
-  is_polymer3 = true
-  closure_flags =
-      default_closure_args + mojom_js_args + [
-        "js_module_root=" + rebase_path(".", root_build_dir),
-        "js_module_root=" + rebase_path(
-                "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/ash/emoji",
-                root_build_dir),
-      ]
-  deps = [
-    ":constants",
-    ":emoji_button",
-    ":emoji_category_button",
-    ":emoji_group",
-    ":emoji_picker",
-    ":emoji_picker_api_proxy",
-    ":emoji_search",
-    ":emoji_variants",
-    ":events",
-    ":store",
-    ":text_group_button",
-    ":types",
-  ]
-}
-
 html_to_wrapper("html_wrapper_files") {
   in_files = html_files
   out_folder = preprocessed_folder
 }
 
 copy("copy_checked_in_ts_js_files") {
-  sources = web_component_files + non_component_js_files
+  sources = web_component_files + non_component_ts_files
   outputs = [ "$preprocessed_folder/{{source_target_relative}}" ]
 }
 
@@ -328,8 +206,9 @@ ts_library("build_ts") {
   root_dir = "$target_gen_dir/preprocessed"
   out_dir = "$target_gen_dir/tsc"
   tsconfig_base = "tsconfig_base.json"
-  in_files = web_component_files + non_component_js_files + html_wrapper_files +
+  in_files = web_component_files + non_component_ts_files + html_wrapper_files +
              mojo_js_files + [ "fuse.js" ]
+  definitions = [ "$target_gen_dir/preprocessed/fuse.d.ts" ]
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
@@ -337,6 +216,7 @@ ts_library("build_ts") {
   extra_deps = [
     ":copy_checked_in_ts_js_files",
     ":copy_fuse",
+    ":copy_fuse_dts",
     ":copy_mojo",
     ":html_wrapper_files",
     "//ash/webui/common/resources:generate_definitions",

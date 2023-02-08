@@ -247,6 +247,30 @@ webrtc::PeerConnectionInterface::IceTransportsType IceTransportPolicyFromString(
   return webrtc::PeerConnectionInterface::kAll;
 }
 
+bool IsValidStunURL(const KURL& url) {
+  if (!url.ProtocolIs("stun") && !url.ProtocolIs("stuns")) {
+    return false;
+  }
+  if (!url.Query().empty()) {
+    return false;
+  }
+  return true;
+}
+
+bool IsValidTurnURL(const KURL& url) {
+  if (!url.ProtocolIs("turn") && !url.ProtocolIs("turns")) {
+    return false;
+  }
+  if (!url.Query().empty()) {
+    Vector<String> query_parts;
+    url.Query().Split("=", query_parts);
+    if (query_parts.size() < 2 || query_parts[0] != "transport") {
+      return false;
+    }
+  }
+  return true;
+}
+
 webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     ExecutionContext* context,
     const RTCConfiguration* configuration,
@@ -287,6 +311,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
     WebVector<webrtc::PeerConnectionInterface::IceServer> ice_servers;
     for (const RTCIceServer* ice_server : configuration->iceServers()) {
       Vector<String> url_strings;
+      std::vector<std::string> converted_urls;
       if (ice_server->hasUrls()) {
         UseCounter::Count(context, WebFeature::kRTCIceServerURLs);
         switch (ice_server->urls()->GetContentType()) {
@@ -313,16 +338,14 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
               "'" + url_string + "' is not a valid URL.");
           return {};
         }
-        if (!(url.ProtocolIs("turn") || url.ProtocolIs("turns") ||
-              url.ProtocolIs("stun"))) {
+        bool is_valid_turn = IsValidTurnURL(url);
+        if (!is_valid_turn && !IsValidStunURL(url)) {
           exception_state->ThrowDOMException(
               DOMExceptionCode::kSyntaxError,
-              "'" + url.Protocol() +
-                  "' is not one of the supported URL schemes "
-                  "'stun', 'turn' or 'turns'.");
+              "'" + url_string + "' is not a valid stun or turn URL.");
           return {};
         }
-        if ((url.ProtocolIs("turn") || url.ProtocolIs("turns")) &&
+        if (is_valid_turn &&
             (!ice_server->hasUsername() || !ice_server->hasCredential())) {
           exception_state->ThrowDOMException(
               DOMExceptionCode::kInvalidAccessError,
@@ -331,18 +354,18 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
               "\"turn\" or \"turns\".");
         }
 
-        auto converted_ice_server =
-            webrtc::PeerConnectionInterface::IceServer();
-        converted_ice_server.urls.push_back(String(url).Utf8());
-        if (ice_server->hasUsername()) {
-          converted_ice_server.username = ice_server->username().Utf8();
-        }
-        if (ice_server->hasCredential()) {
-          converted_ice_server.password = ice_server->credential().Utf8();
-        }
-
-        ice_servers.emplace_back(std::move(converted_ice_server));
+        converted_urls.push_back(String(url).Utf8());
       }
+
+      auto converted_ice_server = webrtc::PeerConnectionInterface::IceServer();
+      converted_ice_server.urls = std::move(converted_urls);
+      if (ice_server->hasUsername()) {
+        converted_ice_server.username = ice_server->username().Utf8();
+      }
+      if (ice_server->hasCredential()) {
+        converted_ice_server.password = ice_server->credential().Utf8();
+      }
+      ice_servers.emplace_back(std::move(converted_ice_server));
     }
     web_configuration.servers = ice_servers.ReleaseVector();
   }
@@ -643,11 +666,10 @@ RTCPeerConnection::~RTCPeerConnection() {
 }
 
 void RTCPeerConnection::Dispose() {
-  // Promptly clears the handler
+  // Promptly clears the handler's pointer to |this|
   // so that content/ doesn't access it in a lazy sweeping phase.
-  // Other references to the handler use a weak pointer, preventing access.
   if (peer_handler_) {
-    peer_handler_.reset();
+    peer_handler_->CloseAndUnregister();
   }
 }
 
@@ -1244,18 +1266,21 @@ void RTCPeerConnection::setConfiguration(
   }
 
   webrtc::RTCErrorType error = peer_handler_->SetConfiguration(configuration);
-  if (error != webrtc::RTCErrorType::NONE) {
-    // All errors besides InvalidModification should have been detected above.
-    if (error == webrtc::RTCErrorType::INVALID_MODIFICATION) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidModificationError,
-          "Attempted to modify the PeerConnection's "
-          "configuration in an unsupported way.");
-    } else {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kOperationError,
-          "Could not update the PeerConnection with the given configuration.");
-    }
+  if (error == webrtc::RTCErrorType::NONE) {
+    return;
+  } else if (error == webrtc::RTCErrorType::INVALID_MODIFICATION) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidModificationError,
+        "Attempted to modify the PeerConnection's configuration in an "
+        "unsupported way.");
+  } else if (error == webrtc::RTCErrorType::SYNTAX_ERROR) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "The given configuration has a syntax error.");
+  } else {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kOperationError,
+        "Could not update the PeerConnection with the given configuration.");
   }
 }
 
@@ -1409,7 +1434,6 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   RTCIceCandidatePlatform* platform_candidate =
       ConvertToRTCIceCandidatePlatform(ExecutionContext::From(script_state),
                                        candidate);
-
 
   if (IsIceCandidateMissingSdpMidAndMLineIndex(candidate)) {
     exception_state.ThrowTypeError(

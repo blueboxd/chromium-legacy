@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/sequence_checker_impl.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -24,7 +25,7 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/base/trace_constants.h"
 #include "net/dns/address_info.h"
-#include "net/dns/dns_util.h"
+#include "net/dns/dns_names_util.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "net/base/winsock_init.h"
@@ -234,9 +235,10 @@ HostResolverSystemTask::HostResolverSystemTask(
       net_log_(job_net_log),
       network_(network) {
   if (hostname_) {
-    // |host| should be a valid domain name. HostResolverImpl::Resolve has
-    // checks to fail early if this is not the case.
-    DCHECK(IsValidDNSDomain(*hostname_)) << "Invalid hostname: " << *hostname_;
+    // |host| should be a valid domain name. HostResolverManager has checks to
+    // fail early if this is not the case.
+    DCHECK(dns_names_util::IsValidDnsName(*hostname_))
+        << "Invalid hostname: " << *hostname_;
   }
   // If a resolver_proc has not been specified, try to use a default if one is
   // set, as it may be in tests.
@@ -297,7 +299,7 @@ void HostResolverSystemTask::StartLookupAttempt() {
   // Use a WeakPtr to avoid keeping the HostResolverSystemTask alive after
   // completion or cancellation.
   if (attempt_number_ <= params_.max_retry_attempts) {
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HostResolverSystemTask::StartLookupAttempt,
                        weak_ptr_factory_.GetWeakPtr()),

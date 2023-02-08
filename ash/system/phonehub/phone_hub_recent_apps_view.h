@@ -5,13 +5,20 @@
 #ifndef ASH_SYSTEM_PHONEHUB_PHONE_HUB_RECENT_APPS_VIEW_H_
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_RECENT_APPS_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "ash/components/phonehub/recent_apps_interaction_handler.h"
 #include "base/gtest_prod_util.h"
+#include "chromeos/ash/components/phonehub/recent_apps_interaction_handler.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
+
+namespace phonehub {
+class PhoneHubManager;
+}
 
 // A view in Phone Hub bubble that allows user to relaunch a streamed app from
 // the recent apps list.
@@ -20,7 +27,8 @@ class ASH_EXPORT PhoneHubRecentAppsView
       public phonehub::RecentAppsInteractionHandler::Observer {
  public:
   explicit PhoneHubRecentAppsView(
-      phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler);
+      phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler,
+      phonehub::PhoneHubManager* phone_hub_manager);
   ~PhoneHubRecentAppsView() override;
   PhoneHubRecentAppsView(PhoneHubRecentAppsView&) = delete;
   PhoneHubRecentAppsView operator=(PhoneHubRecentAppsView&) = delete;
@@ -37,6 +45,8 @@ class ASH_EXPORT PhoneHubRecentAppsView
                            SingleRecentAppButtonsView);
   FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
                            MultipleRecentAppButtonsView);
+  FRIEND_TEST_ALL_PREFIXES(RecentAppButtonsViewTest,
+                           MultipleRecentAppButtonsWithMoreAppsButtonView);
 
   class PlaceholderView;
 
@@ -60,10 +70,17 @@ class ASH_EXPORT PhoneHubRecentAppsView
   // Update the view to reflect the most recently opened apps.
   void Update();
 
+  // Switch to full apps list view.
+  void SwitchToFullAppsList();
+
+  // Generate more apps button.
+  std::unique_ptr<views::ImageButton> GenerateMoreAppsButton();
+
   RecentAppButtonsView* recent_app_buttons_view_ = nullptr;
   std::vector<views::View*> recent_app_button_list_;
   phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler_ =
       nullptr;
+  phonehub::PhoneHubManager* phone_hub_manager_ = nullptr;
   PlaceholderView* placeholder_view_ = nullptr;
 };
 

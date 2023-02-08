@@ -56,8 +56,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
     // Called after tracing is enabled on all processes because the rule was
     // triggered.
-    virtual void OnTracingEnabled(
-        BackgroundTracingConfigImpl::CategoryPreset preset) = 0;
+    virtual void OnTracingEnabled() = 0;
 
     virtual ~EnabledStateObserver() = default;
   };
@@ -125,8 +124,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool HasTraceToUpload() override;
   std::string GetLatestTraceToUpload() override;
   void SetTraceToUpload(std::unique_ptr<std::string> trace_data);
-  std::string GetBackgroundTracingUploadUrl(
-      const std::string& trial_name) override;
   std::unique_ptr<BackgroundTracingConfig> GetBackgroundTracingConfig(
       const std::string& trial_name) override;
 
@@ -146,7 +143,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   bool IsAllowedFinalization(bool is_crash_scenario) const;
 
   // Called by BackgroundTracingActiveScenario
-  void OnStartTracingDone(BackgroundTracingConfigImpl::CategoryPreset preset);
+  void OnStartTracingDone();
 
   // For tests
   CONTENT_EXPORT BackgroundTracingActiveScenario* GetActiveScenarioForTesting();
@@ -165,8 +162,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   BackgroundTracingManagerImpl();
   ~BackgroundTracingManagerImpl() override;
 
-  bool IsSupportedConfig(BackgroundTracingConfigImpl* config);
-  absl::optional<base::Value::Dict> GenerateMetadataDict();
+  absl::optional<base::Value> GenerateMetadataDict();
   void GenerateMetadataProto(
       perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
       bool privacy_filtering_enabled);
@@ -195,7 +191,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
       pending_agents_;
 
   IdleCallback idle_callback_;
-  base::RepeatingClosure tracing_enabled_callback_for_testing_;
 
   // This field contains serialized trace log proto.
   std::string trace_to_upload_;

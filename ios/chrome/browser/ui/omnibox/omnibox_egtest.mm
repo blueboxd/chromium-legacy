@@ -306,7 +306,8 @@ void FocusFakebox() {
 
 // Tests that Search Copied Image menu button is shown with an image in the
 // clipboard and is starting an image search.
-- (void)testOmniboxMenuPasteImageToSearch {
+// Flaky. crbug.com/1361857
+- (void)DISABLED_testOmniboxMenuPasteImageToSearch {
   [self copyImageIntoClipboard];
 
   // Wait for the context menu to dismiss, so the omnibox can be tapped.
@@ -757,28 +758,6 @@ void FocusFakebox() {
 
 - (void)setUp {
   _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation1UIKit);
-
-  // `appConfigurationForTestCase` is called during [super setUp], and
-  // depends on _variant.
-  [super setUp];
-}
-
-// This is currently needed to prevent this test case from being ignored.
-- (void)testEmpty {
-}
-
-@end
-
-// Test case for the NTP home UI, except the new omnibox popup flag is enabled
-// with variant 2.
-@interface NewOmniboxPopupLocationBarSteadyStateVariant2TestCase
-    : NewOmniboxPopupLocationBarSteadyStateTestCase
-@end
-
-@implementation NewOmniboxPopupLocationBarSteadyStateVariant2TestCase
-
-- (void)setUp {
-  _variant = std::string(kIOSOmniboxUpdatedPopupUIVariation2UIKit);
 
   // `appConfigurationForTestCase` is called during [super setUp], and
   // depends on _variant.

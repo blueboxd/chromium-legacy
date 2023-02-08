@@ -22,4 +22,22 @@ suite('NetworkSummary', function() {
     assertEquals(1, summaryItems.length);
     assertEquals('WiFi', summaryItems[0].id);
   });
+
+  [false, true].forEach(isHotspotFeatureEnabled => {
+    test('Hotspot summary item', async () => {
+      loadTimeData.overrideValues(
+          {'isHotspotEnabled': isHotspotFeatureEnabled});
+      netSummary = document.createElement('network-summary');
+      document.body.appendChild(netSummary);
+      flush();
+      const hotspotSummaryItem = netSummary.$$('hotspot-summary-item');
+
+      if (isHotspotFeatureEnabled) {
+        assertTrue(!!hotspotSummaryItem);
+      } else {
+        assertFalse(!!hotspotSummaryItem);
+      }
+    });
+  });
+
 });

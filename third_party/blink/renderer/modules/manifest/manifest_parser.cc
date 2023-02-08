@@ -146,7 +146,6 @@ bool ManifestParser::Parse() {
   manifest_ = mojom::blink::Manifest::New();
   if (!root) {
     AddErrorInfo(error.message, true, error.line, error.column);
-    ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return false;
   }
@@ -154,7 +153,6 @@ bool ManifestParser::Parse() {
   std::unique_ptr<JSONObject> root_object = JSONObject::From(std::move(root));
   if (!root_object) {
     AddErrorInfo("root element must be a valid JSON object.", true);
-    ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return false;
   }
@@ -1904,6 +1902,9 @@ absl::optional<RGBA32> ManifestParser::ParseDarkColorOverride(
 
   for (wtf_size_t i = 0; i < colors_list->size(); ++i) {
     const JSONObject* list_item = JSONObject::Cast(colors_list->at(i));
+    if (!list_item)
+      continue;
+
     absl::optional<String> media_query =
         ParseString(list_item, "media", Trim(false));
     absl::optional<RGBA32> color = ParseColor(list_item, "color");

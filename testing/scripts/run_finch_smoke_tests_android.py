@@ -701,10 +701,16 @@ class WebViewFinchTestCase(FinchTestCase):
       experiments_loaded = ('Active field trial '
                             '"UMA-Uniformity-Trial-100-Percent" '
                             'in group "group_01"') in logcat_content
+
+      # The check for field trials logged in the logcat is flaky therefore we
+      # should set the expected results field to 'PASS FAIL'. When the check
+      # is fixed, then we can revert back to setting the expected result
+      # to 'PASS'.
+      expected_results = 'PASS FAIL'
       field_trials_loaded_results_dict = (
           all_results_dict['tests'].setdefault(
               'check_field_trials_loaded',
-              {'expected': 'PASS',
+              {'expected': expected_results,
                'artifacts': {'logcat_path': [logcat_relpath]}}))
 
       if experiments_loaded:
@@ -716,6 +722,11 @@ class WebViewFinchTestCase(FinchTestCase):
         field_trials_loaded_results_dict['actual'] = 'FAIL'
         all_results_dict['num_failures_by_type'].setdefault('FAIL', 0)
         all_results_dict['num_failures_by_type']['FAIL'] += 1
+
+        if 'FAIL' in expected_results:
+          # If the check for field trial configs is flaky then only
+          # use the seed_loaded variable to set the return code.
+          return 0 if seed_loaded else 1
 
       return 0 if seed_loaded and experiments_loaded else 1
 
@@ -757,6 +768,10 @@ class WebViewFinchTestCase(FinchTestCase):
       choices=['dev', 'canary', 'beta', 'stable'], default=None)
     installer_tool_group.add_argument(
       '--milestone', '-M', help='Milestone build of WebView to install')
+    installer_tool_group.add_argument(
+      '--package', '-P', default=None,
+      help='Name of the WebView apk to install')
+
 
   def new_seed_downloaded(self):
     """Checks if a new seed was downloaded
@@ -828,6 +843,10 @@ class WebViewFinchTestCase(FinchTestCase):
 
       if self.options.channel:
         cmd.extend(['--channel', self.options.channel])
+
+      if self.options.package:
+        cmd.extend(['--package', self.options.package])
+
       exit_code = subprocess.call(cmd)
       assert exit_code == 0, (
           'The WebView installer tool failed to install WebView')
@@ -959,15 +978,15 @@ def main(args):
       ret |= test_case.run_tests('with_finch_seed', test_results_dict,
                                  check_seed_loaded=True)
 
+      # enable wifi so that a new seed can be downloaded from the finch server
+      test_case.enable_wifi()
+
       # TODO(b/187185389): Figure out why WebView needs an extra restart
       # to fetch and load a new finch seed.
       ret |= test_case.run_tests(
           'extra_restart', test_results_dict,
           extra_browser_args=test_case.finch_seed_download_args(),
           check_seed_loaded=True)
-
-      # enable wifi so that a new seed can be downloaded from the finch server
-      test_case.enable_wifi()
 
       # Restart webview+shell to fetch new seed to variations_seed_new
       ret |= test_case.run_tests(

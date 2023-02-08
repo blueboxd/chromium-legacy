@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -173,33 +174,16 @@ CloudPolicyClient::RegistrationParameters::RegistrationParameters(
 
 CloudPolicyClient::RegistrationParameters::~RegistrationParameters() = default;
 
-void CloudPolicyClient::RegistrationParameters::SetPsmExecutionResult(
-    absl::optional<
-        enterprise_management::DeviceRegisterRequest::PsmExecutionResult>
-        new_psm_result) {
-  psm_execution_result = new_psm_result;
-}
-
-void CloudPolicyClient::RegistrationParameters::SetPsmDeterminationTimestamp(
-    absl::optional<int64_t> new_psm_timestamp) {
-  psm_determination_timestamp = new_psm_timestamp;
-}
-
-void CloudPolicyClient::RegistrationParameters::SetLicenseType(
-    em::LicenseType_LicenseTypeEnum license_type) {
-  license_type_ = license_type;
-}
-
-CloudPolicyClient::Observer::~Observer() {}
+CloudPolicyClient::Observer::~Observer() = default;
 
 CloudPolicyClient::CloudPolicyClient(
-    const std::string& machine_id,
-    const std::string& machine_model,
-    const std::string& brand_code,
-    const std::string& attested_device_id,
+    base::StringPiece machine_id,
+    base::StringPiece machine_model,
+    base::StringPiece brand_code,
+    base::StringPiece attested_device_id,
     absl::optional<MacAddress> ethernet_mac_address,
     absl::optional<MacAddress> dock_mac_address,
-    const std::string& manufacture_date,
+    base::StringPiece manufacture_date,
     DeviceManagementService* service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DeviceDMTokenCallback device_dm_token_callback)
@@ -245,7 +229,7 @@ void CloudPolicyClient::SetupRegistration(
   app_install_report_request_job_ = nullptr;
   extension_install_report_request_job_ = nullptr;
   unique_request_job_.reset();
-  responses_.clear();
+  last_policy_fetch_responses_.clear();
   if (device_dm_token_callback_) {
     device_dm_token_ = device_dm_token_callback_.Run(user_affiliation_ids);
   }
@@ -547,23 +531,6 @@ void CloudPolicyClient::FetchRobotAuthCodes(
   request->set_device_type(device_type);
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
-}
-
-void CloudPolicyClient::Unregister() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(service_);
-
-  std::unique_ptr<DMServerJobConfiguration> config =
-      std::make_unique<DMServerJobConfiguration>(
-          DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION, this,
-          /*critical=*/false, DMAuth::FromDMToken(dm_token_),
-          /*oauth_token=*/absl::nullopt,
-          base::BindOnce(&CloudPolicyClient::OnUnregisterCompleted,
-                         weak_ptr_factory_.GetWeakPtr()));
-
-  config->request()->mutable_unregister_request();
-
-  unique_request_job_ = service_->CreateJob(std::move(config));
 }
 
 void CloudPolicyClient::UploadEnterpriseMachineCertificate(
@@ -926,8 +893,8 @@ void CloudPolicyClient::UploadEuiccInfo(
 
 void CloudPolicyClient::OnEuiccInfoUploaded(StatusCallback callback,
                                             DMServerJobResult result) {
-  status_ = result.dm_status;
-  if (status_ != DM_STATUS_SUCCESS)
+  last_dm_status_ = result.dm_status;
+  if (last_dm_status_ != DM_STATUS_SUCCESS)
     NotifyClientError();
 
   std::move(callback).Run(result.dm_status == DM_STATUS_SUCCESS);
@@ -1092,8 +1059,9 @@ const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
     const std::string& settings_entity_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = responses_.find(std::make_pair(policy_type, settings_entity_id));
-  return it == responses_.end() ? nullptr : &it->second;
+  auto it = last_policy_fetch_responses_.find(
+      std::make_pair(policy_type, settings_entity_id));
+  return it == last_policy_fetch_responses_.end() ? nullptr : &it->second;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1171,7 +1139,7 @@ void CloudPolicyClient::OnRegisterCompleted(DMServerJobResult result) {
     }
   }
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status == DM_STATUS_SUCCESS) {
     dm_token_ = result.response.register_response().device_management_token();
     reregistration_dm_token_.clear();
@@ -1221,7 +1189,7 @@ void CloudPolicyClient::OnFetchRobotAuthCodesCompleted(
     LOG(WARNING) << "Invalid service api access response.";
     result.dm_status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status == DM_STATUS_SUCCESS) {
     DVLOG(1) << "Device robot account auth code fetch complete - code = "
              << result.response.service_api_access_response().auth_code();
@@ -1243,17 +1211,17 @@ void CloudPolicyClient::OnPolicyFetchCompleted(DMServerJobResult result) {
     }
   }
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status == DM_STATUS_SUCCESS) {
     const em::DevicePolicyResponse& policy_response =
         result.response.policy_response();
     // Log histogram on first device policy fetch response to check the state
     // keys.
-    if (responses_.empty()) {
+    if (last_policy_fetch_responses_.empty()) {
       base::UmaHistogramBoolean("Ash.StateKeysPresent",
                                 !state_keys_to_upload_.empty());
     }
-    responses_.clear();
+    last_policy_fetch_responses_.clear();
     for (int i = 0; i < policy_response.responses_size(); ++i) {
       const em::PolicyFetchResponse& fetch_response =
           policy_response.responses(i);
@@ -1268,12 +1236,12 @@ void CloudPolicyClient::OnPolicyFetchCompleted(DMServerJobResult result) {
       if (policy_data.has_settings_entity_id())
         entity_id = policy_data.settings_entity_id();
       std::pair<std::string, std::string> key(type, entity_id);
-      if (base::Contains(responses_, key)) {
+      if (base::Contains(last_policy_fetch_responses_, key)) {
         LOG(WARNING) << "Duplicate PolicyFetchResponse for type: " << type
                      << ", entity: " << entity_id << ", ignoring";
         continue;
       }
-      responses_[key] = fetch_response;
+      last_policy_fetch_responses_[key] = fetch_response;
     }
     state_keys_to_upload_.clear();
     NotifyPolicyFetched();
@@ -1282,7 +1250,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(DMServerJobResult result) {
   } else {
     NotifyClientError();
 
-    VLOG(2) << "Policy fetch error: " << status_;
+    VLOG(2) << "Policy fetch error: " << last_dm_status_;
 
     if (result.dm_status == DM_STATUS_SERVICE_DEVICE_NOT_FOUND ||
         result.dm_status == DM_STATUS_SERVICE_DEVICE_NEEDS_RESET) {
@@ -1294,32 +1262,11 @@ void CloudPolicyClient::OnPolicyFetchCompleted(DMServerJobResult result) {
   }
 }
 
-void CloudPolicyClient::OnUnregisterCompleted(DMServerJobResult result) {
-  if (result.dm_status == DM_STATUS_SUCCESS &&
-      !result.response.has_unregister_response()) {
-    // Assume unregistration has succeeded either way.
-    LOG(WARNING) << "Empty unregistration response.";
-  }
-
-  status_ = result.dm_status;
-  if (result.dm_status == DM_STATUS_SUCCESS) {
-    dm_token_.clear();
-    // Cancel all outstanding jobs.
-    request_jobs_.clear();
-    app_install_report_request_job_ = nullptr;
-    extension_install_report_request_job_ = nullptr;
-    device_dm_token_.clear();
-    NotifyRegistrationStateChanged();
-  } else {
-    NotifyClientError();
-  }
-}
-
 void CloudPolicyClient::OnCertificateUploadCompleted(
     CloudPolicyClient::StatusCallback callback,
     DMServerJobResult result) {
   bool success = true;
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status != DM_STATUS_SUCCESS) {
     success = false;
     NotifyClientError();
@@ -1342,7 +1289,7 @@ void CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted(
     result.dm_status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status == DM_STATUS_SUCCESS &&
       result.response.device_attribute_update_permission_response()
           .has_result() &&
@@ -1366,7 +1313,7 @@ void CloudPolicyClient::OnDeviceAttributeUpdated(
     result.dm_status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status == DM_STATUS_SUCCESS &&
       result.response.device_attribute_update_response().has_result() &&
       result.response.device_attribute_update_response().result() ==
@@ -1397,7 +1344,7 @@ void CloudPolicyClient::RemoveJob(const DeviceManagementService::Job* job) {
 
 void CloudPolicyClient::OnReportUploadCompleted(StatusCallback callback,
                                                 DMServerJobResult result) {
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   if (result.dm_status != DM_STATUS_SUCCESS)
     NotifyClientError();
 
@@ -1411,7 +1358,7 @@ void CloudPolicyClient::OnRealtimeReportUploadCompleted(
     DeviceManagementStatus status,
     int reponse_code,
     absl::optional<base::Value::Dict> response) {
-  status_ = status;
+  last_dm_status_ = status;
   if (status != DM_STATUS_SUCCESS)
     NotifyClientError();
 
@@ -1433,7 +1380,7 @@ void CloudPolicyClient::OnEncryptedReportUploadCompleted(
     std::move(callback).Run(absl::nullopt);
     return;
   }
-  status_ = status;
+  last_dm_status_ = status;
   if (status != DM_STATUS_SUCCESS) {
     NotifyClientError();
   }
@@ -1452,8 +1399,8 @@ void CloudPolicyClient::OnRemoteCommandsFetched(RemoteCommandCallback callback,
 
 void CloudPolicyClient::OnGcmIdUpdated(StatusCallback callback,
                                        DMServerJobResult result) {
-  status_ = result.dm_status;
-  if (status_ != DM_STATUS_SUCCESS)
+  last_dm_status_ = result.dm_status;
+  if (last_dm_status_ != DM_STATUS_SUCCESS)
     NotifyClientError();
 
   std::move(callback).Run(result.dm_status == DM_STATUS_SUCCESS);
@@ -1504,7 +1451,7 @@ void CloudPolicyClient::OnClientCertProvisioningStartCsrResponse(
   base::ScopedClosureRunner job_cleaner(base::BindOnce(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), result.job));
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 
@@ -1573,7 +1520,7 @@ void CloudPolicyClient::OnClientCertProvisioningFinishCsrResponse(
   base::ScopedClosureRunner job_cleaner(base::BindOnce(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), result.job));
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 
@@ -1603,7 +1550,7 @@ void CloudPolicyClient::OnClientCertProvisioningDownloadCertResponse(
   base::ScopedClosureRunner job_cleaner(base::BindOnce(
       &CloudPolicyClient::RemoveJob, base::Unretained(this), result.job));
 
-  status_ = result.dm_status;
+  last_dm_status_ = result.dm_status;
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 
@@ -1698,9 +1645,9 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
     request->set_psm_determination_timestamp_ms(
         params.psm_determination_timestamp.value());
   }
-  if (params.license_type_.has_value()) {
+  if (params.license_type.has_value()) {
     request->mutable_license_type()->set_license_type(
-        params.license_type_.value());
+        params.license_type.value());
   }
 }
 

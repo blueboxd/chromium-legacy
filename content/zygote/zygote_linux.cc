@@ -666,7 +666,7 @@ bool Zygote::HandleGetSandboxStatus(int fd, base::PickleIterator iter) {
 
 void Zygote::HandleReinitializeLoggingRequest(base::PickleIterator iter,
                                               std::vector<base::ScopedFD> fds) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   uint32_t logging_dest;
   if (!iter.ReadUInt32(&logging_dest)) {
     LOG(ERROR) << "Missing logging_dest parameter";
@@ -677,22 +677,32 @@ void Zygote::HandleReinitializeLoggingRequest(base::PickleIterator iter,
     LOG(ERROR) << "Wrong number of log fds was passed";
     return;
   }
-  base::PlatformFile log_fd = fds[0].release();
+  base::ScopedFD log_fd(std::move(fds.front()));
 
-  logging::LoggingSettings logging_settings;
-  logging_settings.logging_dest = logging_dest;
-  logging_settings.log_file = fdopen(log_fd, "a");
-  if (!logging_settings.log_file) {
-    close(log_fd);
-    LOG(ERROR) << "Failed to open new log file handle";
-    return;
+  if (logging_dest & logging::LOG_TO_STDERR) {
+    int fd = dup2(log_fd.get(), STDERR_FILENO);
+    if (fd == base::kInvalidPlatformFile)
+      PLOG(ERROR) << "Unable to redirect stderr logging";
   }
-  if (!logging::InitLogging(logging_settings))
-    LOG(ERROR) << "Unable to reinitialize logging";
+
+  if (logging_dest & logging::LOG_TO_FILE) {
+    logging::LoggingSettings logging_settings;
+    logging_settings.logging_dest = logging_dest;
+    logging_settings.log_file = fdopen(log_fd.get(), "a");
+    if (!logging_settings.log_file) {
+      PLOG(ERROR) << "Failed to open new log file handle";
+      return;
+    }
+    if (!logging::InitLogging(logging_settings)) {
+      LOG(ERROR) << "Unable to reinitialize logging";
+      return;
+    }
+    std::ignore = log_fd.release();
+  }
 #else
-  // This method should only be used in ChromeOS (Ash).
+  // This method should only be used in ChromeOS.
   NOTREACHED();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
 }  // namespace content

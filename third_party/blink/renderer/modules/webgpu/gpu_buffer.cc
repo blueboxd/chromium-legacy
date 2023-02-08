@@ -31,9 +31,10 @@ namespace {
 
 // A size that if used to create a dawn_wire buffer, will guarantee we'll OOM
 // immediately. It is an implementation detail of dawn_wire but that's tested
-// on CQ in Dawn.
-constexpr uint64_t kGuaranteedBufferOOMSize =
-    std::numeric_limits<size_t>::max();
+// on CQ in Dawn. Note that we set kGuaranteedBufferOOMSize to
+// (WGPU_WHOLE_MAP_SIZE - 1) to ensure we never pass WGPU_WHOLE_MAP_SIZE from
+// blink to wire_client.
+constexpr uint64_t kGuaranteedBufferOOMSize = WGPU_WHOLE_MAP_SIZE - 1u;
 
 WGPUBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc,
                                 std::string* label) {
@@ -118,7 +119,8 @@ class GPUMappedDOMArrayBuffer : public DOMArrayBuffer {
 
 // static
 GPUBuffer* GPUBuffer::Create(GPUDevice* device,
-                             const GPUBufferDescriptor* webgpu_desc) {
+                             const GPUBufferDescriptor* webgpu_desc,
+                             ExceptionState& exception_state) {
   DCHECK(device);
 
   std::string label;
@@ -133,9 +135,21 @@ GPUBuffer* GPUBuffer::Create(GPUDevice* device,
     dawn_desc.size = std::min(dawn_desc.size, kGuaranteedBufferOOMSize);
   }
 
-  GPUBuffer* buffer = MakeGarbageCollected<GPUBuffer>(
-      device, dawn_desc.size,
-      device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc));
+  WGPUBuffer wgpuBuffer =
+      device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc);
+  // dawn_wire::client will return nullptr when mappedAtCreation == true and
+  // dawn_wire::client fails to allocate memory for initializing an active
+  // buffer mapping, which is required by latest WebGPU SPEC.
+  if (wgpuBuffer == nullptr) {
+    DCHECK(dawn_desc.mappedAtCreation);
+    exception_state.ThrowRangeError(
+        "createBuffer failed, size is too large for the implementation when "
+        "mappedAtCreation == true");
+    return nullptr;
+  }
+
+  GPUBuffer* buffer =
+      MakeGarbageCollected<GPUBuffer>(device, dawn_desc.size, wgpuBuffer);
   if (webgpu_desc->hasLabel())
     buffer->setLabel(webgpu_desc->label());
 

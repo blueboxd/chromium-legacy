@@ -219,7 +219,11 @@ class CORE_EXPORT HTMLElement : public Element {
   bool HasPopoverAttribute() const;
   PopoverValueType PopoverType() const;
   bool popoverOpen() const;
+  const char* IsPopoverNotReady(PopoverTriggerAction action,
+                                DOMExceptionCode& exception_code) const;
+  bool IsPopoverReady(PopoverTriggerAction action) const;
   void togglePopover(ExceptionState& exception_state);
+  void togglePopover(bool force, ExceptionState& exception_state);
   void showPopover(ExceptionState& exception_state);
   void hidePopover(ExceptionState& exception_state);
   void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
@@ -231,7 +235,9 @@ class CORE_EXPORT HTMLElement : public Element {
   // Retrieves the element pointed to by this element's 'anchor' content
   // attribute, if that element exists, and if this element is a popover.
   Element* anchorElement() const;
-  static void HandlePopoverLightDismiss(const Event& event);
+  void ResetPopoverAnchorObserver();
+  void PopoverAnchorElementChanged();
+  static void HandlePopoverLightDismiss(const Event& event, const Node& node);
   void InvokePopover(Element* invoker);
   Element* GetPopoverFirstFocusableElement(bool autofocus_only);
   void SetPopoverFocusOnShow();
@@ -242,12 +248,8 @@ class CORE_EXPORT HTMLElement : public Element {
                                    HidePopoverFocusBehavior,
                                    HidePopoverForcingLevel);
 
-  // TODO(crbug.com/1197720): The popover position should be provided by the new
-  // anchored positioning scheme.
-  void SetNeedsRepositioningForSelectMenu(bool flag);
   void SetOwnerSelectMenuElement(HTMLSelectMenuElement* element);
-  scoped_refptr<ComputedStyle> StyleForSelectMenuPopoverstyle(
-      const StyleRecalcContext&);
+  HTMLSelectMenuElement* ownerSelectMenuElement() const;
 
   bool DispatchFocusEvent(
       Element* old_focused_element,
@@ -295,9 +297,6 @@ class CORE_EXPORT HTMLElement : public Element {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
   unsigned ParseBorderWidthAttribute(const AtomicString&) const;
-
-  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
-      const StyleRecalcContext&) override;
 
   void ChildrenChanged(const ChildrenChange&) override;
   bool CalculateAndAdjustAutoDirectionality(Node* stay_within);

@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/child_accounts/child_user_service.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/ash/policy/core/user_policy_test_helper.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -52,7 +52,6 @@ arc::mojom::ArcPackageInfoPtr CreateArcAppPackage(
   package->last_backup_android_id = 1;
   package->last_backup_time = 1;
   package->sync = false;
-  package->system = false;
   return package;
 }
 

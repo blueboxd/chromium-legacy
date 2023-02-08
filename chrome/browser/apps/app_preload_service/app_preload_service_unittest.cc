@@ -12,11 +12,22 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/apps/app_preload_service/app_preload_service_factory.h"
 #include "chrome/browser/apps/app_preload_service/proto/app_provisioning.pb.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -25,17 +36,22 @@
 
 namespace {
 
-static constexpr char kFirstLoginFlowCompletedKey[] =
-    "first_login_flow_completed";
+constexpr char kFirstLoginFlowStartedKey[] = "first_login_flow_started";
+constexpr char kFirstLoginFlowCompletedKey[] = "first_login_flow_completed";
 
-static constexpr char kApsStateManager[] =
-    "apps.app_preload_service.state_manager";
-
-static constexpr char kServerUrl[] =
-    "http://localhost:9876/v1/app_provisioning/apps?alt=proto";
+constexpr char kApsStateManager[] = "apps.app_preload_service.state_manager";
 
 const base::Value::Dict& GetStateManager(Profile* profile) {
   return profile->GetPrefs()->GetDict(kApsStateManager);
+}
+
+void FillWebExtras(apps::proto::AppProvisioningResponse_WebExtras* extras,
+                   const std::string& start_url) {
+  extras->set_manifest_id(start_url);
+  extras->set_start_url(start_url);
+  extras->set_scope(start_url);
+  extras->set_display_mode(
+      apps::proto::AppProvisioningResponse::DISPLAY_MODE_STANDALONE);
 }
 
 }  // namespace
@@ -43,34 +59,32 @@ const base::Value::Dict& GetStateManager(Profile* profile) {
 namespace apps {
 
 class AppPreloadServiceTest : public testing::Test {
- public:
-  void VerifyFirstLoginPrefSet(base::OnceClosure on_complete) {
-    // We expect that the key has been set after the first login flow has been
-    // completed.
-    auto flow_completed =
-        GetStateManager(GetProfile()).FindBool(kFirstLoginFlowCompletedKey);
-    EXPECT_NE(flow_completed, absl::nullopt);
-    EXPECT_TRUE(flow_completed.value());
-
-    std::move(on_complete).Run();
-  }
-
  protected:
-  AppPreloadServiceTest() {
+  AppPreloadServiceTest()
+      : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()) {
     scoped_feature_list_.InitAndEnableFeature(features::kAppPreloadService);
   }
 
   void SetUp() override {
     testing::Test::SetUp();
 
+    GetFakeUserManager()->set_current_user_new(true);
+
     TestingProfile::Builder profile_builder;
     profile_builder.SetSharedURLLoaderFactory(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_));
     profile_ = profile_builder.Build();
+
+    web_app::test::AwaitStartWebAppProviderAndSubsystems(GetProfile());
   }
 
   Profile* GetProfile() { return profile_.get(); }
+
+  ash::FakeChromeUserManager* GetFakeUserManager() const {
+    return static_cast<ash::FakeChromeUserManager*>(
+        user_manager::UserManager::Get());
+  }
 
   network::TestURLLoaderFactory url_loader_factory_;
 
@@ -78,6 +92,7 @@ class AppPreloadServiceTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
+  user_manager::ScopedUserManager scoped_user_manager_;
 };
 
 TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
@@ -95,8 +110,8 @@ TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
   EXPECT_EQ(nullptr,
             AppPreloadServiceFactory::GetForProfile(incognito_profile));
 
-  // We expect the App Preload Service to not be available in a guest profile as
-  // the App Service isn't available.
+  // We expect the App Preload Service to not be available in either regular or
+  // OTR guest profiles.
   TestingProfile::Builder guest_builder;
   guest_builder.SetGuestSession();
   auto guest_profile = guest_builder.Build();
@@ -104,39 +119,215 @@ TEST_F(AppPreloadServiceTest, ServiceAccessPerProfile) {
   EXPECT_EQ(nullptr,
             AppPreloadServiceFactory::GetForProfile(guest_profile.get()));
 
-  // The service is available for the OTR profile in guest mode, as the App
-  // Service supports this mode.
   auto* guest_otr_profile =
       guest_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
-  EXPECT_TRUE(AppPreloadServiceFactory::IsAvailable(guest_otr_profile));
-  auto* otr_guest_service =
-      AppPreloadServiceFactory::GetForProfile(guest_otr_profile);
-  EXPECT_NE(nullptr, otr_guest_service);
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(guest_otr_profile));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(guest_otr_profile));
 
-  // We expect a different service in the Guest Session profile.
-  EXPECT_NE(otr_guest_service, service);
+  // The service is unsupported for managed and supervised accounts.
+  TestingProfile::Builder child_builder;
+  child_builder.SetIsSupervisedProfile();
+  std::unique_ptr<TestingProfile> child_profile = child_builder.Build();
+
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(child_profile.get()));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(child_profile.get()));
+
+  TestingProfile::Builder managed_builder;
+  managed_builder.OverridePolicyConnectorIsManagedForTesting(true);
+  std::unique_ptr<TestingProfile> managed_profile = managed_builder.Build();
+
+  EXPECT_FALSE(AppPreloadServiceFactory::IsAvailable(managed_profile.get()));
+  EXPECT_EQ(nullptr,
+            AppPreloadServiceFactory::GetForProfile(managed_profile.get()));
 }
 
-TEST_F(AppPreloadServiceTest, FirstLoginPrefSet) {
+TEST_F(AppPreloadServiceTest, FirstLoginStartedPrefSet) {
+  // Ensure that the AppPreloadService is created.
+  AppPreloadService::Get(GetProfile());
+
+  auto flow_started =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowStartedKey);
+  auto flow_completed =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowCompletedKey);
+  // Since we're creating a new profile with no saved state, we expect the state
+  // to be "started", but not "completed".
+  EXPECT_TRUE(flow_started.has_value() && flow_started.value());
+  EXPECT_EQ(flow_completed, absl::nullopt);
+}
+
+TEST_F(AppPreloadServiceTest, FirstLoginCompletedPrefSetAfterSuccess) {
+  // An empty response indicates that the request completed successfully, but
+  // there are no apps to install.
+  proto::AppProvisioningResponse response;
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  // We expect that the key has been set after the first login flow has been
+  // completed.
+  auto flow_completed =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowCompletedKey);
+  EXPECT_NE(flow_completed, absl::nullopt);
+  EXPECT_TRUE(flow_completed.value());
+}
+
+TEST_F(AppPreloadServiceTest, FirstLoginExistingUserNotStarted) {
+  GetFakeUserManager()->set_current_user_new(false);
+  TestingProfile existing_user_profile;
+
+  // Ensure that the AppPreloadService is created.
+  AppPreloadService::Get(&existing_user_profile);
+
+  auto flow_started = GetStateManager(&existing_user_profile)
+                          .FindBool(kFirstLoginFlowStartedKey);
+  // Existing users should not start the first-login flow.
+  EXPECT_FALSE(flow_started.has_value());
+}
+
+TEST_F(AppPreloadServiceTest, WebAppInstall) {
   proto::AppProvisioningResponse response;
   auto* app = response.add_apps_to_install();
   app->set_name("Peanut Types");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
+  app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
+  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app");
 
-  url_loader_factory_.AddResponse(kServerUrl, response.SerializeAsString());
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
 
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  auto app_id = web_app::GenerateAppId(absl::nullopt,
+                                       GURL("https://peanuttypes.com/app"));
+  bool found =
+      AppServiceProxyFactory::GetForProfile(GetProfile())
+          ->AppRegistryCache()
+          .ForOneApp(app_id, [](const AppUpdate& update) {
+            EXPECT_EQ(update.Name(), "Peanut Types");
+            EXPECT_EQ(update.InstallReason(), InstallReason::kOem);
+            EXPECT_EQ(update.PublisherId(), "https://peanuttypes.com/app");
+          });
+  ASSERT_TRUE(found);
+}
+
+TEST_F(AppPreloadServiceTest, IgnoreDefaultAppInstall) {
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+  app->set_name("Peanut Types");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
+  app->set_install_reason(
+      proto::AppProvisioningResponse::INSTALL_REASON_DEFAULT);
+  FillWebExtras(app->mutable_web_extras(), "https://peanuttypes.com/app");
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  auto app_id = web_app::GenerateAppId(absl::nullopt,
+                                       GURL("https://peanuttypes.com/app"));
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate&) {});
+  ASSERT_FALSE(found);
+}
+
+TEST_F(AppPreloadServiceTest, IgnoreAndroidAppInstall) {
+  constexpr char kPackageName[] = "com.peanuttypes";
+  constexpr char kActivityName[] = "com.peanuttypes.PeanutTypesActivity";
+
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+  app->set_name("Peanut Types");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_ANDROID);
+  app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
+  app->mutable_android_extras()->set_package_name(kPackageName);
+  app->mutable_android_extras()->set_activity_name(kActivityName);
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  // It's hard to assert conclusively that nothing happens in this case, but for
+  // now we just assert that the app wasn't added to App Service.
+  auto app_id = ArcAppListPrefs::GetAppId(kPackageName, kActivityName);
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate&) {});
+  ASSERT_FALSE(found);
+}
+
+TEST_F(AppPreloadServiceTest, InstallOverUserApp) {
+  constexpr char kStartUrl[] = "https://www.example.com/";
+  constexpr char kUserAppName[] = "User Installed App";
+
+  auto app_id = web_app::test::InstallDummyWebApp(GetProfile(), kUserAppName,
+                                                  GURL(kStartUrl));
+
+  proto::AppProvisioningResponse response;
+  auto* app = response.add_apps_to_install();
+
+  app->set_name("OEM Installed app");
+  app->set_platform(proto::AppProvisioningResponse::PLATFORM_WEB);
+  app->set_install_reason(proto::AppProvisioningResponse::INSTALL_REASON_OEM);
+  FillWebExtras(app->mutable_web_extras(), kStartUrl);
+
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_TRUE(result.Get());
+
+  bool found = AppServiceProxyFactory::GetForProfile(GetProfile())
+                   ->AppRegistryCache()
+                   .ForOneApp(app_id, [](const AppUpdate& update) {
+                     EXPECT_EQ(update.InstallReason(), InstallReason::kOem);
+                   });
+  ASSERT_TRUE(found);
+}
+
+TEST_F(AppPreloadServiceTest, FirstLoginStartedNotCompletedAfterServerError) {
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(), /*content=*/"",
+      net::HTTP_INTERNAL_SERVER_ERROR);
+
+  base::test::TestFuture<bool> result;
+  auto* service = AppPreloadService::Get(GetProfile());
+  service->SetInstallationCompleteCallbackForTesting(result.GetCallback());
+  ASSERT_FALSE(result.Get());
+
+  auto flow_started =
+      GetStateManager(GetProfile()).FindBool(kFirstLoginFlowStartedKey);
   auto flow_completed =
       GetStateManager(GetProfile()).FindBool(kFirstLoginFlowCompletedKey);
-  // Since we're creating a new profile with no saved state, we expect the
-  // absence of the key.
+  // Since there was an error fetching apps, the flow should be "started" but
+  // not "completed".
+  EXPECT_EQ(flow_started, true);
   EXPECT_EQ(flow_completed, absl::nullopt);
-
-  base::RunLoop run_loop;
-  auto* service = AppPreloadService::Get(GetProfile());
-  service->check_first_pref_set_callback_ =
-      base::BindOnce(&AppPreloadServiceTest::VerifyFirstLoginPrefSet,
-                     base::Unretained(this), run_loop.QuitClosure());
-
-  run_loop.Run();
 }
 
 }  // namespace apps

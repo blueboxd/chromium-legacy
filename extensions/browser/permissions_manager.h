@@ -150,11 +150,32 @@ class PermissionsManager : public KeyedService {
   ExtensionSiteAccess GetSiteAccess(const Extension& extension,
                                     const GURL& url) const;
 
+  // Returns true if the associated extension can be affected by
+  // runtime host permissions.
+  bool CanAffectExtension(const Extension& extension) const;
+
+  // Returns true if the extension has been explicitly granted permission to run
+  // on the origin of `url`. This will return true if any permission includes
+  // access to the origin of |url|, even if the permission includes others
+  // (such as *://*.com/*) or is restricted to a path (that is, an extension
+  // with permission for https://google.com/maps will return true for
+  // https://google.com). Note: This checks any runtime-granted permissions,
+  // which includes both granted optional permissions and permissions granted
+  // through the runtime host permissions feature.
+  // This may only be called for extensions that can be affected (i.e., for
+  // which CanAffectExtension() returns true). Anything else will DCHECK.
+  bool HasGrantedHostPermission(const Extension& extension,
+                                const GURL& url) const;
+
+  // Returns true if the `extension` has runtime granted permission patterns
+  // that are sufficiently broad enough to be functionally similar to all sites
+  // access.
+  bool HasBroadGrantedHostPermissions(const Extension& extension);
+
   // Returns whether Chrome has withheld host permissions from the extension.
-  // TODO(crbug.com/1289441): Add DCHECK to verify this is only be called for
-  // extensions that can be affected (i.e., for which
-  // ScriptingPermissionsModifier::CanAffectExtension() returns true).
-  bool HasWithheldHostPermissions(const ExtensionId& extension_id) const;
+  // This may only be called for extensions that can be affected (i.e., for
+  // which CanAffectExtension() returns true). Anything else will DCHECK.
+  bool HasWithheldHostPermissions(const Extension& extension) const;
 
   // Returns the effective list of runtime-granted permissions for a given
   // `extension` from its prefs. ExtensionPrefs doesn't store the valid schemes
@@ -181,6 +202,11 @@ class PermissionsManager : public KeyedService {
   std::unique_ptr<PermissionSet> GetEffectivePermissionsToGrant(
       const Extension& extension,
       const PermissionSet& desired_permissions) const;
+
+  // Returns the subset of active permissions which can be withheld for a given
+  // `extension`.
+  std::unique_ptr<const PermissionSet> GetRevokablePermissions(
+      const Extension& extension) const;
 
   // Notifies `observers_` that the permissions have been updated for an
   // extension.

@@ -614,6 +614,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kPage:
       case StyleRule::kFontFace:
       case StyleRule::kKeyframe:
+      case StyleRule::kFontFeature:
         result->push_back(data);
         break;
       case StyleRule::kMedia:
@@ -622,6 +623,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kKeyframes:
       case StyleRule::kContainer:
       case StyleRule::kLayerBlock:
+      case StyleRule::kFontFeatureValues:
         result->push_back(data);
         FlattenSourceData(data->child_rules, result);
         break;
@@ -674,6 +676,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kFontFaceRule:
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
+      case CSSRule::kFontFeatureRule:
         result->push_back(rule);
         break;
       case CSSRule::kMediaRule:
@@ -682,6 +685,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kKeyframesRule:
       case CSSRule::kContainerRule:
       case CSSRule::kLayerBlockRule:
+      case CSSRule::kFontFeatureValuesRule:
         result->push_back(rule);
         CollectFlatRules(AsCSSRuleList(rule), result);
         break;
@@ -1065,11 +1069,16 @@ InspectorStyle::LonghandProperties(
     auto result =
         std::make_unique<protocol::Array<protocol::CSS::CSSProperty>>();
     for (auto longhand_property : longhand_properties) {
+      String value = longhand_property.Value()->CssText();
       std::unique_ptr<protocol::CSS::CSSProperty> longhand =
           protocol::CSS::CSSProperty::create()
               .setName(longhand_property.Name().ToAtomicString())
-              .setValue(longhand_property.Value()->CssText())
+              .setValue(value)
               .build();
+      if (property_entry.important) {
+        longhand->setValue(value + " !important");
+        longhand->setImportant(true);
+      }
       result->emplace_back(std::move(longhand));
     }
     return result;
@@ -1247,7 +1256,9 @@ CSSKeyframeRule* InspectorStyleSheet::SetKeyframeKey(
   }
 
   CSSKeyframeRule* keyframe_rule = To<CSSKeyframeRule>(rule);
-  keyframe_rule->setKeyText(text, exception_state);
+  keyframe_rule->setKeyText(
+      page_style_sheet_->OwnerDocument()->GetExecutionContext(), text,
+      exception_state);
 
   ReplaceText(source_data->rule_header_range, text, new_range, old_text);
   OnStyleSheetTextChanged();

@@ -59,6 +59,7 @@
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "extensions/common/constants.h"
+#include "net/base/url_util.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -332,7 +333,8 @@ bool ChromeWebAuthenticationDelegate::OriginMayUseRemoteDesktopClientOverride(
 }
 
 bool ChromeWebAuthenticationDelegate::IsSecurityLevelAcceptableForWebAuthn(
-    content::RenderFrameHost* rfh) {
+    content::RenderFrameHost* rfh,
+    const url::Origin& caller_origin) {
   if (!base::FeatureList::IsEnabled(device::kDisableWebAuthnWithBrokenCerts)) {
     return true;
   }
@@ -340,6 +342,12 @@ bool ChromeWebAuthenticationDelegate::IsSecurityLevelAcceptableForWebAuthn(
       Profile::FromBrowserContext(rfh->GetBrowserContext());
   if (profile->GetPrefs()->GetBoolean(
           webauthn::pref_names::kAllowWithBrokenCerts)) {
+    return true;
+  }
+  if (caller_origin.scheme() == extensions::kExtensionScheme) {
+    return true;
+  }
+  if (net::IsLocalhost(caller_origin.GetURL())) {
     return true;
   }
   content::WebContents* web_contents =

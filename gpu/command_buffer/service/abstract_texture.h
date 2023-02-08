@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_ABSTRACT_TEXTURE_H_
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_gles2_export.h"
 
@@ -54,6 +55,7 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // Set a texture parameter.  The GL context must be current.
   virtual void SetParameteri(GLenum pname, GLint param) = 0;
 
+#if BUILDFLAG(IS_ANDROID)
   // Set |image| to be our stream texture image, using |service_id| in place
   // of our real service id when the client tries to bind us.  This must also
   // guarantee that CopyTexImage() is called before drawing, so that |image|
@@ -65,16 +67,29 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // The context must be current.
   virtual void BindStreamTextureImage(gl::GLImage* image,
                                       GLuint service_id) = 0;
+#endif
 
-  // Attaches |image| to the AbstractTexture.  If |client_managed| is true, then
-  // the decoder does not call GLImage::Copy/Bind.  Further, the decoder
-  // guarantees that ScheduleOverlayPlane will be called if the texture is ever
-  // promoted to an overlay.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  // Attaches |image| to the AbstractTexture. The decoder will call
+  // GLImage::Copy/Bind. Further, the decoder guarantees that
+  // ScheduleOverlayPlane will be called if the texture is ever promoted to an
+  // overlay.
   //
   // It is not required to SetCleared() if one binds an image.
   //
   // The context must be current.
-  virtual void BindImage(gl::GLImage* image, bool client_managed) = 0;
+  virtual void SetUnboundImage(gl::GLImage* image) = 0;
+#else
+  // Attaches |image| to the AbstractTexture. The decoder does not call
+  // GLImage::Copy/Bind. Further, the decoder guarantees that
+  // ScheduleOverlayPlane will be called if the texture is ever promoted to an
+  // overlay.
+  //
+  // It is not required to SetCleared() if one binds an image.
+  //
+  // The context must be current.
+  virtual void SetBoundImage(gl::GLImage* image) = 0;
+#endif
 
   // Return the image, if any, for testing purposes.
   virtual gl::GLImage* GetImageForTesting() const = 0;

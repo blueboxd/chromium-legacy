@@ -99,7 +99,7 @@ class PopupHostWatcher : public ExtensionHostRegistry::Observer {
 
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, quit_closure_, TestTimeouts::action_timeout());
     run_loop.Run();
   }
@@ -727,6 +727,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, OpenPopupOnPopup) {
   // TODO(crbug.com/1115237): Now that this is an interactive test, is this
   // ifdef still necessary?
 #if !BUILDFLAG(IS_MAC)
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  waiter.WaitForActivation();
   EXPECT_TRUE(popup_browser->window()->IsActive());
 #endif
   EXPECT_FALSE(browser()->window()->IsActive());

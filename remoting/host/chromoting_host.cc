@@ -16,6 +16,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/named_mojo_ipc_server/connection_info.h"
 #include "components/named_mojo_ipc_server/named_mojo_ipc_server.h"
 #include "components/webrtc/thread_wrapper.h"
 #include "remoting/base/constants.h"
@@ -126,10 +127,23 @@ void ChromotingHost::StartChromotingHostServices() {
   DCHECK(!ipc_server_);
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1378803): Make Windows hosts work with non-isolated
+  // connections.
+  auto message_pipe_id =
+      named_mojo_ipc_server::NamedMojoIpcServerBase::kUseIsolatedConnection;
+#else
+  auto message_pipe_id = kChromotingHostServicesMessagePipeId;
+#endif
   ipc_server_ = std::make_unique<
       named_mojo_ipc_server::NamedMojoIpcServer<mojom::ChromotingHostServices>>(
-      GetChromotingHostServicesServerName(), this,
-      base::BindRepeating(&IsTrustedMojoEndpoint));
+      GetChromotingHostServicesServerName(), message_pipe_id,
+      base::BindRepeating(&IsTrustedMojoEndpoint)
+          .Then(base::BindRepeating(
+              [](mojom::ChromotingHostServices* impl, bool trusted) {
+                return trusted ? impl : nullptr;
+              },
+              base::Unretained(this))));
   ipc_server_->StartServer();
   HOST_LOG << "ChromotingHostServices IPC server has been started.";
 #else

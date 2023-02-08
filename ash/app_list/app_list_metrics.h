@@ -38,39 +38,12 @@ ASH_EXPORT extern const char kContinueSectionFilesRemovedInSessionHistogram[];
 
 // These are used in histograms, do not remove/renumber entries. If you're
 // adding to this enum with the intention that it will be logged, update the
-// AppListZeroStateSearchResultUserActionType enum listing in
-// tools/metrics/histograms/enums.xml.
-enum class ZeroStateSearchResultUserActionType {
-  kRemoveResult = 0,
-  kAppendResult = 1,
-  kMaxValue = kAppendResult,
-};
-
-// These are used in histograms, do not remove/renumber entries. If you're
-// adding to this enum with the intention that it will be logged, update the
 // AppListResultRemovalConfirmation enum listing in
 // tools/metrics/histograms/enums.xml.
 enum class SearchResultRemovalConfirmation {
   kRemovalConfirmed = 0,
   kRemovalCanceled = 1,
   kMaxValue = kRemovalCanceled,
-};
-
-// The different ways the app list can be shown. These values are written to
-// logs.  New enum values can be added, but existing enums must never be
-// renumbered or deleted and reused.
-// TODO(crbug.com/1378658): Deprecate kSwipeFromShelf and correct the spell
-// of kShelfButtonFullscreen_DEPRACTED.
-enum class AppListShowSource : uint8_t {
-  kSearchKey = 0,
-  kShelfButton = 1,
-  kSwipeFromShelf = 2,
-  kTabletMode = 3,
-  kSearchKeyFullscreen_DEPRECATED = 4,   // Migrated to kSearchKey.
-  kShelfButtonFullscreen_DEPRACTED = 5,  // Obsolete on bubble launcher.
-  kAssistantEntryPoint = 6,
-  kScrollFromShelf = 7,
-  kMaxValue = kScrollFromShelf,
 };
 
 // The two versions of folders. These values are written to logs.  New enum
@@ -239,9 +212,6 @@ struct AppLaunchedMetricParams {
 void AppListRecordPageSwitcherSourceByEventType(ui::EventType type);
 
 void RecordPageSwitcherSource(AppListPageSwitcherSource source);
-
-void RecordZeroStateSearchResultUserActionHistogram(
-    ZeroStateSearchResultUserActionType action);
 
 void RecordSearchResultRemovalDialogDecision(
     SearchResultRemovalConfirmation removal_decision);

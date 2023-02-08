@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">A mozgásérzékelőkhöz való hozzáférés engedélyezése a webhelyek számára (ajánlott)</translation>
 <translation id="5050380848339752099">A webhely adatokat kíván megosztani az inkognitó módon kívüli alkalmazással.</translation>
 <translation id="5063480226653192405">Használat</translation>
-<translation id="5082281938627763039">Ezzel törli a(z) <ph name="FPS_MEMBER" /> webhelyre, valamint a(z) <ph name="FPS_OWNER" /> webhelycsoportjában lévő webhelyekre vonatkozó cookie-kat és egyéb webhelyadatokat</translation>
 <translation id="5091013926750941408">Mobilwebhely</translation>
 <translation id="509133520954049755">Asztali nézet kérelmezése</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">A teljes képernyős megjelenítésből való kilépéshez húzza le felülről, majd koppintson a vissza gombra.</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
-<translation id="5313967007315987356">Webhely hozzáadása</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5335288049665977812">Engedélyezze a webhelyek számára a JavaScript futtatását (ajánlott)</translation>
 <translation id="534295439873310000">NFC-eszközök</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Képernyő megosztása</translation>
 <translation id="5922967540311291836">Harmadik féltől származó cookie-k letiltása</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
+<translation id="5968921426641056619">Adja meg a kívánt internetcímet</translation>
 <translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">A webhelynek az eszközhöz való hozzáférésének vezérlése</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elem kiválasztva</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> és <ph name="PERMISSION_2" /> engedélyezve</translation>
 <translation id="7302486331832100261">Ön általában letiltja az értesítéseket. Az engedélyezéshez koppintson a Részletek elemre.</translation>
+<translation id="7366415735885268578">Webhely hozzáadása</translation>
 <translation id="7383715096023715447">Beállítások – <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Kérdezzen rá</translation>
 <translation id="7423538860840206698">Le van tiltva a vágólap megtekintése</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
 <translation id="8409345997656833551">Értesítés megjelenítése, ha az adott cikk megjeleníthető egyszerűsített négyzetben</translation>
+<translation id="8423565414844018592">Szöveg mérete beállítva a következőre: <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8441146129660941386">Ugrás visszafelé</translation>
 <translation id="8444433999583714703">Ahhoz, hogy a(z) <ph name="APP_NAME" /> hozzáférhessen a helyadatokhoz, a helyadatokat az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
@@ -380,7 +381,7 @@
 <translation id="8676374126336081632">Beírt szöveg törlése</translation>
 <translation id="868929229000858085">Keresés a névjegyek között</translation>
 <translation id="8702612070107455751">Az offline adatok törlődnek.</translation>
-<translation id="8712637175834984815">Értem</translation>
+<translation id="8712637175834984815">Sikerült</translation>
 <translation id="8719283222052720129">A(z) <ph name="APP_NAME" /> alkalmazásra vonatkozó engedélyt az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között lehet aktiválni.</translation>
 <translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8730621377337864115">Kész</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Az NFC ki van kapcsolva ezen az eszközön. Kapcsolja be az <ph name="BEGIN_LINK" />Android Beállítások alkalmazásában<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">NFC-eszközökön található információk megtekintésének és az ilyen eszközökkel való információcserének a tiltása a webhelyek számára</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Adott webhely cookie-jainak letiltása.</translation>
 <translation id="8959122750345127698">Nem érhető el az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Elfelejt</translation>

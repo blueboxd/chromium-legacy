@@ -5,13 +5,14 @@
 #include "components/password_manager/core/browser/well_known_change_password_state.h"
 
 #include "base/files/file_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "components/password_manager/core/browser/android_affiliation/mock_affiliation_fetcher.h"
-#include "components/password_manager/core/browser/site_affiliation/affiliation_service_impl.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_fetcher_factory.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_service_impl.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_fetcher.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_fetcher_factory.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
@@ -105,7 +106,7 @@ void WellKnownChangePasswordStateTest::RespondeToNonExistingRequest(
   EXPECT_EQ(net::LOAD_DISABLE_CACHE, request.load_flags);
   EXPECT_EQ(url::Origin::Create(GURL(kOrigin)), request.request_initiator);
   EXPECT_TRUE(request.trusted_params->EqualsForTesting(trusted_params_));
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           [](net::HttpStatusCode status,
@@ -122,7 +123,7 @@ void WellKnownChangePasswordStateTest::RespondeToNonExistingRequest(
 void WellKnownChangePasswordStateTest::RespondeToChangePasswordRequest(
     net::HttpStatusCode status,
     int delay) {
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           &WellKnownChangePasswordState::SetChangePasswordResponseCode,

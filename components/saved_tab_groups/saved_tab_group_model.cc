@@ -8,9 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/observer_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/saved_tab_groups/saved_tab_group_model_observer.h"
+#include "components/saved_tab_groups/saved_tab_group_tab.h"
 #include "components/sync/protocol/saved_tab_group_specifics.pb.h"
 #include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -19,8 +22,6 @@
 
 SavedTabGroupModel::SavedTabGroupModel() = default;
 SavedTabGroupModel::~SavedTabGroupModel() = default;
-
-SavedTabGroupModel::SavedTabGroupModel(Profile* profile) : profile_(profile) {}
 
 absl::optional<int> SavedTabGroupModel::GetIndexOf(
     tab_groups::TabGroupId tab_group_id) const {
@@ -77,23 +78,28 @@ SavedTabGroup* SavedTabGroupModel::Get(
 }
 
 void SavedTabGroupModel::Add(SavedTabGroup saved_group) {
-  if (Contains(saved_group.saved_guid()))
+  base::GUID group_guid = saved_group.saved_guid();
+  if (Contains(group_guid))
     return;
 
-  saved_tab_groups_.emplace_back(std::move(saved_group));
-  const int index = Count() - 1;
-  for (auto& observer : observers_) {
-    observer.SavedTabGroupAddedLocally(saved_tab_groups_[index].saved_guid());
-  }
+  // Give a default position to groups if it is not already set.
+  if (saved_group.position() == SavedTabGroup::kUnsetPosition)
+    saved_group.SetPosition(Count());
+
+  InsertGroupImpl(std::move(saved_group));
+
+  for (auto& observer : observers_)
+    observer.SavedTabGroupAddedLocally(Get(group_guid)->saved_guid());
 }
 
 void SavedTabGroupModel::Remove(const tab_groups::TabGroupId tab_group_id) {
   if (!Contains(tab_group_id))
     return;
 
-  const absl::optional<int> index = GetIndexOf(tab_group_id);
+  const int index = GetIndexOf(tab_group_id).value();
   base::GUID removed_guid = Get(tab_group_id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index.value());
+  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index);
+  UpdatePositionsImpl();
   for (auto& observer : observers_)
     observer.SavedTabGroupRemovedLocally(removed_group.get());
 }
@@ -102,9 +108,10 @@ void SavedTabGroupModel::Remove(const base::GUID& id) {
   if (!Contains(id))
     return;
 
-  const absl::optional<int> index = GetIndexOf(id);
+  const int index = GetIndexOf(id).value();
   base::GUID removed_guid = Get(id)->saved_guid();
-  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index.value());
+  std::unique_ptr<SavedTabGroup> removed_group = RemoveImpl(index);
+  UpdatePositionsImpl();
   for (auto& observer : observers_)
     observer.SavedTabGroupRemovedLocally(removed_group.get());
 }
@@ -135,13 +142,14 @@ void SavedTabGroupModel::UpdateVisualData(
 }
 
 void SavedTabGroupModel::AddedFromSync(SavedTabGroup saved_group) {
-  if (Contains(saved_group.saved_guid()))
+  base::GUID group_guid = saved_group.saved_guid();
+  if (Contains(group_guid))
     return;
 
-  saved_tab_groups_.emplace_back(std::move(saved_group));
-  const int index = Count() - 1;
+  InsertGroupImpl(std::move(saved_group));
+
   for (auto& observer : observers_)
-    observer.SavedTabGroupAddedFromSync(saved_tab_groups_[index].saved_guid());
+    observer.SavedTabGroupAddedFromSync(Get(group_guid)->saved_guid());
 }
 
 void SavedTabGroupModel::RemovedFromSync(
@@ -211,8 +219,18 @@ void SavedTabGroupModel::RemoveTabFromGroup(const base::GUID& group_id,
     return;
 
   absl::optional<int> index = GetIndexOf(group_id);
+  SavedTabGroup group = saved_tab_groups_[index.value()];
+
+  // Remove the group from the model if the last tab will be removed from it.
+  if (group.ContainsTab(tab_id) && group.saved_tabs().size() == 1) {
+    Remove(group_id);
+    return;
+  }
+
   saved_tab_groups_[index.value()].RemoveTab(tab_id);
 
+  // TODO(dljames): Update to use SavedTabGroupRemoveLocally and update the API
+  // to pass a group_id and an optional tab_id.
   for (auto& observer : observers_)
     observer.SavedTabGroupUpdatedLocally(group_id);
 }
@@ -244,36 +262,42 @@ void SavedTabGroupModel::MoveTabInGroupTo(const base::GUID& group_id,
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeGroup(
-    std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific) {
-  const base::GUID& group_id =
-      base::GUID::ParseLowercase(sync_specific->guid());
+    const sync_pb::SavedTabGroupSpecifics& sync_specific) {
+  const base::GUID& group_id = base::GUID::ParseLowercase(sync_specific.guid());
 
   DCHECK(Contains(group_id));
 
-  absl::optional<int> index = GetIndexOf(group_id);
-  saved_tab_groups_[index.value()].MergeGroup(std::move(sync_specific));
+  int index = GetIndexOf(group_id).value();
+  saved_tab_groups_[index].MergeGroup(std::move(sync_specific));
+
+  int preferred_index = Get(group_id)->position();
+  if (index != preferred_index) {
+    Reorder(group_id, preferred_index);
+  }
 
   for (auto& observer : observers_)
     observer.SavedTabGroupUpdatedFromSync(group_id);
 
-  return saved_tab_groups_[index.value()].ToSpecifics();
+  return Get(group_id)->ToSpecifics();
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeTab(
-    std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific) {
+    const sync_pb::SavedTabGroupSpecifics& sync_specific) {
   const base::GUID& group_id =
-      base::GUID::ParseLowercase(sync_specific->tab().group_guid());
-  const base::GUID& tab_id = base::GUID::ParseLowercase(sync_specific->guid());
+      base::GUID::ParseLowercase(sync_specific.tab().group_guid());
+  const base::GUID& tab_id = base::GUID::ParseLowercase(sync_specific.guid());
   DCHECK(Contains(group_id));
+  DCHECK(Get(group_id)->ContainsTab(tab_id));
 
-  absl::optional<int> index = GetIndexOf(group_id);
-  saved_tab_groups_[index.value()].GetTab(tab_id)->MergeTab(
-      std::move(sync_specific));
+  absl::optional<SavedTabGroupTab*> maybe_tab = Get(group_id)->GetTab(tab_id);
+  SavedTabGroupTab* tab = maybe_tab.value();
+
+  tab->MergeTab(std::move(sync_specific));
 
   for (auto& observer : observers_)
-    observer.SavedTabGroupUpdatedFromSync(group_id);
+    observer.SavedTabGroupUpdatedFromSync(tab->saved_group_guid());
 
-  return saved_tab_groups_[index.value()].GetTab(tab_id)->ToSpecifics();
+  return tab->ToSpecifics();
 }
 
 void SavedTabGroupModel::Reorder(const base::GUID& id, int new_index) {
@@ -290,38 +314,88 @@ void SavedTabGroupModel::Reorder(const base::GUID& id, int new_index) {
   saved_tab_groups_.emplace(saved_tab_groups_.begin() + new_index,
                             std::move(group));
 
+  UpdatePositionsImpl();
+
   for (auto& observer : observers_)
     observer.SavedTabGroupReorderedLocally();
 }
 
-void SavedTabGroupModel::LoadStoredEntries(
-    std::vector<sync_pb::SavedTabGroupSpecifics> entries) {
-  // TODO(crbug/1372095): Figure out if we should clear `saved_tab_groups`, in
-  // the case there are entries saved before the bridge had a chance to load.
-  std::vector<SavedTabGroupTab> tabs;
+void SavedTabGroupModel::UpdatePositionsImpl() {
+  for (size_t i = 0; i < saved_tab_groups_.size(); ++i)
+    saved_tab_groups_[i].SetPosition(i);
+}
 
-  // The `entries` is not ordered such that groups are guaranteed to be
+void SavedTabGroupModel::InsertGroupImpl(const SavedTabGroup& group) {
+  // We can always safely insert the first group.
+  if (saved_tab_groups_.empty()) {
+    saved_tab_groups_.emplace_back(std::move(group));
+    return;
+  }
+
+  // Because saved_tab_groups_ must be in sorted order, we can immediately place
+  // the group at the end of the vector if `group` is the largest
+  // element we have seen yet.
+  if (saved_tab_groups_[saved_tab_groups_.size() - 1].position() <
+      group.position()) {
+    saved_tab_groups_.emplace_back(std::move(group));
+    return;
+  }
+
+  // Insert `group` in front of an element if one of these criteria
+  // are met:
+  // 1. The current index is larger than `group`.
+  // 2. The current index has the same position as `group` and is not
+  // the most recently updated position.
+  for (size_t index = 0; index < saved_tab_groups_.size(); ++index) {
+    const SavedTabGroup& curr_group = saved_tab_groups_[index];
+    bool curr_position_larger = curr_group.position() > group.position();
+    bool curr_position_same = curr_group.position() == group.position();
+    bool curr_position_least_recently_updated =
+        curr_group.update_time_windows_epoch_micros() <=
+        group.update_time_windows_epoch_micros();
+
+    if (curr_position_larger ||
+        (curr_position_same && curr_position_least_recently_updated)) {
+      saved_tab_groups_.insert(saved_tab_groups_.begin() + index,
+                               std::move(group));
+      return;
+    }
+  }
+
+  // This can happen when the last element of the vector has the same position
+  // as `group` and was more recently updated.
+  saved_tab_groups_.emplace_back(std::move(group));
+}
+
+std::vector<sync_pb::SavedTabGroupSpecifics>
+SavedTabGroupModel::LoadStoredEntries(
+    std::vector<sync_pb::SavedTabGroupSpecifics> entries) {
+  std::vector<SavedTabGroupTab> tabs;
+  std::vector<sync_pb::SavedTabGroupSpecifics> tabs_missing_groups;
+
+  // `entries` is not ordered such that groups are guaranteed to be
   // at the front of the vector. As such, we can run into the case where we
   // try to add a tab to a group that does not exist for us yet.
   for (sync_pb::SavedTabGroupSpecifics proto : entries) {
     if (proto.has_group())
-      saved_tab_groups_.emplace_back(SavedTabGroup::FromSpecifics(proto));
+      Add(SavedTabGroup::FromSpecifics(proto));
     else
       tabs.emplace_back(SavedTabGroupTab::FromSpecifics(proto));
   }
 
-  for (auto tab : tabs) {
-    absl::optional<int> index = GetIndexOf(tab.group_guid());
-    if (!index.has_value())
-      continue;
+  UpdatePositionsImpl();
 
-    saved_tab_groups_[index.value()].AddTab(0, std::move(tab));
+  for (const SavedTabGroupTab& tab : tabs) {
+    absl::optional<int> index = GetIndexOf(tab.saved_group_guid());
+    if (!index.has_value()) {
+      tabs_missing_groups.emplace_back(std::move(*tab.ToSpecifics()));
+    } else {
+      base::GUID group_id = tab.saved_group_guid();
+      AddTabToGroup(group_id, std::move(tab), 0);
+    }
   }
 
-  for (SavedTabGroup group : saved_tab_groups_) {
-    for (auto& observer : observers_)
-      observer.SavedTabGroupAddedLocally(group.saved_guid());
-  }
+  return tabs_missing_groups;
 }
 
 void SavedTabGroupModel::OnGroupClosedInTabStrip(

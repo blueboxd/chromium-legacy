@@ -406,8 +406,64 @@ ci.builder(
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_bootstrap_env = {
         "RBE_ip_reset_min_delay": "-1s",
-        "RBE_experimental_goma_deps_cache": "true",
-        "RBE_deps_cache_mode": "reproxy",
+        "RBE_deps_cache_dir": "",
+        "RBE_clang_depscan_archive": "true",
+    },
+)
+
+ci.builder(
+    name = "Comparison Linux (reclient vs reclient remote links)(small)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "cmp",
+    ),
+    executable = "recipe:reclient_reclient_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
+    os = os.LINUX_DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
+    reclient_bootstrap_env = {
+        "RBE_ip_reset_min_delay": "-1s",
+        "RBE_deps_cache_dir": "",
+        "RBE_clang_depscan_archive": "true",
+    },
+)
+
+ci.builder(
+    name = "Comparison Linux (reclient vs reclient remote links)(medium)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "cmp",
+    ),
+    executable = "recipe:reclient_reclient_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
+    os = os.LINUX_DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
+    reclient_bootstrap_env = {
+        "RBE_ip_reset_min_delay": "-1s",
+        "RBE_deps_cache_dir": "",
+        "RBE_clang_depscan_archive": "true",
+    },
+)
+
+ci.builder(
+    name = "Comparison Linux (reclient vs reclient remote links)(large)",
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+        short_name = "cmp",
+    ),
+    executable = "recipe:reclient_reclient_comparison",
+    execution_timeout = 6 * time.hour,
+    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
+    os = os.LINUX_DEFAULT,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.TEST_TRUSTED,
+    reclient_bootstrap_env = {
+        "RBE_ip_reset_min_delay": "-1s",
+        "RBE_deps_cache_dir": "",
         "RBE_clang_depscan_archive": "true",
     },
 )

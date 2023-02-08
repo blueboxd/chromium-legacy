@@ -24,6 +24,7 @@
 #include "chrome/browser/lookalikes/lookalike_url_tab_storage.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_selections.h"
 #include "chrome/browser/reputation/reputation_service.h"
 #include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
@@ -48,15 +49,6 @@ bool IsInterstitialReload(const GURL& current_url,
   return stored_redirect_chain.size() > 1 &&
          stored_redirect_chain[stored_redirect_chain.size() - 1] == current_url;
 }
-
-BASE_FEATURE(kOptimizeLookalikeUrlNavigationThrottle,
-             "OptimizeLookalikeUrlNavigationThrottle",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
 
 // Records latency histograms for an invocation of PerformChecks() just before
 // it will return a value of PROCEED.
@@ -89,11 +81,11 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::WillStartRequest() {
   if (profile_->AsTestingProfile())
     return content::NavigationThrottle::PROCEED;
 
+#if BUILDFLAG(IS_ANDROID)
   auto* service = LookalikeUrlService::Get(profile_);
-  if (base::FeatureList::IsEnabled(kOptimizeLookalikeUrlNavigationThrottle) &&
-      service->EngagedSitesNeedUpdating()) {
+  if (service->EngagedSitesNeedUpdating())
     service->ForceUpdateEngagedSites(base::DoNothing());
-  }
+#endif
   return content::NavigationThrottle::PROCEED;
 }
 
@@ -216,6 +208,13 @@ LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
           web_contents))
     return nullptr;
 
+  // Stop creating NavitationThrottle for System Profiles. It needs some
+  // KeyedServices that are not available for the System Profile.
+  if (AreKeyedServicesDisabledForProfileByDefault(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+    return nullptr;
+  }
+
   // Don't handle navigations in subframe or fenced frame which shouldn't
   // show an interstitial and record metrics.
   // TODO(crbug.com/1199724): For portals, the throttle probably should be run
@@ -244,54 +243,8 @@ LookalikeUrlNavigationThrottle::CheckAndMaybeShowInterstitial(
 
   // Punycode interstitial doesn't have a target site, so safe_domain isn't
   // valid.
-  if (!base::FeatureList::IsEnabled(
-          lookalikes::features::kLookalikeDigitalAssetLinks) ||
-      !safe_domain.is_valid()) {
-    return ShowInterstitial(safe_domain, lookalike_domain, source_id,
-                            match_type, triggered_by_initial_url);
-  }
-
-  const url::Origin lookalike_origin =
-      url::Origin::Create(navigation_handle()->GetURL());
-  const url::Origin target_origin = url::Origin::Create(safe_domain);
-  DigitalAssetLinkCrossValidator::ResultCallback callback = base::BindOnce(
-      &LookalikeUrlNavigationThrottle::OnManifestValidationResult,
-      weak_factory_.GetWeakPtr(), safe_domain, lookalike_domain, source_id,
-      match_type, triggered_by_initial_url);
-  DCHECK(!digital_asset_link_validator_);
-  // This assumes each navigation has its own throttle.
-  // TODO(crbug.com/1175385): Consider moving this to LookalikeURLService.
-  digital_asset_link_validator_ =
-      std::make_unique<DigitalAssetLinkCrossValidator>(
-          profile_, lookalike_origin, target_origin,
-          LookalikeUrlService::kManifestFetchDelay.Get(),
-          LookalikeUrlService::Get(profile_)->clock(), std::move(callback));
-  digital_asset_link_validator_->Start();
-  return NavigationThrottle::DEFER;
-}
-
-void LookalikeUrlNavigationThrottle::OnManifestValidationResult(
-    const GURL& safe_domain,
-    const GURL& lookalike_domain,
-    ukm::SourceId source_id,
-    LookalikeUrlMatchType match_type,
-    bool triggered_by_initial_url,
-    bool validation_succeeded) {
-  if (validation_succeeded) {
-    // Add the lookalike URL to the allowlist.
-    // TODO(meacer): Use a proper key for caching here. At the very least, we
-    // should allowlist (lookalike, target) pairs. We should also cache some of
-    // the failure cases, e.g. when the lookalike site serves a manifest but it
-    // doesn't have an entry for the target site.
-    ReputationService::Get(profile_)->SetUserIgnore(lookalike_domain);
-
-    Resume();
-    return;
-  }
-  ThrottleCheckResult result =
-      ShowInterstitial(safe_domain, lookalike_domain, source_id, match_type,
-                       triggered_by_initial_url);
-  CancelDeferredNavigation(result);
+  return ShowInterstitial(safe_domain, lookalike_domain, source_id, match_type,
+                          triggered_by_initial_url);
 }
 
 void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
@@ -414,6 +367,15 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
 
   LookalikeUrlMatchType match_type =
       first_is_lookalike ? first_match_type : last_match_type;
+  if (match_type == LookalikeUrlMatchType::kCharacterSwapTop500 ||
+      match_type == LookalikeUrlMatchType::kCharacterSwapSiteEngagement) {
+    // Character Swap is enabled as a safety tip by default. Don't record
+    // metrics here.
+    // TODO(crbug.com/1394808): Replace this with a more generalized check
+    // to decide which UI to show (Safety Tip or interstitial), and reuse it
+    // from the throttle and the safety tips code.
+    return NavigationThrottle::PROCEED;
+  }
 
   // IMPORTANT: Every time that a new lookalike heuristic is added, before
   // adding a warning UI, a console message should be printed here. To do that,
@@ -448,7 +410,7 @@ bool LookalikeUrlNavigationThrottle::IsLookalikeUrl(
   // Don't warn on non-public domains.
   if (net::HostStringIsLocalhost(url.host()) ||
       net::IsHostnameNonUnique(url.host()) ||
-      GetETLDPlusOne(url.host()).empty()) {
+      GetETLDPlusOne(url.host()).empty() || IsSafeTLD(url.host())) {
     return false;
   }
 

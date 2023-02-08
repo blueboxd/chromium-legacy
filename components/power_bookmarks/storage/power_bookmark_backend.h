@@ -10,8 +10,11 @@
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
 #include "components/power_bookmarks/storage/power_bookmark_database.h"
+#include "components/sync/protocol/power_bookmark_specifics.pb.h"
 
 namespace power_bookmarks {
+
+struct SearchParams;
 
 // Class responsible for marshalling calls from the browser thread which the
 // service is called from and the background thread which the database is
@@ -34,11 +37,14 @@ class PowerBookmarkBackend {
   // everything.
   std::vector<std::unique_ptr<Power>> GetPowersForURL(
       const GURL& url,
-      const PowerType& power_type);
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type);
 
   // Returns a vector of PowerOverviews for the given `power_type`.
   std::vector<std::unique_ptr<PowerOverview>> GetPowerOverviewsForType(
-      const PowerType& power_type);
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type);
+
+  // Returns a vector of Powers matching the given `search_params`.
+  std::vector<std::unique_ptr<Power>> Search(const SearchParams& search_params);
 
   // Create the given `power` in the database. If it already exists, then it
   // will be updated. Returns whether the operation was successful.
@@ -52,7 +58,9 @@ class PowerBookmarkBackend {
   // Delete all powers for the given `url`. Success of the operation is
   // returned through the given `callback`. Use `power_type` to restrict which
   // type is deleted or use POWER_TYPE_UNSPECIFIED to delete everything.
-  bool DeletePowersForURL(const GURL& url, const PowerType& power_type);
+  bool DeletePowersForURL(
+      const GURL& url,
+      const sync_pb::PowerBookmarkSpecifics::PowerType& power_type);
 
  private:
   const base::FilePath database_dir_;

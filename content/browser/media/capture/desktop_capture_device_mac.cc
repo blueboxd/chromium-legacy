@@ -18,7 +18,7 @@ class DesktopCaptureDeviceMac : public IOSurfaceCaptureDeviceBase {
  public:
   DesktopCaptureDeviceMac(CGDirectDisplayID display_id)
       : display_id_(display_id),
-        device_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        device_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
         weak_factory_(this) {}
 
   DesktopCaptureDeviceMac(const DesktopCaptureDeviceMac&) = delete;
@@ -127,7 +127,8 @@ class DesktopCaptureDeviceMac : public IOSurfaceCaptureDeviceBase {
 
  private:
   void OnFrame(gfx::ScopedInUseIOSurface io_surface) {
-    OnReceivedIOSurfaceFromStream(io_surface, requested_format_);
+    OnReceivedIOSurfaceFromStream(io_surface, requested_format_,
+                                  gfx::Rect(requested_format_.frame_size));
   }
 
   const CGDirectDisplayID display_id_;

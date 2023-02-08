@@ -13,9 +13,9 @@
 #include "base/test/task_environment.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
@@ -58,17 +58,19 @@ struct MockInsecureCredentialsManagerObserver
 using StrictMockInsecureCredentialsManagerObserver =
     ::testing::StrictMock<MockInsecureCredentialsManagerObserver>;
 
-PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
-                               base::StringPiece16 username,
-                               base::StringPiece16 password,
-                               base::StringPiece16 username_element = u"") {
+PasswordForm MakeSavedPassword(
+    base::StringPiece signon_realm,
+    base::StringPiece16 username,
+    base::StringPiece16 password,
+    base::StringPiece16 username_element = u"",
+    PasswordForm::Store store = PasswordForm::Store::kProfileStore) {
   PasswordForm form;
   form.signon_realm = std::string(signon_realm);
   form.url = GURL(signon_realm);
   form.username_value = std::u16string(username);
   form.password_value = std::u16string(password);
   form.username_element = std::u16string(username_element);
-  form.in_store = PasswordForm::Store::kProfileStore;
+  form.in_store = store;
   return form;
 }
 
@@ -82,6 +84,8 @@ class InsecureCredentialsManagerTest : public ::testing::Test {
  protected:
   InsecureCredentialsManagerTest() {
     store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+    presenter_.Init();
+    RunUntilIdle();
   }
 
   ~InsecureCredentialsManagerTest() override {
@@ -100,12 +104,11 @@ class InsecureCredentialsManagerTest : public ::testing::Test {
   // be empty, unless it's a federated credential or "Never save" entry.
   std::u16string GetSavedPasswordForUsername(const std::string& signon_realm,
                                              const std::u16string& username) {
-    SavedPasswordsPresenter::SavedPasswordsView saved_passwords =
-        presenter_.GetSavedPasswords();
-    for (const auto& form : saved_passwords) {
-      if (form.signon_realm == signon_realm &&
-          form.username_value == username) {
-        return form.password_value;
+    const auto saved_passwords = presenter_.GetSavedPasswords();
+    for (const auto& password : saved_passwords) {
+      if (password.GetFirstSignonRealm() == signon_realm &&
+          password.username == username) {
+        return password.password;
       }
     }
     return std::u16string();
@@ -122,8 +125,10 @@ class InsecureCredentialsManagerTest : public ::testing::Test {
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   MockAffiliationService affiliation_service_;
-  SavedPasswordsPresenter presenter_{&affiliation_service_, store_};
-  InsecureCredentialsManager provider_{&presenter_, store_};
+  SavedPasswordsPresenter presenter_{&affiliation_service_, store_,
+                                     /*account_store=*/nullptr};
+  InsecureCredentialsManager provider_{&presenter_, store_,
+                                       /*account_store=*/nullptr};
 };
 
 }  // namespace
@@ -1196,6 +1201,8 @@ class InsecureCredentialsManagerWithTwoStoresTest : public ::testing::Test {
                          /*affiliated_match_helper=*/nullptr);
     account_store_->Init(/*prefs=*/nullptr,
                          /*affiliated_match_helper=*/nullptr);
+    presenter_.Init();
+    RunUntilIdle();
   }
 
   ~InsecureCredentialsManagerWithTwoStoresTest() override {
@@ -1235,9 +1242,11 @@ TEST_F(InsecureCredentialsManagerWithTwoStoresTest, SaveCompromisedPassword) {
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
 
   account_store().AddLogin(
-      MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
+      MakeSavedPassword(kExampleOrg, kUsername1, kPassword1, u"",
+                        PasswordForm::Store::kAccountStore));
   account_store().AddLogin(
-      MakeSavedPassword(kExampleCom, kUsername1, kPassword216));
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword216, u"",
+                        PasswordForm::Store::kAccountStore));
 
   RunUntilIdle();
 

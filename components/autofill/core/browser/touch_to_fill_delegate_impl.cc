@@ -4,8 +4,10 @@
 
 #include "components/autofill/core/browser/touch_to_fill_delegate_impl.h"
 
+#include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 
@@ -23,15 +25,22 @@ TouchToFillDelegateImpl::~TouchToFillDelegateImpl() {
   HideTouchToFill();
 }
 
-bool TouchToFillDelegateImpl::TryToShowTouchToFill(int query_id,
-                                                   const FormData& form,
+bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
                                                    const FormFieldData& field) {
+  // TODO(crbug.com/1386143): store only FormGlobalId and FieldGlobalId instead
+  // to avoid that FormData and FormFieldData may become obsolete during the
+  // bottomsheet being open.
+  query_form_ = form;
+  query_field_ = field;
   // Trigger only for a credit card field/form.
   // TODO(crbug.com/1247698): Clarify field/form requirements.
   if (manager_->GetPopupType(form, field) != PopupType::kCreditCards)
     return false;
   // Trigger only on supported platforms.
   if (!manager_->client()->IsTouchToFillCreditCardSupported())
+    return false;
+  // Trigger only if the client and the form are not insecure.
+  if (IsFormOrClientNonSecure(manager_->client(), form))
     return false;
   // Trigger only if not shown before.
   if (ttf_credit_card_state_ != TouchToFillState::kShouldShow)
@@ -85,6 +94,38 @@ void TouchToFillDelegateImpl::Reset() {
 
 AutofillDriver* TouchToFillDelegateImpl::GetDriver() {
   return manager_->driver();
+}
+
+bool TouchToFillDelegateImpl::ShouldShowScanCreditCard() {
+  if (!manager_->client()->HasCreditCardScanFeature())
+    return false;
+
+  return !IsFormOrClientNonSecure(manager_->client(), query_form_);
+}
+
+void TouchToFillDelegateImpl::ScanCreditCard() {
+  manager_->client()->ScanCreditCard(base::BindOnce(
+      &TouchToFillDelegateImpl::OnCreditCardScanned, GetWeakPtr()));
+}
+
+void TouchToFillDelegateImpl::OnCreditCardScanned(const CreditCard& card) {
+  HideTouchToFill();
+  manager_->FillCreditCardFormImpl(query_form_, query_field_, card,
+                                   std::u16string());
+}
+
+void TouchToFillDelegateImpl::ShowCreditCardSettings() {
+  HideTouchToFill();
+  manager_->client()->ShowAutofillSettings(/*show_credit_card_settings=*/true);
+}
+
+void TouchToFillDelegateImpl::SuggestionSelected(std::string unique_id) {
+  HideTouchToFill();
+  PersonalDataManager* pdm = manager_->client()->GetPersonalDataManager();
+  DCHECK(pdm);
+  CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
+  manager_->FillOrPreviewCreditCardForm(mojom::RendererFormDataAction::kFill,
+                                        query_form_, query_field_, card);
 }
 
 base::WeakPtr<TouchToFillDelegateImpl> TouchToFillDelegateImpl::GetWeakPtr() {

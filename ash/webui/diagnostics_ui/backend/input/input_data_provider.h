@@ -21,11 +21,13 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/aura/window.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/ozone/device/device_event.h"
@@ -47,7 +49,8 @@ class InputDataProvider : public mojom::InputDataProvider,
                           public KeyboardInputDataEventWatcher::Dispatcher,
                           public views::WidgetObserver,
                           public TabletModeObserver,
-                          public display::DisplayConfigurator::Observer {
+                          public display::DisplayConfigurator::Observer,
+                          public chromeos::PowerManagerClient::Observer {
  public:
   explicit InputDataProvider(aura::Window* window,
                              KeyboardInputLog* keyboard_input_log_ptr);
@@ -55,10 +58,16 @@ class InputDataProvider : public mojom::InputDataProvider,
       aura::Window* window,
       std::unique_ptr<ui::DeviceManager> device_manager,
       std::unique_ptr<EventWatcherFactory> watcher_factory,
-      KeyboardInputLog* keyboard_input_log_ptr);
+      KeyboardInputLog* keyboard_input_log_ptr,
+      AcceleratorControllerImpl* accelerator_controller,
+      ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate);
   InputDataProvider(const InputDataProvider&) = delete;
   InputDataProvider& operator=(const InputDataProvider&) = delete;
   ~InputDataProvider() override;
+
+  static bool ShouldCloseDialogOnEscape() {
+    return should_close_dialog_on_escape_;
+  }
 
   void BindInterface(
       mojo::PendingReceiver<mojom::InputDataProvider> pending_receiver);
@@ -86,6 +95,9 @@ class InputDataProvider : public mojom::InputDataProvider,
       mojo::PendingRemote<mojom::TabletModeObserver> observer,
       ObserveTabletModeCallback callback) override;
 
+  void ObserveLidState(mojo::PendingRemote<mojom::LidStateObserver> observer,
+                       ObserveLidStateCallback callback) override;
+
   void ObserveInternalDisplayPowerState(
       mojo::PendingRemote<mojom::InternalDisplayPowerStateObserver> observer)
       override;
@@ -104,8 +116,13 @@ class InputDataProvider : public mojom::InputDataProvider,
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  void OnTabletModeEventsBlockingChanged() override;
+
+  // chromeos::PowerManagerClient::Observer
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        base::TimeTicks time) override;
+  void OnReceiveSwitchStates(
+      absl::optional<chromeos::PowerManagerClient::SwitchStates> switch_states);
 
   // display::DisplayConfigurator::Observer
   void OnPowerStateChanged(chromeos::DisplayPowerState power_state) override;
@@ -158,6 +175,10 @@ class InputDataProvider : public mojom::InputDataProvider,
   base::raw_ptr<KeyboardInputLog> keyboard_input_log_ptr_ =
       nullptr;  // Not Owned.
 
+  // Denotes whether DiagnosticsDialog should be closed when escape is pressed.
+  // Currently, this is only false when the keyboard tester is actively in use.
+  static bool should_close_dialog_on_escape_;
+
   // Whether a tablet mode switch is present (which we use as a hint for the
   // top-right key glyph).
   bool has_tablet_mode_switch_ = false;
@@ -165,6 +186,10 @@ class InputDataProvider : public mojom::InputDataProvider,
   // Whether the internal touchscreen is on, used to determine if the internal
   // display is testable or not.
   bool is_internal_display_on_ = true;
+
+  // Whether the laptop lid is closed or open. On chromeboxes, this will always
+  // be false.
+  bool is_lid_open_ = false;
 
   // Id of the previous display the Diagnostics app was in, used to move the app
   // back to previous display when the touchscreen tester is closed.
@@ -182,12 +207,18 @@ class InputDataProvider : public mojom::InputDataProvider,
   base::flat_map<int, std::unique_ptr<InputDataEventWatcher>>
       keyboard_watchers_;
 
+  // Timestamp of when keyboard tester is first opened. Undefined if the
+  // keyboard tester is not open.
+  base::Time keyboard_tester_start_timestamp_;
+
   bool logged_not_dispatching_key_events_ = false;
   views::Widget* widget_ = nullptr;
 
   mojo::RemoteSet<mojom::ConnectedDevicesObserver> connected_devices_observers_;
 
-  mojo::Remote<mojom::TabletModeObserver> tablet_mode_observer_;
+  mojo::RemoteSet<mojom::TabletModeObserver> tablet_mode_observers_;
+
+  mojo::RemoteSet<mojom::LidStateObserver> lid_state_observers_;
 
   mojo::Remote<mojom::InternalDisplayPowerStateObserver>
       internal_display_power_state_observer_;
@@ -197,6 +228,9 @@ class InputDataProvider : public mojom::InputDataProvider,
   std::unique_ptr<ui::DeviceManager> device_manager_;
 
   std::unique_ptr<EventWatcherFactory> watcher_factory_;
+
+  raw_ptr<AcceleratorControllerImpl> accelerator_controller_;
+  raw_ptr<ui::EventRewriterChromeOS::Delegate> event_rewriter_delegate_;
 
   base::WeakPtrFactory<InputDataProvider> weak_factory_{this};
 };

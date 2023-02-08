@@ -8,6 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -90,7 +91,7 @@ class PasswordReuseManagerImplTest : public testing::Test {
     account_store_ = base::MakeRefCounted<TestPasswordStore>();
     account_store_->Init(&prefs_, /*affiliated_match_helper=*/nullptr);
     reuse_manager_.Init(&prefs(), profile_store(), account_store());
-    RunUntilIdle();
+    FastForwardUntilNoTasksRemain();
   }
 
   void TearDown() override {
@@ -102,13 +103,17 @@ class PasswordReuseManagerImplTest : public testing::Test {
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+  void FastForwardUntilNoTasksRemain() {
+    task_environment_.FastForwardUntilNoTasksRemain();
+  }
   TestPasswordStore* profile_store() { return profile_store_.get(); }
   TestPasswordStore* account_store() { return account_store_.get(); }
   PasswordReuseManager* reuse_manager() { return &reuse_manager_; }
   TestingPrefServiceSimple& prefs() { return prefs_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList feature_list_;
   TestingPrefServiceSimple prefs_;
   scoped_refptr<TestPasswordStore> profile_store_;
@@ -431,7 +436,7 @@ TEST_F(PasswordReuseManagerImplTest, NoReuseFoundAfterClearingAccountStorage) {
   RunUntilIdle();
 
   account_store()->Clear();
-  reuse_manager()->AccountStoreStateChanged();
+  account_store()->CallSyncEnabledOrDisabledCallbacks();
   MockPasswordReuseDetectorConsumer mock_consumer;
   EXPECT_CALL(mock_consumer,
               OnReuseCheckDone(/* is_reuse_found=*/false, _, _, IsEmpty(),

@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
@@ -43,16 +44,18 @@ class IndexedDBContextTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*is_incognito=*/false, temp_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
+        special_storage_policy_);
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
-        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
+        quota_manager_.get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     indexed_db_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_proxy_,
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*file_system_access_context=*/mojo::NullRemote(),
-        base::SequencedTaskRunnerHandle::Get(),
-        base::SequencedTaskRunnerHandle::Get());
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        base::SequencedTaskRunner::GetCurrentDefault());
   }
 
  protected:
@@ -178,24 +181,6 @@ TEST_F(IndexedDBContextTest, GetDefaultBucketError) {
   example_remote->DeleteDatabase(mock_callbacks->CreateInterfacePtrAndBind(),
                                  u"database_name", /*force_close=*/true);
   loop_3.Run();
-
-  // IDBFactory::AbortTransactionsAndCompactDatabase
-  base::RunLoop loop_4;
-  example_remote->AbortTransactionsAndCompactDatabase(
-      base::BindLambdaForTesting([&](blink::mojom::IDBStatus status) {
-        EXPECT_EQ(status, blink::mojom::IDBStatus::NotFound);
-        loop_4.Quit();
-      }));
-  loop_4.Run();
-
-  // IDBFactory::AbortTransactionsForDatabase
-  base::RunLoop loop_5;
-  example_remote->AbortTransactionsForDatabase(
-      base::BindLambdaForTesting([&](blink::mojom::IDBStatus status) {
-        EXPECT_EQ(status, blink::mojom::IDBStatus::NotFound);
-        loop_5.Quit();
-      }));
-  loop_5.Run();
 }
 
 }  // namespace content

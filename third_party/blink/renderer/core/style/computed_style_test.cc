@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
@@ -134,8 +135,13 @@ TEST_F(ComputedStyleTest, TrackedPseudoStyle) {
   for (uint8_t pseudo_id_int = kFirstPublicPseudoId;
        pseudo_id_int <= kLastTrackedPublicPseudoId; pseudo_id_int++) {
     PseudoId pseudo_id = static_cast<PseudoId>(pseudo_id_int);
-    scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-    style->SetHasPseudoElementStyle(pseudo_id);
+    MatchResult match_result;
+    match_result.SetHasPseudoElementStyle(pseudo_id);
+
+    ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+    builder.SetPseudoElementStyles(match_result.PseudoElementStyles());
+    scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
+
     EXPECT_TRUE(style->HasPseudoElementStyle(pseudo_id));
     EXPECT_TRUE(style->HasAnyPseudoElementStyles());
   }
@@ -528,8 +534,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesEqual_Values) {
   css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
                                      "0px", false);
 
-  scoped_refptr<ComputedStyle> style1 = CreateComputedStyle();
-  scoped_refptr<ComputedStyle> style2 = CreateComputedStyle();
+  scoped_refptr<const ComputedStyle> style1;
+  scoped_refptr<const ComputedStyle> style2;
 
   using UnitType = CSSPrimitiveValue::UnitType;
 
@@ -540,16 +546,23 @@ TEST_F(ComputedStyleTest, CustomPropertiesEqual_Values) {
   Vector<AtomicString> properties;
   properties.push_back("--x");
 
-  style1->SetVariableValue("--x", value1, false);
-  style2->SetVariableValue("--x", value1, false);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableValue("--x", value1, false);
+  style1 = builder.TakeStyle();
+
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableValue("--x", value1, false);
+  style2 = builder.TakeStyle();
   EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
 
-  style1->SetVariableValue("--x", value1, false);
-  style2->SetVariableValue("--x", value3, false);
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableValue("--x", value3, false);
+  style2 = builder.TakeStyle();
   EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
 
-  style1->SetVariableValue("--x", value1, false);
-  style2->SetVariableValue("--x", value2, false);
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableValue("--x", value2, false);
+  style2 = builder.TakeStyle();
   EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
 }
 
@@ -558,8 +571,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesEqual_Data) {
   css_test_helpers::RegisterProperty(dummy->GetDocument(), "--x", "<length>",
                                      "0px", false);
 
-  scoped_refptr<ComputedStyle> style1 = CreateComputedStyle();
-  scoped_refptr<ComputedStyle> style2 = CreateComputedStyle();
+  scoped_refptr<const ComputedStyle> style1;
+  scoped_refptr<const ComputedStyle> style2;
 
   auto value1 = css_test_helpers::CreateVariableData("foo");
   auto value2 = css_test_helpers::CreateVariableData("bar");
@@ -568,16 +581,23 @@ TEST_F(ComputedStyleTest, CustomPropertiesEqual_Data) {
   Vector<AtomicString> properties;
   properties.push_back("--x");
 
-  style1->SetVariableData("--x", value1, false);
-  style2->SetVariableData("--x", value1, false);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--x", value1, false);
+  style1 = builder.TakeStyle();
+
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--x", value1, false);
+  style2 = builder.TakeStyle();
   EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
 
-  style1->SetVariableData("--x", value1, false);
-  style2->SetVariableData("--x", value3, false);
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--x", value3, false);
+  style2 = builder.TakeStyle();
   EXPECT_TRUE(style1->CustomPropertiesEqual(properties, *style2));
 
-  style1->SetVariableData("--x", value1, false);
-  style2->SetVariableData("--x", value2, false);
+  builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--x", value2, false);
+  style2 = builder.TakeStyle();
   EXPECT_FALSE(style1->CustomPropertiesEqual(properties, *style2));
 }
 
@@ -603,7 +623,7 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
 
   // Removed variable
   old_builder = CreateComputedStyleBuilder();
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
+  old_builder.SetVariableValue("--x", value1, true);
   old_style = old_builder.TakeStyle();
   EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
             ComputedStyle::ComputeDifference(old_style.get(), new_style.get()));
@@ -612,7 +632,7 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
   new_builder = CreateComputedStyleBuilder();
 
   // Added a new variable
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  new_builder.SetVariableValue("--x", value2, true);
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
   EXPECT_EQ(ComputedStyle::Difference::kIndependentInherited,
@@ -621,8 +641,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
   // Change value of variable
   old_builder = CreateComputedStyleBuilder();
   new_builder = ComputedStyleBuilder(*new_style);
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value1, true);
+  new_builder.SetVariableValue("--x", value2, true);
   new_builder.SetHasVariableReference();
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
@@ -635,8 +655,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
   new_builder = CreateComputedStyleBuilder();
 
   // New styles with variable declaration don't force style recalc
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value1, true);
+  new_builder.SetVariableValue("--x", value2, true);
   new_builder.SetHasVariableDeclaration();
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
@@ -649,8 +669,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_FastPath) {
   new_builder = CreateComputedStyleBuilder();
 
   // New styles with variable reference don't force style recalc
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value1, true);
+  new_builder.SetVariableValue("--x", value2, true);
   new_builder.SetHasVariableDeclaration();
   new_builder.SetHasVariableReference();
   old_style = old_builder.TakeStyle();
@@ -685,7 +705,7 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
   // Old styles with variable reference force style recalc
   old_builder = CreateComputedStyleBuilder();
   old_builder.SetHasVariableReference();
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value2, true);
   old_style = old_builder.TakeStyle();
   EXPECT_TRUE(old_style->HasVariableReference());
   EXPECT_EQ(ComputedStyle::Difference::kInherited,
@@ -697,7 +717,7 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
   // New variable value
   // Old styles with variable declaration force style recalc
   old_builder.SetHasVariableDeclaration();
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  new_builder.SetVariableValue("--x", value2, true);
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
   EXPECT_TRUE(old_style->HasVariableDeclaration());
@@ -709,8 +729,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
 
   // Change variable value
   // Old styles with variable declaration force style recalc
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value1, true);
+  new_builder.SetVariableValue("--x", value2, true);
   old_builder.SetHasVariableDeclaration();
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
@@ -723,8 +743,8 @@ TEST_F(ComputedStyleTest, CustomPropertiesInheritance_StyleRecalc) {
 
   // Change variable value
   // Old styles with variable reference force style recalc
-  old_builder.MutableInternalStyle()->SetVariableValue("--x", value1, true);
-  new_builder.MutableInternalStyle()->SetVariableValue("--x", value2, true);
+  old_builder.SetVariableValue("--x", value1, true);
+  new_builder.SetVariableValue("--x", value2, true);
   old_builder.SetHasVariableReference();
   old_style = old_builder.TakeStyle();
   new_style = new_builder.TakeStyle();
@@ -888,15 +908,16 @@ TEST_F(ComputedStyleTest, InitialVariableNamesEmpty) {
 TEST_F(ComputedStyleTest, InitialVariableNames) {
   using css_test_helpers::CreateLengthRegistration;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
   ScopedNullExecutionContext execution_context;
   PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
   registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
   registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
-  style->SetInitialData(StyleInitialData::Create(
+
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetInitialData(StyleInitialData::Create(
       *Document::CreateForTest(execution_context.GetExecutionContext()),
       *registry));
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
   EXPECT_EQ(2u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
@@ -906,11 +927,11 @@ TEST_F(ComputedStyleTest, InitialVariableNames) {
 TEST_F(ComputedStyleTest, InheritedVariableNames) {
   using css_test_helpers::CreateVariableData;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
   const bool inherited = true;
-  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
-  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--a", CreateVariableData("foo"), inherited);
+  builder.SetVariableData("--b", CreateVariableData("bar"), inherited);
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
   EXPECT_EQ(2u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
@@ -920,11 +941,11 @@ TEST_F(ComputedStyleTest, InheritedVariableNames) {
 TEST_F(ComputedStyleTest, NonInheritedVariableNames) {
   using css_test_helpers::CreateVariableData;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
   const bool inherited = true;
-  style->SetVariableData("--a", CreateVariableData("foo"), !inherited);
-  style->SetVariableData("--b", CreateVariableData("bar"), !inherited);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--a", CreateVariableData("foo"), !inherited);
+  builder.SetVariableData("--b", CreateVariableData("bar"), !inherited);
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
   EXPECT_EQ(2u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
@@ -934,13 +955,13 @@ TEST_F(ComputedStyleTest, NonInheritedVariableNames) {
 TEST_F(ComputedStyleTest, InheritedAndNonInheritedVariableNames) {
   using css_test_helpers::CreateVariableData;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
   const bool inherited = true;
-  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
-  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
-  style->SetVariableData("--d", CreateVariableData("foz"), !inherited);
-  style->SetVariableData("--c", CreateVariableData("baz"), !inherited);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--a", CreateVariableData("foo"), inherited);
+  builder.SetVariableData("--b", CreateVariableData("bar"), inherited);
+  builder.SetVariableData("--d", CreateVariableData("foz"), !inherited);
+  builder.SetVariableData("--c", CreateVariableData("baz"), !inherited);
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
   EXPECT_EQ(4u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
@@ -953,21 +974,22 @@ TEST_F(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
   using css_test_helpers::CreateLengthRegistration;
   using css_test_helpers::CreateVariableData;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
   ScopedNullExecutionContext execution_context;
   PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
   registry->RegisterProperty("--b", *CreateLengthRegistration("--b", 1));
   registry->RegisterProperty("--e", *CreateLengthRegistration("--e", 2));
-  style->SetInitialData(StyleInitialData::Create(
+
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetInitialData(StyleInitialData::Create(
       *Document::CreateForTest(execution_context.GetExecutionContext()),
       *registry));
 
   const bool inherited = true;
-  style->SetVariableData("--a", CreateVariableData("foo"), inherited);
-  style->SetVariableData("--b", CreateVariableData("bar"), inherited);
-  style->SetVariableData("--d", CreateVariableData("foz"), !inherited);
-  style->SetVariableData("--c", CreateVariableData("baz"), !inherited);
+  builder.SetVariableData("--a", CreateVariableData("foo"), inherited);
+  builder.SetVariableData("--b", CreateVariableData("bar"), inherited);
+  builder.SetVariableData("--d", CreateVariableData("foz"), !inherited);
+  builder.SetVariableData("--c", CreateVariableData("baz"), !inherited);
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
   EXPECT_EQ(5u, style->GetVariableNames().size());
   EXPECT_TRUE(style->GetVariableNames().Contains("--a"));
@@ -978,35 +1000,46 @@ TEST_F(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
 }
 
 TEST_F(ComputedStyleTest, GetVariableNamesCount_Invalidation) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
-
+  scoped_refptr<const ComputedStyle> style = CreateComputedStyle();
   EXPECT_EQ(style->GetVariableNamesCount(), 0u);
 
   auto data = css_test_helpers::CreateVariableData("foo");
-  style->SetVariableData("--x", data, false);
+  ComputedStyleBuilder builder(*style);
+  builder.SetVariableData("--x", data, false);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNamesCount(), 1u);
 
-  style->SetVariableData("--y", data, false);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--y", data, false);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNamesCount(), 2u);
 
-  style->SetVariableData("--z", data, true);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--z", data, true);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNamesCount(), 3u);
 }
 
 TEST_F(ComputedStyleTest, GetVariableNames_Invalidation) {
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  scoped_refptr<const ComputedStyle> style;
 
   auto data = css_test_helpers::CreateVariableData("foo");
-  style->SetVariableData("--x", data, false);
+  ComputedStyleBuilder builder = CreateComputedStyleBuilder();
+  builder.SetVariableData("--x", data, false);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNames().size(), 1u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
 
-  style->SetVariableData("--y", data, false);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--y", data, false);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNames().size(), 2u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
   EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
 
-  style->SetVariableData("--z", data, true);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--z", data, true);
+  style = builder.TakeStyle();
   EXPECT_EQ(style->GetVariableNames().size(), 3u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
   EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
@@ -1016,27 +1049,31 @@ TEST_F(ComputedStyleTest, GetVariableNames_Invalidation) {
 TEST_F(ComputedStyleTest, GetVariableNamesWithInitialData_Invalidation) {
   using css_test_helpers::CreateLengthRegistration;
 
-  scoped_refptr<ComputedStyle> style = CreateComputedStyle();
+  scoped_refptr<const ComputedStyle> style;
 
   ScopedNullExecutionContext execution_context;
   {
+    ComputedStyleBuilder builder = CreateComputedStyleBuilder();
     PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
     registry->RegisterProperty("--x", *CreateLengthRegistration("--x", 1));
-    style->SetInitialData(StyleInitialData::Create(
+    builder.SetInitialData(StyleInitialData::Create(
         *Document::CreateForTest(execution_context.GetExecutionContext()),
         *registry));
+    style = builder.TakeStyle();
   }
   EXPECT_EQ(style->GetVariableNames().size(), 1u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--x"));
 
   // Not set StyleInitialData to something else.
   {
+    ComputedStyleBuilder builder(*style);
     PropertyRegistry* registry = MakeGarbageCollected<PropertyRegistry>();
     registry->RegisterProperty("--y", *CreateLengthRegistration("--y", 2));
     registry->RegisterProperty("--z", *CreateLengthRegistration("--z", 3));
-    style->SetInitialData(StyleInitialData::Create(
+    builder.SetInitialData(StyleInitialData::Create(
         *Document::CreateForTest(execution_context.GetExecutionContext()),
         *registry));
+    style = builder.TakeStyle();
   }
   EXPECT_EQ(style->GetVariableNames().size(), 2u);
   EXPECT_TRUE(style->GetVariableNames().Contains("--y"));
@@ -1079,9 +1116,10 @@ TEST_F(ComputedStyleTest, BorderWidthZoom) {
   };
 
   for (const auto& test : tests) {
-    for (const auto* property :
-         {&GetCSSPropertyBorderTopWidth(), &GetCSSPropertyOutlineWidth(),
-          &GetCSSPropertyColumnRuleWidth()}) {
+    for (const Longhand* property :
+         {static_cast<const Longhand*>(&GetCSSPropertyBorderTopWidth()),
+          static_cast<const Longhand*>(&GetCSSPropertyOutlineWidth()),
+          static_cast<const Longhand*>(&GetCSSPropertyColumnRuleWidth())}) {
       const Longhand& longhand = To<Longhand>(*property);
       auto* computed_value = longhand.CSSValueFromComputedStyleInternal(
           *test.style, nullptr /* layout_object */,
@@ -1157,11 +1195,11 @@ TEST_F(ComputedStyleTest, BorderWidthConversion) {
   };
 
   for (const auto& test : tests) {
-    for (const auto* property :
-         {&GetCSSPropertyBorderTopWidth(), &GetCSSPropertyOutlineWidth(),
-          &GetCSSPropertyColumnRuleWidth()}) {
-      const Longhand& longhand = To<Longhand>(*property);
-      auto* computed_value = longhand.CSSValueFromComputedStyleInternal(
+    for (const Longhand* longhand :
+         {static_cast<const Longhand*>(&GetCSSPropertyBorderTopWidth()),
+          static_cast<const Longhand*>(&GetCSSPropertyOutlineWidth()),
+          static_cast<const Longhand*>(&GetCSSPropertyColumnRuleWidth())}) {
+      auto* computed_value = longhand->CSSValueFromComputedStyleInternal(
           *test.style, nullptr /* layout_object */,
           false /* allow_visited_style */);
       ASSERT_NE(computed_value, nullptr);
@@ -1356,20 +1394,20 @@ TEST_F(ComputedStyleTest, ClonedStyleAnimationsAreIndependent) {
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
 
   auto& animations = builder.AccessAnimations();
-  animations.DelayList().clear();
-  animations.DelayList().push_back(CSSAnimationData::InitialDelay());
+  animations.DelayStartList().clear();
+  animations.DelayStartList().push_back(CSSAnimationData::InitialDelayStart());
   scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
-  EXPECT_EQ(1u, style->Animations()->DelayList().size());
+  EXPECT_EQ(1u, style->Animations()->DelayStartList().size());
 
   builder = ComputedStyleBuilder(*style);
   auto& cloned_style_animations = builder.AccessAnimations();
-  EXPECT_EQ(1u, cloned_style_animations.DelayList().size());
-  cloned_style_animations.DelayList().push_back(
-      CSSAnimationData::InitialDelay());
+  EXPECT_EQ(1u, cloned_style_animations.DelayStartList().size());
+  cloned_style_animations.DelayStartList().push_back(
+      CSSAnimationData::InitialDelayStart());
   scoped_refptr<const ComputedStyle> cloned_style = builder.TakeStyle();
 
-  EXPECT_EQ(2u, cloned_style->Animations()->DelayList().size());
-  EXPECT_EQ(1u, style->Animations()->DelayList().size());
+  EXPECT_EQ(2u, cloned_style->Animations()->DelayStartList().size());
+  EXPECT_EQ(1u, style->Animations()->DelayStartList().size());
 }
 
 TEST_F(ComputedStyleTest, ClonedStyleTransitionsAreIndependent) {

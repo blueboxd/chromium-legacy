@@ -32,13 +32,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -47,6 +47,7 @@
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/eol_notification.h"
 #include "chrome/browser/ash/first_run/first_run.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_util.h"
@@ -109,9 +110,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
+#include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -180,6 +181,7 @@
 #include "url/gurl.h"
 
 namespace ash {
+
 namespace {
 
 using ::signin::ConsentLevel;
@@ -931,8 +933,8 @@ bool UserSessionManager::RespectLocalePreference(
           : Profile::APP_LOCALE_CHANGED_VIA_LOGIN;
 
   // check if pref_locale is allowed by policy (AllowedLanguages)
-  if (!chromeos::locale_util::IsAllowedUILanguage(pref_locale, prefs)) {
-    pref_locale = chromeos::locale_util::GetAllowedFallbackUILanguage(prefs);
+  if (!locale_util::IsAllowedUILanguage(pref_locale, prefs)) {
+    pref_locale = locale_util::GetAllowedFallbackUILanguage(prefs);
     app_locale_changed_via = Profile::APP_LOCALE_CHANGED_VIA_POLICY;
   }
 
@@ -1024,12 +1026,12 @@ void UserSessionManager::RemoveSessionStateObserver(
 }
 
 void UserSessionManager::AddUserAuthenticatorObserver(
-    ash::UserAuthenticatorObserver* observer) {
+    UserAuthenticatorObserver* observer) {
   authenticator_observer_list_.AddObserver(observer);
 }
 
 void UserSessionManager::RemoveUserAuthenticatorObserver(
-    ash::UserAuthenticatorObserver* observer) {
+    UserAuthenticatorObserver* observer) {
   authenticator_observer_list_.RemoveObserver(observer);
 }
 
@@ -1212,9 +1214,16 @@ void UserSessionManager::StartCrosSession() {
   TRACE_EVENT0(kEventCategoryChromeOS, kEventStartCrosSession);
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("StartSession-Start", false);
-  SessionManagerClient::Get()->StartSession(
-      cryptohome::CreateAccountIdentifierFromAccountId(
-          user_context_.GetAccountId()));
+  if (base::FeatureList::IsEnabled(ownership::kChromeSideOwnerKeyGeneration)) {
+    SessionManagerClient::Get()->StartSessionEx(
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()),
+        true);
+  } else {
+    SessionManagerClient::Get()->StartSession(
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_context_.GetAccountId()));
+  }
   btl->AddLoginTimeMarker("StartSession-End", false);
 }
 
@@ -1242,7 +1251,7 @@ void UserSessionManager::VoteForSavingLoginPassword(
     // task triggered by this can handle it. This could happen if chrome has
     // been restarted (e.g. due to a crash) within an active Chrome OS user
     // session.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&UserSessionManager::LoadShillProfile,
                                   GetUserSessionManagerAsWeakPtr(),
                                   user_context_.GetAccountId()));
@@ -1317,7 +1326,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
       base::BindOnce(
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
-            CHECK(profile);
+            // `profile` might be null, meaning that the creation failed.
+            if (!profile)
+              return;
             // Profile is created, extensions and promo resources
             // are initialized. At this point all other Chrome OS
             // services will be notified that it is safe to use
@@ -1329,7 +1340,9 @@ void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
       base::BindOnce(
           [](base::WeakPtr<UserSessionManager> self,
              const UserContext& user_context, Profile* profile) {
-            CHECK(profile);
+            // `profile` might be null, meaning that the creation failed.
+            if (!profile)
+              return;
             // Profile created but before initializing extensions and
             // promo resources.
             self->InitProfilePreferences(profile, user_context);
@@ -1587,7 +1600,7 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
               GetUserSessionManagerAsWeakPtr(), profile));
     } else {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &UserSessionManager::CompleteProfileCreateAfterAuthTransfer,
@@ -1838,7 +1851,7 @@ bool MaybeShowManagedTermsOfService(Profile* profile) {
 bool UserSessionManager::InitializeUserSession(Profile* profile) {
   TRACE_EVENT0(kEventCategoryChromeOS, kEventInitUserDesktop);
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UserSessionManager::StopChildStatusObserving,
                      GetUserSessionManagerAsWeakPtr(), profile),
@@ -2260,22 +2273,21 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   // Call this before `RestartToApplyPerSessionFlagsIfNeed()` in the login
   // process.
-  ash::BrowserDataMigratorImpl::ClearMigrationStep(
-      g_browser_process->local_state());
+  BrowserDataMigratorImpl::ClearMigrationStep(g_browser_process->local_state());
 
   if (RestartToApplyPerSessionFlagsIfNeed(profile, false))
     return;
 
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  if (ash::BrowserDataMigratorImpl::MaybeRestartToMigrate(
+  if (BrowserDataMigratorImpl::MaybeRestartToMigrate(
           user->GetAccountId(), user->username_hash(),
           crosapi::browser_util::PolicyInitState::kAfterInit)) {
     LOG(WARNING) << "Restarting chrome to run profile migration.";
     return;
   }
 
-  if (ash::BrowserDataBackMigrator::MaybeRestartToMigrateBack(
+  if (BrowserDataBackMigrator::MaybeRestartToMigrateBack(
           user->GetAccountId(), user->username_hash(),
           crosapi::browser_util::PolicyInitState::kAfterInit)) {
     LOG(WARNING) << "Restarting chrome to run backward profile migration.";
@@ -2292,11 +2304,13 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
   if (should_launch_browser_) {
-    if (floating_workspace_util::IsFloatingWorkspaceEnabled()) {
+    if (floating_workspace_util::IsFloatingWorkspaceV1Enabled() ||
+        floating_workspace_util::IsFloatingWorkspaceV2Enabled()) {
       // If floating workspace is enabled, it will override full restore.
       FloatingWorkspaceService* floating_workspace_service =
-          ash::FloatingWorkspaceService::GetForProfile(profile);
-      if (floating_workspace_service) {
+          FloatingWorkspaceService::GetForProfile(profile);
+      if (floating_workspace_util::IsFloatingWorkspaceV1Enabled() &&
+          floating_workspace_service) {
         floating_workspace_service->SubscribeToForeignSessionUpdates();
       }
     } else if (!IsFullRestoreEnabled(profile)) {
@@ -2351,7 +2365,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     std::move(login_host_finalized_callback).Run();
   }
 
-  ash::BootTimesRecorder::Get()->LoginDone(
+  BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 
   // Check to see if this profile should show EndOfLife Notification and show
@@ -2573,12 +2587,12 @@ void UserSessionManager::OnUserEligibleForOnboardingSurvey(Profile* profile) {
     return;
 
   if (!HatsNotificationController::ShouldShowSurveyToProfile(
-          profile, ash::kHatsOnboardingSurvey)) {
+          profile, kHatsOnboardingSurvey)) {
     return;
   }
 
   hats_notification_controller_ =
-      new HatsNotificationController(profile, ash::kHatsOnboardingSurvey);
+      new HatsNotificationController(profile, kHatsOnboardingSurvey);
 }
 
 void UserSessionManager::LoadShillProfile(const AccountId& account_id) {

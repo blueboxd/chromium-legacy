@@ -101,7 +101,7 @@ class InMemoryURLIndex : public KeyedService,
                                             size_t max_matches);
 
   // Returns URL hosts that have been visited more than a threshold.
-  std::vector<std::string> HighlyVisitedHosts() const;
+  const std::vector<std::string>& HighlyVisitedHosts() const;
 
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);
@@ -136,7 +136,8 @@ class InMemoryURLIndex : public KeyedService,
     void DoneRunOnMainThread() override;
 
    private:
-    raw_ptr<InMemoryURLIndex> index_;  // Call back to this index at completion.
+    raw_ptr<InMemoryURLIndex, DanglingUntriaged>
+        index_;                   // Call back to this index at completion.
     SchemeSet scheme_allowlist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.

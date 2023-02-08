@@ -16,7 +16,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -78,9 +78,19 @@
 
 using ui::OSExchangeData;
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(std::vector<views::ViewTracker>*)
+
 namespace views {
 
 namespace {
+
+// The menu controller manages the AX index attributes inside menu items. This
+// property maintains a vector of menu children that were last assigned such
+// attributes by MenuController::SetSelectionIndices() so that the controller
+// can update them if children change via MenuController::MenuChildrenChanged().
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::vector<views::ViewTracker>,
+                                   kOrderedMenuChildren,
+                                   nullptr)
 
 #if BUILDFLAG(IS_MAC)
 bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
@@ -729,7 +739,7 @@ bool MenuController::OnMouseDragged(SubmenuView* source,
         part.menu = source->GetMenuItem();
       else
         mouse_menu = part.menu;
-      SetSelection(part.menu ? part.menu : state_.item.get(),
+      SetSelection(part.menu ? part.menu.get() : state_.item.get(),
                    SELECTION_OPEN_SUBMENU);
     }
   } else if (part.type == MenuPart::Type::kNone) {
@@ -833,7 +843,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
   } else if (part.type == MenuPart::Type::kMenuItem) {
     // User either clicked on empty space, or a menu that has children.
-    SetSelection(part.menu ? part.menu : state_.item.get(),
+    SetSelection(part.menu ? part.menu.get() : state_.item.get(),
                  SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   }
   SendMouseCaptureLostToActiveView();
@@ -889,7 +899,7 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
                                   const ui::MouseWheelEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
 
-  SetSelection(part.menu ? part.menu : state_.item.get(),
+  SetSelection(part.menu ? part.menu.get() : state_.item.get(),
                SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   return part.submenu && part.submenu->OnMouseWheel(event);
@@ -953,7 +963,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
       event->StopPropagation();
     } else if (part.type == MenuPart::Type::kMenuItem) {
       // User either tapped on empty space, or a menu that has children.
-      SetSelection(part.menu ? part.menu : state_.item.get(),
+      SetSelection(part.menu ? part.menu.get() : state_.item.get(),
                    SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
       event->StopPropagation();
     }
@@ -2256,6 +2266,10 @@ void MenuController::MenuChildrenChanged(MenuItemView* item) {
   // Menu shouldn't be updated during drag operation.
   DCHECK(!active_mouse_view_tracker_->view());
 
+  // If needed, refresh the AX index assignments.
+  if (item->GetProperty(kOrderedMenuChildren))
+    SetSelectionIndices(item);
+
   // If the current item or pending item is a descendant of the item
   // that changed, move the selection back to the changed item.
   const MenuItemView* ancestor = state_.item;
@@ -2816,6 +2830,14 @@ void MenuController::IncrementSelection(
 }
 
 void MenuController::SetSelectionIndices(MenuItemView* parent) {
+  if (parent->GetProperty(kOrderedMenuChildren)) {
+    // Clear any old AX index assignments.
+    for (ViewTracker& item : *(parent->GetProperty(kOrderedMenuChildren))) {
+      if (item.view())
+        item.view()->GetViewAccessibility().ClearPosInSetOverride();
+    }
+  }
+
   std::vector<View*> ordering;
   SubmenuView* const submenu = parent->GetSubmenu();
 
@@ -2834,6 +2856,10 @@ void MenuController::SetSelectionIndices(MenuItemView* parent) {
     if (!found_focusable)
       ordering.push_back(item);
   }
+
+  parent->SetProperty(kOrderedMenuChildren,
+                      std::make_unique<std::vector<ViewTracker>>(
+                          ordering.begin(), ordering.end()));
 
   if (ordering.empty())
     return;
@@ -3198,7 +3224,7 @@ void MenuController::ExitMenu() {
 MenuItemView* MenuController::ExitTopMostMenu() {
   // Release the lock which prevents Chrome from shutting down while the menu is
   // showing.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&ViewsDelegate::ReleaseRef,
                      base::Unretained(ViewsDelegate::GetInstance())));

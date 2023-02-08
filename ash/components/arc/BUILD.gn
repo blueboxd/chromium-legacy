@@ -64,6 +64,8 @@ static_library("arc") {
     "memory/arc_memory_bridge.h",
     "memory_pressure/arc_memory_pressure_bridge.cc",
     "memory_pressure/arc_memory_pressure_bridge.h",
+    "metrics/arc_daily_metrics.cc",
+    "metrics/arc_daily_metrics.h",
     "metrics/arc_metrics_anr.cc",
     "metrics/arc_metrics_anr.h",
     "metrics/arc_metrics_service.cc",
@@ -139,13 +141,13 @@ static_library("arc") {
     "//chromeos/ash/components/dbus/userdataauth",
     "//chromeos/ash/components/dbus/userdataauth:userdataauth_proto",
     "//chromeos/ash/components/disks",
+    "//chromeos/ash/components/login/login_state",
     "//chromeos/ash/components/network",
     "//chromeos/components/disks:prefs",
     "//chromeos/components/sensors:sensors",
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
     "//chromeos/dbus/power:power_manager_proto",
-    "//chromeos/login/login_state",
     "//chromeos/ui/frame",
     "//components/device_event_log",
     "//components/exo",
@@ -179,6 +181,7 @@ static_library("prefs") {
     "arc_export.h",
     "arc_prefs.cc",
     "arc_prefs.h",
+    "metrics/arc_daily_metrics_prefs.h",
   ]
 
   defines = [ "ARC_IMPLEMENTATION" ]
@@ -208,6 +211,8 @@ static_library("arc_base_utils") {
 
   public_deps = [ ":arc_features" ]
   deps = [
+    "//ash/components/arc:prefs",
+    "//ash/components/arc/session:arc_base_enums",
     "//ash/constants",
     "//ash/public/cpp",
     "//base",
@@ -218,6 +223,7 @@ static_library("arc_base_utils") {
     "//chromeos/ash/components/dbus/upstart:upstart",
     "//chromeos/version",
     "//components/exo",
+    "//components/prefs:prefs",
     "//ui/aura",
   ]
 }

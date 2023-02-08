@@ -155,7 +155,10 @@ static_library("sandbox") {
   configs +=
       [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
 
-  configs += [ "//build/config:precompiled_headers" ]
+  configs += [
+    "//build/config:precompiled_headers",
+    "//build/config/compiler:prevent_unsafe_narrowing",
+  ]
 
   public_deps = [
     ":common",
@@ -167,6 +170,8 @@ static_library("sandbox") {
     ":maybe_set_appcontainer_acls",
     "//base:base_static",
   ]
+
+  libs = [ "userenv.lib" ]
 }
 
 test("sbox_integration_tests") {
@@ -302,6 +307,14 @@ test("sbox_unittests") {
 fuzzer_test("sandbox_policy_rule_fuzzer") {
   sources = [ "fuzzer/sandbox_policy_rule_fuzzer.cc" ]
   dict = "fuzzer/sandbox_policy_rule.dict"
+  deps = [
+    "//base",
+    "//sandbox",
+  ]
+}
+
+fuzzer_test("sandbox_nt_utils_fuzzer") {
+  sources = [ "fuzzer/sandbox_nt_utils_fuzzer.cc" ]
   deps = [
     "//base",
     "//sandbox",

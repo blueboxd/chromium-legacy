@@ -20,7 +20,6 @@ after discussions on the right group.
       <annotation id="android_web_socket"/>
       <annotation id="query_tiles_fetcher"/>
       <annotation id="query_tiles_image_loader"/>
-      <annotation id="autofill_service"/>
       <annotation id="cached_image_fetcher"/>
       <annotation id="chime_sdk"/>
       <annotation id="chrome_android_hats"/>
@@ -30,8 +29,6 @@ after discussions on the right group.
       <annotation id="download_manager_service_retry"/>
       <annotation id="explore_sites"/>
       <annotation id="family_info"/>
-      <annotation id="gstatic_change_password_scripts"/>
-      <annotation id="gstatic_onboarding_definition"/>
       <annotation id="kids_chrome_management_client_classify_url"/>
       <annotation id="minidump_uploader_android"/>
       <annotation id="oma_download_handler_android"/>
@@ -88,7 +85,6 @@ after discussions on the right group.
       <annotation id="tachyon_ice_config_fetcher"/>
       <annotation id="terms_of_service_fetch"/>
       <annotation id="timezone_lookup"/>
-      <annotation id="url_icon_source_fetch"/>
       <annotation id="wallpaper_backdrop_collection_names"/>
       <annotation id="wallpaper_backdrop_images_info"/>
       <annotation id="wallpaper_backdrop_surprise_me_image"/>
@@ -98,6 +94,7 @@ after discussions on the right group.
       <annotation id="wallpaper_google_photos_enabled"/>
       <annotation id="wallpaper_google_photos_photos"/>
       <annotation id="search_and_assistant_enabled_checker"/>
+      <annotation id="wallpaper_online_downloader"/>
     </sender>
     <sender name="ChromeOS Recovery">
       <annotation id="cros_recovery_image_download"/>
@@ -163,9 +160,7 @@ after discussions on the right group.
       <annotation id="cast_socket"/>
       <annotation id="dom_distiller"/>
       <annotation id="download_manager_resume"/>
-      <annotation id="file_system_connector_to_box"/>
       <annotation id="parallel_download_job"/>
-      <annotation id="mirroring_get_setup_info"/>
       <annotation id="cast_udp_socket"/>
       <annotation id="icon_cacher"/>
       <annotation id="omnibox_suggest_deletion"/>
@@ -230,13 +225,11 @@ after discussions on the right group.
       <annotation id="stream_message_pipe_adapter"/>
       <annotation id="stream_packet_socket"/>
       <annotation id="certificate_verifier_url_loader"/>
-      <annotation id="expect_ct_reporter"/>
       <annotation id="domain_security_policy"/>
       <annotation id="services_http_server_error_response"/>
       <annotation id="webrtc_peer_connection"/>
       <annotation id="direct_sockets"/>
       <annotation id="sanitized_image_source"/>
-      <annotation id="box_access_token_fetcher"/>
       <annotation id="web_app_origin_association_download"/>
       <annotation id="digital_asset_links"/>
       <annotation id="device_trust_key_rotation"/>
@@ -269,6 +262,14 @@ after discussions on the right group.
       <annotation id="nearby_share_contacts"/>
       <annotation id="nearby_share_list_public_certificates"/>
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
+      <annotation id="ntp_custom_background"/>
+      <annotation id="iwa_policy_update_manifest"/>
+      <annotation id="iwa_policy_signed_web_bundle"/>
+      <annotation id="quick_start_challenge_bytes_fetcher"/>
+      <annotation id="customization_document"/>
+      <annotation id="password_sync_token_fetcher"/>
+      <annotation id="nearby_webrtc_connection"/>
+      <annotation id="projector_xhr_loader"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

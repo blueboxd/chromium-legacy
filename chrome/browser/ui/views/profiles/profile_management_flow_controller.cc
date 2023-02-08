@@ -7,6 +7,8 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
@@ -15,27 +17,18 @@
 
 ProfileManagementFlowController::ProfileManagementFlowController(
     ProfilePickerWebContentsHost* host,
-    ClearHostClosure clear_host_callback,
-    Step initial_step)
-    : initial_step_(initial_step),
-      host_(host),
-      clear_host_callback_(std::move(clear_host_callback)) {}
+    ClearHostClosure clear_host_callback)
+    : host_(host), clear_host_callback_(std::move(clear_host_callback)) {
+  DCHECK(clear_host_callback_.value());
+}
 
 ProfileManagementFlowController::~ProfileManagementFlowController() = default;
-
-void ProfileManagementFlowController::Init(
-    base::OnceCallback<void(bool)> initial_step_switch_finished_callback) {
-  DCHECK(clear_host_callback_.value());
-  SwitchToStep(initial_step(), /*reset_state=*/true,
-               /*pop_step_callback=*/base::OnceClosure(),
-               std::move(initial_step_switch_finished_callback));
-}
 
 void ProfileManagementFlowController::SwitchToStep(
     Step step,
     bool reset_state,
-    base::OnceClosure pop_step_callback,
-    base::OnceCallback<void(bool)> step_switch_finished_callback) {
+    StepSwitchFinishedCallback step_switch_finished_callback,
+    base::OnceClosure pop_step_callback) {
   DCHECK_NE(Step::kUnknown, step);
   DCHECK_NE(current_step_, step);
 
@@ -83,17 +76,21 @@ void ProfileManagementFlowController::ExitFlow() {
   std::move(clear_host_callback_.value()).Run();
 }
 
+bool ProfileManagementFlowController::PreFinishWithBrowser() {
+  return false;
+}
+
 void ProfileManagementFlowController::FinishFlowAndRunInBrowser(
     Profile* profile,
     PostHostClearedCallback post_host_cleared_callback) {
   DCHECK(clear_host_callback_.value());  // The host shouldn't be cleared yet.
 
-  // TODO(crbug.com/1370485): Update when we have a more elegant way to ignore
-  // the incoming argument.
-  base::OnceCallback<void(Profile*)> post_browser_open_callback =
-      base::BindOnce([](Profile* absorb_arg) {
-      }).Then(std::move(clear_host_callback_.value()));
+  // TODO(crbug.com/1383969): Handle the return value and don't open a browser
+  // if it is already going to be opened.
+  PreFinishWithBrowser();
 
+  base::OnceCallback<void(Profile*)> post_browser_open_callback =
+      base::IgnoreArgs<Profile*>(std::move(clear_host_callback_.value()));
   if (!post_host_cleared_callback->is_null()) {
     post_browser_open_callback =
         std::move(post_browser_open_callback)

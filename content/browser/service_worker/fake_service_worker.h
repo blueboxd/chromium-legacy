@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -132,6 +131,8 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
   void SetIdleDelay(base::TimeDelta delay) override;
+  void AddKeepAlive() override;
+  void ClearKeepAlive() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   void ExecuteScriptForTest(const std::u16string& script,

@@ -54,7 +54,8 @@ class WaiterMetricsObserver final : public PageLoadMetricsObserver {
 
   void OnSoftNavigationCountUpdated() override;
 
-  void OnPageInputTimingUpdate(uint64_t num_input_events) override;
+  void OnPageInputTimingUpdate(uint64_t num_interactions,
+                               uint64_t num_input_events) override;
 
   void OnCpuTimingUpdate(content::RenderFrameHost* subframe_rfh,
                          const mojom::CpuTiming& timing) override;
@@ -83,11 +84,66 @@ class WaiterMetricsObserver final : public PageLoadMetricsObserver {
       const gfx::Rect& main_frame_viewport_rect) override;
   void OnV8MemoryChanged(
       const std::vector<MemoryUpdate>& memory_updates) override;
+  void OnPageRenderDataUpdate(const mojom::FrameRenderDataUpdate& render_data,
+                              bool is_main_frame) override;
 
  private:
   const base::WeakPtr<PageLoadMetricsTestWaiter> waiter_;
   const char* observer_name_;
 };
+
+std::string PageLoadMetricsTestWaiter::TimingFieldBitSet::ToDebugString()
+    const {
+  std::string debug_string = "";
+  if (ContainsTimingField(TimingField::kFirstPaint))
+    debug_string += "FirstPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstContentfulPaint))
+    debug_string += "FirstContentfulPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstMeaningfulPaint))
+    debug_string += "FirstMeaningfulPaint|";
+
+  if (ContainsTimingField(TimingField::kFirstPaintAfterBackForwardCacheRestore))
+    debug_string += "FirstPaintAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(
+          TimingField::kRequestAnimationFrameAfterBackForwardCacheRestore))
+    debug_string += "RequestAnimationFrameAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(TimingField::kDocumentWriteBlockReload))
+    debug_string += "DocumentWriteBlockReload|";
+
+  if (ContainsTimingField(TimingField::kFirstInputDelay))
+    debug_string += "FirstInputDelay|";
+
+  if (ContainsTimingField(TimingField::kFirstInputOrScroll))
+    debug_string += "FirstInputOrScroll|";
+
+  if (ContainsTimingField(
+          TimingField::kFirstInputDelayAfterBackForwardCacheRestore))
+    debug_string += "FirstInputDelayAfterBackForwardCacheRestore|";
+
+  if (ContainsTimingField(TimingField::kLoadTimingInfo))
+    debug_string += "LoadTimingInfo|";
+
+  if (ContainsTimingField(TimingField::kLargestContentfulPaint))
+    debug_string += "LargestContentfulPaint|";
+
+  if (ContainsTimingField(TimingField::kTotalInputDelay))
+    debug_string += "TotalInputDelay|";
+
+  if (ContainsTimingField(TimingField::kFirstScrollDelay))
+    debug_string += "FirstScrollDelay|";
+
+  if (ContainsTimingField(TimingField::kLoadEvent))
+    debug_string += "LoadEvent|";
+
+  if (ContainsTimingField(TimingField::kSoftNavigationCountUpdated))
+    debug_string += "SoftNavigationCountUpdated";
+
+  return debug_string;
+}
 
 PageLoadMetricsTestWaiter::PageLoadMetricsTestWaiter(
     content::WebContents* web_contents)
@@ -181,6 +237,13 @@ void PageLoadMetricsTestWaiter::AddLoadingBehaviorExpectation(
   expected_.loading_behavior_flags_ |= behavior_flags;
 }
 
+void PageLoadMetricsTestWaiter::AddPageLayoutShiftExpectation(
+    ShiftFrame shift_frame) {
+  expected_.layout_shift_ = true;
+  shift_frame_ = shift_frame;
+  observed_.layout_shift_ = false;
+}
+
 bool PageLoadMetricsTestWaiter::DidObserveInPage(TimingField field) const {
   return observed_.page_fields_.IsSet(field);
 }
@@ -198,7 +261,7 @@ void PageLoadMetricsTestWaiter::Wait() {
     run_loop_->Run();
     run_loop_ = nullptr;
   }
-  EXPECT_TRUE(ExpectationsSatisfied());
+  AssertExpectationsSatisfied();
   ResetExpectations();
 }
 
@@ -212,11 +275,7 @@ void PageLoadMetricsTestWaiter::OnTimingUpdated(
   const page_load_metrics::mojom::FrameMetadata& metadata =
       subframe_rfh ? delegate->GetSubframeMetadata()
                    : delegate->GetMainFrameMetadata();
-
-  const PageRenderData* render_data = &delegate->GetPageRenderData();
-
-  TimingFieldBitSet matched_bits =
-      GetMatchedBits(timing, metadata, render_data, !subframe_rfh);
+  TimingFieldBitSet matched_bits = GetMatchedBits(timing, metadata);
 
   if (subframe_rfh)
     observed_.subframe_fields_.Merge(matched_bits);
@@ -232,9 +291,16 @@ void PageLoadMetricsTestWaiter::OnSoftNavigationCountUpdated() {
 }
 
 void PageLoadMetricsTestWaiter::OnPageInputTimingUpdated(
+    uint64_t num_interactions,
     uint64_t num_input_events) {
+  // The number of user interactions, including click, tap and key press in this
+  // update.
+  current_num_interactions_ += num_interactions;
+  // The total number of input events including click, tap, key press,
+  // cancellable touchstart, or pointer down followed by a pointer up...
   current_num_input_events_ = num_input_events;
-  observed_.page_fields_.Set(TimingField::kTotalInputDelay);
+  if (num_input_events)
+    observed_.page_fields_.Set(TimingField::kTotalInputDelay);
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
 }
@@ -348,12 +414,41 @@ void PageLoadMetricsTestWaiter::FrameSizeChanged(
     run_loop_->Quit();
 }
 
+void PageLoadMetricsTestWaiter::OnPageRenderDataUpdate(
+    const mojom::FrameRenderDataUpdate& render_data,
+    bool is_main_frame) {
+  auto* delegate = GetDelegateForCommittedLoad();
+  if (!delegate)
+    return;
+
+  double layout_shift_score =
+      (&delegate->GetPageRenderData())->layout_shift_score;
+  if (is_main_frame) {
+    if ((shift_frame_ == ShiftFrame::LayoutShiftOnlyInMainFrame ||
+         shift_frame_ == ShiftFrame::LayoutShiftOnlyInBothFrames) &&
+        last_main_frame_layout_shift_score_ < layout_shift_score &&
+        render_data.layout_shift_delta > 0) {
+      observed_.layout_shift_ = true;
+    }
+    last_main_frame_layout_shift_score_ = layout_shift_score;
+  } else {  // subframe
+    if ((shift_frame_ == ShiftFrame::LayoutShiftOnlyInSubFrame ||
+         shift_frame_ == ShiftFrame::LayoutShiftOnlyInBothFrames) &&
+        last_sub_frame_layout_shift_score_ < layout_shift_score &&
+        render_data.layout_shift_delta > 0) {
+      observed_.layout_shift_ = true;
+    }
+    last_sub_frame_layout_shift_score_ = layout_shift_score;
+  }
+
+  if (ExpectationsSatisfied() && run_loop_)
+    run_loop_->Quit();
+}
+
 PageLoadMetricsTestWaiter::TimingFieldBitSet
 PageLoadMetricsTestWaiter::GetMatchedBits(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::mojom::FrameMetadata& metadata,
-    const PageRenderData* render_data,
-    bool is_main_frame) {
+    const page_load_metrics::mojom::FrameMetadata& metadata) {
   PageLoadMetricsTestWaiter::TimingFieldBitSet matched_bits;
   if (timing.document_timing->load_event_start)
     matched_bits.Set(TimingField::kLoadEvent);
@@ -398,18 +493,6 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
   if (timing.interactive_timing->first_scroll_delay)
     matched_bits.Set(TimingField::kFirstScrollDelay);
 
-  if (render_data) {
-    double layout_shift_score = render_data->layout_shift_score;
-    if (is_main_frame) {
-      if (last_main_frame_layout_shift_score_ < layout_shift_score)
-        matched_bits.Set(TimingField::kLayoutShift);
-      last_main_frame_layout_shift_score_ = layout_shift_score;
-    } else {  // subframe
-      if (last_sub_frame_layout_shift_score_ < layout_shift_score)
-        matched_bits.Set(TimingField::kLayoutShift);
-      last_sub_frame_layout_shift_score_ = layout_shift_score;
-    }
-  }
   if (soft_navigation_count_updated_) {
     soft_navigation_count_updated_ = false;
     matched_bits.Set(TimingField::kSoftNavigationCountUpdated);
@@ -533,6 +616,16 @@ bool PageLoadMetricsTestWaiter::TotalInputDelayExpectationsSatisfied() const {
   return current_num_input_events_ == expected_num_input_events_;
 }
 
+bool PageLoadMetricsTestWaiter::LayoutShiftExpectationsSatisfied() const {
+  return expected_.layout_shift_ == observed_.layout_shift_;
+}
+
+bool PageLoadMetricsTestWaiter::NumInteractionsExpectationsSatisfied() const {
+  if (expected_num_interactions_ == 0)
+    return true;
+  return current_num_interactions_ == expected_num_interactions_;
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return expected_.page_fields_.AreAllSetIn(observed_.page_fields_) &&
          expected_.subframe_fields_.AreAllSetIn(observed_.subframe_fields_) &&
@@ -546,7 +639,26 @@ bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
          MainFrameIntersectionExpectationsSatisfied() &&
          MainFrameViewportRectExpectationsSatisfied() &&
          MemoryUpdateExpectationsSatisfied() &&
-         TotalInputDelayExpectationsSatisfied();
+         TotalInputDelayExpectationsSatisfied() &&
+         LayoutShiftExpectationsSatisfied() &&
+         NumInteractionsExpectationsSatisfied();
+}
+
+void PageLoadMetricsTestWaiter::AssertExpectationsSatisfied() const {
+  EXPECT_TRUE(expected_.page_fields_.AreAllSetIn(observed_.page_fields_));
+  EXPECT_TRUE(
+      expected_.subframe_fields_.AreAllSetIn(observed_.subframe_fields_));
+  EXPECT_TRUE(ResourceUseExpectationsSatisfied());
+  EXPECT_TRUE(UseCounterExpectationsSatisfied());
+  EXPECT_TRUE(SubframeNavigationExpectationsSatisfied());
+  EXPECT_TRUE(SubframeDataExpectationsSatisfied());
+  EXPECT_TRUE(IsSubset(expected_.frame_sizes_, observed_.frame_sizes_));
+  EXPECT_TRUE(LoadingBehaviorExpectationsSatisfied());
+  EXPECT_TRUE(CpuTimeExpectationsSatisfied());
+  EXPECT_TRUE(MainFrameIntersectionExpectationsSatisfied());
+  EXPECT_TRUE(MainFrameViewportRectExpectationsSatisfied());
+  EXPECT_TRUE(MemoryUpdateExpectationsSatisfied());
+  EXPECT_TRUE(TotalInputDelayExpectationsSatisfied());
 }
 
 void PageLoadMetricsTestWaiter::ResetExpectations() {
@@ -589,9 +701,10 @@ void WaiterMetricsObserver::OnSoftNavigationCountUpdated() {
     waiter_->OnSoftNavigationCountUpdated();
 }
 
-void WaiterMetricsObserver::OnPageInputTimingUpdate(uint64_t num_input_events) {
+void WaiterMetricsObserver::OnPageInputTimingUpdate(uint64_t num_interactions,
+                                                    uint64_t num_input_events) {
   if (waiter_)
-    waiter_->OnPageInputTimingUpdated(num_input_events);
+    waiter_->OnPageInputTimingUpdated(num_interactions, num_input_events);
 }
 
 void WaiterMetricsObserver::OnCpuTimingUpdate(
@@ -662,6 +775,13 @@ void WaiterMetricsObserver::OnV8MemoryChanged(
     const std::vector<MemoryUpdate>& memory_updates) {
   if (waiter_)
     waiter_->OnV8MemoryChanged(memory_updates);
+}
+
+void WaiterMetricsObserver::OnPageRenderDataUpdate(
+    const mojom::FrameRenderDataUpdate& render_data,
+    bool is_main_frame) {
+  if (waiter_)
+    waiter_->OnPageRenderDataUpdate(render_data, is_main_frame);
 }
 
 bool PageLoadMetricsTestWaiter::FrameSizeComparator::operator()(

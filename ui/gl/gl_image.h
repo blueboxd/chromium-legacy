@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
@@ -30,13 +31,66 @@ class ProcessMemoryDump;
 }  // namespace base
 
 namespace gl {
+class GLImage;
+}
+
+namespace gpu {
+class DawnEGLImageRepresentation;
+class D3DImageBacking;
+class D3DImageBackingFactoryTest;
+class GpuMemoryBufferFactoryAndroidHardwareBuffer;
+class GpuMemoryBufferFactoryDXGI;
+class GpuMemoryBufferFactoryIOSurface;
+class IOSurfaceImageBackingFactory;
+class IOSurfaceImageBackingFactoryNewTestBase;
+class OverlayD3DImageRepresentation;
+class TestOverlayImageRepresentation;
+void SetColorSpaceOnGLImage(gl::GLImage* gl_image,
+                            const gfx::ColorSpace& color_space);
+FORWARD_DECLARE_TEST(CALayerTreeTest, HDRTrigger);
+FORWARD_DECLARE_TEST(CompoundImageBackingTest, NoUploadOnOverlayMemoryAccess);
+FORWARD_DECLARE_TEST(D3DImageBackingFactoryTestSwapChain,
+                     CreateAndPresentSwapChain);
+FORWARD_DECLARE_TEST(D3DImageBackingFactoryTest, CreateFromSharedMemory);
+}  // namespace gpu
+
+namespace gpu::gles2 {
+class GLES2DecoderImpl;
+class GLES2DecoderPassthroughImpl;
+class Texture;
+}
+
+namespace media {
+class GLImagePbuffer;
+class DXVAVideoDecodeAccelerator;
+class VTVideoDecodeAccelerator;
+}
+
+namespace ui {
+class NativePixmapEGLBinding;
+class SurfacelessGlRenderer;
+class SurfacelessSkiaGlRenderer;
+}  // namespace ui
+
+namespace viz {
+class ImageContextImpl;
+class SkiaOutputDeviceDComp;
+}  // namespace viz
+
+namespace gl {
+
+class DCompPresenterTest;
+class DirectCompositionSurfaceTest;
+class GLImageD3D;
+class GLImageDXGI;
+class GLImageIOSurface;
+class GLImageMemory;
+class SwapChainPresenter;
 
 // Encapsulates an image that can be bound and/or copied to a texture, hiding
 // platform specific management.
 class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
  public:
-  GLImage() = default;
-
   GLImage(const GLImage&) = delete;
   GLImage& operator=(const GLImage&) = delete;
 
@@ -65,6 +119,16 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Release image from texture currently bound to |target|.
   virtual void ReleaseTexImage(unsigned target);
 
+ protected:
+  // NOTE: We are in the process of eliminating client usage of GLImage. As part
+  // of this effort, we are incrementally moving its public interface to be
+  // protected with friend'ing of existing users. DO NOT ADD MORE client usage -
+  // instead, reach out to shared-image-team@ with your use case.
+  // See crbug.com/1382031.
+  GLImage() = default;
+
+  virtual ~GLImage() = default;
+
   // Define texture currently bound to |target| by copying image into it.
   // Returns true on success. It is valid for an implementation to always
   // return false.
@@ -83,24 +147,12 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // BT.709, or BT.2020) and range (limited or null), and |color_space| conveys
   // this.
   virtual void SetColorSpace(const gfx::ColorSpace& color_space);
-  const gfx::ColorSpace& color_space() const { return color_space_; }
 
   // Dumps information about the memory backing the GLImage to a dump named
   // |dump_name|.
   virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                             uint64_t process_tracing_id,
                             const std::string& dump_name);
-
-  // If this returns true, then the command buffer client has requested a
-  // CHROMIUM image with internalformat GL_RGB, but the platform only supports
-  // GL_RGBA. The client is responsible for implementing appropriate
-  // workarounds. The only support that the command buffer provides is format
-  // validation during calls to copyTexImage2D and copySubTexImage2D.
-  //
-  // This is a workaround that is not intended to become a permanent part of the
-  // GLImage API. Theoretically, when Apple fixes their drivers, this can be
-  // removed. https://crbug.com/581777#c36
-  virtual bool EmulatingRGB() const;
 
   // An identifier for subclasses. Necessary for safe downcasting.
   enum class Type {
@@ -110,6 +162,7 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
     DXGI_IMAGE,
     D3D,
     DCOMP_SURFACE,
+    PBUFFER
   };
   virtual Type GetType() const;
 
@@ -119,12 +172,50 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
 
   virtual void* GetEGLImage() const;
 
- protected:
-  virtual ~GLImage() = default;
-
   gfx::ColorSpace color_space_;
 
  private:
+  // Safe downcasts. All functions return nullptr if |image| does not exist or
+  // does not have the specified type.
+  static GLImageD3D* ToGLImageD3D(GLImage* image);
+  static GLImageMemory* ToGLImageMemory(GLImage* image);
+  static GLImageIOSurface* ToGLImageIOSurface(GLImage* image);
+  static GLImageDXGI* ToGLImageDXGI(GLImage* image);
+  static media::GLImagePbuffer* ToGLImagePbuffer(GLImage* image);
+
+  friend class DCompPresenterTest;
+  friend class DirectCompositionSurfaceTest;
+  friend class SwapChainPresenter;
+  friend class gpu::DawnEGLImageRepresentation;
+  friend class gpu::D3DImageBacking;
+  friend class gpu::D3DImageBackingFactoryTest;
+  friend class gpu::GpuMemoryBufferFactoryAndroidHardwareBuffer;
+  friend class gpu::GpuMemoryBufferFactoryDXGI;
+  friend class gpu::GpuMemoryBufferFactoryIOSurface;
+  friend class gpu::IOSurfaceImageBackingFactory;
+  friend class gpu::IOSurfaceImageBackingFactoryNewTestBase;
+  friend class gpu::OverlayD3DImageRepresentation;
+  friend class gpu::TestOverlayImageRepresentation;
+  friend class gpu::gles2::GLES2DecoderImpl;
+  friend class gpu::gles2::GLES2DecoderPassthroughImpl;
+  friend class gpu::gles2::Texture;
+  friend class media::DXVAVideoDecodeAccelerator;
+  friend class media::VTVideoDecodeAccelerator;
+  friend class ui::NativePixmapEGLBinding;
+  friend class ui::SurfacelessGlRenderer;
+  friend class ui::SurfacelessSkiaGlRenderer;
+  friend class viz::ImageContextImpl;
+  friend class viz::SkiaOutputDeviceDComp;
+  friend void gpu::SetColorSpaceOnGLImage(GLImage* gl_image,
+                                          const gfx::ColorSpace& color_space);
+  FRIEND_TEST_ALL_PREFIXES(gpu::CALayerTreeTest, HDRTrigger);
+  FRIEND_TEST_ALL_PREFIXES(gpu::CompoundImageBackingTest,
+                           NoUploadOnOverlayMemoryAccess);
+  FRIEND_TEST_ALL_PREFIXES(gpu::D3DImageBackingFactoryTestSwapChain,
+                           CreateAndPresentSwapChain);
+  FRIEND_TEST_ALL_PREFIXES(gpu::D3DImageBackingFactoryTest,
+                           CreateFromSharedMemory);
+
   friend class base::RefCounted<GLImage>;
 };
 

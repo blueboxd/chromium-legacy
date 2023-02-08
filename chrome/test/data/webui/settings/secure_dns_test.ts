@@ -11,7 +11,7 @@
 import 'chrome://settings/lazy_load.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SecureDnsInputElement, SettingsSecureDnsElement} from 'chrome://settings/lazy_load.js';
 import {PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
@@ -272,4 +272,29 @@ suite('SettingsSecureDns', function() {
                     .querySelector('cr-policy-pref-indicator')!.shadowRoot!
                     .querySelector('cr-tooltip-icon')!.hidden);
   });
+
+  // <if expr="chromeos_ash">
+  test('SecureDnsManagedWithIdentifiers', function() {
+    testElement.prefs.dns_over_https.mode.enforcement =
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+    testElement.prefs.dns_over_https.mode.controlledBy =
+        chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
+
+    const effectiveConfig = 'https://example/dns-query';
+    const displayConfig = 'https://example-for-display/dns-query';
+
+    webUIListenerCallback('secure-dns-setting-changed', {
+      mode: SecureDnsMode.SECURE,
+      config: effectiveConfig,
+      dohWithIdentifiersActive: true,
+      configForDisplay: displayConfig,
+      managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
+    });
+    flush();
+    const expectedDescription = loadTimeData.substituteString(
+        loadTimeData.getString('secureDnsWithIdentifiersDescription'),
+        displayConfig);
+    assertEquals(expectedDescription, testElement.$.secureDnsToggle.subLabel);
+  });
+  // </if>
 });

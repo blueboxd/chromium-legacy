@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
@@ -21,10 +20,11 @@
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -44,6 +44,7 @@
 #include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
@@ -59,9 +60,9 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/disks/disk.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -383,17 +384,95 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
 
   void BroadcastEvent(extensions::events::HistogramValue histogram_value,
                       const std::string& event_name,
-                      base::Value::List event_args) override {
+                      base::Value::List event_args,
+                      bool dispatch_to_system_notification = true) override {
     std::unique_ptr<extensions::Event> event =
         std::make_unique<extensions::Event>(histogram_value, event_name,
                                             std::move(event_args));
-    system_notification_manager()->HandleEvent(*event.get());
+    if (dispatch_to_system_notification) {
+      system_notification_manager()->HandleEvent(*event.get());
+    }
     extensions::EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
+  }
+
+  void PathsToEntries(const std::vector<base::FilePath>& paths,
+                      const GURL& source_url,
+                      IndividualFileTransferEntriesCallback callback) override {
+    auto origin = url::Origin::Create(source_url);
+
+    auto* file_system_context =
+        util::GetFileSystemContextForSourceURL(profile_, source_url);
+    if (file_system_context == nullptr) {
+      LOG(ERROR) << "Could not find file system context";
+      std::move(callback).Run(IndividualFileTransferEntries());
+      return;
+    }
+
+    auto* drive_integration_service =
+        DriveIntegrationServiceFactory::FindForProfile(profile_);
+    if (!drive_integration_service) {
+      LOG(ERROR) << "Could not find drive integration service";
+      std::move(callback).Run(IndividualFileTransferEntries());
+      return;
+    }
+    auto mount_path = drive_integration_service->GetMountPointPath();
+
+    file_manager::util::FileDefinitionList file_definition_list;
+    for (const auto& path : paths) {
+      auto absolute_path = mount_path;
+      base::FilePath("/").AppendRelativePath(path, &absolute_path);
+      file_manager::util::FileDefinition file_definition;
+      if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+              profile_, source_url, absolute_path,
+              &file_definition.virtual_path)) {
+        LOG(ERROR)
+            << "Could not convert absolute path to relative file system path.";
+      }
+      file_definition_list.push_back(std::move(file_definition));
+    }
+
+    file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+        file_system_context, origin, std::move(file_definition_list),
+        base::BindOnce(&DriveFsEventRouterImpl::
+                           OnConvertFileDefinitionListToEntryDefinitionList_,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnConvertFileDefinitionListToEntryDefinitionList_(
+      IndividualFileTransferEntriesCallback callback,
+      std::unique_ptr<file_manager::util::EntryDefinitionList>
+          entry_definition_list) {
+    if (entry_definition_list == nullptr) {
+      LOG(WARNING)
+          << "Failed to convert file definition list to entry definition list";
+      std::move(callback).Run(IndividualFileTransferEntries());
+      return;
+    }
+
+    IndividualFileTransferEntries entries;
+    for (const auto& def : *entry_definition_list) {
+      if (def.error != base::File::FILE_OK) {
+        LOG(WARNING) << "File entry ignored: " << static_cast<int>(def.error);
+        entries.emplace_back();
+        continue;
+      }
+      IndividualFileTransferEntry entry;
+      entry.additional_properties.Set("fileSystemName", def.file_system_name);
+      entry.additional_properties.Set("fileSystemRoot",
+                                      def.file_system_root_url);
+      entry.additional_properties.Set(
+          "fileFullPath", base::FilePath("/").Append(def.full_path).value());
+      entry.additional_properties.Set("fileIsDirectory", def.is_directory);
+      entries.push_back(std::move(entry));
+    }
+    std::move(callback).Run(std::move(entries));
   }
 
   Profile* const profile_;
   const std::map<base::FilePath, std::unique_ptr<FileWatcher>>* const
       file_watchers_;
+
+  base::WeakPtrFactory<DriveFsEventRouterImpl> weak_ptr_factory_{this};
 };
 
 // Observes App Service and notifies Files app when there are any changes in the
@@ -445,61 +524,50 @@ void RecordFileSystemProviderMountMetrics(const Volume& volume) {
 
 }  // namespace
 
-file_manager_private::MountCompletedStatus MountErrorToMountCompletedStatus(
+file_manager_private::MountError MountErrorToMountCompletedStatus(
     ash::MountError error) {
   switch (error) {
     case ash::MountError::kSuccess:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS;
+      return file_manager_private::MOUNT_ERROR_SUCCESS;
     case ash::MountError::kUnknownError:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_ERROR;
     case ash::MountError::kInternalError:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INTERNAL;
+      return file_manager_private::MOUNT_ERROR_INTERNAL_ERROR;
     case ash::MountError::kInvalidArgument:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_INVALID_ARGUMENT;
+      return file_manager_private::MOUNT_ERROR_INVALID_ARGUMENT;
     case ash::MountError::kInvalidPath:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_INVALID_PATH;
+      return file_manager_private::MOUNT_ERROR_INVALID_PATH;
     case ash::MountError::kPathAlreadyMounted:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_PATH_ALREADY_MOUNTED;
+      return file_manager_private::MOUNT_ERROR_PATH_ALREADY_MOUNTED;
     case ash::MountError::kPathNotMounted:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_PATH_NOT_MOUNTED;
+      return file_manager_private::MOUNT_ERROR_PATH_NOT_MOUNTED;
     case ash::MountError::kDirectoryCreationFailed:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_DIRECTORY_CREATION_FAILED;
+      return file_manager_private::MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
     case ash::MountError::kInvalidMountOptions:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_INVALID_MOUNT_OPTIONS;
+      return file_manager_private::MOUNT_ERROR_INVALID_MOUNT_OPTIONS;
     case ash::MountError::kInsufficientPermissions:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_INSUFFICIENT_PERMISSIONS;
+      return file_manager_private::MOUNT_ERROR_INSUFFICIENT_PERMISSIONS;
     case ash::MountError::kMountProgramNotFound:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_NOT_FOUND;
+      return file_manager_private::MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND;
     case ash::MountError::kMountProgramFailed:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_MOUNT_PROGRAM_FAILED;
+      return file_manager_private::MOUNT_ERROR_MOUNT_PROGRAM_FAILED;
     case ash::MountError::kInvalidDevicePath:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_INVALID_DEVICE_PATH;
+      return file_manager_private::MOUNT_ERROR_INVALID_DEVICE_PATH;
     case ash::MountError::kUnknownFilesystem:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN_FILESYSTEM;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_FILESYSTEM;
     case ash::MountError::kUnsupportedFilesystem:
-      return file_manager_private::
-          MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM;
+      return file_manager_private::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM;
     case ash::MountError::kNeedPassword:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_NEED_PASSWORD;
+      return file_manager_private::MOUNT_ERROR_NEED_PASSWORD;
     case ash::MountError::kInProgress:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_IN_PROGRESS;
+      return file_manager_private::MOUNT_ERROR_IN_PROGRESS;
     case ash::MountError::kCancelled:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_CANCELLED;
+      return file_manager_private::MOUNT_ERROR_CANCELLED;
     case ash::MountError::kBusy:
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_BUSY;
+      return file_manager_private::MOUNT_ERROR_BUSY;
     default:
       LOG(ERROR) << "Unexpected mount error: " << error;
-      return file_manager_private::MOUNT_COMPLETED_STATUS_ERROR_UNKNOWN;
+      return file_manager_private::MOUNT_ERROR_UNKNOWN_ERROR;
   }
 }
 
@@ -585,11 +653,9 @@ void EventRouter::Shutdown() {
       chromeos::PowerManagerClient::Get();
   power_manager_client->RemoveObserver(device_event_router_.get());
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles)) {
-    auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                         ->MountProviderRegistry();
-    registry->RemoveObserver(this);
-  }
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
+                       ->MountProviderRegistry();
+  registry->RemoveObserver(this);
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =
@@ -604,8 +670,8 @@ void EventRouter::Shutdown() {
 void EventRouter::ObserveEvents() {
   DCHECK(profile_);
 
-  if (!chromeos::LoginState::IsInitialized() ||
-      !chromeos::LoginState::Get()->IsUserLoggedIn()) {
+  if (!ash::LoginState::IsInitialized() ||
+      !ash::LoginState::Get()->IsUserLoggedIn()) {
     return;
   }
 
@@ -654,27 +720,10 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(ash::prefs::kFilesAppTrashEnabled, callback);
   pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
-  pref_change_registrar_->Add(
-      crostini::prefs::kCrostiniEnabled,
-      base::BindRepeating(
-          &EventRouter::OnCrostiniChanged, weak_factory_.GetWeakPtr(),
-          crostini::kCrostiniDefaultVmName, crostini::prefs::kCrostiniEnabled,
-          file_manager_private::CROSTINI_EVENT_TYPE_ENABLE,
-          file_manager_private::CROSTINI_EVENT_TYPE_DISABLE));
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);
   pref_change_registrar_->Add(ash::prefs::kFilesAppFolderShortcuts, callback);
-
-  auto plugin_vm_callback = base::BindRepeating(&EventRouter::OnPluginVmChanged,
-                                                weak_factory_.GetWeakPtr());
-  plugin_vm_subscription_ =
-      std::make_unique<plugin_vm::PluginVmPolicySubscription>(
-          profile_, base::BindRepeating([](base::RepeatingClosure closure,
-                                           bool is_allowed) { closure.Run(); },
-                                        plugin_vm_callback));
-  pref_change_registrar_->Add(plugin_vm::prefs::kPluginVmImageExists,
-                              plugin_vm_callback);
 
   ash::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -692,11 +741,9 @@ void EventRouter::ObserveEvents() {
   if (tablet_mode)
     tablet_mode->AddObserver(this);
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kGuestOsFiles)) {
-    auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
-                         ->MountProviderRegistry();
-    registry->AddObserver(this);
-  }
+  auto* registry = guest_os::GuestOsService::GetForProfile(profile_)
+                       ->MountProviderRegistry();
+  registry->AddObserver(this);
 
   if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
     apps::AppServiceProxy* proxy =
@@ -727,7 +774,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
     file_watchers_[local_path] = std::move(watcher);
   } else {
     iter->second->AddListener(listener_origin);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), true));
   }
 }
@@ -1047,6 +1094,7 @@ void EventRouter::PopulateCrostiniEvent(
     const std::string& full_path) {
   event.event_type = event_type;
   event.vm_name = vm_name;
+  event.container_name = "";  // Unused for the event types handled by this.
   file_manager_private::CrostiniEvent::EntriesType entry;
   entry.additional_properties.Set(
       "fileSystemRoot",
@@ -1069,6 +1117,30 @@ void EventRouter::OnUnshare(const std::string& vm_name,
                     path);
 }
 
+void EventRouter::OnGuestRegistered(const guest_os::GuestId& guest) {
+  file_manager_private::CrostiniEvent event;
+  event.vm_name = guest.vm_name;
+  event.container_name = guest.container_name;
+  event.event_type =
+      extensions::api::file_manager_private::CROSTINI_EVENT_TYPE_ENABLE;
+  BroadcastEvent(profile_,
+                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+                 file_manager_private::OnCrostiniChanged::kEventName,
+                 file_manager_private::OnCrostiniChanged::Create(event));
+}
+
+void EventRouter::OnGuestUnregistered(const guest_os::GuestId& guest) {
+  file_manager_private::CrostiniEvent event;
+  event.vm_name = guest.vm_name;
+  event.container_name = guest.container_name;
+  event.event_type =
+      extensions::api::file_manager_private::CROSTINI_EVENT_TYPE_DISABLE;
+  BroadcastEvent(profile_,
+                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
+                 file_manager_private::OnCrostiniChanged::kEventName,
+                 file_manager_private::OnCrostiniChanged::Create(event));
+}
+
 void EventRouter::OnTabletModeStarted() {
   BroadcastEvent(
       profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
@@ -1081,33 +1153,6 @@ void EventRouter::OnTabletModeEnded() {
       profile_, extensions::events::FILE_MANAGER_PRIVATE_ON_TABLET_MODE_CHANGED,
       file_manager_private::OnTabletModeChanged::kEventName,
       file_manager_private::OnTabletModeChanged::Create(/*enabled=*/false));
-}
-
-void EventRouter::OnCrostiniChanged(
-    const std::string& vm_name,
-    const std::string& pref_name,
-    extensions::api::file_manager_private::CrostiniEventType pref_true,
-    extensions::api::file_manager_private::CrostiniEventType pref_false) {
-  file_manager_private::CrostiniEvent event;
-  event.vm_name = vm_name;
-  event.event_type =
-      profile_->GetPrefs()->GetBoolean(pref_name) ? pref_true : pref_false;
-  BroadcastEvent(profile_,
-                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
-                 file_manager_private::OnCrostiniChanged::kEventName,
-                 file_manager_private::OnCrostiniChanged::Create(event));
-}
-
-void EventRouter::OnPluginVmChanged() {
-  file_manager_private::CrostiniEvent event;
-  event.vm_name = plugin_vm::kPluginVmName;
-  event.event_type = plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile_)
-                         ? file_manager_private::CROSTINI_EVENT_TYPE_ENABLE
-                         : file_manager_private::CROSTINI_EVENT_TYPE_DISABLE;
-  BroadcastEvent(profile_,
-                 extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,
-                 file_manager_private::OnCrostiniChanged::kEventName,
-                 file_manager_private::OnCrostiniChanged::Create(event));
 }
 
 void EventRouter::NotifyDriveConnectionStatusChanged() {

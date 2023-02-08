@@ -56,6 +56,7 @@ struct ColorProfile;
 namespace ash {
 
 class WallpaperColorCalculator;
+class WallpaperDriveFsDelegate;
 class WallpaperMetricsManager;
 class WallpaperPrefManager;
 class WallpaperResizer;
@@ -232,6 +233,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // WallpaperController:
   void SetClient(WallpaperControllerClient* client) override;
+  void SetDriveFsDelegate(
+      std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate) override;
   void Init(const base::FilePath& user_data,
             const base::FilePath& wallpapers,
             const base::FilePath& custom_wallpapers,
@@ -381,9 +384,17 @@ class ASH_EXPORT WallpaperControllerImpl
 
   void set_bypass_decode_for_testing() { bypass_decode_for_testing_ = true; }
 
+  void set_allow_blur_or_shield_for_testing() {
+    allow_blur_or_shield_for_testing_ = true;
+  }
+
   // Exposed for testing.
   void UpdateDailyRefreshWallpaperForTesting();
   base::WallClockTimer& GetUpdateWallpaperTimerForTesting();
+
+  WallpaperDriveFsDelegate* drivefs_delegate_for_testing() {
+    return drivefs_delegate_.get();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
@@ -738,6 +749,12 @@ class ASH_EXPORT WallpaperControllerImpl
 
   void DriveFsWallpaperChanged(const base::FilePath& path, bool error);
 
+  void OnGetDriveFsWallpaperModificationTime(
+      const AccountId& account_id,
+      const WallpaperInfo& wallpaper_info,
+      const base::FilePath& drivefs_path,
+      base::Time modification_time);
+
   PrefService* GetUserPrefServiceSyncable(const AccountId& account_id) const;
 
   // This will not update a new wallpaper if the synced |info.collection_id| is
@@ -772,6 +789,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Manages interactions with relevant preferences.
   std::unique_ptr<WallpaperPrefManager> pref_manager_;
+
+  std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate_;
 
   // Asynchronous task to extract colors from the wallpaper.
   std::unique_ptr<WallpaperColorCalculator> color_calculator_;
@@ -852,15 +871,23 @@ class ASH_EXPORT WallpaperControllerImpl
 
   base::FilePathWatcher drive_fs_wallpaper_watcher_;
 
-  // Used to capture wallpaper variants' url to their corresponding image.
-  // Cleared every time downloading wallpapers is initiated.
-  base::flat_map<std::string, gfx::ImageSkia> url_to_image_map_;
+  // Transient storage for the wallpaper variant (out of the N total variants
+  // that may exist for a given "unit") that was requested by the client. The
+  // other N - 1 variants are saved to disc for potential future usage. After
+  // all variants have been downloaded and saved, the
+  // |online_wallpaper_variant_to_use_| is released and passed on for further
+  // processing in the pipeline.
+  gfx::ImageSkia online_wallpaper_variant_to_use_;
+  size_t num_variants_downloaded_ = 0;
 
   // If true, use a solid color wallpaper as if it is the decoded image.
   bool bypass_decode_for_testing_ = false;
 
   // Tracks how many wallpapers have been set.
   int wallpaper_count_for_testing_ = 0;
+
+  // If true, the one shot wallpaper is allowed to be blurred or shielded.
+  bool allow_blur_or_shield_for_testing_ = false;
 
   // The file paths of decoding requests that have been initiated. Must be a
   // list because more than one decoding requests may happen during a single

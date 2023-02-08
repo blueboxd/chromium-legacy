@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ML_WEBNN_ML_GRAPH_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -22,13 +21,7 @@ class ScriptPromiseResolver;
 
 // Implement the MLNamedArrayBufferViews type definition of WebNN spec:
 // https://www.w3.org/TR/webnn/#typedefdef-mlnamedarraybufferviews
-
-// TODO(crbug.com/1382288): There is a build error for the C++ type
-// HeapVector<std::pair<String, NotShared<DOMArrayBufferView>>> generated for
-// IDL type record<DOMString, ArrayBufferView>. Use
-// V8UnionArrayBufferOrArrayBufferView as a workaround.
-typedef HeapVector<
-    std::pair<String, Member<V8UnionArrayBufferOrArrayBufferView>>>
+typedef HeapVector<std::pair<String, NotShared<DOMArrayBufferView>>>
     MLNamedArrayBufferViews;
 
 class MODULES_EXPORT MLGraph : public ScriptWrappable {
@@ -66,15 +59,23 @@ class MODULES_EXPORT MLGraph : public ScriptWrappable {
                     const MLNamedArrayBufferViews& outputs,
                     ScriptPromiseResolver* resolver);
 
+  // ComputeSync() has the similar function as ComputeAsync(). The difference is
+  // if there are no validation errors, it calls ComputeSyncImpl() implemented
+  // by an MLGraph backend that binds the array buffer views and executes the
+  // compiled platform graph synchronously in the caller's thread. This method
+  // is called by MLContext to implement MLContext.computeSync() method.
+  void ComputeSync(const MLNamedArrayBufferViews& inputs,
+                   const MLNamedArrayBufferViews& outputs,
+                   ExceptionState& exception_state);
+
  protected:
   explicit MLGraph(MLContext* context);
 
   // BuildAsync() should be called right after constructing a concrete
-  // MLGraph object. FakeMLGraphBackend::ValidateAndBuildAsync() in
-  // ml_graph_builder_test.cc gives an example. BuildAsync() validates the named
-  // outputs and initializes the input and output resources info. If there are
-  // no errors, it calls BuildAsyncImpl() implemented by an MLGraph backend that
-  // builds the platform specific graph.
+  // MLGraph object. BuildAsync() validates the named outputs and initializes
+  // the input and output resources info. If there are no errors, it calls
+  // BuildAsyncImpl() implemented by an MLGraph backend that builds the platform
+  // specific graph.
   void BuildAsync(const MLNamedOperands& named_outputs,
                   ScriptPromiseResolver* resolver);
 
@@ -87,15 +88,38 @@ class MODULES_EXPORT MLGraph : public ScriptWrappable {
   virtual void BuildAsyncImpl(const MLNamedOperands& outputs,
                               ScriptPromiseResolver* resolver) = 0;
 
+  // BuildSync() has the similar function as BuildAsync() and should also be
+  // called right after constructing a concrete MLGraph object. The difference
+  // is if there are no validation errors, it calls BuildSyncImpl() implemented
+  // by an MLGraph backend that builds the platform specific graph in the
+  // caller's thread synchronously.
+  MLGraph* BuildSync(const MLNamedOperands& named_outputs,
+                     ExceptionState& exception_state);
+
+  // An MLGraph backend should implement this method to build and compile a
+  // platform specific graph synchronously in the caller's thread. Once the
+  // platform graph is compiled, it should return a concrete MLGraph object.
+  // Otherwise, it should return a nullptr and throw a DOMException accordingly.
+  virtual MLGraph* BuildSyncImpl(const MLNamedOperands& named_outputs,
+                                 ExceptionState& exception_state) = 0;
+
   // An MLGraph backend should implement this method to execute the compiled
-  // platform graph asynchronously. The actual graph execution work
-  // should be handled by a worker thread without blocking the main thread. Once
-  // the execution of the platform graph is completed, the results should be
-  // produeced into the output buffers and the resolver should be resolved.
-  // Otherwise, the resolver should be rejected with a DOMException accordingly.
+  // platform graph asynchronously. The actual graph execution work should be
+  // handled by a worker thread without blocking the main thread. If no errors
+  // occurred, the resolver will be resolved and results will be stored in
+  // output buffers. Otherwise, the resolver will be rejected with a
+  // DOMException accordingly.
   virtual void ComputeAsyncImpl(const MLNamedArrayBufferViews& inputs,
                                 const MLNamedArrayBufferViews& outputs,
                                 ScriptPromiseResolver* resolver) = 0;
+
+  // An MLGraph backend should implement this method to execute the compiled
+  // platform graph synchronously in the caller's thread. Results will be stored
+  // in output buffers if no errors occurred. Otherwise, this method will throw
+  // a DOMException accordingly.
+  virtual void ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
+                               const MLNamedArrayBufferViews& outputs,
+                               ExceptionState& exception_state) = 0;
 
   Member<MLContext> ml_context_;
   bool resources_info_initialized_{false};

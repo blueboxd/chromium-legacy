@@ -64,7 +64,7 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
   Verify(UIKeyCommand.cr_reopenLastClosedTab, @"⇧⌘T",
          @"keyCommand_reopenLastClosedTab", IDS_IOS_KEYBOARD_REOPEN_CLOSED_TAB);
   Verify(UIKeyCommand.cr_find, @"⌘F", @"keyCommand_find",
-         IDS_IOS_KEYBOARD_FIND_IN_PAGE);
+         IDS_IOS_KEYBOARD_FIND);
   Verify(UIKeyCommand.cr_findNext, @"⌘G", @"keyCommand_findNext",
          IDS_IOS_KEYBOARD_FIND_NEXT);
   Verify(UIKeyCommand.cr_findPrevious, @"⇧⌘G", @"keyCommand_findPrevious",
@@ -109,16 +109,15 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
   Verify(UIKeyCommand.cr_showDownloads, @"⌥⌘L", @"keyCommand_showDownloads",
          IDS_IOS_KEYBOARD_SHOW_DOWNLOADS);
   Verify(UIKeyCommand.cr_showDownloads_2, @"⇧⌘J", @"keyCommand_showDownloads");
-  Verify(UIKeyCommand.cr_showFirstTab, @"⌘1", @"keyCommand_showFirstTab",
-         IDS_IOS_KEYBOARD_FIRST_TAB);
-  Verify(UIKeyCommand.cr_showTab2, @"⌘2", @"keyCommand_showTab2");
-  Verify(UIKeyCommand.cr_showTab3, @"⌘3", @"keyCommand_showTab3");
-  Verify(UIKeyCommand.cr_showTab4, @"⌘4", @"keyCommand_showTab4");
-  Verify(UIKeyCommand.cr_showTab5, @"⌘5", @"keyCommand_showTab5");
-  Verify(UIKeyCommand.cr_showTab6, @"⌘6", @"keyCommand_showTab6");
-  Verify(UIKeyCommand.cr_showTab7, @"⌘7", @"keyCommand_showTab7");
-  Verify(UIKeyCommand.cr_showTab8, @"⌘8", @"keyCommand_showTab8");
-  Verify(UIKeyCommand.cr_showLastTab, @"⌘9", @"keyCommand_showLastTab",
+  Verify(UIKeyCommand.cr_select1, @"⌘1", @"keyCommand_select1");
+  Verify(UIKeyCommand.cr_select2, @"⌘2", @"keyCommand_select2");
+  Verify(UIKeyCommand.cr_select3, @"⌘3", @"keyCommand_select3");
+  Verify(UIKeyCommand.cr_select4, @"⌘4", @"keyCommand_select4");
+  Verify(UIKeyCommand.cr_select5, @"⌘5", @"keyCommand_select5");
+  Verify(UIKeyCommand.cr_select6, @"⌘6", @"keyCommand_select6");
+  Verify(UIKeyCommand.cr_select7, @"⌘7", @"keyCommand_select7");
+  Verify(UIKeyCommand.cr_select8, @"⌘8", @"keyCommand_select8");
+  Verify(UIKeyCommand.cr_select9, @"⌘9", @"keyCommand_select9",
          IDS_IOS_KEYBOARD_LAST_TAB);
   Verify(UIKeyCommand.cr_reportAnIssue, @"⇧⌘I", @"keyCommand_reportAnIssue",
          IDS_IOS_KEYBOARD_REPORT_AN_ISSUE);
@@ -131,6 +130,9 @@ TEST_F(UIKeyCommandChromeTest, Factories) {
          IDS_IOS_KEYBOARD_GO_TO_TAB_GRID);
   Verify(UIKeyCommand.cr_clearBrowsingData, @"⇧⌘⌫",
          @"keyCommand_clearBrowsingData", IDS_IOS_KEYBOARD_CLEAR_BROWSING_DATA);
+  Verify(UIKeyCommand.cr_closeAll, @"⇧⌘W", @"keyCommand_closeAll",
+         IDS_IOS_KEYBOARD_CLOSE_ALL);
+  Verify(UIKeyCommand.cr_undo, @"⌘Z", @"keyCommand_undo");
 
   // Prior to iOS 15, RTL needs to be handled manually. Check it for key
   // commands that need to adapt.

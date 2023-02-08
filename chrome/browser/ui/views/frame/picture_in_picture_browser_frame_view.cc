@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/overlay/overlay_window_image_button.h"
@@ -25,6 +26,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
 #if !BUILDFLAG(IS_MAC)
@@ -33,21 +35,32 @@
 #endif
 
 #if BUILDFLAG(IS_LINUX)
+#include "chrome/browser/ui/views/frame/browser_frame_view_paint_utils_linux.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/wm/window_util.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/ui/frame/interior_resize_handler_targeter.h"
 #endif
 
 namespace {
 
-// TODO(https://crbug.com/1346734): Check whether any of the below should be
-// based on platform constants instead.
-
-constexpr int kWindowIconImageSize = 14;
-constexpr int kBackToTabImageSize = 14;
+constexpr int kWindowIconImageSize = 16;
+constexpr int kBackToTabImageSize = 16;
 
 // The height of the controls bar at the top of the window.
 constexpr int kTopControlsHeight = 30;
 
-constexpr int kWindowBorderThickness = 10;
+#if BUILDFLAG(IS_LINUX)
+// Frame border when window shadow is not drawn.
+constexpr int kFrameBorderThickness = 4;
+#endif
+
+constexpr int kResizeBorder = 10;
 constexpr int kResizeAreaCornerSize = 16;
 
 // The window has a smaller minimum size than normal Chrome windows.
@@ -85,13 +98,6 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   location_bar_model_ = std::make_unique<LocationBarModelImpl>(
       this, content::kMaxURLDisplayChars);
 
-  // Creates a window background with solid color.
-  // TODO(https://crbug.com/1346734): Need to figure out how to make this
-  // background color not overlap pip content. AddChildView() would cause it to
-  // overlap while now it never shows.
-  window_background_view_ = browser_view->contents_web_view()->AddChildViewAt(
-      std::make_unique<views::View>(), 0);
-
   // Creates a view that will hold all the control views.
   AddChildView(
       views::Builder<views::BoxLayoutView>()
@@ -112,6 +118,7 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
           .CopyAddressTo(&window_title_)
           .SetText(location_bar_model_->GetURLForDisplay())
           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+          .SetElideBehavior(gfx::ELIDE_HEAD)
           .Build());
   controls_container_view_->SetFlexForView(window_title_, 1);
 
@@ -136,7 +143,7 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
   back_to_tab_button_ = controls_container_view_->AddChildView(
       std::make_unique<BackToTabButton>(base::BindRepeating(
           [](PictureInPictureBrowserFrameView* frame_view) {
-            // TODO(https://crbug.com/1346734): Focus the original tab too.
+            PictureInPictureWindowManager::GetInstance()->FocusInitiator();
             PictureInPictureWindowManager::GetInstance()
                 ->ExitPictureInPicture();
           },
@@ -150,6 +157,20 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
                 ->ExitPictureInPicture();
           },
           base::Unretained(this))));
+
+#if BUILDFLAG(IS_LINUX)
+  frame_background_ = std::make_unique<views::FrameBackground>();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::window_util::InstallResizeHandleWindowTargeterForWindow(
+      frame->GetNativeWindow());
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  frame->GetNativeWindow()->SetEventTargeter(
+      std::make_unique<chromeos::InteriorResizeHandleTargeter>());
+#endif
 }
 
 PictureInPictureBrowserFrameView::~PictureInPictureBrowserFrameView() = default;
@@ -208,7 +229,7 @@ int PictureInPictureBrowserFrameView::NonClientHitTest(
 
   // Allow dragging and resizing the window.
   int window_component = GetHTComponentForFrame(
-      point, FrameBorderInsets(), kResizeAreaCornerSize, kResizeAreaCornerSize,
+      point, ResizeBorderInsets(), kResizeAreaCornerSize, kResizeAreaCornerSize,
       GetWidget()->widget_delegate()->CanResize());
   if (window_component != HTNOWHERE)
     return window_component;
@@ -249,24 +270,18 @@ gfx::Size PictureInPictureBrowserFrameView::GetMaximumSize() const {
 
 void PictureInPictureBrowserFrameView::OnThemeChanged() {
   const auto* color_provider = GetColorProvider();
-  window_background_view_->SetBackground(views::CreateSolidBackground(
-      color_provider->GetColor(kColorPipWindowBackground)));
   window_title_->SetEnabledColor(
       color_provider->GetColor(kColorPipWindowForeground));
   for (ContentSettingImageView* view : content_setting_views_)
     view->SetIconColor(color_provider->GetColor(kColorOmniboxResultsIcon));
 
-#if BUILDFLAG(IS_LINUX)
-  // If the top bar background is already drawn by window_frame_provider_, skip
-  // drawing it again below.
-  if (window_frame_provider_) {
-    BrowserNonClientFrameView::OnThemeChanged();
-    return;
-  }
-#endif
+#if !BUILDFLAG(IS_LINUX)
+  // On Linux the top bar background will be drawn in OnPaint().
   controls_container_view_->SetBackground(views::CreateSolidBackground(
       SkColorSetA(color_provider->GetColor(kColorPipWindowControlsBackground),
                   SK_AlphaOPAQUE)));
+#endif
+
   BrowserNonClientFrameView::OnThemeChanged();
 }
 
@@ -292,6 +307,19 @@ void PictureInPictureBrowserFrameView::AddedToWidget() {
   BrowserNonClientFrameView::AddedToWidget();
 }
 
+void PictureInPictureBrowserFrameView::RemovedFromWidget() {
+  if (GetWidget()->IsClosed())
+    return;
+
+  widget_observation_.Reset();
+
+#if !BUILDFLAG(IS_MAC)
+  GetWidget()->GetNativeWindow()->RemovePreTargetHandler(this);
+#endif
+
+  BrowserNonClientFrameView::RemovedFromWidget();
+}
+
 #if BUILDFLAG(IS_LINUX)
 gfx::Insets PictureInPictureBrowserFrameView::MirroredFrameBorderInsets()
     const {
@@ -302,7 +330,7 @@ gfx::Insets PictureInPictureBrowserFrameView::MirroredFrameBorderInsets()
 }
 
 gfx::Insets PictureInPictureBrowserFrameView::GetInputInsets() const {
-  return gfx::Insets(ShouldDrawFrameShadow() ? -kWindowBorderThickness : 0);
+  return gfx::Insets(ShouldDrawFrameShadow() ? -kResizeBorder : 0);
 }
 
 SkRRect PictureInPictureBrowserFrameView::GetRestoredClipRegion() const {
@@ -315,6 +343,9 @@ SkRRect PictureInPictureBrowserFrameView::GetRestoredClipRegion() const {
   float radius_dip = 0;
   if (window_frame_provider_) {
     radius_dip = window_frame_provider_->GetTopCornerRadiusDip();
+  } else {
+    radius_dip = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+        views::Emphasis::kHigh);
   }
   SkVector radii[4]{{radius_dip, radius_dip}, {radius_dip, radius_dip}, {}, {}};
   SkRRect clip;
@@ -429,6 +460,7 @@ PictureInPictureBrowserFrameView::GetContentSettingBubbleModelDelegate() {
   return browser->content_setting_bubble_model_delegate();
 }
 
+#if BUILDFLAG(IS_MAC)
 ///////////////////////////////////////////////////////////////////////////////
 // GeolocationManager::PermissionObserver implementations:
 void PictureInPictureBrowserFrameView::OnSystemPermissionUpdated(
@@ -436,6 +468,7 @@ void PictureInPictureBrowserFrameView::OnSystemPermissionUpdated(
   // Update icons if the macOS location permission is updated.
   UpdateContentSettingsIcons();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::WidgetObserver implementations:
@@ -495,12 +528,27 @@ void PictureInPictureBrowserFrameView::OnMouseEvent(ui::MouseEvent* event) {
 // views::View implementations:
 void PictureInPictureBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 #if BUILDFLAG(IS_LINUX)
+  // Draw the PiP window frame borders and shadows, including the top bar
+  // background.
   if (window_frame_provider_) {
-    // Draw the PiP window frame borders and shadows, including the top bar
-    // background.
     window_frame_provider_->PaintWindowFrame(
         canvas, GetLocalBounds(), GetTopAreaHeight(), ShouldPaintAsActive(),
         frame()->tiled_edges());
+  } else {
+    DCHECK(frame_background_);
+    frame_background_->set_frame_color(
+        GetFrameColor(BrowserFrameActiveState::kUseCurrent));
+    frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
+    frame_background_->set_is_active(ShouldPaintAsActive());
+    frame_background_->set_theme_image(GetFrameImage());
+    frame_background_->set_theme_image_y_inset(
+        ThemeProperties::kFrameHeightAboveTabs - GetTopAreaHeight());
+    frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
+    frame_background_->set_top_area_height(GetTopAreaHeight());
+    PaintRestoredFrameBorderLinux(
+        *canvas, *this, frame_background_.get(), GetRestoredClipRegion(),
+        ShouldDrawFrameShadow(), MirroredFrameBorderInsets(),
+        GetShadowValues());
   }
 #endif
   BrowserNonClientFrameView::OnPaint(canvas);
@@ -574,8 +622,20 @@ gfx::Insets PictureInPictureBrowserFrameView::FrameBorderInsets() const {
                              tiled_edges.bottom ? 0 : insets.bottom(),
                              tiled_edges.right ? 0 : insets.right());
   }
+  return GetRestoredFrameBorderInsetsLinux(
+      ShouldDrawFrameShadow(), gfx::Insets(kFrameBorderThickness),
+      frame()->tiled_edges(), GetShadowValues(), kResizeBorder);
+#else
+  return gfx::Insets();
 #endif
-  return gfx::Insets(kWindowBorderThickness);
+}
+
+gfx::Insets PictureInPictureBrowserFrameView::ResizeBorderInsets() const {
+#if BUILDFLAG(IS_LINUX)
+  return FrameBorderInsets();
+#else
+  return gfx::Insets(kResizeBorder);
+#endif
 }
 
 int PictureInPictureBrowserFrameView::GetTopAreaHeight() const {
@@ -585,7 +645,11 @@ int PictureInPictureBrowserFrameView::GetTopAreaHeight() const {
 #if BUILDFLAG(IS_LINUX)
 void PictureInPictureBrowserFrameView::SetWindowFrameProvider(
     ui::WindowFrameProvider* window_frame_provider) {
+  DCHECK(window_frame_provider);
   window_frame_provider_ = window_frame_provider;
+
+  // Only one of window_frame_provider_ and frame_background_ will be used.
+  frame_background_.reset();
 }
 
 bool PictureInPictureBrowserFrameView::ShouldDrawFrameShadow() const {
@@ -593,7 +657,18 @@ bool PictureInPictureBrowserFrameView::ShouldDrawFrameShadow() const {
              frame()->native_browser_frame())
       ->ShouldDrawRestoredFrameShadow();
 }
+
+// static
+gfx::ShadowValues PictureInPictureBrowserFrameView::GetShadowValues() {
+  int elevation = ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+      views::Emphasis::kMaximum);
+  return gfx::ShadowValue::MakeMdShadowValues(elevation);
+}
 #endif
+
+views::View* PictureInPictureBrowserFrameView::GetBackToTabButtonForTesting() {
+  return back_to_tab_button_;
+}
 
 BEGIN_METADATA(PictureInPictureBrowserFrameView, BrowserNonClientFrameView)
 END_METADATA

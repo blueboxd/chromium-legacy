@@ -10,16 +10,20 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/run_on_os_login_types.h"
@@ -48,7 +52,6 @@ enum class Site {
   kMinimalUi,
   kNotPromotable,
   kWco,
-  kIsolated,
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
@@ -62,7 +65,6 @@ enum class InstallableSite {
   kStandaloneNotStartUrl,
   kMinimalUi,
   kWco,
-  kIsolated,
   kFileHandler,
   kNoServiceWorker,
   kNotInstalled,
@@ -150,8 +152,7 @@ struct AppState {
            absl::optional<UserDisplayMode> user_display_mode,
            std::string manifest_launcher_icon_filename,
            bool is_installed_locally,
-           bool is_shortcut_created,
-           bool is_isolated);
+           bool is_shortcut_created);
   ~AppState();
   AppState(const AppState&);
   bool operator==(const AppState& other) const;
@@ -165,7 +166,6 @@ struct AppState {
   std::string manifest_launcher_icon_filename;
   bool is_installed_locally;
   bool is_shortcut_created;
-  bool is_isolated;
 };
 
 struct ProfileState {
@@ -256,6 +256,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void LaunchFromLaunchIcon(Site site);
   void LaunchFromMenuOption(Site site);
   void LaunchFromPlatformShortcut(Site site);
+#if BUILDFLAG(IS_MAC)
+  void LaunchFromAppShimFallback(Site site);
+#endif
   void OpenAppSettingsFromChromeApps(Site site);
   void OpenAppSettingsFromAppMenu(Site site);
   void CreateShortcutsFromList(Site site);
@@ -281,6 +284,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void UninstallFromAppSettings(Site site);
   void UninstallPolicyApp(Site site);
   void UninstallFromOs(Site site);
+#if BUILDFLAG(IS_MAC)
+  void CorruptAppShim(Site site);
+#endif
 
   // State Check Actions:
   void CheckAppListEmpty();
@@ -316,6 +322,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckUserDisplayModeInternal(UserDisplayMode user_display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
+  void CheckWindowNotCreated();
   void CheckWindowControlsOverlay(Site site, IsOn is_on);
   void CheckWindowControlsOverlayToggle(Site site, IsShown is_shown);
   void CheckWindowDisplayBrowser();
@@ -385,6 +392,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void SetRunOnOsLoginMode(Site site, apps::RunOnOsLoginMode login_mode);
 
   void LaunchAppStartupBrowserCreator(const AppId& app_id);
+#if BUILDFLAG(IS_MAC)
+  void LaunchFromAppShim(Site site, const std::vector<GURL>& urls);
+#endif
 
   void CheckAppSettingsAppState(Profile* profile, const AppState& app_state);
 
@@ -443,12 +453,12 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   std::unique_ptr<ShortcutOverrideForTesting::BlockingRegistration>
       override_registration_;
 
-  std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_test_server_ =
-      nullptr;
   std::unique_ptr<base::RunLoop> window_controls_overlay_callback_for_testing_ =
       nullptr;
 
-  base::flat_set<Site> site_remember_deny_open_file;
+  base::flat_set<Site> site_remember_deny_open_file_;
+  base::AutoReset<absl::optional<web_app::AppIdentityUpdate>>
+      update_dialog_scope_;
 };
 
 // Simple base browsertest class usable by all non-sync web app integration

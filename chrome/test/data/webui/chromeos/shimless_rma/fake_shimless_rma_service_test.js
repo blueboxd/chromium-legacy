@@ -6,9 +6,9 @@ import {fakeCalibrationComponentsWithFails} from 'chrome://shimless-rma/fake_dat
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationError, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningError, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, ShutdownMethod, State, UpdateErrorCode, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
 
-import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-export function fakeShimlessRmaServiceTestSuite() {
+suite('fakeShimlessRmaServiceTestSuite', function() {
   /** @type {?FakeShimlessRmaService} */
   let service = null;
 
@@ -924,4 +924,4 @@ export function fakeShimlessRmaServiceTestSuite() {
     return service.triggerFinalizationObserver(
         FinalizationStatus.kInProgress, 0.5, FinalizationError.kUnknown, 0);
   });
-}
+});

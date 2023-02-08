@@ -9,7 +9,6 @@
 #include <numeric>
 
 #include "base/numerics/checked_math.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
@@ -1915,6 +1914,215 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
   }
 }
 
+MLOperand* BuildResample2d(V8TestingScope& scope,
+                           MLGraphBuilder* builder,
+                           const MLOperand* input,
+                           const MLResample2dOptions* options) {
+  auto* output = builder->resample2d(input, options, scope.GetExceptionState());
+  EXPECT_NE(output, nullptr);
+  EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
+  EXPECT_EQ(output->Type(), input->Type());
+  auto* resample = output->Operator();
+  EXPECT_NE(resample, nullptr);
+  EXPECT_EQ(resample->Kind(), MLOperator::OperatorKind::kResample);
+  EXPECT_EQ(resample->IsConnected(), true);
+  EXPECT_NE(resample->Options(), nullptr);
+  return output;
+}
+
+TEST_F(MLGraphBuilderTest, Resample2dTest) {
+  V8TestingScope scope;
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  {
+    // Test building resample2d with default options.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    EXPECT_TRUE(options->hasMode());
+    EXPECT_EQ(options->mode(), V8MLInterpolationMode::Enum::kNearestNeighbor);
+    EXPECT_FALSE(options->hasScales());
+    EXPECT_FALSE(options->hasSizes());
+    EXPECT_FALSE(options->hasAxes());
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 2, 4}));
+  }
+  {
+    // Test building resample2d with scales = {2.0, 2.0}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 4, 8}));
+  }
+  {
+    // Test building resample2d with scales = {0.5, 0.5}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({0.5, 0.5});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 2, 2}));
+  }
+  {
+    // Test building resample2d with sizes = {3, 6}.
+    // When the target sizes are specified, scales argument is
+    // ignored.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    options->setSizes({3, 6});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 1, 3, 6}));
+  }
+  {
+    // Test building resample2d with scales = {1.0, 2.0} and axes = {0, 1}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, 2.0});
+    options->setAxes({0, 1});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 2, 2, 4}));
+  }
+  {
+    // Test building resample2d with scales = {2.0, 2.0} and axes = {1, 2}.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    options->setAxes({1, 2});
+    auto* output = BuildResample2d(scope, builder, input, options);
+    EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({1, 2, 4, 4}));
+  }
+  {
+    // Test throwing error when the input is not a 4-D tensor.
+    auto* input = BuildInput(scope, builder, "input", {2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The input must be a 4-D tensor.");
+  }
+  {
+    // Test throwing error when the length of scales is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, 1.0, 2.0, 2.0});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of scales should be 2.");
+  }
+  {
+    // Test throwing error when the scale is negative.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({1.0, -2.0});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "All scales should be greater than 0.");
+  }
+  {
+    // Test throwing error when the length of sizes is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setSizes({1, 1, 4, 6});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of sizes should be 2.");
+  }
+  {
+    // Test throwing error when the scale height is too large.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({232433, 4});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The scale height is too large.");
+  }
+  {
+    // Test throwing error when the scale width is too large.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({20, 434324});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The scale width is too large.");
+  }
+  {
+    // Test throwing error when the length of axes is not 2.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({0, 1, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The length of axes should be 2.");
+  }
+  {
+    // Test throwing error when the values of axes are inconsecutive.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({0, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The values of axes are invalid.");
+  }
+  {
+    // Test throwing error when one value of axes is negative.
+    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
+                             V8MLOperandType::Enum::kFloat32);
+    auto* options = MLResample2dOptions::Create();
+    options->setAxes({-1, 2});
+    auto* output =
+        builder->resample2d(input, options, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The values of axes are invalid.");
+  }
+}
+
 MLOperand* BuildClamp(V8TestingScope& scope,
                       MLGraphBuilder* builder,
                       const MLOperand* input,
@@ -2033,6 +2241,14 @@ class FakeMLGraphBackend final : public MLGraph {
     graph->BuildAsync(named_outputs, resolver);
   }
 
+  // Create and build a FakeMLGraphBackend object synchronously.
+  static MLGraph* ValidateAndBuildSync(MLContext* context,
+                                       const MLNamedOperands& named_outputs,
+                                       ExceptionState& exception_state) {
+    return MakeGarbageCollected<FakeMLGraphBackend>(context)->BuildSync(
+        named_outputs, exception_state);
+  }
+
   // The constructor shouldn't be called directly. The callers should use
   // ValidateAndBuildAsync() method instead.
   explicit FakeMLGraphBackend(MLContext* context) : MLGraph(context) {}
@@ -2040,19 +2256,34 @@ class FakeMLGraphBackend final : public MLGraph {
   ~FakeMLGraphBackend() override = default;
 
  private:
-  // Simpliy resolve the promise with this FakeMLGraphBackend object for testing
-  // the input and output resources info.
+  // Resolve the promise with this FakeMLGraphBackend object for testing the
+  // input and output resources info.
   void BuildAsyncImpl(const MLNamedOperands& named_outputs,
                       ScriptPromiseResolver* resolver) override {
     resolver->Resolve(this);
   }
 
-  // Simpliy resolve the promise for testing the validation of inputs and
-  // outputs in MLGraph::ComputeAsync().
+  // Return this FakeMLGraphBackend object for testing the input and output
+  // resources info.
+  MLGraph* BuildSyncImpl(const MLNamedOperands& named_outputs,
+                         ExceptionState& exception_state) override {
+    return this;
+  }
+
+  // Resolve the promise for testing the validation of inputs and outputs in
+  // MLGraph::ComputeAsync().
   void ComputeAsyncImpl(const MLNamedArrayBufferViews& inputs,
                         const MLNamedArrayBufferViews& outputs,
                         ScriptPromiseResolver* resolver) override {
     resolver->Resolve();
+  }
+
+  // Just return for testing the validation of inputs and outputs in
+  // MLGraph::ComputeSync().
+  void ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
+                       const MLNamedArrayBufferViews& outputs,
+                       ExceptionState& exception_state) override {
+    return;
   }
 };
 
@@ -2062,21 +2293,137 @@ FakeMLGraphBackend* ToFakeMLGraphBackend(V8TestingScope* scope,
       scope->GetIsolate(), value.V8Value(), scope->GetExceptionState());
 }
 
-TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
+MLGraph* ToMLGraph(V8TestingScope* scope, ScriptValue value) {
+  return NativeValueTraits<MLGraph>::NativeValue(
+      scope->GetIsolate(), value.V8Value(), scope->GetExceptionState());
+}
+
+std::string ExecutionModeParamToString(
+    const ::testing::TestParamInfo<ExecutionMode>& execution_mode) {
+  switch (execution_mode.param) {
+    case ExecutionMode::kAsync:
+      return "Async";
+    case ExecutionMode::kSync:
+      return "Sync";
+  }
+}
+
+MLGraphTestBase::BuildResult MLGraphTestBase::BuildGraph(
+    V8TestingScope& scope,
+    MLGraphBuilder* builder,
+    const MLNamedOperands& named_operands) {
+  switch (GetParam()) {
+    case ExecutionMode::kAsync: {
+      ScriptPromiseTester tester(
+          scope.GetScriptState(),
+          builder->buildAsync(scope.GetScriptState(), named_operands,
+                              scope.GetExceptionState()));
+      tester.WaitUntilSettled();
+      if (tester.IsFulfilled()) {
+        return BuildResult{.graph = ToMLGraph(&scope, tester.Value()),
+                           .exception = nullptr};
+      } else {
+        return BuildResult{.graph = nullptr,
+                           .exception = V8DOMException::ToImplWithTypeCheck(
+                               scope.GetIsolate(), tester.Value().V8Value())};
+      }
+    }
+    case ExecutionMode::kSync: {
+      auto* graph =
+          builder->buildSync(named_operands, scope.GetExceptionState());
+      if (graph) {
+        return BuildResult{.graph = static_cast<MLGraph*>(graph),
+                           .exception = nullptr};
+      } else {
+        return BuildResult{
+            .graph = nullptr,
+            .exception = MakeGarbageCollected<DOMException>(
+                scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+                scope.GetExceptionState().Message())};
+      }
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+DOMException* MLGraphTestBase::ComputeGraph(
+    V8TestingScope& scope,
+    MLGraph* graph,
+    const MLNamedArrayBufferViews& inputs,
+    const MLNamedArrayBufferViews& outputs) {
+  switch (GetParam()) {
+    case ExecutionMode::kAsync: {
+      auto* resolver =
+          MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+      ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+      graph->ComputeAsync(inputs, outputs, resolver);
+      tester.WaitUntilSettled();
+      if (tester.IsFulfilled()) {
+        return nullptr;
+      } else {
+        return V8DOMException::ToImplWithTypeCheck(scope.GetIsolate(),
+                                                   tester.Value().V8Value());
+      }
+    }
+    case ExecutionMode::kSync: {
+      graph->ComputeSync(inputs, outputs, scope.GetExceptionState());
+      if (scope.GetExceptionState().HadException()) {
+        return MakeGarbageCollected<DOMException>(
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+            scope.GetExceptionState().Message());
+      } else {
+        return nullptr;
+      }
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+namespace {
+
+// Helper class to create the FakeMLGraphBackend that is intended to test
+// the GraphBuilder validation steps.
+class FakeMLGraphBuilderBackend : public MLGraphBuilder::BackendForTesting {
+ public:
+  void BuildGraphAsyncImpl(MLContext* context,
+                           const MLNamedOperands& named_outputs,
+                           ScriptPromiseResolver* resolver) override {
+    FakeMLGraphBackend::ValidateAndBuildAsync(context, named_outputs, resolver);
+  }
+
+  MLGraph* BuildGraphSyncImpl(MLContext* context,
+                              const MLNamedOperands& named_outputs,
+                              ExceptionState& exception_state) override {
+    return FakeMLGraphBackend::ValidateAndBuildSync(context, named_outputs,
+                                                    exception_state);
+  }
+};
+
+}  // namespace
+
+// Helper class to test FakeMLGraphBackend.
+class FakeMLGraphTest : public MLGraphTestBase {
+ public:
+  void SetUp() override {
+    // Ensure MLGraphBuilder builds a FakeMLGraphBackend.
+    MLGraphBuilder::SetBackendForTesting(&backend_for_testing);
+  }
+
+  void TearDown() override { MLGraphBuilder::SetBackendForTesting(nullptr); }
+
+ private:
+  FakeMLGraphBuilderBackend backend_for_testing;
+};
+
+TEST_P(FakeMLGraphTest, BuildTest) {
   V8TestingScope scope;
   auto* builder = CreateMLGraphBuilder(scope);
-  auto* script_state = scope.GetScriptState();
   {
     // Test throwing exception if the named outputs is empty.
     MLNamedOperands named_outputs;
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(),
-                                              named_outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto [graph, exception] = BuildGraph(scope, builder, named_outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2087,14 +2434,7 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
     // Test throwing exception if the named output is an input operand.
     auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
                              V8MLOperandType::Enum::kFloat32);
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(),
-                                              {{"output", input}}, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto [graph, exception] = BuildGraph(scope, builder, {{"output", input}});
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2105,14 +2445,8 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
     // Test throwing exception if the named output is a constant operand.
     auto* constant = BuildConstant(scope, builder, {3, 4, 5},
                                    V8MLOperandType::Enum::kFloat32);
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(),
-                                              {{"output", constant}}, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto [graph, exception] =
+        BuildGraph(scope, builder, {{"output", constant}});
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2126,15 +2460,8 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
                              V8MLOperandType::Enum::kFloat32);
     auto* constant = BuildConstant(scope, builder, {3, 4, 5},
                                    V8MLOperandType::Enum::kFloat32);
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(
-        builder->GetContext(), {{"output1", input}, {"output2", constant}},
-        resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto [graph, exception] =
+        BuildGraph(scope, builder, {{"output1", input}, {"output2", constant}});
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2150,14 +2477,7 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
     auto* c = builder->add(a, b, scope.GetExceptionState());
     ASSERT_NE(c, nullptr);
 
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(), {{"c", c}},
-                                              resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto [graph, exception] = BuildGraph(scope, builder, {{"c", c}});
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2172,13 +2492,7 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
                          V8MLOperandType::Enum::kFloat32);
     auto* c = BuildGemm(scope, builder, a, b);
 
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(), {{"c", c}},
-                                              resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsFulfilled());
-    auto* graph = ToFakeMLGraphBackend(&scope, tester.Value());
+    auto [graph, exception] = BuildGraph(scope, builder, {{"c", c}});
     EXPECT_NE(graph, nullptr);
     const auto& inputs = graph->GetInputResourcesInfo();
     EXPECT_EQ(inputs.size(), static_cast<uint32_t>(2));
@@ -2205,13 +2519,7 @@ TEST_F(MLGraphBuilderTest, BuildAsyncTest) {
     auto* output = builder->relu(add, scope.GetExceptionState());
     ASSERT_NE(output, nullptr);
 
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(),
-                                              {{"output", output}}, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsFulfilled());
-    auto* graph = ToFakeMLGraphBackend(&scope, tester.Value());
+    auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
     EXPECT_NE(graph, nullptr);
     const auto& inputs = graph->GetInputResourcesInfo();
     EXPECT_EQ(inputs.size(), static_cast<uint32_t>(1));
@@ -2229,52 +2537,35 @@ struct ArrayBufferViewInfo {
   size_t number_of_elements;
   V8MLOperandType::Enum type;
 
-  // TODO(crbug.com/1382288): Return a DOMArrayBufferView.
-  V8UnionArrayBufferOrArrayBufferView* ToArrayBufferView() {
-    return MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-        CreateDOMArrayBufferView(number_of_elements, type));
+  NotShared<DOMArrayBufferView> ToArrayBufferView() {
+    return CreateDOMArrayBufferView(number_of_elements, type);
   }
 };
 
 // Helper function to create an ArrayBufferView given an operand.
-V8UnionArrayBufferOrArrayBufferView* CreateArrayBufferViewForOperand(
+NotShared<DOMArrayBufferView> CreateArrayBufferViewForOperand(
     const MLOperand* operand) {
-  return MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-      CreateDOMArrayBufferView(operand->NumberOfElements(), operand->Type()));
+  return CreateDOMArrayBufferView(operand->NumberOfElements(), operand->Type());
 }
 
-TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
+TEST_P(FakeMLGraphTest, ComputeTest) {
   V8TestingScope scope;
   auto* builder = CreateMLGraphBuilder(scope);
-  auto* script_state = scope.GetScriptState();
   // Build a fake graph represents computation 'c = a * b';
   auto* a =
       BuildInput(scope, builder, "a", {3, 4}, V8MLOperandType::Enum::kFloat32);
   auto* b =
       BuildInput(scope, builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32);
   auto* c = BuildGemm(scope, builder, a, b);
-  auto* graph_build_resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromiseTester graph_build_tester(script_state,
-                                         graph_build_resolver->Promise());
-  FakeMLGraphBackend::ValidateAndBuildAsync(builder->GetContext(), {{"c", c}},
-                                            graph_build_resolver);
-  graph_build_tester.WaitUntilSettled();
-  DCHECK(graph_build_tester.IsFulfilled());
-  auto* graph = ToFakeMLGraphBackend(&scope, graph_build_tester.Value());
+  auto [graph, build_exception] = BuildGraph(scope, builder, {{"c", c}});
   DCHECK_NE(graph, nullptr);
+  DCHECK_EQ(build_exception, nullptr);
   {
     // Test throwing exception if the inputs is empty.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2284,17 +2575,11 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the number of inputs doesn't match.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2304,17 +2589,11 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the outputs is empty.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2324,19 +2603,13 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the number of outputs doesn't match.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
     outputs.emplace_back("d", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2346,19 +2619,13 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the input name is unknown.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("invalid-input-name",
                         CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2368,19 +2635,13 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the output name is unknown.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("invalid-output-name",
                          CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2390,8 +2651,6 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the input array buffer view type is wrong.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back(
         "a", ArrayBufferViewInfo{.number_of_elements = 12,
@@ -2400,11 +2659,7 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2414,8 +2669,6 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the input array buffer view size is wrong.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back(
         "a", ArrayBufferViewInfo{.number_of_elements = 10,
@@ -2424,11 +2677,7 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
     MLNamedArrayBufferViews outputs;
     outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2438,8 +2687,6 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the output array buffer view type is wrong.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
@@ -2448,11 +2695,7 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
         "c", ArrayBufferViewInfo{.number_of_elements = 9,
                                  .type = V8MLOperandType::Enum::kInt32}
                  .ToArrayBufferView());
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2462,8 +2705,6 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
   }
   {
     // Test throwing exception if the output array buffer view size is wrong.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
     MLNamedArrayBufferViews inputs;
     inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
     inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
@@ -2472,11 +2713,7 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
         "c", ArrayBufferViewInfo{.number_of_elements = 8,
                                  .type = V8MLOperandType::Enum::kFloat32}
                  .ToArrayBufferView());
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
+    auto* exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
               DOMException::GetErrorName(DOMExceptionCode::kDataError));
@@ -2484,54 +2721,12 @@ TEST_F(MLGraphBuilderTest, MLNamedArrayBufferViewsValidationTest) {
               "Invalid outputs: The byte length (32) of the array buffer view "
               "with name \"c\" doesn't match the expected byte length (36).");
   }
-  {
-    // Test throwing exception if the input is not an array buffer view object.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    MLNamedArrayBufferViews inputs;
-    inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
-    inputs.emplace_back(
-        "b", MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                 CreateDOMArrayBufferView(12, V8MLOperandType::Enum::kFloat32)
-                     ->buffer()));
-    MLNamedArrayBufferViews outputs;
-    outputs.emplace_back("c", CreateArrayBufferViewForOperand(c));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
-    EXPECT_NE(exception, nullptr);
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
-    EXPECT_EQ(exception->message(),
-              "Invalid inputs: The object with name \"b\" is not an "
-              "ArrayBufferView.");
-  }
-  {
-    // Test throwing exception if the output is not an array buffer view object.
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-    ScriptPromiseTester tester(script_state, resolver->Promise());
-    MLNamedArrayBufferViews inputs;
-    inputs.emplace_back("a", CreateArrayBufferViewForOperand(a));
-    inputs.emplace_back("b", CreateArrayBufferViewForOperand(b));
-    MLNamedArrayBufferViews outputs;
-    outputs.emplace_back(
-        "c", MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferView>(
-                 CreateDOMArrayBufferView(9, V8MLOperandType::Enum::kFloat32)
-                     ->buffer()));
-    graph->ComputeAsync(inputs, outputs, resolver);
-    tester.WaitUntilSettled();
-    EXPECT_TRUE(tester.IsRejected());
-    auto* exception = V8DOMException::ToImplWithTypeCheck(
-        scope.GetIsolate(), tester.Value().V8Value());
-    EXPECT_NE(exception, nullptr);
-    EXPECT_EQ(exception->name(),
-              DOMException::GetErrorName(DOMExceptionCode::kDataError));
-    EXPECT_EQ(exception->message(),
-              "Invalid outputs: The object with name \"c\" is not an "
-              "ArrayBufferView.");
-  }
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         FakeMLGraphTest,
+                         ::testing::Values(ExecutionMode::kAsync,
+                                           ExecutionMode::kSync),
+                         ExecutionModeParamToString);
 
 }  // namespace blink

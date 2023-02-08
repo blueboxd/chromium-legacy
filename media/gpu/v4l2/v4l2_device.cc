@@ -1480,16 +1480,6 @@ absl::optional<struct v4l2_format> V4L2Queue::SetModifierFormat(
     constexpr uint32_t kNV12UBWCFourcc = v4l2_fourcc('Q', '0', '8', 'C');
     auto format = SetFormat(kNV12UBWCFourcc, size, 0);
 
-    // TODO(b/170469464) The fourcc is changing from the downstream (Q128) to
-    // the upstream (Q08C).  Attempt with Q08C, then fall back to Q128.
-    // Remove once the ChromeOS kernel can handle Q08C.
-    // ------------------------ cut --------------------------------
-    if (format)
-      return format;
-
-    const uint32_t v4l2_pix_fmt_nv12_ubwc = v4l2_fourcc('Q', '1', '2', '8');
-    format = SetFormat(v4l2_pix_fmt_nv12_ubwc, size, 0);
-    // ------------------------ cut --------------------------------
     if (!format)
       VPLOGF(1) << "Failed to set magic modifier format.";
     return format;
@@ -1588,6 +1578,16 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
       return V4L2_PIX_FMT_H264_SLICE;
     else
       return V4L2_PIX_FMT_H264;
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+  } else if (profile == HEVCPROFILE_MAIN) {
+    if (slice_based) {
+      DVLOGF(1) << "Unsupported profile for slice based decode: "
+                << GetProfileName(profile);
+      return 0;
+    } else {
+      return V4L2_PIX_FMT_HEVC;
+    }
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     if (slice_based)
       return V4L2_PIX_FMT_VP8_FRAME;
@@ -1678,6 +1678,11 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
       case VideoCodec::kH264:
         query_id = V4L2_CID_MPEG_VIDEO_H264_PROFILE;
         break;
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+      case VideoCodec::kHEVC:
+        query_id = V4L2_CID_MPEG_VIDEO_HEVC_PROFILE;
+        break;
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
       case VideoCodec::kVP8:
         query_id = V4L2_CID_MPEG_VIDEO_VP8_PROFILE;
         break;
@@ -1729,6 +1734,17 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
         };
       }
       break;
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+    case V4L2_PIX_FMT_HEVC:
+      if (!get_supported_profiles(VideoCodec::kHEVC, &profiles)) {
+        DLOG(WARNING) << "Driver doesn't support QUERY HEVC profiles, "
+                      << "use default value, Main";
+        profiles = {
+            HEVCPROFILE_MAIN,
+        };
+      }
+      break;
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
     case V4L2_PIX_FMT_VP8:
     case V4L2_PIX_FMT_VP8_FRAME:
       profiles = {VP8PROFILE_ANY};
@@ -2147,6 +2163,13 @@ V4L2Device::EnumerateSupportedDecodeProfiles(const size_t num_formats,
     if (std::find(pixelformats, pixelformats + num_formats, pixelformat) ==
         pixelformats + num_formats)
       continue;
+
+    // Skip AV1 decoder profiles if kChromeOSHWAV1Decoder is disabled.
+    if ((pixelformat == V4L2_PIX_FMT_AV1 ||
+         pixelformat == V4L2_PIX_FMT_AV1_FRAME) &&
+        !base::FeatureList::IsEnabled(kChromeOSHWAV1Decoder)) {
+      continue;
+    }
 
     VideoDecodeAccelerator::SupportedProfile profile;
     GetSupportedResolution(pixelformat, &profile.min_resolution,

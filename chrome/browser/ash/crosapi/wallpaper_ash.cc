@@ -13,7 +13,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
@@ -90,7 +90,7 @@ void WallpaperAsh::SetWallpaper(mojom::WallpaperSettingsPtr wallpaper_settings,
                                 const std::string& extension_name,
                                 SetWallpaperCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CHECK(chromeos::LoginState::Get()->IsUserLoggedIn());
+  CHECK(ash::LoginState::Get()->IsUserLoggedIn());
   // Prevent any in progress decodes from changing wallpaper.
   weak_ptr_factory_.InvalidateWeakPtrs();
   // Notify the last pending request, if any, that it is canceled.

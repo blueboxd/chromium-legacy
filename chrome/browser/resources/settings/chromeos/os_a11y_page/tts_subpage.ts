@@ -21,7 +21,7 @@ import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resource
 import {DomRepeat, DomRepeatEvent, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from '../os_languages_page/languages_browser_proxy.js';
 import {routes} from '../os_route.js';
@@ -191,15 +191,15 @@ class SettingsTtsSubpageElement extends SettingsTtsSubpageElementBase {
     // Populate the preview text with textToSpeechPreviewInput. Users can change
     // this to their own value later.
     this.previewText_ = this.i18n('textToSpeechPreviewInput');
-    this.addWebUIListener(
+    this.addWebUiListener(
         'all-voice-data-updated',
         (voices: TtsHandlerVoice[]) => this.populateVoiceList_(voices));
     this.ttsBrowserProxy_.getAllTtsVoiceData();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'tts-extensions-updated',
         (extensions: TtsHandlerExtension[]) =>
             this.populateExtensionList_(extensions));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'tts-preview-state-changed',
         (isSpeaking: boolean) => this.onTtsPreviewStateChanged_(isSpeaking));
     this.ttsBrowserProxy_.getTtsExtensions();
@@ -437,13 +437,13 @@ class SettingsTtsSubpageElement extends SettingsTtsSubpageElementBase {
     this.$.previewVoiceOptions.render();
 
     // Set something if nothing exists. This useful for new users where
-    // sometimes browserProxy.getProspectiveUILanguage() does not complete the
+    // sometimes browserProxy.getProspectiveUiLanguage() does not complete the
     // callback.
     if (!this.defaultPreviewVoice) {
       this.set('defaultPreviewVoice', this.getBestVoiceForLocale_(allVoices));
     }
 
-    this.langBrowserProxy_.getProspectiveUILanguage().then(
+    this.langBrowserProxy_.getProspectiveUiLanguage().then(
         prospectiveUILanguage => {
           let result: string = '';
           if (prospectiveUILanguage && prospectiveUILanguage !== '' &&

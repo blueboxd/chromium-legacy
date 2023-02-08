@@ -50,4 +50,29 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
   EXPECT_TRUE(shadow_element->LayoutObjectIsNeeded(*style));
 }
 
+TEST_F(ProgressShadowElementTest, OnlyChangeDirectionOnShadowElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <progress id='prog' style='-webkit-appearance:none; writing-mode:vertical-lr; direction: ltr;' />
+  )HTML");
+
+  auto* progress =
+      To<HTMLProgressElement>(GetDocument().getElementById("prog"));
+  ASSERT_TRUE(progress);
+
+  auto* shadow_element = To<Element>(progress->GetShadowRoot()->firstChild());
+  ASSERT_TRUE(shadow_element);
+
+  GetDocument().View()->UpdateAllLifecyclePhasesForTest();
+  progress->SetForceReattachLayoutTree();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().GetStyleEngine().RecalcStyle();
+
+  EXPECT_TRUE(progress->GetComputedStyle());
+  EXPECT_EQ(progress->GetComputedStyle()->Direction(), TextDirection::kLtr);
+
+  EXPECT_TRUE(shadow_element->GetComputedStyle());
+  EXPECT_EQ(shadow_element->GetComputedStyle()->Direction(),
+            TextDirection::kRtl);
+}
+
 }  // namespace blink

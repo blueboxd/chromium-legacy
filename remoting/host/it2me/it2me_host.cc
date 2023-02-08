@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "components/policy/policy_constants.h"
@@ -275,6 +275,9 @@ void It2MeHost::ConnectOnNetworkThread(
 
   // Set up the desktop environment options.
   DesktopEnvironmentOptions options(DesktopEnvironmentOptions::CreateDefault());
+#if defined(REMOTING_USE_WAYLAND)
+  options.desktop_capture_options()->set_prefer_cursor_embedded(true);
+#endif
   options.set_enable_user_interface(enable_dialogs_);
   options.set_enable_notifications(enable_notifications_);
   options.set_terminate_upon_input(terminate_upon_input_);
@@ -717,7 +720,7 @@ void It2MeHost::ValidateConnectionDetails(
         base::BindOnce(&It2MeHost::OnConfirmationResult, base::Unretained(this),
                        std::move(result_callback)));
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(result_callback), ValidationResult::SUCCESS));
   }

@@ -12,6 +12,7 @@
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
@@ -74,7 +75,6 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
       {"shoppingListUntrackPriceButtonDescription",
        IDS_PRICE_TRACKING_UNTRACK_PRODUCT_ACCESSIBILITY},
-      {"folderSort", IDS_BOOKMARKS_FOLDER_SORT},
       {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
       {"allBookmarks", IDS_BOOKMARKS_ALL_BOOKMARKS},
       {"priceTrackingLabel", IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS},
@@ -82,7 +82,18 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       {"sortOldest", IDS_BOOKMARKS_SORT_OLDEST},
       {"sortAlphabetically", IDS_BOOKMARKS_SORT_ALPHABETICALLY},
       {"sortReverseAlphabetically", IDS_BOOKMARKS_SORT_REVERSE_ALPHABETICALLY},
+      {"visualView", IDS_BOOKMARKS_VISUAL_VIEW},
+      {"compactView", IDS_BOOKMARKS_COMPACT_VIEW},
       {"sortMenuA11yLabel", IDS_BOOKMARKS_SORT_MENU_A11Y_LABEL},
+      {"createNewFolderA11yLabel", IDS_BOOKMARKS_CREATE_NEW_FOLDER_A11Y_LABEL},
+      {"editBookmarkListA11yLabel",
+       IDS_BOOKMARKS_EDIT_BOOKMARK_LIST_A11Y_LABEL},
+      {"cancelA11yLabel", IDS_CANCEL},
+      {"emptyTitle", IDS_BOOKMARKS_EMPTY_STATE_TITLE},
+      {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
+      {"searchBookmarks", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
+      {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
+      {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
   };
   for (const auto& str : kLocalizedStrings)
     webui::AddLocalizedString(source, str.name, str.id);
@@ -95,6 +106,13 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
       "bookmarksDragAndDropEnabled",
       prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled));
 
+  bookmarks::BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
+  source->AddString(
+      "otherBookmarksId",
+      base::NumberToString(bookmark_model ? bookmark_model->other_node()->id()
+                                          : -1));
+
   ReadingListModel* const reading_list_model =
       ReadingListModelFactory::GetForBrowserContext(profile);
   source->AddBoolean(
@@ -104,6 +122,9 @@ ReadingListUI::ReadingListUI(content::WebUI* web_ui)
   source->AddBoolean("readAnythingEnabled", features::IsReadAnythingEnabled());
   source->AddBoolean("unifiedSidePanel",
                      base::FeatureList::IsEnabled(features::kUnifiedSidePanel));
+
+  source->AddBoolean("canModifyBookmarks", !profile->IsGuestSession() &&
+                                               !profile->IsIncognitoProfile());
 
   source->AddBoolean(
       "showPowerBookmarks",
@@ -174,7 +195,7 @@ void ReadingListUI::CreatePageHandler(
     mojo::PendingReceiver<read_anything::mojom::PageHandler> receiver) {
   DCHECK(page);
   read_anything_page_handler_ = std::make_unique<ReadAnythingPageHandler>(
-      std::move(page), std::move(receiver));
+      std::move(page), std::move(receiver), web_ui());
 }
 
 void ReadingListUI::BindInterface(
@@ -182,6 +203,25 @@ void ReadingListUI::BindInterface(
         receiver) {
   shopping_list_factory_receiver_.reset();
   shopping_list_factory_receiver_.Bind(std::move(receiver));
+}
+
+void ReadingListUI::BindInterface(
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
+        pending_receiver) {
+  if (help_bubble_handler_factory_receiver_.is_bound())
+    help_bubble_handler_factory_receiver_.reset();
+  help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
+void ReadingListUI::CreateHelpBubbleHandler(
+    mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
+  help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
+      std::move(handler), std::move(client), web_ui()->GetWebContents(),
+      std::vector<ui::ElementIdentifier>{
+          kAddCurrentTabToReadingListElementId,
+          kSidePanelReadingListUnreadElementId,
+      });
 }
 
 void ReadingListUI::CreateShoppingListHandler(

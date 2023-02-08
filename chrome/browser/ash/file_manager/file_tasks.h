@@ -126,6 +126,9 @@ extern const char kActionIdWebDriveOfficeWord[];
 extern const char kActionIdWebDriveOfficeExcel[];
 extern const char kActionIdWebDriveOfficePowerPoint[];
 extern const char kActionIdOpenInOffice[];
+extern const char kActionIdOpenWeb[];
+
+extern const char kODFSExtensionId[];
 
 // Task types as explained in the comment above. Search for <task-type>.
 enum TaskType {
@@ -335,6 +338,15 @@ bool ExecuteFileTask(Profile* profile,
 void LaunchQuickOffice(Profile* profile,
                        const std::vector<storage::FileSystemURL>& file_urls);
 
+// Executes appropriate task to open the selected `file_urls`.
+// If user's `choice` is `kDialogChoiceQuickOffice`, launch QuickOffice.
+// If user's `choice` is `kDialogChoiceTryAgain`, execute the `task`.
+// If user's `choice` is `kDialogChoiceCancel`, do nothing.
+void OnDialogChoiceReceived(Profile* profile,
+                            const TaskDescriptor& task,
+                            const std::vector<FileSystemURL>& file_urls,
+                            const std::string& choice);
+
 // Shows a new dialog for users to choose what to do next. Returns True
 // if a new dialog has been effectively created.
 bool GetUserFallbackChoice(Profile* profile,
@@ -367,11 +379,33 @@ void ChooseAndSetDefaultTask(Profile* profile,
                              const std::vector<extensions::EntryInfo>& entries,
                              ResultingTasks* resulting_tasks);
 
+bool IsExtensionInstalled(Profile* profile, const std::string& extension_id);
+
 // Returns whether |path| is an HTML file according to its extension.
 bool IsHtmlFile(const base::FilePath& path);
 
 // Returns whether |path| is a MS Office file according to its extension.
 bool IsOfficeFile(const base::FilePath& path);
+
+// TODO(petermarshall): Move these to a new file office_file_tasks.cc/h
+// Updates the default task for each of the office file types. |action_id| must
+// be a valid action registered with the Files app SWA.
+void SetWordFileHandler(Profile* profile, const std::string& action_id);
+void SetExcelFileHandler(Profile* profile, const std::string& action_id);
+void SetPowerPointFileHandler(Profile* profile, const std::string& action_id);
+
+// TODO(petermarshall): Move these to a new file office_file_tasks.cc/h
+// Sets the user preference storing whether the setup flow for office files has
+// ever been completed.
+void SetOfficeSetupComplete(Profile* profile, bool complete = true);
+// Whether or not the setup flow for office files has ever been completed.
+bool OfficeSetupComplete(Profile* profile);
+
+// Sets the user preference storing whether we should always move office files
+// without first asking the user.
+void SetAlwaysMoveOfficeFiles(Profile* profile, bool complete = true);
+// Whether we should always move office files without first asking the user.
+bool AlwaysMoveOfficeFiles(Profile* profile);
 
 }  // namespace file_manager::file_tasks
 

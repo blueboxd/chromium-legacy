@@ -18,7 +18,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -459,7 +458,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
     GetDragTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
-                       target.x(), target.y()));
+                       target.x(), target.y(), ui_controls::kNoWindowHint));
   }
 
   void OnWidgetDragComplete(views::Widget* widget) override {
@@ -523,7 +522,8 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseEvents),
                        ui_controls::LEFT, ui_controls::UP,
-                       ui_controls::kNoAccelerator));
+                       ui_controls::kNoAccelerator,
+                       ui_controls::kNoWindowHint));
   }
 
   // Called after the drag ends; returns the node the test thinks should be the
@@ -759,7 +759,8 @@ class BookmarkContextMenuNotificationObserver {
 
   void ScheduleCallback() {
     DCHECK(!task_.is_null());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task_));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(task_));
   }
 
  private:
@@ -917,7 +918,7 @@ class BookmarkBarViewTest7 : public BookmarkBarViewDragTestBase {
     GetDragTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
-                       target.x(), target.y()));
+                       target.x(), target.y(), ui_controls::kNoWindowHint));
   }
 
   void OnWidgetDragComplete(views::Widget* widget) override {
@@ -971,7 +972,7 @@ class BookmarkBarViewTest8 : public BookmarkBarViewDragTestBase {
     GetDragTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&ui_controls::SendMouseMove),
-                       target.x(), target.y()));
+                       target.x(), target.y(), ui_controls::kNoWindowHint));
   }
 
  protected:
@@ -1033,7 +1034,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   }
 
   void Step3() {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BookmarkBarViewTest9::Step4, base::Unretained(this)),
         base::Milliseconds(200));
@@ -1328,7 +1329,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     tab_waiter.WaitForTab();
 
     // For some reason return isn't processed correctly unless we delay.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&BookmarkBarViewTest12::Step5, base::Unretained(this),
                        base::Unretained(dialog)),
@@ -1576,7 +1577,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     // Close the window.
     window()->Close();
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest16::Done));
   }
 };
@@ -2236,7 +2237,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
     ::SendMessage(window()->GetNativeView()->GetHost()->GetAcceleratedWidget(),
                   WM_CANCELMODE, 0, 0);
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&BookmarkBarViewTest26::Step3, base::Unretained(this)));
   }

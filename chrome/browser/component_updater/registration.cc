@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/component_updater/app_provisioning_component_installer.h"
-#include "chrome/browser/component_updater/autofill_regex_remover.h"
 #include "chrome/browser/component_updater/chrome_client_side_phishing_component_installer.h"
 #include "chrome/browser/component_updater/chrome_origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
@@ -62,6 +61,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/component_updater/crow_domain_list_component_installer.h"
 #include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
+#include "chrome/browser/component_updater/real_time_url_checks_allowlist_component_installer.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -147,8 +147,6 @@ void RegisterComponentsForUpdate() {
     // the old file.
     component_updater::DeleteLegacyCRLSet(path);
 
-    component_updater::DeleteAutofillRegex(path);
-
     component_updater::DeleteUrlParamFilter(path);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -213,15 +211,16 @@ void RegisterComponentsForUpdate() {
 
 #if BUILDFLAG(IS_ANDROID)
   RegisterCrowDomainListComponent(cus);
+  RegisterRealTimeUrlChecksAllowlistComponent(cus);
 #endif  // BUIDLFLAG(IS_ANDROID)
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 
   RegisterClientSidePhishingComponent(cus);
 
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && !BUILDFLAG(IS_CHROMEOS)
   RegisterScreenAIComponent(cus, g_browser_process->local_state());
-#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && !BUILDFLAG(IS_CHROMEOS)
 
   RegisterCommerceHeuristicsComponent(cus);
 }

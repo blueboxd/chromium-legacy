@@ -15,12 +15,11 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
-#include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequenced_task_runner_helpers.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_io_thread.h"
@@ -42,8 +41,7 @@ class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  public:
   SequenceManagerThreadDelegate() {
     ui_sequence_manager_ =
-        base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
-            base::sequence_manager::SequenceManager::Settings());
+        base::sequence_manager::CreateUnboundSequenceManager();
     auto browser_ui_thread_scheduler =
         BrowserUIThreadScheduler::CreateForTesting(ui_sequence_manager_.get());
 
@@ -162,7 +160,8 @@ class UIThreadDestructionObserver
  public:
   explicit UIThreadDestructionObserver(bool* did_shutdown,
                                        base::OnceClosure callback)
-      : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      : callback_task_runner_(
+            base::SingleThreadTaskRunner::GetCurrentDefault()),
         ui_task_runner_(GetUIThreadTaskRunner({})),
         callback_(std::move(callback)),
         did_shutdown_(did_shutdown) {

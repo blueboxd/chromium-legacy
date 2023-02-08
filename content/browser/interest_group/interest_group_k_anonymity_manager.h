@@ -5,11 +5,14 @@
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_K_ANONYMITY_MANAGER_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_K_ANONYMITY_MANAGER_H_
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/interest_group/storage_interest_group.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/k_anonymity_service_delegate.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+
+class GURL;
 
 namespace content {
 class InterestGroupManagerImpl;
@@ -17,6 +20,20 @@ class InterestGroupManagerImpl;
 // Calculates the k-anonymity key for an interest group from the owner and name
 std::string CONTENT_EXPORT KAnonKeyFor(const url::Origin& owner,
                                        const std::string& name);
+
+// Calculates the k-anonymity key for an Ad that is used for bidding.
+std::string CONTENT_EXPORT KAnonKeyForAdBid(const blink::InterestGroup& group,
+                                            const blink::InterestGroup::Ad& ad);
+
+// Given a key computed by KAnonKeyForAdBid, returns the `render_url` of the
+// ad that was used to produce it.
+GURL CONTENT_EXPORT RenderUrlFromKAnonKeyForAdBid(const std::string& key);
+
+// Calculates the k-anonymity key for an Ad that is used for reporting the
+// interest group name.
+std::string CONTENT_EXPORT
+KAnonKeyForAdNameReporting(const blink::InterestGroup& group,
+                           const blink::InterestGroup::Ad& ad);
 
 // Manages k-anonymity updates. Checks last updated times in the database
 // to limit updates (joins and queries) to once per day. Called by the
@@ -36,14 +53,10 @@ class InterestGroupKAnonymityManager {
   void QueryKAnonymityForInterestGroup(
       const StorageInterestGroup& storage_group);
 
-  // Notify the k-anonymity service that we are joining this interest group.
-  // Internally this calls RegisterIDAsJoined() for interest group name and
-  // update URL.
-  void RegisterInterestGroupAsJoined(const blink::InterestGroup& group);
-
   // Notify the k-anonymity service that this ad won an auction. Internally this
   // calls RegisterIDAsJoined().
-  void RegisterAdAsWon(const GURL& render_url);
+  void RegisterAdAsWon(const blink::InterestGroup& group,
+                       const blink::InterestGroup::Ad& ad);
 
  private:
   // Callback from k-anonymity service QuerySets(). Saves the updated results to
@@ -73,6 +86,13 @@ class InterestGroupKAnonymityManager {
   raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
   raw_ptr<KAnonymityServiceDelegate> k_anonymity_service_;
+
+  // We keep track of joins in progress because the joins that haven't completed
+  // are still marked as eligible but it would be incorrect to join them
+  // multiple times. We don't do this for query because the size of the request
+  // could expose membership in overlapping groups through traffic analysis.
+  base::flat_set<std::string> joins_in_progress;
+
   base::WeakPtrFactory<InterestGroupKAnonymityManager> weak_ptr_factory_;
 };
 

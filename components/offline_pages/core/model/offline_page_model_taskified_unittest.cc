@@ -245,7 +245,8 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
   // Keep a copy of the system download manager stub to test against.
   auto archive_manager = std::make_unique<ArchiveManager>(
       temporary_dir_path(), private_archive_dir_path(),
-      public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
+      public_archive_dir_path(),
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   archive_manager_ = archive_manager.get();
 
   auto publisher = std::make_unique<OfflinePageTestArchivePublisher>(
@@ -254,7 +255,7 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
 
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
-      std::move(publisher), base::ThreadTaskRunnerHandle::Get());
+      std::move(publisher), base::SingleThreadTaskRunner::GetCurrentDefault());
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
@@ -340,7 +341,7 @@ OfflinePageModelTaskifiedTest::BuildArchiver(const GURL& url,
                                              ArchiverResult result) {
   return std::make_unique<OfflinePageTestArchiver>(
       this, url, result, kTestTitle, kTestFileSize, kTestDigest,
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 void OfflinePageModelTaskifiedTest::CheckTaskQueueIdle() {
@@ -721,7 +722,6 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOnBackground) {
   save_page_params.client_id = kTestClientId1;
   save_page_params.original_url = GURL("http://other.page.com");
   save_page_params.is_background = true;
-  save_page_params.use_page_problem_detectors = false;
 
   base::MockCallback<SavePageCallback> callback;
   EXPECT_CALL(callback, Run(Eq(SavePageResult::SUCCESS), A<int64_t>()));

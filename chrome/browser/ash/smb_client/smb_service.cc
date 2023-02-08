@@ -13,7 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/file_manager/file_manager_pref_names.h"
@@ -142,7 +142,7 @@ SmbService::SmbService(Profile* profile,
   // Post a task to complete setup. This is to allow unit tests to perform
   // expectations setup after constructing an instance. It also mirrors the
   // behaviour when Kerberos is being used.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr()));
 }
 
@@ -319,7 +319,7 @@ void SmbService::Mount(const std::string& display_name,
   SmbShareInfo info(parsed_url, display_name, username, workgroup, use_kerberos,
                     salt);
   MountInternal(info, password, save_credentials, false /* skip_connect */,
-                base::BindOnce(&SmbService::MountInternalDone,
+                base::BindOnce(&SmbService::OnUserInitiatedMountDone,
                                base::Unretained(this), std::move(callback),
                                info, should_open_file_manager_after_mount));
 
@@ -327,11 +327,12 @@ void SmbService::Mount(const std::string& display_name,
                                   share_path.value());
 }
 
-void SmbService::MountInternalDone(MountResponse callback,
-                                   const SmbShareInfo& info,
-                                   bool should_open_file_manager_after_mount,
-                                   SmbMountResult result,
-                                   const base::FilePath& mount_path) {
+void SmbService::OnUserInitiatedMountDone(
+    MountResponse callback,
+    const SmbShareInfo& info,
+    bool should_open_file_manager_after_mount,
+    SmbMountResult result,
+    const base::FilePath& mount_path) {
   if (result != SmbMountResult::kSuccess) {
     std::move(callback).Run(result);
     return;
@@ -464,15 +465,24 @@ void SmbService::OnHostsDiscovered(
   }
 }
 
+void SmbService::SetRestoredShareMountDoneCallbackForTesting(
+    MountInternalCallback callback) {
+  restored_share_mount_done_callback_ = std::move(callback);
+}
+
 void SmbService::MountSavedSmbfsShare(const SmbShareInfo& info) {
   MountInternal(
       info, "" /* password */, true /* save_credentials */,
       true /* skip_connect */,
-      base::BindOnce(
-          [](SmbMountResult result, const base::FilePath& mount_path) {
-            LOG_IF(ERROR, result != SmbMountResult::kSuccess)
-                << "Error restoring saved share: " << static_cast<int>(result);
-          }));
+      restored_share_mount_done_callback_.is_null()
+          ? base::BindOnce(&SmbService::OnMountSavedSmbfsShareDone, AsWeakPtr())
+          : std::move(restored_share_mount_done_callback_));
+}
+
+void SmbService::OnMountSavedSmbfsShareDone(SmbMountResult result,
+                                            const base::FilePath& mount_path) {
+  LOG_IF(ERROR, result != SmbMountResult::kSuccess)
+      << "Error restoring saved share: " << static_cast<int>(result);
 }
 
 void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {
@@ -481,10 +491,12 @@ void SmbService::MountPreconfiguredShare(const SmbUrl& share_url) {
   // Note: Preconfigured shares are mounted without credentials.
   SmbShareInfo info(share_url, display_name, "" /* username */,
                     "" /* workgroup */, false /* use_kerberos */);
-  MountInternal(
-      info, "" /* password */, false /* save_credentials */,
-      true /* skip_connect */,
-      base::BindOnce(&SmbService::OnMountPreconfiguredShareDone, AsWeakPtr()));
+  MountInternal(info, "" /* password */, false /* save_credentials */,
+                true /* skip_connect */,
+                restored_share_mount_done_callback_.is_null()
+                    ? base::BindOnce(&SmbService::OnMountPreconfiguredShareDone,
+                                     AsWeakPtr())
+                    : std::move(restored_share_mount_done_callback_));
 }
 
 void SmbService::OnMountPreconfiguredShareDone(

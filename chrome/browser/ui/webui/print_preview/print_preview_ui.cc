@@ -25,6 +25,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
+#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/pdf_nup_converter_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -352,7 +353,8 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean("useSystemDefaultPrinter", system_default_printer);
 #endif
 
-  source->AddBoolean("isEnterpriseManaged", webui::IsEnterpriseManaged());
+  source->AddBoolean("isEnterpriseManaged",
+                     policy::IsDeviceEnterpriseManaged());
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
@@ -850,23 +852,19 @@ void PrintPreviewUI::DidGetDefaultPageLayout(
     return;
   }
 
-  base::DictionaryValue layout;
-  layout.SetDoubleKey(kSettingMarginTop, page_layout_in_points->margin_top);
-  layout.SetDoubleKey(kSettingMarginLeft, page_layout_in_points->margin_left);
-  layout.SetDoubleKey(kSettingMarginBottom,
-                      page_layout_in_points->margin_bottom);
-  layout.SetDoubleKey(kSettingMarginRight, page_layout_in_points->margin_right);
-  layout.SetDoubleKey(kSettingContentWidth,
-                      page_layout_in_points->content_width);
-  layout.SetDoubleKey(kSettingContentHeight,
-                      page_layout_in_points->content_height);
-  layout.SetIntKey(kSettingPrintableAreaX, printable_area_in_points.x());
-  layout.SetIntKey(kSettingPrintableAreaY, printable_area_in_points.y());
-  layout.SetIntKey(kSettingPrintableAreaWidth,
-                   printable_area_in_points.width());
-  layout.SetIntKey(kSettingPrintableAreaHeight,
-                   printable_area_in_points.height());
-  handler_->SendPageLayoutReady(layout, has_custom_page_size_style, request_id);
+  base::Value::Dict layout;
+  layout.Set(kSettingMarginTop, page_layout_in_points->margin_top);
+  layout.Set(kSettingMarginLeft, page_layout_in_points->margin_left);
+  layout.Set(kSettingMarginBottom, page_layout_in_points->margin_bottom);
+  layout.Set(kSettingMarginRight, page_layout_in_points->margin_right);
+  layout.Set(kSettingContentWidth, page_layout_in_points->content_width);
+  layout.Set(kSettingContentHeight, page_layout_in_points->content_height);
+  layout.Set(kSettingPrintableAreaX, printable_area_in_points.x());
+  layout.Set(kSettingPrintableAreaY, printable_area_in_points.y());
+  layout.Set(kSettingPrintableAreaWidth, printable_area_in_points.width());
+  layout.Set(kSettingPrintableAreaHeight, printable_area_in_points.height());
+  handler_->SendPageLayoutReady(std::move(layout), has_custom_page_size_style,
+                                request_id);
 }
 
 bool PrintPreviewUI::OnPendingPreviewPage(uint32_t page_number) {

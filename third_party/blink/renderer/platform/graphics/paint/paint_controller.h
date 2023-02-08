@@ -28,6 +28,8 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
+class SkTextBlob;
+
 namespace blink {
 
 class PaintUnderInvalidationChecker;
@@ -164,6 +166,15 @@ class PLATFORM_EXPORT PaintController {
   // list and returns true. Otherwise returns false.
   bool UseCachedItemIfPossible(const DisplayItemClient&, DisplayItem::Type);
 
+#if DCHECK_IS_ON()
+  void AssertLastCheckedCachedItem(const DisplayItemClient&, DisplayItem::Type);
+#endif
+
+  // Returns the SkTextBlob in DrawTextBlobOp in
+  // MatchingCachedItemToBeRepainted() if it exists and can be reused for
+  // repainting.
+  sk_sp<SkTextBlob> CachedTextBlob() const;
+
   // Tries to find the cached subsequence corresponding to the given parameters.
   // If found, copies the cache subsequence to the new display list and returns
   // true. Otherwise returns false.
@@ -246,6 +257,8 @@ class PLATFORM_EXPORT PaintController {
     return benchmark_mode_ >= PaintBenchmarkMode::kForcePaint;
   }
 
+  bool IsCheckingUnderInvalidationForTesting() const;
+
   void SetFirstPainted();
   void SetTextPainted();
   void SetImagePainted();
@@ -323,6 +336,12 @@ class PLATFORM_EXPORT PaintController {
 
   // Set new item state (cache skipping, etc) for the last new display item.
   void ProcessNewItem(const DisplayItemClient&, DisplayItem&);
+
+  // This can only be called if the previous UseCachedItemIfPossible() returned
+  // false. Returns the cached display item that was matched in the previous
+  // UseCachedItemIfPossible() for an invalidated DisplayItemClient for
+  // non-layout reason, or nullptr if there is no such item.
+  const DisplayItem* MatchingCachedItemToBeRepainted() const;
 
   void CheckNewItem(DisplayItem&);
   void CheckNewChunkId(const PaintChunk::Id&);
@@ -424,6 +443,10 @@ class PLATFORM_EXPORT PaintController {
   // requests.
   wtf_size_t next_item_to_index_ = 0;
 
+  wtf_size_t last_matching_item_ = kNotFound;
+  PaintInvalidationReason last_matching_client_invalidation_reason_ =
+      PaintInvalidationReason::kNone;
+
 #if DCHECK_IS_ON()
   wtf_size_t num_indexed_items_ = 0;
   wtf_size_t num_sequential_matches_ = 0;
@@ -433,6 +456,8 @@ class PLATFORM_EXPORT PaintController {
   IdIndexMap new_display_item_id_index_map_;
   // This is used to check duplicated ids for new paint chunks.
   IdIndexMap new_paint_chunk_id_index_map_;
+
+  DisplayItem::Id::HashKey last_checked_cached_item_id_;
 #endif
 
   std::unique_ptr<PaintUnderInvalidationChecker> under_invalidation_checker_;

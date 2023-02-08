@@ -56,7 +56,7 @@ class MojoMessage {
   IpczHandle parcel() const { return parcel_.get(); }
 
   // Sets the received parcel object backing this message.
-  void SetParcel(ScopedIpczHandle parcel);
+  bool SetParcel(ScopedIpczHandle parcel);
 
   // Appends data to a new or partially serialized message, effectively
   // implementing MojoAppendMessageData().

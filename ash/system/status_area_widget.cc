@@ -142,11 +142,11 @@ void StatusAreaWidget::Initialize() {
     media_tray_ = AddTrayButton(std::make_unique<MediaTray>(shelf_));
   }
 
-  if (chromeos::features::IsEcheSWAEnabled()) {
+  if (features::IsEcheSWAEnabled()) {
     eche_tray_ = AddTrayButton(std::make_unique<EcheTray>(shelf_));
   }
 
-  if (chromeos::features::IsPhoneHubEnabled()) {
+  if (features::IsPhoneHubEnabled()) {
     phone_hub_tray_ = AddTrayButton(std::make_unique<PhoneHubTray>(shelf_));
   }
 
@@ -155,7 +155,7 @@ void StatusAreaWidget::Initialize() {
         AddTrayButton(std::make_unique<WmModeButtonTray>(shelf_));
   }
 
-  if (chromeos::features::IsQsRevampEnabled()) {
+  if (features::IsQsRevampEnabled()) {
     notification_center_tray_ =
         AddTrayButton(std::make_unique<NotificationCenterTray>(shelf_));
     notification_center_tray_->AddObserver(this);
@@ -200,7 +200,10 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-  if (features::IsQsRevampEnabled())
+  // If QsRevamp flag is enabled, `notification_center_tray_` may be null in
+  // some unittests. During the test environment tear-down, removing the
+  // observer will lead to a crash.
+  if (features::IsQsRevampEnabled() && notification_center_tray_)
     notification_center_tray_->RemoveObserver(this);
   status_area_widget_delegate_->Shutdown();
 }

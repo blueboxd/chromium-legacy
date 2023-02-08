@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <string>
 
@@ -40,7 +40,7 @@ id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
 id<GREYMatcher> ButtonWithAccessibilityLabel(NSString* label);
 
 // Returns a matcher for element with an image corresponding to `image_id`.
-id<GREYMatcher> ImageViewWithImage(int image_id);
+id<GREYMatcher> ImageViewWithImage(UIImage* image);
 
 // Returns a matcher for element with an image defined by its name in the main
 // bundle.
@@ -547,6 +547,9 @@ id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title);
 
 // Returns a matcher to the add button in the toolbar in the settings view.
 id<GREYMatcher> SettingsToolbarAddButton();
+
+// Returns a matcher matching cells that can be swiped-to-dismiss.
+id<GREYMatcher> CellCanBeSwipedToDismissed();
 
 #pragma mark - Promo style view controller
 

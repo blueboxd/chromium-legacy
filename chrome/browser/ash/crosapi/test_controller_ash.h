@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ASH_CROSAPI_TEST_CONTROLLER_ASH_H_
 #define CHROME_BROWSER_ASH_CROSAPI_TEST_CONTROLLER_ASH_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,6 +51,8 @@ class TestControllerAsh : public mojom::TestController,
   void ExitOverviewMode(ExitOverviewModeCallback callback) override;
   void EnterTabletMode(EnterTabletModeCallback callback) override;
   void ExitTabletMode(ExitTabletModeCallback callback) override;
+  void GetShelfItemState(const std::string& app_id,
+                         GetShelfItemStateCallback callback) override;
   void GetContextMenuForShelfItem(
       const std::string& item_id,
       GetContextMenuForShelfItemCallback callback) override;
@@ -58,6 +62,7 @@ class TestControllerAsh : public mojom::TestController,
   void GetWindowPositionInScreen(const std::string& window_id,
                                  GetWindowPositionInScreenCallback cb) override;
   void LaunchAppFromAppList(const std::string& app_id) override;
+  void AreDesksBeingModified(AreDesksBeingModifiedCallback callback) override;
   void PinOrUnpinItemInShelf(const std::string& item_id,
                              bool pin,
                              PinOrUnpinItemInShelfCallback cb) override;
@@ -101,6 +106,15 @@ class TestControllerAsh : public mojom::TestController,
       mojo::PendingReceiver<crosapi::mojom::InputMethodTestInterface> receiver,
       BindInputMethodTestInterfaceCallback callback) override;
 
+  void GetTtsUtteranceQueueSize(
+      GetTtsUtteranceQueueSizeCallback callback) override;
+
+  void GetTtsVoices(GetTtsVoicesCallback callback) override;
+
+  void TtsSpeak(crosapi::mojom::TtsUtterancePtr mojo_utterance,
+                mojo::PendingRemote<crosapi::mojom::TtsUtteranceClient>
+                    utterance_client) override;
+
   mojo::Remote<mojom::StandaloneBrowserTestController>&
   GetStandaloneBrowserTestController() {
     DCHECK(standalone_browser_test_controller_.is_bound());
@@ -115,6 +129,10 @@ class TestControllerAsh : public mojom::TestController,
 
  private:
   class OverviewWaiter;
+  class AshUtteranceEventDelegate;
+
+  // Called when a Tts utterance is finished.
+  void OnAshUtteranceFinished(int utterance_id);
 
   // Called when a waiter has finished waiting for its event.
   void WaiterFinished(OverviewWaiter* waiter);
@@ -149,6 +167,10 @@ class TestControllerAsh : public mojom::TestController,
       standalone_browser_test_controller_;
 
   base::OneShotEvent on_standalone_browser_test_controller_bound_;
+
+  // Ash utterance event delegates by utterance id.
+  std::map<int, std::unique_ptr<AshUtteranceEventDelegate>>
+      ash_utterance_event_delegates_;
 };
 
 class TestShillControllerAsh : public crosapi::mojom::TestShillController {

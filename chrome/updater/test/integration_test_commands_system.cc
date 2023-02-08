@@ -28,7 +28,7 @@
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -171,6 +171,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("run_wake",
                {Param("exit_code", base::NumberToString(expected_exit_code))});
   }
+
+  void RunWakeAll() const override { RunCommand("run_wake_all", {}); }
 
   void RunWakeActive(int expected_exit_code) const override {
     RunCommand("run_wake_active",
@@ -371,7 +373,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     // the code invoked by the test command. This is the most common case.
     // Other exit codes mean that the helper command is not defined or the
     // helper command line syntax is wrong for some reason.
-    EXPECT_EQ(exit_code, 0);
+    ASSERT_EQ(exit_code, 0);
   }
 
   void RunCommand(const std::string& command_switch) const {

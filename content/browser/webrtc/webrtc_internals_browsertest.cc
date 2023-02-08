@@ -195,24 +195,24 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
         ");"));
   }
 
-  // Execute the javascript of addGetUserMedia.
-  void ExecuteAddGetUserMediaJs(const UserMediaRequestEntry& request) {
+  // Execute the javascript of addMedia.
+  void ExecuteAddMediaJs(const UserMediaRequestEntry& request) {
     std::stringstream ss;
     ss << "{rid:" << request.rid << ", pid:" << request.pid << ", origin:'"
        << request.origin << "', audio:'" << request.audio_constraints
        << "', video:'" << request.video_constraints << "'}";
 
-    ASSERT_TRUE(ExecuteJavascript(
-        "cr.webUIListenerCallback('add-get-user-media', " + ss.str() + ");"));
+    ASSERT_TRUE(ExecuteJavascript("cr.webUIListenerCallback('add-media', " +
+                                  ss.str() + ");"));
   }
 
-  // Execute the javascript of removeGetUserMediaForRenderer.
-  void ExecuteRemoveGetUserMediaForRendererJs(int rid) {
+  // Execute the javascript of removeMediaForRenderer.
+  void ExecuteRemoveMediaForRendererJs(int rid) {
     std::stringstream ss;
     ss << "{rid:" << rid << "}";
     ASSERT_TRUE(ExecuteJavascript(
-        "cr.webUIListenerCallback('remove-get-user-media-for-renderer', " +
-        ss.str() + ");"));
+        "cr.webUIListenerCallback('remove-media-for-renderer', " + ss.str() +
+        ");"));
   }
 
   // Verifies that the DOM element with id |id| exists.
@@ -238,8 +238,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
   }
 
   // Verifies the JS Array of userMediaRequests matches |requests|.
-  void VerifyUserMediaRequest(
-      const std::vector<UserMediaRequestEntry>& requests) {
+  void VerifyMediaRequest(const std::vector<UserMediaRequestEntry>& requests) {
     string json_requests;
     ASSERT_TRUE(
         ExecuteScriptAndExtractString(shell(),
@@ -251,27 +250,28 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
     EXPECT_EQ(base::Value::Type::LIST, value_requests->type());
 
-    base::ListValue* list_request =
-        static_cast<base::ListValue*>(value_requests.get());
-    EXPECT_EQ(requests.size(), list_request->GetList().size());
+    const base::Value::List& list_request = value_requests->GetList();
+    EXPECT_EQ(requests.size(), list_request.size());
 
     for (size_t i = 0; i < requests.size(); ++i) {
-      const base::Value& value = list_request->GetList()[i];
+      const base::Value& value = list_request[i];
       ASSERT_TRUE(value.is_dict());
       absl::optional<int> rid = value.FindIntKey("rid");
       absl::optional<int> pid = value.FindIntKey("pid");
-      std::string origin, audio, video;
       ASSERT_TRUE(rid);
       ASSERT_TRUE(pid);
-      const base::DictionaryValue& dict = base::Value::AsDictionaryValue(value);
-      ASSERT_TRUE(dict.GetString("origin", &origin));
-      ASSERT_TRUE(dict.GetString("audio", &audio));
-      ASSERT_TRUE(dict.GetString("video", &video));
+      const base::Value::Dict& dict = value.GetDict();
+      const std::string* origin = dict.FindString("origin");
+      const std::string* audio = dict.FindString("audio");
+      const std::string* video = dict.FindString("video");
+      ASSERT_TRUE(origin);
+      ASSERT_TRUE(audio);
+      ASSERT_TRUE(video);
       EXPECT_EQ(requests[i].rid, *rid);
       EXPECT_EQ(requests[i].pid, *pid);
-      EXPECT_EQ(requests[i].origin, origin);
-      EXPECT_EQ(requests[i].audio_constraints, audio);
-      EXPECT_EQ(requests[i].video_constraints, video);
+      EXPECT_EQ(requests[i].origin, *origin);
+      EXPECT_EQ(requests[i].audio_constraints, *audio);
+      EXPECT_EQ(requests[i].video_constraints, *video);
     }
 
     bool user_media_tab_existed = false;
@@ -291,7 +291,9 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
           "    document.querySelector('#user-media-tab-id')"
           "        .childNodes.length);",
           &user_media_request_count));
-      ASSERT_EQ(requests.size(), static_cast<size_t>(user_media_request_count));
+      // The list of childnodes includes the input field and its label.
+      ASSERT_EQ(requests.size(),
+                static_cast<size_t>(user_media_request_count) - 2);
     }
   }
 
@@ -487,22 +489,16 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                        const string& report_id,
                        const StatsUnit& stats) {
     EXPECT_NE((base::Value*)nullptr, dump);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, dump->type());
+    EXPECT_EQ(base::Value::Type::DICT, dump->type());
 
-    base::DictionaryValue* dict_dump =
-        static_cast<base::DictionaryValue*>(dump);
-    base::Value* value = nullptr;
-    dict_dump->Get(pc.getIdString(), &value);
-    base::DictionaryValue* pc_dump = static_cast<base::DictionaryValue*>(value);
+    const base::Value::Dict& dict_dump = dump->GetDict();
+    const base::Value::Dict* pc_dump = dict_dump.FindDict(pc.getIdString());
+    ASSERT_TRUE(pc_dump);
 
     // Verifies there is one data series per stats name.
-    value = nullptr;
-    pc_dump->Get("stats", &value);
-    EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
-
-    base::DictionaryValue* dataSeries =
-        static_cast<base::DictionaryValue*>(value);
-    EXPECT_EQ(stats.values.size(), dataSeries->DictSize());
+    const base::Value::Dict* data_series_dump = pc_dump->FindDict("stats");
+    ASSERT_TRUE(data_series_dump);
+    EXPECT_EQ(stats.values.size(), data_series_dump->size());
   }
 };
 
@@ -830,27 +826,27 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, CreatePageDump) {
   VerifyStatsDump(dump.get(), pc_0, type, id, stats);
 }
 
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdateGetUserMedia) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdateMedia) {
   GURL url("chrome://webrtc-internals");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   UserMediaRequestEntry request1(1, 1, "origin", "ac", "vc");
   UserMediaRequestEntry request2(2, 2, "origin2", "ac2", "vc2");
-  ExecuteAddGetUserMediaJs(request1);
-  ExecuteAddGetUserMediaJs(request2);
+  ExecuteAddMediaJs(request1);
+  ExecuteAddMediaJs(request2);
 
   std::vector<UserMediaRequestEntry> list;
   list.push_back(request1);
   list.push_back(request2);
-  VerifyUserMediaRequest(list);
+  VerifyMediaRequest(list);
 
-  ExecuteRemoveGetUserMediaForRendererJs(1);
+  ExecuteRemoveMediaForRendererJs(1);
   list.erase(list.begin());
-  VerifyUserMediaRequest(list);
+  VerifyMediaRequest(list);
 
-  ExecuteRemoveGetUserMediaForRendererJs(2);
+  ExecuteRemoveMediaForRendererJs(2);
   list.erase(list.begin());
-  VerifyUserMediaRequest(list);
+  VerifyMediaRequest(list);
 }
 
 // Tests that the received propagation delta values are converted and drawn

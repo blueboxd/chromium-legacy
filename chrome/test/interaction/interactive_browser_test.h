@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "base/test/rectify_callback.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/interaction/interaction_test_util_browser.h"
@@ -74,36 +73,85 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
   static WebContentsInteractionTestUtil* AsInstrumentedWebContents(
       ui::TrackedElement* el);
 
-  // Retrieves an instrumented WebContents with identifier `id`, or null if the
-  // contents has not been instrumented.
-  WebContentsInteractionTestUtil* GetInstrumentedWebContents(
-      ui::ElementIdentifier id);
-
-  // Instruments an existing tab in `browser`. If `tab_index` is not specified,
-  // the active tab is instrumented.
-  WebContentsInteractionTestUtil* InstrumentTab(
-      Browser* browser,
-      ui::ElementIdentifier id,
-      absl::optional<int> tab_index = absl::nullopt);
-
-  // Instruments the next tab to open in `browser`, or if not specified, in any
-  // browser.
-  WebContentsInteractionTestUtil* InstrumentNextTab(
-      absl::optional<Browser*> browser,
-      ui::ElementIdentifier id);
-
-  // Instruments a non-tab `web_view`.
-  WebContentsInteractionTestUtil* InstrumentNonTabWebView(
-      views::WebView* web_view,
-      ui::ElementIdentifier id);
-
+  // Takes a screenshot of the specified element, with name `screenshot_name`
+  // (may be empty for tests that take only one screenshot) and `baseline`,
+  // which should be set to match the CL number when a screenshot should change.
+  //
+  // Currently, is somewhat unreliable for WebUI embedded in bubbles or dialogs
+  // (e.g. Tab Search dropdown) but should work fairly well in most other cases.
   [[nodiscard]] StepBuilder Screenshot(ElementSpecifier element,
                                        const std::string& screenshot_name,
                                        const std::string& baseline);
 
+  struct CurrentBrowser {};
+  struct AnyBrowser {};
+
+  // Specifies which browser to use when instrumenting a tab.
+  using BrowserSpecifier = absl::variant<
+      // Use the browser associated with the context of the current test step;
+      // if unspecified use the default context for the sequence.
+      CurrentBrowser,
+      // Find a tab in any browser.
+      AnyBrowser,
+      // Specify a browser that is known at the time the sequence is created.
+      // The browser must persist until the step executes.
+      Browser*,
+      // Specify a browser that will be valid by the time the step executes
+      // (i.e is set in a previous step callback) but not at the time the test
+      // sequence is built. The browser will be read from the target variable,
+      // which must point to a valid browser.
+      Browser**>;
+
+  // Instruments tab `tab_index` in `in_browser` as `id`. If `tab_index` is
+  // unspecified, the active tab is used.
+  //
+  // Does not support AnyBrowser; you must specify a browser.
+  //
+  // If `wait_for_ready` is true (default), the step will not complete until the
+  // current page in the WebContents is fully loaded.
+  [[nodiscard]] MultiStep InstrumentTab(
+      ui::ElementIdentifier id,
+      absl::optional<int> tab_index = absl::nullopt,
+      BrowserSpecifier in_browser = CurrentBrowser(),
+      bool wait_for_ready = true);
+
+  // Instruments the next tab in `in_browser` as `id`.
+  [[nodiscard]] StepBuilder InstrumentNextTab(
+      ui::ElementIdentifier id,
+      BrowserSpecifier in_browser = CurrentBrowser());
+
+  // Opens a new tab for `url` and instruments it as `id`. The tab is inserted
+  // at `at_index` if specified, otherwise the browser decides.
+  //
+  // Does not support AnyBrowser; you must specify a browser.
+  [[nodiscard]] MultiStep AddInstrumentedTab(
+      ui::ElementIdentifier id,
+      GURL url,
+      absl::optional<int> tab_index = absl::nullopt,
+      BrowserSpecifier in_browser = CurrentBrowser());
+
+  // Instruments the WebContents held by `web_view` as `id`. Will wait for the
+  // WebView to become visible if it is not.
+  //
+  // If `wait_for_ready` is true (default), the step will not complete until the
+  // current page in the WebContents is fully loaded. (Note that this may not
+  // cover dynamic loading of data; you may need to do a WaitForStateChange() to
+  // be sure dynamic content is loaded).
+  [[nodiscard]] MultiStep InstrumentNonTabWebView(ui::ElementIdentifier id,
+                                                  ElementSpecifier web_view,
+                                                  bool wait_for_ready = true);
+  [[nodiscard]] MultiStep InstrumentNonTabWebView(
+      ui::ElementIdentifier id,
+      AbsoluteViewSpecifier web_view,
+      bool wait_for_ready = true);
+
   // These convenience methods wait for page navigation/ready. If you specify
   // `expected_url`, the test will fail if that is not the loaded page. If you
   // do not, there is no step start callback and you can add your own logic.
+  //
+  // Note that because `webcontents_id` is expected to be globally unique, these
+  // actions have SetFindElementInAnyContext(true) by default (otherwise it's
+  // really easy to forget to add InAnyContext() and have your test not work.
   [[nodiscard]] static StepBuilder WaitForWebContentsReady(
       ui::ElementIdentifier webcontents_id,
       absl::optional<GURL> expected_url = absl::nullopt);
@@ -128,6 +176,85 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
       StateChange state_change,
       bool expect_timeout = false);
 
+  // Required to keep from hiding inherited versions of these methods.
+  using InteractiveViewsTestApi::EnsureNotPresent;
+  using InteractiveViewsTestApi::EnsurePresent;
+
+  // Ensures that there is an element at path `where` in `webcontents_id`.
+  // Unlike InteractiveTestApi::EnsurePresent, this verb can be inside an
+  // InAnyContext() block.
+  [[nodiscard]] static StepBuilder EnsurePresent(
+      ui::ElementIdentifier webcontents_id,
+      DeepQuery where);
+
+  // Ensures that there is no element at path `where` in `webcontents_id`.
+  // Unlike InteractiveTestApi::EnsurePresent, this verb can be inside an
+  // InAnyContext() block.
+  [[nodiscard]] static StepBuilder EnsureNotPresent(
+      ui::ElementIdentifier webcontents_id,
+      DeepQuery where);
+
+  // Execute javascript `function`, which should take no arguments, in
+  // WebContents `webcontents_id`.
+  [[nodiscard]] static StepBuilder ExecuteJs(
+      ui::ElementIdentifier webcontents_id,
+      const std::string& function);
+
+  // Execute javascript `function`, which should take a single DOM element as an
+  // argument, with the element at `where`, in WebContents `webcontents_id`.
+  [[nodiscard]] static StepBuilder ExecuteJsAt(
+      ui::ElementIdentifier webcontents_id,
+      DeepQuery where,
+      const std::string& function);
+
+  // Executes javascript `function`, which should take no arguments and return a
+  // value, in WebContents `webcontents_id`, and fails if the result is not
+  // truthy.
+  [[nodiscard]] static StepBuilder CheckJsResult(
+      ui::ElementIdentifier webcontents_id,
+      const std::string& function);
+
+  // Executes javascript `function`, which should take no arguments and return a
+  // value, in WebContents `webcontents_id`, and fails if the result does not
+  // match `matcher`, which can be a literal or a testing::Matcher.
+  //
+  // Note that only the following types are supported:
+  //  - string (for literals, you may pass a const char*)
+  //  - bool
+  //  - int
+  //  - double (will also match integer return values)
+  //  - base::Value (required if you want to match a list or dictionary)
+  //
+  // You must pass a literal or Matcher that matches the type returned by the
+  // javascript function. If your function could return either an integer or a
+  // floating-point value, you *must* use a double.
+  template <typename T>
+  [[nodiscard]] static StepBuilder CheckJsResult(
+      ui::ElementIdentifier webcontents_id,
+      const std::string& function,
+      T&& matcher);
+
+  // Executes javascript `function`, which should take a single DOM element as
+  // an argument and returns a value, in WebContents `webcontents_id` on the
+  // element specified by `where`, and fails if the result is not truthy.
+  [[nodiscard]] static StepBuilder CheckJsResultAt(
+      ui::ElementIdentifier webcontents_id,
+      DeepQuery where,
+      const std::string& function);
+
+  // Executes javascript `function`, which should take a single DOM element as
+  // an argument and returns a value, in WebContents `webcontents_id` on the
+  // element specified by `where`, and fails if the result does not match
+  // `matcher`, which can be a literal or a testing::Matcher.
+  //
+  // See notes on CheckJsResult() for what values and Matchers are supported.
+  template <typename T>
+  [[nodiscard]] static StepBuilder CheckJsResultAt(
+      ui::ElementIdentifier webcontents_id,
+      DeepQuery where,
+      const std::string& function,
+      T&& matcher);
+
   // These are required so the following overloads don't hide the base class
   // variations.
   using InteractiveViewsTestApi::DragMouseTo;
@@ -136,16 +263,16 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
   // Find the DOM element at the given path in the reference element, which
   // should be an instrumented WebContents; see Instrument*(). Move the mouse to
   // the element's center point in screen coordinates.
-  [[nodiscard]] MultiStep MoveMouseTo(ElementSpecifier web_contents,
-                                      DeepQuery where);
+  [[nodiscard]] StepBuilder MoveMouseTo(ElementSpecifier web_contents,
+                                        DeepQuery where);
 
   // Find the DOM element at the given path in the reference element, which
   // should be an instrumented WebContents; see Instrument*(). Perform a drag
   // from the mouse's current location to the element's center point in screen
   // coordinates, and then if `release` is true, releases the mouse button.
-  [[nodiscard]] MultiStep DragMouseTo(ElementSpecifier web_contents,
-                                      DeepQuery where,
-                                      bool release = true);
+  [[nodiscard]] StepBuilder DragMouseTo(ElementSpecifier web_contents,
+                                        DeepQuery where,
+                                        bool release = true);
 
  protected:
   explicit InteractiveBrowserTestApi(
@@ -154,6 +281,9 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
 
  private:
   static RelativePositionCallback DeepQueryToRelativePosition(DeepQuery query);
+
+  Browser* GetBrowserFor(ui::ElementContext current_context,
+                         BrowserSpecifier spec);
 
   internal::InteractiveBrowserTestPrivate& test_impl() {
     return static_cast<internal::InteractiveBrowserTestPrivate&>(
@@ -184,5 +314,28 @@ class InteractiveBrowserTest : public InProcessBrowserTest,
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 };
+
+// Template definitions:
+
+// static
+template <typename T>
+ui::InteractionSequence::StepBuilder InteractiveBrowserTestApi::CheckJsResult(
+    ui::ElementIdentifier webcontents_id,
+    const std::string& function,
+    T&& matcher) {
+  return internal::JsResultChecker<T>::CheckJsResult(webcontents_id, function,
+                                                     std::move(matcher));
+}
+
+// static
+template <typename T>
+ui::InteractionSequence::StepBuilder InteractiveBrowserTestApi::CheckJsResultAt(
+    ui::ElementIdentifier webcontents_id,
+    DeepQuery where,
+    const std::string& function,
+    T&& matcher) {
+  return internal::JsResultChecker<T>::CheckJsResultAt(
+      webcontents_id, where, function, std::move(matcher));
+}
 
 #endif  // CHROME_TEST_INTERACTION_INTERACTIVE_BROWSER_TEST_H_

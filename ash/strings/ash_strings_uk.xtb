@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">Відкрити вікно з інформацією про обліковий запис <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Календар</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
-<translation id="1165712434476988950">Щоб застосувати оновлення, потрібно перезапустити пристрій.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Ваш кабель USB-C може не підключатися до екранів належним чином</translation>
 <translation id="1175572348579024023">Прокрутити</translation>
@@ -52,6 +51,7 @@
 <translation id="1218444235442067213"><ph name="APP_NAME" />, додаток із Play Маркету</translation>
 <translation id="1225748608451425081">Ваш пристрій Chromebook заблоковано через відому проблему. Ви зможете ввійти через <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Припинити вибір</translation>
+<translation id="1235458158152011030">Відомі мережі</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> підключено.</translation>
 <translation id="1240638468526743569">Додаток</translation>
 <translation id="1246890715821376239">Непідтримувані додатки</translation>
@@ -357,7 +357,6 @@
 <translation id="296762781903199866">Не вдалося завантажити файли живих субтитрів для такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">установлювати додатки, розширення й теми</translation>
 <translation id="2977598380246111477">Наступна цифра</translation>
-<translation id="2981684127883932071">Показано пропозиції</translation>
 <translation id="2985148236010982088">Показати всі додатки</translation>
 <translation id="2992327365391326550">Кнопку мікрофона пристрою вимкнено.</translation>
 <translation id="2996462380875591307">Увімкнено закріплену лупу. Щоб вимкнути її, знову натисніть комбінацію Ctrl + клавіша пошуку + D.</translation>
@@ -386,7 +385,6 @@
 <translation id="3120421559657122717">Завершити роботу пристрою?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
-<translation id="3139382871451988441">Вимкнути доступ до камери.</translation>
 <translation id="3139942575505304791">Робочий стіл 1</translation>
 <translation id="315116470104423982">Мобільне передавання даних</translation>
 <translation id="3151786313568798007">Орієнтація</translation>
@@ -519,7 +517,6 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="385300504083504382">На початок</translation>
 <translation id="3861651314799684201">Щоб записати весь екран, натисніть клавішу Enter</translation>
-<translation id="3885531177412808398">Надайте доступ до мікрофона для всіх додатків і веб-сайтів, де потрібен відповідний дозвіл</translation>
 <translation id="3886872229787704059">Відкрито сьогодні</translation>
 <translation id="3891340733213178823">Щоб вийти, двічі натисніть Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосові підказки)</translation>
@@ -555,6 +552,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Вимк. для додатка}one{Вимк. для # додатка}few{Вимк. для # додатків}many{Вимк. для # додатків}other{Вимк. для # додатка}}</translation>
 <translation id="4066027111132117168">Увімкнено, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">середній сигнал</translation>
+<translation id="4086921558679520050">Увімкніть фізичний перемикач мікрофона на пристрої</translation>
 <translation id="4112140312785995938">Перейти назад</translation>
 <translation id="4114315158543974537">Увімкнути Phone Hub</translation>
 <translation id="4115378294792113321">Пурпурний</translation>
@@ -607,6 +605,7 @@
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4378551569595875038">Підключення…</translation>
 <translation id="4379531060876907730">Це ваші інструменти стилуса</translation>
+<translation id="4381031910344220229">Буде надано доступ до мікрофона для додатка <ph name="APP_NAME" /> і всіх додатків та веб-сайтів, де потрібен відповідний дозвіл</translation>
 <translation id="4389184120735010762">Ви натиснули комбінацію клавіш для закріпленої лупи. Увімкнути?</translation>
 <translation id="439598569299422042">Призупинено, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Не вдалося зберегти скрінкаст</translation>
@@ -648,11 +647,8 @@
 <translation id="4573176682887762361">"Написати [слово або фразу]"</translation>
 <translation id="4577274620589681794">Час минув   <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Увімкнути попередній перегляд</translation>
-<translation id="4578196883126898996">Мікрофон вимкнено. Увімкніть його відповідною кнопкою на пристрої.</translation>
 <translation id="4578906031062871102">Меню налаштувань відкрито</translation>
-<translation id="4581047786858252841">Мікрофон увімкнено</translation>
 <translation id="4585337515783392668">Зупинити трансляцію на невідомий пристрій</translation>
-<translation id="4587299710837179226">Мікрофон вимкнено</translation>
 <translation id="4596144739579517758">Темну тему вимкнено</translation>
 <translation id="4611292653554630842">Увійти</translation>
 <translation id="4623167406982293031">Підтвердьте обліковий запис</translation>
@@ -669,7 +665,9 @@
 <translation id="4659419629803378708">ChromeVox увімкнено</translation>
 <translation id="4665114317261903604">Увімкнути/вимкнути режим "Не турбувати". <ph name="STATE_TEXT" /></translation>
 <translation id="4666082839192943839">Вимкніть доступ до камери на цьому пристрої, щоб інші камери були постійно заблоковані.</translation>
+<translation id="4666911709726371538">Більше додатків</translation>
 <translation id="4667099493359681081">Завантажується файл <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Додатки з вашого телефона</translation>
 <translation id="4690510401873698237">Полицю розміщено внизу</translation>
 <translation id="4696813013609194136">Введіть код доступу батьків</translation>
 <translation id="4702647871202761252">Екран конфіденційності вимкнено</translation>
@@ -731,6 +729,7 @@
 <translation id="4987738733603015246">Робочий стіл 16</translation>
 <translation id="5003993274120026347">Наступне речення</translation>
 <translation id="5016558321564993266">Перемкнути маркер. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">Доступ до мікрофона пристрою ввімкнено</translation>
 <translation id="5030687792513154421">Час закінчився</translation>
 <translation id="5033299697334913360">Натисніть будь-де, щоб зробити знімок усього екрана</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> під’єднано до нового телефона</translation>
@@ -895,7 +894,6 @@
 <translation id="5958529069007801266">Контрольований користувач</translation>
 <translation id="5965524703725988602">Увімкнути або вимкнути темну тему. <ph name="STATE_TEXT" />.</translation>
 <translation id="5976112937189445008">Щоб записати вікно, натисніть клавішу Enter</translation>
-<translation id="5977415296283489383">Навушники</translation>
 <translation id="5978382165065462689">Спільний доступ до екрана через віддалену допомогу.</translation>
 <translation id="5980301590375426705">Закрити сеанс гостя</translation>
 <translation id="598407983968395253">Використати шаблон</translation>
@@ -926,12 +924,10 @@
 <translation id="6103838137565245112">система</translation>
 <translation id="6107292179555508368">На цьому пристрої не надано доступ до мікрофона й камери</translation>
 <translation id="6114505516289286752">Файли живих субтитрів завантажено (<ph name="LANGUAGE" />)</translation>
-<translation id="6116825164611323644">Доступ до камери вимкнено на цьому пристрої</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Підтвердити завантаження файлу <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">Google Асистент недоступний під час сеансу в режимі "Гість".</translation>
 <translation id="6129953537138746214">Пробіл</translation>
-<translation id="6134259848159370930">Шукайте на пристрої, у додатках, налаштуваннях та Інтернеті.</translation>
 <translation id="6137566720514957455">Відкрити вікно видалення облікового запису <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Підтвердити завантаження</translation>
 <translation id="6154006699632741460">Периферійний пристрій не підтримується</translation>
@@ -963,9 +959,11 @@
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> – сеанс, яким керує <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467">Пристрій <ph name="DEVICE_NAME" /> під’єднано</translation>
 <translation id="6351032674660237738">ПРОПОЗИЦІЇ ДОДАТКІВ</translation>
+<translation id="6352082849089527770">Невідомі мережі</translation>
 <translation id="6359587239691116345">Отримуйте доступ до найновіших функцій і покращеної безпеки. Якщо відхилити це оновлення, ваш пристрій може працювати неналежним чином і у вас можуть виникати проблеми з безпекою та продуктивністю.</translation>
 <translation id="6376931439017688372">Bluetooth увімкнено</translation>
 <translation id="6381109794406942707">Щоб розблокувати пристрій, введіть PIN-код.</translation>
+<translation id="638716340450135524">Увімкнути доступ до камери</translation>
 <translation id="639644700271529076">Режим CAPS LOCK вимкнено</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Асистент</translation>
@@ -973,6 +971,7 @@
 <translation id="642644398083277086">Видаліть усі сповіщення</translation>
 <translation id="643147933154517414">Готово</translation>
 <translation id="6431865393913628856">Запис відео з екрана</translation>
+<translation id="6442259747294754014">Доступ до мікрофона пристрою вимкнено</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> транслюється на пристрій "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6447111710783417522"><ph name="DATE" />, подій: <ph name="NUMBER" /></translation>
 <translation id="6449483711453944360">Додатки Linux і вікна в режимі анонімного перегляду наразі не підтримуються</translation>
@@ -1024,6 +1023,7 @@
 <translation id="6670153871843998651">Робочий стіл 3</translation>
 <translation id="6671495933530132209">Копіювати зображення</translation>
 <translation id="6671661918848783005">Не вдається розблокувати Chromebook.</translation>
+<translation id="6683022854667115063">Навушники</translation>
 <translation id="6696025732084565524">Змінну клавіатуру потрібно оновити</translation>
 <translation id="6700713906295497288">Кнопка меню IME</translation>
 <translation id="6707693040195709527">Кінцевий термін переходу пристрою до попередньої версії минув</translation>
@@ -1136,6 +1136,7 @@
 <translation id="7360036564632145207">Щоб оптимізувати ефективність, змініть налаштування обмеження доступу до даних для периферійних пристроїв</translation>
 <translation id="736045644501761622">Налаштувати фоновий малюнок і стиль</translation>
 <translation id="7371404428569700291">Записувати вікно</translation>
+<translation id="737315737514430195">Буде надано доступ до мікрофона для всіх додатків і веб-сайтів, де потрібен відповідний дозвіл</translation>
 <translation id="7377169924702866686">Клавішу Caps Lock увімкнено.</translation>
 <translation id="7377481913241237033">Підключити за допомогою коду</translation>
 <translation id="7378203170292176219">Потягніть, щоб вибрати область для запису</translation>
@@ -1204,12 +1205,14 @@
 <translation id="7671610481353807627">Додатки відсортовано за кольором</translation>
 <translation id="7672095158465655885">Підключено до мережі "<ph name="NAME" />", <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Використовується камера "<ph name="CAMERA_NAME" />".</translation>
+<translation id="7689817529363080918">Буде надано доступ до мікрофона для додатків <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> і всіх додатків та веб-сайтів, де потрібен відповідний дозвіл</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Додати мобільну мережу</translation>
 <translation id="7720400844887872976">Увімкнено до <ph name="TIME" /></translation>
 <translation id="7720410380936703141">ПОВТОРИТИ</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 cповіщення}one{# сповіщення}few{# сповіщення}many{# сповіщень}other{# сповіщення}}</translation>
 <translation id="7724603315864178912">Вирізати</translation>
+<translation id="7742327441377685481">Немає сповіщень</translation>
 <translation id="7745560842763881396">Показати додатки на полиці</translation>
 <translation id="7749443890790263709">Ви додали максимальну кількість робочих столів.</translation>
 <translation id="776344839111254542">Натисніть, щоб переглянути деталі оновлення</translation>
@@ -1285,6 +1288,7 @@
 <translation id="8142441511840089262">Двічі натиснути</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>
 <translation id="8144760705599030999">Збережіть пристрій "<ph name="NAME" />" в обліковому записі <ph name="EMAIL" />, щоб швидко створювати пару з іншими пристроями</translation>
+<translation id="8144914663975476336">Вибрати формат запису</translation>
 <translation id="8149413265954228307">Показати налаштування Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Щоб закрити вкладку, натисніть Ctrl + W.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
@@ -1366,6 +1370,7 @@
 <translation id="8598235756057743477">Сортуйте додатки за назвою чи кольором</translation>
 <translation id="8614517853887502247">Сповіщення з додатків <ph name="APP_1_TITLE" /> і <ph name="APP_2_TITLE" /> приховано, оскільки ввімкнено безпечний перегляд</translation>
 <translation id="8627191004499078455">Під’єднано до пристрою: <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Вимкнути доступ до камери</translation>
 <translation id="8631727435199967028">Налаштування спеціальних можливостей</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />. Мережею керує адміністратор</translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>
@@ -1381,8 +1386,6 @@
 <translation id="8666856788528804727">Відкрийте <ph name="NAME" />, щоб налаштувати пристрій</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
 <translation id="8683506306463609433">Відстеження ефективності активне</translation>
-<translation id="8684405646663021166">Надайте доступ до мікрофона для додатка <ph name="APP_NAME" /> і всіх додатків та веб-сайтів, де потрібен відповідний дозвіл</translation>
-<translation id="8685326675965865247">Шукайте на пристрої, у додатках, налаштуваннях та Інтернеті. Натискайте клавіші зі стрілками, щоб переходити між додатками.</translation>
 <translation id="8703634754197148428">Почніть запис. Коли запис почнеться, натисніть Alt + Shift + L, щоб перейти на полицю, де розташована кнопка зупинки запису</translation>
 <translation id="8721053961083920564">Увімкнути або вимкнути гучність. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Зйомка всього екрана</translation>
@@ -1391,7 +1394,6 @@
 <translation id="8735678380411481005">Колір підсвічування клавіатури</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Надайте доступ до камери, щоб додатки й веб-сторінки з відповідним дозволом могли використовувати камери, підключені до цього пристрою.</translation>
 <translation id="8755498163081687682">Потрібне підтвердження: сайт <ph name="ORIGIN_NAME" /> хоче підтвердити вашу особу</translation>
 <translation id="875593634123171288">Показати налаштування VPN</translation>
 <translation id="8759408218731716181">Не вдається налаштувати паралельний вхід</translation>
@@ -1406,7 +1408,6 @@
 <translation id="8819728065740986820">Адаптивне заряджання ввімкнено</translation>
 <translation id="8825863694328519386">Щоб повернутися, проведіть пальцем від лівого краю</translation>
 <translation id="8834539327799336565">Підключено</translation>
-<translation id="8834657930627018205">Надати доступ до камери</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8843682306134542540">Заблокувати/розблокувати обертання. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>
@@ -1459,7 +1460,6 @@
 <translation id="9089416786594320554">Методи введення</translation>
 <translation id="9091626656156419976">Дисплей <ph name="DISPLAY_NAME" /> вилучено</translation>
 <translation id="9098969848082897657">Вимкнути звук на телефоні</translation>
-<translation id="9099154003160514616">Доступне оновлення Lacros</translation>
 <translation id="9100887602489003640">Додається профіль. Зачекайте кілька хвилин.</translation>
 <translation id="9105450214093926548">Під час роботи веб-переглядача Lacros вхід у кілька облікових записів не підтримується. Скористайтесь іншим профілем веб-переглядача або закрийте Lacros і повторіть спробу.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> або <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

@@ -42,6 +42,10 @@ const char kDisableImageAnimationResync[] = "disable-image-animation-resync";
 // during fast scrolling especially on slower devices.
 const char kDisableLowResTiling[] = "disable-low-res-tiling";
 
+// Disallow use of the feature NewBaseUrlInheritanceBehavior.
+const char kDisableNewBaseUrlInheritanceBehavior[] =
+    "disable-new-base-url-inheritance-behavior";
+
 // Disable partial raster in the renderer. Disabling this switch also disables
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
@@ -125,22 +129,17 @@ const char kShowLayoutShiftRegions[] = "show-layout-shift-regions";
 // and study painting behavior.
 const char kShowPaintRects[] = "show-paint-rects";
 
+// Used to override the ThrottleDisplayNoneAndVisibilityHiddenCrossOrigin
+// feature from an enterprise policy.
+const char kDisableThrottleNonVisibleCrossOriginIframes[] =
+    "disable-throttle-non-visible-cross-origin-iframes";
+
 // Controls how text selection granularity changes when touch text selection
 // handles are dragged. Should be "character" or "direction". If not specified,
 // the platform default is used.
 const char kTouchTextSelectionStrategy[] = "touch-selection-strategy";
 const char kTouchTextSelectionStrategy_Character[] = "character";
 const char kTouchTextSelectionStrategy_Direction[] = "direction";
-
-// Used to communicate managed policy for the SetTimeoutWithoutClamp feature.
-// This feature is typically controlled by base::Feature (see
-// blink/common/features.*) but requires an enterprise policy override.
-// This is implicitly a tri-state, and can be either unset, or
-// set to "1" for force enable, or "0" for force disable.
-extern const char kSetTimeoutWithout1MsClampPolicy[] =
-    "set-timeout-without-1ms-clamp-policy";
-extern const char kSetTimeoutWithout1MsClampPolicy_ForceDisable[] = "0";
-extern const char kSetTimeoutWithout1MsClampPolicy_ForceEnable[] = "1";
 
 // Used to communicate managed policy for the MaxUnthrottledTimeoutNestingLevel
 // feature. This feature is typically controlled by base::Feature (see

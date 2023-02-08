@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -73,6 +73,8 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
 
   protected abstract afterZoom(viewportZoom: number): void;
 
+  protected abstract setPluginSrc(plugin: HTMLEmbedElement): void;
+
   /** Whether to enable the new UI. */
   protected isNewUiEnabled(): boolean {
     return true;
@@ -96,7 +98,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
     plugin.type = 'application/x-google-chrome-pdf';
 
     plugin.setAttribute('original-url', this.originalUrl);
-    plugin.setAttribute('src', this.browserApi!.getStreamInfo().streamUrl);
+    this.setPluginSrc(plugin);
 
     plugin.setAttribute(
         'background-color', this.getBackgroundColor().toString());
@@ -196,7 +198,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
     document.body.addEventListener('change-page-and-xy', e => {
       const point =
           this.viewport_!.convertPageToScreen(e.detail.page, e.detail);
-      this.viewport_!.goToPageAndXY(e.detail.page, point.x, point.y);
+      this.viewport_!.goToPageAndXy(e.detail.page, point.x, point.y);
     });
 
     // Setup the keyboard event listener.
@@ -239,7 +241,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
         this.viewport_!.setPosition(this.lastViewportPosition);
       }
       this.paramsParser!.getViewportFromUrlParams(this.originalUrl)
-          .then(params => this.handleURLParams_(params));
+          .then(params => this.handleUrlParams_(params));
       this.setLoadState(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage();
       while (this.delayedScriptingMessages_.length > 0) {
@@ -269,7 +271,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
   }
 
   /** Updates the UI before sending the viewport scripting message. */
-  protected abstract updateUIForViewportChange(): void;
+  protected abstract updateUiForViewportChange(): void;
 
   /** A callback to be called after the viewport changes. */
   private viewportChanged_() {
@@ -277,7 +279,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
       return;
     }
 
-    this.updateUIForViewportChange();
+    this.updateUiForViewportChange();
 
     const visiblePage = this.viewport_!.getMostVisiblePage();
     const visiblePageDimensions =
@@ -421,7 +423,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
    * later actions can override the effects of previous actions.
    * @param params The open params passed in the URL.
    */
-  private handleURLParams_(params: OpenPdfParams) {
+  private handleUrlParams_(params: OpenPdfParams) {
     assert(this.viewport_);
 
     if (params.zoom) {
@@ -429,7 +431,7 @@ export abstract class PdfViewerBaseElement extends PolymerElement {
     }
 
     if (params.position) {
-      this.viewport_.goToPageAndXY(
+      this.viewport_.goToPageAndXy(
           params.page ? params.page : 0, params.position.x, params.position.y);
     } else if (params.page) {
       this.viewport_.goToPage(params.page);

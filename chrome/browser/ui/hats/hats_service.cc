@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/accuracy_tips/features.h"
 #include "components/history_clusters/core/features.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/permissions/constants.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
-constexpr char kHatsSurveyTriggerAccuracyTips[] = "accuracy-tips";
 constexpr char kHatsSurveyTriggerAutofillAddress[] = "autofill-address";
 constexpr char kHatsSurveyTriggerAutofillCard[] = "autofill-card";
 constexpr char kHatsSurveyTriggerAutofillPassword[] = "autofill-password";
@@ -75,6 +73,18 @@ constexpr char kHatsSurveyTriggerTrustSafetyTrustedSurface[] =
     "ts-trusted-surface";
 constexpr char kHatsSurveyTriggerTrustSafetyTransactions[] = "ts-transactions";
 constexpr char kHatsSurveyTriggerWhatsNew[] = "whats-new";
+constexpr char kHatsSurveyTriggerTrustSafetyV2BrowsingData[] =
+    "ts-v2-browsing-data";
+constexpr char kHatsSurveyTriggerTrustSafetyV2ControlGroup[] =
+    "ts-v2-control-group";
+constexpr char kHatsSurveyTriggerTrustSafetyV2PasswordCheck[] =
+    "ts-v2-password-check";
+constexpr char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[] =
+    "ts-v2-safety-check";
+constexpr char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[] =
+    "ts-v2-trusted-surface";
+constexpr char kHatsSurveyTriggerTrustSafetyV2PrivacyGuide[] =
+    "ts-v2-privacy-guide";
 
 constexpr char kHatsNextSurveyTriggerIDTesting[] =
     "HLpeYy5Av0ugnJ3q1cK0XzzA8UHv";
@@ -248,12 +258,34 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       std::vector<std::string>{"Stable channel", "3P cookies blocked",
                                "Privacy Sandbox enabled"});
 
-  // Accuracy tips survey.
+  // Trust & Safety Sentiment surveys - Version 2.
   survey_configs.emplace_back(
-      &accuracy_tips::features::kAccuracyTipsSurveyFeature,
-      kHatsSurveyTriggerAccuracyTips,
-      /*presupplied_trigger_id=*/absl::nullopt, std::vector<std::string>{},
-      std::vector<std::string>{"Tip shown for URL", "UI interaction"});
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2BrowsingData,
+      features::kTrustSafetySentimentSurveyV2BrowsingDataTriggerId.Get(),
+      std::vector<std::string>{"Deleted history", "Deleted downloads",
+                               "Deleted autofill form data"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2ControlGroup,
+      features::kTrustSafetySentimentSurveyV2ControlGroupTriggerId.Get());
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2PasswordCheck,
+      features::kTrustSafetySentimentSurveyV2PasswordCheckTriggerId.Get());
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2SafetyCheck,
+      features::kTrustSafetySentimentSurveyV2SafetyCheckTriggerId.Get());
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2TrustedSurface,
+      features::kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId.Get(),
+      std::vector<std::string>{"Interacted with Page Info"});
+  survey_configs.emplace_back(
+      &features::kTrustSafetySentimentSurveyV2,
+      kHatsSurveyTriggerTrustSafetyV2PrivacyGuide,
+      features::kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId.Get());
 
   // Autofill surveys.
   survey_configs.emplace_back(&features::kAutofillAddressSurvey,

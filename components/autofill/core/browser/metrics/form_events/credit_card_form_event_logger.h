@@ -15,8 +15,10 @@
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/form_event_logger_base.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
+#include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/signatures.h"
 
 namespace autofill {
@@ -43,14 +45,14 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
 
   ~CreditCardFormEventLogger() override;
 
-  void set_is_context_secure(bool is_context_secure) {
-    is_context_secure_ = is_context_secure;
-  }
-
-  // Invoked when |suggestions| are successfully fetched. |with_offer| indicates
+  // Invoked when `suggestions` are successfully fetched. `with_offer` indicates
   // whether an offer is attached to any of the suggestion in the list.
+  // `metadata_logging_context` contains information about whether any card has
+  // a non-empty product description or art image, and whether they are shown.
   void OnDidFetchSuggestion(const std::vector<Suggestion>& suggestions,
-                            bool with_offer);
+                            bool with_offer,
+                            const autofill_metrics::CardMetadataLoggingContext&
+                                metadata_logging_context);
 
   void OnDidShowSuggestions(const FormStructure& form,
                             const AutofillField& field,
@@ -127,7 +129,6 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   // Returns whether the shown suggestions included a virtual credit card.
   bool DoSuggestionsIncludeVirtualCard();
 
-  bool is_context_secure_ = false;
   UnmaskAuthFlowType current_authentication_flow_;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
   bool has_logged_virtual_card_suggestion_selected_ = false;
@@ -139,6 +140,10 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   std::vector<Suggestion> suggestions_;
   bool has_eligible_offer_ = false;
   bool card_selected_has_offer_ = false;
+  autofill_metrics::CardMetadataLoggingContext metadata_logging_context_;
+
+  // Set when a list of suggestion is shown.
+  base::TimeTicks suggestion_shown_timestamp_;
 
   // Weak references.
   raw_ptr<PersonalDataManager> personal_data_manager_;

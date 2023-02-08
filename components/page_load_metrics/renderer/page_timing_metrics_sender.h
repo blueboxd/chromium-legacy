@@ -50,6 +50,9 @@ class PageTimingMetricsSender {
   ~PageTimingMetricsSender();
 
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior);
+  void DidObserveSubresourceLoad(
+      uint32_t number_of_subresources_loaded,
+      uint32_t number_of_subresource_loads_handled_by_service_worker);
   void DidObserveNewFeatureUsage(const blink::UseCounterFeature& feature);
   void DidObserveSoftNavigation(uint32_t count);
   void DidObserveLayoutShift(double score, bool after_input_or_scroll);
@@ -57,7 +60,6 @@ class PageTimingMetricsSender {
                           uint32_t ng_block_count,
                           uint32_t all_call_count,
                           uint32_t ng_call_count);
-  void DidObserveMobileFriendlinessChanged(const blink::MobileFriendliness&);
 
   void DidStartResponse(const url::SchemeHostPort& final_response_url,
                         int resource_id,
@@ -111,7 +113,7 @@ class PageTimingMetricsSender {
   mojom::PageLoadTimingPtr last_timing_;
   mojom::CpuTimingPtr last_cpu_timing_;
   mojom::InputTimingPtr input_timing_delta_;
-  absl::optional<blink::MobileFriendliness> mobile_friendliness_;
+  mojom::SubresourceLoadMetricsPtr subresource_load_metrics_;
 
   // The the sender keep track of metadata as it comes in, because the sender is
   // scoped to a single committed load.

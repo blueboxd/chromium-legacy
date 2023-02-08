@@ -4,6 +4,8 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,7 +14,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
 import android.text.SpannableString;
@@ -25,7 +26,9 @@ import androidx.preference.Preference;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.subresource_filter.SubresourceFilterFeatureList;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -43,7 +46,8 @@ public class SiteSettingsCategory {
             Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC, Type.NOTIFICATIONS, Type.POPUPS,
             Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND, Type.USB, Type.VIRTUAL_REALITY,
             Type.USE_STORAGE, Type.AUTO_DARK_WEB_CONTENT, Type.REQUEST_DESKTOP_SITE,
-            Type.FEDERATED_IDENTITY_API})
+            Type.FEDERATED_IDENTITY_API, Type.THIRD_PARTY_COOKIES, Type.SITE_DATA,
+            Type.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // All updates here must also be reflected in {@link #preferenceKey(int)
@@ -74,10 +78,12 @@ public class SiteSettingsCategory {
         int AUTO_DARK_WEB_CONTENT = 23;
         int REQUEST_DESKTOP_SITE = 24;
         int FEDERATED_IDENTITY_API = 25;
+        int THIRD_PARTY_COOKIES = 26;
+        int SITE_DATA = 27;
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 26;
+        int NUM_ENTRIES = 28;
     }
 
     private final BrowserContextHandle mBrowserContextHandle;
@@ -173,6 +179,8 @@ public class SiteSettingsCategory {
             case Type.CLIPBOARD:
                 return ContentSettingsType.CLIPBOARD_READ_WRITE;
             case Type.COOKIES:
+            case Type.SITE_DATA:
+            case Type.THIRD_PARTY_COOKIES:
                 return ContentSettingsType.COOKIES;
             case Type.REQUEST_DESKTOP_SITE:
                 return ContentSettingsType.REQUEST_DESKTOP_SITE;
@@ -202,11 +210,12 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.USB_GUARD;
             case Type.VIRTUAL_REALITY:
                 return ContentSettingsType.VR;
-            // case Type.ALL_SITES
-            // case Type.USE_STORAGE
-            default:
+            case Type.ALL_SITES:
+            case Type.USE_STORAGE:
                 return ContentSettingsType.DEFAULT; // Conversion unavailable.
         }
+        assert false;
+        return ContentSettingsType.DEFAULT;
     }
 
     /**
@@ -282,6 +291,10 @@ public class SiteSettingsCategory {
                 return "use_storage";
             case Type.VIRTUAL_REALITY:
                 return "virtual_reality";
+            case Type.SITE_DATA:
+                return "site_data";
+            case Type.THIRD_PARTY_COOKIES:
+                return "third_party_cookies";
             default:
                 assert false;
                 return "";
@@ -333,6 +346,9 @@ public class SiteSettingsCategory {
                 || mCategory == Type.CAMERA || mCategory == Type.MICROPHONE) {
             return !WebsitePreferenceBridge.isContentSettingUserModifiable(
                     getBrowserContextHandle(), getContentSettingsType());
+        } else if (mCategory == Type.THIRD_PARTY_COOKIES) {
+            PrefService prefService = UserPrefs.get(getBrowserContextHandle());
+            return prefService.isManagedPreference(COOKIE_CONTROLS_MODE);
         }
         return false;
     }
@@ -542,8 +558,6 @@ public class SiteSettingsCategory {
      * @param permission The string of the permission to check.
      */
     private boolean permissionOnInAndroid(String permission, Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true;
-
         return PackageManager.PERMISSION_GRANTED
                 == ApiCompatibilityUtils.checkPermission(
                         context, permission, Process.myPid(), Process.myUid());

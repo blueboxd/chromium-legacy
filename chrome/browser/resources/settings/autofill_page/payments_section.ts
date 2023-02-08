@@ -209,8 +209,8 @@ export class SettingsPaymentsSectionElement extends
     this.setPersonalDataListener_ = setPersonalDataListener;
 
     // Request initial data.
-    this.paymentsManager_.getCreditCardList(setCreditCardsListener);
-    this.paymentsManager_.getUpiIdList(setUpiIdsListener);
+    this.paymentsManager_.getCreditCardList().then(setCreditCardsListener);
+    this.paymentsManager_.getUpiIdList().then(setUpiIdsListener);
 
     // Listen for changes.
     this.paymentsManager_.setPersonalDataManagerListener(
@@ -356,8 +356,8 @@ export class SettingsPaymentsSectionElement extends
   /**
    * Listens for the enable-authentication event, and calls the private API.
    */
-  private setFIDOAuthenticationEnabledState_() {
-    this.paymentsManager_.setCreditCardFIDOAuthEnabledState(
+  private setFidoAuthenticationEnabledState_() {
+    this.paymentsManager_.setCreditCardFidoAuthEnabledState(
         this.shadowRoot!
             .querySelector<SettingsToggleButtonElement>(
                 '#autofillCreditCardFIDOAuthToggle')!.checked);

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/ntp/feed_header_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
@@ -198,7 +199,7 @@
     self.shouldScrollIntoFeed = NO;
   }
 
-  [self updateFeedSigninPromoIsVisible];
+  [self updateFeedTopSectionIsVisible];
 
   // Since this VC is shared across web states, the stickiness might have
   // changed in another tab. This ensures that the sticky elements are correct
@@ -338,20 +339,19 @@
                                      kContentSuggestionsReset];
   }
 
-  // Configures the feed header in the view hierarchy if it is visible.
-  if (self.feedHeaderViewController) {
-    // Ensure that sticky header is not covered by omnibox.
-    if ([self.ntpContentDelegate isContentHeaderSticky]) {
-      self.feedHeaderViewController.view.layer.zPosition = FLT_MAX;
-    }
-    [self addViewControllerAboveFeed:self.feedHeaderViewController];
-  }
   [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
 
   // Adds the feed top section to the view hierarchy if it exists.
   if (IsDiscoverFeedTopSyncPromoEnabled() &&
       self.feedTopSectionViewController) {
     [self addViewControllerAboveFeed:self.feedTopSectionViewController];
+  }
+
+  // Configures the feed header in the view hierarchy if it is visible. Add it
+  // in the order that guarantees it is behind `headerController` and in front
+  // of all other views.
+  if (self.feedHeaderViewController) {
+    [self addViewControllerAboveFeed:self.feedHeaderViewController];
   }
 
   [self addViewControllerAboveFeed:self.headerController];
@@ -530,7 +530,7 @@
   [self handleStickyElementsForScrollPosition:scrollPosition force:NO];
 
   if (self.viewDidAppear) {
-    [self updateFeedSigninPromoIsVisible];
+    [self updateFeedTopSectionIsVisible];
   }
 }
 
@@ -800,27 +800,17 @@
 
 // Checks whether the feed top section is visible and updates the
 // `ntpContentDelegate`.
-- (void)updateFeedSigninPromoIsVisible {
+- (void)updateFeedTopSectionIsVisible {
   if (!self.feedTopSectionViewController) {
     return;
   }
-
-  // The y-position where NTP content starts being visible.
-  CGFloat visibleContentStartingPoint = [self scrollPosition] +
-                                        self.view.frame.size.height -
-                                        self.view.safeAreaInsets.top;
-
-  // Signin promo is logged as visible when at least the top 2/3 or bottom 1/3
-  // of it can be seen. This is not logged if the user focuses the omnibox since
-  // the suggestion sheet covers the NTP content.
-  BOOL isFeedSigninPromoVisible =
-      (visibleContentStartingPoint > -([self feedTopSectionHeight] * 2) / 3 &&
-       ([self scrollPosition] <
-        -([self stickyContentHeight] + [self feedTopSectionHeight] / 3))) &&
-      ![self.headerController isOmniboxFocused];
-
+  BOOL isFeedTopSectionVisible =
+      ([self scrollPosition] + self.view.frame.size.height -
+           self.view.safeAreaInsets.top >
+       -[self feedTopSectionHeight]) &&
+      ([self scrollPosition] < -[self stickyContentHeight]);
   [self.ntpContentDelegate
-      signinPromoHasChangedVisibility:isFeedSigninPromoVisible];
+      feedTopSectionHasChangedVisibility:isFeedTopSectionVisible];
 }
 
 // TODO(crbug.com/1170995): Remove once the Feed header properly supports

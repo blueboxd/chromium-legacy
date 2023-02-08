@@ -37,6 +37,19 @@ class ConsolidatedConsentScreen
     NOT_APPLICABLE,
   };
 
+  // The result of the cryptohome recovery opt-in.
+  // These values are logged to UMA
+  // ("OOBE.ConsolidatedConsentScreen.RecoveryOptInResult"). Entries should not
+  // be renumbered and numeric values should never be reused.
+  enum class RecoveryOptInResult {
+    kNotSupported = 0,
+    kUserOptIn = 1,
+    kUserOptOut = 2,
+    kPolicyOptIn = 3,
+    kPolicyOptOut = 4,
+    kMaxValue = kPolicyOptOut,
+  };
+
   class Observer : public base::CheckedObserver {
    public:
     // Called when the user accepts terms of service.
@@ -131,11 +144,5 @@ class ConsolidatedConsentScreen
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash ::ConsolidatedConsentScreen;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_CONSOLIDATED_CONSENT_SCREEN_H_

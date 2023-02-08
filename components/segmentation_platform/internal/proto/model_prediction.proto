@@ -8,17 +8,8 @@ option optimize_for = LITE_RUNTIME;
 package segmentation_platform.proto;
 
 import "components/segmentation_platform/public/proto/model_metadata.proto";
+import "components/segmentation_platform/public/proto/prediction_result.proto";
 import "components/segmentation_platform/public/proto/segmentation_platform.proto";
-
-// Result from the model evaluation for a given segment.
-message PredictionResult {
-  // The result is the confidence rating from the model evaluation.
-  repeated float result = 1;
-
-  // The time when the prediction was made, in terms of the number of
-  // microseconds since Windows epoch.
-  optional int64 timestamp_us = 2;
-}
 
 // Partial training data set with only inputs, used when observation period has
 // not ended.

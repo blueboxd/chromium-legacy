@@ -193,7 +193,8 @@ FeatureInfo::FeatureInfo(
           .status_values[GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_CAST_ANDROID)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_CAST_ANDROID) || \
+    BUILDFLAG(IS_FUCHSIA)
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
@@ -201,7 +202,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   feature_flags_.chromium_image_ycbcr_p010 = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::P010);
@@ -309,12 +310,6 @@ bool IsGL_REDSupportedOnFBOs() {
 
   return result;
 #endif  // BUILDFLAG(IS_MAC)
-}
-
-void FeatureInfo::EnableTextureStorageImage() {
-  if (!feature_flags_.texture_storage_image) {
-    feature_flags_.texture_storage_image = true;
-  }
 }
 
 void FeatureInfo::EnableEXTFloatBlend() {
@@ -1403,7 +1398,6 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   bool ui_gl_fence_works = gl::GLFence::IsSupported();
-  UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
       gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
@@ -1501,7 +1495,6 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_8);
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::RG_88);
   }
-  UMA_HISTOGRAM_BOOLEAN("GPU.TextureRG", feature_flags_.ext_texture_rg);
 
   if (IsWebGL2OrES3OrHigherContext() &&
       (gl_version_info_->is_desktop_core_profile ||
@@ -1737,6 +1730,11 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_ANGLE_rgbx_internal_format");
     validators_.texture_internal_format_storage.AddValue(GL_RGBX8_ANGLE);
   }
+
+  if (gfx::HasExtension(extensions, "GL_ANGLE_provoking_vertex")) {
+    feature_flags_.angle_provoking_vertex = true;
+    AddExtensionString("GL_ANGLE_provoking_vertex");
+  }
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
@@ -1902,10 +1900,6 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, width, 0, GL_RGB,
                    GL_FLOAT, nullptr);
       GLenum status_rgb = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
-      base::UmaHistogramBoolean("GPU.RenderableFormat.RGBA32F.FLOAT",
-                                status_rgba == GL_FRAMEBUFFER_COMPLETE);
-      base::UmaHistogramBoolean("GPU.RenderableFormat.RGB32F.FLOAT",
-                                status_rgb == GL_FRAMEBUFFER_COMPLETE);
 
       // For desktop systems, check to see if we support rendering to the full
       // range of formats supported by EXT_color_buffer_float
@@ -1917,22 +1911,12 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
         const GLenum kFormats[] = {
             GL_RED, GL_RG, GL_RGBA, GL_RED, GL_RG, GL_RGB,
         };
-        const char* kInternalFormatHistogramNames[] = {
-            "GPU.RenderableFormat.R16F.FLOAT",
-            "GPU.RenderableFormat.RG16F.FLOAT",
-            "GPU.RenderableFormat.RGBA16F.FLOAT",
-            "GPU.RenderableFormat.R32F.FLOAT",
-            "GPU.RenderableFormat.RG32F.FLOAT",
-            "GPU.RenderableFormat.R11F_G11F_B10F.FLOAT",
-        };
         DCHECK_EQ(std::size(kInternalFormats), std::size(kFormats));
         for (size_t i = 0; i < std::size(kFormats); ++i) {
           glTexImage2D(GL_TEXTURE_2D, 0, kInternalFormats[i], width, width, 0,
                        kFormats[i], GL_FLOAT, nullptr);
           bool supported = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
                            GL_FRAMEBUFFER_COMPLETE;
-          base::UmaHistogramBoolean(kInternalFormatHistogramNames[i],
-                                    supported);
           full_float_support &= supported;
         }
         enable_ext_color_buffer_float = full_float_support;
@@ -1953,8 +1937,6 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
                      data_type, nullptr);
         bool supported = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER) ==
                          GL_FRAMEBUFFER_COMPLETE;
-        base::UmaHistogramBoolean("GPU.RenderableFormat.RGBA16F.HALF_FLOAT",
-                                  supported);
         enable_ext_color_buffer_half_float = supported;
       }
 

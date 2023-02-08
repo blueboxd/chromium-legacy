@@ -132,7 +132,7 @@ public abstract class OriginVerifier {
         PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
 
         mSignatureFingerprints =
-                PackageUtils.getCertificateSHA256FingerprintForPackage(pm, packageName);
+                PackageUtils.getCertificateSHA256FingerprintForPackage(packageName);
 
         mRelation = relation;
         mWebContents = webContents;
@@ -171,8 +171,8 @@ public abstract class OriginVerifier {
         String scheme = origin.uri().getScheme();
         String host = origin.uri().getHost();
         if (TextUtils.isEmpty(scheme)
-                || !(UrlConstants.LOCALHOST.equals(host.toLowerCase(Locale.US))
-                        || UrlConstants.HTTPS_SCHEME.equals(scheme.toLowerCase(Locale.US)))) {
+                || (UrlConstants.HTTP_SCHEME.equals(scheme.toLowerCase(Locale.US))
+                        && !UrlConstants.LOCALHOST.equals(host.toLowerCase(Locale.US)))) {
             Log.i(TAG, "Verification failed for %s as not https or localhost.", origin);
             recordResultMetrics(VerifierResult.HTTPS_FAILURE);
             PostTask.runOrPostTask(

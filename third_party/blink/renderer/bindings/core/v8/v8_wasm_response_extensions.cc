@@ -4,12 +4,13 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
+#include "components/crash/core/common/crash_key.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -522,9 +523,31 @@ void StreamFromResponseCallback(
     return;
   }
 
+  // The enum values need to match "WasmStreamingInputType" in
+  // tools/metrics/histograms/enums.xml.
+  enum class WasmStreamingInputType {
+    kNoResponse = 0,
+    kResponseNotOK = 1,
+    kWrongMimeType = 2,
+    kReponseEmpty = 3,
+    kReponseLocked = 4,
+    kNoURL = 5,
+    kValidHttp = 6,
+    kValidHttps = 7,
+    kValidDataURL = 8,
+    kValidFileURL = 9,
+    kValidBlob = 10,
+    kValidChromeExtension = 11,
+    kValidOtherProtocol = 12,
+
+    kMaxValue = kValidOtherProtocol
+  };
+
   Response* response =
       V8Response::ToImplWithTypeCheck(args.GetIsolate(), args[0]);
   if (!response) {
+    base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
+                                  WasmStreamingInputType::kNoResponse);
     exception_state.ThrowTypeError(
         "An argument must be provided, which must be a "
         "Response or Promise<Response> object");
@@ -532,6 +555,8 @@ void StreamFromResponseCallback(
   }
 
   if (!response->ok()) {
+    base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
+                                  WasmStreamingInputType::kResponseNotOK);
     exception_state.ThrowTypeError("HTTP status code is not ok");
     return;
   }
@@ -540,23 +565,46 @@ void StreamFromResponseCallback(
   // so we check against ContentType() rather than MimeType(), which
   // implicitly strips extras.
   if (response->ContentType().LowerASCII() != "application/wasm") {
+    base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
+                                  WasmStreamingInputType::kWrongMimeType);
     exception_state.ThrowTypeError(
         "Incorrect response MIME type. Expected 'application/wasm'.");
     return;
   }
 
   if (response->IsBodyLocked() || response->IsBodyUsed()) {
+    base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
+                                  WasmStreamingInputType::kReponseLocked);
     exception_state.ThrowTypeError(
         "Cannot compile WebAssembly.Module from an already read Response");
     return;
   }
 
   if (!response->BodyBuffer()) {
+    base::UmaHistogramEnumeration("V8.WasmStreamingInputType",
+                                  WasmStreamingInputType::kReponseEmpty);
     // Since the status is 2xx (ok), this must be status 204 (No Content),
     // status 205 (Reset Content) or a malformed status 200 (OK).
     exception_state.ThrowWasmCompileError("Empty WebAssembly module");
     return;
   }
+
+  auto protocol_type = WasmStreamingInputType::kNoURL;
+  if (const KURL* kurl = response->GetResponse()->Url()) {
+    String protocol = kurl->Protocol();
+    // Http and https can be cached; also track other protocols we expect in
+    // Wasm streaming. If {kValidOtherProtocol} spikes, we should add more enum
+    // values.
+    protocol_type = protocol == "http"    ? WasmStreamingInputType::kValidHttp
+                    : protocol == "https" ? WasmStreamingInputType::kValidHttps
+                    : protocol == "data" ? WasmStreamingInputType::kValidDataURL
+                    : protocol == "file" ? WasmStreamingInputType::kValidFileURL
+                    : protocol == "blob" ? WasmStreamingInputType::kValidBlob
+                    : protocol == "chrome-extension"
+                        ? WasmStreamingInputType::kValidChromeExtension
+                        : WasmStreamingInputType::kValidOtherProtocol;
+  }
+  base::UmaHistogramEnumeration("V8.WasmStreamingInputType", protocol_type);
 
   String url = response->url();
   const std::string& url_utf8 = url.Utf8();

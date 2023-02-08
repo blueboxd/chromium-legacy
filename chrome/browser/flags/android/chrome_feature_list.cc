@@ -123,7 +123,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
-    &features::kElidePrioritizationOfPreNativeBootstrapTasks,
     &features::kPrivacyGuideAndroid,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
@@ -169,6 +168,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &history_clusters::internal::kJourneys,
     &kAdaptiveButtonInTopToolbar,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
+    &kAddEduAccountFromAccountSettingsForSupervisedUsers,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
     &kAndroidScrollOptimizations,
@@ -180,7 +180,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAssistantIntentPageUrl,
     &kAssistantIntentTranslateInfo,
     &kAssistantNonPersonalizedVoiceSearch,
-    &kAppLaunchpad,
     &kAppMenuMobileSiteOption,
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
@@ -192,6 +191,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTBackgroundTab,
     &kCCTBrandTransparency,
     &kCCTClientDataHeader,
+    &kCCTFeatureUsage,
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTNewDownloadTab,
@@ -207,6 +207,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableAlwaysShowNavBarButtons,
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
+    &kCCTResizableSideSheet,
     &kCCTRetainingState,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
@@ -235,19 +236,16 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchForceCaption,
     &kContextualSearchSuppressShortView,
     &kContextualSearchThinWebViewImplementation,
+    &kDeferKeepScreenOnDuringGesture,
     &kDirectActions,
-    &kDownloadFileProvider,
-    &kDownloadNotificationBadge,
-    &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
-    &kEnableFamilyInfoFeedback,
     &kExperimentsForAgsa,
     &kExploreSites,
-    &kFixedUmaSessionResumeOrder,
     &kFocusOmniboxInIncognitoTabIntents,
     &kFoldableJankFix,
     &kGridTabSwitcherForTablets,
     &kHandleMediaIntents,
+    &kHideNonDisplayableAccountEmail,
     &kImmersiveUiMode,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
@@ -371,6 +369,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxRemoveExcessiveRecycledViewClearCalls,
     &omnibox::kOmniboxRemoveSuggestionHeaderCapitalization,
     &omnibox::kOmniboxRemoveSuggestionHeaderChevron,
+    &omnibox::kOmniboxMostVisitedTilesAddRecycledViewPool,
     &omnibox::kOmniboxMostVisitedTilesFadingOnTablet,
     &omnibox::kOmniboxMostVisitedTilesOnSrp,
     &omnibox::kOmniboxOnClobberFocusTypeOnContent,
@@ -385,9 +384,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordDomainCapabilitiesFetching,
     &password_manager::features::kPasswordChange,
-    &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
@@ -401,7 +398,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesOnStart,
     &query_tiles::features::kQueryTilesSegmentation,
     &reading_list::switches::kReadLater,
-    &safe_browsing::kCreateSafebrowsingOnStartup,
     &segmentation_platform::features::kContextualPageActions,
     &segmentation_platform::features::kContextualPageActionPriceTracking,
     &segmentation_platform::features::kContextualPageActionReaderMode,
@@ -414,10 +410,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kUpcomingSharingFeatures,
     &supervised_users::kLocalWebApprovals,
     &supervised_users::kWebFilterInterstitialRefresh,
-    &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
+    &syncer::kSyncEnableHistoryDataType,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncAndroidPromosWithAlternativeTitle,
@@ -461,6 +457,10 @@ BASE_FEATURE(kAdaptiveButtonInTopToolbar,
 BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
              "AdaptiveButtonInTopToolbarCustomizationV2",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAddEduAccountFromAccountSettingsForSupervisedUsers,
+             "AddEduAccountFromAccountSettingsForSupervisedUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAddToHomescreenIPH,
              "AddToHomescreenIPH",
@@ -509,8 +509,6 @@ BASE_FEATURE(kAssistantIntentTranslateInfo,
 BASE_FEATURE(kAssistantNonPersonalizedVoiceSearch,
              "AssistantNonPersonalizedVoiceSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAppLaunchpad, "AppLaunchpad", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAppMenuMobileSiteOption,
              "AppMenuMobileSiteOption",
@@ -565,6 +563,10 @@ BASE_FEATURE(kCCTNewDownloadTab,
              "CCTNewDownloadTab",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTFeatureUsage,
+             "CCTFeatureUsage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTIncognito, "CCTIncognito", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTIncognitoAvailableToThirdParty,
@@ -618,6 +620,10 @@ BASE_FEATURE(kCCTResizableForFirstParties,
 BASE_FEATURE(kCCTResizableForThirdParties,
              "CCTResizableForThirdParties",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTResizableSideSheet,
+             "CCTResizableSideSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
@@ -721,7 +727,7 @@ BASE_FEATURE(kContextualSearchDisableOnlineDetection,
 
 BASE_FEATURE(kContextualSearchForceCaption,
              "ContextualSearchForceCaption",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kContextualSearchSuppressShortView,
              "ContextualSearchSuppressShortView",
@@ -729,6 +735,10 @@ BASE_FEATURE(kContextualSearchSuppressShortView,
 
 BASE_FEATURE(kContextualSearchThinWebViewImplementation,
              "ContextualSearchThinWebViewImplementation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDeferKeepScreenOnDuringGesture,
+             "DeferKeepScreenOnDuringGesture",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDirectActions, "DirectActions", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -739,18 +749,6 @@ BASE_FEATURE(kDownloadAutoResumptionThrottling,
 
 BASE_FEATURE(kDownloadHomeForExternalApp,
              "DownloadHomeForExternalApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadFileProvider,
-             "DownloadFileProvider",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadNotificationBadge,
-             "DownloadNotificationBadge",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDownloadRename,
-             "DownloadRename",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDuetTabStripIntegrationAndroid,
@@ -775,6 +773,10 @@ BASE_FEATURE(kHandleMediaIntents,
              "HandleMediaIntents",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kHideNonDisplayableAccountEmail,
+             "HideNonDisplayableAccountEmail",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kImmersiveUiMode,
              "ImmersiveUiMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -789,7 +791,7 @@ BASE_FEATURE(kIncognitoScreenshot,
 
 BASE_FEATURE(kInfobarScrollOptimization,
              "InfobarScrollOptimization",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
 

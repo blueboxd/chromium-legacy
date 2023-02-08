@@ -112,19 +112,17 @@ SubAppInstallCommand::SubAppInstallCommand(
     std::vector<std::pair<UnhashedAppId, GURL>> sub_apps,
     SubAppInstallResultCallback install_callback,
     Profile* profile,
-    const WebAppRegistrar* registrar,
-    WebAppInstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppUrlLoader> url_loader,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
-    : lock_description_(
+    : WebAppCommandTemplate<SharedWebContentsWithAppLock>(
+          "SubAppInstallCommand"),
+      lock_description_(
           std::make_unique<SharedWebContentsWithAppLockDescription>(
               CreateAppIdsForLock(parent_app_id, sub_apps))),
       parent_app_id_{parent_app_id},
       requested_installs_{std::move(sub_apps)},
       install_callback_{std::move(install_callback)},
       profile_(profile),
-      registrar_{registrar},
-      install_finalizer_{install_finalizer},
       url_loader_(std::move(url_loader)),
       data_retriever_{std::move(data_retriever)},
       log_entry_(/*background_installation=*/false,
@@ -138,7 +136,6 @@ LockDescription& SubAppInstallCommand::lock_description() const {
 
 base::Value SubAppInstallCommand::ToDebugValue() const {
   base::Value::Dict install_info;
-  install_info.Set("type", "SubAppInstallCommand");
   install_info.Set("parent_app_id", parent_app_id_);
   base::Value::List pending_installs;
   for (const auto& installs_remaining : requested_installs_) {
@@ -157,10 +154,13 @@ void SubAppInstallCommand::SetDialogNotAcceptedForTesting() {
   dialog_not_accepted_for_testing_ = true;
 }
 
-void SubAppInstallCommand::Start() {
+void SubAppInstallCommand::StartWithLock(
+    std::unique_ptr<SharedWebContentsWithAppLock> lock) {
+  lock_ = std::move(lock);
+
   DCHECK(state_ == State::kNotStarted);
 
-  if (!registrar_->IsInstalled(parent_app_id_)) {
+  if (!lock_->registrar().IsInstalled(parent_app_id_)) {
     base::ranges::transform(
         requested_installs_, std::inserter(results_, results_.begin()),
         [](auto const& pair) {
@@ -216,7 +216,7 @@ void SubAppInstallCommand::StartNextInstall() {
   }
 
   url_loader_->LoadUrl(
-      install_url, shared_web_contents(),
+      install_url, &lock_->shared_web_contents(),
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(
           &SubAppInstallCommand::OnWebAppUrlLoadedGetWebAppInstallInfo,
@@ -251,7 +251,7 @@ void SubAppInstallCommand::OnWebAppUrlLoadedGetWebAppInstallInfo(
   }
 
   data_retriever_->GetWebAppInstallInfo(
-      shared_web_contents(),
+      &lock_->shared_web_contents(),
       base::BindOnce(&SubAppInstallCommand::OnGetWebAppInstallInfo,
                      weak_ptr_factory_.GetWeakPtr(), unhashed_app_id));
 }
@@ -276,7 +276,7 @@ void SubAppInstallCommand::OnGetWebAppInstallInfo(
   install_info->user_display_mode = UserDisplayMode::kStandalone;
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      shared_web_contents(), /*bypass_service_worker_check=*/false,
+      &lock_->shared_web_contents(), /*bypass_service_worker_check=*/false,
       base::BindOnce(&SubAppInstallCommand::OnDidPerformInstallableCheck,
                      weak_ptr_factory_.GetWeakPtr(), unhashed_app_id,
                      std::move(install_info)));
@@ -316,7 +316,7 @@ void SubAppInstallCommand::OnDidPerformInstallableCheck(
     return;
   }
 
-  if (registrar_->WasInstalledBySubApp(app_id)) {
+  if (lock_->registrar().WasInstalledBySubApp(app_id)) {
     MaybeFinishInstall(unhashed_app_id,
                        webapps::InstallResultCode::kSuccessAlreadyInstalled);
     return;
@@ -327,7 +327,7 @@ void SubAppInstallCommand::OnDidPerformInstallableCheck(
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info);
 
   data_retriever_->GetIcons(
-      shared_web_contents(), std::move(icon_urls), skip_page_favicons,
+      &lock_->shared_web_contents(), std::move(icon_urls), skip_page_favicons,
       base::BindOnce(&SubAppInstallCommand::OnIconsRetrievedShowDialog,
                      weak_ptr_factory_.GetWeakPtr(), unhashed_app_id,
                      std::move(web_app_info)));
@@ -367,7 +367,7 @@ void SubAppInstallCommand::OnDialogCompleted(
 
   web_app_info->user_display_mode = UserDisplayMode::kStandalone;
 
-  install_finalizer_->FinalizeInstall(
+  lock_->install_finalizer().FinalizeInstall(
       *web_app_info, GetFinalizerOptionsForSubApps(parent_app_id_),
       base::BindOnce(&SubAppInstallCommand::OnInstallFinalized,
                      weak_ptr_factory_.GetWeakPtr(), unhashed_app_id,
@@ -387,7 +387,7 @@ void SubAppInstallCommand::OnInstallFinalized(
 
   RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
                                     webapps::WebappInstallSource::SUB_APP);
-  RecordAppBanner(shared_web_contents(), start_url);
+  RecordAppBanner(&lock_->shared_web_contents(), start_url);
   MaybeFinishInstall(unhashed_app_id,
                      webapps::InstallResultCode::kSuccessNewInstall);
 }
@@ -466,7 +466,7 @@ void SubAppInstallCommand::AddResultAndRemoveFromPendingInstalls(
 }
 
 bool SubAppInstallCommand::IsWebContentsDestroyed() {
-  return !shared_web_contents() || shared_web_contents()->IsBeingDestroyed();
+  return lock_->shared_web_contents().IsBeingDestroyed();
 }
 
 void SubAppInstallCommand::AddResultToDebugData(

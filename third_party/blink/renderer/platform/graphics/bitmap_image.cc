@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -175,11 +176,8 @@ bool BitmapImage::GetHotSpot(gfx::Point& hot_spot) const {
 bool BitmapImage::ShouldReportByteSizeUMAs(bool data_now_completely_received) {
   if (!decoder_)
     return false;
-  // Ensures that refactoring to check truthiness of ByteSize() method is
-  // equivalent to the previous use of Data() and does not mess up UMAs.
-  DCHECK_EQ(!decoder_->ByteSize(), !decoder_->Data());
   return !all_data_received_ && data_now_completely_received &&
-         decoder_->ByteSize() && IsSizeAvailable();
+         decoder_->ByteSize() != 0 && IsSizeAvailable();
 }
 
 Image::SizeAvailability BitmapImage::SetData(scoped_refptr<SharedBuffer> data,
@@ -248,6 +246,10 @@ bool BitmapImage::HasColorProfile() const {
 
 String BitmapImage::FilenameExtension() const {
   return decoder_ ? decoder_->FilenameExtension() : String();
+}
+
+const AtomicString& BitmapImage::MimeType() const {
+  return decoder_ ? decoder_->MimeType() : g_null_atom;
 }
 
 void BitmapImage::Draw(cc::PaintCanvas* canvas,

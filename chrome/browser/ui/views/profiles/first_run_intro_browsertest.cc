@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "base/functional/callback_helpers.h"
+#include "base/scoped_environment_variable_override.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/signin_features.h"
@@ -31,6 +33,7 @@ struct TestParam {
   bool use_dark_theme = false;
   bool use_fixed_size = false;
   bool use_longer_strings = false;
+  bool use_right_to_left_language = false;
 };
 
 // To be passed as 4th argument to `INSTANTIATE_TEST_SUITE_P()`, allows the test
@@ -49,17 +52,18 @@ const TestParam kTestParams[] = {
     {.test_suffix = "LongerStringsFixedSize",
      .use_fixed_size = true,
      .use_longer_strings = true},
+    {.test_suffix = "RightToLeftLanguage", .use_right_to_left_language = true},
 };
 
 const char kMakeCardDescriptionLongerJsString[] =
-    "(async () => {"
-    "const introApp = document.querySelector('intro-app');"
-    "const signInPromo = introApp.shadowRoot.querySelector('sign-in-promo');"
-    "const cardDescriptions = "
-    "Array.from(signInPromo.shadowRoot.querySelectorAll('.benefit-card-"
-    "description'));"
-    "cardDescriptions[0].innerHTML = cardDescriptions[0].innerHTML.repeat(20);"
-    "return true;"
+    "(() => {"
+    "  const introApp = document.querySelector('intro-app');"
+    "  const signInPromo = introApp.shadowRoot.querySelector('sign-in-promo');"
+    "  const cardDescriptions = signInPromo.shadowRoot.querySelectorAll("
+    "      '.benefit-card-description');"
+    "  cardDescriptions[0].textContent = "
+    "      cardDescriptions[0].textContent.repeat(20);"
+    "  return true;"
     "})();";
 
 }  // namespace
@@ -78,6 +82,15 @@ class FirstRunIntroPixelTest : public UiBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     if (GetParam().use_dark_theme) {
       command_line->AppendSwitch(switches::kForceDarkMode);
+    }
+    if (GetParam().use_right_to_left_language) {
+      command_line->AppendSwitchASCII(switches::kLang, "ar");
+
+      // On Linux & Lacros the command line switch has no effect, we need to use
+      // environment variables to change the language.
+      scoped_env_override_ =
+          std::make_unique<base::ScopedEnvironmentVariableOverride>("LANGUAGE",
+                                                                    "ar");
     }
   }
 
@@ -125,6 +138,8 @@ class FirstRunIntroPixelTest : public UiBrowserTest,
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::ScopedEnvironmentVariableOverride> scoped_env_override_;
+
   raw_ptr<ProfileManagementStepTestView, DanglingUntriaged>
       profile_picker_view_;
 };

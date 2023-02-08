@@ -63,6 +63,7 @@
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/modules/media/audio/audio_device_factory.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "url/origin.h"
@@ -125,6 +126,7 @@
 #include "content/renderer/media/win/dcomp_texture_wrapper_impl.h"
 #include "content/renderer/media/win/overlay_state_observer_impl.h"
 #include "content/renderer/media/win/overlay_state_service_provider.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/win/mf_feature_checks.h"
 #include "media/cdm/win/media_foundation_cdm.h"
 #include "media/mojo/clients/win/media_foundation_renderer_client_factory.h"
@@ -272,23 +274,6 @@ enum class MediaPlayerType {
   kNormal,       // WebMediaPlayerImpl backed.
   kMediaStream,  // MediaStream backed.
 };
-
-// Helper function getting or creating the compositor task runner to use.
-scoped_refptr<base::SingleThreadTaskRunner>
-GetOrCreateVideoFrameCompositorTaskRunner(content::RenderFrame* render_frame) {
-  content::RenderThreadImpl* render_thread =
-      content::RenderThreadImpl::current();
-  if (::features::UseSurfaceLayerForVideo()) {
-    // All of Chromium's GPU code must know which thread it's running on, and
-    // be the same thread on which the rendering context was initialized. This
-    // is why this must be a SingleThreadTaskRunner instead of a
-    // SequencedTaskRunner.
-    return render_thread->CreateVideoFrameCompositorTaskRunner();
-  }
-  if (auto task_runner = render_thread->compositor_task_runner())
-    return task_runner;
-  return render_frame->GetTaskRunner(blink::TaskType::kInternalMediaRealTime);
-}
 
 std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
     scoped_refptr<base::SingleThreadTaskRunner>
@@ -488,7 +473,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   }
 
   auto video_frame_compositor_task_runner =
-      GetOrCreateVideoFrameCompositorTaskRunner(render_frame_);
+      blink::Platform::Current()->VideoFrameCompositorTaskRunner();
   auto vfc = std::make_unique<blink::VideoFrameCompositor>(
       video_frame_compositor_task_runner, std::move(submitter));
 
@@ -678,7 +663,17 @@ MediaFactory::CreateRendererFactorySelector(
 #endif
 
 #if BUILDFLAG(IS_WIN)
-  bool use_mf_for_clear = media::SupportMediaFoundationClearPlayback();
+  // Enable Media Foundation for Clear if it is supported & there are no GPU
+  // workarounds enabled.
+  bool use_mf_for_clear = false;
+  if (media::SupportMediaFoundationClearPlayback()) {
+    if (auto gpu_channel_host = render_thread->EstablishGpuChannelSync()) {
+      use_mf_for_clear =
+          !gpu_channel_host->gpu_feature_info().IsWorkaroundEnabled(
+              gpu::DISABLE_MEDIA_FOUNDATION_CLEAR_PLAYBACK);
+    }
+  }
+
   // Only use MediaFoundationRenderer when MediaFoundationCdm is available or
   // MediaFoundation for Clear is supported.
   if (media::MediaFoundationCdm::IsAvailable() || use_mf_for_clear) {
@@ -791,8 +786,8 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
-      render_thread->GetIOTaskRunner(),
-      GetOrCreateVideoFrameCompositorTaskRunner(render_frame_),
+      blink::Platform::Current()->GetMediaStreamVideoSourceVideoTaskRunner(),
+      blink::Platform::Current()->VideoFrameCompositorTaskRunner(),
       render_thread->GetMediaSequencedTaskRunner(),
       std::move(compositor_worker_task_runner),
       render_thread->GetGpuFactories(), sink_id,
@@ -825,13 +820,13 @@ void MediaFactory::EnsureDecoderFactory() {
     external_decoder_factory =
         std::make_unique<media::MojoDecoderFactory>(interface_factory);
 #elif BUILDFLAG(IS_FUCHSIA)
-    mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
-        media_resource_provider;
+    mojo::PendingRemote<media::mojom::FuchsiaMediaCodecProvider>
+        media_codec_provider;
     interface_broker_->GetInterface(
-        media_resource_provider.InitWithNewPipeAndPassReceiver());
+        media_codec_provider.InitWithNewPipeAndPassReceiver());
 
     external_decoder_factory = std::make_unique<media::FuchsiaDecoderFactory>(
-        std::move(media_resource_provider), /*allow_overlay=*/true);
+        std::move(media_codec_provider), /*allow_overlay=*/true);
 #endif
     decoder_factory_ = std::make_unique<media::DefaultDecoderFactory>(
         std::move(external_decoder_factory));

@@ -656,7 +656,8 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
       DCHECK(!container_builder_.FoundColumnSpanner());
       DCHECK(!IsBreakInside(To<NGBlockBreakToken>(child_break_token)));
 
-      if (container_builder_.HasChildBreakInside()) {
+      if (ConstraintSpace().IsPastBreak() ||
+          container_builder_.HasInsertedChildBreak()) {
         // Something broke inside (typically in a parallel flow, or we wouldn't
         // be here). Before we can handle the spanner, we need to finish what
         // comes before it.
@@ -847,7 +848,8 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::FinishLayout(
   // all of our floats.
   if (ConstraintSpace().IsNewFormattingContext()) {
     intrinsic_block_size_ = std::max(
-        intrinsic_block_size_, ExclusionSpace().ClearanceOffset(EClear::kBoth));
+        intrinsic_block_size_,
+        ExclusionSpace().ClearanceOffsetIncludingInitialLetter(EClear::kBoth));
   }
 
   // If line clamping occurred, the intrinsic block-size comes from the
@@ -1522,9 +1524,9 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   if (!IsBreakInside(child_break_token)) {
     // The origin offset is where we should start looking for layout
     // opportunities. It needs to be adjusted by the child's clearance.
-    AdjustToClearance(
-        ExclusionSpace().ClearanceOffset(child_style.Clear(Style())),
-        &origin_offset);
+    AdjustToClearance(ExclusionSpace().ClearanceOffsetIncludingInitialLetter(
+                          child_style.Clear(Style())),
+                      &origin_offset);
   }
   DCHECK(container_builder_.BfcBlockOffset());
 
@@ -2777,6 +2779,15 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     SetupSpaceBuilderForFragmentation(
         ConstraintSpace(), child, fragmentainer_offset_delta, &builder,
         is_new_fc, container_builder_.RequiresContentBeforeBreaking());
+
+    // If there's a child break inside (typically in a parallel flow, or we
+    // would have finished layout by now), we need to produce more
+    // fragmentainers, before we can insert any column spanners, so that
+    // everything that is supposed to come before the spanner actually ends up
+    // there.
+    if (ConstraintSpace().IsPastBreak() ||
+        container_builder_.HasInsertedChildBreak())
+      builder.SetIsPastBreak();
   }
 
   return builder.ToConstraintSpace();

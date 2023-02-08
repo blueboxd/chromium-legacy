@@ -15,8 +15,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/crosapi/mojom/wallpaper.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -60,7 +60,7 @@ class WallpaperAshTest : public testing::Test {
 
   void SetUp() override {
     // Log in user.
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
     testing_profile_ = testing_profile_manager_.CreateTestingProfile("profile");
     user_manager_->AddUser(user_manager::StubAccountId());
@@ -75,7 +75,7 @@ class WallpaperAshTest : public testing::Test {
   }
 
   void TearDown() override {
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     wallpaper_controller_client_.reset();
   }
 

@@ -14,13 +14,13 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -45,6 +45,7 @@
 #include "net/log/net_log.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/single_request_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -131,6 +132,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
                               std::move(ack_callback));
   }
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    network::RecordOnTransferSizeUpdatedUMA(
+        network::OnTransferSizeUpdatedFrom::kDelegatingURLLoaderClient);
     client_->OnTransferSizeUpdated(transfer_size_diff);
   }
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
@@ -199,7 +202,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
       return;
 
     scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::SequencedTaskRunnerHandle::Get();
+        base::SequencedTaskRunner::GetCurrentDefault();
     while (!devtools_callbacks.empty()) {
       task_runner->PostTask(
           FROM_HERE, base::BindOnce(std::move(devtools_callbacks.front()),
@@ -818,7 +821,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
               frame_tree_node_id, resource_request);
 
   if (!embedder_url_loader_handler.is_null()) {
-    factory = base::MakeRefCounted<content::SingleRequestURLLoaderFactory>(
+    factory = base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
         std::move(embedder_url_loader_handler));
   }
 

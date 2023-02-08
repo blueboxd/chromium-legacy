@@ -48,20 +48,15 @@ class MockReportSchedulerTimerDelegate : public ReportSchedulerTimer::Delegate {
 
 class ReportSchedulerTimerTest : public testing::Test {
  public:
-  ReportSchedulerTimerTest()
-      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+  void SetUp() override {
     auto timer_delegate = std::make_unique<MockReportSchedulerTimerDelegate>();
     timer_delegate_ = timer_delegate.get();
     timer_ = std::make_unique<ReportSchedulerTimer>(std::move(timer_delegate));
   }
 
-  void SetUp() override {
-    SetNetworkConnectionTrackerForTesting(
-        network::TestNetworkConnectionTracker::GetInstance());
-  }
-
  protected:
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   raw_ptr<MockReportSchedulerTimerDelegate> timer_delegate_;
   std::unique_ptr<ReportSchedulerTimer> timer_;
 };
@@ -143,11 +138,6 @@ TEST_F(ReportSchedulerTimerTest, MultipleSetTimers_FiredAtAppropriateTime) {
   std::move(saved_cb_2).Run(absl::nullopt);
 }
 
-TEST_F(ReportSchedulerTimerTest, Refresh_CallsGetNextReportTime) {
-  EXPECT_CALL(*timer_delegate_, GetNextReportTime);
-  timer_->Refresh();
-}
-
 TEST_F(ReportSchedulerTimerTest, NetworkChange) {
   Checkpoint checkpoint;
   {
@@ -174,6 +164,50 @@ TEST_F(ReportSchedulerTimerTest, NetworkChange) {
   // Ensure that the network connection observers have been notified before
   // this call returns.
   task_environment_.RunUntilIdle();
+}
+
+// TODO(apaseltiner): Figure out how to test the case in which the network
+// connection tracker is uninitialized.
+TEST(ReportSchedulerTimer, Constructor_AdjustsOfflineReportTimes) {
+  constexpr struct {
+    network::mojom::ConnectionType connection_type;
+    bool call_expected;
+  } kTestCases[] = {
+      // Call is skipped because the browser is offline.
+      {
+          network::mojom::ConnectionType::CONNECTION_NONE,
+          false,
+      },
+      // Call is made because the browser is online.
+      {
+          network::mojom::ConnectionType::CONNECTION_ETHERNET,
+          true,
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    for (bool synchronous : {true, false}) {
+      base::test::TaskEnvironment task_environment{
+          base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
+      auto* tracker = network::TestNetworkConnectionTracker::GetInstance();
+      tracker->SetRespondSynchronously(synchronous);
+      tracker->SetConnectionType(test_case.connection_type);
+
+      auto timer_delegate =
+          std::make_unique<MockReportSchedulerTimerDelegate>();
+
+      EXPECT_CALL(*timer_delegate, AdjustOfflineReportTimes)
+          .Times(test_case.call_expected);
+
+      ReportSchedulerTimer timer(std::move(timer_delegate));
+
+      // Flush the async call.
+      if (!synchronous) {
+        task_environment.RunUntilIdle();
+      }
+    }
+  }
 }
 
 }  // namespace

@@ -4,7 +4,6 @@
 
 #include "net/cert/pki/ocsp.h"
 
-#include "base/strings/string_piece.h"
 #include "net/cert/pki/string_util.h"
 #include "net/cert/pki/test_helpers.h"
 #include "net/der/encode_values.h"
@@ -17,13 +16,14 @@ namespace net {
 
 namespace {
 
-const base::TimeDelta kOCSPAgeOneWeek = base::Days(7);
+constexpr int64_t kOCSPAgeOneWeek = 7 * 24 * 60 * 60;
 
 std::string GetFilePath(const std::string& file_name) {
   return std::string("net/data/ocsp_unittest/") + file_name;
 }
 
-scoped_refptr<ParsedCertificate> ParseCertificate(std::string_view data) {
+std::shared_ptr<const ParsedCertificate> ParseCertificate(
+    std::string_view data) {
   CertErrors errors;
   return ParsedCertificate::Create(
       bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
@@ -153,7 +153,7 @@ TEST_P(CheckOCSPTest, FromFile) {
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(params.file_name), mappings));
 
   // Mar 5 00:00:00 2017 GMT
-  base::Time kVerifyTime = base::Time::UnixEpoch() + base::Seconds(1488672000);
+  int64_t kVerifyTime = 1488672000;
 
   // Test that CheckOCSP() works.
   OCSPVerifyResult::ResponseStatus response_status;
@@ -165,10 +165,10 @@ TEST_P(CheckOCSPTest, FromFile) {
   EXPECT_EQ(params.expected_response_status, response_status);
 
   // Check that CreateOCSPRequest() works.
-  scoped_refptr<ParsedCertificate> cert = ParseCertificate(cert_data);
+  std::shared_ptr<const ParsedCertificate> cert = ParseCertificate(cert_data);
   ASSERT_TRUE(cert);
 
-  scoped_refptr<ParsedCertificate> issuer = ParseCertificate(ca_data);
+  std::shared_ptr<const ParsedCertificate> issuer = ParseCertificate(ca_data);
   ASSERT_TRUE(issuer);
 
   std::vector<uint8_t> encoded_request;
@@ -208,10 +208,10 @@ TEST_P(CreateOCSPGetURLTest, Basic) {
   ASSERT_TRUE(
       ReadTestDataFromPemFile(GetFilePath("good_response.pem"), mappings));
 
-  scoped_refptr<ParsedCertificate> cert = ParseCertificate(cert_data);
+  std::shared_ptr<const ParsedCertificate> cert = ParseCertificate(cert_data);
   ASSERT_TRUE(cert);
 
-  scoped_refptr<ParsedCertificate> issuer = ParseCertificate(ca_data);
+  std::shared_ptr<const ParsedCertificate> issuer = ParseCertificate(ca_data);
   ASSERT_TRUE(issuer);
 
   GURL url = CreateOCSPGetURL(cert.get(), issuer.get(), GetParam());

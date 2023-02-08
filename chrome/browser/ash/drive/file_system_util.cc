@@ -21,7 +21,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/command_line_switches.h"
@@ -79,7 +79,7 @@ bool IsDriveAvailableForProfile(Profile* profile) {
           ash::switches::kDisableGaiaServices)) {
     return false;
   }
-  if (!chromeos::LoginState::IsInitialized())
+  if (!ash::LoginState::IsInitialized())
     return false;
   // Disable Drive for incognito profiles.
   if (profile->IsOffTheRecord())

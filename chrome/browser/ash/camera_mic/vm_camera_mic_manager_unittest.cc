@@ -28,18 +28,19 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/test/display_manager_test_api.h"
 
+namespace ash {
+
 namespace {
-using testing::UnorderedElementsAre;
-using VmType = ash::VmCameraMicManager::VmType;
-using DeviceType = ash::VmCameraMicManager::DeviceType;
-using NotificationType = ash::VmCameraMicManager::NotificationType;
+
+using VmType = VmCameraMicManager::VmType;
+using DeviceType = VmCameraMicManager::DeviceType;
+using NotificationType = VmCameraMicManager::NotificationType;
 
 constexpr VmType kCrostiniVm = VmType::kCrostiniVm;
 constexpr VmType kPluginVm = VmType::kPluginVm;
@@ -49,13 +50,13 @@ constexpr DeviceType kCamera = DeviceType::kCamera;
 constexpr DeviceType kMic = DeviceType::kMic;
 
 constexpr NotificationType kMicNotification =
-    ash::VmCameraMicManager::kMicNotification;
+    VmCameraMicManager::kMicNotification;
 constexpr NotificationType kCameraNotification =
-    ash::VmCameraMicManager::kCameraNotification;
+    VmCameraMicManager::kCameraNotification;
 constexpr NotificationType kCameraAndMicNotification =
-    ash::VmCameraMicManager::kCameraAndMicNotification;
+    VmCameraMicManager::kCameraAndMicNotification;
 
-constexpr auto kDebounceTime = ash::VmCameraMicManager::kDebounceTime;
+constexpr auto kDebounceTime = VmCameraMicManager::kDebounceTime;
 
 class FakeNotificationDisplayService : public NotificationDisplayService {
  public:
@@ -98,8 +99,8 @@ struct IsActiveTestParam {
 
 // Check the visibility of privacy indicators in all displays.
 void ExpectPrivacyIndicatorsVisible(bool visible) {
-  for (ash::RootWindowController* root_window_controller :
-       ash::Shell::Get()->GetAllRootWindowControllers()) {
+  for (RootWindowController* root_window_controller :
+       Shell::Get()->GetAllRootWindowControllers()) {
     EXPECT_EQ(root_window_controller->GetStatusAreaWidget()
                   ->unified_system_tray()
                   ->privacy_indicators_view()
@@ -109,8 +110,6 @@ void ExpectPrivacyIndicatorsVisible(bool visible) {
 }
 
 }  // namespace
-
-namespace ash {
 
 class VmCameraMicManagerTest : public testing::Test {
  public:
@@ -274,10 +273,7 @@ class VmCameraMicManagerPrivacyIndicatorsTest : public VmCameraMicManagerTest {
  public:
   // VmCameraMicManagerTest:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {apps::kAppServiceCapabilityAccessWithoutMojom,
-         ash::features::kPrivacyIndicators},
-        {});
+    scoped_feature_list_.InitWithFeatures({features::kPrivacyIndicators}, {});
 
     VmCameraMicManagerTest::SetUp();
   }
@@ -308,7 +304,7 @@ TEST_F(VmCameraMicManagerPrivacyIndicatorsTest, Notification) {
 
 TEST_F(VmCameraMicManagerPrivacyIndicatorsTest, PrivacyIndicatorsView) {
   // Make sure privacy indicators work on multiple displays.
-  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
       .UpdateDisplay("800x800,801+0-800x800");
 
   SetCameraAccessing(kPluginVm, false);
@@ -470,14 +466,11 @@ class VmCameraMicManagerNotificationTest
   // VmCameraMicManagerTest:
   void SetUp() override {
     if (IsPrivacyIndicatorsFeatureEnabled()) {
-      scoped_feature_list_.InitWithFeatures(
-          {apps::kAppServiceCapabilityAccessWithoutMojom,
-           ash::features::kPrivacyIndicators},
-          {});
+      scoped_feature_list_.InitAndEnableFeature(
+          ash::features::kPrivacyIndicators);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {apps::kAppServiceCapabilityAccessWithoutMojom},
-          {ash::features::kPrivacyIndicators});
+      scoped_feature_list_.InitAndDisableFeature(
+          ash::features::kPrivacyIndicators);
     }
 
     VmCameraMicManagerTest::SetUp();
@@ -580,14 +573,11 @@ class VmCameraMicManagerDebounceTest
   // VmCameraMicManagerTest:
   void SetUp() override {
     if (IsPrivacyIndicatorsFeatureEnabled()) {
-      scoped_feature_list_.InitWithFeatures(
-          {apps::kAppServiceCapabilityAccessWithoutMojom,
-           ash::features::kPrivacyIndicators},
-          {});
+      scoped_feature_list_.InitAndEnableFeature(
+          ash::features::kPrivacyIndicators);
     } else {
-      scoped_feature_list_.InitWithFeatures(
-          {apps::kAppServiceCapabilityAccessWithoutMojom},
-          {ash::features::kPrivacyIndicators});
+      scoped_feature_list_.InitAndDisableFeature(
+          ash::features::kPrivacyIndicators);
     }
 
     VmCameraMicManagerTest::SetUp();

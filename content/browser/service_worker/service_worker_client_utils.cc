@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -109,7 +109,7 @@ class OpenURLObserver : public WebContentsObserver {
     DCHECK(callback_);
 
     scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::SequencedTaskRunnerHandle::Get();
+        base::SequencedTaskRunner::GetCurrentDefault();
     // TODO(falken): Does this need to be asynchronous?
     task_runner->PostTask(FROM_HERE,
                           base::BindOnce(std::move(callback_), rfh_id));
@@ -413,7 +413,7 @@ void FocusWindowClient(ServiceWorkerContainerHost* container_host,
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
 
   // Focus the frame in the frame tree node, in case it has changed.
-  frame_tree_node->frame_tree()->SetFocusedFrame(
+  frame_tree_node->frame_tree().SetFocusedFrame(
       frame_tree_node, render_frame_host->GetSiteInstance()->group());
 
   // Focus the frame's view to make sure the frame is now considered as focused.
@@ -552,7 +552,7 @@ void GetClient(ServiceWorkerContainerHost* container_host,
     blink::mojom::ServiceWorkerClientInfoPtr info = GetWindowClientInfo(
         container_host->GetRenderFrameHostId(), container_host->create_time(),
         container_host->client_uuid());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(info)));
     return;
   }
@@ -566,7 +566,7 @@ void GetClient(ServiceWorkerContainerHost* container_host,
       /*is_focused=*/false,
       blink::mojom::ServiceWorkerClientLifecycleState::kActive,
       base::TimeTicks(), container_host->create_time());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(client_info)));
 }
 

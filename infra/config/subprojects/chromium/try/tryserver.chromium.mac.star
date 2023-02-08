@@ -69,9 +69,12 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-fieldtrial-rel",
+    name = "mac-fieldtrial-tester",
     os = os.MAC_DEFAULT,
-    mirrors = ["ci/mac-fieldtrial-rel"],
+    mirrors = [
+        "ci/mac-arm64-rel",
+        "ci/mac-fieldtrial-tester",
+    ],
 )
 
 try_.builder(
@@ -110,9 +113,6 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO (crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     #use_orchestrator_pool = True,
@@ -144,6 +144,7 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     os = os.MAC_DEFAULT,
+    goma_jobs = goma.jobs.J300,
 )
 
 try_.builder(
@@ -182,22 +183,6 @@ try_.compilator_builder(
 # NOTE: the following trybots aren't sensitive to Mac version on which
 # they are built, hence no additional dimension is specified.
 # The 10.xx version translates to which bots will run isolated tests.
-try_.builder(
-    name = "mac_chromium_10.11_rel_ng",
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac10.11 Tests",
-    ],
-)
-
-try_.builder(
-    name = "mac_chromium_10.12_rel_ng",
-    mirrors = [
-        "ci/Mac Builder",
-        "ci/Mac10.12 Tests",
-    ],
-)
-
 try_.builder(
     name = "mac_chromium_10.13_rel_ng",
     mirrors = [

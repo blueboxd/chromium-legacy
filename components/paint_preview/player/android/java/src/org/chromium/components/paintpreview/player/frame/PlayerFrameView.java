@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Size;
 import android.view.MotionEvent;
@@ -47,26 +46,7 @@ public class PlayerFrameView extends FrameLayout {
      *                                gestures.
      * @param playerFrameViewDelegate The interface used for forwarding events.
      */
-    static PlayerFrameView create(@NonNull Context context, boolean canDetectZoom,
-            PlayerFrameViewDelegate playerFrameViewDelegate,
-            PlayerFrameGestureDetectorDelegate gestureDetectorDelegate,
-            @Nullable Runnable firstPaintListener) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new PlayerFrameViewApi23(context, canDetectZoom, playerFrameViewDelegate,
-                    gestureDetectorDelegate, firstPaintListener);
-        }
-        return new PlayerFrameView(context, canDetectZoom, playerFrameViewDelegate,
-                gestureDetectorDelegate, firstPaintListener);
-    }
-
-    /**
-     * Sets the {@link WebContentsAccessibility} for this View.
-     */
-    public void setWebContentsAccessibility(WebContentsAccessibility webContentsAccessibility) {
-        mWebContentsAccessibility = webContentsAccessibility;
-    }
-
-    private PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
+    public PlayerFrameView(@NonNull Context context, boolean canDetectZoom,
             PlayerFrameViewDelegate playerFrameViewDelegate,
             PlayerFrameGestureDetectorDelegate gestureDetectorDelegate,
             @Nullable Runnable firstPaintListener) {
@@ -76,6 +56,13 @@ public class PlayerFrameView extends FrameLayout {
         mBitmapPainter = new PlayerFrameBitmapPainter(this::postInvalidate, firstPaintListener);
         mGestureDetector =
                 new PlayerFrameGestureDetector(context, canDetectZoom, gestureDetectorDelegate);
+    }
+
+    /**
+     * Sets the {@link WebContentsAccessibility} for this View.
+     */
+    public void setWebContentsAccessibility(WebContentsAccessibility webContentsAccessibility) {
+        mWebContentsAccessibility = webContentsAccessibility;
     }
 
     PlayerFrameGestureDetector getGestureDetector() {
@@ -195,28 +182,14 @@ public class PlayerFrameView extends FrameLayout {
         return (provider != null) ? provider : super.getAccessibilityNodeProvider();
     }
 
-    void destroy() {
-        mBitmapPainter.destroy();
+    @Override
+    public void onProvideVirtualStructure(final ViewStructure structure) {
+        if (mWebContentsAccessibility != null) {
+            mWebContentsAccessibility.onProvideVirtualStructure(structure, false);
+        }
     }
 
-    /**
-     * Override onProvideVirtualStructure on API level 23.
-     */
-    public static class PlayerFrameViewApi23 extends PlayerFrameView {
-        PlayerFrameViewApi23(@NonNull Context context, boolean canDetectZoom,
-                PlayerFrameViewDelegate playerFrameViewDelegate,
-                PlayerFrameGestureDetectorDelegate gestureDetectorDelegate,
-                @Nullable Runnable firstPaintListener) {
-            super(context, canDetectZoom, playerFrameViewDelegate, gestureDetectorDelegate,
-                    firstPaintListener);
-            setWillNotDraw(false);
-        }
-
-        @Override
-        public void onProvideVirtualStructure(final ViewStructure structure) {
-            if (mWebContentsAccessibility != null) {
-                mWebContentsAccessibility.onProvideVirtualStructure(structure, false);
-            }
-        }
+    void destroy() {
+        mBitmapPainter.destroy();
     }
 }

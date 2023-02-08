@@ -5,6 +5,7 @@
 #include "net/http/transport_security_state.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -37,7 +38,7 @@
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/symantec_certs.h"
 #include "net/cert/x509_certificate.h"
-#include "net/dns/dns_util.h"
+#include "net/dns/dns_names_util.h"
 #include "net/extras/preload_data/decoder.h"
 #include "net/http/http_security_headers.h"
 #include "net/net_buildflags.h"
@@ -60,7 +61,7 @@ const TransportSecurityStateSource* const kDefaultHSTSSource = nullptr;
 
 const TransportSecurityStateSource* g_hsts_source = kDefaultHSTSSource;
 
-// Parameters for remembering sent HPKP and Expect-CT reports.
+// Parameters for remembering sent HPKP reports.
 const size_t kMaxReportCacheEntries = 50;
 const int kTimeToRememberReportsMins = 60;
 const size_t kReportCacheKeyLength = 16;
@@ -69,10 +70,6 @@ const size_t kReportCacheKeyLength = 16;
 //   false: Use the default implementation (e.g. production)
 //   true: Unless a delegate says otherwise, require CT.
 bool g_ct_required_for_testing = false;
-
-bool IsDynamicExpectCTEnabled() {
-  return base::FeatureList::IsEnabled(kDynamicExpectCTFeature);
-}
 
 base::Value GetPEMEncodedChainAsList(const net::X509Certificate* cert_chain) {
   if (!cert_chain)
@@ -193,16 +190,14 @@ std::string HashesToBase64String(const HashValueVector& hashes) {
   return str;
 }
 
-std::string HashHost(base::StringPiece canonicalized_host) {
-  char hashed[crypto::kSHA256Length];
-  crypto::SHA256HashString(canonicalized_host, hashed, sizeof(hashed));
-  return std::string(hashed, sizeof(hashed));
+TransportSecurityState::HashedHost HashHost(
+    base::span<const uint8_t> canonicalized_host) {
+  return crypto::SHA256Hash(canonicalized_host);
 }
 
 // Returns true if the intersection of |a| and |b| is not empty. If either
 // |a| or |b| is empty, returns false.
-bool HashesIntersect(const HashValueVector& a,
-                     const HashValueVector& b) {
+bool HashesIntersect(const HashValueVector& a, const HashValueVector& b) {
   for (const auto& hash : a) {
     if (base::Contains(b, hash))
       return true;
@@ -220,28 +215,25 @@ bool AddHash(const char* sha256_hash, HashValueVector* out) {
 // Converts |hostname| from dotted form ("www.google.com") to the form
 // used in DNS: "\x03www\x06google\x03com", lowercases that, and returns
 // the result.
-std::string CanonicalizeHost(const std::string& host) {
-  // We cannot perform the operations as detailed in the spec here as |host|
-  // has already undergone IDN processing before it reached us. Thus, we check
-  // that there are no invalid characters in the host and lowercase the result.
-  std::string new_host;
-  if (!DNSDomainFromDot(host, &new_host)) {
+std::vector<uint8_t> CanonicalizeHost(const std::string& host) {
+  // We cannot perform the operations as detailed in the spec here as `host`
+  // has already undergone IDN processing before it reached us. Thus, we
+  // lowercase the input (probably redudnant since most input here has been
+  // lowercased through URL canonicalization) and check that there are no
+  // invalid characters in the host (via DNSDomainFromDot()).
+  std::string lowered_host = base::ToLowerASCII(host);
+
+  absl::optional<std::vector<uint8_t>> new_host =
+      dns_names_util::DottedNameToNetwork(
+          lowered_host,
+          /*require_valid_internet_hostname=*/true);
+  if (!new_host.has_value()) {
     // DNSDomainFromDot can fail if any label is > 63 bytes or if the whole
     // name is >255 bytes. However, search terms can have those properties.
-    return std::string();
+    return std::vector<uint8_t>();
   }
 
-  for (size_t i = 0; new_host[i]; i += new_host[i] + 1) {
-    const unsigned label_length = static_cast<unsigned>(new_host[i]);
-    if (!label_length)
-      break;
-
-    for (size_t j = 0; j < label_length; ++j) {
-      new_host[i + 1 + j] = static_cast<char>(tolower(new_host[i + 1 + j]));
-    }
-  }
-
-  return new_host;
+  return new_host.value();
 }
 
 // PreloadResult is the result of resolving a specific name in the preloaded
@@ -255,8 +247,6 @@ struct PreloadResult {
   bool pkp_include_subdomains = false;
   bool force_https = false;
   bool has_pins = false;
-  bool expect_ct = false;
-  uint32_t expect_ct_report_uri_id = 0;
 };
 
 using net::extras::PreloadDecoder;
@@ -300,14 +290,6 @@ class HSTSPreloadDecoder : public net::extras::PreloadDecoder {
              !reader->Next(&tmp.pkp_include_subdomains))) {
           return false;
         }
-      }
-
-      if (!reader->Next(&tmp.expect_ct))
-        return false;
-
-      if (tmp.expect_ct) {
-        if (!reader->Read(4, &tmp.expect_ct_report_uri_id))
-          return false;
       }
     }
 
@@ -381,11 +363,6 @@ bool DecodeHSTSPreload(const std::string& search_hostname, PreloadResult* out) {
 }  // namespace
 
 // static
-BASE_FEATURE(kDynamicExpectCTFeature,
-             "DynamicExpectCT",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// static
 BASE_FEATURE(kCertificateTransparencyEnforcement,
              "CertificateTransparencyEnforcement",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -396,24 +373,15 @@ void SetTransportSecurityStateSourceForTesting(
 }
 
 TransportSecurityState::TransportSecurityState()
-    : TransportSecurityState(std::vector<std::string>()) {
-  // By default the CT log list is treated as last updated at build time (since
-  // a compiled-in list is used), this is overridden if the list is dynamically
-  // updated.
-  ct_log_list_last_update_time_ = base::GetBuildTime();
-}
+    : TransportSecurityState(std::vector<std::string>()) {}
 
 TransportSecurityState::TransportSecurityState(
     std::vector<std::string> hsts_host_bypass_list)
-    : sent_hpkp_reports_cache_(kMaxReportCacheEntries),
-      sent_expect_ct_reports_cache_(kMaxReportCacheEntries),
-      key_expect_ct_by_nik_(base::FeatureList::IsEnabled(
-          features::kPartitionExpectCTStateByNetworkIsolationKey)) {
+    : sent_hpkp_reports_cache_(kMaxReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_IOS)
   enable_static_pins_ = false;
-  enable_static_expect_ct_ = false;
 #endif
   // Check that there no invalid entries in the static HSTS bypass list.
   for (auto& host : hsts_host_bypass_list) {
@@ -496,7 +464,6 @@ TransportSecurityState::CheckCTRequirements(
     const X509Certificate* served_certificate_chain,
     const SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps,
-    const ExpectCTReportStatus report_status,
     ct::CTPolicyCompliance policy_compliance,
     const NetworkAnonymizationKey& network_anonymization_key) {
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
@@ -524,26 +491,9 @@ TransportSecurityState::CheckCTRequirements(
            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
        policy_compliance == ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY);
 
-  // Check Expect-CT first so that other CT requirements do not prevent
-  // Expect-CT reports from being sent.
-  bool required_via_expect_ct = false;
-  ExpectCTState state;
-  if (IsDynamicExpectCTEnabled() &&
-      GetDynamicExpectCTState(hostname, network_anonymization_key, &state)) {
-    if (!complies && expect_ct_reporter_ && !state.report_uri.is_empty() &&
-        report_status == ENABLE_EXPECT_CT_REPORTS) {
-      MaybeNotifyExpectCTFailed(
-          host_port_pair, state.report_uri, state.expiry,
-          validated_certificate_chain, served_certificate_chain,
-          signed_certificate_timestamps, network_anonymization_key);
-    }
-    required_via_expect_ct = state.enforce;
-  }
-
   CTRequirementLevel ct_required = CTRequirementLevel::DEFAULT;
   if (require_ct_delegate_) {
-    // Allow the delegate to override the CT requirement state, including
-    // overriding any Expect-CT enforcement.
+    // Allow the delegate to override the CT requirement state.
     ct_required = require_ct_delegate_->IsCTRequiredForHost(
         hostname, validated_certificate_chain, public_key_hashes);
   }
@@ -553,11 +503,6 @@ TransportSecurityState::CheckCTRequirements(
     case CTRequirementLevel::NOT_REQUIRED:
       return CT_NOT_REQUIRED;
     case CTRequirementLevel::DEFAULT:
-      if (required_via_expect_ct) {
-        // If Expect-CT is set, short-circuit checking additional policies,
-        // since they will only enable CT requirement, not exclude from it.
-        return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
-      }
       break;
   }
 
@@ -616,19 +561,9 @@ void TransportSecurityState::SetReportSender(
   report_sender_ = report_sender;
 }
 
-void TransportSecurityState::SetExpectCTReporter(
-    ExpectCTReporter* expect_ct_reporter) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  expect_ct_reporter_ = expect_ct_reporter;
-}
-
 void TransportSecurityState::SetRequireCTDelegate(RequireCTDelegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   require_ct_delegate_ = delegate;
-}
-
-void TransportSecurityState::SetCTLogListUpdateTime(base::Time update_time) {
-  ct_log_list_last_update_time_ = update_time;
 }
 
 void TransportSecurityState::UpdatePinList(
@@ -637,7 +572,8 @@ void TransportSecurityState::UpdatePinList(
     base::Time update_time) {
   pinsets_ = pinsets;
   key_pins_list_last_update_time_ = update_time;
-  host_pins_.emplace();
+  host_pins_ = absl::make_optional(
+      std::map<std::string, std::pair<PinSet const*, bool>>());
   std::map<std::string, PinSet const*> pinset_names_map;
   for (const auto& pinset : pinsets_) {
     pinset_names_map[pinset.name()] = &pinset;
@@ -659,7 +595,7 @@ void TransportSecurityState::AddHSTSInternal(
     const base::Time& expiry,
     bool include_subdomains) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::vector<uint8_t> canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return;
 
@@ -676,7 +612,7 @@ void TransportSecurityState::AddHSTSInternal(
   if (sts_state.ShouldUpgradeToSSL()) {
     enabled_sts_hosts_[HashHost(canonicalized_host)] = sts_state;
   } else {
-    const std::string hashed_host = HashHost(canonicalized_host);
+    const HashedHost hashed_host = HashHost(canonicalized_host);
     enabled_sts_hosts_.erase(hashed_host);
   }
 
@@ -690,7 +626,7 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
                                              const HashValueVector& hashes,
                                              const GURL& report_uri) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::vector<uint8_t> canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return;
 
@@ -708,45 +644,8 @@ void TransportSecurityState::AddHPKPInternal(const std::string& host,
   if (pkp_state.HasPublicKeyPins()) {
     enabled_pkp_hosts_[HashHost(canonicalized_host)] = pkp_state;
   } else {
-    const std::string hashed_host = HashHost(canonicalized_host);
+    const HashedHost hashed_host = HashHost(canonicalized_host);
     enabled_pkp_hosts_.erase(hashed_host);
-  }
-
-  DirtyNotify();
-}
-
-void TransportSecurityState::AddExpectCTInternal(
-    const std::string& host,
-    const base::Time& last_observed,
-    const base::Time& expiry,
-    bool enforce,
-    const GURL& report_uri,
-    const NetworkAnonymizationKey& network_anonymization_key) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!IsDynamicExpectCTEnabled())
-    return;
-
-  const std::string canonicalized_host = CanonicalizeHost(host);
-  if (canonicalized_host.empty())
-    return;
-
-  ExpectCTState expect_ct_state;
-  // No need to store |expect_ct_state.domain| since it is redundant.
-  // (|canonicalized_host| is the map key.)
-  expect_ct_state.last_observed = last_observed;
-  expect_ct_state.expiry = expiry;
-  expect_ct_state.enforce = enforce;
-  expect_ct_state.report_uri = report_uri;
-
-  // Only store new state when Expect-CT is explicitly enabled. If it is
-  // disabled, remove the state from the enabled hosts.
-  ExpectCTStateIndex index = CreateExpectCTStateIndex(
-      HashHost(canonicalized_host), network_anonymization_key);
-  if (expect_ct_state.enforce || !expect_ct_state.report_uri.is_empty()) {
-    enabled_expect_ct_hosts_[index] = expect_ct_state;
-    MaybePruneExpectCTState();
-  } else {
-    enabled_expect_ct_hosts_.erase(index);
   }
 
   DirtyNotify();
@@ -813,63 +712,14 @@ TransportSecurityState::CheckPinsAndMaybeSendReport(
   return PKPStatus::VIOLATED;
 }
 
-bool TransportSecurityState::GetStaticExpectCTState(
-    const std::string& host,
-    ExpectCTState* expect_ct_state) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (!IsCTLogListTimely())
-    return false;
-
-  PreloadResult result;
-  if (!DecodeHSTSPreload(host, &result))
-    return false;
-
-  if (!enable_static_expect_ct_ || !result.expect_ct)
-    return false;
-
-  expect_ct_state->report_uri = GURL(
-      g_hsts_source->expect_ct_report_uris[result.expect_ct_report_uri_id]);
-  return true;
-}
-
-void TransportSecurityState::MaybeNotifyExpectCTFailed(
-    const HostPortPair& host_port_pair,
-    const GURL& report_uri,
-    base::Time expiration,
-    const X509Certificate* validated_certificate_chain,
-    const X509Certificate* served_certificate_chain,
-    const SignedCertificateTimestampAndStatusList&
-        signed_certificate_timestamps,
-    const NetworkAnonymizationKey& network_anonymization_key) {
-  // Do not send repeated reports to the same host/port pair within
-  // |kTimeToRememberReportsMins|. Theoretically, there could be scenarios in
-  // which the same host/port generates different reports and it would be useful
-  // to the server operator to receive those different reports, but such
-  // scenarios are not expected to arise very often in practice.
-  const std::string report_cache_key(host_port_pair.ToString());
-  if (sent_expect_ct_reports_cache_.Get(report_cache_key,
-                                        base::TimeTicks::Now())) {
-    return;
-  }
-  sent_expect_ct_reports_cache_.Put(
-      report_cache_key, true, base::TimeTicks::Now(),
-      base::TimeTicks::Now() + base::Minutes(kTimeToRememberReportsMins));
-
-  expect_ct_reporter_->OnExpectCTFailed(
-      host_port_pair, report_uri, expiration, validated_certificate_chain,
-      served_certificate_chain, signed_certificate_timestamps,
-      network_anonymization_key);
-}
-
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::vector<uint8_t> canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
-  const std::string hashed_host = HashHost(canonicalized_host);
+  const HashedHost hashed_host = HashHost(canonicalized_host);
   bool deleted = false;
   auto sts_interator = enabled_sts_hosts_.find(hashed_host);
   if (sts_interator != enabled_sts_hosts_.end()) {
@@ -883,19 +733,6 @@ bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
     deleted = true;
   }
 
-  // Delete matching entries for all NetworkIsolationKeys. Performance isn't
-  // important here, since this is only called when directly initiated by the
-  // user, so a linear search is fine.
-  for (auto it = enabled_expect_ct_hosts_.begin();
-       it != enabled_expect_ct_hosts_.end();) {
-    auto current = it;
-    ++it;
-    if (current->first.hashed_host != hashed_host)
-      continue;
-    enabled_expect_ct_hosts_.erase(current);
-    deleted = true;
-  }
-
   if (deleted)
     DirtyNotify();
   return deleted;
@@ -905,7 +742,6 @@ void TransportSecurityState::ClearDynamicData() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   enabled_sts_hosts_.clear();
   enabled_pkp_hosts_.clear();
-  enabled_expect_ct_hosts_.clear();
 }
 
 void TransportSecurityState::DeleteAllDynamicDataBetween(
@@ -937,19 +773,6 @@ void TransportSecurityState::DeleteAllDynamicDataBetween(
     }
 
     ++pkp_iterator;
-  }
-
-  auto expect_ct_iterator = enabled_expect_ct_hosts_.begin();
-  while (expect_ct_iterator != enabled_expect_ct_hosts_.end()) {
-    if (expect_ct_iterator->second.last_observed >= start_time &&
-
-        expect_ct_iterator->second.last_observed < end_time) {
-      dirtied = true;
-      enabled_expect_ct_hosts_.erase(expect_ct_iterator++);
-      continue;
-    }
-
-    ++expect_ct_iterator;
   }
 
   if (dirtied && delegate_)
@@ -1009,99 +832,6 @@ void TransportSecurityState::AddHPKP(const std::string& host,
                   report_uri);
 }
 
-void TransportSecurityState::AddExpectCT(
-    const std::string& host,
-    const base::Time& expiry,
-    bool enforce,
-    const GURL& report_uri,
-    const NetworkAnonymizationKey& network_anonymization_key) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri,
-                      network_anonymization_key);
-}
-
-void TransportSecurityState::ProcessExpectCTHeader(
-    const std::string& value,
-    const HostPortPair& host_port_pair,
-    const SSLInfo& ssl_info,
-    const NetworkAnonymizationKey& network_anonymization_key) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If a site sends `Expect-CT: preload` and appears on the preload list, they
-  // are in the experimental preload-list-only, report-only version of
-  // Expect-CT.
-  if (value == "preload") {
-    if (!expect_ct_reporter_)
-      return;
-    if (!ssl_info.is_issued_by_known_root)
-      return;
-    if (ssl_info.ct_policy_compliance ==
-            ct::CTPolicyCompliance::
-                CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE ||
-        ssl_info.ct_policy_compliance ==
-            ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
-        ssl_info.ct_policy_compliance ==
-            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
-      return;
-    }
-    ExpectCTState state;
-    if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
-      MaybeNotifyExpectCTFailed(
-          host_port_pair, state.report_uri, base::Time(), ssl_info.cert.get(),
-          ssl_info.unverified_cert.get(),
-          ssl_info.signed_certificate_timestamps, network_anonymization_key);
-    }
-    return;
-  }
-
-  // Otherwise, see if the site has sent a valid Expect-CT header to dynamically
-  // turn on reporting and/or enforcement.
-  if (!IsDynamicExpectCTEnabled())
-    return;
-  base::Time now = base::Time::Now();
-  base::TimeDelta max_age;
-  bool enforce;
-  GURL report_uri;
-  bool parsed = ParseExpectCTHeader(value, &max_age, &enforce, &report_uri);
-  if (!parsed)
-    return;
-  // Do not persist Expect-CT headers if the connection was not chained to a
-  // public root or did not comply with CT policy.
-  if (!ssl_info.is_issued_by_known_root)
-    return;
-  if (ssl_info.ct_policy_compliance !=
-      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
-    // If an Expect-CT header is observed over a non-compliant connection, the
-    // site owner should be notified about the misconfiguration. If the site was
-    // already opted in to Expect-CT, this report would have been sent at
-    // connection setup time. If the host is not already a noted Expect-CT host,
-    // however, the lack of CT compliance would not have been evaluated/reported
-    // at connection setup time, so it needs to be reported here while
-    // processing the header.
-    if (ssl_info.ct_policy_compliance ==
-            ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY ||
-        ssl_info.ct_policy_compliance ==
-            ct::CTPolicyCompliance::
-                CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE) {
-      // Only send reports for truly non-compliant connections, not those for
-      // which compliance wasn't checked.
-      return;
-    }
-    ExpectCTState state;
-    if (expect_ct_reporter_ && !report_uri.is_empty() &&
-        !GetDynamicExpectCTState(host_port_pair.host(),
-                                 network_anonymization_key, &state)) {
-      MaybeNotifyExpectCTFailed(
-          host_port_pair, report_uri, base::Time(), ssl_info.cert.get(),
-          ssl_info.unverified_cert.get(),
-          ssl_info.signed_certificate_timestamps, network_anonymization_key);
-    }
-    return;
-  }
-  AddExpectCTInternal(host_port_pair.host(), now, now + max_age, enforce,
-                      report_uri, network_anonymization_key);
-}
-
 // static
 void TransportSecurityState::SetRequireCTForTesting(bool required) {
   g_ct_required_for_testing = required;
@@ -1109,11 +839,6 @@ void TransportSecurityState::SetRequireCTForTesting(bool required) {
 
 void TransportSecurityState::ClearReportCachesForTesting() {
   sent_hpkp_reports_cache_.Clear();
-  sent_expect_ct_reports_cache_.Clear();
-}
-
-size_t TransportSecurityState::num_expect_ct_entries_for_testing() const {
-  return enabled_expect_ct_hosts_.size();
 }
 
 size_t TransportSecurityState::num_sts_entries() const {
@@ -1181,61 +906,32 @@ bool TransportSecurityState::GetStaticPKPState(const std::string& host,
 
   PreloadResult result;
   if (host_pins_.has_value()) {
-    // Ensure that |host| is a valid hostname before processing.
-    if (CanonicalizeHost(host).empty()) {
-      return false;
-    }
-    // Normalize any trailing '.' used for DNS suffix searches.
-    std::string normalized_host = host;
-    size_t trailing_dot_found = normalized_host.find_last_not_of('.');
-    if (trailing_dot_found == std::string::npos) {
-      // Hostname is either empty or all dots
-      return false;
-    }
-    normalized_host.erase(trailing_dot_found + 1);
-    normalized_host = base::ToLowerASCII(normalized_host);
-
-    base::StringPiece search_hostname = normalized_host;
-    while (true) {
-      auto iter = host_pins_->find(search_hostname);
-      // Only consider this a match if either include_subdomains is set, or
-      // this is an exact match of the full hostname.
-      if (iter != host_pins_->end() &&
-          (iter->second.second || search_hostname == normalized_host)) {
-        pkp_result->domain = std::string(search_hostname);
-        pkp_result->last_observed = key_pins_list_last_update_time_;
-        pkp_result->include_subdomains = iter->second.second;
-        const PinSet* pinset = iter->second.first;
-        if (!pinset->report_uri().empty()) {
-          pkp_result->report_uri = GURL(pinset->report_uri());
-        }
-        for (auto hash : pinset->static_spki_hashes()) {
-          // If the update is malformed, it's preferable to skip the hash than
-          // crash.
-          if (hash.size() == 32) {
-            AddHash(reinterpret_cast<const char*>(hash.data()),
-                    &pkp_result->spki_hashes);
-          }
-        }
-        for (auto hash : pinset->bad_static_spki_hashes()) {
-          // If the update is malformed, it's preferable to skip the hash than
-          // crash.
-          if (hash.size() == 32) {
-            AddHash(reinterpret_cast<const char*>(hash.data()),
-                    &pkp_result->bad_spki_hashes);
-          }
-        }
-        return true;
+    auto iter = host_pins_->find(host);
+    if (iter != host_pins_->end()) {
+      pkp_result->domain = host;
+      pkp_result->last_observed = key_pins_list_last_update_time_;
+      pkp_result->include_subdomains = iter->second.second;
+      const PinSet* pinset = iter->second.first;
+      if (!pinset->report_uri().empty()) {
+        pkp_result->report_uri = GURL(pinset->report_uri());
       }
-      auto dot_pos = search_hostname.find(".");
-      if (dot_pos == std::string::npos) {
-        // If this was not a match, and there are no more dots in the string,
-        // there are no more domains to try.
-        return false;
+      for (auto hash : pinset->static_spki_hashes()) {
+        // If the update is malformed, it's preferable to skip the hash than
+        // crash.
+        if (hash.size() == 32) {
+          AddHash(reinterpret_cast<const char*>(hash.data()),
+                  &pkp_result->spki_hashes);
+        }
       }
-      // Try again in case this is a subdomain of a pinned domain that includes
-      // subdomains.
-      search_hostname = search_hostname.substr(dot_pos + 1);
+      for (auto hash : pinset->bad_static_spki_hashes()) {
+        // If the update is malformed, it's preferable to skip the hash than
+        // crash.
+        if (hash.size() == 32) {
+          AddHash(reinterpret_cast<const char*>(hash.data()),
+                  &pkp_result->bad_spki_hashes);
+        }
+      }
+      return true;
     }
   } else if (DecodeHSTSPreload(host, &result) && result.has_pins) {
     if (result.pinset_id >= g_hsts_source->pinsets_count)
@@ -1284,15 +980,15 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
                                                 STSState* result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::vector<uint8_t> canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
   base::Time current_time(base::Time::Now());
 
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    base::StringPiece host_sub_chunk =
-        base::StringPiece(canonicalized_host).substr(i);
+    base::span<const uint8_t> host_sub_chunk =
+        base::make_span(canonicalized_host).subspan(i);
     auto j = enabled_sts_hosts_.find(HashHost(host_sub_chunk));
     if (j == enabled_sts_hosts_.end())
       continue;
@@ -1308,7 +1004,7 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
     // match and the includeSubDomains directive was included.
     if (i == 0 || j->second.include_subdomains) {
       absl::optional<std::string> dotted_name =
-          DnsDomainToString(host_sub_chunk);
+          dns_names_util::NetworkToDottedName(host_sub_chunk);
       if (!dotted_name)
         return false;
 
@@ -1325,15 +1021,15 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
                                                 PKPState* result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const std::string canonicalized_host = CanonicalizeHost(host);
+  const std::vector<uint8_t> canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
   base::Time current_time(base::Time::Now());
 
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
-    base::StringPiece host_sub_chunk =
-        base::StringPiece(canonicalized_host).substr(i);
+    base::span<const uint8_t> host_sub_chunk =
+        base::make_span(canonicalized_host).subspan(i);
     auto j = enabled_pkp_hosts_.find(HashHost(host_sub_chunk));
     if (j == enabled_pkp_hosts_.end())
       continue;
@@ -1354,7 +1050,7 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
     // Cronet.
     if (i == 0 || j->second.include_subdomains) {
       absl::optional<std::string> dotted_name =
-          DnsDomainToString(host_sub_chunk);
+          dns_names_util::NetworkToDottedName(host_sub_chunk);
       if (!dotted_name)
         return false;
 
@@ -1369,48 +1065,12 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
   return false;
 }
 
-bool TransportSecurityState::GetDynamicExpectCTState(
-    const std::string& host,
-    const NetworkAnonymizationKey& network_anonymization_key,
-    ExpectCTState* result) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  const std::string canonicalized_host = CanonicalizeHost(host);
-  if (canonicalized_host.empty())
-    return false;
-
-  base::Time current_time(base::Time::Now());
-  auto j = enabled_expect_ct_hosts_.find(CreateExpectCTStateIndex(
-      HashHost(canonicalized_host), network_anonymization_key));
-  if (j == enabled_expect_ct_hosts_.end())
-    return false;
-  // If the entry is invalid, drop it.
-  if (current_time > j->second.expiry) {
-    enabled_expect_ct_hosts_.erase(j);
-    DirtyNotify();
-    return false;
-  }
-
-  *result = j->second;
-  return true;
-}
-
 void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
-    const std::string& hashed_host,
+    const HashedHost& hashed_host,
     const STSState& state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state.ShouldUpgradeToSSL());
   enabled_sts_hosts_[hashed_host] = state;
-}
-
-void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
-    const std::string& hashed_host,
-    const NetworkAnonymizationKey& network_anonymization_key,
-    const ExpectCTState& state) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(state.enforce || !state.report_uri.is_empty());
-  enabled_expect_ct_hosts_[CreateExpectCTStateIndex(
-      hashed_host, network_anonymization_key)] = state;
 }
 
 TransportSecurityState::STSState::STSState() = default;
@@ -1424,8 +1084,7 @@ bool TransportSecurityState::STSState::ShouldUpgradeToSSL() const {
 TransportSecurityState::STSStateIterator::STSStateIterator(
     const TransportSecurityState& state)
     : iterator_(state.enabled_sts_hosts_.begin()),
-      end_(state.enabled_sts_hosts_.end()) {
-}
+      end_(state.enabled_sts_hosts_.end()) {}
 
 TransportSecurityState::STSStateIterator::~STSStateIterator() = default;
 
@@ -1434,29 +1093,6 @@ TransportSecurityState::PKPState::PKPState() = default;
 TransportSecurityState::PKPState::PKPState(const PKPState& other) = default;
 
 TransportSecurityState::PKPState::~PKPState() = default;
-
-TransportSecurityState::ExpectCTState::ExpectCTState() = default;
-
-TransportSecurityState::ExpectCTState::~ExpectCTState() = default;
-
-TransportSecurityState::ExpectCTStateIndex::ExpectCTStateIndex(
-    const std::string& hashed_host,
-    const NetworkAnonymizationKey& network_anonymization_key,
-    bool respect_network_anonymization_key)
-    : hashed_host(hashed_host),
-      network_anonymization_key(respect_network_anonymization_key
-                                    ? network_anonymization_key
-                                    : NetworkAnonymizationKey()) {}
-
-TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
-    const TransportSecurityState& state)
-    : iterator_(state.enabled_expect_ct_hosts_.begin()),
-      end_(state.enabled_expect_ct_hosts_.end()) {
-  state.AssertCalledOnValidThread();
-}
-
-TransportSecurityState::ExpectCTStateIterator::~ExpectCTStateIterator() =
-    default;
 
 TransportSecurityState::PinSet::PinSet(
     std::string name,
@@ -1515,153 +1151,6 @@ bool TransportSecurityState::PKPState::CheckPublicKeyPins(
 
 bool TransportSecurityState::PKPState::HasPublicKeyPins() const {
   return spki_hashes.size() > 0 || bad_spki_hashes.size() > 0;
-}
-
-TransportSecurityState::ExpectCTStateIndex
-TransportSecurityState::CreateExpectCTStateIndex(
-    const std::string& hashed_host,
-    const NetworkAnonymizationKey& network_anonymization_key) {
-  return ExpectCTStateIndex(hashed_host, network_anonymization_key,
-                            key_expect_ct_by_nik_);
-}
-
-void TransportSecurityState::MaybePruneExpectCTState() {
-  if (!base::FeatureList::IsEnabled(features::kExpectCTPruning) ||
-      enabled_expect_ct_hosts_.size() <
-          static_cast<size_t>(features::kExpectCTPruneMax.Get())) {
-    return;
-  }
-
-  base::Time now = base::Time::Now();
-  if (now < earliest_next_prune_expect_ct_time_)
-    return;
-
-  earliest_next_prune_expect_ct_time_ =
-      now + base::Seconds(features::kExpectCTPruneDelaySecs.Get());
-
-  base::Time last_prunable_observation_time =
-      now - base::Days(features::kExpectCTSafeFromPruneDays.Get());
-
-  // Cache this locally, so don't have to repeatedly query the value.
-  size_t expect_ct_prune_min = features::kExpectCTPruneMin.Get();
-
-  // Entries that are eligible to be pruned based on the global (not per-NIK)
-  // entry limit.
-  std::vector<ExpectCTStateMap::iterator> prunable_expect_ct_entries;
-
-  // Clear expired entries first. If that's enough, maybe no valid entries have
-  // to be removed. Also populate |prunable_expect_ct_entries|.
-  for (auto expect_ct_iterator = enabled_expect_ct_hosts_.begin();
-       expect_ct_iterator != enabled_expect_ct_hosts_.end();) {
-    if (expect_ct_iterator->second.expiry < now) {
-      enabled_expect_ct_hosts_.erase(expect_ct_iterator++);
-      continue;
-    }
-
-    // If there are fewer than |expect_ct_prune_min| entries remaining, no need
-    // to delete anything else.
-    if (enabled_expect_ct_hosts_.size() <= expect_ct_prune_min)
-      return;
-
-    // Entries that are older than the prunable time window, are report-only, or
-    // have a transient NetworkAnonymizationKey, are considered prunable.
-    //
-    // If |key_expect_ct_by_nik_| is false, all entries have an empty NIK.
-    // IsTransient() returns true for the empty NIK, despite entries being saved
-    // to disk, so don't want to delete entries with empty NIKs.
-    if (expect_ct_iterator->second.last_observed <
-            last_prunable_observation_time ||
-        !expect_ct_iterator->second.enforce ||
-        (key_expect_ct_by_nik_ &&
-         expect_ct_iterator->first.network_anonymization_key.IsTransient())) {
-      prunable_expect_ct_entries.push_back(expect_ct_iterator);
-    }
-    ++expect_ct_iterator;
-  }
-
-  // Number of entries that need to be removed to reach |expect_ct_prune_min|.
-  size_t num_entries_to_prune =
-      enabled_expect_ct_hosts_.size() - expect_ct_prune_min;
-  if (num_entries_to_prune < prunable_expect_ct_entries.size()) {
-    // There are more than enough prunable entries to reach kExpectCTPruneMin.
-    // Find the |num_entries_to_prune| most prunable entries, according to
-    // ExpectCTPruningSorter.
-    auto expect_ct_prune_end =
-        prunable_expect_ct_entries.begin() + num_entries_to_prune;
-    std::partial_sort(prunable_expect_ct_entries.begin(), expect_ct_prune_end,
-                      prunable_expect_ct_entries.end(), ExpectCTPruningSorter);
-  } else {
-    // Otherwise, delete all prunable entries.
-    num_entries_to_prune = prunable_expect_ct_entries.size();
-  }
-  DCHECK_LE(num_entries_to_prune, prunable_expect_ct_entries.size());
-
-  for (size_t i = 0; i < num_entries_to_prune; ++i) {
-    enabled_expect_ct_hosts_.erase(prunable_expect_ct_entries[i]);
-  }
-
-  // If there are fewer than |kExpectCTPruneMin| entries remaining, or entries
-  // are not being keyed by NetworkAnonymizationKey, nothing left to do.
-  if (enabled_expect_ct_hosts_.size() <= expect_ct_prune_min ||
-      !key_expect_ct_by_nik_) {
-    return;
-  }
-
-  // Otherwise, cap the number of entries per NetworkAnonymizationKey to
-  // |kMaxEntriesPerNik|.
-
-  // Create a vector of all the ExpectCT entries for each NIK.
-  std::map<net::NetworkAnonymizationKey,
-           std::vector<ExpectCTStateMap::iterator>>
-      nik_map;
-  for (auto expect_ct_iterator = enabled_expect_ct_hosts_.begin();
-       expect_ct_iterator != enabled_expect_ct_hosts_.end();
-       ++expect_ct_iterator) {
-    nik_map[expect_ct_iterator->first.network_anonymization_key].push_back(
-        expect_ct_iterator);
-  }
-
-  // For each NIK with more than the maximum number of entries, remove the most
-  // prunable entries until it has exactly |kExpectCTMaxEntriesPerNik| entries.
-  size_t max_entries_per_nik = features::kExpectCTMaxEntriesPerNik.Get();
-  for (auto& nik_entries : nik_map) {
-    if (nik_entries.second.size() < max_entries_per_nik)
-      continue;
-    auto top_frame_origin_prune_end = nik_entries.second.begin() +
-                                      nik_entries.second.size() -
-                                      max_entries_per_nik;
-    std::partial_sort(nik_entries.second.begin(), top_frame_origin_prune_end,
-                      nik_entries.second.end(), ExpectCTPruningSorter);
-    for (auto entry_to_prune = nik_entries.second.begin();
-         entry_to_prune != top_frame_origin_prune_end; ++entry_to_prune) {
-      enabled_expect_ct_hosts_.erase(*entry_to_prune);
-    }
-  }
-}
-
-bool TransportSecurityState::ExpectCTPruningSorter(
-    const ExpectCTStateMap::iterator& it1,
-    const ExpectCTStateMap::iterator& it2) {
-  // std::tie requires r-values, so have to put these on the stack to use
-  // std::tie.
-  bool is_not_transient1 = !it1->first.network_anonymization_key.IsTransient();
-  bool is_not_transient2 = !it2->first.network_anonymization_key.IsTransient();
-  return std::tie(is_not_transient1, it1->second.enforce,
-                  it1->second.last_observed) <
-         std::tie(is_not_transient2, it2->second.enforce,
-                  it2->second.last_observed);
-}
-
-bool TransportSecurityState::IsCTLogListTimely() const {
-  // Preloaded Expect-CT is enforced if the CT log list is timely. Note that
-  // unlike HSTS and HPKP, the date of the preloaded list itself (i.e.
-  // base::GetBuildTime()) is not directly consulted. Consulting the
-  // build time would allow sites that have subsequently disabled Expect-CT
-  // to opt-out. However, because as of June 2021, all unexpired certificates
-  // are already expected to comply with the policies expressed by Expect-CT,
-  // there's no need to offer an opt-out.
-  return (base::Time::Now() - ct_log_list_last_update_time_).InDays() <
-         70 /* 10 weeks */;
 }
 
 bool TransportSecurityState::IsStaticPKPListTimely() const {

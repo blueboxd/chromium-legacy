@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
@@ -29,6 +29,7 @@
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/proxy_resolver/pac_js_library.h"
+#include "tools/v8_context_snapshot/buildflags.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
 #include "v8/include/v8.h"
@@ -382,7 +383,7 @@ class SharedIsolateFactory {
       // Do one-time initialization for V8.
       if (!has_initialized_v8_) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
+#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
         gin::V8Initializer::LoadV8Snapshot(
             gin::V8SnapshotFileType::kWithAdditionalContext);
 #else
@@ -413,7 +414,8 @@ class SharedIsolateFactory {
       }
 
       holder_ = std::make_unique<gin::IsolateHolder>(
-          base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kUseLocker,
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
+          gin::IsolateHolder::kUseLocker,
           gin::IsolateHolder::IsolateType::kUtility);
     }
 

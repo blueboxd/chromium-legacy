@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/services/sharing/nearby/platform/wifi_lan_server_socket.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
@@ -19,7 +20,6 @@
 #include "chromeos/ash/services/nearby/public/cpp/fake_tcp_socket_factory.h"
 #include "chromeos/ash/services/nearby/public/cpp/tcp_server_socket_port.h"
 #include "chromeos/ash/services/nearby/public/mojom/firewall_hole.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -99,7 +99,7 @@ class WifiLanMediumTest : public ::testing::Test {
     // Sets up a test Wi-Fi network to varying degrees depending on |state|.
     // This is needed in order to fetch the local IP address during server
     // socket creation.
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
     switch (state) {
       case WifiInitState::kComplete:
         InitializeCrosNetworkConfig(/*use_managed_config_handler=*/true);
@@ -143,7 +143,7 @@ class WifiLanMediumTest : public ::testing::Test {
     ui_proxy_config_service_.reset();
     network_configuration_handler_.reset();
     network_profile_handler_.reset();
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
   }
 
   // Calls ConnectToService()/ListenForService() from |num_threads|, which will

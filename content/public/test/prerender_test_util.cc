@@ -38,6 +38,19 @@ constexpr char kAddSpeculationRuleScript[] = R"({
     document.head.appendChild(script);
   })";
 
+constexpr char kAddSpeculationRuleWithTargetHintScript[] = R"({
+    const script = document.createElement('script');
+    script.type = 'speculationrules';
+    script.text = `{
+      "prerender": [{
+        "source": "list",
+        "urls": [$1],
+        "target_hint": $2
+      }]
+    }`;
+    document.head.appendChild(script);
+  })";
+
 PrerenderHostRegistry& GetPrerenderHostRegistry(WebContents* web_contents) {
   EXPECT_TRUE(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
   return *static_cast<WebContentsImpl*>(web_contents)
@@ -339,6 +352,22 @@ void PrerenderTestHelper::AddMultiplePrerenderAsync(
       base::UTF8ToUTF16(script), base::NullCallback());
 }
 
+void PrerenderTestHelper::AddPrerenderWithTargetHintAsync(
+    const GURL& prerendering_url,
+    const std::string& target_hint) {
+  TRACE_EVENT("test", "PrerenderTestHelper::AddPrerenderWithTargetHintAsync",
+              "prerendering_url", prerendering_url, "target_hint", target_hint);
+  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string script = JsReplace(kAddSpeculationRuleWithTargetHintScript,
+                                 prerendering_url, target_hint);
+
+  // Have to use ExecuteJavaScriptForTests instead of ExecJs/EvalJs here,
+  // because some test pages have ContentSecurityPolicy and EvalJs cannot work
+  // with it. See the quick migration guide for EvalJs for more information.
+  GetWebContents()->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(script), base::NullCallback());
+}
+
 std::unique_ptr<PrerenderHandle>
 PrerenderTestHelper::AddEmbedderTriggeredPrerenderAsync(
     const GURL& prerendering_url,
@@ -379,6 +408,11 @@ void PrerenderTestHelper::NavigatePrerenderedPage(int host_id,
   // should be safe to ignore it.
   std::ignore =
       ExecJs(prerender_render_frame_host, JsReplace("location = $1", gurl));
+}
+
+void PrerenderTestHelper::CancelPrerenderedPage(int host_id) {
+  PrerenderHostRegistry& registry = GetPrerenderHostRegistry(GetWebContents());
+  registry.CancelHost(host_id, PrerenderFinalStatus::kDestroyed);
 }
 
 // static

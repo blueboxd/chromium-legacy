@@ -108,8 +108,14 @@ class WindowCloseObserver : public aura::WindowObserver {
     has_arc_app_ = base::ranges::any_of(windows, &IsArcWindow);
 
     // Observe the windows that we are going to close.
-    for (aura::Window* window : windows)
+    for (aura::Window* window : windows) {
+      // Save desk for later would not close all desk windows, thus no need to
+      // observe here.
+      if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
+        continue;
+
       window_observer_.AddObservation(window);
+    }
 
     OverviewController* overview_controller =
         Shell::Get()->overview_controller();
@@ -406,7 +412,7 @@ void SavedDeskPresenter::LaunchSavedDesk(
         l10n_util::GetStringFUTF16(
             IDS_ASH_DESKS_TEMPLATES_REACH_MAXIMUM_DESK_TOAST,
             base::FormatNumber(desks_util::GetMaxNumberOfDesks()))};
-    ToastManager::Get()->Show(toast_data);
+    ToastManager::Get()->Show(std::move(toast_data));
     return;
   }
 
@@ -502,7 +508,14 @@ void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
       if (!item_view)
         continue;
 
-      item_view->MaybeRemoveNameNumber(saved_desk_name);
+      if (FindOtherEntryWithName(saved_desk_name,
+                                 item_view->desk_template().type(),
+                                 item_view->uuid())) {
+        // When we are here, the item view will contain "{saved_desk_name} (n)",
+        // so what we are doing here is just setting the contained name view to
+        // exactly "{saved_desk_name}" before activating the entry.
+        item_view->SetDisplayName(saved_desk_name);
+      }
       if (library_view->GetWidget()->GetNativeWindow()->GetRootWindow() ==
           root_window) {
         item_view->name_view()->RequestFocus();
@@ -619,7 +632,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
     ToastData toast_data(kTemplateTooLargeToastName,
                          ToastCatalogName::kDeskTemplateTooLarge,
                          l10n_util::GetStringUTF16(toast_text_id));
-    ToastManager::Get()->Show(toast_data);
+    ToastManager::Get()->Show(std::move(toast_data));
     return;
   }
 
@@ -644,7 +657,10 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
                                                  root_window);
       if (SavedDeskItemView* item_view =
               library_view->GetItemForUUID(desk_template->uuid())) {
-        item_view->MaybeRemoveNameNumber(saved_desk_name);
+        if (FindOtherEntryWithName(saved_desk_name, desk_template->type(),
+                                   desk_template->uuid())) {
+          item_view->SetDisplayName(saved_desk_name);
+        }
         item_view->name_view()->RequestFocus();
       }
     }
@@ -682,6 +698,10 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
       // Go through windows and attempt to close them.
       for (aura::Window* window : windows) {
+        // Save desk for later would not close all desk windows, thus skip here.
+        if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
+          continue;
+
         if (views::Widget* widget =
                 views::Widget::GetWidgetForNativeView(window)) {
           widget->Close();

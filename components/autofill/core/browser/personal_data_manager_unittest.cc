@@ -63,6 +63,10 @@ namespace autofill {
 
 namespace {
 
+using testing::ElementsAre;
+using testing::Pointee;
+using testing::UnorderedElementsAre;
+
 const char kPrimaryAccountEmail[] = "syncuser@example.com";
 const char16_t kPrimaryAccountEmail16[] = u"syncuser@example.com";
 const std::string kAddressEntryIcon = "accountIcon";
@@ -174,7 +178,7 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
 
   void ResetProfiles() {
     std::vector<AutofillProfile> empty_profiles;
-    personal_data_->SetProfiles(&empty_profiles);
+    personal_data_->SetProfilesForAllSources(&empty_profiles);
     WaitForOnPersonalDataChanged();
   }
 
@@ -399,19 +403,6 @@ class PersonalDataManagerSyncTransportModeTest
   void TearDown() override { TearDownTest(); }
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-class PersonalDataManagerMigrationTest : public PersonalDataManagerHelper,
-                                         public testing::Test {
- public:
-  PersonalDataManagerMigrationTest()
-      : PersonalDataManagerHelper({::switches::kAccountIdMigration}) {}
-
- protected:
-  void SetUp() override { SetUpTest(); }
-  void TearDown() override { TearDownTest(); }
-};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
                                     public testing::Test {
  protected:
@@ -545,6 +536,83 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
   profiles.push_back(&profile0);
   profiles.push_back(&profile1);
   ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+// Tests that profiles with source `kAccount` and `kLocalOrSyncable` are loaded,
+// and accessible via `GetProfiles()` and `GetProfilesFromSource()`.
+// If duplicates exist across sources, they should be considered distinct.
+TEST_F(PersonalDataManagerTest, GetProfiles) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillAccountProfilesUnionView);
+
+  AutofillProfile kAccountProfile = test::GetFullProfile();
+  kAccountProfile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  AutofillProfile kAccountProfile2 = test::GetFullProfile2();
+  kAccountProfile2.set_source_for_testing(AutofillProfile::Source::kAccount);
+  AutofillProfile kLocalProfile = test::GetFullProfile();
+
+  AddProfileToPersonalDataManager(kAccountProfile);
+  AddProfileToPersonalDataManager(kAccountProfile2);
+  AddProfileToPersonalDataManager(kLocalProfile);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  EXPECT_THAT(
+      personal_data_->GetProfiles(),
+      UnorderedElementsAre(Pointee(kAccountProfile), Pointee(kAccountProfile2),
+                           Pointee(kLocalProfile)));
+  EXPECT_THAT(
+      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount),
+      UnorderedElementsAre(Pointee(kAccountProfile),
+                           Pointee(kAccountProfile2)));
+  EXPECT_THAT(personal_data_->GetProfilesFromSource(
+                  AutofillProfile::Source::kLocalOrSyncable),
+              ElementsAre(Pointee(kLocalProfile)));
+}
+
+// Tests that `SetProfilesForAllSources()` overwrites profiles with the correct
+// source.
+TEST_F(PersonalDataManagerTest, SetProfiles) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kAutofillAccountProfilesUnionView);
+
+  AutofillProfile kAccountProfile = test::GetFullProfile();
+  kAccountProfile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  AutofillProfile kLocalProfile = test::GetFullProfile();
+
+  // Set `kAccount` profiles only.
+  std::vector<AutofillProfile> profiles = {kAccountProfile};
+  personal_data_->SetProfilesForAllSources(&profiles);
+  WaitForOnPersonalDataChanged();
+  EXPECT_THAT(
+      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount),
+      ElementsAre(Pointee(kAccountProfile)));
+  EXPECT_TRUE(
+      personal_data_
+          ->GetProfilesFromSource(AutofillProfile::Source::kLocalOrSyncable)
+          .empty());
+
+  // Set `kLocalOrSyncable` profiles only. This clear the existing `kAccount`
+  // profiles
+  profiles = {kLocalProfile};
+  personal_data_->SetProfilesForAllSources(&profiles);
+  WaitForOnPersonalDataChanged();
+  EXPECT_TRUE(
+      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount)
+          .empty());
+  EXPECT_THAT(personal_data_->GetProfilesFromSource(
+                  AutofillProfile::Source::kLocalOrSyncable),
+              ElementsAre(Pointee(kLocalProfile)));
+
+  // Set profiles of both sources.
+  profiles = {kAccountProfile, kLocalProfile};
+  personal_data_->SetProfilesForAllSources(&profiles);
+  WaitForOnPersonalDataChanged();
+  EXPECT_THAT(
+      personal_data_->GetProfilesFromSource(AutofillProfile::Source::kAccount),
+      ElementsAre(Pointee(kAccountProfile)));
+  EXPECT_THAT(personal_data_->GetProfilesFromSource(
+                  AutofillProfile::Source::kLocalOrSyncable),
+              ElementsAre(Pointee(kLocalProfile)));
 }
 
 // Adding, updating, removing operations without waiting in between.
@@ -716,7 +784,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_CrazyCharacters) {
   profile7.FinalizeAfterImport();
   profiles.push_back(profile7);
 
-  personal_data_->SetProfiles(&profiles);
+  personal_data_->SetProfilesForAllSources(&profiles);
 
   WaitForOnPersonalDataChanged();
 
@@ -744,7 +812,7 @@ TEST_F(PersonalDataManagerTest, AddProfile_Invalid) {
 
   std::vector<AutofillProfile> profiles;
   profiles.push_back(with_invalid);
-  personal_data_->SetProfiles(&profiles);
+  personal_data_->SetProfilesForAllSources(&profiles);
   WaitForOnPersonalDataChanged();
   ASSERT_EQ(1u, personal_data_->GetProfiles().size());
   AutofillProfile profile = *personal_data_->GetProfiles()[0];
@@ -1370,8 +1438,8 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 
   // Sign in.
-  identity_test_env_.SetPrimaryAccount("test@gmail.com",
-                                       signin::ConsentLevel::kSync);
+  identity_test_env_.MakePrimaryAccountAvailable("test@gmail.com",
+                                                 signin::ConsentLevel::kSync);
   sync_service_.SetHasSyncConsent(true);
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
@@ -1576,9 +1644,9 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 
   profile_database_service_->RemoveAutofillProfile(
-      profile1.guid(), AutofillProfile::Source::kLocal);
+      profile1.guid(), AutofillProfile::Source::kLocalOrSyncable);
   profile_database_service_->RemoveAutofillProfile(
-      profile2.guid(), AutofillProfile::Source::kLocal);
+      profile2.guid(), AutofillProfile::Source::kLocalOrSyncable);
 
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
@@ -3608,8 +3676,8 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
 
   // Get the set of profiles persisted in the db.
   std::vector<std::unique_ptr<AutofillProfile>> db_profiles;
-  profile_autofill_table_->GetAutofillProfiles(&db_profiles,
-                                               AutofillProfile::Source::kLocal);
+  profile_autofill_table_->GetAutofillProfiles(
+      &db_profiles, AutofillProfile::Source::kLocalOrSyncable);
 
   // Expect the profiles held in-memory by PersonalDataManager and the db
   // profiles to be the same.
@@ -5217,8 +5285,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   // Expect that a profile is stored in the profile autofill table.
-  profile_autofill_table_->GetAutofillProfiles(&profiles,
-                                               AutofillProfile::Source::kLocal);
+  profile_autofill_table_->GetAutofillProfiles(
+      &profiles, AutofillProfile::Source::kLocalOrSyncable);
   EXPECT_EQ(1U, profiles.size());
   EXPECT_EQ(profile, *profiles[0]);
 }
@@ -5467,27 +5535,6 @@ TEST_F(PersonalDataManagerTest, ClearUrlsFromBrowsingHistoryInTimeRange) {
   // range and therefore, the blocking should prevail.
   EXPECT_TRUE(personal_data_->IsNewProfileImportBlockedForDomain(second_url));
 }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(PersonalDataManagerMigrationTest,
-       MigrateUserOptedInWalletSyncTransportIfNeeded) {
-  ASSERT_EQ(
-      signin::IdentityManager::MIGRATION_DONE,
-      identity_test_env_.identity_manager()->GetAccountIdMigrationState());
-
-  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
-      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail), true);
-  ASSERT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
-      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail)));
-
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  EXPECT_FALSE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
-      prefs_.get(), CoreAccountId::FromEmail(kPrimaryAccountEmail)));
-  EXPECT_TRUE(::autofill::prefs::IsUserOptedInWalletSyncTransport(
-      prefs_.get(), sync_service_.GetAccountInfo().account_id));
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerSyncTransportModeTest,
@@ -5810,8 +5857,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   // kSignedInAndSyncFeature
   ///////////////////////////////////////////////////////////
-  identity_test_env_.SetPrimaryAccount(active_info.email,
-                                       signin::ConsentLevel::kSync);
+  identity_test_env_.MakePrimaryAccountAvailable(active_info.email,
+                                                 signin::ConsentLevel::kSync);
   sync_service_.SetHasSyncConsent(true);
   {
     EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,

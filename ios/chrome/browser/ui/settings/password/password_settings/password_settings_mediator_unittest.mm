@@ -6,8 +6,8 @@
 
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
+#import "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
-#import "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -76,7 +76,7 @@ class PasswordSettingsMediatorTest : public PlatformTest {
     password_manager::MockAffiliationService affiliation_service_;
     store_ = CreateAndUseTestPasswordStore(browser_state_.get());
     presenter_ = std::make_unique<SavedPasswordsPresenter>(
-        &affiliation_service_, store_);
+        &affiliation_service_, store_, /*accont_store=*/nullptr);
 
     mediator_ = [[PasswordSettingsMediator alloc]
         initWithReauthenticationModule:reauth_module_

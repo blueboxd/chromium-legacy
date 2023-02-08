@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.creator.CreatorApiBridge.Creator;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * Sets up the Mediator for Cormorant Creator surface.  It is based on the doc at
  * https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_list_tutorial.md
@@ -19,48 +21,48 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class CreatorMediator {
     private Context mContext;
     private Creator mCreator;
+    private byte[] mWebFeedId;
     private String mTitle;
     private String mUrl;
-    private PropertyModel mCreatorProfileModel;
+    private PropertyModel mCreatorModel;
     private boolean mFollowState;
 
-    CreatorMediator(Context context, PropertyModel creatorProfileModel) {
+    CreatorMediator(Context context, PropertyModel creatorModel) {
         mContext = context;
-        mCreatorProfileModel = creatorProfileModel;
+        mCreatorModel = creatorModel;
+        mWebFeedId = mCreatorModel.get(CreatorProperties.WEB_FEED_ID_KEY);
+        getCreator();
 
         // Set Follow OnClick Action
-        mCreatorProfileModel.set(
-                CreatorProfileProperties.ON_FOLLOW_CLICK_KEY, this::followClickHandler);
-        mCreatorProfileModel.set(
-                CreatorProfileProperties.ON_FOLLOWING_CLICK_KEY, this::followingClickHandler);
-
-        // TODO(crbug.com/1377071): Set up Title and URL dynamically using CreatorBridge
+        mCreatorModel.set(CreatorProperties.ON_FOLLOW_CLICK_KEY, this::followClickHandler);
+        mCreatorModel.set(CreatorProperties.ON_FOLLOWING_CLICK_KEY, this::followingClickHandler);
     }
 
     private void followClickHandler() {
-        WebFeedBridge.followFromId(
-                mCreatorProfileModel.get(CreatorProfileProperties.WEB_FEED_ID_KEY),
+        WebFeedBridge.followFromId(mWebFeedId,
                 /*isDurable=*/false, WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU, (result) -> {
                     if (result.requestStatus == SUCCESS) {
-                        mCreatorProfileModel.set(CreatorProfileProperties.IS_FOLLOWED_KEY, true);
+                        mCreatorModel.set(CreatorProperties.IS_FOLLOWED_KEY, true);
                     }
                 });
     }
 
     private void followingClickHandler() {
-        WebFeedBridge.unfollow(mCreatorProfileModel.get(CreatorProfileProperties.WEB_FEED_ID_KEY),
+        WebFeedBridge.unfollow(mWebFeedId,
                 /*isDurable=*/false, WebFeedBridge.CHANGE_REASON_WEB_PAGE_MENU, (result) -> {
                     if (result.requestStatus == SUCCESS) {
-                        mCreatorProfileModel.set(CreatorProfileProperties.IS_FOLLOWED_KEY, false);
+                        mCreatorModel.set(CreatorProperties.IS_FOLLOWED_KEY, false);
                     }
                 });
     }
 
     private void getCreator() {
-        CreatorApiBridge.getCreator("test", this::onGetCreator);
+        CreatorApiBridge.getCreator(
+                new String(mWebFeedId, StandardCharsets.UTF_8), this::onGetCreator);
     }
 
     private void onGetCreator(Creator creator) {
+        // TODO(crbug/1374058): Get Title and Url from CreatorAPI
         mCreator = creator;
     }
 }

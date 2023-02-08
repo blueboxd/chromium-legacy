@@ -113,6 +113,8 @@ std::unique_ptr<Browser::Histogram> Convert(base::HistogramBase& in_histogram,
   if (!in_delta) {
     in_buckets = in_histogram.SnapshotSamples();
   } else {
+    // TODO(crbug/1377433): Remove this call, as SnapshotDelta() should not be
+    // called outside the metrics collection system.
     in_buckets = in_histogram.SnapshotDelta();
   }
   DCHECK(in_buckets);
@@ -294,6 +296,8 @@ Response PermissionSettingToPermissionStatus(
     *out_status = blink::mojom::PermissionStatus::GRANTED;
   } else if (setting == protocol::Browser::PermissionSettingEnum::Denied) {
     *out_status = blink::mojom::PermissionStatus::DENIED;
+  } else if (setting == protocol::Browser::PermissionSettingEnum::Prompt) {
+    *out_status = blink::mojom::PermissionStatus::ASK;
   } else {
     return Response::InvalidParams("Unknown permission setting: " + setting);
   }
@@ -620,9 +624,10 @@ void BrowserHandler::DownloadWillBegin(FrameTreeNode* ftn,
       item->GetURL(), item->GetContentDisposition(), std::string(),
       item->GetSuggestedFilename(), item->GetMimeType(), "download");
 
-  frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
-                               item->GetGuid(), item->GetURL().spec(),
-                               base::UTF16ToUTF8(likely_filename));
+  frontend_->DownloadWillBegin(
+      ftn->current_frame_host()->devtools_frame_token().ToString(),
+      item->GetGuid(), item->GetURL().spec(),
+      base::UTF16ToUTF8(likely_filename));
   item->AddObserver(this);
   pending_downloads_.insert(item);
 }

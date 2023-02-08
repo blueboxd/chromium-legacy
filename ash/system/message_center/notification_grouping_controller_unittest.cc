@@ -77,6 +77,7 @@ class NotificationGroupingControllerTest : public AshTestBase {
     message_center::NotifierId notifier_id;
     notifier_id.profile_id = "abc@gmail.com";
     notifier_id.type = message_center::NotifierType::WEB_PAGE;
+    notifier_id.url = origin_url;
     auto notification = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_SIMPLE, id_out,
         u"id" + base::NumberToString16(notifications_counter_),
@@ -432,6 +433,82 @@ TEST_F(NotificationGroupingControllerTest, NotificationSwipeGestureBehavior) {
   EXPECT_FALSE(message_center->FindNotificationById(parent_id));
   EXPECT_FALSE(message_center->FindNotificationById(id1));
   EXPECT_FALSE(message_center->FindNotificationById(id2));
+}
+
+// Regression test for b/251684908. Tests that a duplicate `AddNotification`
+// event does not cause the associated notification popup to be dismissed or the
+// original notification to be grouped incorrectly.
+TEST_F(NotificationGroupingControllerTest, DuplicateAddNotificationNotGrouped) {
+  std::string id = AddNotificationWithOriginUrl(GURL(u"http://test-url.com/"));
+
+  auto* popup = GetPopupView(id);
+  EXPECT_TRUE(popup->GetVisible());
+
+  auto* message_center = message_center::MessageCenter::Get();
+
+  // Add a copy of the original notification.
+  auto* original_notification = message_center->FindNotificationById(id);
+  message_center->AddNotification(
+      std::make_unique<Notification>(*original_notification));
+
+  // Add a new notification to force an update to all notification popups.
+  AddNotificationWithOriginUrl(GURL(u"http://other-url.com/"));
+
+  // Make sure the popup for the `original_notification` still exists and is
+  // visible. Also, make sure the `original_notification` was not grouped.
+  EXPECT_TRUE(GetPopupView(id));
+  EXPECT_TRUE(popup->GetVisible());
+  EXPECT_FALSE(message_center->FindNotificationById(id)->group_child());
+}
+
+TEST_F(NotificationGroupingControllerTest, ChildNotificationUpdate) {
+  auto* message_center = MessageCenter::Get();
+  std::string id0, id1, id2;
+  const GURL url(u"http://test-url.com/");
+  id0 = AddNotificationWithOriginUrl(url);
+  id1 = AddNotificationWithOriginUrl(url);
+
+  EXPECT_TRUE(message_center->FindNotificationById(id0)->group_child());
+
+  // Update the notification.
+  auto notification = MakeNotification(id2, url);
+  auto updated_notification =
+      std::make_unique<Notification>(id0, *notification.get());
+  message_center->UpdateNotification(id0, std::move(updated_notification));
+
+  // Make sure the updated notification is still a group child.
+  EXPECT_TRUE(message_center->FindNotificationById(id0)->group_child());
+}
+
+// When the last child of the group notification is removed, its parent
+// notification should be removed as well. We are testing in the case where
+// there is no popup or notification center is not showing.
+TEST_F(NotificationGroupingControllerTest, ChildNotificationRemove) {
+  auto* message_center = MessageCenter::Get();
+  std::string id0, id1;
+  const GURL url(u"http://test-url.com/");
+  id0 = AddNotificationWithOriginUrl(url);
+  id1 = AddNotificationWithOriginUrl(url);
+  std::string id_parent = id0 + kIdSuffixForGroupContainerNotification;
+
+  // Toggle the system tray to dismiss all popups.
+  GetPrimaryUnifiedSystemTray()->ShowBubble();
+  GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+  EXPECT_EQ(3u, message_center->GetVisibleNotifications().size());
+
+  // Remove one child. Parent notification is still retained.
+  message_center->RemoveNotification(id1, /*by_user=*/false);
+  EXPECT_EQ(2u, message_center->GetVisibleNotifications().size());
+  EXPECT_TRUE(message_center->FindNotificationById(id_parent));
+  EXPECT_FALSE(message_center->FindNotificationById(id1));
+  EXPECT_TRUE(message_center->FindNotificationById(id0));
+
+  // Remove the last child notification. Parent notification should be removed.
+  message_center->RemoveNotification(id0, /*by_user=*/false);
+  EXPECT_EQ(0u, message_center->GetVisibleNotifications().size());
+  EXPECT_FALSE(message_center->FindNotificationById(id_parent));
+  EXPECT_FALSE(message_center->FindNotificationById(id0));
 }
 
 }  // namespace ash

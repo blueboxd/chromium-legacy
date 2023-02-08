@@ -37,16 +37,14 @@ group("js_modules") {
     ":lru_cache",
     ":metrics",
     ":metrics_base",
-    ":notifications_browser_proxy",
+    ":notifications",
     ":progress_center_common",
     ":recent_date_bucket",
-    ":storage_adapter",
-    ":trash",
+    ":storage",
     ":ui",
     ":url_constants",
     ":util",
     ":volume_manager_types",
-    ":xfm",
   ]
 }
 
@@ -68,16 +66,14 @@ js_type_check("closure_compile_jsmodules") {
     ":metrics_base",
     ":mock_entry",
     ":mock_util",
-    ":notifications_browser_proxy",
+    ":notifications",
     ":progress_center_common",
     ":recent_date_bucket",
-    ":storage_adapter",
-    ":trash",
+    ":storage",
     ":ui",
     ":url_constants",
     ":util",
     ":volume_manager_types",
-    ":xfm",
   ]
 
   closure_flags = strict_error_checking_closure_args + [
@@ -114,7 +110,7 @@ js_library("api") {
 
 js_library("app_util") {
   deps = [
-    ":storage_adapter",
+    ":storage",
     "//ui/file_manager/file_manager/externs:file_manager_private",
     "//ui/file_manager/file_manager/externs:volume_manager",
   ]
@@ -124,15 +120,15 @@ js_library("app_util") {
 
 js_library("array_data_model") {
   deps = [
+    "//ash/webui/common/resources:event_target",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
 js_unittest("array_data_model_unittest") {
   deps = [
     ":array_data_model",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
   ]
 }
 
@@ -154,7 +150,7 @@ js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
     ":mock_entry",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
     "//ui/file_manager/file_manager/common/js:test_error_reporting",
     "//ui/file_manager/file_manager/externs:volume_info",
     "//ui/webui/resources/js:assert",
@@ -187,6 +183,7 @@ js_library("file_type") {
     ":files_app_entry_types",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
+    "//ui/file_manager/file_manager/externs/ts:state",
     "//ui/webui/resources/js:assert",
   ]
 }
@@ -195,7 +192,7 @@ js_unittest("file_type_unittest") {
   deps = [
     ":file_type",
     ":mock_entry",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
   ]
 }
@@ -205,6 +202,7 @@ js_library("filtered_volume_manager") {
     ":array_data_model",
     ":util",
     "//ash/webui/common/resources:cr_deprecated",
+    "//ash/webui/common/resources:event_target",
     "//ui/file_manager/file_manager/common/js:files_app_entry_types",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:entry_location",
@@ -213,14 +211,13 @@ js_library("filtered_volume_manager") {
     "//ui/file_manager/file_manager/externs:volume_info_list",
     "//ui/file_manager/file_manager/externs:volume_manager",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js/cr:event_target",
   ]
 }
 
 js_unittest("filtered_volume_manager_unittest") {
   deps = [
     ":filtered_volume_manager",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/webui/resources/js:load_time_data.m",
@@ -233,7 +230,7 @@ js_library("lru_cache") {
 js_unittest("lru_cache_unittest") {
   deps = [
     ":lru_cache",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
   ]
 }
 
@@ -260,7 +257,7 @@ js_library("mock_util") {
   deps = [ ":util" ]
 }
 
-js_library("notifications_browser_proxy") {
+js_library("notifications") {
   externs_list =
       [ "//ui/file_manager/file_manager/externs/app_window_common.js" ]
 }
@@ -287,14 +284,13 @@ js_unittest("recent_date_bucket_unittest") {
   ]
 }
 
-js_library("storage_adapter") {
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+js_library("storage") {
 }
 
-js_unittest("storage_adapter_unittest") {
+js_unittest("storage_unittest") {
   deps = [
-    ":storage_adapter",
-    "//chrome/test/data/webui:chai_assert",
+    ":storage",
+    "//chrome/test/data/webui/chromeos:chai_assert",
   ]
 }
 
@@ -302,26 +298,8 @@ js_library("test_error_reporting") {
   testonly = true
 }
 
-js_library("xfm") {
-  deps = [
-    ":notifications_browser_proxy",
-    ":storage_adapter",
-  ]
-}
-
-js_library("trash") {
-  deps = [
-    ":files_app_entry_types",
-    ":metrics",
-    ":util",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
-    "//ui/file_manager/file_manager/externs:files_app_entry_interfaces",
-    "//ui/file_manager/file_manager/externs:volume_manager",
-  ]
-}
-
 js_library("unittest_util") {
-  deps = [ "//chrome/test/data/webui:chai_assert" ]
+  deps = [ "//chrome/test/data/webui/chromeos:chai_assert" ]
 }
 
 js_library("url_constants") {
@@ -353,7 +331,7 @@ js_unittest("util_unittest") {
     ":files_app_entry_types",
     ":mock_entry",
     ":util",
-    "//chrome/test/data/webui:chai_assert",
+    "//chrome/test/data/webui/chromeos:chai_assert",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
   ]
@@ -382,7 +360,7 @@ js_test_type_check("js_test_type_check") {
     ":filtered_volume_manager_unittest",
     ":lru_cache_unittest",
     ":recent_date_bucket_unittest",
-    ":storage_adapter_unittest",
+    ":storage_unittest",
     ":util_unittest",
     ":volume_manager_types_unittest",
   ]

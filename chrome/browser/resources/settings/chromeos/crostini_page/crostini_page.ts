@@ -12,8 +12,8 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_subpage.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_subpage.js';
 import '../../settings_shared.css.js';
 import '../guest_os/guest_os_shared_paths.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
@@ -28,14 +28,14 @@ import './bruschetta_subpage.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../../router.js';
+import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 
 import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl} from './crostini_browser_proxy.js';
 import {getTemplate} from './crostini_page.html.js';
@@ -44,12 +44,12 @@ const SettingsCrostiniPageElementBase =
     mixinBehaviors(
         [
           DeepLinkingBehavior,
-          PrefsBehavior,
         ],
-        RouteObserverMixin(I18nMixin(WebUiListenerMixin(PolymerElement)))) as {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          I18nMixinInterface & PrefsBehaviorInterface &
-          RouteObserverMixinInterface & WebUiListenerMixinInterface,
+        PrefsMixin(RouteObserverMixin(
+            I18nMixin(WebUiListenerMixin(PolymerElement))))) as {
+      new (): PolymerElement & WebUiListenerMixinInterface &
+          I18nMixinInterface & RouteObserverMixinInterface &
+          PrefsMixinInterface & DeepLinkingBehaviorInterface,
     };
 
 class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
@@ -63,11 +63,6 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
 
   static get properties() {
     return {
-      prefs: {
-        type: Object,
-        notify: true,
-      },
-
       focusConfig_: {
         type: Object,
         value() {
@@ -108,6 +103,11 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
           if (routes.BRUSCHETTA_SHARED_USB_DEVICES) {
             map.set(
                 routes.BRUSCHETTA_SHARED_USB_DEVICES.path,
+                '#crostini .subpage-arrow');
+          }
+          if (routes.BRUSCHETTA_SHARED_PATHS) {
+            map.set(
+                routes.BRUSCHETTA_SHARED_PATHS.path,
                 '#crostini .subpage-arrow');
           }
           return map;
@@ -153,7 +153,7 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
       this.disableCrostiniInstall_ = true;
       return;
     }
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-installer-status-changed', (installerShowing: boolean) => {
           this.disableCrostiniInstall_ = installerShowing;
         });

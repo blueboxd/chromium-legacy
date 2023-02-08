@@ -29,8 +29,9 @@ const bool kFakeDebugMode = false;
 const char kFakeGaiaId[] = "123";
 const char kFakeDeviceType[] = "Chromebook";
 const bool kFakeMeasureLatency = false;
-const bool kFakeSendStartSignaling = false;
+const bool kFakeSendStartSignaling = true;
 const bool kFakeDisableStunServer = false;
+const bool kFakeCheckAndroidNetworkInfo = false;
 
 void ParseJson(const std::string& json,
                std::string& device_name,
@@ -42,7 +43,8 @@ void ParseJson(const std::string& json,
                std::string& device_type,
                bool& measure_latency,
                bool& send_start_signaling,
-               bool& disable_stun_server) {
+               bool& disable_stun_server,
+               bool& check_android_network_info) {
   absl::optional<base::Value> message_value = base::JSONReader::Read(json);
   base::Value::Dict* message_dictionary = message_value->GetIfDict();
   const std::string* device_name_ptr =
@@ -85,6 +87,10 @@ void ParseJson(const std::string& json,
       message_dictionary->FindBool(kJsonDisableStunServerKey);
   if (disable_stun_server_opt.has_value())
     disable_stun_server = disable_stun_server_opt.value();
+  absl::optional<bool> check_android_network_info_opt =
+      message_dictionary->FindBool(kJsonCheckAndroidNetworkInfoKey);
+  if (check_android_network_info_opt.has_value())
+    check_android_network_info = check_android_network_info_opt.value();
 }
 
 class TaskRunner {
@@ -149,6 +155,7 @@ class FakeObserver : public mojom::SystemInfoObserver {
     return num_backlight_state_calls_;
   }
   size_t num_tablet_state_calls() const { return num_tablet_state_calls_; }
+  size_t num_android_state_calls() const { return num_android_state_calls_; }
 
   // mojom::SystemInfoObserver:
   void OnScreenBacklightStateChanged(
@@ -167,6 +174,15 @@ class FakeObserver : public mojom::SystemInfoObserver {
     }
   }
 
+  void OnAndroidDeviceNetworkInfoChanged(
+      bool is_different_network,
+      bool android_device_on_cellular) override {
+    ++num_android_state_calls_;
+    if (task_runner_) {
+      task_runner_->Finish();
+    }
+  }
+
   static void setTaskRunner(TaskRunner* task_runner) {
     task_runner_ = task_runner;
   }
@@ -176,6 +192,7 @@ class FakeObserver : public mojom::SystemInfoObserver {
  private:
   size_t num_backlight_state_calls_ = 0;
   size_t num_tablet_state_calls_ = 0;
+  size_t num_android_state_calls_ = 0;
   static TaskRunner* task_runner_;
 };
 
@@ -243,6 +260,10 @@ class SystemInfoProviderTest : public testing::Test {
         ash::ScreenBacklightState::OFF);
   }
 
+  void SetAndroidDeviceNetworkInfoChanged() {
+    system_info_provider_->SetAndroidDeviceNetworkInfoChanged(false, false);
+  }
+
   void OnTabletModeStarted() { system_info_provider_->OnTabletModeStarted(); }
 
   void OnTabletModeEnded() { system_info_provider_->OnTabletModeEnded(); }
@@ -264,6 +285,9 @@ class SystemInfoProviderTest : public testing::Test {
   size_t GetNumBacklightStateObserverCalls() const {
     return fake_observer_->num_backlight_state_calls();
   }
+  size_t GetNumAndroidStateObserverCalls() const {
+    return fake_observer_->num_android_state_calls();
+  }
   TaskRunner task_runner_;
 
  private:
@@ -284,12 +308,14 @@ TEST_F(SystemInfoProviderTest, GetSystemInfoHasCorrectJson) {
   bool measure_latency = true;
   bool send_start_signaling = false;
   bool disable_stun_server = true;
+  bool check_android_network_info = true;
 
   GetSystemInfo();
   std::string json = Callback::GetSystemInfo();
   ParseJson(json, device_name, board_name, tablet_mode, wifi_connection_state,
             debug_mode, gaia_id, device_type, measure_latency,
-            send_start_signaling, disable_stun_server);
+            send_start_signaling, disable_stun_server,
+            check_android_network_info);
 
   EXPECT_EQ(device_name, kFakeDeviceName);
   EXPECT_EQ(board_name, kFakeBoardName);
@@ -301,6 +327,7 @@ TEST_F(SystemInfoProviderTest, GetSystemInfoHasCorrectJson) {
   EXPECT_EQ(measure_latency, kFakeMeasureLatency);
   EXPECT_EQ(send_start_signaling, kFakeSendStartSignaling);
   EXPECT_EQ(disable_stun_server, kFakeDisableStunServer);
+  EXPECT_EQ(check_android_network_info, kFakeCheckAndroidNetworkInfo);
 }
 
 TEST_F(SystemInfoProviderTest, ObserverCalledWhenBacklightChanged) {
@@ -325,6 +352,15 @@ TEST_F(SystemInfoProviderTest, ObserverCalledWhenTabletModeEnded) {
   task_runner_.WaitForResult();
 
   EXPECT_EQ(1u, GetNumTabletStateObserverCalls());
+}
+
+TEST_F(SystemInfoProviderTest,
+       ObserverCalledWhenAndroidDeviceNetworkStateChanged) {
+  FakeObserver::setTaskRunner(&task_runner_);
+  SetAndroidDeviceNetworkInfoChanged();
+  task_runner_.WaitForResult();
+
+  EXPECT_EQ(1u, GetNumAndroidStateObserverCalls());
 }
 
 }  // namespace eche_app

@@ -5,7 +5,7 @@
 #include "content/browser/buckets/bucket_host.h"
 
 #include "base/bind.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "content/browser/buckets/bucket_context.h"
 #include "content/browser/buckets/bucket_manager.h"
@@ -17,9 +17,19 @@
 
 namespace content {
 
+// `BucketContext` assumes these two mojom methods have the same signature. This
+// assert is here instead of in `bucket_context.h` to avoid pulling in too many
+// includes in a header.
+static_assert(
+    std::is_same_v<
+        blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback,
+        blink::mojom::BucketHost::GetDirectoryCallback>);
+
 BucketHost::BucketHost(BucketManagerHost* bucket_manager_host,
                        const storage::BucketInfo& bucket_info)
-    : bucket_manager_host_(bucket_manager_host), bucket_info_(bucket_info) {
+    : bucket_manager_host_(bucket_manager_host),
+      bucket_info_(bucket_info),
+      bucket_id_(bucket_info.id) {
   receivers_.set_disconnect_handler(base::BindRepeating(
       &BucketHost::OnReceiverDisconnected, base::Unretained(this)));
 }
@@ -36,53 +46,100 @@ BucketHost::CreateStorageBucketBinding(
 }
 
 void BucketHost::Persist(PersistCallback callback) {
-  if (bucket_info_.persistent) {
-    std::move(callback).Run(true, true);
-    return;
-  }
-
-  if (receivers_.current_context() &&
+  if (!bucket_info_.is_null() && receivers_.current_context() &&
       receivers_.current_context()->GetPermissionStatus(
           blink::PermissionType::DURABLE_STORAGE) ==
           blink::mojom::PermissionStatus::GRANTED) {
     GetQuotaManagerProxy()->UpdateBucketPersistence(
-        bucket_info_.id, /*persistent=*/true,
-        base::SequencedTaskRunnerHandle::Get(),
+        bucket_id_, /*persistent=*/true,
+        base::SequencedTaskRunner::GetCurrentDefault(),
         base::BindOnce(
-            &BucketHost::DidUpdateBucket, weak_factory_.GetWeakPtr(),
-            base::BindOnce(std::move(callback), /*persisted=*/true)));
+            &BucketHost::DidGetBucket, weak_factory_.GetWeakPtr(),
+            base::BindOnce(&BucketHost::DidValidateForPersist,
+                           base::Unretained(this), std::move(callback))));
   } else {
     std::move(callback).Run(false, false);
   }
 }
 
 void BucketHost::Persisted(PersistedCallback callback) {
-  std::move(callback).Run(bucket_info_.persistent, true);
+  if (bucket_info_.is_null()) {
+    std::move(callback).Run(false, false);
+    return;
+  }
+
+  GetQuotaManagerProxy()->GetBucketById(
+      bucket_id_, base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(
+          &BucketHost::DidGetBucket, weak_factory_.GetWeakPtr(),
+          base::BindOnce(&BucketHost::DidValidateForPersist,
+                         base::Unretained(this), std::move(callback))));
+}
+
+void BucketHost::DidValidateForPersist(PersistedCallback callback,
+                                       bool bucket_exists) {
+  std::move(callback).Run(bucket_info_.persistent, bucket_exists);
 }
 
 void BucketHost::Estimate(EstimateCallback callback) {
+  if (bucket_info_.is_null()) {
+    std::move(callback).Run({}, {}, /*success=*/false);
+    return;
+  }
+
   GetQuotaManagerProxy()->GetBucketUsageAndQuota(
-      bucket_info_, base::SequencedTaskRunnerHandle::Get(),
+      bucket_id_, base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&BucketHost::DidGetUsageAndQuota,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BucketHost::Durability(DurabilityCallback callback) {
-  std::move(callback).Run(bucket_info_.durability, true);
+  if (bucket_info_.is_null()) {
+    std::move(callback).Run({}, false);
+    return;
+  }
+
+  GetQuotaManagerProxy()->GetBucketById(
+      bucket_id_, base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(
+          &BucketHost::DidGetBucket, weak_factory_.GetWeakPtr(),
+          base::BindOnce(&BucketHost::DidValidateForDurability,
+                         base::Unretained(this), std::move(callback))));
+}
+
+void BucketHost::DidValidateForDurability(DurabilityCallback callback,
+                                          bool bucket_exists) {
+  std::move(callback).Run(bucket_info_.durability, bucket_exists);
 }
 
 void BucketHost::SetExpires(base::Time expires, SetExpiresCallback callback) {
   GetQuotaManagerProxy()->UpdateBucketExpiration(
-      bucket_info_.id, expires, base::SequencedTaskRunnerHandle::Get(),
-      base::BindOnce(&BucketHost::DidUpdateBucket, weak_factory_.GetWeakPtr(),
+      bucket_id_, expires, base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(&BucketHost::DidGetBucket, weak_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
 
 void BucketHost::Expires(ExpiresCallback callback) {
+  if (bucket_info_.is_null()) {
+    std::move(callback).Run(absl::nullopt, /*success=*/false);
+    return;
+  }
+
+  GetQuotaManagerProxy()->GetBucketById(
+      bucket_id_, base::SequencedTaskRunner::GetCurrentDefault(),
+      base::BindOnce(
+          &BucketHost::DidGetBucket, weak_factory_.GetWeakPtr(),
+          base::BindOnce(&BucketHost::DidValidateForExpires,
+                         base::Unretained(this), std::move(callback))));
+}
+
+void BucketHost::DidValidateForExpires(ExpiresCallback callback,
+                                       bool bucket_exists) {
   absl::optional<base::Time> expires;
-  if (!bucket_info_.expiration.is_null())
+  if (bucket_exists && !bucket_info_.expiration.is_null())
     expires = bucket_info_.expiration;
-  std::move(callback).Run(expires, true);
+
+  std::move(callback).Run(expires, bucket_exists);
 }
 
 void BucketHost::GetIdbFactory(
@@ -102,29 +159,39 @@ void BucketHost::GetCaches(
   bucket_context->BindCacheStorageForBucket(bucket_info_, std::move(caches));
 }
 
+void BucketHost::GetDirectory(GetDirectoryCallback callback) {
+  auto bucket_context = receivers_.current_context();
+  if (!bucket_context)
+    return;
+
+  bucket_context->GetSandboxedFileSystemForBucket(bucket_info_,
+                                                  std::move(callback));
+}
+
 void BucketHost::GetLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   bucket_manager_host_->GetStoragePartition()->GetLockManager()->BindReceiver(
-      bucket_info_.id, std::move(receiver));
+      bucket_id_, std::move(receiver));
 }
 
 void BucketHost::OnReceiverDisconnected() {
   if (!receivers_.empty())
     return;
   // Destroys `this`.
-  bucket_manager_host_->RemoveBucketHost(bucket_info_.name);
+  bucket_manager_host_->RemoveBucketHost(bucket_id_);
 }
 
 storage::QuotaManagerProxy* BucketHost::GetQuotaManagerProxy() {
   return bucket_manager_host_->GetQuotaManagerProxy();
 }
 
-void BucketHost::DidUpdateBucket(
+void BucketHost::DidGetBucket(
     base::OnceCallback<void(bool)> callback,
     storage::QuotaErrorOr<storage::BucketInfo> bucket_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!bucket_info.ok()) {
+    bucket_info_ = {};
     std::move(callback).Run(false);
     return;
   }
@@ -138,6 +205,10 @@ void BucketHost::DidGetUsageAndQuota(EstimateCallback callback,
                                      int64_t usage,
                                      int64_t quota) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (code != blink::mojom::QuotaStatusCode::kOk) {
+    bucket_info_ = {};
+  }
+
   std::move(callback).Run(usage, quota,
                           code == blink::mojom::QuotaStatusCode::kOk);
 }

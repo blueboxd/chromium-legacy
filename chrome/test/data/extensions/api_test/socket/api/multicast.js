@@ -163,7 +163,8 @@ function testMulticast() {
       var canceller = waitForMessage(serverSocketId, function (cancelled) {
         clearTimeout(recvTimeout);
         if (cancelled) {
-          leaveGroupAndDisconnect(serverSocketId);
+          socket.destroy(serverSocketId);
+          chrome.test.succeed();
         } else {
           chrome.test.fail("Received message after leaving the group");
           socket.destroy(serverSocketId);
@@ -172,20 +173,9 @@ function testMulticast() {
       testSendMessage(request);
       recvTimeout = setTimeout(function () {
         canceller();
-      }, 2000);
-    });
-  }
-
-  function leaveGroupAndDisconnect(serverSocketId) {
-    socket.joinGroup(serverSocketId, kMulticastAddress, function (result) {
-      chrome.test.assertNoLastError();
-      chrome.test.assertEq(0, result, "Join group failed.");
-      socket.leaveGroup(serverSocketId, kMulticastAddress, () => {
-        chrome.test.assertEq(0, result, "Leave group failed.");
         socket.destroy(serverSocketId);
         chrome.test.succeed();
-      });
-      socket.disconnect(serverSocketId);
+      }, 2000);
     });
   }
 

@@ -9,13 +9,14 @@
 
 #include "ash/system/tray/actionable_view.h"
 #include "base/bind.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_constants.h"
 
 namespace views {
 class Border;
 class Label;
-}
+}  // namespace views
 
 namespace ash {
 class TriView;
@@ -46,7 +47,12 @@ class ASH_EXPORT HoverHighlightView : public ActionableView {
   // Convenience function for populating the view with an icon and a label. This
   // also sets the accessible name. Primarily used for scrollable rows in
   // detailed views.
+  // New callers should use the function below which takes an ImageModel.
+  // TODO(b/259490845): Change callers to pass an ImageModel and eliminate this.
   void AddIconAndLabel(const gfx::ImageSkia& image, const std::u16string& text);
+
+  // The same as the above function with `ImageModel` parameter instead.
+  void AddIconAndLabel(const ui::ImageModel& image, const std::u16string& text);
 
   // Convenience function for populating the view with an arbitrary view and a
   // label. This also sets the accessible name.
@@ -94,6 +100,7 @@ class ASH_EXPORT HoverHighlightView : public ActionableView {
   views::View* left_view() { return left_view_; }
   views::View* right_view() { return right_view_; }
   views::View* sub_row() { return sub_row_; }
+  TriView* tri_view() { return tri_view_; }
 
  protected:
   // Override from Button to also set the tooltip for all child elements.
@@ -102,8 +109,6 @@ class ASH_EXPORT HoverHighlightView : public ActionableView {
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   const char* GetClassName() const override;
-
-  TriView* tri_view() { return tri_view_; }
 
  private:
   friend class TrayAccessibilityTest;

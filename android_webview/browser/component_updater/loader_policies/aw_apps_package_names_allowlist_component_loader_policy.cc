@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/components/aw_apps_package_names_allowlist_component_utils.h"
 #include "android_webview/common/metrics/app_package_name_logging_rule.h"
@@ -198,15 +199,17 @@ AwAppsPackageNamesAllowlistComponentLoaderPolicy::
 void AwAppsPackageNamesAllowlistComponentLoaderPolicy::ComponentLoaded(
     const base::Version& version,
     base::flat_map<std::string, base::ScopedFD>& fd_map,
-    std::unique_ptr<base::DictionaryValue> manifest) {
+    base::Value::Dict manifest) {
   DCHECK(version.IsValid());
 
   // Have to use double because base::DictionaryValue doesn't support int64
   // values.
   absl::optional<double> expiry_date_ms =
-      manifest->FindDoublePath(kExpiryDateKey);
-  absl::optional<int> num_hash = manifest->FindIntPath(kBloomFilterNumHashKey);
-  absl::optional<int> num_bits = manifest->FindIntPath(kBloomFilterNumBitsKey);
+      manifest.FindDoubleByDottedPath(kExpiryDateKey);
+  absl::optional<int> num_hash =
+      manifest.FindIntByDottedPath(kBloomFilterNumHashKey);
+  absl::optional<int> num_bits =
+      manifest.FindIntByDottedPath(kBloomFilterNumBitsKey);
   // Being conservative and consider the allowlist expired when a valid expiry
   // date is absent.
   if (!expiry_date_ms.has_value() || !num_hash.has_value() ||
@@ -270,6 +273,12 @@ void LoadPackageNamesAllowlistComponent(
     AwMetricsServiceClient* metrics_service_client) {
   DCHECK(metrics_service_client);
 
+  // Prevent loading of client-side allowlist if using server-side allowlist
+  if (base::FeatureList::IsEnabled(
+          android_webview::features::
+              kWebViewAppsPackageNamesServerSideAllowlist)) {
+    return;
+  }
   absl::optional<AppPackageNameLoggingRule> cached_record =
       metrics_service_client->GetCachedAppPackageNameLoggingRule();
   base::Time last_update =

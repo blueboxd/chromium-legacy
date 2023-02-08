@@ -10,11 +10,15 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/url_constants.h"
 #include "components/custom_handlers/protocol_handler.h"
@@ -47,6 +51,18 @@ base::Value::List GetHandlersAsListValue(
   return handler_list;
 }
 
+void AcquireAppLockAndScheduleCallback(
+    const std::string& operation_name,
+    web_app::WebAppProvider& provider,
+    const web_app::AppId& app_id,
+    base::OnceCallback<void(web_app::AppLock& lock)> callback) {
+  provider.scheduler().ScheduleCallbackWithLock<web_app::AppLock>(
+      operation_name,
+      std::make_unique<web_app::AppLockDescription,
+                       base::flat_set<web_app::AppId>>({app_id}),
+      std::move(callback));
+}
+
 }  // namespace
 
 ProtocolHandlersHandler::ProtocolHandlersHandler(Profile* profile)
@@ -58,7 +74,7 @@ ProtocolHandlersHandler::~ProtocolHandlersHandler() = default;
 void ProtocolHandlersHandler::OnJavascriptAllowed() {
   registry_observation_.Observe(GetProtocolHandlerRegistry());
   if (web_app_provider_) {
-    app_observation_.Observe(&web_app_provider_->registrar());
+    app_observation_.Observe(&web_app_provider_->registrar_unsafe());
     install_manager_observation_.Observe(&web_app_provider_->install_manager());
   }
 }
@@ -119,6 +135,10 @@ void ProtocolHandlersHandler::OnProtocolHandlerRegistryChanged() {
 void ProtocolHandlersHandler::OnWebAppProtocolSettingsChanged() {
   UpdateAllAllowedLaunchProtocols();
   UpdateAllDisallowedLaunchProtocols();
+}
+
+void ProtocolHandlersHandler::OnAppRegistrarDestroyed() {
+  app_observation_.Reset();
 }
 
 void ProtocolHandlersHandler::OnWebAppUninstalled(
@@ -254,7 +274,7 @@ void ProtocolHandlersHandler::UpdateAllAllowedLaunchProtocols() {
     return;
 
   base::flat_set<std::string> protocols(
-      web_app_provider_->registrar().GetAllAllowedLaunchProtocols());
+      web_app_provider_->registrar_unsafe().GetAllAllowedLaunchProtocols());
   web_app::OsIntegrationManager& os_integration_manager =
       web_app_provider_->os_integration_manager();
 
@@ -275,7 +295,7 @@ void ProtocolHandlersHandler::UpdateAllDisallowedLaunchProtocols() {
     return;
 
   base::flat_set<std::string> protocols(
-      web_app_provider_->registrar().GetAllDisallowedLaunchProtocols());
+      web_app_provider_->registrar_unsafe().GetAllDisallowedLaunchProtocols());
   web_app::OsIntegrationManager& os_integration_manager =
       web_app_provider_->os_integration_manager();
 
@@ -303,8 +323,16 @@ void ProtocolHandlersHandler::HandleRemoveAllowedAppHandler(
   CHECK(!handler.IsEmpty());
   DCHECK(web_app_provider_);
 
-  web_app_provider_->sync_bridge().RemoveAllowedLaunchProtocol(
-      handler.web_app_id().value(), handler.protocol());
+  const web_app::AppId& app_id = handler.web_app_id().value();
+  AcquireAppLockAndScheduleCallback(
+      "ProtocolHandlersHandler::HandleRemoveAllowedAppHandler",
+      *web_app_provider_, app_id,
+      base::BindOnce(
+          [](custom_handlers::ProtocolHandler handler, web_app::AppLock& lock) {
+            lock.sync_bridge().RemoveAllowedLaunchProtocol(
+                handler.web_app_id().value(), handler.protocol());
+          },
+          std::move(handler)));
 
   // No need to call UpdateAllAllowedLaunchProtocols() - we should receive a
   // notification that the Web App Protocol Settings has changed and we will
@@ -317,13 +345,21 @@ void ProtocolHandlersHandler::HandleRemoveDisallowedAppHandler(
   CHECK(!handler.IsEmpty());
   DCHECK(web_app_provider_);
 
-  web_app_provider_->sync_bridge().RemoveDisallowedLaunchProtocol(
-      handler.web_app_id().value(), handler.protocol());
+  const web_app::AppId& app_id = handler.web_app_id().value();
+  AcquireAppLockAndScheduleCallback(
+      "ProtocolHandlersHandler::HandleRemoveDisallowedAppHandler",
+      *web_app_provider_, app_id,
+      base::BindOnce(
+          [](custom_handlers::ProtocolHandler handler, web_app::AppLock& lock) {
+            lock.sync_bridge().RemoveDisallowedLaunchProtocol(
+                handler.web_app_id().value(), handler.protocol());
 
-  // Update registration with the OS.
-  web_app_provider_->os_integration_manager().UpdateProtocolHandlers(
-      handler.web_app_id().value(), /*force_shortcut_updates_if_needed=*/true,
-      base::DoNothing());
+            // Update registration with the OS.
+            lock.os_integration_manager().UpdateProtocolHandlers(
+                handler.web_app_id().value(),
+                /*force_shortcut_updates_if_needed=*/true, base::DoNothing());
+          },
+          std::move(handler)));
 
   // No need to call UpdateAllDisallowedLaunchProtocols() - we should receive a
   // notification that the Web App Protocol Settings has changed and we will

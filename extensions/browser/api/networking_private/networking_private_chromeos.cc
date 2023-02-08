@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_activation_handler.h"
@@ -26,7 +27,6 @@
 #include "chromeos/ash/components/network/onc/onc_translator.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/onc/onc_constants.h"
 #include "components/proxy_config/proxy_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -89,7 +89,7 @@ bool GetPrimaryUserIdHash(content::BrowserContext* browser_context,
 
   // Currently Chrome OS only configures networks for the primary user.
   // Configuration attempts from other browser contexts should fail.
-  if (context_user_hash != chromeos::LoginState::Get()->primary_user_hash()) {
+  if (context_user_hash != ash::LoginState::Get()->primary_user_hash()) {
     // Disallow class requiring a user id hash from a non-primary user context
     // to avoid complexities with the policy code.
     LOG(ERROR) << "networkingPrivate API call from non primary user: "
@@ -378,8 +378,7 @@ void NetworkingPrivateChromeOS::SetProperties(
   NET_LOG(USER) << "networkingPrivate.setProperties for: "
                 << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
-      network->path(), static_cast<base::DictionaryValue&>(properties),
-      std::move(success_callback),
+      network->path(), properties, std::move(success_callback),
       base::BindOnce(&NetworkHandlerFailureCallback,
                      std::move(failure_callback)));
 }
@@ -408,7 +407,7 @@ void NetworkingPrivateChromeOS::CreateNetwork(
       GetStringFromDictionary(properties, ::onc::network_config::kGUID);
   NET_LOG(USER) << "networkingPrivate.CreateNetwork. GUID=" << guid;
   GetManagedConfigurationHandler()->CreateConfiguration(
-      user_id_hash, static_cast<base::DictionaryValue&>(properties),
+      user_id_hash, properties,
       base::BindOnce(&NetworkHandlerCreateCallback,
                      std::move(success_callback)),
       base::BindOnce(&NetworkHandlerFailureCallback,
@@ -489,21 +488,17 @@ void NetworkingPrivateChromeOS::GetNetworks(
       (!visible_only && network_type == ::onc::network_type::kEthernet)
           ? NetworkTypePattern::EthernetOrEthernetEAP()
           : ash::onc::NetworkTypePatternFromOncType(network_type);
-  base::Value network_properties_list =
+  base::Value::List network_properties_list =
       ash::network_util::TranslateNetworkListToONC(pattern, configured_only,
                                                    visible_only, limit);
 
-  for (auto& value : network_properties_list.GetList()) {
-    base::DictionaryValue* network_dict = nullptr;
-    value.GetAsDictionary(&network_dict);
-    DCHECK(network_dict);
-    if (GetThirdPartyVPNDictionary(network_dict))
-      AppendThirdPartyProviderName(network_dict);
+  for (auto& value : network_properties_list) {
+    DCHECK(value.is_dict());
+    if (GetThirdPartyVPNDictionary(&value))
+      AppendThirdPartyProviderName(&value);
   }
 
-  std::move(success_callback)
-      .Run(base::ListValue::From(
-          base::Value::ToUniquePtrValue(std::move(network_properties_list))));
+  std::move(success_callback).Run(std::move(network_properties_list));
 }
 
 void NetworkingPrivateChromeOS::StartConnect(const std::string& guid,

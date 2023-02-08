@@ -93,6 +93,7 @@ void InitSearchKeyToPredicateMapIfNeeded() {
   AddToPredicateMap("LIVE", AccessibilityLiveRegionPredicate);
   AddToPredicateMap("MAIN", AccessibilityMainPredicate);
   AddToPredicateMap("MEDIA", AccessibilityMediaPredicate);
+  AddToPredicateMap("PARAGRAPH", AccessibilityParagraphPredicate);
   AddToPredicateMap("RADIO", AccessibilityRadioButtonPredicate);
   AddToPredicateMap("RADIO_GROUP", AccessibilityRadioGroupPredicate);
   AddToPredicateMap("SECTION", AccessibilitySectionPredicate);
@@ -317,8 +318,8 @@ void WebContentsAccessibilityAndroid::SetAXMode(
       // Remove the mode flags present in kAXModeComplete but not in
       // kAXModeBasic, thereby reverting the mode to kAXModeBasic while
       // not touching any other flags.
-      ui::AXMode remove_mode_flags(ui::kAXModeComplete.mode() &
-                                   ~ui::kAXModeBasic.mode());
+      ui::AXMode remove_mode_flags(ui::kAXModeComplete.flags() &
+                                   ~ui::kAXModeBasic.flags());
       accessibility_state->RemoveAccessibilityModeFlags(remove_mode_flags);
     }
   }
@@ -777,17 +778,6 @@ jboolean WebContentsAccessibilityAndroid::UpdateCachedAccessibilityNodeInfo(
 
   // Update cached nodes by providing new enclosing Rects
   UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
-
-  // On Android L and M, there is a bug in the Android framework that could
-  // result in an incorrect RangeInfo object being returned from the pool, so
-  // update the cached node to work around this. This is not necessary on newer
-  // versions of Android that contain the fix, see: ag/930331
-  // TODO(mschillaci): Remove this when Android M is no longer supported.
-  if (node->IsRangeControlWithoutAriaValueText()) {
-    Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoRangeInfo(
-        env, obj, info, node->AndroidRangeType(), node->RangeMin(),
-        node->RangeMax(), node->RangeCurrentValue());
-  }
 
   return true;
 }

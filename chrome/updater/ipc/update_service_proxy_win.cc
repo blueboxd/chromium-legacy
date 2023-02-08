@@ -27,10 +27,11 @@
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
+#include "chrome/updater/ipc/proxy_impl_base_win.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
-#include "chrome/updater/win/proxy_impl_base.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/win_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -44,9 +45,9 @@ using ICompleteStatusPtr = ::Microsoft::WRL::ComPtr<ICompleteStatus>;
 // This class implements the IUpdaterObserver interface and exposes it as a COM
 // object. The class has thread-affinity for the STA thread.
 class UpdaterObserver
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdaterObserver> {
+    : public DynamicIIDsImpl<IUpdaterObserver,
+                             __uuidof(IUpdaterObserverUser),
+                             __uuidof(IUpdaterObserverSystem)> {
  public:
   UpdaterObserver(UpdateService::StateChangeCallback state_update_callback,
                   UpdateService::Callback callback)
@@ -213,9 +214,9 @@ class UpdaterObserver
 // This class implements the IUpdaterCallback interface and exposes it as a COM
 // object. The class has thread-affinity for the STA thread.
 class UpdaterCallback
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdaterCallback> {
+    : public DynamicIIDsImpl<IUpdaterCallback,
+                             __uuidof(IUpdaterCallbackUser),
+                             __uuidof(IUpdaterCallbackSystem)> {
  public:
   explicit UpdaterCallback(base::OnceCallback<void(LONG)> callback)
       : callback_(std::move(callback)) {}
@@ -260,13 +261,16 @@ class UpdaterCallback
 
 class UpdateServiceProxyImpl
     : public base::RefCountedThreadSafe<UpdateServiceProxyImpl>,
-      public ProxyImplBase<UpdateServiceProxyImpl, IUpdater> {
+      public ProxyImplBase<UpdateServiceProxyImpl,
+                           IUpdater,
+                           __uuidof(IUpdaterUser),
+                           __uuidof(IUpdaterSystem)> {
  public:
   explicit UpdateServiceProxyImpl(UpdaterScope scope) : ProxyImplBase(scope) {}
 
   static auto GetClassGuid(UpdaterScope scope) {
-    return scope == UpdaterScope::kSystem ? __uuidof(UpdaterSystemClass)
-                                          : __uuidof(UpdaterUserClass);
+    return IsSystemInstall(scope) ? __uuidof(UpdaterSystemClass)
+                                  : __uuidof(UpdaterUserClass);
   }
 
   void GetVersion(base::OnceCallback<void(const base::Version&)> callback) {
@@ -758,11 +762,6 @@ void UpdateServiceProxy::RunInstaller(const std::string& app_id,
   impl_->RunInstaller(app_id, installer_path, install_args, install_data,
                       install_settings, OnCurrentSequence(state_update),
                       OnCurrentSequence(std::move(callback)));
-}
-
-// TODO(crbug.com/1363829) - remove the function.
-void UpdateServiceProxy::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<UpdateService> CreateUpdateServiceProxy(

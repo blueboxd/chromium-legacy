@@ -100,6 +100,7 @@
 #include "third_party/cros_system_api/constants/cryptohome.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_non_backed.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 using ::ash::disks::DiskMountManager;
 using content::BrowserThread;
@@ -984,8 +985,24 @@ FileManagerPrivateInternalGetDlpMetadataFunction::Run() {
 
   policy::DlpFilesController* files_controller =
       rules_manager->GetDlpFilesController();
+
+  absl::optional<policy::DlpFilesController::DlpFileDestination> destination;
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents) {
+    LOG(WARNING) << "Failed to locate WebContents";
+    return RespondNow(Error("Failed to locate WebContents"));
+  }
+  ui::SelectFileDialog::Type type =
+      SelectFileDialogExtensionUserData::GetDialogTypeForWebContents(
+          web_contents);
+  if (type != ui::SelectFileDialog::Type::SELECT_SAVEAS_FILE) {
+    destination =
+        SelectFileDialogExtensionUserData::GetDialogCallerForWebContents(
+            web_contents);
+  }
+
   files_controller->GetDlpMetadata(
-      source_urls_,
+      source_urls_, destination,
       base::BindOnce(
           &FileManagerPrivateInternalGetDlpMetadataFunction::OnGetDlpMetadata,
           this));
@@ -1002,6 +1019,7 @@ void FileManagerPrivateInternalGetDlpMetadataFunction::OnGetDlpMetadata(
     DlpMetadata metadata;
     metadata.is_dlp_restricted = md.is_dlp_restricted;
     metadata.source_url = md.source_url;
+    metadata.is_restricted_for_destination = md.is_restricted_for_destination;
     converted_list.emplace_back(std::move(metadata));
   }
   Respond(ArgumentList(
@@ -1512,8 +1530,8 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
   // Check if Trash is enabled, this pref is mainly used by enterprise policy to
   // disable trash on a per profile basis.
   bool is_trash_enabled = false;
-  if (base::FeatureList::IsEnabled(chromeos::features::kFilesTrash) &&
-      profile && profile->GetPrefs()) {
+  if (base::FeatureList::IsEnabled(ash::features::kFilesTrash) && profile &&
+      profile->GetPrefs()) {
     is_trash_enabled =
         profile->GetPrefs()->GetBoolean(ash::prefs::kFilesAppTrashEnabled);
   }
@@ -1568,17 +1586,14 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       }
       break;
     case file_manager::io_task::OperationType::kExtract:
-      if (base::FeatureList::IsEnabled(
-              chromeos::features::kFilesExtractArchive)) {
-        std::string password;
-        if (params->params.password) {
-          password = *params->params.password;
-        }
-        task = std::make_unique<file_manager::io_task::ExtractIOTask>(
-            std::move(source_urls), std::move(password),
-            std::move(destination_folder_url), profile, file_system_context,
-            show_notification);
+      std::string password;
+      if (params->params.password) {
+        password = *params->params.password;
       }
+      task = std::make_unique<file_manager::io_task::ExtractIOTask>(
+          std::move(source_urls), std::move(password),
+          std::move(destination_folder_url), profile, file_system_context,
+          show_notification);
       break;
   }
   if (!task) {
@@ -1644,12 +1659,13 @@ FileManagerPrivateInternalParseTrashInfoFilesFunction::Run() {
   validator_ = std::make_unique<file_manager::trash::TrashInfoValidator>(
       profile, /*base_path=*/base::FilePath());
 
-  auto barrier_callback = base::BarrierCallback<
-      base::FileErrorOr<file_manager::trash::ParsedTrashInfoData>>(
-      trash_info_paths.size(),
-      base::BindOnce(&FileManagerPrivateInternalParseTrashInfoFilesFunction::
-                         OnTrashInfoFilesParsed,
-                     this));
+  auto barrier_callback =
+      base::BarrierCallback<file_manager::trash::ParsedTrashInfoDataOrError>(
+          trash_info_paths.size(),
+          base::BindOnce(
+              &FileManagerPrivateInternalParseTrashInfoFilesFunction::
+                  OnTrashInfoFilesParsed,
+              this));
 
   for (const base::FilePath& path : trash_info_paths) {
     validator_->ValidateAndParseTrashInfo(std::move(path), barrier_callback);
@@ -1660,8 +1676,8 @@ FileManagerPrivateInternalParseTrashInfoFilesFunction::Run() {
 
 void FileManagerPrivateInternalParseTrashInfoFilesFunction::
     OnTrashInfoFilesParsed(
-        std::vector<base::FileErrorOr<file_manager::trash::ParsedTrashInfoData>>
-            parsed_data) {
+        std::vector<file_manager::trash::ParsedTrashInfoDataOrError>
+            parsed_data_or_error) {
   // The underlying trash service could potentially live longer than the Files
   // window that invoked this function, ensure the frame host and browser
   // context are alive before continuing.
@@ -1676,24 +1692,24 @@ void FileManagerPrivateInternalParseTrashInfoFilesFunction::
   std::vector<file_manager::trash::ParsedTrashInfoData> valid_data;
   url::Origin origin = render_frame_host()->GetLastCommittedOrigin();
 
-  for (auto& trash_info_data : parsed_data) {
-    if (!trash_info_data.has_value()) {
+  for (auto& trash_info_data_or_error : parsed_data_or_error) {
+    if (!trash_info_data_or_error.has_value()) {
       LOG(ERROR) << "Failed parsing trashinfo file: "
-                 << trash_info_data.error();
+                 << trash_info_data_or_error.error();
       continue;
     }
 
     file_manager::util::FileDefinition file_definition;
     if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
             Profile::FromBrowserContext(browser_context()), origin.GetURL(),
-            trash_info_data.value().absolute_restore_path,
+            trash_info_data_or_error.value().absolute_restore_path,
             &file_definition.virtual_path)) {
       LOG(ERROR) << "Failed to convert absolute path to relative path";
       continue;
     }
 
     file_definition_list.push_back(std::move(file_definition));
-    valid_data.push_back(std::move(trash_info_data.value()));
+    valid_data.push_back(std::move(trash_info_data_or_error.value()));
   }
 
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(

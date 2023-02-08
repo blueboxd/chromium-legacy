@@ -5,12 +5,12 @@
 #include "chrome/browser/ash/app_restore/arc_ghost_window_shell_surface.h"
 
 #include "ash/wm/desks/desks_util.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_delegate.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_view.h"
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
 #include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
@@ -19,6 +19,8 @@
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/views/window/caption_button_types.h"
+
+namespace ash::full_restore {
 
 namespace {
 
@@ -36,8 +38,6 @@ bool IsMinimizedState(
 }
 
 }  // namespace
-
-namespace ash::full_restore {
 
 // Explicitly identifies ARC ghost surface.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kArcGhostSurface, false)
@@ -109,7 +109,7 @@ std::unique_ptr<ArcGhostWindowShellSurface> ArcGhostWindowShellSurface::Create(
           : SK_ColorWHITE;
 
   // TODO(sstan): Handle the desk container from full_restore data.
-  int container = ash::desks_util::GetActiveDeskContainerId();
+  int container = desks_util::GetActiveDeskContainerId();
 
   auto surface = std::make_unique<exo::Surface>();
   std::unique_ptr<ArcGhostWindowShellSurface> shell_surface(

@@ -18,6 +18,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
+#include "components/services/storage/shared_storage/shared_storage_database_migrations.h"
 #include "components/services/storage/shared_storage/shared_storage_options.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "sql/error_delegate_util.h"
@@ -36,10 +37,27 @@ namespace storage {
 // entry is at most 2 * 2 * `max_string_length_`.
 const int kSharedStorageEntryTotalBytesMultiplier = 4;
 
-namespace {
-
 // Version number of the database.
-const int kCurrentVersionNumber = 1;
+//
+// Version 1 - https://crrev.com/c/3112567
+//              * initial commit
+//             https://crrev.com/c/3491742
+//              * add `budget_mapping` table
+// Version 2 - https://crrev.com/c/4029459
+//              * add `last_used_time` to `values_mapping`
+//              * rename `last_used_time` in `per_origin_mapping` to
+//                `creation_time`
+const int SharedStorageDatabase::kCurrentVersionNumber = 2;
+
+// Earliest version which can use a `kCurrentVersionNumber` database
+// without failing.
+const int SharedStorageDatabase::kCompatibleVersionNumber = 2;
+
+// Latest version of the database that cannot be upgraded to
+// `kCurrentVersionNumber` without razing the database.
+const int SharedStorageDatabase::kDeprecatedVersionNumber = 0;
+
+namespace {
 
 [[nodiscard]] std::string SerializeOrigin(const url::Origin& origin) {
   DCHECK(!origin.opaque());
@@ -47,27 +65,24 @@ const int kCurrentVersionNumber = 1;
   return origin.Serialize();
 }
 
-[[nodiscard]] bool InitSchema(sql::Database& db) {
+[[nodiscard]] bool InitSchema(sql::Database& db, sql::MetaTable& meta_table) {
   static constexpr char kValuesMappingSql[] =
       "CREATE TABLE IF NOT EXISTS values_mapping("
       "context_origin TEXT NOT NULL,"
       "key TEXT NOT NULL,"
       "value TEXT,"
+      "last_used_time INTEGER NOT NULL,"
       "PRIMARY KEY(context_origin,key)) WITHOUT ROWID";
   if (!db.Execute(kValuesMappingSql))
     return false;
 
-  // Note: In `per_origin_mapping`, `last_used_time` is now the origin's most
-  // recent creation time. We are keeping the outdated name while changing the
-  // de facto usage of the data field in order to avoid an expensive database
-  // migration.
-  //
-  // TODO(cammie): If we ever alter this schema in the future, change the name
-  // of `last_used_time` to `creation_time`.
+  // Note that `length` tracks the total number of entries in `values_mapping`
+  // for `context_origin`, including any expired by not yet purged entries. The
+  // `Length()` method below returns the count of only the unexpired entries.
   static constexpr char kPerOriginMappingSql[] =
       "CREATE TABLE IF NOT EXISTS per_origin_mapping("
       "context_origin TEXT NOT NULL PRIMARY KEY,"
-      "last_used_time INTEGER NOT NULL,"
+      "creation_time INTEGER NOT NULL,"
       "length INTEGER NOT NULL) WITHOUT ROWID";
   if (!db.Execute(kPerOriginMappingSql))
     return false;
@@ -81,17 +96,26 @@ const int kCurrentVersionNumber = 1;
   if (!db.Execute(kBudgetMappingSql))
     return false;
 
-  static constexpr char kLastUsedTimeIndexSql[] =
-      "CREATE INDEX IF NOT EXISTS per_origin_mapping_last_used_time_idx "
-      "ON per_origin_mapping(last_used_time)";
-  if (!db.Execute(kLastUsedTimeIndexSql))
-    return false;
-
   static constexpr char kOriginTimeIndexSql[] =
       "CREATE INDEX IF NOT EXISTS budget_mapping_origin_time_stamp_idx "
       "ON budget_mapping(context_origin,time_stamp)";
   if (!db.Execute(kOriginTimeIndexSql))
     return false;
+
+  if (meta_table.GetVersionNumber() ==
+      SharedStorageDatabase::kCurrentVersionNumber) {
+    static constexpr char kValuesLastUsedTimeIndexSql[] =
+        "CREATE INDEX IF NOT EXISTS values_mapping_last_used_time_idx "
+        "ON values_mapping(last_used_time)";
+    if (!db.Execute(kValuesLastUsedTimeIndexSql))
+      return false;
+
+    static constexpr char kCreationTimeIndexSql[] =
+        "CREATE INDEX IF NOT EXISTS per_origin_mapping_creation_time_idx "
+        "ON per_origin_mapping(creation_time)";
+    if (!db.Execute(kCreationTimeIndexSql))
+      return false;
+  }
 
   return true;
 }
@@ -106,8 +130,9 @@ SharedStorageDatabase::GetResult::GetResult(OperationResult result)
     : result(result) {}
 
 SharedStorageDatabase::GetResult::GetResult(std::u16string data,
+                                            base::Time last_used_time,
                                             OperationResult result)
-    : data(data), result(result) {}
+    : data(data), last_used_time(last_used_time), result(result) {}
 
 SharedStorageDatabase::GetResult::~GetResult() = default;
 
@@ -179,7 +204,7 @@ SharedStorageDatabase::SharedStorageDatabase(
           static_cast<size_t>(options->max_iterator_batch_size)),
       bit_budget_(static_cast<double>(options->bit_budget)),
       budget_interval_(options->budget_interval),
-      origin_staleness_threshold_(options->origin_staleness_threshold),
+      staleness_threshold_(options->staleness_threshold),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(!is_filebacked() || db_path_.IsAbsolute());
   db_file_status_ = is_filebacked() ? DBFileStatus::kNotChecked
@@ -225,7 +250,7 @@ SharedStorageDatabase::GetResult SharedStorageDatabase::Get(
   // assumption about the state of the disk. In the rare case that multiple
   // entries are found, we return only the value from the first entry found.
   static constexpr char kSelectSql[] =
-      "SELECT value FROM values_mapping "
+      "SELECT value,last_used_time FROM values_mapping "
       "WHERE context_origin=? AND key=? "
       "LIMIT 1";
 
@@ -234,8 +259,14 @@ SharedStorageDatabase::GetResult SharedStorageDatabase::Get(
   statement.BindString(0, origin_str);
   statement.BindString16(1, key);
 
-  if (statement.Step())
-    return GetResult(statement.ColumnString16(0), OperationResult::kSuccess);
+  if (statement.Step()) {
+    base::Time last_used_time = statement.ColumnTime(1);
+    OperationResult op_result =
+        (last_used_time >= clock_->Now() - staleness_threshold_)
+            ? OperationResult::kSuccess
+            : OperationResult::kExpired;
+    return GetResult(statement.ColumnString16(0), last_used_time, op_result);
+  }
 
   if (!statement.Succeeded())
     return GetResult();
@@ -260,29 +291,34 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Set(
   if (!transaction.Begin())
     return OperationResult::kSqlError;
 
-  std::string origin_str(SerializeOrigin(context_origin));
-  if (HasEntryFor(origin_str, key)) {
-    if (behavior == SharedStorageDatabase::SetBehavior::kIgnoreIfPresent) {
-      // If we are in a nested transaction, we need to commit, even though we
-      // haven't made any changes, so that the failure to set in this case
-      // isn't seen as an error (as then the entire stack of transactions
-      // will be rolled back and the next transaction within the parent
-      // transaction will fail to begin).
-      if (db_.transaction_nesting())
-        transaction.Commit();
-      return OperationResult::kIgnored;
-    }
+  GetResult get_result = Get(context_origin, key);
+  if (get_result.result != OperationResult::kSuccess &&
+      get_result.result != OperationResult::kNotFound &&
+      get_result.result != OperationResult::kExpired) {
+    return OperationResult::kSqlError;
+  }
 
+  std::string origin_str(SerializeOrigin(context_origin));
+  if (get_result.result == OperationResult::kSuccess ||
+      get_result.result == OperationResult::kExpired) {
     if (Delete(context_origin, key) != OperationResult::kSuccess)
       return OperationResult::kSqlError;
+
+    if (behavior == SharedStorageDatabase::SetBehavior::kIgnoreIfPresent &&
+        get_result.result != OperationResult::kExpired) {
+      // We re-insert the old key-value pair with an updated `last_used_time`.
+      if (!InsertIntoValuesMapping(origin_str, key, get_result.data))
+        return OperationResult::kSqlError;
+
+      if (!transaction.Commit())
+        return OperationResult::kSqlError;
+      return OperationResult::kIgnored;
+    }
   } else if (!HasCapacity(origin_str)) {
     return OperationResult::kNoCapacity;
   }
 
   if (!InsertIntoValuesMapping(origin_str, key, value))
-    return OperationResult::kSqlError;
-
-  if (!UpdateLength(origin_str, /*delta=*/1))
     return OperationResult::kSqlError;
 
   if (!transaction.Commit())
@@ -309,7 +345,8 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Append(
 
   GetResult get_result = Get(context_origin, key);
   if (get_result.result != OperationResult::kSuccess &&
-      get_result.result != OperationResult::kNotFound) {
+      get_result.result != OperationResult::kNotFound &&
+      get_result.result != OperationResult::kExpired) {
     return OperationResult::kSqlError;
   }
 
@@ -325,6 +362,11 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Append(
 
     if (Delete(context_origin, key) != OperationResult::kSuccess)
       return OperationResult::kSqlError;
+  } else if (get_result.result == OperationResult::kExpired) {
+    new_value = std::move(tail_value);
+
+    if (Delete(context_origin, key) != OperationResult::kSuccess)
+      return OperationResult::kSqlError;
   } else {
     new_value = std::move(tail_value);
 
@@ -333,9 +375,6 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Append(
   }
 
   if (!InsertIntoValuesMapping(origin_str, key, new_value))
-    return OperationResult::kSqlError;
-
-  if (!UpdateLength(origin_str, /*delta=*/1))
     return OperationResult::kSqlError;
 
   if (!transaction.Commit())
@@ -416,12 +455,7 @@ int64_t SharedStorageDatabase::Length(url::Origin context_origin) {
       return -1;
   }
 
-  std::string origin_str(SerializeOrigin(context_origin));
-  int64_t length = NumEntries(origin_str);
-  if (!length)
-    return 0L;
-
-  return length;
+  return NumEntriesManualCount(SerializeOrigin(context_origin));
 }
 
 SharedStorageDatabase::OperationResult SharedStorageDatabase::Keys(
@@ -452,19 +486,10 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Keys(
     }
   }
 
-  static constexpr char kCountSql[] =
-      "SELECT COUNT(*) FROM values_mapping WHERE context_origin=?";
-
-  sql::Statement count_statement(
-      db_.GetCachedStatement(SQL_FROM_HERE, kCountSql));
   std::string origin_str(SerializeOrigin(context_origin));
-  count_statement.BindString(0, origin_str);
+  int64_t key_count = NumEntriesManualCount(origin_str);
 
-  int64_t key_count = 0;
-  if (count_statement.Step())
-    key_count = count_statement.ColumnInt64(0);
-
-  if (!count_statement.Succeeded()) {
+  if (key_count == -1) {
     keys_listener->DidReadEntries(
         /*success=*/false, "SQL database could not retrieve key count.",
         /*entries=*/{}, /*has_more_entries=*/false, /*total_queued_to_send=*/0);
@@ -487,11 +512,14 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Keys(
   }
 
   static constexpr char kSelectSql[] =
-      "SELECT key FROM values_mapping WHERE context_origin=? ORDER BY key";
+      "SELECT key FROM values_mapping "
+      "WHERE context_origin=? AND last_used_time>=? "
+      "ORDER BY key";
 
   sql::Statement select_statement(
       db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   select_statement.BindString(0, origin_str);
+  select_statement.BindTime(1, clock_->Now() - staleness_threshold_);
 
   bool has_more_entries = true;
   absl::optional<std::u16string> saved_first_key_for_next_batch;
@@ -569,19 +597,10 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Entries(
     }
   }
 
-  static constexpr char kCountSql[] =
-      "SELECT COUNT(*) FROM values_mapping WHERE context_origin=?";
-
-  sql::Statement count_statement(
-      db_.GetCachedStatement(SQL_FROM_HERE, kCountSql));
   std::string origin_str(SerializeOrigin(context_origin));
-  count_statement.BindString(0, origin_str);
+  int64_t entry_count = NumEntriesManualCount(origin_str);
 
-  int64_t entry_count = 0;
-  if (count_statement.Step())
-    entry_count = count_statement.ColumnInt64(0);
-
-  if (!count_statement.Succeeded()) {
+  if (entry_count == -1) {
     entries_listener->DidReadEntries(
         /*success=*/false, "SQL database could not retrieve entry count.",
         /*entries=*/{}, /*has_more_entries=*/false, /*total_queued_to_send=*/0);
@@ -604,12 +623,14 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::Entries(
   }
 
   static constexpr char kSelectSql[] =
-      "SELECT key,value FROM values_mapping WHERE context_origin=? "
+      "SELECT key,value FROM values_mapping "
+      "WHERE context_origin=? AND last_used_time>=? "
       "ORDER BY key";
 
   sql::Statement select_statement(
       db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   select_statement.BindString(0, origin_str);
+  select_statement.BindTime(1, clock_->Now() - staleness_threshold_);
 
   bool has_more_entries = true;
   absl::optional<std::u16string> saved_first_key_for_next_batch;
@@ -686,8 +707,8 @@ SharedStorageDatabase::PurgeMatchingOrigins(
 
   static constexpr char kSelectSql[] =
       "SELECT context_origin FROM per_origin_mapping "
-      "WHERE last_used_time BETWEEN ? AND ? "
-      "ORDER BY last_used_time";
+      "WHERE creation_time BETWEEN ? AND ? "
+      "ORDER BY creation_time";
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   statement.BindTime(0, begin);
   statement.BindTime(1, end);
@@ -728,10 +749,9 @@ SharedStorageDatabase::PurgeMatchingOrigins(
   return OperationResult::kSuccess;
 }
 
-SharedStorageDatabase::OperationResult
-SharedStorageDatabase::PurgeStaleOrigins() {
+SharedStorageDatabase::OperationResult SharedStorageDatabase::PurgeStale() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GT(origin_staleness_threshold_, base::TimeDelta());
+  DCHECK_GT(staleness_threshold_, base::TimeDelta());
 
   if (LazyInit(DBCreationPolicy::kIgnoreIfAbsent) != InitStatus::kSuccess) {
     // We do not return an error if the database doesn't exist, but only if it
@@ -742,39 +762,71 @@ SharedStorageDatabase::PurgeStaleOrigins() {
       return OperationResult::kInitFailure;
   }
 
-  static constexpr char kSelectSql[] =
-      "SELECT context_origin FROM per_origin_mapping "
-      "WHERE last_used_time<? "
-      "ORDER BY last_used_time";
-  sql::Statement select_statement(
-      db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
-  select_statement.BindTime(0, clock_->Now() - origin_staleness_threshold_);
-
-  std::vector<std::string> stale_origins;
-
-  while (select_statement.Step())
-    stale_origins.push_back(select_statement.ColumnString(0));
-
-  if (!select_statement.Succeeded())
-    return OperationResult::kSqlError;
-
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
     return OperationResult::kSqlError;
 
-  for (const auto& origin : stale_origins) {
-    if (!Purge(origin, /*delete_origin_if_empty=*/true))
+  static constexpr char kDeleteEntriesSql[] =
+      "DELETE FROM values_mapping WHERE last_used_time<?";
+  sql::Statement entries_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteEntriesSql));
+  entries_statement.BindTime(0, clock_->Now() - staleness_threshold_);
+
+  // Delete expired entries.
+  if (!entries_statement.Run())
+    return OperationResult::kSqlError;
+
+  static constexpr char kSelectSql[] =
+      "SELECT context_origin,creation_time,length FROM per_origin_mapping "
+      "ORDER BY creation_time";
+  sql::Statement select_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
+
+  // Update `per_origin_mapping` to agree with the correct post-purge `length`s.
+  // Also, for any origins that are now empty and whose `creation_time`s are
+  // prior to the lookback window, remove them from `per_origin_mapping`
+  // entirely.
+  while (select_statement.Step()) {
+    std::string origin = select_statement.ColumnString(0);
+    base::Time creation_time = select_statement.ColumnTime(1);
+    int64_t reported_length = select_statement.ColumnInt64(2);
+
+    // We want the count of all entries for this origin. There are unlikely to
+    // be any expired ones, since we just purged them, but one or more
+    // additional unpurged entries could have become expired in the meantime.
+    int64_t actual_length =
+        NumEntriesManualCount(origin, /*include_expired=*/true);
+
+    if (actual_length == -1)
+      return OperationResult::kSqlError;
+
+    if (actual_length == 0 &&
+        creation_time < clock_->Now() - staleness_threshold_) {
+      if (!DeleteFromPerOriginMapping(origin))
+        return OperationResult::kSqlError;
+      continue;
+    }
+
+    if (actual_length == reported_length) {
+      continue;
+    }
+
+    if (!UpdateLength(origin, actual_length - reported_length))
       return OperationResult::kSqlError;
   }
 
-  static constexpr char kDeleteSql[] =
+  if (!select_statement.Succeeded())
+    return OperationResult::kSqlError;
+
+  static constexpr char kDeleteWithdrawalsSql[] =
       "DELETE FROM budget_mapping WHERE time_stamp<?";
 
-  sql::Statement delete_statement(
-      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
-  delete_statement.BindTime(0, clock_->Now() - budget_interval_);
+  sql::Statement withdrawals_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, kDeleteWithdrawalsSql));
+  withdrawals_statement.BindTime(0, clock_->Now() - budget_interval_);
 
-  if (!delete_statement.Run())
+  // Remove stale budget withdrawals.
+  if (!withdrawals_statement.Run())
     return OperationResult::kSqlError;
 
   if (!transaction.Commit())
@@ -790,10 +842,10 @@ std::vector<mojom::StorageUsageInfoPtr> SharedStorageDatabase::FetchOrigins(
     return {};
 
   const char* kSelectSql = (exclude_empty_origins)
-                               ? "SELECT context_origin,last_used_time,length "
+                               ? "SELECT context_origin,creation_time,length "
                                  "FROM per_origin_mapping "
                                  "WHERE length>0 ORDER BY context_origin"
-                               : "SELECT context_origin,last_used_time,length "
+                               : "SELECT context_origin,creation_time,length "
                                  "FROM per_origin_mapping "
                                  "ORDER BY context_origin";
 
@@ -927,13 +979,15 @@ SharedStorageDatabase::GetEntriesForDevTools(url::Origin context_origin) {
   }
 
   static constexpr char kSelectSql[] =
-      "SELECT key,value FROM values_mapping WHERE context_origin=? "
+      "SELECT key,value FROM values_mapping "
+      "WHERE context_origin=? AND last_used_time>=? "
       "ORDER BY key";
 
   sql::Statement select_statement(
       db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   std::string origin_str(SerializeOrigin(context_origin));
   select_statement.BindString(0, origin_str);
+  select_statement.BindTime(1, clock_->Now() - staleness_threshold_);
 
   while (select_statement.Step()) {
     entries.entries.emplace_back(
@@ -978,12 +1032,41 @@ bool SharedStorageDatabase::OverrideCreationTimeForTesting(
     return false;
   }
 
-  // Don't delete or insert for non-existent origin.
+  // Don't override time for non-existent origin.
   if (result == OperationResult::kNotFound)
     return true;
 
   return DeleteThenMaybeInsertIntoPerOriginMapping(
       origin_str, new_creation_time, length, /*force_insertion=*/true);
+}
+
+bool SharedStorageDatabase::OverrideLastUsedTimeForTesting(
+    url::Origin context_origin,
+    std::u16string key,
+    base::Time new_last_used_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (LazyInit(DBCreationPolicy::kIgnoreIfAbsent) != InitStatus::kSuccess)
+    return false;
+
+  GetResult result = Get(context_origin, key);
+  if (result.result != OperationResult::kSuccess &&
+      result.result != OperationResult::kNotFound) {
+    return false;
+  }
+
+  // Don't override time for non-existent key.
+  if (result.result == OperationResult::kNotFound)
+    return true;
+
+  if (Delete(context_origin, key) != OperationResult::kSuccess)
+    return false;
+
+  if (!InsertIntoValuesMappingWithTime(SerializeOrigin(context_origin), key,
+                                       result.data, new_last_used_time)) {
+    return false;
+  }
+  return true;
 }
 
 void SharedStorageDatabase::OverrideClockForTesting(base::Clock* clock) {
@@ -1144,6 +1227,10 @@ bool SharedStorageDatabase::OpenDatabase() {
   if (!db_.is_open())
     db_.set_histogram_tag("SharedStorage");
 
+  // If this is not the first call to `OpenDatabase()` because we are re-trying
+  // initialization, then the error callback will have previously been set.
+  db_.reset_error_callback();
+
   // base::Unretained is safe here because this SharedStorageDatabase owns
   // the sql::Database instance that stores and uses the callback. So,
   // `this` is guaranteed to outlive the callback.
@@ -1199,22 +1286,31 @@ SharedStorageDatabase::InitStatus SharedStorageDatabase::InitImpl() {
   }
 
   // Create the tables.
-  if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCurrentVersionNumber) ||
-      !InitSchema(db_)) {
+  if (!meta_table_.Init(&db_, kCurrentVersionNumber,
+                        kCompatibleVersionNumber) ||
+      !InitSchema(db_, meta_table_)) {
     return InitStatus::kError;
   }
 
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
     LOG(WARNING) << "Shared storage database is too new.";
+    db_.RazeAndClose();
     return InitStatus::kTooNew;
   }
 
   int cur_version = meta_table_.GetVersionNumber();
 
-  if (cur_version < kCurrentVersionNumber) {
+  if (cur_version <= kDeprecatedVersionNumber) {
     LOG(WARNING) << "Shared storage database is too old to be compatible.";
     db_.RazeAndClose();
     return InitStatus::kTooOld;
+  }
+
+  if (cur_version < kCurrentVersionNumber &&
+      !UpgradeSharedStorageDatabaseSchema(db_, meta_table_, clock_)) {
+    LOG(WARNING) << "Shared storage database upgrade failed.";
+    db_.RazeAndClose();
+    return InitStatus::kUpgradeFailed;
   }
 
   // The initialization is complete.
@@ -1273,7 +1369,8 @@ bool SharedStorageDatabase::Purge(const std::string& context_origin,
   return transaction.Commit();
 }
 
-int64_t SharedStorageDatabase::NumEntries(const std::string& context_origin) {
+int64_t SharedStorageDatabase::NumEntriesTotal(
+    const std::string& context_origin) {
   // In theory, there ought to be at most one entry found. But we make no
   // assumption about the state of the disk. In the rare case that multiple
   // entries are found, we return only the `length` from the first entry found.
@@ -1285,9 +1382,34 @@ int64_t SharedStorageDatabase::NumEntries(const std::string& context_origin) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSelectSql));
   statement.BindString(0, context_origin);
 
+  int64_t num_entries = 0;
+  if (statement.Step())
+    num_entries = statement.ColumnInt64(0);
+
+  return num_entries;
+}
+
+int64_t SharedStorageDatabase::NumEntriesManualCount(
+    const std::string& context_origin,
+    bool include_expired) {
+  const char* kCountSql =
+      (include_expired)
+          ? "SELECT COUNT(*) FROM values_mapping WHERE context_origin=?"
+          : "SELECT COUNT(*) FROM values_mapping "
+            "WHERE context_origin=? AND last_used_time>=?";
+
+  sql::Statement statement(db_.GetUniqueStatement(kCountSql));
+  statement.BindString(0, context_origin);
+
+  if (!include_expired)
+    statement.BindTime(1, clock_->Now() - staleness_threshold_);
+
   int64_t length = 0;
   if (statement.Step())
     length = statement.ColumnInt64(0);
+
+  if (!statement.Succeeded())
+    length = -1;
 
   return length;
 }
@@ -1315,10 +1437,10 @@ SharedStorageDatabase::OperationResult SharedStorageDatabase::GetOriginInfo(
 
   // In theory, there ought to be at most one entry found. But we make no
   // assumption about the state of the disk. In the rare case that multiple
-  // entries are found, we retrieve only the `length` and `last_used_time`
+  // entries are found, we retrieve only the `length` and `creation_time`
   // from the first entry found.
   static constexpr char kSelectSql[] =
-      "SELECT length,last_used_time FROM per_origin_mapping "
+      "SELECT length,creation_time FROM per_origin_mapping "
       "WHERE context_origin=? "
       "LIMIT 1";
 
@@ -1365,20 +1487,40 @@ bool SharedStorageDatabase::UpdateLength(const std::string& context_origin,
       context_origin, creation_time, new_length, !delete_origin_if_empty);
 }
 
-bool SharedStorageDatabase::InsertIntoValuesMapping(
+bool SharedStorageDatabase::InsertIntoValuesMappingWithTime(
     const std::string& context_origin,
     const std::u16string& key,
-    const std::u16string& value) {
+    const std::u16string& value,
+    base::Time last_used_time) {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return false;
+
   static constexpr char kInsertSql[] =
-      "INSERT INTO values_mapping(context_origin,key,value)"
-      "VALUES(?,?,?)";
+      "INSERT INTO values_mapping(context_origin,key,value,last_used_time)"
+      "VALUES(?,?,?,?)";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kInsertSql));
   statement.BindString(0, context_origin);
   statement.BindString16(1, key);
   statement.BindString16(2, value);
+  statement.BindTime(3, last_used_time);
 
-  return statement.Run();
+  if (!statement.Run())
+    return false;
+
+  if (!UpdateLength(context_origin, /*delta=*/1))
+    return false;
+
+  return transaction.Commit();
+}
+
+bool SharedStorageDatabase::InsertIntoValuesMapping(
+    const std::string& context_origin,
+    const std::u16string& key,
+    const std::u16string& value) {
+  return InsertIntoValuesMappingWithTime(context_origin, key, value,
+                                         clock_->Now());
 }
 
 bool SharedStorageDatabase::DeleteFromPerOriginMapping(
@@ -1398,7 +1540,7 @@ bool SharedStorageDatabase::InsertIntoPerOriginMapping(
     base::Time creation_time,
     uint64_t length) {
   static constexpr char kInsertSql[] =
-      "INSERT INTO per_origin_mapping(context_origin,last_used_time,length)"
+      "INSERT INTO per_origin_mapping(context_origin,creation_time,length)"
       "VALUES(?,?,?)";
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kInsertSql));
@@ -1432,7 +1574,7 @@ bool SharedStorageDatabase::DeleteThenMaybeInsertIntoPerOriginMapping(
 }
 
 bool SharedStorageDatabase::HasCapacity(const std::string& context_origin) {
-  return NumEntries(context_origin) < max_entries_per_origin_;
+  return NumEntriesTotal(context_origin) < max_entries_per_origin_;
 }
 
 void SharedStorageDatabase::LogInitHistograms() {

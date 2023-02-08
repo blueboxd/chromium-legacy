@@ -14,10 +14,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_profile_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -65,8 +65,8 @@ class HiddenNetworkMetricsHelperTest : public testing::Test {
   ~HiddenNetworkMetricsHelperTest() override = default;
 
   void SetUp() override {
-    chromeos::LoginState::Initialize();
-    chromeos::LoginState::Get()->set_always_logged_in(false);
+    LoginState::Initialize();
+    LoginState::Get()->set_always_logged_in(false);
 
     network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     histogram_tester_ = std::make_unique<base::HistogramTester>();
@@ -78,7 +78,7 @@ class HiddenNetworkMetricsHelperTest : public testing::Test {
     network_handler_test_helper_->ClearServices();
     network_handler_test_helper_.reset();
 
-    chromeos::LoginState::Shutdown();
+    LoginState::Shutdown();
   }
 
   void SetLoggedIn(bool logged_in) const {

@@ -4,11 +4,11 @@
 
 #include "ash/webui/camera_app_ui/document_scanner_service_client.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/camera_app_ui/document_scanner_installer.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/device_event_log/device_event_log.h"
@@ -43,9 +43,6 @@ bool IsEnabledOnRootfs() {
 
 // Returns true if switch kOndeviceDocumentScanner is set to use_dlc.
 bool IsEnabledOnDlc() {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kCameraAppDocScanDlc)) {
-    return false;
-  }
   return HasCommandLineSwitch(kOndeviceDocumentScanner, "use_dlc");
 }
 
@@ -168,7 +165,7 @@ void DocumentScannerServiceClient::LoadDocumentScanner() {
   } else if (IsEnabledOnDlc()) {
     DocumentScannerInstaller::GetInstance()->RegisterLibraryPathCallback(
         base::BindPostTask(
-            base::SequencedTaskRunnerHandle::Get(),
+            base::SequencedTaskRunner::GetCurrentDefault(),
             base::BindOnce(
                 &DocumentScannerServiceClient::LoadDocumentScannerInternal,
                 weak_ptr_factory_.GetWeakPtr())));

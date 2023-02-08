@@ -8,26 +8,26 @@
  */
 
 import 'chrome://resources/ash/common/network/network_list.js';
+import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
-import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
-import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import 'chrome://resources/cr_elements/md_select.css.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+import 'chrome://resources/cr_elements/md_select.css.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../os_settings_icons_css.js';
 import '../../settings_shared.css.js';
-import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import '../os_settings_icons.css.js';
 import './cellular_networks_list.js';
 import './network_always_on_vpn.js';
 
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {AlwaysOnVpnMode, AlwaysOnVpnProperties, CrosNetworkConfigRemote, FilterType, GlobalPolicy, NO_LIMIT, VpnProvider, VpnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
@@ -35,7 +35,7 @@ import {ConnectionStateType, DeviceStateType, NetworkType} from 'chrome://resour
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
@@ -43,6 +43,18 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
 import {RouteOriginBehavior, RouteOriginBehaviorImpl, RouteOriginBehaviorInterface} from '../route_origin_behavior.js';
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
+
+/**
+ * TODO(crbug/1315757) The following type definitions are only needed for
+ * Closure compiler and can be removed when this file is converted to TS.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+export function CellularNetworksListElement() {}
+
+/** @return {?HTMLElement} */
+CellularNetworksListElement.prototype.getAddEsimButton = function() {};
 
 /**
  * @constructor
@@ -298,7 +310,8 @@ class SettingsInternetSubpageElement extends
     if (settingId === Setting.kAddESimNetwork) {
       afterNextRender(this, () => {
         const deepLinkElement =
-            this.shadowRoot.querySelector('cellular-networks-list')
+            /** @type {CellularNetworksListElement} */ (
+                this.shadowRoot.querySelector('cellular-networks-list'))
                 .getAddEsimButton();
         if (!deepLinkElement || deepLinkElement.hidden) {
           console.warn(`Element with deep link id ${settingId} not focusable.`);

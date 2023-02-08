@@ -12,7 +12,7 @@ import {addWebUiListener, removeWebUiListener, WebUiListener} from 'chrome://res
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
-import {isRTL} from 'chrome://resources/js/util.js';
+import {isRTL} from 'chrome://resources/js/util_ts.js';
 
 import {DragManager, DragManagerDelegate} from './drag_manager.js';
 import {isTabElement, TabElement} from './tab.js';
@@ -235,7 +235,7 @@ export class TabListElement extends CustomElement implements
 
     const callbackRouter = this.tabsApi_.getCallbackRouter();
     callbackRouter.layoutChanged.addListener(
-        this.applyCSSDictionary_.bind(this));
+        this.applyCssDictionary_.bind(this));
 
     callbackRouter.tabThumbnailUpdated.addListener(
         this.tabThumbnailUpdated_.bind(this));
@@ -326,7 +326,7 @@ export class TabListElement extends CustomElement implements
     this.currentScrollUpdateFrame_ = requestAnimationFrame(onAnimationFrame);
   }
 
-  private applyCSSDictionary_(dictionary: {[key: string]: string}) {
+  private applyCssDictionary_(dictionary: {[key: string]: string}) {
     for (const [cssVariable, value] of Object.entries(dictionary)) {
       this.style.setProperty(cssVariable, value);
     }
@@ -339,7 +339,7 @@ export class TabListElement extends CustomElement implements
 
   connectedCallback() {
     this.tabsApi_.getLayout().then(
-        ({layout}) => this.applyCSSDictionary_(layout));
+        ({layout}) => this.applyCssDictionary_(layout));
 
     const getTabsStartTimestamp = Date.now();
     this.tabsApi_.getTabs().then(({tabs}) => {

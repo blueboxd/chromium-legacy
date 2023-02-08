@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/error_state.h"
@@ -46,8 +47,18 @@ void PassthroughAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
   gl_api_->glTexParameteriFn(texture_passthrough_->target(), pname, param);
 }
 
-void PassthroughAbstractTextureImpl::BindImage(gl::GLImage* image,
-                                               bool client_managed) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void PassthroughAbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
+  BindImageInternal(image, /*client_managed=*/false);
+}
+#else
+void PassthroughAbstractTextureImpl::SetBoundImage(gl::GLImage* image) {
+  BindImageInternal(image, /*client_managed=*/true);
+}
+#endif
+
+void PassthroughAbstractTextureImpl::BindImageInternal(gl::GLImage* image,
+                                                       bool client_managed) {
   if (!texture_passthrough_)
     return;
 
@@ -58,18 +69,34 @@ void PassthroughAbstractTextureImpl::BindImage(gl::GLImage* image,
   if (decoder_managed_image_) {
     gl::GLImage* current_image =
         texture_passthrough_->GetLevelImage(target, level);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     // TODO(sandersd): This isn't correct if CopyTexImage() was used.
     bool is_bound = !texture_passthrough_->is_bind_pending();
+#else
+    bool is_bound = true;
+#endif
     if (current_image && is_bound)
       current_image->ReleaseTexImage(target);
   }
 
   // Configure the new image.
   decoder_managed_image_ = image && !client_managed;
-  texture_passthrough_->set_is_bind_pending(decoder_managed_image_);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  CHECK(!client_managed);
+  if (decoder_managed_image_)
+    texture_passthrough_->set_bind_pending();
+  else
+    texture_passthrough_->clear_bind_pending();
+#else
+  CHECK(client_managed);
+#if BUILDFLAG(IS_ANDROID)
+  texture_passthrough_->clear_bind_pending();
+#endif
+#endif
   texture_passthrough_->SetLevelImage(target, level, image);
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void PassthroughAbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
                                                             GLuint service_id) {
   DCHECK(image);
@@ -81,9 +108,10 @@ void PassthroughAbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
   const GLuint target = texture_passthrough_->target();
   const GLint level = 0;
 
-  texture_passthrough_->set_is_bind_pending(true);
+  texture_passthrough_->set_bind_pending();
   texture_passthrough_->SetStreamLevelImage(target, level, image, service_id);
 }
+#endif
 
 gl::GLImage* PassthroughAbstractTextureImpl::GetImageForTesting() const {
   if (!texture_passthrough_)

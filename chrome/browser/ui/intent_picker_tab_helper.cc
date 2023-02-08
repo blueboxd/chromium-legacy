@@ -60,7 +60,7 @@ web_app::WebAppRegistrar* MaybeGetWebAppRegistrar(
   // Profile for web contents might not contain a web app provider. eg. kiosk
   // profile in Chrome OS.
   auto* provider = web_app::WebAppProvider::GetForWebContents(web_contents);
-  return provider ? &provider->registrar() : nullptr;
+  return provider ? &provider->registrar_unsafe() : nullptr;
 }
 
 web_app::WebAppInstallManager* MaybeGetWebAppInstallManager(
@@ -311,7 +311,10 @@ void IntentPickerTabHelper::DidFinishNavigation(
   if (!web_contents()) {
     return;
   }
+
   if (IsNavigatingToNewSite(navigation_handle)) {
+    ++commit_count_;
+
     bool is_valid_page = navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
                          !navigation_handle->IsErrorPage();
     if (is_valid_page) {

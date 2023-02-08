@@ -12,7 +12,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
@@ -62,7 +63,8 @@ blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
 }
 
 void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      from_here, std::move(closure));
 }
 
 void CompleteFindNow(scoped_refptr<ServiceWorkerRegistration> registration,
@@ -191,7 +193,7 @@ void ServiceWorkerRegistry::CreateNewRegistration(
     // Can be nullptr in tests.
     quota_manager_proxy_->UpdateOrCreateBucket(
         storage::BucketInitParams::ForDefaultBucket(key),
-        base::ThreadTaskRunnerHandle::Get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
         base::BindOnce(
             &ServiceWorkerRegistry::CreateNewRegistrationWithBucketInfo,
             weak_factory_.GetWeakPtr(), std::move(options), key,
@@ -813,10 +815,11 @@ void ServiceWorkerRegistry::FindRegistrationForIdInternal(
     // Only notify access for already stored registrations.
     if (status == blink::ServiceWorkerStatusCode::kOk &&
         (*registration)->IsStored()) {
+      // Can be nullptr in tests.
       if (quota_manager_proxy_) {
-        // Can be nullptr in tests.
-        quota_manager_proxy_->NotifyStorageAccessed(
-            (*registration)->key(), blink::mojom::StorageType::kTemporary,
+        // TODO(crbug.com/1293510): pass correct bucket.
+        quota_manager_proxy_->NotifyBucketAccessed(
+            storage::BucketLocator::ForDefaultBucket((*registration)->key()),
             base::Time::Now());
       }
     }
@@ -1022,8 +1025,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForClientUrl(
 
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
-      quota_manager_proxy_->NotifyStorageAccessed(
-          registration->key(), blink::mojom::StorageType::kTemporary,
+      quota_manager_proxy_->NotifyBucketAccessed(
+          storage::BucketLocator::ForDefaultBucket(registration->key()),
           base::Time::Now());
     }
   }
@@ -1061,8 +1064,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForScope(
 
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
-      quota_manager_proxy_->NotifyStorageAccessed(
-          registration->key(), blink::mojom::StorageType::kTemporary,
+      quota_manager_proxy_->NotifyBucketAccessed(
+          storage::BucketLocator::ForDefaultBucket(registration->key()),
           base::Time::Now());
     }
   }
@@ -1106,8 +1109,8 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
                                 std::move(result->version_reference));
     if (quota_manager_proxy_) {
       // Can be nullptr in tests.
-      quota_manager_proxy_->NotifyStorageAccessed(
-          registration->key(), blink::mojom::StorageType::kTemporary,
+      quota_manager_proxy_->NotifyBucketAccessed(
+          storage::BucketLocator::ForDefaultBucket(registration->key()),
           base::Time::Now());
     }
   }
@@ -1281,11 +1284,11 @@ void ServiceWorkerRegistry::DidStoreRegistration(
 
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
-    quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClientType::kServiceWorker, key,
-        blink::mojom::StorageType::kTemporary,
+    quota_manager_proxy_->NotifyBucketModified(
+        storage::QuotaClientType::kServiceWorker,
+        storage::BucketLocator::ForDefaultBucket(key),
         stored_resources_total_size_bytes - deleted_resources_size,
-        base::Time::Now(), base::SequencedTaskRunnerHandle::Get(),
+        base::Time::Now(), base::SequencedTaskRunner::GetCurrentDefault(),
         base::DoNothing());
   }
 
@@ -1323,10 +1326,10 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
 
   if (quota_manager_proxy_) {
     // Can be nullptr in tests.
-    quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClientType::kServiceWorker, key,
-        blink::mojom::StorageType::kTemporary, -deleted_resources_size,
-        base::Time::Now(), base::SequencedTaskRunnerHandle::Get(),
+    quota_manager_proxy_->NotifyBucketModified(
+        storage::QuotaClientType::kServiceWorker,
+        storage::BucketLocator::ForDefaultBucket(key), -deleted_resources_size,
+        base::Time::Now(), base::SequencedTaskRunner::GetCurrentDefault(),
         base::DoNothing());
   }
 
@@ -1580,7 +1583,7 @@ ServiceWorkerRegistry::GetRemoteStorageControl() {
                 kServiceWorkerStorageControlResponseQueue)
                 ? GetUIThreadTaskRunner(
                       {BrowserTaskType::kServiceWorkerStorageControlResponse})
-                : base::SequencedTaskRunnerHandle::Get()));
+                : base::SequencedTaskRunner::GetCurrentDefault()));
     DCHECK(remote_storage_control_.is_bound());
     remote_storage_control_.set_disconnect_handler(
         base::BindOnce(&ServiceWorkerRegistry::OnRemoteStorageDisconnected,

@@ -18,10 +18,16 @@ class RecoveryEligibilityScreen : public BaseScreen {
  public:
   enum class Result { PROCEED, NOT_APPLICABLE };
   static std::string GetResultString(Result result);
+  static bool ShouldSkipRecoverySetupBecauseOfPolicy();
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
   explicit RecoveryEligibilityScreen(const ScreenExitCallback& exit_callback);
   ~RecoveryEligibilityScreen() override;
+
+  ScreenExitCallback get_exit_callback_for_testing() { return exit_callback_; }
+  void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
+    exit_callback_ = callback;
+  }
 
  private:
   // BaseScreen:
@@ -33,11 +39,5 @@ class RecoveryEligibilityScreen : public BaseScreen {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::RecoveryEligibilityScreen;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_RECOVERY_ELIGIBILITY_SCREEN_H_

@@ -74,7 +74,8 @@ crosapi::mojom::TtsEventType ToMojo(content::TtsEventType event_type) {
 content::VoiceData FromMojo(const crosapi::mojom::TtsVoicePtr& mojo_voice) {
   content::VoiceData voice_data;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  voice_data.from_crosapi = true;
+  // The mojo_voice is from the remote TTS engine in Lacros.
+  voice_data.from_remote_tts_engine = true;
 #endif
   voice_data.name = mojo_voice->voice_name;
   voice_data.lang = mojo_voice->lang;
@@ -137,14 +138,14 @@ crosapi::mojom::TtsUtterancePtr ToMojo(content::TtsUtterance* utterance) {
   return mojo_utterance;
 }
 
-std::unique_ptr<content::TtsUtterance> FromMojo(
-    crosapi::mojom::TtsUtterancePtr& mojo_utterance) {
+std::unique_ptr<content::TtsUtterance> CreateUtteranceFromMojo(
+    crosapi::mojom::TtsUtterancePtr& mojo_utterance,
+    bool should_always_be_spoken) {
   // Construct TtsUtterance object.
   content::BrowserContext* browser_context =
       ProfileManager::GetPrimaryUserProfile();
   std::unique_ptr<content::TtsUtterance> utterance =
-      content::TtsUtterance::Create(browser_context,
-                                    /*should_always_be_spoken=*/true);
+      content::TtsUtterance::Create(browser_context, should_always_be_spoken);
 
   utterance->SetText(mojo_utterance->text);
   utterance->SetLang(mojo_utterance->lang);
@@ -191,6 +192,10 @@ void GetAllVoicesForTesting(content::BrowserContext* browser_context,
 
 void SpeakForTesting(std::unique_ptr<content::TtsUtterance> utterance) {
   content::TtsController::GetInstance()->SpeakOrEnqueue(std::move(utterance));
+}
+
+int GetTtsUtteranceQueueSizeForTesting() {
+  return content::TtsController::GetInstance()->QueueSize();
 }
 
 }  // namespace tts_crosapi_util

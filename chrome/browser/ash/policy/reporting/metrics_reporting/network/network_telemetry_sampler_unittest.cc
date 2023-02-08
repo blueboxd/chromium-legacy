@@ -17,12 +17,12 @@
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_manager.h"
 #include "chromeos/ash/components/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/tether_constants.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/reporting/metrics/fakes/fake_sampler.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/reporting/util/test_support_callbacks.h"
@@ -88,10 +88,10 @@ std::string DevicePath(const std::string& interface_name) {
 class NetworkTelemetrySamplerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    ::chromeos::LoginState::Initialize();
-    ::chromeos::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-        ::chromeos::LoginState::LOGGED_IN_ACTIVE,
-        ::chromeos::LoginState::LOGGED_IN_USER_REGULAR,
+    ash::LoginState::Initialize();
+    ash::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
+        ash::LoginState::LOGGED_IN_ACTIVE,
+        ash::LoginState::LOGGED_IN_USER_REGULAR,
         network_handler_test_helper_.UserHash());
 
     network_handler_test_helper_.AddDefaultProfiles();
@@ -102,7 +102,7 @@ class NetworkTelemetrySamplerTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    ::chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     ash::cros_healthd::FakeCrosHealthd::Shutdown();
   }
 

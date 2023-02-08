@@ -42,7 +42,8 @@ class CompoundTabContainer : public TabContainer {
   void SetActiveTab(absl::optional<size_t> prev_active_index,
                     absl::optional<size_t> new_active_index) override;
   std::unique_ptr<Tab> TransferTabOut(int model_index) override;
-  void StoppedDraggingView(TabSlotView* view) override;
+  Tab* AddTabToViewModel(Tab* tab, int model_index, TabPinned pinned) override;
+  void ReturnTabSlotView(TabSlotView* view) override;
   void ScrollTabToVisible(int model_index) override;
   void ScrollTabContainerByOffset(int offset) override;
   void OnGroupCreated(const tab_groups::TabGroupId& group) override;
@@ -54,13 +55,18 @@ class CompoundTabContainer : public TabContainer {
       const tab_groups::TabGroupVisualData* old_visuals,
       const tab_groups::TabGroupVisualData* new_visuals) override;
   void OnGroupClosed(const tab_groups::TabGroupId& group) override;
+  void ToggleTabGroup(const tab_groups::TabGroupId& group,
+                      bool is_collapsing,
+                      ToggleTabGroupCollapsedStateOrigin origin) override;
   void UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) override;
   void NotifyTabGroupEditorBubbleOpened() override;
   void NotifyTabGroupEditorBubbleClosed() override;
-  int GetModelIndexOf(const TabSlotView* slot_view) const override;
+  absl::optional<int> GetModelIndexOf(
+      const TabSlotView* slot_view) const override;
   Tab* GetTabAtModelIndex(int index) const override;
   int GetTabCount() const override;
-  int GetModelIndexOfFirstNonClosingTab(Tab* tab) const override;
+  absl::optional<int> GetModelIndexOfFirstNonClosingTab(
+      Tab* tab) const override;
   void UpdateHoverCard(
       Tab* tab,
       TabSlotController::HoverCardUpdateType update_type) override;
@@ -69,6 +75,7 @@ class CompoundTabContainer : public TabContainer {
   void OnTabSlotAnimationProgressed(TabSlotView* view) override;
   void OnTabCloseAnimationCompleted(Tab* tab) override;
   void InvalidateIdealBounds() override;
+  void AnimateToIdealBounds() override;
   bool IsAnimating() const override;
   void CancelAnimation() override;
   void CompleteAnimationAndLayout() override;
@@ -101,6 +108,13 @@ class CompoundTabContainer : public TabContainer {
       const absl::optional<BrowserRootView::DropIndex>& index) override;
   void HandleDragExited() override;
 
+  // Notifies this CompoundTabContainer that `tab_slot_view` must be animated to
+  // `target_bounds`. `pinned` indicates whether these bounds are relative to
+  // `pinned_tab_container_` or `unpinned_tab_container_`.
+  void UpdateAnimationTarget(TabSlotView* tab_slot_view,
+                             gfx::Rect target_bounds,
+                             TabPinned pinned);
+
  private:
   int NumPinnedTabs() const;
 
@@ -115,14 +129,38 @@ class CompoundTabContainer : public TabContainer {
   // the index that corresponds to `to_model_index`.
   void TransferTabBetweenContainers(int from_model_index, int to_model_index);
 
+  // Converts `ideal_bounds` from `unpinned_tab_container_`'s coordinate space
+  // into local coordinate space. References ideal bounds instead of current
+  // bounds to correctly account for any ongoing animations in the pinned tab
+  // container.
+  gfx::Rect ConvertUnpinnedContainerIdealBoundsToLocal(
+      gfx::Rect ideal_bounds) const;
+
+  // Animates `tab` to `ideal_bounds` using `bounds_animator_`. Retargets an
+  // existing animation if one is already running.
+  void AnimateTabTo(Tab* tab, gfx::Rect ideal_bounds);
+
   // Returns the child TabContainer that should contain `view`. NB this can be
   // different from `view->parent()` e.g. while `view` is being dragged.
   raw_ref<TabContainer> GetTabContainerFor(TabSlotView* view);
 
   TabContainer* GetTabContainerAt(gfx::Point point_in_local_coords);
 
+  // Returns the x position that `unpinned_tab_container_` should be at after
+  // any running animations finish.
+  int GetUnpinnedContainerIdealLeadingX() const;
+
   int GetAvailableWidthForUnpinnedTabContainer(
       base::RepeatingCallback<int()> available_width_callback);
+
+  // Private getter to retrieve the visible rect of the scroll container.
+  absl::optional<gfx::Rect> GetVisibleContentRect();
+
+  // Animates and scrolls the tab container from the start_edge to the
+  // target_edge. If the target_edge is beyond the tab strip it will be clamped
+  // bounds of the tabstrip.
+  void AnimateScrollToShowXCoordinate(const int start_edge,
+                                      const int target_edge);
 
   const raw_ref<TabContainerController> controller_;
 
@@ -141,6 +179,19 @@ class CompoundTabContainer : public TabContainer {
   const raw_ref<TabContainer> unpinned_tab_container_;
 
   base::RepeatingCallback<int()> available_width_callback_;
+
+  const raw_ptr<TabHoverCardController, DanglingUntriaged>
+      hover_card_controller_;
+
+  // The View that is to be scrolled by |tab_scrolling_animation_|. May be
+  // nullptr in tests.
+  const raw_ptr<views::View> scroll_contents_view_;
+
+  // Responsible for animating the scroll of the tab container.
+  std::unique_ptr<gfx::LinearAnimation> tab_scrolling_animation_;
+
+  // Animates tabs between pinned and unpinned states.
+  views::BoundsAnimator bounds_animator_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_COMPOUND_TAB_CONTAINER_H_

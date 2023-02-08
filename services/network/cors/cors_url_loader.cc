@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/cpp/timing_allow_origin_parser.h"
@@ -402,11 +403,6 @@ void CorsURLLoader::FollowRedirect(
     }
   }
 
-  network::URLLoader::LogConcerningRequestHeaders(
-      modified_headers, /*added_during_redirect=*/true);
-  network::URLLoader::LogConcerningRequestHeaders(
-      modified_cors_exempt_headers, /*added_during_redirect=*/true);
-
   for (const auto& name : removed_headers) {
     request_.headers.RemoveHeader(name);
     request_.cors_exempt_headers.RemoveHeader(name);
@@ -697,6 +693,8 @@ void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kCorsURLLoader);
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
@@ -909,9 +907,13 @@ void CorsURLLoader::StartNetworkRequest() {
   // Check whether a fresh entry exists in the in-memory cache.
   absl::optional<std::string> cache_key;
   if (context_->GetMemoryCache() && !has_factory_override_) {
+    // Pass `factory_client_security_state_` directly instead of using
+    // GetClientSecurityState() so that private network access checks in
+    // the memory cache don't think that both factory and request supply
+    // client security states.
     cache_key = context_->GetMemoryCache()->CanServe(
         options_, request_, isolation_info_.network_isolation_key(),
-        cross_origin_embedder_policy_, GetClientSecurityState());
+        cross_origin_embedder_policy_, factory_client_security_state_);
   }
 
   if (cache_key.has_value()) {
@@ -920,8 +922,7 @@ void CorsURLLoader::StartNetworkRequest() {
         *cache_key, request_, net_log_,
         network_client_receiver_.BindNewPipeAndPassRemote());
     memory_cache_was_used_ = true;
-  } else if (sync_network_loader_factory_ &&
-             base::FeatureList::IsEnabled(features::kURLLoaderSyncClient)) {
+  } else if (sync_network_loader_factory_) {
     sync_network_loader_factory_->CreateLoaderAndStartWithSyncClient(
         network_loader_.BindNewPipeAndPassReceiver(), request_id_, options_,
         request_, network_client_receiver_.BindNewPipeAndPassRemote(),

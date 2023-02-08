@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
-#include "base/logging.h"
 
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
@@ -15,13 +14,16 @@
 #include <string>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/launch_services_util.h"
@@ -49,6 +51,8 @@
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/os_integration/icns_encoder.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -60,6 +64,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/core/embedder/embedder.h"
+#include "mojo/core/embedder/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
@@ -440,6 +446,17 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
     if (launched_after_rebuild)
       command_line.AppendSwitch(app_mode::kLaunchedAfterRebuild);
 
+    // The shim must use the same Mojo implementation as this browser. Since
+    // feature parameters and field trials are otherwise not passed to shim
+    // processes, we use feature override switches to ensure Mojo parity.
+    if (mojo::core::IsMojoIpczEnabled()) {
+      command_line.AppendSwitchASCII(switches::kEnableFeatures,
+                                     mojo::core::kMojoIpcz.name);
+    } else {
+      command_line.AppendSwitchASCII(switches::kDisableFeatures,
+                                     mojo::core::kMojoIpcz.name);
+    }
+
     // Launch without activating (NSWorkspaceLaunchWithoutActivation).
     base::scoped_nsobject<NSRunningApplication> app(
         base::mac::OpenApplicationWithPath(
@@ -631,18 +648,6 @@ bool UpdateAppShortcutsSubdirLocalizedName(
   return true;
 }
 
-std::unique_ptr<ShortcutInfo> BuildShortcutInfoFromBundle(
-    const base::FilePath& bundle_path) {
-  BundleInfoPlist bundle_info(bundle_path);
-  std::unique_ptr<ShortcutInfo> shortcut_info(new ShortcutInfo);
-  shortcut_info->extension_id = bundle_info.GetExtensionId();
-  shortcut_info->url = bundle_info.GetURL();
-  shortcut_info->title = bundle_info.GetTitle();
-  shortcut_info->profile_name = bundle_info.GetProfileName();
-  shortcut_info->profile_path = bundle_info.GetFullProfilePath();
-  return shortcut_info;
-}
-
 base::FilePath GetMultiProfileAppDataDir(base::FilePath app_data_dir) {
   // The kCrAppModeUserDataDirKey is expected to be a path in kWebAppDirname,
   // and the true user data dir is extracted by going three directories up.
@@ -735,17 +740,6 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
 }
 
 }  // namespace
-
-std::unique_ptr<ShortcutInfo> RecordAppShimErrorAndBuildShortcutInfo(
-    const base::FilePath& bundle_path) {
-  base::Version full_version = BundleInfoPlist(bundle_path).GetVersion();
-  uint32_t major_version = 0;
-  if (full_version.IsValid())
-    major_version = full_version.components()[0];
-  base::UmaHistogramSparse("Apps.AppShimErrorVersion", major_version);
-
-  return BuildShortcutInfoFromBundle(bundle_path);
-}
 
 bool AppShimLaunchDisabled() {
   return AppShimCreationDisabledForTest() &&
@@ -922,6 +916,18 @@ bool WebAppShortcutCreator::BuildShortcut(
     LOG(ERROR) << "Failed to copy executable: " << executable_path;
     return false;
   }
+
+#if defined(ADDRESS_SANITIZER)
+  const base::FilePath asan_library_path =
+      framework_bundle_path.Append("Versions")
+          .Append("Current")
+          .Append("libclang_rt.asan_osx_dynamic.dylib");
+  if (!base::CopyFile(asan_library_path, destination_executable_path.Append(
+                                             asan_library_path.BaseName()))) {
+    LOG(ERROR) << "Failed to copy asan library: " << asan_library_path;
+    return false;
+  }
+#endif
 
   // Copy the Info.plist.
   if (!base::CopyFile(plist_path,
@@ -1237,6 +1243,15 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
       app_mode::kCFBundleURLSchemesKey : handlers
     } ];
   }
+  if (GetShortcutOverrideForTesting()) {  // IN-TEST
+    std::vector<std::string> protocol_handlers_vec;
+    protocol_handlers_vec.insert(protocol_handlers_vec.end(),
+                                 protocol_handlers.begin(),
+                                 protocol_handlers.end());
+    GetShortcutOverrideForTesting()  // IN-TEST
+        ->protocol_scheme_registrations.emplace_back(
+            info_->extension_id, std::move(protocol_handlers_vec));
+  }
 
   // TODO(crbug.com/1273526): If we decide to rename app bundles on app title
   // changes, instead of relying on localization, then this will need to change
@@ -1415,7 +1430,7 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
 }
 
 void LaunchShimForTesting(const base::FilePath& shim_path,  // IN-TEST
-                          const std::vector<GURL> urls,
+                          const std::vector<GURL>& urls,
                           ShimLaunchedCallback launched_callback,
                           ShimTerminatedCallback terminated_callback) {
   base::CommandLine command_line = BuildCommandLineForShimLaunch();
@@ -1569,9 +1584,9 @@ void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   }
 }
 
-void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
-                             const std::u16string& old_app_title,
-                             const ShortcutInfo& shortcut_info) {
+Result UpdatePlatformShortcuts(const base::FilePath& app_data_path,
+                               const std::u16string& old_app_title,
+                               const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   // If this is set, then keeping this as a local variable ensures it is not
@@ -1580,7 +1595,7 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
   scoped_refptr<ShortcutOverrideForTesting> shortcut_override =
       web_app::GetShortcutOverrideForTesting();
   if (AppShimLaunchDisabled())
-    return;
+    return Result::kOk;
 
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   std::vector<base::FilePath> updated_shim_paths;
@@ -1589,7 +1604,10 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
   // relying on asynchronous creation at installation.
   if (g_app_shims_allow_update_and_launch_in_tests)
     create_if_needed = true;
-  shortcut_creator.UpdateShortcuts(create_if_needed, &updated_shim_paths);
+  return (
+      shortcut_creator.UpdateShortcuts(create_if_needed, &updated_shim_paths)
+          ? Result::kOk
+          : Result::kError);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

@@ -54,7 +54,7 @@ bool NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = node->frame_tree_node_id();
-  FrameTree* frame_tree = node->frame_tree();
+  FrameTree& frame_tree = node->frame_tree();
 
   node->navigator().controller().LoadURLWithParams(params);
   observer.Wait();
@@ -66,7 +66,7 @@ bool NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
 
   // It's possible for JS handlers triggered during the navigation to remove
   // the node, so retrieve it by ID again to check if that occurred.
-  node = frame_tree->FindByID(params.frame_tree_node_id);
+  node = frame_tree.FindByID(params.frame_tree_node_id);
 
   if (node && url != node->current_url()) {
     DLOG(WARNING) << "Expected URL " << url << " but observed "
@@ -198,15 +198,11 @@ Shell* OpenBlankWindow(WebContentsImpl* web_contents) {
   EXPECT_TRUE(ExecJs(root, "last_opened_window = window.open()"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_NE(new_shell->web_contents(), web_contents);
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(new_shell->web_contents()
-                    ->GetController()
-                    .GetLastCommittedEntry()
-                    ->IsInitialEntry());
-    EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
-  } else {
-    EXPECT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
-  }
+  EXPECT_TRUE(new_shell->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
+  EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
   return new_shell;
 }
 
@@ -905,11 +901,9 @@ void InactiveRenderFrameHostDeletionObserver::Wait() {
       ->GetController()
       .GetBackForwardCache()
       .Flush();
-  if (blink::features::IsPrerender2Enabled()) {
-    static_cast<WebContentsImpl*>(web_contents())
-        ->GetPrerenderHostRegistry()
-        ->CancelAllHostsForTesting();
-  }
+  static_cast<WebContentsImpl*>(web_contents())
+      ->GetPrerenderHostRegistry()
+      ->CancelAllHostsForTesting();
 
   for (RenderFrameHost* rfh : CollectAllRenderFrameHosts(web_contents())) {
     // Keep track of all currently inactive RenderFrameHosts so that we can wait
@@ -943,6 +937,29 @@ void TestNavigationObserverInternal::OnDidFinishNavigation(
                 ->navigation_type()
           : NAVIGATION_TYPE_UNKNOWN;
   TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
+}
+
+RenderFrameHostImpl* DescendantRenderFrameHostAtInternal(
+    RenderFrameHostImpl* rfh,
+    std::string path,
+    std::vector<size_t>& descendant_indices) {
+  if (descendant_indices.size() == 0)
+    return rfh;
+  size_t index = descendant_indices[0];
+  descendant_indices.erase(descendant_indices.begin());
+  CHECK_LT(index, rfh->child_count()) << path;
+  FrameTreeNode* node = rfh->child_at(index);
+  path = base::StringPrintf("%s[%zu]", path.c_str(), index);
+  return DescendantRenderFrameHostAtInternal(node->current_frame_host(), path,
+                                             descendant_indices);
+}
+
+RenderFrameHostImpl* DescendantRenderFrameHostImplAt(
+    const ToRenderFrameHost& adapter,
+    std::vector<size_t> descendant_indices) {
+  return DescendantRenderFrameHostAtInternal(
+      static_cast<RenderFrameHostImpl*>(adapter.render_frame_host()), "rfh",
+      descendant_indices);
 }
 
 }  // namespace content

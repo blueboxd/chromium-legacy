@@ -67,7 +67,7 @@ void FedCmAccountSelectionView::Show(
   for (const auto& identity_provider : identity_provider_data) {
     idp_data_list_.emplace_back(
         base::UTF8ToUTF16(identity_provider.idp_for_display),
-        identity_provider.idp_metadata, identity_provider.client_id_data,
+        identity_provider.idp_metadata, identity_provider.client_metadata,
         identity_provider.accounts);
     accounts_size += identity_provider.accounts.size();
   }
@@ -190,7 +190,14 @@ void FedCmAccountSelectionView::OnAccountSelected(
                : State::VERIFYING;
   if (state_ == State::VERIFYING) {
     notify_delegate_of_dismiss_ = false;
+
+    base::WeakPtr<FedCmAccountSelectionView> weak_ptr(
+        weak_ptr_factory_.GetWeakPtr());
     delegate_->OnAccountSelected(idp_data.idp_metadata_.config_url, account);
+    // AccountSelectionView::Delegate::OnAccountSelected() might delete this.
+    // See https://crbug.com/1393650 for details.
+    if (!weak_ptr)
+      return;
 
     GetBubbleView()->ShowVerifyingSheet(account, idp_data);
     return;

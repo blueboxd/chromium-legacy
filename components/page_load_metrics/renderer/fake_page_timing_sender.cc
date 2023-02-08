@@ -25,11 +25,11 @@ void FakePageTimingSender::SendTiming(
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
     const mojom::InputTimingPtr new_input_timing,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    const mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
     uint32_t soft_navigation_count) {
   validator_->UpdateTiming(timing, metadata, new_features, resources,
                            render_data, cpu_timing, new_input_timing,
-                           mobile_friendliness, soft_navigation_count);
+                           subresource_load_metrics, soft_navigation_count);
 }
 
 void FakePageTimingSender::SetUpSmoothnessReporting(
@@ -86,14 +86,15 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedInputTiming()
 }
 
 void FakePageTimingSender::PageTimingValidator::
-    UpdateExpectedMobileFriendliness(
-        const blink::MobileFriendliness& mobile_friendliness) {
-  expected_mobile_friendliness = mobile_friendliness;
+    UpdateExpectedSubresourceLoadMetrics(
+        const mojom::SubresourceLoadMetrics& subresource_load_metrics) {
+  expected_subresource_load_metrics_ = subresource_load_metrics.Clone();
 }
 
 void FakePageTimingSender::PageTimingValidator::
-    VerifyExpectedMobileFriendliness() const {
-  ASSERT_EQ(expected_mobile_friendliness, actual_mobile_friendliness);
+    VerifyExpectedSubresourceLoadMetrics() const {
+  ASSERT_EQ(expected_subresource_load_metrics_,
+            actual_subresource_load_metrics_);
 }
 
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedCpuTimings()
@@ -144,7 +145,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::FrameRenderDataUpdate& render_data,
     const mojom::CpuTimingPtr& cpu_timing,
     const mojom::InputTimingPtr& new_input_timing,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    const mojom::SubresourceLoadMetricsPtr& subresource_load_metrics,
     uint32_t soft_navigation_count) {
   actual_timings_.push_back(timing.Clone());
   if (!cpu_timing->task_time.is_zero()) {
@@ -165,8 +166,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
   actual_input_timing->total_input_delay += new_input_timing->total_input_delay;
   actual_input_timing->total_adjusted_input_delay +=
       new_input_timing->total_adjusted_input_delay;
-  if (mobile_friendliness.has_value())
-    actual_mobile_friendliness = *mobile_friendliness;
+  actual_subresource_load_metrics_ = subresource_load_metrics.Clone();
 
   VerifyExpectedTimings();
   VerifyExpectedCpuTimings();
@@ -174,7 +174,7 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
   VerifyExpectedRenderData();
   VerifyExpectedMainFrameIntersectionRect();
   VerifyExpectedMainFrameViewportRect();
-  VerifyExpectedMobileFriendliness();
+  VerifyExpectedSubresourceLoadMetrics();
   // TODO(yoav): Verify that soft nav count matches expectations.
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_view.h"
 #include "chrome/browser/ui/views/passwords/move_to_account_store_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_generation_confirmation_view.h"
@@ -82,7 +83,12 @@ PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
   password_manager::ui::State model_state =
       PasswordsModelDelegateFromWebContents(web_contents)->GetState();
   if (model_state == password_manager::ui::MANAGE_STATE) {
-    view = new PasswordItemsView(web_contents, anchor_view);
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kRevampedPasswordManagementBubble)) {
+      view = new ManagePasswordsView(web_contents, anchor_view);
+    } else {
+      view = new PasswordItemsView(web_contents, anchor_view);
+    }
   } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
     view = new PasswordAutoSignInView(web_contents, anchor_view);
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
@@ -183,18 +189,14 @@ std::unique_ptr<views::Label> PasswordBubbleViewBase::CreateUsernameLabel(
 // static
 std::unique_ptr<views::Label> PasswordBubbleViewBase::CreatePasswordLabel(
     const password_manager::PasswordForm& form) {
-  std::unique_ptr<views::Label> label;
+  std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
+      GetDisplayPassword(form), views::style::CONTEXT_DIALOG_BODY_TEXT);
   if (form.federation_origin.opaque()) {
-    label = std::make_unique<views::Label>(
-        form.password_value, views::style::CONTEXT_DIALOG_BODY_TEXT,
-        STYLE_SECONDARY_MONOSPACED);
+    label->SetTextStyle(STYLE_SECONDARY_MONOSPACED);
     label->SetObscured(true);
     label->SetElideBehavior(gfx::TRUNCATE);
   } else {
-    label = std::make_unique<views::Label>(
-        l10n_util::GetStringFUTF16(IDS_PASSWORDS_VIA_FEDERATION,
-                                   GetDisplayFederation(form)),
-        views::style::CONTEXT_DIALOG_BODY_TEXT, views::style::STYLE_SECONDARY);
+    label->SetTextStyle(views::style::STYLE_SECONDARY);
     label->SetElideBehavior(gfx::ELIDE_HEAD);
   }
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

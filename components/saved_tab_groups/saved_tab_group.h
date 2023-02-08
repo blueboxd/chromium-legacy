@@ -24,11 +24,14 @@
 // tab_group_editor_bubble_view.
 class SavedTabGroup {
  public:
+  static constexpr int kUnsetPosition = -1;
+
   SavedTabGroup(
       const std::u16string& title,
       const tab_groups::TabGroupColorId& color,
       const std::vector<SavedTabGroupTab>& urls,
       absl::optional<base::GUID> saved_guid = absl::nullopt,
+      absl::optional<int> position = absl::nullopt,
       absl::optional<tab_groups::TabGroupId> local_group_id = absl::nullopt,
       absl::optional<base::Time> creation_time_windows_epoch_micros =
           absl::nullopt,
@@ -53,14 +56,22 @@ class SavedTabGroup {
   const std::vector<SavedTabGroupTab>& saved_tabs() const {
     return saved_tabs_;
   }
+  int position() const { return position_; }
+
   std::vector<SavedTabGroupTab>& saved_tabs() { return saved_tabs_; }
-  absl::optional<SavedTabGroupTab> GetTab(const base::GUID& tab_id);
+
+  // Accessors for Tabs based on id.
+  SavedTabGroupTab* GetTab(const base::GUID& saved_tab_guid);
+  SavedTabGroupTab* GetTab(const base::Token& local_tab_id);
+
   // Returns the index for `tab_id` in `saved_tabs_` if it exists. Otherwise,
   // returns absl::nullopt.
-  absl::optional<int> GetIndexOfTab(const base::GUID& tab_id) const;
+  absl::optional<int> GetIndexOfTab(const base::GUID& saved_tab_guid) const;
+  absl::optional<int> GetIndexOfTab(const base::Token& local_tab_id) const;
 
   // Returns true if the `tab_id` was found in `saved_tabs_`.
-  bool ContainsTab(const base::GUID& tab_id) const;
+  bool ContainsTab(const base::GUID& saved_tab_guid) const;
+  bool ContainsTab(const base::Token& tab_id) const;
 
   // Metadata mutators.
   SavedTabGroup& SetTitle(std::u16string title);
@@ -69,6 +80,7 @@ class SavedTabGroup {
       absl::optional<tab_groups::TabGroupId> tab_group_id);
   SavedTabGroup& SetUpdateTimeWindowsEpochMicros(
       base::Time update_time_windows_epoch_micros);
+  SavedTabGroup& SetPosition(int position);
 
   // Tab mutators.
   // Adds `tab` to `saved_tabs_` at the specified `index` unless the added tab
@@ -76,23 +88,24 @@ class SavedTabGroup {
   SavedTabGroup& AddTab(size_t index, SavedTabGroupTab tab);
   // Removes the tab denoted by `tab_id` from `saved_tabs_`. This function will
   // remove the last tab: crbug/1371959.
-  SavedTabGroup& RemoveTab(const base::GUID& tab_id);
+  SavedTabGroup& RemoveTab(const base::GUID& saved_tab_guid);
   // Replaces that tab denoted by `tab_id` with value of `tab` unless the
   // replacement tab already exists. In this case we CHECK.
-  SavedTabGroup& ReplaceTabAt(const base::GUID& tab_id, SavedTabGroupTab tab);
+  SavedTabGroup& ReplaceTabAt(const base::GUID& saved_tab_guid,
+                              SavedTabGroupTab tab);
   // Moves the tab denoted by `tab_id` from its current index to the
   // `new_index`.
-  SavedTabGroup& MoveTab(const base::GUID& tab_id, size_t new_index);
+  SavedTabGroup& MoveTab(const base::GUID& saved_tab_guid, size_t new_index);
 
   // Merges this groups data with a specific from sync and returns the newly
   // merged specific. Side effect: Updates the values of this group.
   std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeGroup(
-      std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific);
+      const sync_pb::SavedTabGroupSpecifics& sync_specific);
 
   // We should merge a group if one of the following is true:
   // 1. The data from `sync_specific` has the most recent (larger) update time.
   // 2. The `sync_specific` has the oldest (smallest) creation time.
-  bool ShouldMergeGroup(sync_pb::SavedTabGroupSpecifics* sync_specific);
+  bool ShouldMergeGroup(const sync_pb::SavedTabGroupSpecifics& sync_specific);
 
   // Converts a `SavedTabGroupSpecifics` retrieved from sync into a
   // `SavedTabGroupTab`.
@@ -128,6 +141,11 @@ class SavedTabGroup {
 
   // The URLS and later webcontents (such as favicons) of the saved tab group.
   std::vector<SavedTabGroupTab> saved_tabs_;
+
+  // The current position of the group in relation to all other saved groups.
+  // A value of -1 means that the group was not assigned a position and will be
+  // assigned one when it is added into the SavedTabGroupModel.
+  int position_;
 
   // Timestamp for when the tab was created using windows epoch microseconds.
   base::Time creation_time_windows_epoch_micros_;

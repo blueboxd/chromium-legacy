@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/mock_signal_storage_config.h"
@@ -52,7 +53,8 @@ constexpr int kSample = 1;
 
 class TrainingDataCollectorImplTest : public ::testing::Test {
  public:
-  TrainingDataCollectorImplTest() = default;
+  TrainingDataCollectorImplTest()
+      : task_environment_{base::test::TaskEnvironment::TimeSource::MOCK_TIME} {}
   ~TrainingDataCollectorImplTest() override = default;
 
   void SetUp() override {
@@ -75,9 +77,10 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
         features::kSegmentationStructuredMetricsFeature, params);
 
     // Setup behavior for |feature_list_processor_|.
-    std::vector<float> inputs({1.f});
+    ModelProvider::Request inputs({1.f});
     ON_CALL(feature_list_processor_, ProcessFeatureList(_, _, _, _, _, _))
-        .WillByDefault(RunOnceCallback<5>(false, inputs, std::vector<float>()));
+        .WillByDefault(
+            RunOnceCallback<5>(false, inputs, ModelProvider::Response()));
     ON_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
         .WillByDefault(Return(true));
 
@@ -131,7 +134,7 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
     return segment_info;
   }
 
-  proto::SegmentInfo* CreateSegmentInfoWithTriggers() {
+  proto::SegmentInfo* CreateSegmentInfoWithTriggers(int delay_sec) {
     test_segment_db()->AddUserActionFeature(kTestOptimizationTarget0, "action",
                                             1, 1, proto::Aggregation::COUNT);
 
@@ -146,7 +149,7 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
 
     // Add a time delay trigger of 1 second.
     auto* delay_trigger = trigger->add_observation_trigger();
-    delay_trigger->set_delay_sec(5);
+    delay_trigger->set_delay_sec(delay_sec);
     auto* uma_trigger = trigger->add_observation_trigger();
 
     // Add a uma feature trigger based on |kHistogramName0|.
@@ -334,8 +337,8 @@ TEST_F(TrainingDataCollectorImplTest, PartialOutputNotAllowed) {
 // Tests that continuous collection happens on startup.
 TEST_F(TrainingDataCollectorImplTest, ContinousCollectionOnStartup) {
   ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
-      .WillByDefault(RunOnceCallback<5>(false, std::vector<float>{1.f},
-                                        std::vector<float>{2.f, 3.f}));
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
   CreateSegmentInfo();
   clock()->Advance(base::Hours(24));
   Init();
@@ -355,8 +358,8 @@ TEST_F(TrainingDataCollectorImplTest, ContinousCollectionOnStartup) {
 // no data is reported on start up.
 TEST_F(TrainingDataCollectorImplTest, ReportCollectedContinuousTrainingData) {
   ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
-      .WillByDefault(RunOnceCallback<5>(false, std::vector<float>{1.f},
-                                        std::vector<float>{2.f, 3.f}));
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
   CreateSegmentInfo();
   Init();
   clock()->Advance(base::Hours(24));
@@ -383,8 +386,8 @@ TEST_F(TrainingDataCollectorImplTest, ReportCollectedContinuousTrainingData) {
 TEST_F(TrainingDataCollectorImplTest,
        NoImmediateDataCollectionAfterLastCollection) {
   ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
-      .WillByDefault(RunOnceCallback<5>(false, std::vector<float>{1.f},
-                                        std::vector<float>{2.f, 3.f}));
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
   CreateSegmentInfo();
   Init();
   clock()->Advance(base::Hours(24));
@@ -407,8 +410,8 @@ TEST_F(TrainingDataCollectorImplTest,
 // collection won't happen.
 TEST_F(TrainingDataCollectorImplTest, NoDataCollectionIfUkmAllowedPrefNotSet) {
   ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
-      .WillByDefault(RunOnceCallback<5>(false, std::vector<float>{1.f},
-                                        std::vector<float>{2.f, 3.f}));
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
   LocalStateHelper::GetInstance().SetPrefTime(
       kSegmentationUkmMostRecentAllowedTimeKey, base::Time());
   CreateSegmentInfo();
@@ -418,15 +421,15 @@ TEST_F(TrainingDataCollectorImplTest, NoDataCollectionIfUkmAllowedPrefNotSet) {
   ExpectUkmCount(0u);
 }
 
-// Tests that if triggers are set, data collection only happens when triggers
-// are hit.
-TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTrigger) {
+// Tests that if uma histogram trigger is set, collection will happen when the
+// trigger histogram is observed.
+TEST_F(TrainingDataCollectorImplTest, DataCollectionWithUMATrigger) {
   ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
-      .WillByDefault(RunOnceCallback<5>(false, std::vector<float>{1.f},
-                                        std::vector<float>{2.f, 3.f}));
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
 
   // Create a segment that contain a time delay trigger and a uma trigger.
-  CreateSegmentInfoWithTriggers();
+  CreateSegmentInfoWithTriggers(10);
   Init();
 
   // Wait for input collection to be done and cached in memory.
@@ -442,6 +445,42 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTrigger) {
 
   // Trigger output collection and ukm data recording.
   collector()->OnHistogramSignalUpdated(kHistogramName0, kSample);
+  run_loop.Run();
+  ExpectUkmCount(1u);
+  ExpectUkm({Segmentation_ModelExecution::kOptimizationTargetName,
+             Segmentation_ModelExecution::kModelVersionName,
+             Segmentation_ModelExecution::kInput0Name,
+             Segmentation_ModelExecution::kActualResultName,
+             Segmentation_ModelExecution::kActualResult2Name},
+            {kTestOptimizationTarget0, kModelVersion,
+             SegmentationUkmHelper::FloatToInt64(1.f),
+             SegmentationUkmHelper::FloatToInt64(2.f),
+             SegmentationUkmHelper::FloatToInt64(3.f)});
+}
+
+// Tests that if no uma histogram trigger is set, collection will happen when
+// the time delay passes.
+TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTimeTrigger) {
+  ON_CALL(*feature_list_processor(), ProcessFeatureList(_, _, _, _, _, _))
+      .WillByDefault(RunOnceCallback<5>(false, ModelProvider::Request{1.f},
+                                        ModelProvider::Response{2.f, 3.f}));
+
+  // Create a segment that contain a time delay trigger and a uma trigger.
+  CreateSegmentInfoWithTriggers(10);
+  Init();
+
+  // Wait for input collection to be done and cached in memory.
+  auto input_context = base::MakeRefCounted<InputContext>();
+  base::RunLoop run_loop;
+  test_recorder()->SetOnAddEntryCallback(
+      Segmentation_ModelExecution::kEntryName, run_loop.QuitClosure());
+  collector()->OnDecisionTime(
+      kTestOptimizationTarget0, input_context,
+      proto::TrainingOutputs_TriggerConfig_DecisionType_ONDEMAND);
+  task_environment()->RunUntilIdle();
+  ExpectUkmCount(0u);
+
+  // Trigger output collection and ukm data recording.
   run_loop.Run();
   ExpectUkmCount(1u);
   ExpectUkm({Segmentation_ModelExecution::kOptimizationTargetName,

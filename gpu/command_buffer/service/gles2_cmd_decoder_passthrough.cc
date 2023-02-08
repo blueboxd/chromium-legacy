@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_external_framebuffer.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_factory.h"
@@ -804,7 +805,6 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       emulated_back_buffer_(nullptr),
       offscreen_single_buffer_(false),
       offscreen_target_buffer_preserved_(false),
-      create_color_buffer_count_for_test_(0),
       bound_draw_framebuffer_(0),
       bound_read_framebuffer_(0),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -1022,44 +1022,49 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
 
     if (request_optional_extensions_) {
       static constexpr const char* kOptionalFunctionalityExtensions[] = {
-          "GL_ANGLE_depth_texture",
-          "GL_ANGLE_framebuffer_multisample",
-          "GL_ANGLE_get_tex_level_parameter",
-          "GL_ANGLE_instanced_arrays",
-          "GL_ANGLE_memory_object_flags",
-          "GL_ANGLE_pack_reverse_row_order",
-          "GL_ANGLE_texture_compression_dxt1",
-          "GL_ANGLE_texture_compression_dxt3",
-          "GL_ANGLE_texture_compression_dxt5",
-          "GL_ANGLE_translated_shader_source",
-          "GL_CHROMIUM_framebuffer_mixed_samples",
-          "GL_CHROMIUM_path_rendering",
-          "GL_EXT_blend_minmax",
-          "GL_EXT_discard_framebuffer",
-          "GL_EXT_disjoint_timer_query",
-          "GL_EXT_multisampled_render_to_texture",
-          "GL_EXT_occlusion_query_boolean",
-          "GL_EXT_sRGB",
-          "GL_EXT_sRGB_write_control",
-          "GL_EXT_texture_compression_dxt1",
-          "GL_EXT_texture_compression_s3tc_srgb",
-          "GL_EXT_texture_format_BGRA8888",
-          "GL_EXT_texture_norm16",
-          "GL_EXT_texture_rg",
-          "GL_EXT_texture_sRGB_decode",
-          "GL_EXT_texture_storage",
-          "GL_EXT_unpack_subimage",
-          "GL_KHR_parallel_shader_compile",
-          "GL_KHR_robust_buffer_access_behavior",
-          "GL_KHR_texture_compression_astc_hdr",
-          "GL_KHR_texture_compression_astc_ldr",
-          "GL_NV_pack_subimage",
-          "GL_OES_compressed_ETC1_RGB8_texture",
-          "GL_OES_depth32",
-          "GL_OES_packed_depth_stencil",
-          "GL_OES_rgb8_rgba8",
-          "GL_OES_vertex_array_object",
-          "NV_EGL_stream_consumer_external",
+        "GL_ANGLE_depth_texture",
+        "GL_ANGLE_framebuffer_multisample",
+        "GL_ANGLE_get_tex_level_parameter",
+        "GL_ANGLE_instanced_arrays",
+        "GL_ANGLE_memory_object_flags",
+        "GL_ANGLE_pack_reverse_row_order",
+        "GL_ANGLE_texture_compression_dxt1",
+        "GL_ANGLE_texture_compression_dxt3",
+        "GL_ANGLE_texture_compression_dxt5",
+        "GL_ANGLE_translated_shader_source",
+        "GL_CHROMIUM_framebuffer_mixed_samples",
+        "GL_CHROMIUM_path_rendering",
+        "GL_EXT_blend_minmax",
+        "GL_EXT_discard_framebuffer",
+        "GL_EXT_disjoint_timer_query",
+        "GL_EXT_multisampled_render_to_texture",
+        "GL_EXT_occlusion_query_boolean",
+        "GL_EXT_sRGB",
+        "GL_EXT_sRGB_write_control",
+        "GL_EXT_texture_compression_dxt1",
+        "GL_EXT_texture_compression_s3tc_srgb",
+        "GL_EXT_texture_format_BGRA8888",
+        "GL_EXT_texture_norm16",
+        "GL_EXT_texture_rg",
+        "GL_EXT_texture_sRGB_decode",
+        "GL_EXT_texture_storage",
+        "GL_EXT_unpack_subimage",
+        "GL_KHR_parallel_shader_compile",
+        "GL_KHR_robust_buffer_access_behavior",
+        "GL_KHR_texture_compression_astc_hdr",
+        "GL_KHR_texture_compression_astc_ldr",
+#if BUILDFLAG(IS_CHROMEOS)
+        // Required for Webgl to display in overlay on ChromeOS devices.
+        // TODO(crbug.com/1379081): Consider for other platforms.
+        "GL_MESA_framebuffer_flip_y",
+#endif
+        "GL_NV_pack_subimage",
+        "GL_OES_compressed_ETC1_RGB8_texture",
+        "GL_OES_depth32",
+        "GL_OES_packed_depth_stencil",
+        "GL_OES_rgb8_rgba8",
+        "GL_OES_vertex_array_object",
+        "NV_EGL_stream_consumer_external",
       };
       RequestExtensions(api(), requestable_extensions,
                         kOptionalFunctionalityExtensions,
@@ -1074,13 +1079,6 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   // to dynamically enable extensions.
   InitializeFeatureInfo(attrib_helper.context_type, DisallowedFeatures(),
                         false);
-
-  // Support for texture_storage_image depends on the underlying
-  // ImageFactory's ability to create anonymous images.
-  gpu::ImageFactory* image_factory = group_->image_factory();
-  if (image_factory && image_factory->SupportsCreateAnonymousImage()) {
-    feature_info_->EnableTextureStorageImage();
-  }
 
   // Check for required extensions
   // TODO(geofflang): verify
@@ -1382,6 +1380,11 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     emulated_front_buffer_.reset();
   }
 
+  if (external_default_framebuffer_) {
+    external_default_framebuffer_->Destroy(have_context);
+    external_default_framebuffer_.reset();
+  }
+
   for (auto& in_use_color_texture : in_use_color_textures_) {
     in_use_color_texture->Destroy(have_context);
   }
@@ -1460,6 +1463,61 @@ void GLES2DecoderPassthroughImpl::ReleaseSurface() {
   }
   context_->ReleaseCurrent(surface_.get());
   surface_ = nullptr;
+}
+
+void GLES2DecoderPassthroughImpl::SetDefaultFramebufferSharedImage(
+    const Mailbox& mailbox,
+    int samples,
+    bool preserve,
+    bool needs_depth,
+    bool needs_stencil) {
+  if (!offscreen_)
+    return;
+
+  if (!external_default_framebuffer_) {
+    external_default_framebuffer_ = std::make_unique<GLES2ExternalFramebuffer>(
+        /*passthrough=*/true, *group_->feature_info(),
+        group_->shared_image_representation_factory());
+  }
+
+  if (!external_default_framebuffer_->AttachSharedImage(
+          mailbox, samples, preserve, needs_depth, needs_stencil)) {
+    return;
+  }
+
+  GLuint default_framebuffer_id;
+  if (external_default_framebuffer_->IsSharedImageAttached()) {
+    default_framebuffer_id = external_default_framebuffer_->GetFramebufferId();
+  } else {
+    default_framebuffer_id = emulated_back_buffer_->framebuffer_service_id;
+  }
+
+  framebuffer_id_map_.RemoveClientID(0);
+  framebuffer_id_map_.SetIDMapping(0, default_framebuffer_id);
+
+  // Note, there is member variable `supports_separate_fbo_bindings_` that is
+  // used across this class, but it's never initialized with the real value
+  // (defaults to false) which is likely a bug. To avoid any code changes
+  // outside of the feature flag we don't use it here.
+  const bool supports_separate_fbo_bindings =
+      feature_info_->feature_flags().chromium_framebuffer_multisample ||
+      feature_info_->IsWebGL2OrES3Context();
+
+  if (supports_separate_fbo_bindings) {
+    if (bound_draw_framebuffer_ == 0) {
+      api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER,
+                                    default_framebuffer_id);
+    }
+    if (bound_read_framebuffer_ == 0) {
+      api()->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER,
+                                    default_framebuffer_id);
+    }
+  } else {
+    DCHECK_EQ(bound_draw_framebuffer_, bound_read_framebuffer_);
+    if (bound_draw_framebuffer_ == 0) {
+      api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, default_framebuffer_id);
+    }
+  }
 }
 
 void GLES2DecoderPassthroughImpl::TakeFrontBuffer(const Mailbox& mailbox) {
@@ -1700,10 +1758,13 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
       caps.shared_image_d3d && D3DImageBackingFactory::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
-  caps.texture_storage_image =
-      feature_info_->feature_flags().texture_storage_image;
+  caps.supports_scanout_shared_images =
+      SharedImageManager::SupportsScanoutImages();
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.chromium_nonblocking_readback = true;
+  caps.mesa_framebuffer_flip_y =
+      feature_info_->feature_flags().mesa_framebuffer_flip_y;
+
   caps.gpu_memory_buffer_formats =
       feature_info_->feature_flags().gpu_memory_buffer_formats;
   caps.texture_target_exception_list =
@@ -2008,10 +2069,28 @@ GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
 }
 
-void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
-                                            uint32_t texture_target,
-                                            gl::GLImage* image,
-                                            bool can_bind_to_sampler) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void GLES2DecoderPassthroughImpl::AttachImageToTextureWithDecoderBinding(
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    gl::GLImage* image) {
+  BindImageInternal(client_texture_id, texture_target, image,
+                    /*can_bind_to_sampler=*/false);
+}
+#else
+void GLES2DecoderPassthroughImpl::AttachImageToTextureWithClientBinding(
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    gl::GLImage* image) {
+  BindImageInternal(client_texture_id, texture_target, image,
+                    /*can_bind_to_sampler=*/true);
+}
+#endif
+
+void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
+                                                    uint32_t texture_target,
+                                                    gl::GLImage* image,
+                                                    bool can_bind_to_sampler) {
   scoped_refptr<TexturePassthrough> passthrough_texture;
   if (!resources_->texture_object_map.GetServiceID(client_texture_id,
                                                    &passthrough_texture) ||
@@ -2023,7 +2102,15 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
 
   // |can_bind_to_sampler| indicates that we don't need to take any action.
   // Otherwise, we do it when the texture is first used for drawing.
-  passthrough_texture->set_is_bind_pending(!can_bind_to_sampler);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  CHECK(!can_bind_to_sampler);
+  passthrough_texture->set_bind_pending();
+#else
+  CHECK(can_bind_to_sampler);
+#if BUILDFLAG(IS_ANDROID)
+  passthrough_texture->clear_bind_pending();
+#endif
+#endif
 
   GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
   if (passthrough_texture->target() != bind_target) {
@@ -2034,6 +2121,7 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
   passthrough_texture->SetLevelImage(texture_target, 0, image);
 }
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 void GLES2DecoderPassthroughImpl::BindOnePendingImage(
     GLenum target,
     TexturePassthrough* texture) {
@@ -2081,7 +2169,7 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
 
   // If copy / bind fail, then we could keep the bind state the same.
   // However, for now, we only try once.
-  texture->set_is_bind_pending(false);
+  texture->clear_bind_pending();
 
   // Re-bind the previous texture
   const BoundTexture& bound_texture =
@@ -2106,6 +2194,7 @@ void GLES2DecoderPassthroughImpl::BindPendingImagesForSamplers() {
   // them around.
   textures_pending_binding_.clear();
 }
+#endif
 
 void GLES2DecoderPassthroughImpl::OnDebugMessage(GLenum source,
                                                  GLenum type,
@@ -2147,11 +2236,6 @@ void GLES2DecoderPassthroughImpl::InitializeFeatureInfo(
     bool force_reinitialize) {
   feature_info_->Initialize(context_type, true /* is_passthrough_cmd_decoder */,
                             disallowed_features, force_reinitialize);
-
-  gpu::ImageFactory* image_factory = group_->image_factory();
-  if (image_factory && image_factory->SupportsCreateAnonymousImage()) {
-    feature_info_->EnableTextureStorageImage();
-  }
 }
 
 template <typename T>
@@ -2989,7 +3073,7 @@ void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
 
 bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
     GLenum target) const {
-  if (!emulated_back_buffer_) {
+  if (!emulated_back_buffer_ && !external_default_framebuffer_) {
     return false;
   }
 

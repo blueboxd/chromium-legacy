@@ -17,6 +17,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -82,6 +83,24 @@ bool AppBrowserController::IsWebApp(const Browser* browser) {
 bool AppBrowserController::IsForWebApp(const Browser* browser,
                                        const AppId& app_id) {
   return IsWebApp(browser) && browser->app_controller()->app_id() == app_id;
+}
+
+// static
+Browser* AppBrowserController::FindForWebApp(const Profile& profile,
+                                             const AppId& app_id) {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  for (auto it = browser_list->begin_browsers_ordered_by_activation();
+       it != browser_list->end_browsers_ordered_by_activation(); ++it) {
+    Browser* browser = *it;
+    if (browser->type() == Browser::TYPE_POPUP)
+      continue;
+    if (browser->profile() != &profile)
+      continue;
+    if (!IsForWebApp(browser, app_id))
+      continue;
+    return browser;
+  }
+  return nullptr;
 }
 
 // static
@@ -259,7 +278,10 @@ bool AppBrowserController::IsWindowControlsOverlayEnabled() const {
   return false;
 }
 
-void AppBrowserController::ToggleWindowControlsOverlayEnabled() {}
+void AppBrowserController::ToggleWindowControlsOverlayEnabled(
+    base::OnceClosure on_complete) {
+  std::move(on_complete).Run();
+}
 
 gfx::Rect AppBrowserController::GetDefaultBounds() const {
   return gfx::Rect();
@@ -276,6 +298,14 @@ const ash::SystemWebAppDelegate* AppBrowserController::system_app() const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::u16string AppBrowserController::GetLaunchFlashText() const {
+  // Isolated Web Apps should show the app's name instead of the origin.
+  // App Short Name is considered trustworthy because manifest comes from signed
+  // web bundle.
+  // TODO:(crbug.com/b/1394199) Disable IWA launch flash text for OSs that
+  // already display name on title bar.
+  if (IsIsolatedWebApp()) {
+    return GetAppShortName();
+  }
   return GetFormattedUrlOrigin();
 }
 
@@ -406,12 +436,10 @@ void AppBrowserController::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   if (selection.active_tab_changed()) {
     content::WebContentsObserver::Observe(selection.new_contents);
-    // Update themes when we switch tabs, or create the first tab, but not
-    // when we create 2nd or subsequent tabs. Don't update the theme if the
-    // tab has not finished loading to avoid using uninitialized colors,
-    // wait for |DOMContentLoaded| before updating.
-    if (change.type() != TabStripModelChange::kInserted ||
-        tab_strip_model->count() == 1 || !selection.new_contents->IsLoading()) {
+    // Update theme when tabs change unless there are no tabs, or if the tab has
+    // not finished loading, we will update later in DOMContentLoaded().
+    if (tab_strip_model->count() > 0 &&
+        selection.new_contents->IsDocumentOnLoadCompletedInPrimaryMainFrame()) {
       UpdateThemePack();
     }
   }

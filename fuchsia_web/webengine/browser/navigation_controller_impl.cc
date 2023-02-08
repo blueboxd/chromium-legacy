@@ -76,18 +76,19 @@ fuchsia::web::Favicon GfxImageToFidlFavicon(gfx::Image gfx_image) {
 namespace {
 
 // For each field that differs between |old_entry| and |new_entry|, the field
-// is set to its new value in |difference|. |new_entry| is assumed to have been
-// fully-populated with fields.
+// is set to its new value in |difference|. All other fields in |difference| are
+// left unchanged, such that a series of DiffNavigationEntries() calls may be
+// used to accumulate differences across a progression of NavigationStates.
 void DiffNavigationEntries(const fuchsia::web::NavigationState& old_entry,
                            const fuchsia::web::NavigationState& new_entry,
                            fuchsia::web::NavigationState* difference) {
   DCHECK(difference);
 
-  // |new_entry| should not be empty when the difference is between states
-  // pre- and post-navigation. It is possible for non-navigation events (e.g.
-  // Renderer-process teardown) to trigger notifications, in which case both
-  // states may be empty (i.e. both come from the "initial" NavigationEntry).
-  if (new_entry.IsEmpty() && old_entry.IsEmpty()) {
+  // NavigationStates will only be empty for "initial" navigation entries, so
+  // if |new_entry| is empty then |old_entry| must necessarily also be empty,
+  // and there is no difference to report.
+  if (new_entry.IsEmpty()) {
+    CHECK(old_entry.IsEmpty());
     return;
   }
 
@@ -194,7 +195,7 @@ fuchsia::web::NavigationState
 NavigationControllerImpl::GetVisibleNavigationState() const {
   content::NavigationEntry* const entry =
       web_contents_->GetController().GetVisibleEntry();
-  if (!entry || entry->IsInitialEntry())
+  if (entry->IsInitialEntry())
     return fuchsia::web::NavigationState();
 
   fuchsia::web::NavigationState state;
@@ -235,7 +236,7 @@ void NavigationControllerImpl::OnNavigationEntryChanged() {
                         &pending_navigation_event_);
   previous_navigation_state_ = std::move(new_state);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&NavigationControllerImpl::MaybeSendNavigationEvent,
                      weak_factory_.GetWeakPtr()));
@@ -333,11 +334,6 @@ void NavigationControllerImpl::Reload(fuchsia::web::ReloadType type) {
       break;
   }
   web_contents_->GetController().Reload(internal_reload_type, false);
-}
-
-void NavigationControllerImpl::GetVisibleEntry(
-    fuchsia::web::NavigationController::GetVisibleEntryCallback callback) {
-  callback(GetVisibleNavigationState());
 }
 
 void NavigationControllerImpl::TitleWasSet(content::NavigationEntry* entry) {

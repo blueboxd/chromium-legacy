@@ -23,8 +23,11 @@ class HistoryBackendForSync {
  public:
   virtual bool IsExpiredVisitTime(const base::Time& time) const = 0;
 
+  virtual bool CanAddURL(const GURL& url) const = 0;
+
   virtual bool GetURLByID(URLID url_id, URLRow* url_row) = 0;
   virtual bool GetVisitByID(VisitID visit_id, VisitRow* visit_row) = 0;
+  virtual bool GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) = 0;
   virtual bool GetLastVisitByTime(base::Time visit_time,
                                   VisitRow* visit_row) = 0;
   virtual VisitVector GetRedirectChain(VisitRow visit) = 0;
@@ -44,6 +47,9 @@ class HistoryBackendForSync {
       const absl::optional<VisitContextAnnotations>& context_annotations,
       const absl::optional<VisitContentAnnotations>& content_annotations) = 0;
   virtual VisitID UpdateSyncedVisit(
+      const GURL& url,
+      const std::u16string& title,
+      bool hidden,
       const VisitRow& visit,
       const absl::optional<VisitContextAnnotations>& context_annotations,
       const absl::optional<VisitContentAnnotations>& content_annotations) = 0;
@@ -52,6 +58,8 @@ class HistoryBackendForSync {
                                             VisitID opener_id) = 0;
 
   virtual std::vector<GURL> GetFaviconURLsForURL(const GURL& page_url) = 0;
+
+  virtual bool DeleteAllForeignVisits() = 0;
 
   virtual void AddObserver(HistoryBackendObserver* observer) = 0;
   virtual void RemoveObserver(HistoryBackendObserver* observer) = 0;

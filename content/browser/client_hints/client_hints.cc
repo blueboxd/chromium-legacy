@@ -300,8 +300,12 @@ gfx::Size GetViewportSize(FrameTreeNode* frame_tree_node,
     return cached_viewport_size;
   }
 
-  // Finally, use the display size if neither of the above methods work.
-  return display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  // Finally, use the display size if neither of the above methods work. Applies
+  // the device scale factor in this case, which is implicitly applied to other
+  // viewport sizes already.
+  return ScaleToRoundedSize(
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel(),
+      1.0 / GetDeviceScaleFactor());
 }
 
 gfx::Size GetScaledViewportSize(BrowserContext* context,
@@ -327,9 +331,12 @@ gfx::Size GetScaledViewportSize(BrowserContext* context,
   }
 #endif
 
-  double scale_factor = GetZoomFactor(context, url) * GetDeviceScaleFactor();
-  if (scale_factor > 0) {
-    viewport_size = ScaleToRoundedSize(viewport_size, 1.0 / scale_factor);
+  base::UmaHistogramBoolean("ClientHints.Viewport.IsDeviceScaleFactorOne",
+                            GetDeviceScaleFactor() == 1.0);
+
+  double zoom_factor = GetZoomFactor(context, url);
+  if (zoom_factor > 0) {
+    viewport_size = ScaleToRoundedSize(viewport_size, 1.0 / zoom_factor);
   }
   return viewport_size;
 }
@@ -551,7 +558,7 @@ void RemoveAllClientHintsExceptOriginTrialHints(
     url::Origin* outermost_main_frame_origin,
     absl::optional<url::Origin>* third_party_origin) {
   RenderFrameHostImpl* outermost_main_frame =
-      frame_tree_node->frame_tree()->GetMainFrame()->GetOutermostMainFrame();
+      frame_tree_node->frame_tree().GetMainFrame()->GetOutermostMainFrame();
 
   for (auto it = accept_ch->begin(); it != accept_ch->end();) {
     if (*it == WebClientHintsType::kUAReduced ||
@@ -601,9 +608,8 @@ struct ClientHintsExtendedData {
       permissions_policy = blink::PermissionsPolicy::CreateForFencedFrame(
           resource_origin, frame_tree_node->GetFencedFrameMode().value());
     } else {
-      RenderFrameHostImpl* outermost_main_frame = frame_tree_node->frame_tree()
-                                                      ->GetMainFrame()
-                                                      ->GetOutermostMainFrame();
+      RenderFrameHostImpl* outermost_main_frame =
+          frame_tree_node->frame_tree().GetMainFrame()->GetOutermostMainFrame();
       outermost_main_frame_origin =
           outermost_main_frame->GetLastCommittedOrigin();
       permissions_policy = blink::PermissionsPolicy::CopyStateFrom(
@@ -619,7 +625,7 @@ struct ClientHintsExtendedData {
     // If this is a prerender tree, also capture prerender local setting. The
     // setting was given by navigation requests on the prerendering page, and
     // has not been used as a global setting.
-    if (frame_tree_node && frame_tree_node->frame_tree()->is_prerendering()) {
+    if (frame_tree_node && frame_tree_node->frame_tree().is_prerendering()) {
       // If prerender host is nullptr, it means prerender has been canceled and
       // the host will be discarded soon, so we do not need to continue.
       if (auto* host = PrerenderHost::GetPrerenderHostFromFrameTreeNode(
@@ -1152,7 +1158,7 @@ void PersistAcceptCH(const url::Origin& origin,
   // implementation returns a nullptr in two cases: not prerendered or
   // prerender is canceled, and the callers cannot distinguish between the two
   // reasons and have to have another if condition.
-  if (frame_tree_node.frame_tree()->is_prerendering()) {
+  if (frame_tree_node.frame_tree().is_prerendering()) {
     // For prerendering headers, it should not persist the client header until
     // activation, considering user has not visited the page and allowed it to
     // change content setting yet. The client hints should apply to navigations

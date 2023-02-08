@@ -91,7 +91,8 @@ class CONTENT_EXPORT AuctionWorkletManager {
         const GURL& url,
         const net::NetworkAnonymizationKey& network_anonymization_key) = 0;
 
-    // Get containing frame. (Passed to debugging hooks).
+    // Get containing frame. (Passed to debugging hooks, and also used to get
+    // the renderer process ID for subresource loading).
     virtual RenderFrameHostImpl* GetFrame() = 0;
 
     // Returns the SiteInstance representing the frame running the auction.
@@ -174,7 +175,8 @@ class CONTENT_EXPORT AuctionWorkletManager {
     FatalErrorCallback fatal_error_callback_;
 
     // Never null, owned by InterestGroupAuction / InterestGroupAuctionReporter.
-    const raw_ptr<const SubresourceUrlBuilder> subresource_url_builder_;
+    const raw_ptr<const SubresourceUrlBuilder, DanglingUntriaged>
+        subresource_url_builder_;
   };
 
   // `delegate` and `auction_process_manager` must outlive the created

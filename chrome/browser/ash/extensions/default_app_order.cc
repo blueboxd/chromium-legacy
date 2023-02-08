@@ -16,11 +16,10 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -41,10 +40,9 @@ const char kDefaultAttr[] = "default";
 const char kNameAttr[] = "name";
 const char kImportDefaultOrderAttr[] = "import_default_order";
 
-// Reads external ordinal json file and returned the parsed value. Returns NULL
-// if the file does not exist or could not be parsed properly. Caller takes
-// ownership of the returned value.
-std::unique_ptr<base::ListValue> ReadExternalOrdinalFile(
+// Reads external ordinal json file and returns the parsed value. Returns NULL
+// if the file does not exist or could not be parsed properly.
+std::unique_ptr<base::Value::List> ReadExternalOrdinalFile(
     const base::FilePath& path) {
   if (!base::PathExists(path))
     return nullptr;
@@ -59,12 +57,10 @@ std::unique_ptr<base::ListValue> ReadExternalOrdinalFile(
     return nullptr;
   }
 
-  std::unique_ptr<base::ListValue> ordinal_list_value =
-      base::ListValue::From(std::move(value));
-  if (!ordinal_list_value)
+  if (!value->is_list())
     LOG(WARNING) << "Expect a JSON list in file " << path.value();
 
-  return ordinal_list_value;
+  return std::make_unique<base::Value::List>(std::move(*value).TakeList());
 }
 
 std::string GetLocaleSpecificStringImpl(const base::Value::Dict& root,
@@ -158,9 +154,6 @@ void GetDefault(std::vector<std::string>* app_ids) {
 
     web_app::kStadiaAppId,
 
-    // First default page break
-    app_list::kDefaultPageBreak1,
-
     arc::kGoogleMapsAppId,
     web_app::kGoogleMapsAppId,
 
@@ -179,6 +172,8 @@ void GetDefault(std::vector<std::string>* app_ids) {
 
     ash::kChromeUITrustedProjectorSwaAppId,
     extension_misc::kTextEditorAppId,
+    web_app::kPrintManagementAppId,
+    web_app::kScanningAppId,
     guest_os::kTerminalSystemAppId,
 
     web_app::kYoutubeTVAppId,
@@ -244,11 +239,11 @@ void ExternalLoader::Load() {
   base::FilePath ordinals_file;
   CHECK(base::PathService::Get(FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
-  std::unique_ptr<base::ListValue> ordinals_value =
+  std::unique_ptr<base::Value::List> ordinals_value =
       ReadExternalOrdinalFile(ordinals_file);
   if (ordinals_value) {
     std::string locale = g_browser_process->GetApplicationLocale();
-    for (const base::Value& i : ordinals_value->GetList()) {
+    for (const base::Value& i : *ordinals_value) {
       if (i.is_string()) {
         std::string app_id = i.GetString();
         app_ids_.push_back(app_id);

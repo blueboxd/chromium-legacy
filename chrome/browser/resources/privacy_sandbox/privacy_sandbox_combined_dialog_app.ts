@@ -6,13 +6,18 @@ import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import './strings.m.js';
+import './shared_style.css.js';
+import './privacy_sandbox_dialog_consent_step.js';
+import './privacy_sandbox_dialog_notice_step.js';
 
+import {CrScrollableMixinInterface} from 'chrome://resources/cr_elements/cr_scrollable_mixin.js';
 import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './privacy_sandbox_combined_dialog_app.html.js';
+import {PrivacySandboxDialogBrowserProxy, PrivacySandboxPromptAction} from './privacy_sandbox_dialog_browser_proxy.js';
+import {PrivacySandboxDialogResizeMixin} from './privacy_sandbox_dialog_resize_mixin.js';
 
 export enum PrivacySandboxCombinedDialogStep {
   CONSENT = 'consent',
@@ -26,7 +31,11 @@ export interface PrivacySandboxCombinedDialogAppElement {
   };
 }
 
-export class PrivacySandboxCombinedDialogAppElement extends PolymerElement {
+const PrivacySandboxCombinedDialogAppElementBase =
+    PrivacySandboxDialogResizeMixin(PolymerElement);
+
+export class PrivacySandboxCombinedDialogAppElement extends
+    PrivacySandboxCombinedDialogAppElementBase {
   static get is() {
     return 'privacy-sandbox-combined-dialog-app';
   }
@@ -46,39 +55,69 @@ export class PrivacySandboxCombinedDialogAppElement extends PolymerElement {
   }
 
   private step_: PrivacySandboxCombinedDialogStep;
+  private animationsEnabled_: boolean = true;
 
   override ready() {
     super.ready();
 
     // Support starting with notice step instead of starting with consent step.
     const step = new URLSearchParams(window.location.search).get('step');
-    if (step === PrivacySandboxCombinedDialogStep.NOTICE) {
-      this.navigateToStep_(PrivacySandboxCombinedDialogStep.NOTICE);
-    } else {
-      this.navigateToStep_(PrivacySandboxCombinedDialogStep.CONSENT);
-    }
+    const startWithNotice = step === PrivacySandboxCombinedDialogStep.NOTICE;
+
+    const firstStep = startWithNotice ?
+        PrivacySandboxCombinedDialogStep.NOTICE :
+        PrivacySandboxCombinedDialogStep.CONSENT;
+    // After the initial step was loaded, resize the native dialog to fit it.
+    this.navigateToStep_(firstStep)
+        .then(() => this.resizeAndShowNativeDialog())
+        .then(() => this.updateScrollableContentsCurrentStep_())
+        .then(
+            () => this.promptActionOccurred(
+                startWithNotice ? PrivacySandboxPromptAction.NOTICE_SHOWN :
+                                  PrivacySandboxPromptAction.CONSENT_SHOWN));
+  }
+
+  disableAnimationsForTesting() {
+    this.animationsEnabled_ = false;
   }
 
   private onConsentStepResolved_() {
-    this.navigateToStep_(PrivacySandboxCombinedDialogStep.SAVING);
-    const savingDurationMs = 1000;
-    setTimeout(() => {
-      this.navigateToStep_(PrivacySandboxCombinedDialogStep.NOTICE);
-    }, savingDurationMs);
+    const savingDurationMs = this.animationsEnabled_ ? 1500 : 0;
+    this.navigateToStep_(PrivacySandboxCombinedDialogStep.SAVING)
+        .then(() => new Promise(r => setTimeout(r, savingDurationMs)))
+        .then(
+            () => this.navigateToStep_(PrivacySandboxCombinedDialogStep.NOTICE))
+        .then(() => this.updateScrollableContentsCurrentStep_())
+        .then(
+            () => this.promptActionOccurred(
+                PrivacySandboxPromptAction.NOTICE_SHOWN));
   }
 
-  private navigateToStep_(step: PrivacySandboxCombinedDialogStep) {
+  private navigateToStep_(step: PrivacySandboxCombinedDialogStep):
+      Promise<void> {
     assert(step !== this.step_);
     this.step_ = step;
+    const enterAnimation = this.animationsEnabled_ ? 'fade-in' : 'no-animation';
+    const exitAnimation = this.animationsEnabled_ ? 'fade-out' : 'no-animation';
+    return this.$.viewManager.switchView(
+        this.step_, enterAnimation, exitAnimation);
+  }
 
-    // TODO(crbug.com/1378703): Check if animations are disabled by global
-    // control.
-    const animateFromLeftToRight =
-        loadTimeData.getString('textdirection') === 'ltr';
-    this.$.viewManager.switchView(
-        this.step_,
-        animateFromLeftToRight ? 'slide-in-fade-in-ltr' :
-                                 'slide-in-fade-in-rtl');
+  private promptActionOccurred(action: PrivacySandboxPromptAction) {
+    PrivacySandboxDialogBrowserProxy.getInstance().promptActionOccurred(action);
+  }
+
+  private updateScrollableContentsCurrentStep_() {
+    // After the dialog was resized and filled content, trigger
+    // `updateScrollableContents()` for the current step (consent or notice).
+    this.getStepElement_(this.step_)!.updateScrollableContents();
+  }
+
+  private getStepElement_(step: PrivacySandboxCombinedDialogStep):
+      CrScrollableMixinInterface|null {
+    return this.shadowRoot!.querySelector(`#${step}`) as
+        CrScrollableMixinInterface |
+        null;
   }
 }
 

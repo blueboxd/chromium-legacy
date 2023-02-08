@@ -82,7 +82,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   ~SVGSMILElement() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  void SvgAttributeChanged(const SvgAttributeChangedParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
 
@@ -167,6 +166,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
  private:
   bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) final;
@@ -186,7 +189,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
 
-  SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
+  SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after);
   // Check if the current interval is still current, and apply restart
   // semantics. Returns true if a new interval should be resolved.
   bool HandleIntervalRestart(SMILTime presentation_time);
@@ -240,7 +243,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     AtomicString name_;
     SMILTime offset_;
     unsigned repeat_;
-    Member<SVGElement> base_element_;
+    Member<Element> base_element_;
     Member<IdTargetObserver> base_id_observer_;
     Member<ConditionEventListener> event_listener_;
   };

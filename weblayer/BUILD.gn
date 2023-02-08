@@ -199,7 +199,6 @@ source_set("weblayer_lib_base") {
     "browser/content_browser_client_impl_receiver_bindings.cc",
     "browser/content_settings_manager_delegate.cc",
     "browser/content_settings_manager_delegate.h",
-    "browser/controls_visibility_reason.h",
     "browser/cookie_manager_impl.cc",
     "browser/cookie_manager_impl.h",
     "browser/cookie_settings_factory.cc",
@@ -606,19 +605,10 @@ source_set("weblayer_lib_base") {
       "browser/android/permission_request_utils.h",
       "browser/android/resource_mapper.cc",
       "browser/android/resource_mapper.h",
-      "browser/autofill_assistant/weblayer_assistant_field_trial_util.cc",
-      "browser/autofill_assistant/weblayer_assistant_field_trial_util.h",
-      "browser/autofill_assistant/weblayer_dependencies.cc",
-      "browser/autofill_assistant/weblayer_dependencies.h",
       "browser/bluetooth/weblayer_bluetooth_chooser_android_delegate.cc",
       "browser/bluetooth/weblayer_bluetooth_chooser_android_delegate.h",
       "browser/bluetooth/weblayer_bluetooth_scanning_prompt_android_delegate.cc",
       "browser/bluetooth/weblayer_bluetooth_scanning_prompt_android_delegate.h",
-      "browser/browser_controls_container_view.cc",
-      "browser/browser_controls_container_view.h",
-      "browser/browser_controls_navigation_state_handler.cc",
-      "browser/browser_controls_navigation_state_handler.h",
-      "browser/browser_controls_navigation_state_handler_delegate.h",
       "browser/browser_list_proxy.cc",
       "browser/browser_list_proxy.h",
       "browser/component_updater/client_side_phishing_component_loader_policy.cc",
@@ -724,9 +714,6 @@ source_set("weblayer_lib_base") {
       "//components/android_autofill/browser",
       "//components/android_autofill/browser:android",
       "//components/android_system_error_page",
-      "//components/autofill_assistant/browser",
-      "//components/autofill_assistant/browser/android:dependencies_android",
-      "//components/autofill_assistant/content/browser",
       "//components/browser_ui/accessibility/android",
       "//components/browser_ui/client_certificate/android",
       "//components/browser_ui/contacts_picker/android",
@@ -864,10 +851,9 @@ if (is_android) {
     deps = [
       "//base",
       "//weblayer/browser/java:jni",
-      "//weblayer/browser/java:weblayer_jni_registration",
+      "//weblayer/browser/java:weblayer_jni_registration($default_toolchain)",
     ]
     sources = [
-      "$target_gen_dir/browser/java/weblayer_jni_registration.h",
       "browser/web_view_compatibility_helper_impl.cc",
       "browser/web_view_compatibility_helper_impl.h",
     ]
@@ -892,10 +878,9 @@ if (is_android) {
       ":weblayer_android_test_jni_impl",
       "//base",
       "//weblayer/browser/java:jni",
-      "//weblayer/browser/java:weblayer_jni_registration",
+      "//weblayer/browser/java:weblayer_jni_registration($default_toolchain)",
     ]
     sources = [
-      "$target_gen_dir/browser/java/weblayer_jni_registration.h",
       "browser/web_view_compatibility_helper_impl.cc",
       "browser/web_view_compatibility_helper_impl.h",
     ]
@@ -925,16 +910,13 @@ if (is_android) {
 
   shared_library("libweblayer_test") {
     testonly = true
-    sources = [
-      "$target_gen_dir/browser/java/test_weblayer_jni_registration.h",
-      "app/entry_point.cc",
-    ]
+    sources = [ "app/entry_point.cc" ]
     deps = [
       ":weblayer_lib_webview_test",
       "//base",
       "//components/android_autofill/browser/test_support:component_autofill_provider_native_test_support",
       "//content/public/app",
-      "//weblayer/browser/java:test_weblayer_jni_registration",
+      "//weblayer/browser/java:test_weblayer_jni_registration($default_toolchain)",
     ]
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
@@ -953,7 +935,7 @@ grit("resources") {
     "grit/weblayer_resources.h",
     "weblayer_resources.pak",
   ]
-  deps = [ "//weblayer/browser/webui:mojo_bindings_webui_js" ]
+  deps = [ "//weblayer/browser/webui:mojo_bindings_js__generator" ]
 }
 # TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in
 # a way that's shareable?

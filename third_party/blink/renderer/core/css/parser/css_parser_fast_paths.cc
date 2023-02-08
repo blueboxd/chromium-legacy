@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/css/css_revert_layer_value.h"
 #include "third_party/blink/renderer/core/css/css_revert_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
@@ -98,8 +99,7 @@ static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
   return properties.Has(property_id);
 }
 
-template <typename CharacterType>
-static inline bool ParseSimpleLength(const CharacterType* characters,
+static inline bool ParseSimpleLength(const LChar* characters,
                                      unsigned length,
                                      CSSPrimitiveValue::UnitType& unit,
                                      double& number) {
@@ -1244,6 +1244,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kAntialiased ||
              value_id == CSSValueID::kSubpixelAntialiased;
+    case CSSPropertyID::kFontVariantPosition:
+      DCHECK(RuntimeEnabledFeatures::FontVariantPositionEnabled());
+      return value_id == CSSValueID::kNormal || value_id == CSSValueID::kSub ||
+             value_id == CSSValueID::kSuper;
     case CSSPropertyID::kLineBreak:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kLoose ||
              value_id == CSSValueID::kNormal ||
@@ -1419,6 +1423,7 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kFontSynthesisWeight,
     CSSPropertyID::kFontSynthesisStyle,
     CSSPropertyID::kFontSynthesisSmallCaps,
+    CSSPropertyID::kFontVariantPosition,
     CSSPropertyID::kWebkitFontSmoothing,
     CSSPropertyID::kLineBreak,
     CSSPropertyID::kWebkitLineBreak,
@@ -1445,8 +1450,7 @@ bool CSSParserFastPaths::IsValidSystemFont(CSSValueID value_id) {
   return value_id >= CSSValueID::kCaption && value_id <= CSSValueID::kStatusBar;
 }
 
-template <typename CharType>
-static inline CSSValue* ParseCSSWideKeywordValue(const CharType* ptr,
+static inline CSSValue* ParseCSSWideKeywordValue(const LChar* ptr,
                                                  unsigned length) {
   if (length == 7 && MatchesCaseInsensitiveLiteral4(ptr, "init") &&
       MatchesCaseInsensitiveLiteral4(ptr + 3, "tial")) {
@@ -1525,10 +1529,9 @@ static CSSValue* ParseKeywordValue(CSSPropertyID property_id,
   return nullptr;
 }
 
-template <typename CharType>
 static bool ParseTransformTranslateArguments(
-    CharType*& pos,
-    CharType* end,
+    const LChar*& pos,
+    const LChar* end,
     unsigned expected_count,
     CSSFunctionValue* transform_value) {
   while (expected_count) {
@@ -1552,9 +1555,8 @@ static bool ParseTransformTranslateArguments(
   return true;
 }
 
-template <typename CharType>
-static bool ParseTransformRotateArgument(CharType*& pos,
-                                         CharType* end,
+static bool ParseTransformRotateArgument(const LChar*& pos,
+                                         const LChar* end,
                                          CSSFunctionValue* transform_value) {
   wtf_size_t delimiter =
       WTF::Find(pos, static_cast<wtf_size_t>(end - pos), ')');
@@ -1578,9 +1580,8 @@ static bool ParseTransformRotateArgument(CharType*& pos,
   return true;
 }
 
-template <typename CharType>
-static bool ParseTransformNumberArguments(CharType*& pos,
-                                          CharType* end,
+static bool ParseTransformNumberArguments(const LChar*& pos,
+                                          const LChar* end,
                                           unsigned expected_count,
                                           CSSFunctionValue* transform_value) {
   while (expected_count) {
@@ -1604,9 +1605,8 @@ static bool ParseTransformNumberArguments(CharType*& pos,
 
 static const int kShortestValidTransformStringLength = 12;
 
-template <typename CharType>
-static CSSFunctionValue* ParseSimpleTransformValue(CharType*& pos,
-                                                   CharType* end) {
+static CSSFunctionValue* ParseSimpleTransformValue(const LChar*& pos,
+                                                   const LChar* end) {
   if (end - pos < kShortestValidTransformStringLength)
     return nullptr;
 

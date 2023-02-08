@@ -191,10 +191,12 @@ fontSynthesisSmallCaps
 fontSynthesisStyle
 fontSynthesisWeight
 fontVariant
+fontVariantAlternates
 fontVariantCaps
 fontVariantEastAsian
 fontVariantLigatures
 fontVariantNumeric
+fontVariantPosition
 fontVariationSettings
 fontWeight
 forcedColorAdjust
@@ -247,7 +249,6 @@ lightingColor
 lineBreak
 lineGapOverride
 lineHeight
-lineHeightStep
 listStyle
 listStyleImage
 listStylePosition

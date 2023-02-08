@@ -107,18 +107,15 @@ PRINT STATEMENT: webdriver/tests/support/helpers.py
 
 # semi-legitimate use of console.*
 CONSOLE: console/*
-CONSOLE: custom-elements/resources/garbage-collect.js
-CONSOLE: js/builtins/weakrefs/resources/maybe-garbage-collect.js
+CONSOLE: common/gc.js
 CONSOLE: resources/check-layout-th.js
 CONSOLE: resources/chromium/*
 CONSOLE: resources/testharness.js
-CONSOLE: streams/resources/test-utils.js
 CONSOLE: service-workers/service-worker/resources/navigation-redirect-other-origin.html
 CONSOLE: service-workers/service-worker/navigation-redirect.https.html
 CONSOLE: service-workers/service-worker/resources/clients-get-other-origin.html
 CONSOLE: webrtc/tools/*
 CONSOLE: webaudio/resources/audit.js:41
-CONSOLE: webusb/resources/usb-helpers.js
 
 # use of console in a public library - annotation-model ensures
 # it is not actually used
@@ -146,6 +143,7 @@ SET TIMEOUT: common/reftest-wait.js
 SET TIMEOUT: conformance-checkers/*
 SET TIMEOUT: content-security-policy/*
 SET TIMEOUT: css/compositing/opacity-and-transform-animation-crash.html
+SET TIMEOUT: css/css-contain/contain-body-overflow-002.html
 SET TIMEOUT: css/css-display/display-contents-shadow-dom-1.html
 SET TIMEOUT: css/CSS2/normal-flow/crashtests/block-in-inline-ax-crash.html
 SET TIMEOUT: css/selectors/selector-placeholder-shown-type-change-001.html
@@ -847,6 +845,7 @@ CSS-COLLIDING-REF-NAME: css/css-break/background-image-001-ref.html
 # Ported crashtests from Mozilla
 SET TIMEOUT: editing/crashtests/backcolor-in-nested-editing-host-td-from-DOMAttrModified.html
 SET TIMEOUT: editing/crashtests/contenteditable-will-be-blurred-by-focus-event-listener.html
+SET TIMEOUT: editing/crashtests/delete-content-in-no-data-object.html
 SET TIMEOUT: editing/crashtests/designMode-document-will-be-blurred-by-focus-event-listener.html
 SET TIMEOUT: editing/crashtests/indent-outdent-after-closing-editable-dialog-element.html
 SET TIMEOUT: editing/crashtests/inserthtml-after-temporarily-removing-document-element.html

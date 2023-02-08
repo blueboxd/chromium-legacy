@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
@@ -31,6 +32,10 @@ import javax.net.ssl.HttpsURLConnection;
  */
 public abstract class CronetEngine {
     private static final String TAG = CronetEngine.class.getSimpleName();
+    /**
+     * The value of the active request count is unknown
+     */
+    public static final int ACTIVE_REQUEST_COUNT_UNKNOWN = -1;
 
     /**
      * The value of a connection metric is unknown.
@@ -87,6 +92,8 @@ public abstract class CronetEngine {
     // NOTE(kapishnikov): In order to avoid breaking the existing API clients, all future methods
     // added to this class and other API classes must have default implementation.
     public static class Builder {
+        private static final String TAG = "CronetEngine.Builder";
+
         /**
          * A class which provides a method for loading the cronet native library. Apps needing to
          * implement custom library loading logic can inherit from this class and pass an instance
@@ -382,6 +389,14 @@ public abstract class CronetEngine {
          * @return constructed {@link CronetEngine}.
          */
         public CronetEngine build() {
+            int implLevel = getImplementationApiLevel();
+            if (implLevel != -1 && implLevel < getMaximumApiLevel()) {
+                Log.w(TAG,
+                        "The implementation version is lower than the API version. Calls to "
+                                + "methods added in API " + (implLevel + 1) + " and newer will "
+                                + "likely have no effect.");
+            }
+
             return mBuilderDelegate.build();
         }
 
@@ -489,6 +504,29 @@ public abstract class CronetEngine {
                 }
             }
             return Integer.signum(s1segments.length - s2segments.length);
+        }
+
+        private int getMaximumApiLevel() {
+            return ApiVersion.getMaximumAvailableApiLevel();
+        }
+
+        /**
+         * Returns the implementation version, the implementation being represented by the delegate
+         * builder, or {@code -1} if the version couldn't be retrieved.
+         */
+        private int getImplementationApiLevel() {
+            try {
+                ClassLoader implClassLoader = mBuilderDelegate.getClass().getClassLoader();
+                Class<?> implVersionClass =
+                        implClassLoader.loadClass("org.chromium.net.impl.ImplVersion");
+                Method getApiLevel = implVersionClass.getMethod("getApiLevel");
+                int implementationApiLevel = (Integer) getApiLevel.invoke(null);
+
+                return implementationApiLevel;
+            } catch (Exception e) {
+                // Any exception in the block above isn't critical, don't bother the app about it.
+                return -1;
+            }
         }
     }
 
@@ -606,19 +644,23 @@ public abstract class CronetEngine {
             String url, UrlRequest.Callback callback, Executor executor);
 
     /**
-     * Creates a builder for {@link BidirectionalStream} objects. All callbacks for generated {@code
-     * BidirectionalStream} objects will be invoked on {@code executor}. {@code executor} must not
-     * run tasks on the current thread, otherwise the networking operations may block and exceptions
-     * may be thrown at shutdown time.
+     * Returns the number of in-flight requests.
+     * <p>
+     * A request is in-flight if its start() method has been called but it hasn't reached a final
+     * state yet. A request reaches the final state when one of the following callbacks has been
+     * called:
+     * <ul>
+     *    <li>onSucceeded</li>
+     *    <li>onCanceled</li>
+     *    <li>onFailed</li>
+     * </ul>
      *
-     * @param url URL for the generated streams.
-     * @param callback the {@link BidirectionalStream.Callback} object that gets invoked upon
-     * different events occurring.
-     * @param executor the {@link Executor} on which {@code callback} methods will be invoked.
-     * @return the created builder.
+     * <a href="https://developer.android.com/guide/topics/connectivity/cronet/lifecycle">Cronet
+     *         requests's lifecycle</a> for more information.
      */
-    public abstract BidirectionalStream.Builder newBidirectionalStreamBuilder(
-            String url, BidirectionalStream.Callback callback, Executor executor);
+    public int getActiveRequestCount() {
+        return ACTIVE_REQUEST_COUNT_UNKNOWN;
+    }
 
     /**
      * Registers a listener that gets called after the end of each request with the request info.

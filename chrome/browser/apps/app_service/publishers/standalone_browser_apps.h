@@ -83,19 +83,11 @@ class StandaloneBrowserApps : public apps::PublisherBase,
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void Launch(const std::string& app_id,
-              int32_t event_flags,
-              apps::mojom::LaunchSource launch_source,
-              apps::mojom::WindowInfoPtr window_info) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void StopApp(const std::string& app_id) override;
 
   // crosapi::BrowserManagerObserver
-  void OnLoadComplete(bool success) override;
+  void OnLoadComplete(bool success, const base::Version& version) override;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
   Profile* const profile_;

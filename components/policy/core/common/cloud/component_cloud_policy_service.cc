@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -287,7 +286,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
 
   backend_ = std::make_unique<Backend>(
       weak_ptr_factory_.GetWeakPtr(), backend_task_runner_,
-      base::ThreadTaskRunnerHandle::Get(), std::move(cache),
+      base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(cache),
       std::make_unique<ExternalPolicyDataFetcher>(client->GetURLLoaderFactory(),
                                                   backend_task_runner_),
       policy_type);
@@ -457,7 +456,7 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
 void ComponentCloudPolicyService::UpdateFromClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (core_->client()->responses().empty()) {
+  if (core_->client()->last_policy_fetch_responses().empty()) {
     // The client's responses will be empty if it hasn't fetched policy from the
     // DMServer yet. Make sure we don't purge the caches in this case.
     return;
@@ -467,7 +466,7 @@ void ComponentCloudPolicyService::UpdateFromClient() {
 
   std::unique_ptr<ScopedResponseMap> valid_responses =
       std::make_unique<ScopedResponseMap>();
-  for (const auto& response : core_->client()->responses()) {
+  for (const auto& response : core_->client()->last_policy_fetch_responses()) {
     PolicyNamespace ns;
     if (!ToPolicyNamespace(response.first, &ns)) {
       DVLOG(1) << "Ignored policy with type = " << response.first.first;

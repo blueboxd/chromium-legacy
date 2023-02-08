@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
@@ -44,6 +45,7 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
@@ -52,6 +54,7 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "media/base/video_frame.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
@@ -313,8 +316,24 @@ void DrawingBuffer::SetIsInHiddenPage(bool hidden) {
   is_hidden_ = hidden;
   if (is_hidden_)
     recycled_color_buffer_queue_.clear();
+
+  if (base::FeatureList::IsEnabled(features::kCanvasFreeMemoryWhenHidden)) {
+    auto* context_support = ContextProvider()->ContextSupport();
+    if (context_support)
+      context_support->SetAggressivelyFreeResources(hidden);
+  }
+
   gl_->ContextVisibilityHintCHROMIUM(is_hidden_ ? GL_FALSE : GL_TRUE);
   gl_->Flush();
+}
+
+void DrawingBuffer::SetHDRConfiguration(
+    gfx::HDRMode hdr_mode,
+    absl::optional<gfx::HDRMetadata> hdr_metadata) {
+  hdr_mode_ = hdr_mode;
+  hdr_metadata_ = hdr_metadata;
+  if (layer_)
+    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
 }
 
 void DrawingBuffer::SetFilterQuality(
@@ -701,7 +720,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   const auto& sk_image_sync_token =
       transferable_resource.mailbox_holder.sync_token;
 
-  auto sk_color_type = viz::ResourceFormatToClosestSkColorType(
+  auto sk_color_type = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, transferable_resource.format);
 
   const SkImageInfo sk_image_info = SkImageInfo::Make(
@@ -1166,6 +1185,7 @@ cc::Layer* DrawingBuffer::CcLayer() {
     DCHECK(!(premultiplied_alpha_ && premultiplied_alpha_false_texture_));
     layer_->SetPremultipliedAlpha(premultiplied_alpha_ ||
                                   premultiplied_alpha_false_texture_);
+    layer_->SetHDRConfiguration(hdr_mode_, hdr_metadata_);
     layer_->SetNearestNeighbor(filter_quality_ ==
                                cc::PaintFlags::FilterQuality::kNone);
 
@@ -1779,10 +1799,14 @@ void DrawingBuffer::ResolveAndPresentSwapChainIfNeeded() {
     GLuint dest_texture_id = premultiplied_alpha_false_texture_
                                  ? premultiplied_alpha_false_texture_
                                  : back_color_buffer_->texture_id;
+    gl_->BeginSharedImageAccessDirectCHROMIUM(
+        front_color_buffer_->texture_id,
+        GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     gl_->CopySubTextureCHROMIUM(front_color_buffer_->texture_id, 0,
                                 texture_target_, dest_texture_id, 0, 0, 0, 0, 0,
                                 size_.width(), size_.height(), GL_FALSE,
                                 GL_FALSE, GL_FALSE);
+    gl_->EndSharedImageAccessDirectCHROMIUM(front_color_buffer_->texture_id);
   }
   contents_changed_ = false;
   if (preserve_drawing_buffer_ == kDiscard) {

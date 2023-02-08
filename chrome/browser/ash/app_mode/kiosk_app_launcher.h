@@ -38,9 +38,6 @@ class KioskAppLauncher {
     // TODO(crbug.com/1015383): Refactor out this method at some moment.
     // Whether network configure UI is shown.
     virtual bool IsShowingNetworkConfigScreen() const = 0;
-    // Whether app launch flow can assume all required apps are installed, and
-    // skip app installation steps.
-    virtual bool ShouldSkipAppInstallation() const = 0;
     virtual void OnAppDataUpdated() {}
     virtual void OnAppInstalling() {}
     virtual void OnAppPrepared() {}
@@ -72,11 +69,5 @@ class KioskAppLauncher {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::KioskAppLauncher;
-}
 
 #endif  // CHROME_BROWSER_ASH_APP_MODE_KIOSK_APP_LAUNCHER_H_

@@ -20,7 +20,6 @@ class ImageModel;
 
 namespace views {
 class Label;
-class StyledLabel;
 class View;
 }  // namespace views
 
@@ -32,22 +31,20 @@ class RichHoverButton : public HoverButton {
   METADATA_HEADER(RichHoverButton);
 
   // Creates a hoverable button that displays the string given by
-  // |title_resource_id| and |secondary_text| and displays the latter part in
-  // the secondary text color. Optional |action_image_icon| is shown on right
-  // side. |secondary_text| is shown on right side before the
-  // |action_image_icon|. |tooltip_text| is used for the tooltip shown on
-  // hovering over the button.
+  // |title_text| and |secondary_text| and displays the latter part in the
+  // secondary text color. Optional |action_image_icon| is shown on right side.
+  // |secondary_text| is shown on right side before the |action_image_icon|.
+  // |tooltip_text| is used for the tooltip shown on hovering over the button.
   // *-------------------------------------------------------------------------*
-  // | Icon | |title_resource_id|   |secondary_text| State image | Action icon |
+  // | Icon | |title_text|          |secondary_text| State image | Action icon |
   // |-------------------------------------------------------------------------|
   // |      | |subtitle_text|                                                  |
   // *-------------------------------------------------------------------------*
   RichHoverButton(
       views::Button::PressedCallback callback,
       const ui::ImageModel& main_image_icon,
-      int title_resource_id,
+      const std::u16string& title_text,
       const std::u16string& secondary_text,
-      int click_target_id,
       const std::u16string& tooltip_text,
       const std::u16string& subtitle_text,
       absl::optional<ui::ImageModel> action_image_icon = absl::nullopt,
@@ -58,23 +55,20 @@ class RichHoverButton : public HoverButton {
 
   ~RichHoverButton() override = default;
 
-  // Updates the title text, and applies the secondary style to the secondary
-  // text portion, if present.
-  void SetTitleText(int title_resource_id,
-                    const std::u16string& secondary_text);
-
   void SetTitleText(const std::u16string& title_text);
+
+  void SetSecondaryText(const std::u16string& secondary_text);
 
   void SetSubtitleText(const std::u16string& subtitle_text);
 
   void SetSubtitleMultiline(bool is_multiline);
 
-  const views::StyledLabel* GetTitleViewForTesting() const;
+  views::Label* secondary_label() { return secondary_label_; }
+
+  const views::Label* GetTitleViewForTesting() const;
   const views::Label* GetSubTitleViewForTesting() const;
 
  protected:
-  views::StyledLabel* title() const { return title_; }
-  views::Label* subtitle() const { return subtitle_; }
   // HoverButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
@@ -84,7 +78,7 @@ class RichHoverButton : public HoverButton {
  private:
   void UpdateAccessibleName();
 
-  raw_ptr<views::StyledLabel> title_ = nullptr;
+  raw_ptr<views::Label> title_ = nullptr;
   raw_ptr<views::Label> secondary_label_ = nullptr;
   raw_ptr<views::Label> subtitle_ = nullptr;
 };

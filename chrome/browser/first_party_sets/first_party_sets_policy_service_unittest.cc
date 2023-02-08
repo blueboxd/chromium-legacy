@@ -5,6 +5,7 @@
 #include "chrome/browser/first_party_sets/first_party_sets_policy_service.h"
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -45,6 +46,10 @@ MATCHER_P2(CarryingConfigAndCacheFilter, config, cache_filter, "") {
 }
 
 namespace first_party_sets {
+
+namespace {
+const base::Version kVersion("1.2.3");
+}
 
 class MockFirstPartySetsAccessDelegate
     : public network::mojom::FirstPartySetsAccessDelegate {
@@ -217,9 +222,9 @@ class FirstPartySetsPolicyServiceTest
  private:
   ScopedMockFirstPartySetsHandler first_party_sets_handler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   base::test::ScopedFeatureList features_;
-  FirstPartySetsPolicyService* service_;
+  raw_ptr<FirstPartySetsPolicyService> service_;
 };
 
 TEST_F(FirstPartySetsPolicyServiceTest, IsSiteInManagedSet_WithoutConfig) {
@@ -302,6 +307,7 @@ TEST_F(FirstPartySetsPolicyServiceTest, FindEntry_FpsDisabledByFeature) {
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   SetGlobalSets(net::GlobalFirstPartySets(
+      kVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -329,6 +335,7 @@ TEST_F(FirstPartySetsPolicyServiceTest, FindEntry_FpsDisabledByPref) {
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
   SetGlobalSets(net::GlobalFirstPartySets(
+      kVersion,
       {{associate1_site,
         {net::FirstPartySetEntry(primary_site, net::SiteType::kAssociated,
                                  0)}}},
@@ -365,8 +372,8 @@ TEST_F(FirstPartySetsPolicyServiceTest,
   // Simulate the global First-Party Sets with the following set:
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate1.test"}
-  SetGlobalSets(
-      net::GlobalFirstPartySets({{associate1_site, {associate1_entry}}}, {}));
+  SetGlobalSets(net::GlobalFirstPartySets(
+      kVersion, {{associate1_site, {associate1_entry}}}, {}));
 
   // Verify that FindEntry returns empty if both sources of sets aren't ready
   // yet.
@@ -402,8 +409,8 @@ TEST_F(FirstPartySetsPolicyServiceTest,
   // Simulate the global First-Party Sets with the following set:
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate.test"}
-  SetGlobalSets(
-      net::GlobalFirstPartySets({{associate_site, {associate_entry}}}, {}));
+  SetGlobalSets(net::GlobalFirstPartySets(
+      kVersion, {{associate_site, {associate_entry}}}, {}));
 
   // Simulate the profile set overrides are empty.
   service()->InitForTesting();
@@ -441,8 +448,8 @@ TEST_F(FirstPartySetsPolicyServiceTest,
   // Simulate the global First-Party Sets with the following set:
   // { primary: "https://primary.test",
   // associatedSites: ["https://associate.test"}
-  SetGlobalSets(
-      net::GlobalFirstPartySets({{associate_site, {associate_entry}}}, {}));
+  SetGlobalSets(net::GlobalFirstPartySets(
+      kVersion, {{associate_site, {associate_entry}}}, {}));
 
   // Simulate the profile set overrides are empty.
   service()->InitForTesting();

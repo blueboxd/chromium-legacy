@@ -41,7 +41,9 @@ class CORE_EXPORT LayoutVideo final : public LayoutMedia {
 
   static LayoutSize DefaultSize();
 
-  PhysicalRect ReplacedContentRect() const final;
+  PhysicalRect ReplacedContentRectFrom(
+      const LayoutSize size,
+      const NGPhysicalBoxStrut& border_padding) const final;
 
   bool SupportsAcceleratedRendering() const;
 
@@ -82,8 +84,6 @@ class CORE_EXPORT LayoutVideo final : public LayoutMedia {
                      const PhysicalOffset& paint_offset) const override;
 
   void UpdateLayout() override;
-
-  LayoutUnit MinimumReplacedHeight() const override;
 
   bool CanHaveAdditionalCompositingReasons() const override {
     NOT_DESTROYED();

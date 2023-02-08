@@ -15,6 +15,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/testing_profile.h"
@@ -84,7 +85,7 @@ class SyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   syncer::ModelTypeSet DefaultDatatypes() {
-    static_assert(44 == syncer::GetNumModelTypes(),
+    static_assert(45 == syncer::GetNumModelTypes(),
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -117,6 +118,14 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::SEARCH_ENGINES);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+    if (features::kTabGroupsSaveSyncIntegration.Get()) {
+      datatypes.Put(syncer::SAVED_TAB_GROUP);
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
     datatypes.Put(syncer::DICTIONARY);
 #endif
@@ -129,7 +138,7 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.Put(syncer::OS_PREFERENCES);
     datatypes.Put(syncer::OS_PRIORITY_PREFERENCES);
     datatypes.Put(syncer::PRINTERS);
-    if (chromeos::features::IsOAuthIppEnabled()) {
+    if (ash::features::IsOAuthIppEnabled()) {
       datatypes.Put(syncer::PRINTERS_AUTHORIZATION_SERVERS);
     }
     datatypes.Put(syncer::WIFI_CONFIGURATIONS);

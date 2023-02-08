@@ -257,8 +257,6 @@ auto RunMirroringService(
 auto RunPasswordStrengthCalculator(
     mojo::PendingReceiver<password_manager::mojom::PasswordStrengthCalculator>
         receiver) {
-  DCHECK(base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordStrengthIndicator));
   return std::make_unique<password_manager::PasswordStrengthCalculatorImpl>(
       std::move(receiver));
 }
@@ -361,7 +359,7 @@ auto RunPrintCompositor(
 auto RunImeService(
     mojo::PendingReceiver<ash::ime::mojom::ImeService> receiver) {
   return std::make_unique<ash::ime::ImeService>(
-      std::move(receiver), ash::ime::ImeDecoderImpl::GetInstance(),
+      std::move(receiver), ash::ime::ImeSharedLibraryWrapperImpl::GetInstance(),
       std::make_unique<ash::ime::FieldTrialParamsRetrieverImpl>());
 }
 
@@ -376,9 +374,8 @@ auto RunSharing(mojo::PendingReceiver<sharing::mojom::Sharing> receiver) {
 }
 
 auto RunTrashService(
-    mojo::PendingReceiver<chromeos::trash_service::mojom::TrashService>
-        receiver) {
-  return std::make_unique<chromeos::trash_service::TrashServiceImpl>(
+    mojo::PendingReceiver<ash::trash_service::mojom::TrashService> receiver) {
+  return std::make_unique<ash::trash_service::TrashServiceImpl>(
       std::move(receiver));
 }
 
@@ -449,10 +446,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #if !BUILDFLAG(IS_ANDROID)
   services.Add(RunProfileImporter);
   services.Add(RunMirroringService);
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordStrengthIndicator)) {
-    services.Add(RunPasswordStrengthCalculator);
-  }
+  services.Add(RunPasswordStrengthCalculator);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)

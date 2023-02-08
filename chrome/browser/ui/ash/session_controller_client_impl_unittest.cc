@@ -26,8 +26,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -110,7 +110,7 @@ class SessionControllerClientImplTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
 
     // Initialize the UserManager singleton.
     user_manager_ = new TestChromeUserManager;
@@ -124,7 +124,7 @@ class SessionControllerClientImplTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     cros_settings_test_helper_ =
-        std::make_unique<chromeos::ScopedCrosSettingsTestHelper>();
+        std::make_unique<ash::ScopedCrosSettingsTestHelper>();
   }
 
   void TearDown() override {
@@ -141,7 +141,7 @@ class SessionControllerClientImplTest : public testing::Test {
     // PolicyCertService::Shutdown()).
     base::RunLoop().RunUntilIdle();
 
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     testing::Test::TearDown();
   }
 
@@ -205,8 +205,7 @@ class SessionControllerClientImplTest : public testing::Test {
   // Owned by |user_manager_enabler_|.
   TestChromeUserManager* user_manager_ = nullptr;
 
-  std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>
-      cros_settings_test_helper_;
+  std::unique_ptr<ash::ScopedCrosSettingsTestHelper> cros_settings_test_helper_;
 };
 
 // Make sure that cycling one user does not cause any harm.

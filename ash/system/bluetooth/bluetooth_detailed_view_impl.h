@@ -14,6 +14,7 @@
 namespace views {
 class Button;
 class ImageView;
+class ToggleButton;
 }  // namespace views
 
 namespace ash {
@@ -39,8 +40,8 @@ class ASH_EXPORT BluetoothDetailedViewImpl : public BluetoothDetailedView,
   views::View* GetAsView() override;
   void UpdateBluetoothEnabledState(bool enabled) override;
   BluetoothDeviceListItemView* AddDeviceListItem() override;
-  TriView* AddDeviceListSubHeader(const gfx::VectorIcon& icon,
-                                  int text_id) override;
+  views::View* AddDeviceListSubHeader(const gfx::VectorIcon& icon,
+                                      int text_id) override;
   void NotifyDeviceListChanged() override;
   views::View* device_list() override;
 
@@ -63,8 +64,18 @@ class ASH_EXPORT BluetoothDetailedViewImpl : public BluetoothDetailedView,
   // Attempts to close the quick settings and open the Bluetooth settings.
   void OnSettingsClicked();
 
+  // Handles clicks on the Bluetooth toggle button.
+  void OnToggleClicked();
+
+  // Handles toggling Bluetooth via the UI to `new_state`.
+  void ToggleBluetoothState(bool new_state);
+
   // Owned by views hierarchy.
   views::Button* settings_button_ = nullptr;
+  RoundedContainer* top_container_ = nullptr;
+  HoverHighlightView* toggle_row_ = nullptr;
+  views::ImageView* toggle_icon_ = nullptr;
+  views::ToggleButton* toggle_button_ = nullptr;
   RoundedContainer* main_container_ = nullptr;
   HoverHighlightView* pair_new_device_view_ = nullptr;
   views::ImageView* pair_new_device_icon_ = nullptr;

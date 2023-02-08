@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +22,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -83,7 +84,7 @@ StreamingSearchPrefetchURLLoader::StreamingSearchPrefetchURLLoader(
           network::mojom::kURLLoadOptionSendSSLInfoForCertificateError,
       *resource_request,
       url_loader_receiver_.BindNewPipeAndPassRemote(
-          base::ThreadTaskRunnerHandle::Get()),
+          base::SingleThreadTaskRunner::GetCurrentDefault()),
       net::MutableNetworkTrafficAnnotationTag(network_traffic_annotation_));
   url_loader_receiver_.set_disconnect_handler(base::BindOnce(
       &StreamingSearchPrefetchURLLoader::OnURLLoaderMojoDisconnect,
@@ -291,6 +292,8 @@ void StreamingSearchPrefetchURLLoader::OnUploadProgress(
 
 void StreamingSearchPrefetchURLLoader::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kStreamingSearchPrefetchURLLoader);
   if (forwarding_client_) {
     DCHECK(forwarding_client_);
     forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
@@ -546,7 +549,7 @@ void StreamingSearchPrefetchURLLoader::Fallback() {
           network::mojom::kURLLoadOptionSendSSLInfoForCertificateError,
       *resource_request_,
       url_loader_receiver_.BindNewPipeAndPassRemote(
-          base::ThreadTaskRunnerHandle::Get()),
+          base::SingleThreadTaskRunner::GetCurrentDefault()),
       net::MutableNetworkTrafficAnnotationTag(network_traffic_annotation_));
   url_loader_receiver_.set_disconnect_handler(base::BindOnce(
       &StreamingSearchPrefetchURLLoader::OnURLLoaderMojoDisconnectInFallback,

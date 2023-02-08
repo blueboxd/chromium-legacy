@@ -16,8 +16,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "content/public/test/browser_task_environment.h"
@@ -108,7 +108,7 @@ class SessionStateChangedEventDispatcherAshUnittest : public testing::Test {
         profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
 
     crosapi::IdleServiceAsh::DisableForTesting();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
     manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
 
     dispatcher_ =
@@ -124,7 +124,7 @@ class SessionStateChangedEventDispatcherAshUnittest : public testing::Test {
     manager_.reset();
     testing_profile_ = nullptr;
     profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
   }
 
  protected:

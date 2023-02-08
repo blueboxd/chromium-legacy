@@ -1,20 +1,68 @@
 <style include="cr-shared-style">
+    @media (min-width: 600px) {
+      :host {
+        --keyboard-key-icon-size: 10px;
+      }
+      #key {
+        font-size: 10px;
+        line-height: 10px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      :host {
+        --keyboard-key-icon-size: 12px;
+      }
+      #key {
+        font-size: 11px;
+        line-height: 16px;
+      }
+    }
+
+    @media (min-width: 960px) {
+      :host {
+        --keyboard-key-icon-size: 14px;
+      }
+      #key {
+        font-size: 12px;
+        line-height: 18px;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      :host {
+        --keyboard-key-icon-size: 20px;
+      }
+      #key {
+        font-size: 13px;
+        line-height: 20px;
+      }
+    }
+
   :host {
     --background-color-pressed: var(--cros-icon-color-selection);
     --background-color-unpressed: var(--cros-highlight-color);
-    --background-color-tested: var(--cros-text-highlight-color);
+    --background-color-tested: rgba(var(--cros-icon-color-selection-rgb),
+        var(--cros-second-tone-opacity));
+    --background-color-disabled: var(--cros-bg-color-dropped-elevation-2);
     --border-color: var(--cros-icon-color-prominent);
     --border-radius:
-        var(--keyboard-key-top-radii, 3px)
-        var(--keyboard-key-top-radii, 3px)
-        var(--keyboard-key-bottom-right-radius, 3px)
-        3px;
-    --icon-size: var(--keyboard-key-icon-size, 100%);
-    --travel: var(--keyboard-key-travel, 3px);
-    --foreground-color-unpressed: var(--cros-icon-color-prominent);
-    --foreground-color-pressed: var(--cros-button-icon-color-primary);
+        var(--keyboard-key-top-radii, 4px)
+        var(--keyboard-key-top-radii, 4px)
+        var(--keyboard-key-bottom-right-radius, 4px)
+        4px;
+    --icon-size: min(100%, var(--keyboard-key-icon-size, 100%));
+    --travel: var(--keyboard-key-travel, 4px);
+    --text-color-unpressed: var(--cros-icon-color-prominent);
+    --text-color-pressed: var(--cros-button-icon-color-primary);
 
     position: relative;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host {
+      --background-color-disabled: var(--cros-bg-color-elevation-4);
+    }
   }
 
   #key {
@@ -23,8 +71,9 @@
     border-radius: var(--border-radius);
     border-top-width: var(--keyboard-key-border-top-width, 1px);
     bottom: var(--travel);
-    color: var(--foreground-color-unpressed);
+    color: var(--text-color-unpressed);
     display: grid;
+    font-family: 'Google Sans', sans-serif;
     grid-auto-columns: 1fr;
     grid-auto-flow: column;
     grid-template-columns: 1fr;
@@ -50,7 +99,7 @@
   }
 
   iron-icon {
-    --iron-icon-fill-color: var(--foreground-color-unpressed);
+    --iron-icon-fill-color: var(--text-color-unpressed);
     --iron-icon-height: var(--icon-size);
     --iron-icon-width: var(--icon-size);
     align-self: center;
@@ -74,7 +123,7 @@
 
   #mainGlyph {
     left: 0;
-    overflow: hidden;
+    overflow: clip visible;
     position: absolute;
     right: 0;
     text-overflow: ellipsis;
@@ -101,8 +150,9 @@
 
   :host([state='pressed']) #key {
     background-color: var(--background-color-pressed);
+    border-color: var(--background-color-pressed);
     bottom: 0;
-    color: var(--foreground-color-pressed);
+    color: var(--text-color-pressed);
     top: var(--travel);
   }
 
@@ -112,7 +162,7 @@
   }
 
   :host([state='pressed']) iron-icon {
-    --iron-icon-fill-color: var(--foreground-color-pressed);
+    --iron-icon-fill-color: var(--text-color-pressed);
   }
 
   :host([state='tested']) #key {
@@ -134,7 +184,7 @@
   }
 
   :host(.disabled) #key {
-    background-color: var(--cros-bg-color-dropped-elevation-2);
+    background-color: var(--background-color-disabled);
     border-color: transparent;
     bottom: 0;
     color: var(--cros-icon-color-disabled);
@@ -148,14 +198,7 @@
   }
 
   :host(.disabled) #shadow {
-    background-color: var(--cros-bg-color-dropped-elevation-2);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :host {
-      --background-color-tested: rgba(var(--google-blue-600-rgb),
-        var(--cros-second-tone-opacity));
-    }
+    background-color: var(--background-color-disabled);
   }
 </style>
 <div id="shadow"></div>

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/network/mdns_responder.h"
+
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "services/network/mdns_responder.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -23,15 +24,16 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
-#include "net/dns/dns_util.h"
 #include "net/dns/mock_mdns_socket_factory.h"
 #include "net/dns/public/dns_protocol.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 namespace {
@@ -68,9 +70,10 @@ const char kMdnsNameGeneratorServiceInstanceName[] =
 std::string CreateMdnsQuery(uint16_t query_id,
                             const std::string& dotted_name,
                             uint16_t qtype = net::dns_protocol::kTypeA) {
-  std::string qname;
-  net::DNSDomainFromDot(dotted_name, &qname);
-  net::DnsQuery query(query_id, qname, qtype);
+  absl::optional<std::vector<uint8_t>> qname =
+      net::dns_names_util::DottedNameToNetwork(dotted_name);
+  CHECK(qname.has_value());
+  net::DnsQuery query(query_id, qname.value(), qtype);
   return std::string(query.io_buffer()->data(), query.io_buffer()->size());
 }
 
@@ -121,10 +124,13 @@ std::string CreateResponseToMdnsNameGeneratorServiceQueryWithCacheFlush(
   const std::string owned_rdata(txt_record.rdata);
   txt_record.SetOwnedRdata(owned_rdata);
   std::vector<net::DnsResourceRecord> answers(1, txt_record);
-  net::DnsResponse response_cache_flush(0 /* id */, true /* is_authoritative */,
-                                        answers, {} /* authority_records */,
-                                        {} /* additional_records */,
-                                        absl::nullopt /* query */);
+  net::DnsResponse response_cache_flush(
+      /*id=*/0, /*is_authoritative=*/true, answers, /*authority_records=*/{},
+      /*additional_records=*/{},
+      /*query=*/absl::nullopt,
+      /*rcode=*/net::dns_protocol::kRcodeNOERROR,
+      /*validate_records=*/true,
+      /*validate_names_as_internet_hostnames=*/false);
   DCHECK(response_cache_flush.io_buffer() != nullptr);
   buf = base::MakeRefCounted<net::IOBufferWithSize>(
       response_cache_flush.io_buffer_size());

@@ -51,7 +51,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public content::WebContentsObserver,
                               public SessionManagerClient::Observer,
                               public CrasAudioHandler::AudioObserver,
-                              public chromeos::OobeConfiguration::Observer,
+                              public OobeConfiguration::Observer,
                               public display::DisplayObserver,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
@@ -127,7 +127,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // SessionManagerClient::Observer:
   void EmitLoginPromptVisibleCalled() override;
 
-  // chromeos::OobeConfiguration::Observer:
+  // OobeConfiguration::Observer:
   void OnOobeConfigurationChanged() override;
 
   // CrasAudioHandler::AudioObserver:
@@ -288,11 +288,5 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source code migration is finished.
-namespace chromeos {
-using ::ash::LoginDisplayHostWebUI;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_WEBUI_H_

@@ -293,15 +293,6 @@ bool TestAutofillClient::IsFastCheckoutTriggerForm(const FormData& form,
   return false;
 }
 
-bool TestAutofillClient::FastCheckoutScriptSupportsConsentlessExecution(
-    const url::Origin& origin) {
-  return false;
-}
-
-bool TestAutofillClient::FastCheckoutClientSupportsConsentlessExecution() {
-  return false;
-}
-
 bool TestAutofillClient::ShowFastCheckout(
     base::WeakPtr<FastCheckoutDelegate> delegate) {
   return false;
@@ -397,7 +388,7 @@ void TestAutofillClient::LoadRiskData(
 }
 
 #if BUILDFLAG(IS_IOS)
-bool TestAutofillClient::IsQueryIDRelevant(int query_id) {
+bool TestAutofillClient::IsLastQueriedField(FieldGlobalId field_id) {
   return true;
 }
 #endif

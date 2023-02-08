@@ -32,6 +32,43 @@ std::vector<std::u16string> SplitDiacritics(base::StringPiece16 diacritics) {
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 
+std::vector<std::u16string> GetDiacriticsFor(char key_character,
+                                             base::StringPiece engine_id) {
+  // Currently only supporting US English.
+  // TODO(b/260915965): Add support for other engines.
+  if (engine_id != "xkb:us::eng") {
+    return {};
+  }
+
+  // Current diacritics ordering is based on the Gboard ordering so it keeps
+  // distance from target key consistent.
+  // TODO(b/260915965): Add more sets here for other engines.
+  static constexpr auto kUSEnglishDiacriticsMap =
+      base::MakeFixedFlatMap<char, base::StringPiece16>(
+          {{'a', u"à;á;â;ä;æ;ã;å;ā"},
+           {'A', u"À;Á;Â;Ä;Æ;Ã;Å;Ā"},
+           {'c', u"ç"},
+           {'C', u"Ç"},
+           {'e', u"é;è;ê;ë;ē"},
+           {'E', u"É;È;Ê;Ë;Ē"},
+           {'i', u"í;î;ï;ī;ì"},
+           {'I', u"Í;Î;Ï;Ī;Ì"},
+           {'n', u"ñ"},
+           {'N', u"Ñ"},
+           {'o', u"ó;ô;ö;ò;œ;ø;ō;õ"},
+           {'O', u"Ó;Ô;Ö;Ò;Œ;Ø;Ō;Õ"},
+           {'s', u"ß"},
+           {'S', u"ẞ"},
+           {'u', u"ú;û;ü;ù;ū"},
+           {'U', u"Ú;Û;Ü;Ù;Ū"}});
+
+  if (const auto* it = kUSEnglishDiacriticsMap.find(key_character);
+      it != kUSEnglishDiacriticsMap.end()) {
+    return SplitDiacritics(it->second);
+  }
+  return {};
+}
+
 AssistiveWindowButton CreateButtonFor(size_t index,
                                       std::u16string announce_string) {
   AssistiveWindowButton button = {
@@ -77,14 +114,14 @@ bool LongpressDiacriticsSuggester::TrySuggestOnLongpress(char key_character) {
     LOG(ERROR) << "Unable to suggest diacritics on longpress, no context_id";
     return false;
   }
-
-  if (const auto* it = kDefaultDiacriticsMap.find(key_character);
-      it != kDefaultDiacriticsMap.end()) {
+  std::vector<std::u16string> diacritics_candidates =
+      GetDiacriticsFor(key_character, engine_id_);
+  if (!diacritics_candidates.empty()) {
     AssistiveWindowProperties properties;
     properties.type =
         ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion;
     properties.visible = true;
-    properties.candidates = SplitDiacritics(it->second);
+    properties.candidates = diacritics_candidates;
     properties.announce_string =
         l10n_util::GetStringUTF16(IDS_SUGGESTION_DIACRITICS_OPEN);
 
@@ -99,6 +136,10 @@ bool LongpressDiacriticsSuggester::TrySuggestOnLongpress(char key_character) {
     LOG(ERROR) << "Unable to suggest diacritics on longpress: " << error;
   }
   return false;
+}
+
+void LongpressDiacriticsSuggester::SetEngineId(const std::string& engine_id) {
+  engine_id_ = engine_id;
 }
 
 void LongpressDiacriticsSuggester::OnFocus(int context_id) {
@@ -294,14 +335,7 @@ LongpressDiacriticsSuggester::GetCurrentShownDiacritics() {
   if (displayed_window_base_character_ == absl::nullopt) {
     return {};
   }
-
-  if (const auto* it =
-          kDefaultDiacriticsMap.find(*displayed_window_base_character_);
-      it != kDefaultDiacriticsMap.end()) {
-    return SplitDiacritics(it->second);
-  } else {
-    return {};
-  }
+  return GetDiacriticsFor(*displayed_window_base_character_, engine_id_);
 }
 
 void LongpressDiacriticsSuggester::Reset() {

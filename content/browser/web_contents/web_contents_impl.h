@@ -217,10 +217,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 
-  // Expose the render manager for testing.
-  // TODO(creis): Remove this now that we can get to it via FrameTreeNode.
-  RenderFrameHostManager* GetRenderManagerForTesting();
-
   // Sets a BrowserPluginGuest object for this WebContents. If this WebContents
   // has a BrowserPluginGuest then that implies that it is being hosted by
   // a BrowserPlugin object in an embedder renderer process.
@@ -310,6 +306,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Returns the primary FrameTree for this WebContents (as opposed to the
   // ones held by MPArch features like Prerender or Fenced Frame).
+  // See docs/frame_trees.md for more details.
   FrameTree& GetPrimaryFrameTree() { return primary_frame_tree_; }
 
   // Whether the initial empty page of this view has been accessed by another
@@ -590,6 +587,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // that this may not equate to the feature being enabled.
   bool IsPrerender2Disabled();
 
+  void AboutToBeDiscarded(WebContents* new_contents) override;
+
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
@@ -678,7 +677,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
       RenderFrameHostImpl* frame_host,
       const GURL& url) override;
-  void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
   void DidCallFocus() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
@@ -768,16 +766,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
       override;
-  bool ShowPopupMenu(
-      RenderFrameHostImpl* render_frame_host,
-      mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,
-      const gfx::Rect& bounds,
-      int32_t item_height,
-      double font_size,
-      int32_t selected_item,
-      std::vector<blink::mojom::MenuItemPtr>* menu_items,
-      bool right_aligned,
-      bool allow_multiple_selection) override;
+  bool ShowPopupMenu(RenderFrameHostImpl* render_frame_host,
+                     const gfx::Rect& bounds) override;
   void DidLoadResourceFromMemoryCache(
       RenderFrameHostImpl* source,
       const GURL& url,
@@ -821,6 +811,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           bool is_hung) override;
 #endif  // BUILDFLAG(ENABLE_PPAPI)
   void DidChangeLoadProgressForPrimaryMainFrame() override;
+  void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
+                            const GURL& url,
+                            int error_code) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -878,9 +871,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidRedirectNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
-  void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
-                            const GURL& url,
-                            int error_code) override;
   void DidNavigateMainFramePreCommit(FrameTreeNode* frame_tree_node,
                                      bool navigation_is_within_page) override;
   void DidNavigateMainFramePostCommit(
@@ -1019,6 +1009,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnBackgroundColorChanged(PageImpl& page) override;
   void DidInferColorScheme(PageImpl& page) override;
   void OnVirtualKeyboardModeChanged(PageImpl& page) override;
+  void NotifyPageBecamePrimary(PageImpl& page) override;
 
   // blink::mojom::ColorChooserFactory ---------------------------------------
   void OnColorChooserFactoryReceiver(
@@ -1037,9 +1028,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                        bool should_show_loading_ui) override;
   void DidStopLoading() override;
   bool IsHidden() override;
-  void NotifyPageChanged(PageImpl& page) override;
   int GetOuterDelegateFrameTreeNodeId() override;
   FrameTree* LoadingTree() override;
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
 
   // NavigationControllerDelegate ----------------------------------------------
 
@@ -1357,7 +1348,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   ui::mojom::VirtualKeyboardMode GetVirtualKeyboardMode() const;
 
  private:
-  using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree*)>;
+  using FrameTreeIterationCallback = base::RepeatingCallback<void(FrameTree&)>;
   using RenderViewHostIterationCallback =
       base::RepeatingCallback<void(RenderViewHostImpl*)>;
 
@@ -1881,11 +1872,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // to be alive.
   void NotifyPrimaryMainFrameProcessIsAlive();
 
-  // If |entry| is null, this method updates the WebContents' fallback title for
-  // when there is no navigation entry (i.e. when GetNavigationEntryForTitle()
-  // returns nullptr), otherwise updates |entry|'s title. If defined, |entry|
-  // must belong to the WebContents' primary NavigationController. Returns true
-  // if the title (entry's or fallback) was changed, false otherwise.
+  // Updates |entry|'s title. |entry| must belong to the WebContents' primary
+  // NavigationController. Returns true if |entry|'s title was changed, and
+  // false otherwise.
   bool UpdateTitleForEntryImpl(NavigationEntryImpl* entry,
                                const std::u16string& title);
   // Dispatches WebContentsObserver::TitleWasSet and also notifies the delegate
@@ -1893,9 +1882,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // display title.
   void NotifyTitleUpdateForEntry(NavigationEntryImpl* entry);
   // Returns the navigation entry whose title is used as the display title for
-  // this WebContents (i.e. for WebContents::GetTitle()). This value can be
-  // null, in which case a fallback title is used (see
-  // |page_title_when_no_navigation_entry_|).
+  // this WebContents (i.e. for WebContents::GetTitle()).
   NavigationEntry* GetNavigationEntryForTitle();
 
   // Wrapper for ui::GetAvailablePointerAndHoverTypes which temporarily allows
@@ -2002,9 +1989,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool is_resume_pending_;
 
   // Data for current page -----------------------------------------------------
-
-  // When a title cannot be taken from any entry, this title will be used.
-  std::u16string page_title_when_no_navigation_entry_;
 
   // The last published theme color.
   absl::optional<SkColor> last_sent_theme_color_;

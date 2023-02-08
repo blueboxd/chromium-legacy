@@ -19,7 +19,6 @@ import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationManagerCompat;
 
 /**
@@ -96,8 +95,6 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
     @SuppressLint("NewApi")
     @Override
     public boolean finishAndRemoveTaskSdk23() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
-
         ActivityManager manager =
                 (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         String webApkPackageName = mContext.getPackageName();
@@ -125,7 +122,6 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
     }
 
     /** Returns the package name of the task's base activity. */
-    @RequiresApi(Build.VERSION_CODES.M)
     private static String getTaskBaseActivityPackageName(ActivityManager.AppTask task) {
         try {
             ActivityManager.RecentTaskInfo info = task.getTaskInfo();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Route} from '../router.js';
+import {Route} from './router.js';
 
 /**
  * Specifies all possible os routes in settings.
@@ -13,6 +13,7 @@ import {Route} from '../router.js';
  *   A11Y_DISPLAY_AND_MAGNIFICATION: !Route,
  *   A11Y_KEYBOARD_AND_TEXT_INPUT: !Route,
  *   A11Y_TEXT_TO_SPEECH: !Route,
+ *   A11Y_SELECT_TO_SPEAK: !Route,
  *   ABOUT: !Route,
  *   ABOUT_ABOUT: !Route,
  *   ACCOUNTS: !Route,
@@ -44,6 +45,7 @@ import {Route} from '../router.js';
  *   BLUETOOTH_SAVED_DEVICES: !Route,
  *   BRUSCHETTA_DETAILS: !Route,
  *   BRUSCHETTA_SHARED_USB_DEVICES: !Route,
+ *   BRUSCHETTA_SHARED_PATHS: !Route,
  *   CHANGE_PICTURE: !Route,
  *   CUPS_PRINTERS: !Route,
  *   DARK_MODE: !Route,
@@ -56,6 +58,7 @@ import {Route} from '../router.js';
  *   FINGERPRINT: !Route,
  *   FILES: !Route,
  *   GOOGLE_ASSISTANT: !Route,
+ *   HOTSPOT_DETAIL: !Route,
  *   INTERNET: !Route,
  *   INTERNET_NETWORKS: !Route,
  *   KERBEROS: !Route,
@@ -64,7 +67,6 @@ import {Route} from '../router.js';
  *   KNOWN_NETWORKS: !Route,
  *   LOCK_SCREEN: !Route,
  *   MANAGE_ACCESSIBILITY: !Route,
- *   MANAGE_CAPTION_SETTINGS: !Route,
  *   MANAGE_SWITCH_ACCESS_SETTINGS: !Route,
  *   MANAGE_TTS_SETTINGS: !Route,
  *   MULTIDEVICE: !Route,
@@ -94,7 +96,6 @@ import {Route} from '../router.js';
  *   PRIVACY_HUB: !Route,
  *   SEARCH: !Route,
  *   SEARCH_SUBPAGE: !Route,
- *   SMART_LOCK: !Route,
  *   SMART_PRIVACY: !Route,
  *   SMB_SHARES: !Route,
  *   STORAGE: !Route,

@@ -22,6 +22,7 @@
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/resource/resource_scale_factor.h"
 
 namespace apps {
 
@@ -36,7 +37,7 @@ class AppPublisher {
   explicit AppPublisher(AppServiceProxy* proxy);
   AppPublisher(const AppPublisher&) = delete;
   AppPublisher& operator=(const AppPublisher&) = delete;
-  ~AppPublisher();
+  virtual ~AppPublisher();
 
   // Returns an app object from the provided parameters
   static AppPtr MakeApp(AppType app_type,
@@ -77,6 +78,17 @@ class AppPublisher {
                         int32_t size_hint_in_dip,
                         bool allow_placeholder_icon,
                         LoadIconCallback callback) = 0;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Requests a compressed icon data for an app identified by `app_id`. The icon
+  // is identified by `size_in_dip` and `scale_factor`. Calls `callback` with
+  // the result.
+  virtual void GetCompressedIconData(const std::string& app_id,
+                                     IconType icon_type,
+                                     int32_t size_in_dip,
+                                     ui::ResourceScaleFactor scale_factor,
+                                     LoadIconCallback callback);
+#endif
 
   // Launches an app identified by `app_id`. `event_flags` contains launch
   // options (e.g. window disposition). `launch_source` contains the source

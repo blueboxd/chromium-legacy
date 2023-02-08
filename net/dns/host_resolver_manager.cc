@@ -5,6 +5,7 @@
 #include "net/dns/host_resolver_manager.h"
 
 #include <cmath>
+#include <cstdint>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -50,6 +51,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -77,6 +79,7 @@
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_alias_utility.h"
 #include "net/dns/dns_client.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/dns_transaction.h"
@@ -468,10 +471,12 @@ absl::variant<url::SchemeHostPort, std::string> CreateHostForJobKey(
 
 DnsResponse CreateFakeEmptyResponse(base::StringPiece hostname,
                                     DnsQueryType query_type) {
-  std::string qname;
-  CHECK(DNSDomainFromDot(hostname, &qname));
+  absl::optional<std::vector<uint8_t>> qname =
+      dns_names_util::DottedNameToNetwork(
+          hostname, /*require_valid_internet_hostname=*/true);
+  CHECK(qname.has_value());
   return DnsResponse::CreateEmptyNoDataResponse(
-      /*id=*/0u, /*is_authoritative=*/true, qname,
+      /*id=*/0u, /*is_authoritative=*/true, qname.value(),
       DnsQueryTypeToQtype(query_type));
 }
 
@@ -797,7 +802,7 @@ class HostResolverManager::RequestImpl
   const NetworkAnonymizationKey network_anonymization_key_;
   ResolveHostParameters parameters_;
   base::WeakPtr<ResolveContext> resolve_context_;
-  const raw_ptr<HostCache> host_cache_;
+  const raw_ptr<HostCache, DanglingUntriaged> host_cache_;
   const HostResolverFlags host_resolver_flags_;
 
   RequestPriority priority_;
@@ -859,7 +864,7 @@ class HostResolverManager::ProbeRequestImpl
   void OnDohServerUnavailable(bool network_change) override {
     // Start the runner asynchronously, as this may trigger reentrant calls into
     // HostResolverManager, which are not allowed during notification handling.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&ProbeRequestImpl::StartRunner,
                        weak_ptr_factory_.GetWeakPtr(), network_change));
@@ -1955,7 +1960,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     // Otherwise the job will be destroyed with requests silently cancelled
     // before completion runs.
     DCHECK(self_iterator_);
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&Job::CompleteRequestsWithError,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   ERR_HOST_RESOLVER_QUEUE_TOO_LARGE,
@@ -2449,7 +2454,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     } else {
       // Could not create an mDNS client. Since we cannot complete synchronously
       // from here, post a failure without starting the task.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&Job::OnMdnsImmediateFailure,
                                     weak_ptr_factory_.GetWeakPtr(), rv));
     }
@@ -2555,11 +2560,19 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
     if (error == OK) {
       DCHECK(task_type.has_value());
-      if (IsGoogleHostWithAlpnH3(GetHostname(key_.host))) {
+      // Record, for HTTPS-capable queries to a host known to serve HTTPS
+      // records, whether the HTTPS record was successfully received.
+      if (key_.query_types.Has(DnsQueryType::HTTPS) &&
+          // Skip http- and ws-schemed hosts. Although they query HTTPS records,
+          // successful queries are reported as errors, which would skew the
+          // metrics.
+          (GetScheme(key_.host) == url::kHttpsScheme ||
+           GetScheme(key_.host) == url::kWssScheme) &&
+          IsGoogleHostWithAlpnH3(GetHostname(key_.host))) {
         bool has_metadata =
             results.GetMetadatas() && !results.GetMetadatas()->empty();
         base::UmaHistogramExactLinear(
-            "Net.DNS.H3SupportedGoogleHost.TaskTypeMetadataAvailability",
+            "Net.DNS.H3SupportedGoogleHost.TaskTypeMetadataAvailability2",
             static_cast<int>(task_type.value()) * 2 + (has_metadata ? 1 : 0),
             (static_cast<int>(TaskType::kMaxValue) + 1) * 2);
       }
@@ -3128,8 +3141,8 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     // than implicitly based on |source|.
     const bool is_valid_hostname =
         job_key.source == HostResolverSource::MULTICAST_DNS
-            ? IsValidUnrestrictedDNSDomain(GetHostname(job_key.host))
-            : IsValidDNSDomain(GetHostname(job_key.host));
+            ? dns_names_util::IsValidDnsName(GetHostname(job_key.host))
+            : IsCanonicalizedHostCompliant(GetHostname(job_key.host));
     if (!is_valid_hostname) {
       return HostCache::Entry(ERR_NAME_NOT_RESOLVED,
                               HostCache::Entry::SOURCE_UNKNOWN);

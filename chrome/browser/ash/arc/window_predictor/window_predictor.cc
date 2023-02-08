@@ -87,6 +87,7 @@ bool WindowPredictor::LaunchArcAppWithGhostWindow(
     Profile* profile,
     const std::string& arc_app_id,
     const ArcAppListPrefs::AppInfo& app_info,
+    const apps::IntentPtr& intent,
     int event_flags,
     GhostWindowType window_type,
     const arc::mojom::WindowInfoPtr& window_info) {
@@ -121,9 +122,9 @@ bool WindowPredictor::LaunchArcAppWithGhostWindow(
     return false;
 
   arc_task_handler->GetWindowPredictorArcAppRestoreHandler(launch_counter)
-      ->LaunchGhostWindowWithApp(profile, arc_app_id, event_flags,
-                                 GhostWindowType::kAppLaunch,
-                                 std::move(predict_window_info));
+      ->LaunchGhostWindowWithApp(
+          profile, arc_app_id, intent ? intent->Clone() : nullptr, event_flags,
+          GhostWindowType::kAppLaunch, std::move(predict_window_info));
 
   base::UmaHistogramEnumeration(kWindowPredictorLaunchHistogram,
                                 WindowPredictorLaunchType::kSuccess);
@@ -138,7 +139,7 @@ arc::mojom::WindowInfoPtr WindowPredictor::PredictAppWindowInfo(
   // TODO(sstan): Consider multi display case.
   if (!window_info)
     return nullptr;
-  auto disp = display::Display::GetDefaultDisplay();
+  auto disp = display::Screen::GetScreen()->GetPrimaryDisplay();
   if (window_info->display_id != display::kInvalidDisplayId) {
     display::Screen::GetScreen()->GetDisplayWithDisplayId(
         window_info->display_id, &disp);

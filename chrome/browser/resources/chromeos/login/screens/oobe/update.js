@@ -15,7 +15,7 @@ import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
 import '../../components/oobe_carousel.js';
 import '../../components/oobe_slide.js';
 
@@ -23,7 +23,7 @@ import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/pol
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 
 
 const USER_ACTION_ACCEPT_UPDATE_OVER_CELLUAR = 'update-accept-cellular';

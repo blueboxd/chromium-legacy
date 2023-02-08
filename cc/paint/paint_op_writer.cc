@@ -693,9 +693,6 @@ void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
     case PaintFilter::Type::kLightingSpot:
       Write(static_cast<const LightingSpotPaintFilter&>(*filter), current_ctm);
       break;
-    case PaintFilter::Type::kStretch:
-      Write(static_cast<const StretchPaintFilter&>(*filter), current_ctm);
-      break;
   }
 }
 
@@ -919,19 +916,10 @@ void PaintOpWriter::Write(const LightingSpotPaintFilter& filter,
   Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const StretchPaintFilter& filter,
-                          const SkM44& current_ctm) {
-  WriteSimple(filter.stretch_x());
-  WriteSimple(filter.stretch_y());
-  WriteSimple(filter.width());
-  WriteSimple(filter.height());
-  Write(filter.input().get(), current_ctm);
-}
-
 void PaintOpWriter::Write(const PaintRecord* record,
                           const gfx::Rect& playback_rect,
                           const gfx::SizeF& post_scale) {
-  AlignMemory(PaintOpBuffer::PaintOpAlign);
+  AlignMemory(PaintOpBuffer::kPaintOpAlign);
 
   // We need to record how many bytes we will serialize, but we don't know this
   // information until we do the serialization. So, skip the amount needed

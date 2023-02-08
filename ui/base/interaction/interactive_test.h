@@ -9,7 +9,10 @@
 #include <sstream>
 #include <vector>
 
+#include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/rectify_callback.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -18,6 +21,10 @@
 #include "ui/base/interaction/interaction_sequence.h"
 #include "ui/base/interaction/interaction_test_util.h"
 #include "ui/base/interaction/interactive_test_internal.h"
+
+#if !BUILDFLAG(IS_IOS)
+#include "ui/base/accelerators/accelerator.h"
+#endif
 
 namespace ui::test {
 
@@ -48,8 +55,9 @@ class InteractiveTestApi {
 
  protected:
   using InputType = InteractionTestUtil::InputType;
-  using MultiStep = std::vector<InteractionSequence::StepBuilder>;
+  using MultiStep = internal::InteractiveTestPrivate::MultiStep;
   using StepBuilder = InteractionSequence::StepBuilder;
+  using TextEntryMode = InteractionTestUtil::TextEntryMode;
 
   // Construct a MultiStep from one or more StepBuilders and/or MultiSteps.
   template <typename... Args>
@@ -73,8 +81,8 @@ class InteractiveTestApi {
   // Convenience methods for creating interaction steps of type kShown. The
   // resulting step's start callback is already set; therefore, do not try to
   // add additional logic. However, any other parameter on the step may be set,
-  // such as SetMustBeVisibleAtStart(), SetFindElementInAnyContext(),
-  // SetTransitionOnlyOnEvent(), etc.
+  // such as SetMustBeVisibleAtStart(), SetTransitionOnlyOnEvent(),
+  // SetContext(), etc.
   //
   // TODO(dfried): in the future, these will be supplanted/supplemented by more
   // flexible primitives that allow multiple actions in the same step in the
@@ -96,6 +104,16 @@ class InteractiveTestApi {
       ElementSpecifier collection,
       size_t item,
       InputType input_type = InputType::kDontCare);
+  [[nodiscard]] StepBuilder EnterText(
+      ElementSpecifier element,
+      std::u16string text,
+      TextEntryMode mode = TextEntryMode::kReplaceAll);
+  [[nodiscard]] StepBuilder ActivateSurface(ElementSpecifier element);
+#if !BUILDFLAG(IS_IOS)
+  [[nodiscard]] StepBuilder SendAccelerator(ElementSpecifier element,
+                                            Accelerator accelerator);
+#endif
+  [[nodiscard]] StepBuilder Confirm(ElementSpecifier element);
 
   // Specifies a test action that is not tied to any one UI element.
   // Returns true on success, false on failure (which will fail the test).
@@ -132,8 +150,8 @@ class InteractiveTestApi {
 
   // Shorthand methods for working with basic ElementTracker events. The element
   // will have `step_callback` called on it. You may specify additional
-  // constraints such as SetMustBeVisibleAtStart(),
-  // SetFindElementInAnyContext(), SetTransitionOnlyOnEvent(), etc.
+  // constraints such as SetMustBeVisibleAtStart(), SetTransitionOnlyOnEvent(),
+  // SetContext(), etc.
   template <class T>
   [[nodiscard]] static StepBuilder AfterShow(ElementSpecifier element,
                                              T&& step_callback);
@@ -173,22 +191,59 @@ class InteractiveTestApi {
       ElementIdentifier element_to_check,
       bool in_any_context = false);
 
+  // Opposite of EnsureNotPresent. Flushes the current message queue and then
+  // checks that the specified element is [still] present. Equivalent to:
+  //   FlushEvents(),
+  //   WithElement(element_to_check, base::DoNothing())
+  //
+  // Like EnsureNotPresent(), is not compatible with InAnyContext(); set
+  // `in_any_context` to true instead. Otherwise, you can still wrap this call
+  // in an InContext() or InSameContext().
+  [[nodiscard]] static MultiStep EnsurePresent(
+      ElementSpecifier element_to_check,
+      bool in_any_context = false);
+
+  // Ensures that the next step does not piggyback on the previous step(s), but
+  // rather, executes on a fresh message loop. Normally, steps will continue to
+  // trigger on the same call stack until a start condition is not met.
+  //
+  // Use sparingly, and only when e.g. re-entrancy issues prevent the test from
+  // otherwise working properly.
+  [[nodiscard]] static MultiStep FlushEvents();
+
   // Provides syntactic sugar so you can put "in any context" before an action
   // or test step rather than after. For example the following are equivalent:
   //
   //    PressButton(kElementIdentifier)
-  //        .SetFindElementInAnyContext(true)
+  //        .SetContext(InteractionSequence::ContextMode::kAny)
   //
   //    InAnyContext(PressButton(kElementIdentifier))
   //
   // Note: does not work with EnsureNotPresent; use the `in_any_context`
-  // parameter.
+  // parameter. Also does not work with all event types (yet).
   //
   // TODO(dfried): consider if we should have a version that takes variadic
   // arguments and applies "in any context" to all of them?
   [[nodiscard]] static MultiStep InAnyContext(MultiStep steps);
   template <typename T>
-  static StepBuilder InAnyContext(T&& step);
+  [[nodiscard]] static StepBuilder InAnyContext(T&& step);
+
+  // Provides syntactic sugar so you can put "inherit context from previous
+  // step" around a step or steps to ensure a sequence executes in a specific
+  // context. For example:
+  //
+  //    InAnyContext(WaitForShow(kMyElementInOtherContext)),
+  //    InSameContext(Steps(
+  //      PressButton(kMyElementInOtherContext),
+  //      WaitForHide(kMyElementInOtherContext)
+  //    )),
+  [[nodiscard]] static MultiStep InSameContext(MultiStep steps);
+  template <typename T>
+  [[nodiscard]] static StepBuilder InSameContext(T&& step);
+
+  [[nodiscard]] MultiStep InContext(ElementContext context, MultiStep steps);
+  template <typename T>
+  [[nodiscard]] StepBuilder InContext(ElementContext context, T&& step);
 
   // Used internally by methods in this class; do not call.
   internal::InteractiveTestPrivate& private_test_impl() {
@@ -261,6 +316,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::AfterShow(
     ElementSpecifier element,
     T&& step_callback) {
   StepBuilder builder;
+  builder.SetDescription("AfterShow()");
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(
       base::RectifyCallback<InteractionSequence::StepStartCallback>(
@@ -274,6 +330,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::AfterActivate(
     ElementSpecifier element,
     T&& step_callback) {
   StepBuilder builder;
+  builder.SetDescription("AfterActivate()");
   internal::SpecifyElement(builder, element);
   builder.SetType(InteractionSequence::StepType::kActivated);
   builder.SetStartCallback(
@@ -289,6 +346,8 @@ InteractionSequence::StepBuilder InteractiveTestApi::AfterEvent(
     CustomElementEventType event_type,
     T&& step_callback) {
   StepBuilder builder;
+  builder.SetDescription(
+      base::StrCat({"AfterEvent( ", event_type.GetName(), " )"}));
   internal::SpecifyElement(builder, element);
   builder.SetType(InteractionSequence::StepType::kCustomEvent, event_type);
   builder.SetStartCallback(
@@ -303,6 +362,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::AfterHide(
     ElementSpecifier element,
     T&& step_callback) {
   StepBuilder builder;
+  builder.SetDescription("AfterHide()");
   internal::SpecifyElement(builder, element);
   builder.SetType(InteractionSequence::StepType::kHidden);
   builder.SetStartCallback(
@@ -317,6 +377,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::WithElement(
     ElementSpecifier element,
     T&& step_callback) {
   StepBuilder builder;
+  builder.SetDescription("WithElement()");
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(
       base::RectifyCallback<InteractionSequence::StepStartCallback>(
@@ -328,7 +389,25 @@ InteractionSequence::StepBuilder InteractiveTestApi::WithElement(
 // static
 template <typename T>
 InteractionSequence::StepBuilder InteractiveTestApi::InAnyContext(T&& step) {
-  return std::move(step.SetFindElementInAnyContext(true));
+  return std::move(step.SetContext(InteractionSequence::ContextMode::kAny)
+                       .FormatDescription("InAnyContext( %s )"));
+}
+
+// static
+template <typename T>
+InteractionSequence::StepBuilder InteractiveTestApi::InSameContext(T&& step) {
+  return std::move(
+      step.SetContext(InteractionSequence::ContextMode::kFromPreviousStep)
+          .FormatDescription("InSameContext( %s )"));
+}
+
+template <typename T>
+InteractionSequence::StepBuilder InteractiveTestApi::InContext(
+    ElementContext context,
+    T&& step) {
+  const auto fmt = base::StringPrintf("InContext( %p, %%s )",
+                                      static_cast<const void*>(context));
+  return std::move(step.SetContext(context).FormatDescription(fmt));
 }
 
 // static
@@ -336,13 +415,16 @@ template <template <typename...> typename C, typename T, typename U>
 InteractionSequence::StepBuilder InteractiveTestApi::CheckResult(
     C<T()> function,
     U&& matcher) {
-  return Check(base::BindOnce(
-      [](base::OnceCallback<T()> function, testing::Matcher<T> matcher) {
-        return internal::MatchAndExplain("CheckResult()", matcher,
-                                         std::move(function).Run());
-      },
-      base::OnceCallback<T()>(std::move(function)),
-      testing::Matcher<T>(std::forward<U>(matcher))));
+  return std::move(Check(base::BindOnce(
+                             [](base::OnceCallback<T()> function,
+                                testing::Matcher<T> matcher) {
+                               return internal::MatchAndExplain(
+                                   "CheckResult()", matcher,
+                                   std::move(function).Run());
+                             },
+                             base::OnceCallback<T()>(std::move(function)),
+                             testing::Matcher<T>(std::forward<U>(matcher))))
+                       .SetDescription("CheckResult"));
 }
 
 // static
@@ -352,6 +434,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::CheckElement(
     C<T(TrackedElement*)> function,
     U&& matcher) {
   StepBuilder builder;
+  builder.SetDescription("CheckElement()");
   internal::SpecifyElement(builder, element);
   builder.SetStartCallback(base::BindOnce(
       [](base::OnceCallback<T(TrackedElement*)> function,

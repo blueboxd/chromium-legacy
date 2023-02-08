@@ -190,8 +190,9 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetAccounts) {
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, CanStartProjectorSession) {
-  NewScreencastPrecondition precondition;
-  precondition.state = NewScreencastPreconditionState::kEnabled;
+  NewScreencastPrecondition precondition = NewScreencastPrecondition(
+      NewScreencastPreconditionState::kEnabled,
+      {NewScreencastPreconditionReason::kEnabledBySoda});
 
   EXPECT_CALL(controller(), GetNewScreencastPrecondition());
   ON_CALL(controller(), GetNewScreencastPrecondition)
@@ -344,7 +345,7 @@ TEST_F(ProjectorMessageHandlerUnitTest, SendXhrFailed) {
 
   base::Value::List list_args;
   list_args.Append(kSendXhrCallback);
-  base::ListValue args;
+  base::Value::List args;
   args.Append(kTestXhrUrl);
   args.Append(kTestXhrMethod);
   args.Append(kTestXhrRequestBody);
@@ -441,8 +442,9 @@ TEST_F(ProjectorMessageHandlerUnitTest, SendXhrWithUnSupportedUrl) {
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, NewScreencastPreconditionChanged) {
-  NewScreencastPrecondition precondition;
-  precondition.state = NewScreencastPreconditionState::kEnabled;
+  NewScreencastPrecondition precondition = NewScreencastPrecondition(
+      NewScreencastPreconditionState::kEnabled,
+      {NewScreencastPreconditionReason::kEnabledBySoda});
   message_handler()->OnNewScreencastPreconditionChanged(precondition);
   const content::TestWebUI::CallData& call_data = *(web_ui().call_data()[0]);
   EXPECT_EQ(call_data.function_name(), kWebUIListenerCall);

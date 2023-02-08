@@ -5,17 +5,15 @@
 #include "gpu/command_buffer/service/shared_image/raw_draw_image_backing.h"
 
 #include "base/logging.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "components/viz/common/resources/resource_sizes.h"
-#include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
-#include "ui/gl/trace_util.h"
 
 namespace gpu {
 
@@ -139,35 +137,6 @@ void RawDrawImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
   NOTIMPLEMENTED();
 }
 
-void RawDrawImageBacking::OnMemoryDump(
-    const std::string& dump_name,
-    base::trace_event::MemoryAllocatorDumpGuid client_guid,
-    base::trace_event::ProcessMemoryDump* pmd,
-    uint64_t client_tracing_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  AutoLock auto_lock(this);
-
-  SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
-                                   client_tracing_id);
-
-  if (auto tracing_id = GrBackendTextureTracingID(backend_texture_)) {
-    // Add a |service_guid| which expresses shared ownership between the
-    // various GPU dumps.
-    auto service_guid = gl::GetGLTextureServiceGUIDForTracing(tracing_id);
-    pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
-  }
-}
-
-size_t RawDrawImageBacking::EstimatedSizeForMemTracking() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  AutoLock auto_lock(this);
-  return backend_texture_.isValid()
-             ? viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size(),
-                                                                format())
-             : 0u;
-}
-
 std::unique_ptr<RasterImageRepresentation> RawDrawImageBacking::ProduceRaster(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
@@ -214,7 +183,7 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
 
   auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                     : GrMipMapped::kNo;
-  auto sk_color = viz::ResourceFormatToClosestSkColorType(
+  auto sk_color = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   const std::string label =
       "RawDrawImageBacking" + CreateLabelForSharedImageUsage(usage());
@@ -227,9 +196,6 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
     return false;
   }
   promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
-
-  // TODO(crbug.com/1353911): The estimated size recorded with GPU memory
-  // tracker should be updated after `backend_texture_` is allocated.
 
   auto surface = SkSurface::MakeFromBackendTexture(
       context_state_->gr_context(), backend_texture_, surface_origin(),
@@ -260,6 +226,9 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
     // and when gr_context->flush() is call, the surface will be resolved.
     surface->resolveMSAA();
   }
+
+  UpdateEstimatedSize(
+      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size(), format()));
 
   return true;
 }

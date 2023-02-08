@@ -309,6 +309,46 @@
       }
     ]
   },
+  "DnsOverHttpsTemplatesWithIdentifiers": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DnsOverHttpsMode": "automatic",
+          "DnsOverHttpsSalt": "test-salt",
+          "DnsOverHttpsTemplatesWithIdentifiers": "https://cloudflare-dns.com/dns-query https://dns.quad9.net/dns-query{?dns}"
+        },
+        "prefs": {
+          "dns_over_https.templates_with_identifiers" : {
+            "location": "local_state",
+            "value": "https://cloudflare-dns.com/dns-query https://dns.quad9.net/dns-query{?dns}"
+          }
+        }
+      }
+    ]
+  },
+  "DnsOverHttpsSalt": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "DnsOverHttpsMode": "automatic",
+          "DnsOverHttpsSalt": "test-salt",
+          "DnsOverHttpsTemplatesWithIdentifiers": "https://dns.quad9.net/dns-query{?dns}"
+        },
+        "prefs": {
+          "dns_over_https.salt": {
+            "location": "local_state",
+            "value": "test-salt"
+          }
+        }
+      }
+    ]
+  },
   "NetworkPredictionOptions": {
     "os": [
       "win",
@@ -3780,6 +3820,67 @@
       }
     ]
   },
+  "ExtensionManifestV2Availability": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "crhomeos_lacros",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ExtensionManifestV2Availability": 0
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExtensionManifestV2Availability": 1
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExtensionManifestV2Availability": 2
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "value": 2
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExtensionManifestV2Availability": 3
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "value": 3
+          }
+        }
+      },
+      {
+        "policies": {
+        },
+        "prefs": {
+          "extensions.manifest_v2": {
+            "default_value": 0
+          }
+        }
+      }
+    ]
+  },
   "BlockExternalExtensions": {
     "os": [
       "win",
@@ -6861,7 +6962,7 @@
   },
   "BuiltInDnsClientEnabled.FeatureDisabledByDefault": {
     "os": [
-      "linux", "fuchsia"
+      "fuchsia"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -6893,7 +6994,8 @@
       "mac",
       "android",
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "linux"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -8211,6 +8313,94 @@
   },
   "UseLegacyFormControls": {
     "reason_for_missing_test": "Policy was removed"
+  },
+  "ThrottleNonVisibleCrossOriginIframesAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ThrottleNonVisibleCrossOriginIframesAllowed": true
+        },
+        "prefs": {
+          "throttle_non_visible_cross_origin_iframes_allowed": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ThrottleNonVisibleCrossOriginIframesAllowed": false
+        },
+        "prefs": {
+          "throttle_non_visible_cross_origin_iframes_allowed": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "throttle_non_visible_cross_origin_iframes_allowed": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      }
+    ]
+  },
+  "NewBaseUrlInheritanceBehaviorAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "NewBaseUrlInheritanceBehaviorAllowed": true
+        },
+        "prefs": {
+          "new_base_url_inheritance_behavior_allowed": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "NewBaseUrlInheritanceBehaviorAllowed": false
+        },
+        "prefs": {
+          "new_base_url_inheritance_behavior_allowed": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "new_base_url_inheritance_behavior_allowed": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      }
+    ]
   },
   "ScrollToTextFragmentEnabled": {
     "os": [
@@ -10986,6 +11176,605 @@
         "prefs": {
           "arc.status_reporting_enabled": {
             "value": true
+          }
+        }
+      }
+    ]
+  },
+  "BruschettaVMConfiguration": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "No policy set, prefs go to default value",
+        "policies": {},
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "default_value": {}
+          }
+        }
+      },
+      {
+        "note": "Policy violates schema (spaces aren't allowed in ids) and is rejected",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "schema violation": true
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "default_value": {}
+          }
+        }
+      },
+      {
+        "note": "Check that INSTALL_ALLOWED is downgraded if no downloadable objects are set",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED"
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check that RUN_ALLOWED is *not* downgraded if no downloadable objects are set, and also that runtime policies are defaulted correctly",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "RUN_ALLOWED"
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check that BLOCKED is translated to enabled_state 0",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "BLOCKED"
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 0,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check vtpm.policy_update_action maps NONE correctly",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "RUN_ALLOWED",
+              "vtpm": {
+                "enabled": true,
+                "policy_update_action": "NONE"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": true,
+                  "policy_update_action": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check vtpm.policy_update_action maps FORCE_SHUTDOWN_IF_MORE_RESTRICTED correctly",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "RUN_ALLOWED",
+              "vtpm": {
+                "enabled": true,
+                "policy_update_action": "FORCE_SHUTDOWN_IF_MORE_RESTRICTED"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": true,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check vtpm.policy_update_action maps FORCE_SHUTDOWN_ALWAYS correctly",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "RUN_ALLOWED",
+              "vtpm": {
+                "enabled": true,
+                "policy_update_action": "FORCE_SHUTDOWN_ALWAYS"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": true,
+                  "policy_update_action": 2
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is downgraded if no installer_image is set",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash",
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image",
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is *not* downgraded if no uefi_pflash is set",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image",
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image",
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 2,
+                "installer_image": {
+                  "url": "https://example.com/installer_image",
+                  "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+                },
+                "uefi_image": {
+                  "url": "https://example.com/uefi_image",
+                  "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+                },
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is downgraded if no uefi_image is set",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image",
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash",
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check that missing URLs are rejected by schema",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+              },
+              "uefi_pflash_x86_64": {
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+              },
+              "uefi_image_x86_64": {
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "default_value": {}
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is downgraded if URLs are invalid",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "invalid url",
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "invalid url",
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+              },
+              "uefi_image_x86_64": {
+                "url": "invalid url",
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Check that missing hashes are rejected by schema",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "default_value": {}
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is downgraded if hashes are invalid (invalid characters)",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image",
+                "hash": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash",
+                "hash": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image",
+                "hash": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "INSTALL_ALLOWED is downgraded if hashes are invalid (wrong length)",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image",
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc58267"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash",
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e9434"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image",
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1"
+              }
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "note": "Big test with multiple different configurations",
+        "policies": {
+          "BruschettaVMConfiguration": {
+            "vm-type": {
+              "name": "Standard Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image",
+                "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash",
+                "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image",
+                "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+              },
+              "vtpm": {
+                "enabled": true
+              }
+            },
+            "another-vm-type": {
+              "name": "Weird Virtual Machine",
+              "enabled_state": "INSTALL_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image_2",
+                "hash": "75cd9ce860dc65e71c4088fab33ffc54bcb29d8215ff2cd3a8c5f489ed7b246c"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash_2",
+                "hash": "0923a3ddb53b9f1be54e0486322c8315e25a678a64941e15276d17ad2c63ee82"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image_2",
+                "hash": "01b243b310908d7d54c275db05c411151bc3e3c331340e83eab5c8322819c2d9"
+              },
+              "vtpm": {
+                "enabled": false,
+                "policy_update_action": "FORCE_SHUTDOWN_ALWAYS"
+              }
+            },
+            "old-vm-type": {
+              "name": "Legacy VM",
+              "enabled_state": "RUN_ALLOWED"
+            },
+            "old-vm-type-2": {
+              "name": "Legacy VM",
+              "enabled_state": "RUN_ALLOWED",
+              "installer_image_x86_64": {
+                "url": "https://example.com/installer_image_2",
+                "hash": "75cd9ce860dc65e71c4088fab33ffc54bcb29d8215ff2cd3a8c5f489ed7b246c"
+              },
+              "uefi_pflash_x86_64": {
+                "url": "https://example.com/uefi_pflash_2",
+                "hash": "0923a3ddb53b9f1be54e0486322c8315e25a678a64941e15276d17ad2c63ee82"
+              },
+              "uefi_image_x86_64": {
+                "url": "https://example.com/uefi_image_2",
+                "hash": "01b243b310908d7d54c275db05c411151bc3e3c331340e83eab5c8322819c2d9"
+              }
+            },
+            "vulnerable-vm-type": {
+              "name": "Forbidden VM",
+              "enabled_state": "BLOCKED"
+            }
+          }
+        },
+        "prefs": {
+          "bruschetta.vm_configuration": {
+            "value": {
+              "vm-type": {
+                "name": "Standard Virtual Machine",
+                "enabled_state": 2,
+                "installer_image": {
+                  "url": "https://example.com/installer_image",
+                  "hash": "761b22509ee7bd3e1a3da9eb9e37c6443acfc582670b733601ca5a1de44b99de"
+                },
+                "uefi_pflash": {
+                  "url": "https://example.com/uefi_pflash",
+                  "hash": "4d9a81e8feb96abb6da0d92642996a26edea6e94345da12a19999470c57bb0a6"
+                },
+                "uefi_image": {
+                  "url": "https://example.com/uefi_image",
+                  "hash": "5dcf78750da3326fb02b89051135ac563eb9509ec1587769ef36e86c260ab86d"
+                },
+                "vtpm": {
+                  "enabled": true,
+                  "policy_update_action": 1
+                }
+              },
+              "another-vm-type": {
+                "name": "Weird Virtual Machine",
+                "enabled_state": 2,
+                "installer_image": {
+                  "url": "https://example.com/installer_image_2",
+                  "hash": "75cd9ce860dc65e71c4088fab33ffc54bcb29d8215ff2cd3a8c5f489ed7b246c"
+                },
+                "uefi_pflash": {
+                  "url": "https://example.com/uefi_pflash_2",
+                  "hash": "0923a3ddb53b9f1be54e0486322c8315e25a678a64941e15276d17ad2c63ee82"
+                },
+                "uefi_image": {
+                  "url": "https://example.com/uefi_image_2",
+                  "hash": "01b243b310908d7d54c275db05c411151bc3e3c331340e83eab5c8322819c2d9"
+                },
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 2
+                }
+              },
+              "old-vm-type": {
+                "name": "Legacy VM",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              },
+              "old-vm-type-2": {
+                "name": "Legacy VM",
+                "enabled_state": 1,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              },
+              "vulnerable-vm-type": {
+                "name": "Forbidden VM",
+                "enabled_state": 0,
+                "vtpm": {
+                  "enabled": false,
+                  "policy_update_action": 1
+                }
+              }
+            }
           }
         }
       }
@@ -14381,49 +15170,7 @@
   },
 
   "AssistantWebEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "fuchsia",
-      "android"
-    ],
-    "can_be_recommended": true,
-    "policy_pref_mapping_tests": [
-      {
-        "note": "Checking default value (no policies set).",
-        "policies": {},
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "default_value": true
-          }
-        }
-      },
-      {
-        "note": "Enabling by policy",
-        "policies": {
-          "AssistantWebEnabled": true
-        },
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "value": true
-          }
-        }
-      },
-      {
-        "note": "Disabling by policy",
-        "policies": {
-          "AssistantWebEnabled": false
-        },
-        "prefs": {
-          "autofill_assistant.enabled": {
-            "value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
 
   "VoiceInteractionContextEnabled": {
@@ -19125,6 +19872,41 @@
       }
     ]
   },
+  "FloatingWorkspaceV2Enabled": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "FloatingWorkspaceV2Enabled": true
+        },
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "FloatingWorkspaceV2Enabled": false
+        },
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "ash.floating_workspace_v2_enabled": {
+            "default_value": false
+          }
+        }
+      }
+    ]
+  },
   "DefaultWindowPlacementSetting": {
     "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "fuchsia"],
     "note": "TODO(http://crbug.com/106682): Flag this with can_be_recommended when bug is fixed.",
@@ -19363,26 +20145,7 @@
     ]
   },
   "SetTimeoutWithout1MsClampEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "SetTimeoutWithout1MsClampEnabled": true
-        },
-        "prefs": {
-          "policy.set_timeout_without_1ms_clamp": {
-            "location": "user_profile"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "UnthrottledNestedTimeoutEnabled": {
     "os": [
@@ -19790,7 +20553,7 @@
       }
     ]
   },
-  "IdleProfileCloseTimeout": {
+  "IdleTimeout": {
     "os": [
       "win",
       "linux",
@@ -19800,11 +20563,43 @@
     "policy_pref_mapping_tests": [
       {
         "policies": {
-          "IdleProfileCloseTimeout": 5
+          "IdleTimeout": 10,
+          "IdleTimeoutActions": []
         },
         "prefs": {
-          "idle_profile_close_timeout": {
+          "idle_timeout": {
+            "value": 10
+          }
+        }
+      },
+      {
+        "policies": {
+          "IdleTimeout": 1,
+          "IdleTimeoutActions": []
+        },
+        "prefs": {
+          "idle_timeout": {
             "value": 5
+          }
+        }
+      }
+    ]
+  },
+  "IdleTimeoutActions": {
+    "os": [
+      "win",
+      "linux",
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "IdleTimeout": 10,
+          "IdleTimeoutActions": ["close_browsers", "show_profile_picker"]
+        },
+        "prefs": {
+          "idle_timeout_actions": {
+            "value": [0, 1]
           }
         }
       }
@@ -20370,6 +21165,106 @@
         "prefs": {
           "webauthn.allow_with_broken_certs": {
             "value": false
+          }
+        }
+      }
+    ]
+  },
+  "PdfLocalFileAccessAllowedForDomains": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "pdf_local_file_access_allowed_for_domains": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "policies": {
+          "PdfLocalFileAccessAllowedForDomains": [
+            "google.com"
+          ]
+        },
+        "prefs": {
+          "pdf_local_file_access_allowed_for_domains": {
+            "value": [
+              "google.com"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "ShowCastSessionsStartedByOtherDevices": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ShowCastSessionsStartedByOtherDevices": true
+        },
+        "prefs": {
+          "media_router.show_cast_sessions_started_by_other_devices.enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "ShowCastSessionsStartedByOtherDevices": false
+        },
+        "prefs": {
+          "media_router.show_cast_sessions_started_by_other_devices.enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "ShowCastSessionsStartedByOtherDevices.DefaultChromeOS": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "media_router.show_cast_sessions_started_by_other_devices.enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "ShowCastSessionsStartedByOtherDevices.DefaultNotChromeOS": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "media_router.show_cast_sessions_started_by_other_devices.enabled": {
+            "default_value": true
           }
         }
       }

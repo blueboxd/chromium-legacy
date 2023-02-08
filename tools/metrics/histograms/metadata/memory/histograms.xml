@@ -22,6 +22,20 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="GpuPeakMemoryUsage">
+  <variant name="ChangeTab2"
+      summary="Changing tabs. Note that this histogram uses presentation
+               callbacks to determine the end of the tab change (which is
+               when the tab change is presented on the screen). However,
+               before M110 it was possible that the callback was called even
+               if the next submitted frame failed to present successfully.
+               Since M110, the histogram switched to using presentation
+               callbacks that are only called when the first following frame
+               is successfully presented on the screen (hence version 2)"/>
+  <variant name="PageLoad" summary="Page load"/>
+  <variant name="Scroll" summary="Scroll"/>
+</variants>
+
 <variants name="ProfiledProcess">
   <variant name="" summary="all process types, aggregated"/>
   <variant name=".Browser" summary="the Browser process"/>
@@ -43,7 +57,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.InProcess.Enabled{Process}"
-    enum="BooleanEnabled" expires_after="2022-12-02">
+    enum="BooleanEnabled" expires_after="2023-06-05">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -53,8 +67,21 @@ chromium-metrics-reviews@google.com.
   <token key="Process" variants="ProfiledProcess"/>
 </histogram>
 
+<histogram name="HeapProfiling.InProcess.ModuleCoverage{Process}" units="%"
+    expires_after="2023-06-05">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    For every stack captured by the in-process heap profiler in {Process},
+    records the percentage of stack frames whose address could be mapped to a
+    module using ModuleCache. Emitted at the time a snapshot is taken with an
+    entry for every stack in the snapshot.
+  </summary>
+  <token key="Process" variants="ProfiledProcess"/>
+</histogram>
+
 <histogram name="HeapProfiling.InProcess.SamplesPerSnapshot{Process}"
-    units="samples" expires_after="2022-12-02">
+    units="samples" expires_after="2023-06-05">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -64,24 +91,22 @@ chromium-metrics-reviews@google.com.
   <token key="Process" variants="ProfiledProcess"/>
 </histogram>
 
-<histogram name="HeapProfiling.InProcess.SnapshotInterval" units="ms"
-    expires_after="2022-02-02">
-  <obsolete>
-    Replaced by
-    HeapProfiling.InProcess.SnapshotInterval.{Platform}.{RecordingTime} on
-    2022-02-02.
-  </obsolete>
+<histogram name="HeapProfiling.InProcess.ShortStacks{Process}" units="Boolean"
+    expires_after="2023-06-05">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
-    The time until the next heap snapshot is scheduled. Emitted once per
-    snapshot when the in-process heap profiler is enabled.
+    For every stack captured by the in-process heap profiler in {Process},
+    records if it has fewer than 5 frames. Stacks with few frames are
+    low-quality and may indicate a problem with the stack unwinder. Emitted at
+    the time a snapshot is taken with an entry for every stack in the snapshot.
   </summary>
+  <token key="Process" variants="ProfiledProcess"/>
 </histogram>
 
 <histogram
     name="HeapProfiling.InProcess.SnapshotInterval.{Platform}.{RecordingTime}{Process}"
-    units="ms" expires_after="2022-12-02">
+    units="ms" expires_after="2023-06-05">
   <owner>joenotcharles@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
   <summary>
@@ -106,7 +131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HeapProfiling.InProcess.TotalSampledMemory{Process}"
-    units="samples" expires_after="2023-04-30">
+    units="MB" expires_after="2023-04-30">
   <owner>joenotcharles@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <owner>chrome-memory@google.com</owner>
@@ -142,16 +167,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="HeapProfiling.RecordTrace.Success" enum="BooleanSuccess"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome attempts to record a memory-infra
-    trace to upload an out-of-process heap-profiling memory dump.
-  </summary>
-</histogram>
-
 <histogram name="HeapProfiling.SamplingIntervalKB" units="KB"
     expires_after="2023-04-16">
   <owner>joenotcharles@chromium.org</owner>
@@ -163,28 +178,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="HeapProfiling.UploadTrace.Size" units="bytes"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome uploads a trace. It reflects the
-    uncompressed size of the trace.
-  </summary>
-</histogram>
-
-<histogram name="HeapProfiling.UploadTrace.Success" enum="BooleanSuccess"
-    expires_after="2021-02-25">
-  <owner>erikchen@chromium.org</owner>
-  <owner>chrome-memory@google.com</owner>
-  <summary>
-    The metric is emitted each time Chrome uploads a trace. It reflects whether
-    the upload was successful.
-  </summary>
-</histogram>
-
 <histogram name="Memory.AudioService.PrivateMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>marinaciocea@chromium.org</owner>
   <owner>maxmorin@chromium.org</owner>
   <owner>olka@chromium.org</owner>
@@ -205,7 +200,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.AudioService.PrivateSwapFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>olka@chromium.org</owner>
   <owner>guidou@chromium.org</owner>
   <summary>
@@ -296,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.Active" units="MB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -307,7 +302,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.Active.Over200MBWatermark"
-    enum="BooleanGreaterOrEqualThan200MB" expires_after="2023-03-19">
+    enum="BooleanGreaterOrEqualThan200MB" expires_after="2023-06-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -323,7 +318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.Background" units="MB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -367,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.NumOpenTabs" units="tabs"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>ajuma@chromium.org</owner>
   <owner>rkgibson@google.com</owner>
   <summary>
@@ -382,7 +377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.OnBackground" units="MiB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -439,7 +434,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.PrivateSwapFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -475,7 +470,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.SharedMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <summary>
     A rough estimate of the shared memory footprint of the browser process.
@@ -608,7 +603,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Browser2.Small" units="KB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -623,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Browser2.Tiny" units="bytes"
-    expires_after="2023-05-07">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -712,7 +707,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Extension2.Small" units="KB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -727,7 +722,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Extension2.Tiny" units="bytes"
-    expires_after="2023-05-07">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -758,7 +753,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Gpu2" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocator2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -773,7 +768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Gpu2.Custom" units="bytes"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorCustom2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -790,7 +785,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Gpu2.Small" units="KB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -805,7 +800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Gpu2.Tiny" units="bytes"
-    expires_after="2023-05-07">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -856,7 +851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.NetworkService2.Small"
-    units="KiB" expires_after="2023-03-12">
+    units="KiB" expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>mmenke@chromium.org</owner>
@@ -873,7 +868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.NetworkService2.Tiny"
-    units="bytes" expires_after="2023-05-07">
+    units="bytes" expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -1028,7 +1023,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Renderer2" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocator2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -1060,7 +1055,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Renderer2.Small" units="KB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -1075,7 +1070,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Renderer2.Tiny" units="bytes"
-    expires_after="2023-05-07">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -1121,7 +1116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Utility2" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocator2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -1153,7 +1148,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Utility2.Small" units="KB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorSmall2" -->
 
   <owner>erikchen@chromium.org</owner>
@@ -1168,7 +1163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.Experimental.Utility2.Tiny" units="bytes"
-    expires_after="2023-04-30">
+    expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocatorTiny2" -->
 
   <owner>sashamcintosh@chromium.org</owner>
@@ -1185,7 +1180,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Extension.PrivateMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1259,33 +1254,35 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Memory.GPU.PeakMemoryAllocationSource2" units="MB"
-    expires_after="2023-04-30">
-<!-- Name completed by a combination of the following two histogram_suffixes: -->
-
-<!-- histogram_suffixes name="GPU.PeakMemoryAllocationSourceBase" -->
-
-<!-- and histogram_suffixes name="GPU.PeakMemoryAllocationSource" -->
-
+<histogram name="Memory.GPU.PeakMemoryAllocationSource2.{Usage}.{Source}"
+    units="MB" expires_after="2023-04-30">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
-    The maximum amount of memory of the GPU process allocated by a particular
-    source during a user interaction (e.g. tab-switch, page-load, scroll etc.).
+    The maximum amount of memory of the GPU process allocated by {Source} during
+    the following user interaction: {Usage}.
+
     See Memory.GPU.PeakMemoryUsage2.
   </summary>
+  <token key="Usage" variants="GpuPeakMemoryUsage"/>
+  <token key="Source">
+    <variant name="CommandBuffer" summary="GPU command buffer"/>
+    <variant name="SharedContextState" summary="Shared Context State"/>
+    <variant name="SharedImageStub" summary="Shared Image Stub"/>
+    <variant name="Skia" summary="Skia"/>
+    <variant name="Unknown" summary="an unknown source"/>
+  </token>
 </histogram>
 
-<histogram base="true" name="Memory.GPU.PeakMemoryUsage2" units="MB"
+<histogram name="Memory.GPU.PeakMemoryUsage2.{Usage}" units="MB"
     expires_after="2023-04-30">
-<!-- Name completed by histogram_suffixes name="GPU_PeakMemoryUsage" -->
-
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
-    The maximum amount of memory of the GPU process during a particular
-    interaction (e.g. tab-switch, page-load, scroll etc.).
+    The maximum amount of memory of the GPU process during the following user
+    interaction: {Usage}.
   </summary>
+  <token key="Usage" variants="GpuPeakMemoryUsage"/>
 </histogram>
 
 <histogram name="Memory.Gpu.PrivateMemoryFootprint" units="MB"
@@ -1347,7 +1344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Gpu.SharedMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -1371,7 +1368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.LowMemoryKiller.Count" units="low-memory kills"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>khmel@google.com</owner>
   <owner>vovoy@google.com</owner>
   <summary>
@@ -1381,7 +1378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.LowMemoryKiller.FirstKillLatency" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>khmel@google.com</owner>
   <owner>vovoy@google.com</owner>
   <summary>
@@ -1396,16 +1393,6 @@ chromium-metrics-reviews@google.com.
   <owner>khmel@google.com</owner>
   <owner>vovoy@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
-</histogram>
-
-<histogram name="Memory.LowMemoryKiller.TimeDelta" units="ms"
-    expires_after="2023-04-23">
-  <owner>khmel@google.com</owner>
-  <owner>vovoy@google.com</owner>
-  <summary>
-    The elapsed time between the last low memory kill event and the current low
-    memory kill event.
-  </summary>
 </histogram>
 
 <histogram name="Memory.NativeLibrary.MappedAndResidentMemoryFootprint3"
@@ -1536,7 +1523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NetworkService.SharedMemoryFootprint" units="MiB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <owner>erikchen@chromium.org</owner>
@@ -1650,7 +1637,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.OOMKills.Daily" units="kills"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>vovoy@google.com</owner>
   <owner>src/chromeos/ash/components/memory/OWNERS</owner>
   <summary>
@@ -1683,7 +1670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateMemoryFootprint"
-    units="MB" expires_after="2023-04-23">
+    units="MB" expires_after="2023-05-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1703,7 +1690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateSwapFootprint" units="MB"
-    expires_after="2023-01-10">
+    expires_after="2023-05-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1716,7 +1703,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.ResidentSet" units="MiB"
-    expires_after="2022-12-18">
+    expires_after="2023-05-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1739,7 +1726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.SharedMemoryFootprint"
-    units="MB" expires_after="2023-01-10">
+    units="MB" expires_after="2023-05-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1911,7 +1898,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.SizeKb" units="KB"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1984,7 +1971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.DiskReadTime.5min" units="ms"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2128,7 +2115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.TotalSizeKb.5min" units="KB"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2261,7 +2248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ProcessCount" units="processes"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>creis@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -2343,7 +2330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Renderer.SharedMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -2374,7 +2361,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.All" units="processes"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -2394,7 +2381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RenderProcessHost.Count.InitializedAndNotDead"
-    units="processes" expires_after="2023-03-12">
+    units="processes" expires_after="2023-05-14">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
@@ -2492,7 +2479,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.System.MemAvailableMB" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>andreaorru@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -2504,7 +2491,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.System.MemUsedMB" units="MB" expires_after="2023-03-12">
+<histogram name="Memory.System.MemUsedMB" units="MB" expires_after="2023-05-14">
   <owner>andreaorru@chromium.org</owner>
   <owner>hidehiko@chromium.org</owner>
   <summary>
@@ -2560,7 +2547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers"
-    units="MB" expires_after="2023-03-26">
+    units="MB" expires_after="2023-06-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2574,7 +2561,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers"
-    units="MB" expires_after="2023-03-26">
+    units="MB" expires_after="2023-06-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2618,7 +2605,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprintExcludingWaived"
-    units="MB" expires_after="2023-03-26">
+    units="MB" expires_after="2023-06-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2632,7 +2619,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority"
-    units="MB" expires_after="2023-03-26">
+    units="MB" expires_after="2023-06-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2674,7 +2661,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.SharedMemoryFootprint" units="MB"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -2781,7 +2768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.UX.Study.1" enum="UXStudy1Arm"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>erikchen@chromium.org</owner>
   <owner>meredithguo@google.com</owner>
   <summary>

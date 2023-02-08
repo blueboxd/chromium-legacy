@@ -56,7 +56,7 @@
 #include "chrome/browser/ash/crosapi/test_crosapi_dependency_registry.h"
 #include "chrome/browser/ash/crosapi/test_local_printer_ash.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/test/chromeos/printing/fake_local_printer_chromeos.h"
 #endif
@@ -388,7 +388,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
     local_printer_ = std::make_unique<TestLocalPrinterAsh>(&profile_, nullptr);
     crosapi::IdleServiceAsh::DisableForTesting();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
     manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
 #endif
     initiator_web_contents_ = content::WebContents::Create(
@@ -430,7 +430,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   void TearDown() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     manager_.reset();
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
 #endif
     PrintViewManager::FromWebContents(initiator_web_contents_.get())
         ->PrintPreviewDone();
@@ -1298,18 +1298,18 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
 
   // Simulate renderer responses: PageLayoutReady, PageCountReady,
   // PagePreviewReady, and OnPrintPreviewReady will be called in that order.
-  base::Value layout(base::Value::Type::DICTIONARY);
-  layout.SetDoubleKey(kSettingMarginTop, 34.0);
-  layout.SetDoubleKey(kSettingMarginLeft, 34.0);
-  layout.SetDoubleKey(kSettingMarginBottom, 34.0);
-  layout.SetDoubleKey(kSettingMarginRight, 34.0);
-  layout.SetDoubleKey(kSettingContentWidth, 544.0);
-  layout.SetDoubleKey(kSettingContentHeight, 700.0);
-  layout.SetIntKey(kSettingPrintableAreaX, 17);
-  layout.SetIntKey(kSettingPrintableAreaY, 17);
-  layout.SetIntKey(kSettingPrintableAreaWidth, 578);
-  layout.SetIntKey(kSettingPrintableAreaHeight, 734);
-  handler()->SendPageLayoutReady(base::Value::AsDictionaryValue(layout),
+  base::Value::Dict layout;
+  layout.Set(kSettingMarginTop, 34.0);
+  layout.Set(kSettingMarginLeft, 34.0);
+  layout.Set(kSettingMarginBottom, 34.0);
+  layout.Set(kSettingMarginRight, 34.0);
+  layout.Set(kSettingContentWidth, 544.0);
+  layout.Set(kSettingContentHeight, 700.0);
+  layout.Set(kSettingPrintableAreaX, 17);
+  layout.Set(kSettingPrintableAreaY, 17);
+  layout.Set(kSettingPrintableAreaWidth, 578);
+  layout.Set(kSettingPrintableAreaHeight, 734);
+  handler()->SendPageLayoutReady(std::move(layout),
                                  /*has_custom_page_size_style,=*/false,
                                  preview_request_id);
 
@@ -1334,7 +1334,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // None of these should work since there has been no new preview request.
   // Check that there are no new web UI messages sent.
   size_t message_count = web_ui()->call_data().size();
-  handler()->SendPageLayoutReady(base::DictionaryValue(),
+  handler()->SendPageLayoutReady(base::Value::Dict(),
                                  /*has_custom_page_size_style,=*/false,
                                  preview_request_id);
   EXPECT_EQ(message_count, web_ui()->call_data().size());

@@ -9,6 +9,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/shell_integration.h"
 #include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -24,10 +25,6 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/app/vector_icons/vector_icons.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 // =============================================================================
@@ -1709,16 +1706,7 @@ class OmniboxPedalManageChromeOSAccessibility : public OmniboxPedal {
                 IDS_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY_SUFFIX,
                 IDS_ACC_OMNIBOX_PEDAL_MANAGE_CHROMEOS_ACCESSIBILITY),
-            GURL("chrome://os-settings/manageAccessibility")) {}
-
-  void OnLoaded() override {
-    OmniboxPedal::OnLoaded();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (::features::IsAccessibilityOSSettingsVisibilityEnabled()) {
-      SetNavigationUrl(GURL("chrome://os-settings/osAccessibility"));
-    }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  }
+            GURL("chrome://os-settings/osAccessibility")) {}
 
   std::vector<SynonymGroupSpec> SpecifySynonymGroups(
       bool locale_is_english) const override {
@@ -1905,6 +1893,78 @@ class OmniboxPedalCustomizeSearchEngines : public OmniboxPedal {
 
 // =============================================================================
 
+#if !BUILDFLAG(IS_ANDROID)
+class OmniboxPedalSetChromeAsDefaultBrowser : public OmniboxPedal {
+ public:
+  OmniboxPedalSetChromeAsDefaultBrowser()
+      : OmniboxPedal(
+            OmniboxPedalId::SET_CHROME_AS_DEFAULT_BROWSER,
+            LabelStrings(
+                IDS_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_HINT,
+                IDS_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_SUGGESTION_CONTENTS,
+                IDS_ACC_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER_SUFFIX,
+                IDS_ACC_OMNIBOX_PEDAL_SET_CHROME_AS_DEFAULT_BROWSER),
+            GURL()) {}
+
+  std::vector<SynonymGroupSpec> SpecifySynonymGroups(
+      bool locale_is_english) const override {
+    if (locale_is_english) {
+      return {
+          {
+              true,
+              true,
+              IDS_OMNIBOX_PEDAL_SYNONYMS_SET_CHROME_AS_DEFAULT_BROWSER_ONE_REQUIRED_HOW_TO_MAKE_CHROME_MY_DEFAULT_BROWSER,
+          },
+          {
+              false,
+              true,
+              IDS_OMNIBOX_PEDAL_SYNONYMS_SET_CHROME_AS_DEFAULT_BROWSER_ONE_OPTIONAL_SELECT,
+          },
+          {
+              false,
+              true,
+              IDS_OMNIBOX_PEDAL_SYNONYMS_SET_CHROME_AS_DEFAULT_BROWSER_ONE_OPTIONAL_DEFAULT_BROWSER,
+          },
+      };
+    } else {
+      return {
+          {
+              true,
+              true,
+              IDS_OMNIBOX_PEDAL_SYNONYMS_SET_CHROME_AS_DEFAULT_BROWSER_ONE_REQUIRED_ALWAYS_OPEN_LINKS_IN_CHROME,
+          },
+      };
+    }
+  }
+
+  bool IsReadyToTrigger(
+      const AutocompleteInput& input,
+      const AutocompleteProviderClient& client) const override {
+    // Note: shell_integration::CanSetAsDefaultBrowser() uses this call too,
+    // and if permission is SET_DEFAULT_NOT_ALLOWED, this method returns false.
+    const shell_integration::DefaultWebClientSetPermission permission =
+        shell_integration::GetDefaultWebClientSetPermission();
+    return (permission == shell_integration::SET_DEFAULT_INTERACTIVE &&
+            OmniboxFieldTrial::kDefaultBrowserPedalInteractive.Get()) ||
+           (permission == shell_integration::SET_DEFAULT_UNATTENDED &&
+            OmniboxFieldTrial::kDefaultBrowserPedalUnattended.Get());
+  }
+
+  void Execute(ExecutionContext& context) const override {
+    // The worker pointer is reference counted. While it is running, the
+    // message loops of the FILE and UI thread will hold references to it
+    // and it will be automatically freed once all its tasks have finished.
+    base::MakeRefCounted<shell_integration::DefaultBrowserWorker>()
+        ->StartSetAsDefault(base::NullCallback());
+  }
+
+ protected:
+  ~OmniboxPedalSetChromeAsDefaultBrowser() override = default;
+};
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+// =============================================================================
+
 const gfx::VectorIcon& GetSharingHubVectorIcon() {
 #if BUILDFLAG(IS_MAC)
   return omnibox::kShareMacIcon;
@@ -1990,6 +2050,9 @@ GetPedalImplementations(bool incognito, bool testing) {
   add(new OmniboxPedalCustomizeChromeFonts());
   add(new OmniboxPedalManageChromeThemes());
   add(new OmniboxPedalCustomizeSearchEngines());
+  if (OmniboxFieldTrial::IsDefaultBrowserPedalEnabled()) {
+    add(new OmniboxPedalSetChromeAsDefaultBrowser());
+  }
 #endif  // BUILDFLAG(IS_ANDROID)
 
   return pedals;

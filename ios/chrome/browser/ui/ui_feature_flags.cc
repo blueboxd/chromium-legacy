@@ -4,6 +4,21 @@
 
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 
+BASE_FEATURE(kDefaultBrowserBlueDotPromo,
+             "DefaultBrowserBlueDotPromo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
+    kBlueDotPromoUserGroupOptions[] = {
+        {BlueDotPromoUserGroup::kAllDBPromosDisabled, "all-db-promos-disabled"},
+        {BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled,
+         "only-blue-dot-promo-enabled"}};
+
+constexpr base::FeatureParam<BlueDotPromoUserGroup> kBlueDotPromoUserGroupParam{
+    &kDefaultBrowserBlueDotPromo, "user-group",
+    BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled,
+    &kBlueDotPromoUserGroupOptions};
+
 BASE_FEATURE(kExpandedTabStrip,
              "ExpandedTabStrip",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -46,6 +61,10 @@ BASE_FEATURE(kIOSNewOmniboxImplementation,
 
 BASE_FEATURE(kIOSOmniboxUpdatedPopupUI,
              "IOSOmniboxUpdatedPopupUI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRemoveCrashInfobar,
+             "RemoveCrashInfobar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char kIOSOmniboxUpdatedPopupUIVariationName[] = "PopupUIVariant";
@@ -67,7 +86,7 @@ BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
 
 BASE_FEATURE(kUseLensToSearchForImage,
              "UseLensToSearchForImage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInHomeScreenWidget,
              "EnableLensInHomeScreenWidget",
@@ -79,6 +98,10 @@ BASE_FEATURE(kEnableLensInKeyboard,
 
 BASE_FEATURE(kEnableLensInNTP,
              "EnableLensInNTP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableLensInOmniboxCopiedImage,
+             "EnableLensInOmniboxCopiedImage",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRemoveExcessNTPs,

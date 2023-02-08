@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -30,7 +29,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_task_environment.h"
@@ -202,7 +201,7 @@ void DeviceLocalAccountExternalCacheTest::SetUp() {
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_dir_));
 
   ASSERT_TRUE(testing_profile_manager_.SetUp());
-  chromeos::LoginState::Initialize();
+  ash::LoginState::Initialize();
   crosapi::IdleServiceAsh::DisableForTesting();
   Profile* profile = testing_profile_manager_.CreateTestingProfile("Default");
   crosapi_manager_ = crosapi::CreateCrosapiManagerWithTestRegistry();
@@ -221,7 +220,7 @@ void DeviceLocalAccountExternalCacheTest::SetUp() {
 void DeviceLocalAccountExternalCacheTest::TearDown() {
   crosapi_manager_.reset();
   testing_profile_manager_.DeleteAllTestingProfiles();
-  chromeos::LoginState::Shutdown();
+  ash::LoginState::Shutdown();
   TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(nullptr);
 }
 
@@ -278,7 +277,8 @@ TEST_F(DeviceLocalAccountExternalCacheTest, CacheNotStarted) {
 TEST_F(DeviceLocalAccountExternalCacheTest, ForceInstallListEmpty) {
   // Start the cache. Verify that the loader announces an empty extension list.
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get())).Times(1);
-  external_cache_->StartCache(base::ThreadTaskRunnerHandle::Get());
+  external_cache_->StartCache(
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   external_cache_->UpdateExtensionsList(base::Value::Dict());
   base::RunLoop().RunUntilIdle();
   VerifyAndResetVisitorCallExpectations();
@@ -305,7 +305,7 @@ TEST_F(DeviceLocalAccountExternalCacheTest, ForceInstallListSet) {
 
   // Start the cache.
   auto cache_task_runner = base::MakeRefCounted<TrackingProxyTaskRunner>(
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   external_cache_->StartCache(cache_task_runner);
   external_cache_->UpdateExtensionsList(std::move(dict));
 

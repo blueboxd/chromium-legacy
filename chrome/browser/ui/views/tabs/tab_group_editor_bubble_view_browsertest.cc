@@ -179,8 +179,21 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
       active_browser->tab_strip_model()->group_model()->ListTabGroups().size());
 }
 
-IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
-                       CollapsingGroupFreezesAllTabs) {
+class TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled
+    : public TabGroupEditorBubbleViewDialogBrowserTest {
+ public:
+  TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kTabGroupsCollapseFreezing}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled,
+    CollapsingGroupFreezesAllTabs) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   InProcessBrowserTest::AddBlankTabAndShow(browser());
   InProcessBrowserTest::AddBlankTabAndShow(browser());
@@ -192,8 +205,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   ASSERT_FALSE(browser_view->tabstrip()->tab_at(0)->HasFreezingVoteToken());
   ASSERT_FALSE(browser_view->tabstrip()->tab_at(1)->HasFreezingVoteToken());
   ASSERT_FALSE(browser_view->tabstrip()->tab_at(2)->HasFreezingVoteToken());
-  ASSERT_TRUE(
-      browser_view->tabstrip()->ToggleTabGroupCollapsedState(group.value()));
+  browser_view->tabstrip()->ToggleTabGroupCollapsedState(group.value());
   EXPECT_TRUE(browser_view->tabstrip()->tab_at(0)->HasFreezingVoteToken());
   EXPECT_TRUE(browser_view->tabstrip()->tab_at(1)->HasFreezingVoteToken());
   EXPECT_FALSE(browser_view->tabstrip()->tab_at(2)->HasFreezingVoteToken());

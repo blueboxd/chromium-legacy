@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -58,6 +59,12 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(ReleaseSurface, void());
   MOCK_METHOD1(TakeFrontBuffer, void(const Mailbox& mailbox));
   MOCK_METHOD2(ReturnFrontBuffer, void(const Mailbox& mailbox, bool is_lost));
+  MOCK_METHOD5(SetDefaultFramebufferSharedImage,
+               void(const Mailbox& mailbox,
+                    int samples,
+                    bool preserve,
+                    bool needs_depth,
+                    bool needs_stencil));
   MOCK_METHOD0(GetSavedBackTextureCountForTest, size_t());
   MOCK_METHOD0(GetCreatedBackTextureCountForTest, size_t());
   MOCK_METHOD1(ResizeOffscreenFramebuffer, bool(const gfx::Size& size));
@@ -174,11 +181,17 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(WasContextLostByRobustnessExtension, bool());
   MOCK_METHOD1(MarkContextLost, void(gpu::error::ContextLostReason reason));
   MOCK_METHOD0(CheckResetStatus, bool());
-  MOCK_METHOD4(BindImage,
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  MOCK_METHOD3(AttachImageToTextureWithDecoderBinding,
                void(uint32_t client_texture_id,
                     uint32_t texture_target,
-                    gl::GLImage* image,
-                    bool can_bind_to_sampler));
+                    gl::GLImage* image));
+#else
+  MOCK_METHOD3(AttachImageToTextureWithClientBinding,
+               void(uint32_t client_texture_id,
+                    uint32_t texture_target,
+                    gl::GLImage* image));
+#endif
   MOCK_METHOD1(
       SetCopyTextureResourceManagerForTest,
       void(CopyTextureCHROMIUMResourceManager* copy_texture_resource_manager));

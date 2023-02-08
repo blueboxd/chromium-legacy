@@ -86,7 +86,7 @@ BASE_FEATURE(kFillOnAccountSelect,
              "fill-on-account-select",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // When enabled, initial sync will be forced during startup if the password
 // store has encryption service failures.
 BASE_FEATURE(kForceInitialSyncWhenDecryptionFails,
@@ -148,25 +148,17 @@ BASE_FEATURE(kSendPasswords,
 // Enables password leak detection for unauthenticated users.
 BASE_FEATURE(kLeakDetectionUnauthenticated,
              "LeakDetectionUnauthenticated",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables automatic password change flow from leaked password dialog.
 BASE_FEATURE(kPasswordChange,
              "PasswordChange",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // Enables password change flow from bulk leak check in settings.
 BASE_FEATURE(kPasswordChangeInSettings,
              "PasswordChangeInSettings",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // Enables automatic password change for account store credentials.
 BASE_FEATURE(kPasswordChangeAccountStoreUsers,
@@ -182,16 +174,16 @@ BASE_FEATURE(kPasswordChangeWellKnown,
 // |PasswordChangeInSettings| and |PasswordChange| features.
 BASE_FEATURE(kPasswordDomainCapabilitiesFetching,
              "PasswordDomainCapabilitiesFetching",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 // Controls the ability to import passwords from Chrome's settings page.
 BASE_FEATURE(kPasswordImport,
              "PasswordImport",
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPasswordManagerRedesign,
@@ -203,11 +195,6 @@ BASE_FEATURE(kPasswordManagerRedesign,
 BASE_FEATURE(kPasswordReuseDetectionEnabled,
              "PasswordReuseDetectionEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables password scripts fetching for the |PasswordChangeInSettings| feature.
-BASE_FEATURE(kPasswordScriptsFetching,
-             "PasswordScriptsFetching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables requesting and saving passwords grouping information from the
 // affiliation service.
@@ -252,14 +239,6 @@ BASE_FEATURE(kShowUPMErrorNotification,
              "ShowUpmErrorNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the experiment to automatically submit a form after filling by
-// TouchToFill
-// TODO(crbug/1283004): Clean up the flag once the feature is completely landed
-// in Stable.
-BASE_FEATURE(kTouchToFillPasswordSubmission,
-             "TouchToFillPasswordSubmission",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.
 BASE_FEATURE(kUnifiedCredentialManagerDryRun,
@@ -270,12 +249,12 @@ BASE_FEATURE(kUnifiedCredentialManagerDryRun,
 // database will be unused but kept in sync for local passwords.
 BASE_FEATURE(kUnifiedPasswordManagerAndroid,
              "UnifiedPasswordManagerAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables showing contextual error messages when UPM encounters an auth error.
 BASE_FEATURE(kUnifiedPasswordManagerErrorMessages,
              "UnifiedPasswordManagerErrorMessages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the built-in sync functionality in PasswordSyncBridge becomes
 // unused, meaning that SyncService/SyncEngine will no longer download or
@@ -289,7 +268,7 @@ BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
 // that were previously evicted after experiencing errors.
 BASE_FEATURE(kUnifiedPasswordManagerReenrollment,
              "UnifiedPasswordManagerReenrollment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables all UI branding changes related to Unified Password Manager:
 // the strings containing 'Password Manager' and the password manager
@@ -370,20 +349,8 @@ const char kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[] =
 const char kPasswordChangeInSettingsWithForcedWarningForEverySite[] =
     "should_force_warning_for_every_site_in_settings";
 
-#if BUILDFLAG(IS_ANDROID)
-// Enables using conservative heuristics to calculate submission readiness.
-const char kTouchToFillPasswordSubmissionWithConservativeHeuristics[] =
-    "should_use_conservative_heuristics";
-#endif  // IS_ANDROID
-
 bool IsPasswordScriptsFetchingEnabled() {
-  return base::FeatureList::IsEnabled(kPasswordScriptsFetching) ||
-         base::FeatureList::IsEnabled(kPasswordDomainCapabilitiesFetching);
-}
-
-bool IsAutomatedPasswordChangeEnabled() {
-  return base::FeatureList::IsEnabled(kPasswordChangeInSettings) ||
-         base::FeatureList::IsEnabled(kPasswordChange);
+  return base::FeatureList::IsEnabled(kPasswordDomainCapabilitiesFetching);
 }
 
 #if BUILDFLAG(IS_ANDROID)

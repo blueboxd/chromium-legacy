@@ -334,6 +334,7 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
+      "instrumented_libraries_release": "xenial",
       "is_component_build": true,
       "is_debug": false,
       "is_msan": true,
@@ -428,21 +429,12 @@
   "Linux ChromiumOS MSan Focal": {
     "gn_args": {
       "dcheck_always_on": false,
+      "instrumented_libraries_release": "focal",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
       "msan_track_origins": 2,
       "target_os": "chromeos",
-      "use_remoteexec": true
-    }
-  },
-  "Linux MSan Focal": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "is_msan": true,
-      "msan_track_origins": 2,
       "use_remoteexec": true
     }
   },
@@ -603,6 +595,7 @@
       "symbol_level": 1,
       "target_cpu": "arm",
       "target_os": "android",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -622,6 +615,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -777,7 +771,8 @@
       "symbol_level": 0,
       "target_os": "fuchsia",
       "use_clang_coverage": true,
-      "use_remoteexec": true
+      "use_remoteexec": true,
+      "use_v2_script_default": false
     }
   },
   "fuchsia-fyi-arm64-cfv2-script": {
@@ -788,7 +783,6 @@
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "test_host_cpu": "arm64",
-      "use_cfv2_script": true,
       "use_remoteexec": true
     }
   },
@@ -798,7 +792,6 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "fuchsia",
-      "use_cfv2_script": true,
       "use_remoteexec": true
     }
   },
@@ -1066,28 +1059,20 @@
       "use_remoteexec": true
     }
   },
-  "linux-ash-chromium-builder-fyi-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "ChromeOS",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "target_os": "chromeos",
-      "use_remoteexec": true
-    }
-  },
   "linux-backuprefptr-x64-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
+      "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -1120,17 +1105,6 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "use_remoteexec": true
-    }
-  },
-  "linux-blink-v8-sandbox-future-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "use_remoteexec": true,
-      "v8_enable_sandbox_future": true
     }
   },
   "linux-blink-wpt-reset-rel": {
@@ -1170,19 +1144,13 @@
   "linux-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_remoteexec": true
-    }
-  },
-  "linux-example-builder": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
       "use_remoteexec": true
     }
   },
@@ -1291,17 +1259,6 @@
       "use_goma": true
     }
   },
-  "linux-lacros-tester-rel-reviver": {
-    "gn_args": {
-      "also_build_ash_chrome": true,
-      "chromeos_is_browser_only": true,
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "target_os": "chromeos",
-      "use_remoteexec": true
-    }
-  },
   "linux-lacros-version-skew-fyi": {
     "gn_args": {
       "chromeos_is_browser_only": true,
@@ -1377,6 +1334,14 @@
       "use_remoteexec": true
     }
   },
+  "mac-12-wpt-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "use_remoteexec": true
+    }
+  },
   "mac-arm64-on-arm64-rel-reclient": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1392,11 +1357,14 @@
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
+      "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -1404,24 +1372,13 @@
   "mac-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_remoteexec": true
-    }
-  },
-  "mac-fieldtrial-rel": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_nacl": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
       "use_remoteexec": true
     }
   },
@@ -1465,11 +1422,14 @@
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
+      "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x64",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -1480,11 +1440,14 @@
       "enable_backup_ref_ptr_slow_checks": true,
       "enable_backup_ref_ptr_support": true,
       "enable_dangling_raw_ptr_checks": true,
+      "ffmpeg_branding": "Chrome",
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "put_ref_count_in_previous_slot": true,
       "symbol_level": 1,
       "target_cpu": "x86",
+      "use_goma": false,
       "use_partition_alloc_as_malloc": true,
       "use_remoteexec": true
     }
@@ -1528,9 +1491,11 @@
   "win10-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
       "is_clang": true,
       "is_component_build": false,
       "is_debug": false,
+      "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
       "use_remoteexec": true
@@ -1548,6 +1513,15 @@
     }
   },
   "win10-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "win11-wpt-content-shell-fyi-rel": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,

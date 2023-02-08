@@ -295,8 +295,8 @@ class FormForest {
       return frame && form;
     }
 
-    FrameData* frame = nullptr;
-    FormData* form = nullptr;
+    raw_ptr<FrameData, DanglingUntriaged> frame = nullptr;
+    raw_ptr<FormData, DanglingUntriaged> form = nullptr;
   };
 
   // Resolves a FrameToken |query| from the perspective of |reference| to the

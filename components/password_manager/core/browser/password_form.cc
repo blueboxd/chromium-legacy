@@ -115,6 +115,10 @@ std::u16string ValueElementVectorToString(
 
 // Serializes a PasswordForm to a JSON object. Used only for logging in tests.
 void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
+  target.Set("primary_key",
+             form.primary_key.has_value()
+                 ? base::NumberToString(form.primary_key.value().value())
+                 : "PRIMARY KEY IS MISSING");
   target.Set("scheme", ToString(form.scheme));
   target.Set("signon_realm", form.signon_realm);
   target.Set("is_public_suffix_match", form.is_public_suffix_match);
@@ -306,12 +310,43 @@ bool PasswordForm::HasNonEmptyPasswordValue() const {
   return !password_value.empty() || !new_password_value.empty();
 }
 
+absl::optional<std::u16string> PasswordForm::GetNoteWithEmptyUniqueDisplayName()
+    const {
+  const auto& note_itr = base::ranges::find_if(
+      notes, &std::u16string::empty, &PasswordNote::unique_display_name);
+  return note_itr != notes.end() ? absl::make_optional(note_itr->value)
+                                 : absl::nullopt;
+}
+
+PasswordNoteChangeResult PasswordForm::SetNoteWithEmptyUniqueDisplayName(
+    const std::u16string& new_note_value) {
+  const auto& note_itr = base::ranges::find_if(
+      notes, &std::u16string::empty, &PasswordNote::unique_display_name);
+  // if the old note doesn't exist, the note is just created.
+  if (note_itr == notes.end()) {
+    notes.emplace_back(new_note_value, base::Time::Now());
+    return PasswordNoteChangeResult::kNoteAdded;
+  }
+  // Note existed, but it was empty.
+  if (note_itr->value.empty()) {
+    note_itr->value = new_note_value;
+    note_itr->date_created = base::Time::Now();
+    return PasswordNoteChangeResult::kNoteAdded;
+  }
+  note_itr->value = new_note_value;
+  return new_note_value.empty() ? PasswordNoteChangeResult::kNoteRemoved
+                                : PasswordNoteChangeResult::kNoteEdited;
+}
+
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
                                     const PasswordForm& right) {
   return PasswordFormUniqueKey(left) == PasswordFormUniqueKey(right);
 }
 
 bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
+  // TODO(crbug.com/1330906): Revisit whether we should consider the primary_key
+  // field when comparing forms. This is currently used only in tests, and non
+  // of the existing tests test the equality of primary_keys.
   return lhs.scheme == rhs.scheme && lhs.signon_realm == rhs.signon_realm &&
          lhs.url == rhs.url && lhs.action == rhs.action &&
          lhs.submit_element == rhs.submit_element &&

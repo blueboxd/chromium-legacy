@@ -99,8 +99,8 @@
         <div id="existingPassphraseTitle" class="list-item">
             <div class="start cr-padded-text">
               <div>$i18n{existingPassphraseTitle}</div>
-              <div class="secondary"
-                  inner-h-t-m-l="[[existingPassphraseLabel_]]">
+              <div id="enterPassphraseLabel" class="secondary"
+                  inner-h-t-m-l="[[enterPassphraseLabel_]]">
               </div>
             </div>
         </div>
@@ -144,7 +144,6 @@
 
           <cr-link-row class="hr"
               label="$i18n{personalizeGoogleServicesTitle}"
-              hidden="[[!showActivityControls_()]]"
               on-click="onActivityControlsClick_" external></cr-link-row>
 
           <cr-link-row id="syncDashboardLink" class="hr"

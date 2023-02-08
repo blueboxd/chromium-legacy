@@ -37,6 +37,7 @@ constexpr char16_t kTab1Contents[] = u"Tab 1 Contents";
 constexpr char16_t kTab2Contents[] = u"Tab 2 Contents";
 constexpr char16_t kTab3Contents[] = u"Tab 3 Contents";
 constexpr char kViewName[] = "Named View";
+constexpr char kViewName2[] = "Second Named View";
 }  // namespace
 
 class InteractiveViewsTestTest : public InteractiveViewsTest {
@@ -111,6 +112,16 @@ class InteractiveViewsTestTest : public InteractiveViewsTest {
   ButtonCallbackMock button1_callback_;
   ButtonCallbackMock button2_callback_;
 };
+
+TEST_F(InteractiveViewsTestTest, WithView) {
+  RunTestSequence(WithView(kButton1Id, base::BindOnce([](LabelButton* button) {
+                             EXPECT_TRUE(button->GetVisible());
+                           })),
+                  // Check version with arbitrary return value and matcher.
+                  WithView(kTabbedPaneId, base::BindOnce([](TabbedPane* tabs) {
+                             EXPECT_EQ(3U, tabs->GetTabCount());
+                           })));
+}
 
 TEST_F(InteractiveViewsTestTest, CheckView) {
   RunTestSequence(
@@ -247,6 +258,26 @@ TEST_F(InteractiveViewsTestTest, NameChildViewFails) {
                                      u"This is not a valid button caption.";
               })),
           PressButton(kViewName, InputType::kKeyboard)));
+}
+
+TEST_F(InteractiveViewsTestTest, NameChildViewByTypeAndIndex) {
+  EXPECT_CALLS_IN_SCOPE_2(
+      button1_callback_, Run, button2_callback_, Run,
+      RunTestSequence(
+          NameChildViewByType<views::LabelButton>(kButtonsId, kViewName),
+          NameChildViewByType<views::LabelButton>(kButtonsId, kViewName2, 1),
+          PressButton(kViewName), PressButton(kViewName2)));
+}
+
+TEST_F(InteractiveViewsTestTest, NameDescendantViewByTypeAndIndex) {
+  RunTestSequence(
+      NameDescendantViewByType<views::TabbedPaneTab>(kContentsId, kViewName),
+      NameDescendantViewByType<views::TabbedPaneTab>(kContentsId, kViewName2,
+                                                     2),
+      CheckViewProperty(kViewName, &views::TabbedPaneTab::GetTitleText,
+                        kTab1Title),
+      CheckViewProperty(kViewName2, &views::TabbedPaneTab::GetTitleText,
+                        kTab3Title));
 }
 
 }  // namespace views::test

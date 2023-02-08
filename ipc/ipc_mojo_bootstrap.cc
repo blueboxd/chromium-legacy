@@ -766,7 +766,7 @@ class ChannelAssociatedGroupController
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
     std::unique_ptr<mojo::SequenceLocalSyncEventWatcher> sync_watcher_;
     base::circular_deque<std::pair<uint32_t, MessageWrapper>> sync_messages_;
-    ExclusiveSyncWait* exclusive_wait_ = nullptr;
+    raw_ptr<ExclusiveSyncWait> exclusive_wait_ = nullptr;
     uint32_t next_sync_message_id_ = 0;
   };
 
@@ -887,13 +887,17 @@ class ChannelAssociatedGroupController
       client->NotifyError(reason);
     } else {
       endpoint->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&ChannelAssociatedGroupController::
-                                        NotifyEndpointOfErrorOnEndpointThread,
-                                    this, endpoint->id(),
-                                    base::UnsafeDanglingUntriaged(endpoint)));
+          FROM_HERE,
+          base::BindOnce(&ChannelAssociatedGroupController::
+                             NotifyEndpointOfErrorOnEndpointThread,
+                         this, endpoint->id(),
+                         // This is safe as `endpoint` is verified to be in
+                         // `endpoints_` (a map with ownership) before use.
+                         base::UnsafeDangling(endpoint)));
     }
   }
 
+  // `endpoint` might be a dangling ptr and must be checked before dereference.
   void NotifyEndpointOfErrorOnEndpointThread(mojo::InterfaceId id,
                                              Endpoint* endpoint) {
     base::AutoLock locker(lock_);

@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 // Necessary to convert async media::VideoDecoder to sync CdmVideoDecoder.
@@ -22,7 +23,6 @@
 // ClearKeyCdm is only for testing.
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decoder_status.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
@@ -41,10 +41,6 @@
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 #include "media/filters/ffmpeg_video_decoder.h"
-#endif
-
-#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
-#include "media/filters/gav1_video_decoder.h"
 #endif
 
 namespace media {
@@ -146,7 +142,7 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
 void SetupGlobalEnvironmentIfNeeded() {
   // Creating a base::SingleThreadTaskExecutor to setup
   // base::ThreadTaskRunnerHandle.
-  if (!base::ThreadTaskRunnerHandle::IsSet()) {
+  if (!base::SingleThreadTaskRunner::HasCurrentDefault()) {
     static base::NoDestructor<base::SingleThreadTaskExecutor> task_executor;
   }
 
@@ -318,18 +314,10 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
     video_decoder = std::make_unique<VpxVideoDecoder>();
 #endif
 
-#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
-  if (base::FeatureList::IsEnabled(kGav1VideoDecoder)) {
-    if (config.codec == cdm::kCodecAv1)
-      video_decoder.reset(new Gav1VideoDecoder(null_media_log.get()));
-  } else
-#endif  // BUILDFLAG(ENABLE_LIBGAV1_DECODER)
-  {
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
-    if (config.codec == cdm::kCodecAv1)
-      video_decoder = std::make_unique<Dav1dVideoDecoder>(null_media_log.get());
+  if (config.codec == cdm::kCodecAv1)
+    video_decoder = std::make_unique<Dav1dVideoDecoder>(null_media_log.get());
 #endif
-  }
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   if (!video_decoder)

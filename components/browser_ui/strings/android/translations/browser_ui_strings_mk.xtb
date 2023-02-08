@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Дозволете сајтовите да пристапуваат до сензорите за движење (препорачано)</translation>
 <translation id="5050380848339752099">Сајтов ќе сподели информации со апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5063480226653192405">Користење</translation>
-<translation id="5082281938627763039">Ова ги брише колачињата и другите податоци од сајтот за <ph name="FPS_MEMBER" /> и за сајтовите во групата сајтови на <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Сајт за мобилен</translation>
 <translation id="509133520954049755">Побарајте приказ на компјутер</translation>
 <translation id="5100237604440890931">Проширено - кликни да се прошири.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Повлечете од врвот и допрете го копчето Назад за да излезете од цел екран.</translation>
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Добро, сфатив</translation>
-<translation id="5313967007315987356">Додај локација</translation>
 <translation id="5317780077021120954">Зачувај</translation>
 <translation id="5335288049665977812">Дозволи сајтовите да извршуваат JavaScript (се препорачува)</translation>
 <translation id="534295439873310000">NFC-уреди</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Се споделува екранот</translation>
 <translation id="5922967540311291836">Блокирајте колачиња од трети страни:</translation>
 <translation id="5939518447894949180">Ресетирај</translation>
+<translation id="5968921426641056619">Внесете интернет-адреса</translation>
 <translation id="5975083100439434680">Одзумирај</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Контролирајте го пристапот на сајтов до вашиот уред</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">Избрани ставки: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /> се одобрени.</translation>
 <translation id="7302486331832100261">Вообичаено ги блокирате известувањата. За да ги дозволите, допрете „Детали“.</translation>
+<translation id="7366415735885268578">Додајте сајт</translation>
 <translation id="7383715096023715447">Поставки за <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Прво прашај</translation>
 <translation id="7423538860840206698">Блокирано читање на привремената меморија</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
 <translation id="8409345997656833551">Добивајте известувања кога статија може да се прикажува во поедноставен преглед</translation>
+<translation id="8423565414844018592">Скалирањето на текстот е поставено на <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Поставки</translation>
 <translation id="8441146129660941386">Барај поназад</translation>
 <translation id="8444433999583714703">За да овозможите <ph name="APP_NAME" /> да пристапува до вашата локација, вклучете ја дозволата за локацијата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC е исклучена за уредов. Вклучете ја во <ph name="BEGIN_LINK" />„Поставки за Android“<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Блокирај сајтовите да не ги гледаат и менуваат податоците на NFC-уреди</translation>
-<translation id="8941729603749328384">www.primer.com</translation>
 <translation id="8958424370300090006">Блокирајте колачиња за одреден сајт.</translation>
 <translation id="8959122750345127698">Навигацијата е недостапна: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Заборави</translation>

@@ -29,17 +29,17 @@ import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_c
 import {CrSliderElement, SliderTick} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../../controls/settings_dropdown_menu.js';
 import {SettingsSliderElement} from '../../controls/settings_slider.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../../router.js';
+import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../router.js';
 import {assertExists, cast, castExists} from '../assert_extras.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, getDisplayApi} from './device_page_browser_proxy.js';
 import {getTemplate} from './display.html.js';
@@ -83,11 +83,11 @@ interface SettingsDisplayElement {
 
 const SettingsDisplayElementBase =
     mixinBehaviors(
-        [DeepLinkingBehavior, PrefsBehavior],
-        RouteObserverMixin(I18nMixin(PolymerElement))) as {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          I18nMixinInterface & PrefsBehaviorInterface &
-          RouteObserverMixinInterface,
+        [DeepLinkingBehavior],
+        PrefsMixin(RouteObserverMixin(I18nMixin(PolymerElement)))) as {
+      new (): PolymerElement & I18nMixinInterface &
+          RouteObserverMixinInterface & PrefsMixinInterface &
+          DeepLinkingBehaviorInterface,
     };
 
 class SettingsDisplayElement extends SettingsDisplayElementBase {
@@ -291,7 +291,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
   private currentRoute_: Route|null;
   private currentSelectedModeIndex_: number;
   private currentSelectedParentModeIndex_: number;
-  private displayChangedListener_: EventListener|null;
+  private displayChangedListener_: (() => void)|null;
   private displayModeList_: DropdownMenuOptionList;
   private displayTabNames_: string[];
   private invalidDisplayId_: string;
@@ -433,8 +433,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     const flags: GetInfoFlags = {
       singleUnified: true,
     };
-    getDisplayApi().getInfo(
-        flags,
+    getDisplayApi().getInfo(flags).then(
         (displays: DisplayUnitInfo[]) => this.displayInfoFetched_(displays));
   }
 
@@ -442,7 +441,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     if (!displays.length) {
       return;
     }
-    getDisplayApi().getDisplayLayout(
+    getDisplayApi().getDisplayLayout().then(
         (layouts: DisplayLayout[]) =>
             this.displayLayoutFetched_(displays, layouts));
     if (this.isMirrored_(displays)) {
@@ -1110,9 +1109,9 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     const properties: DisplayProperties = {
       isPrimary: true,
     };
-    getDisplayApi().setDisplayProperties(
-        this.selectedDisplay.id, properties,
-        () => this.setPropertiesCallback_());
+    getDisplayApi()
+        .setDisplayProperties(this.selectedDisplay.id, properties)
+        .then(() => this.setPropertiesCallback_());
   }
 
   /**
@@ -1187,9 +1186,9 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
 
     this.refreshRateList_ = castExists(this.parentModeToRefreshRateMap_.get(
         this.selectedParentModePref_.value));
-    getDisplayApi().setDisplayProperties(
-        this.selectedDisplay.id, properties,
-        () => this.setPropertiesCallback_());
+    getDisplayApi()
+        .setDisplayProperties(this.selectedDisplay.id, properties)
+        .then(() => this.setPropertiesCallback_());
   }
 
   /**
@@ -1206,9 +1205,9 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
       displayZoomFactor: this.selectedZoomPref_.value,
     };
 
-    getDisplayApi().setDisplayProperties(
-        this.selectedDisplay.id, properties,
-        () => this.setPropertiesCallback_());
+    getDisplayApi()
+        .setDisplayProperties(this.selectedDisplay.id, properties)
+        .then(() => this.setPropertiesCallback_());
   }
 
   /**
@@ -1230,9 +1229,9 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     const properties: DisplayProperties = {
       rotation: value,
     };
-    getDisplayApi().setDisplayProperties(
-        this.selectedDisplay.id, properties,
-        () => this.setPropertiesCallback_());
+    getDisplayApi()
+        .setDisplayProperties(this.selectedDisplay.id, properties)
+        .then(() => this.setPropertiesCallback_());
   }
 
   private onMirroredTap_(event: Event) {
@@ -1244,7 +1243,7 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
       mode: this.isMirrored_(this.displays) ? MirrorMode.OFF :
                                               MirrorMode.NORMAL,
     };
-    getDisplayApi().setMirrorMode(mirrorModeInfo, () => {
+    getDisplayApi().setMirrorMode(mirrorModeInfo).then(() => {
       const error = chrome.runtime.lastError;
       if (error) {
         console.error('setMirrorMode Error: ' + error.message);
@@ -1256,8 +1255,9 @@ class SettingsDisplayElement extends SettingsDisplayElementBase {
     const properties: DisplayProperties = {
       isUnified: !this.unifiedDesktopMode_,
     };
-    getDisplayApi().setDisplayProperties(
-        this.primaryDisplayId, properties, () => this.setPropertiesCallback_());
+    getDisplayApi()
+        .setDisplayProperties(this.primaryDisplayId, properties)
+        .then(() => this.setPropertiesCallback_());
   }
 
   private onOverscanTap_(e: Event) {

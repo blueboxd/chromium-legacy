@@ -4,14 +4,27 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.PreferenceMatchers.withKey;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.refEq;
 
@@ -20,6 +33,7 @@ import static org.chromium.components.browser_ui.site_settings.WebsitePreference
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_DISPLAY_SETTING_ENABLED;
 import static org.chromium.components.content_settings.PrefNames.DESKTOP_SITE_PERIPHERAL_SETTING_ENABLED;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,6 +45,7 @@ import android.view.View;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -74,10 +89,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
+import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
+import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.settings.SettingsFeatureList;
@@ -90,8 +107,10 @@ import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettingsConstants;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
+import org.chromium.components.browser_ui.site_settings.TriStateCookieSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.Website;
 import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
@@ -99,6 +118,7 @@ import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.nfc.NfcSystemLevelSetting;
@@ -111,11 +131,13 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
+import org.chromium.ui.test.util.RenderTestRule;
+import org.chromium.ui.test.util.RenderTestRule.Component;
 import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.url.GURL;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +150,6 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
 @Batch(SiteSettingsTest.SITE_SETTINGS_BATCH_NAME)
-@DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
 public class SiteSettingsTest {
     public static final String SITE_SETTINGS_BATCH_NAME = "site_settings";
 
@@ -139,6 +160,13 @@ public class SiteSettingsTest {
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
             new BlankCTATabInitialStateRule(mPermissionRule, false);
 
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            RenderTestRule.Builder.withPublicCorpus()
+                    .setRevision(2)
+                    .setBugComponent(Component.UI_BROWSER_MOBILE_SETTINGS)
+                    .build();
+
     @Mock
     private SettingsLauncher mSettingsLauncher;
 
@@ -146,6 +174,8 @@ public class SiteSettingsTest {
 
     private static final String[] NULL_ARRAY = new String[0];
     private static final String[] BINARY_TOGGLE = new String[] {"binary_toggle"};
+    private static final String[] BINARY_TOGGLE_WITH_EXCEPTION_AND_INFO_TEXT =
+            new String[] {"info_text", "binary_toggle", "add_exception"};
     private static final String[] BINARY_TOGGLE_WITH_EXCEPTION =
             new String[] {"binary_toggle", "add_exception"};
     private static final String[] BINARY_TOGGLE_WITH_OS_WARNING_EXTRA =
@@ -250,6 +280,15 @@ public class SiteSettingsTest {
                 ? allOf(withId(R.id.managed_disclaimer_text),
                         hasSibling(withId(R.id.radio_button_layout)))
                 : withId(R.id.managed_view_legacy);
+    }
+
+    private void createCookieExceptions() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridge.setContentSettingCustomScope(getBrowserContextHandle(),
+                    ContentSettingsType.COOKIES, "*", "secondary.com", ContentSettingValues.ALLOW);
+            WebsitePreferenceBridge.setContentSettingCustomScope(getBrowserContextHandle(),
+                    ContentSettingsType.COOKIES, "primary.com", "*", ContentSettingValues.ALLOW);
+        });
     }
 
     /**
@@ -398,10 +437,21 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategorySettings preferences =
                     (SingleCategorySettings) settingsActivity.getMainFragment();
-            ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
-                    SingleCategorySettings.BINARY_TOGGLE_KEY);
-            preferences.onPreferenceChange(toggle, enabled);
+            if (type == SiteSettingsCategory.Type.THIRD_PARTY_COOKIES) {
+                TriStateCookieSettingsPreference preference =
+                        preferences.findPreference(SingleCategorySettings.TRI_STATE_COOKIE_TOGGLE);
+                preferences.onPreferenceChange(preference,
+                        enabled ? CookieControlsMode.OFF : CookieControlsMode.BLOCK_THIRD_PARTY);
+            } else {
+                ChromeSwitchPreference toggle =
+                        preferences.findPreference(SingleCategorySettings.BINARY_TOGGLE_KEY);
+                preferences.onPreferenceChange(toggle, enabled);
+            }
         });
+        if (type == SiteSettingsCategory.Type.SITE_DATA && !enabled) {
+            int id = R.string.website_settings_site_data_page_block_confirm_dialog_confirm_button;
+            onViewWaiting(withText(id)).perform(click());
+        }
         settingsActivity.finish();
     }
 
@@ -467,9 +517,8 @@ public class SiteSettingsTest {
                 if (key != null) actualKeys.add(key);
             }
 
-            Assert.assertTrue(
-                    actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
-                    Arrays.equals(actualKeys.toArray(), expectedKeys));
+            assertThat(actualKeys,
+                    expectedKeys.length == 0 ? emptyIterable() : contains(expectedKeys));
         });
         settingsActivity.finish();
     }
@@ -531,30 +580,38 @@ public class SiteSettingsTest {
 
     private void verifyFPSCookieSubpageIsLaunchedWithParams(
             final SettingsActivity settingsActivity, CookieSettingsState cookieSettingsState) {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                final SingleCategorySettings websitePreferences =
-                        (SingleCategorySettings) settingsActivity.getMainFragment();
-                final FourStateCookieSettingsPreference cookies =
-                        (FourStateCookieSettingsPreference) websitePreferences.findPreference(
-                                SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final SingleCategorySettings websitePreferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            final FourStateCookieSettingsPreference cookies = websitePreferences.findPreference(
+                    SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
 
-                Mockito.clearInvocations(mSettingsLauncher);
-                websitePreferences.setSettingsLauncher(mSettingsLauncher);
+            Mockito.clearInvocations(mSettingsLauncher);
+            websitePreferences.setSettingsLauncher(mSettingsLauncher);
 
-                SiteSettingsTestUtils.getCookieRadioButtonFrom(cookies, cookieSettingsState)
-                        .getAuxButtonForTests()
-                        .performClick();
+            SiteSettingsTestUtils.getCookieRadioButtonFrom(cookies, cookieSettingsState)
+                    .getAuxButtonForTests()
+                    .performClick();
 
-                Bundle fragmentArgs = new Bundle();
-                fragmentArgs.putSerializable(
-                        FPSCookieSettings.EXTRA_COOKIE_PAGE_STATE, cookieSettingsState);
-
-                Mockito.verify(mSettingsLauncher)
-                        .launchSettingsActivity(eq(websitePreferences.getContext()),
-                                eq(FPSCookieSettings.class), refEq(fragmentArgs));
+            @CookieControlsMode
+            int expectedState = CookieControlsMode.OFF;
+            switch (cookieSettingsState) {
+                case BLOCK_THIRD_PARTY_INCOGNITO:
+                    expectedState = CookieControlsMode.INCOGNITO_ONLY;
+                    break;
+                case BLOCK_THIRD_PARTY:
+                    expectedState = CookieControlsMode.BLOCK_THIRD_PARTY;
+                    break;
+                default:
+                    assert false;
             }
+
+            Bundle fragmentArgs = new Bundle();
+            fragmentArgs.putInt(FPSCookieSettings.EXTRA_COOKIE_PAGE_STATE, expectedState);
+
+            Mockito.verify(mSettingsLauncher)
+                    .launchSettingsActivity(eq(websitePreferences.getContext()),
+                            eq(FPSCookieSettings.class), refEq(fragmentArgs));
         });
     }
 
@@ -590,7 +647,6 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    // TODO(eokoyomon) figure out how to set and test third party cookie setting in this test
     public void testSiteExceptionCookiesBlocked() throws Exception {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
@@ -616,6 +672,41 @@ public class SiteSettingsTest {
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setBlockCookiesSiteException(settingsActivity, url, false);
         settingsActivity.finish();
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Load the page again and ensure the cookie remains unset.
+        mPermissionRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Blocks specific sites from setting cookies and ensures that no cookies can be set.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testSiteExceptionSiteDataBlocked() throws Exception {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.SITE_DATA, true);
+
+        final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
+
+        // Load the page and clear any set cookies.
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
+        Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Check cookies can be set for this website when there is no rule.
+        mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        // Set specific rule to block site and ensure it cannot set cookies.
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
+
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.SITE_DATA, false);
         mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
@@ -1111,6 +1202,39 @@ public class SiteSettingsTest {
     }
 
     /**
+     * Test that showing the Site Settings menu contains only the "Cookies" row.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testSiteSettingsMenuWithPSS4Disabled() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        SiteSettings websitePreferences = (SiteSettings) settingsActivity.getMainFragment();
+        assertNotNull(websitePreferences.findPreference("cookies"));
+        assertNull(websitePreferences.findPreference("third_party_cookies"));
+        assertNull(websitePreferences.findPreference("site_data"));
+        settingsActivity.finish();
+    }
+
+    /**
+     * Test that showing the Site Settings menu contains the "Third-party cookies" and "Site data"
+     * rows.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testSiteSettingsMenuWithPSS4Enabled() {
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsMenu("");
+        SiteSettings websitePreferences = (SiteSettings) settingsActivity.getMainFragment();
+        assertNull(websitePreferences.findPreference("cookies"));
+        assertNotNull(websitePreferences.findPreference("third_party_cookies"));
+        assertNotNull(websitePreferences.findPreference("site_data"));
+        settingsActivity.finish();
+    }
+
+    /**
      * Tests that only expected Preferences are shown for a category. This
      * santiy checks the number of categories only. Each category has its own
      * individual test below.
@@ -1121,7 +1245,7 @@ public class SiteSettingsTest {
     public void testOnlyExpectedPreferencesShown() {
         // If you add a category in the SiteSettings UI, please update this total AND add a test for
         // it below, named "testOnlyExpectedPreferences<Category>".
-        Assert.assertEquals(26, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(28, SiteSettingsCategory.Type.NUM_ENTRIES);
     }
 
     @Test
@@ -1212,8 +1336,7 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testOnlyExpectedPreferencesCookies() {
-        String[] cookie =
-                new String[] {"cookie_info_text", "four_state_cookie_toggle", "add_exception"};
+        String[] cookie = new String[] {"info_text", "four_state_cookie_toggle", "add_exception"};
         setFourStateCookieToggle(CookieSettingsState.ALLOW);
         checkPreferencesForCategory(SiteSettingsCategory.Type.COOKIES, cookie);
         setFourStateCookieToggle(CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO);
@@ -1222,6 +1345,51 @@ public class SiteSettingsTest {
         checkPreferencesForCategory(SiteSettingsCategory.Type.COOKIES, cookie);
         setFourStateCookieToggle(CookieSettingsState.BLOCK);
         checkPreferencesForCategory(SiteSettingsCategory.Type.COOKIES, cookie);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedPreferencesThirdPartyCookies() {
+        testExpectedPreferences(SiteSettingsCategory.Type.THIRD_PARTY_COOKIES,
+                new String[] {"info_text", "tri_state_cookie_toggle", "add_exception"},
+                new String[] {"info_text", "tri_state_cookie_toggle"});
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedPreferencesSiteData() {
+        testExpectedPreferences(SiteSettingsCategory.Type.SITE_DATA,
+                BINARY_TOGGLE_WITH_EXCEPTION_AND_INFO_TEXT,
+                BINARY_TOGGLE_WITH_EXCEPTION_AND_INFO_TEXT);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedExceptionsSiteData() {
+        createCookieExceptions();
+        SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.SITE_DATA);
+
+        onView(withText("primary.com")).check(matches(isDisplayed()));
+        onView(withText("secondary.com")).check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testOnlyExpectedExceptionsThirdPartyCookies() {
+        createCookieExceptions();
+        SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
+
+        onView(withText("primary.com")).check(doesNotExist());
+        onView(withText("secondary.com")).check(matches(isDisplayed()));
     }
 
     @Test
@@ -1236,8 +1404,7 @@ public class SiteSettingsTest {
             SingleCategorySettings preferences =
                     (SingleCategorySettings) settingsActivity.getMainFragment();
             FourStateCookieSettingsPreference fourStateCookieToggle =
-                    (FourStateCookieSettingsPreference) preferences.findPreference(
-                            SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
+                    preferences.findPreference(SingleCategorySettings.FOUR_STATE_COOKIE_TOGGLE_KEY);
 
             clickButtonAndVerifyItsChecked(fourStateCookieToggle, CookieSettingsState.ALLOW);
             clickButtonAndVerifyItsChecked(
@@ -1255,6 +1422,40 @@ public class SiteSettingsTest {
         fourStateCookieToggle.getButton(state).performClick();
         Assert.assertTrue(
                 "Button should be checked.", fourStateCookieToggle.getButton(state).isChecked());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures({ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI,
+            ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4})
+    public void
+    testExpectedCookieButtonsCheckedWhenFPSUiAndPSS4Enabled() {
+        SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.THIRD_PARTY_COOKIES);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleCategorySettings preferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            TriStateCookieSettingsPreference threeStateCookieToggle =
+                    preferences.findPreference(SingleCategorySettings.TRI_STATE_COOKIE_TOGGLE);
+
+            clickButtonAndVerifyItsChecked(threeStateCookieToggle, CookieControlsMode.OFF);
+            clickButtonAndVerifyItsChecked(
+                    threeStateCookieToggle, CookieControlsMode.INCOGNITO_ONLY);
+            clickButtonAndVerifyItsChecked(
+                    threeStateCookieToggle, CookieControlsMode.BLOCK_THIRD_PARTY);
+        });
+
+        settingsActivity.finish();
+    }
+
+    private void clickButtonAndVerifyItsChecked(
+            TriStateCookieSettingsPreference threeStateCookieToggle,
+            @CookieControlsMode int state) {
+        threeStateCookieToggle.getButton(state).performClick();
+        Assert.assertTrue(
+                "Button should be checked.", threeStateCookieToggle.getButton(state).isChecked());
     }
 
     @Test
@@ -1948,7 +2149,7 @@ public class SiteSettingsTest {
                     blockedGroup.getPreference(0).getSummary());
 
             // Blocked origin should has no summary.
-            Assert.assertNull(blockedGroup.getPreference(1).getSummary());
+            assertNull(blockedGroup.getPreference(1).getSummary());
         });
         settingsActivity.finish();
     }
@@ -1992,7 +2193,6 @@ public class SiteSettingsTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testProtectedContentDefaultOption() throws Exception {
         initializeUpdateWaiter(true /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
@@ -2002,7 +2202,6 @@ public class SiteSettingsTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testProtectedContentAskAllow() throws Exception {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
@@ -2015,7 +2214,6 @@ public class SiteSettingsTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testProtectedContentAskBlocked() throws Exception {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
@@ -2028,7 +2226,6 @@ public class SiteSettingsTest {
     @Test
     @MediumTest
     @Feature({"Preferences"})
-    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
     public void testProtectedContentBlocked() throws Exception {
         setGlobalTriStateToggleForCategory(
                 SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
@@ -2111,6 +2308,193 @@ public class SiteSettingsTest {
                     prefService.getBoolean(DESKTOP_SITE_DISPLAY_SETTING_ENABLED));
         });
         settingsActivity.finish();
+    }
+
+    private void renderCategoryPage(@SiteSettingsCategory.Type int category, String name)
+            throws IOException {
+        createCookieExceptions();
+        var settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(category);
+        View view = settingsActivity.findViewById(android.R.id.content).getRootView();
+        ChromeRenderTestRule.sanitize(view);
+        mRenderTestRule.render(view, name);
+        settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testRenderSiteDataPage() throws Exception {
+        renderCategoryPage(SiteSettingsCategory.Type.SITE_DATA, "site_settings_site_data_page");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
+    public void testRenderThirdPartyCookiesPage() throws Exception {
+        renderCategoryPage(SiteSettingsCategory.Type.THIRD_PARTY_COOKIES,
+                "site_settings_third_party_cookies_page");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @EnableFeatures({ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4,
+            ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI})
+    public void
+    testRenderThirdPartyCookiesPageWithFPS() throws Exception {
+        renderCategoryPage(SiteSettingsCategory.Type.THIRD_PARTY_COOKIES,
+                "site_settings_third_party_cookies_page_fps");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @DisableFeatures({ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4,
+            ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI})
+    public void
+    testRenderCookiesPage() throws Exception {
+        renderCategoryPage(SiteSettingsCategory.Type.COOKIES, "site_settings_cookies_page");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_FPS_UI)
+    @DisableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testRenderCookiesPageWithFPS() throws Exception {
+        renderCategoryPage(SiteSettingsCategory.Type.COOKIES, "site_settings_cookies_page_fps");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderLocationPage() throws Exception {
+        renderCategoryPage(
+                SiteSettingsCategory.Type.DEVICE_LOCATION, "site_settings_location_page");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderProtectedMediaPage() throws Exception {
+        renderCategoryPage(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, "site_settings_protected_media_page");
+    }
+
+    /** Test case for checking that settings with binary toggles are disabled by policy.*/
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Policies.Add({
+        @Policies.Item(key = "DefaultJavaScriptSetting", string = "2")
+        , @Policies.Item(key = "DefaultPopupsSetting", string = "2"),
+                @Policies.Item(key = "DefaultGeolocationSetting", string = "2")
+    })
+    public void
+    testAllTwoStateToggleDisabledByPolicy() {
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.JAVASCRIPT);
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.POPUPS);
+        testTwoStateToggleDisabledByPolicy(SiteSettingsCategory.Type.DEVICE_LOCATION);
+        // TODO(crbug/1385889): add a test for sensors once crash in the sensors settings page is
+        // resolved.
+    }
+
+    public void testTwoStateToggleDisabledByPolicy(@SiteSettingsCategory.Type int type) {
+        final SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(type);
+        SingleCategorySettings singleCategorySettings =
+                (SingleCategorySettings) settingsActivity.getMainFragment();
+        ChromeSwitchPreference binaryToggle =
+                (ChromeSwitchPreference) singleCategorySettings.findPreference(
+                        SingleCategorySettings.BINARY_TOGGLE_KEY);
+
+        Assert.assertFalse(binaryToggle.isEnabled());
+    }
+
+    /**
+     * Allows third party cookies for a website, and tests that the UI shows a managed preference
+     * in the allowed group. Checks that it shows the toast when the preference is clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesAllowedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testAllowCookiesForURL_DisableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.ALLOWED_GROUP);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesAllowedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testAllowCookiesForURL_EnableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.ALLOWED_GROUP);
+    }
+
+    /**
+     * Blocks third party cookies for a website, and tests that the UI shows a managed preference
+     * in the blocked group. Checks that it shows toast when the preference is clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @DisableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesBlockedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testBlockCookiesForURL_DisableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.BLOCKED_GROUP);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures(SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)
+    @Policies.
+    Add({ @Policies.Item(key = "CookiesBlockedForUrls", string = "[\"[*.]chromium.org\"]") })
+    public void testBlockCookiesForURL_EnableHighlightManagedPrefDisclaimerAndroid()
+            throws Exception {
+        testCookiesSettingsManagedForURL(SingleCategorySettings.BLOCKED_GROUP);
+    }
+
+    public void testCookiesSettingsManagedForURL(String setting) throws Exception {
+        final SettingsActivity settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
+        String managedText = InstrumentationRegistry.getTargetContext().getString(
+                R.string.managed_by_your_organization);
+
+        SingleCategorySettings websitePreferences =
+                (SingleCategorySettings) settingsActivity.getMainFragment();
+        ExpandablePreferenceGroup managedGroup =
+                (ExpandablePreferenceGroup) websitePreferences.findPreference(setting);
+        Assert.assertTrue("The blocked group should be expanded.", managedGroup.isExpanded());
+        Assert.assertEquals("The blocked expandable group should have exactly one website listed.",
+                1, managedGroup.getPreferenceCount());
+        ChromeImageViewPreference websitePreference =
+                (ChromeImageViewPreference) managedGroup.getPreference(0);
+
+        /*
+         * Swipes to the end of the screen to show the website preference for the blocked site
+         * then checks that the content description and the summary text reflect the managed state.
+         */
+        onView(ViewMatchers.isRoot()).perform(swipeUp());
+        onData(withKey(setting))
+                .inAdapterView(allOf(withContentDescription(R.string.managed_by_your_organization),
+                        withText(R.string.managed_by_your_organization), isDisplayed()));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> { websitePreference.performClick(); });
+        onView(withText(R.string.managed_by_your_organization))
+                .inRoot(withDecorView(allOf(withId(R.id.toast_text))))
+                .check(matches(isDisplayed()));
     }
 
     static class PermissionTestCase {
@@ -2200,7 +2584,7 @@ public class SiteSettingsTest {
 
             ChromeSwitchPreference toggle =
                     singleCategorySettings.findPreference(SingleCategorySettings.BINARY_TOGGLE_KEY);
-            Assert.assertNotNull("Toggle should not be null.", toggle);
+            assertNotNull("Toggle should not be null.", toggle);
 
             singleCategorySettings.onPreferenceChange(toggle, mIsCategoryEnabled);
             Assert.assertEquals(exceptionString, mIsCategoryEnabled,
@@ -2212,20 +2596,25 @@ public class SiteSettingsTest {
         private void assertToggleTitleAndSummary(SingleCategorySettings singleCategorySettings) {
             ChromeSwitchPreference toggle =
                     singleCategorySettings.findPreference(SingleCategorySettings.BINARY_TOGGLE_KEY);
+            assert toggle != null;
+
+            var delegate = new ChromeSiteSettingsDelegate(
+                    toggle.getContext(), Profile.getLastUsedRegularProfile());
 
             Assert.assertEquals("Preference title is not set correctly.",
                     singleCategorySettings.getResources().getString(
-                            ContentSettingsResources.getTitle(mContentSettingsType)),
+                            ContentSettingsResources.getTitle(mContentSettingsType, delegate)),
                     toggle.getTitle());
-            Assert.assertNotNull("Enabled summary text should not be null.", toggle.getSummaryOn());
-            Assert.assertNotNull(
-                    "Disabled summary text should not be null.", toggle.getSummaryOff());
+            assertNotNull("Enabled summary text should not be null.", toggle.getSummaryOn());
+            assertNotNull("Disabled summary text should not be null.", toggle.getSummaryOff());
 
             String summary = mIsCategoryEnabled ? toggle.getSummaryOn().toString()
                                                 : toggle.getSummaryOff().toString();
             String expected = singleCategorySettings.getResources().getString(mIsCategoryEnabled
-                            ? ContentSettingsResources.getEnabledSummary(mContentSettingsType)
-                            : ContentSettingsResources.getDisabledSummary(mContentSettingsType));
+                            ? ContentSettingsResources.getEnabledSummary(
+                                    mContentSettingsType, delegate)
+                            : ContentSettingsResources.getDisabledSummary(
+                                    mContentSettingsType, delegate));
             Assert.assertEquals(
                     "Summary text in state <" + mIsCategoryEnabled + "> does not match.", expected,
                     summary);

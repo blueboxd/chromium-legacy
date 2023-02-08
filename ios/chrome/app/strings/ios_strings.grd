@@ -258,6 +258,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_APPLICATION_SHORTCUT_VOICE_SEARCH_TITLE" desc="Message when opening a Voice Search from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to trigger a voice search.">
         Voice Search
       </message>
+      <message name="IDS_IOS_APPLICATION_SHORTCUT_SET_DEFAULT_BROWSER" desc="The title of the spotlight item to set Chrome as a default browser. [Length: unlimited] [iOS only]." meaning="Spotlight item title for setting default browser.">
+        Set Chrome as Default Browser
+      </message>
       <message name="IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL" desc="Label of a button to open an application. [Length: 10em] [iOS only]">
         Open
       </message>
@@ -639,8 +642,8 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_ADDTOBOOKMARKS" desc="The iOS context menu item for adding the url of a tab to the bookmarks. [iOS only]">
         Add to Bookmarks
       </message>
-      <message name="IDS_IOS_CONTENT_CONTEXT_CLOSETAB" desc="The iOS context menu item for closing a tab. [iOS only]">
-        Close tab
+      <message name="IDS_IOS_CONTENT_CONTEXT_CLOSETAB" desc="The iOS context menu item for closing a tab. [iOS only]" meaning="Close the current tab [Title Case].">
+        Close Tab
       </message>
       <message name="IDS_IOS_CONTENT_CONTEXT_COPY" desc="The iOS menu item for copying a link's URL into the pasteboard. Shorter than the desktop version [iOS only]">
         Copy Link URL
@@ -1273,8 +1276,17 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_KEYBOARD_CLEAR_BROWSING_DATA" desc="Title of the keyboard shortcut to clear the browsing data." meaning="Used as a command title in the iPad command menu.">
         Clear Browsing Data…
       </message>
+      <message name="IDS_IOS_KEYBOARD_CLOSE_ALL" desc="Title of the button in the tab grid UI that closes all the tabs in the grid." meaning="Used as a command title in the iPad command menu.">
+        Close All
+      </message>
       <message name="IDS_IOS_KEYBOARD_CLOSE_TAB" desc="Title of the keyboard shortcut to close the current tab." meaning="Used as a command title in the iPad command menu.">
         Close Tab
+      </message>
+      <message name="IDS_IOS_KEYBOARD_EDIT_BOOKMARK" desc="Title of the keyboard shortcut that edits the bookmark of the current page." meaning="Used as a command title in the iPad command menu.">
+        Edit Bookmark
+      </message>
+      <message name="IDS_IOS_KEYBOARD_FIND" desc="The default title of the keyboard shortcut to search." meaning="Used as a command title in the iPad command menu.">
+        Find
       </message>
       <message name="IDS_IOS_KEYBOARD_FIND_IN_PAGE" desc="The title of the keyboard shortcut to search in the current page." meaning="Used as a command title in the iPad command menu.">
         Find in Page…
@@ -1332,6 +1344,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_KEYBOARD_REPORT_AN_ISSUE" desc="The title of the keyboard shortcut to open the form to report an issue." meaning="Used as a command title in the iPad command menu.">
         Report an Issue…
+      </message>
+      <message name="IDS_IOS_KEYBOARD_SEARCH_TABS" desc="In Title Case: Title of the keyboard shortcut that open the search tab menu in tab grid." meaning="Used as a command title in the iPad command menu.">
+        Search Tabs…
       </message>
       <message name="IDS_IOS_KEYBOARD_SHOW_BOOKMARKS" desc="In Title Case: Title of the keyboard shortcut that shows the list of bookmarks." meaning="Used as a command title in the iPad command menu.">
         Show Bookmarks
@@ -1724,6 +1739,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKED_SECTION_HEADER" desc="Section header for a Price Notifications table view section that lists items the user is currently price tracking.">
         Tracking Prices
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICAITONS_PRICE_TRACK_TRACKABLE_ITEM_IS_TRACKED" desc="Table element description explaining that the current website contains an item that the user is already tracking">
+        You're already tracking this product.
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACKABLE_EMPTY_LIST" desc="Table element description explaining that the current website does not contain any items that can have their prices tracked.">
         Price tracking isn't available for this site.
@@ -2555,6 +2573,9 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SEARCH_COPIED_IMAGE" desc="If a user has an image on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to search the default search engine for the image. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Image That You Copied.' [iOS only]" meaning="Maximum characters: 32">
           Search for Copied Image
       </message>
+      <message name="IDS_IOS_SEARCH_COPIED_IMAGE_WITH_LENS" desc="If a user has an image on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar if Lens is enabled. The user can select this option to trigger a Lens search on the image. This string is a complete sentence. If necessary for your language, you can translate as 'Lens Image That You Copied.' [iOS only]" meaning="Maximum characters: 32">
+          Lens Copied Image
+      </message>
       <message name="IDS_IOS_SEARCH_COPIED_TEXT" desc="If a user has some text on their clipboard, this string will appear as an option when the user long-presses on Chrome's address bar. The user can select this option to search the default search engine for the text. This string is a complete sentence. If necessary for your language, you can translate as 'Search for Text That You Copied.' [iOS only]" meaning="Maximum characters: 32">
           Search for Copied Text
       </message>
@@ -2650,9 +2671,6 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED_DESC" desc="Detail text for the Safe Browsing check if the user has Safe Browsing Standard Protection enabled">
         Enhanced protection is on
-      </message>
-      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_STANDARD_PROTECTION_ENABLED_DESC" desc="Detail text for the Safe Browsing check if the user has Safe Browsing Standard Protection enabled">
-        Standard protection is on
       </message>
       <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_STANDARD_PROTECTION_ENABLED_DESC_WITH_ENHANCED_PROTECTION" desc="Detail text for the Safe Browsing check if the user has Safe Browsing Standard Protection enabled">
         Standard protection is on. For even more security, use Enhanced protection.
@@ -3151,6 +3169,10 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>reset sync<ph name=
       <message name="IDS_IOS_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
         Passphrase encryption doesn’t include payment methods and addresses from Google Pay. Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you will need to reset sync. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_NEW_SYNC_ENCRYPTION_PASSPHRASE_INFO" desc="The information text for encrypting sync using a passphrase, shown on the passphrase screen [iOS only]">
+        Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
+Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you’ll need to reset sync. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
       <message name="IDS_IOS_SYNC_VERIFY_ITS_YOU_BUTTON" desc="Button title displayed when the signed in user needs to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
         Verify It's You
       </message>
@@ -3518,6 +3540,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_HISTORY" desc="The Tools menu item for opening the navigation history menu">
         History
       </message>
+      <message name="IDS_IOS_TOOLS_MENU_LENS_COPIED_IMAGE" desc="If a user has an image on their clipboard, this string will appear as an option when the user long-presses on Chrome's search icon and Lens is enabled. The user can select this option to search the image using Lens. This string is a complete sentence. If necessary for your language, you can translate as 'Lens Image That You Copied.'" meaning="[Length:Unlimited]">
+        Lens Image You Copied
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_SEARCH" desc="The iOS menu item for opening a new Incognito tab and doing a new search in that tab." meaning="Do a new search in a new Incognito tab">
         Incognito Search
       </message>
@@ -3870,6 +3895,26 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_CAROUSEL_TIP_VOICEOVER" desc="The VoiceOver announcement for the tip explaining to the user they can use the carousel in the overflow menu.">
         Your saved bookmarks, passwords, settings, and more are available from this screen.
+      </message>
+      <message name="IDS_IOS_AUTOFILL_ADDRESS_SUGGESTIONS_AVAILABLE_ACCESSIBILITY_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility announcement to indicate the number of address suggestions available to the user above the keyboard. This announcement is triggered when the user enters edit mode in a form field that has address suggestions available for autofill purposes. According to the number of available addresses, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+           =1 {{count} saved address available above your keyboard.}
+           other {{count} saved addresses available above your keyboard.}}
+      </message>
+      <message name="IDS_IOS_AUTOFILL_PASSWORD_SUGGESTIONS_AVAILABLE_ACCESSIBILITY_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility announcement to indicate the number of password suggestions available to the user above the keyboard. This announcement is triggered when the user enters edit mode in a form field that has password suggestions available for autofill purposes. According to the number of available passwords, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+           =1 {{count} saved password available above your keyboard.}
+           other {{count} saved passwords available above your keyboard.}}
+      </message>
+      <message name="IDS_IOS_AUTOFILL_PAYMENT_METHOD_SUGGESTIONS_AVAILABLE_ACCESSIBILITY_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility announcement to indicate the number of payment method suggestions available to the user above the keyboard. This announcement is triggered when the user enters edit mode in a form field that has payment method suggestions available for autofill purposes. According to the number of available payment methods, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+           =1 {{count} saved payment method available above your keyboard.}
+           other {{count} saved payment methods available above your keyboard.}}
+      </message>
+      <message name="IDS_IOS_AUTOFILL_PROFILE_SUGGESTIONS_AVAILABLE_ACCESSIBILITY_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="The accessibility announcement to indicate the number of profile suggestions available to the user above the keyboard. This announcement is triggered when the user enters edit mode in a form field that has profile suggestions available for autofill purposes. According to the number of available profiles, the string goes from singular to plural. [iOS only]">
+        {count, plural,
+           =1 {{count} saved profile available above your keyboard.}
+           other {{count} saved profiles available above your keyboard.}}
       </message>
     </messages>
   </release>

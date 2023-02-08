@@ -29,6 +29,7 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "third_party/blink/public/mojom/navigation/was_activated_option.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -70,7 +71,7 @@ struct OpenURLParams;
 // WebContents, so there can be multiple NavigationControllers associated with
 // a WebContents. However only the primary one, and the
 // NavigationEntries/events originating from it, is exposed to //content
-// embedders.
+// embedders. See docs/frame_trees.md for more details.
 class NavigationController {
  public:
   using DeletionPredicate =
@@ -301,6 +302,12 @@ class NavigationController {
     // Download policy to be applied if this navigation turns into a download.
     blink::NavigationDownloadPolicy download_policy;
 
+    // Common begin navigation status.
+    blink::mojom::NavigationInitiatorActivationAndAdStatus
+        initiator_activation_and_ad_status =
+            blink::mojom::NavigationInitiatorActivationAndAdStatus::
+                kDidNotStartWithTransientActivation;
+
     // Indicates that this navigation is for PDF content in a renderer.
     bool is_pdf = false;
 
@@ -350,13 +357,12 @@ class NavigationController {
   // See http://crbug.com/273710.
   //
   // Returns the active entry, which is the pending entry if a navigation is in
-  // progress or the last committed entry otherwise. NOTE: This can be nullptr!!
+  // progress or the last committed entry otherwise.
   virtual NavigationEntry* GetActiveEntry() = 0;
 
   // Returns the entry that should be displayed to the user in the address bar.
   // This is the pending entry if a navigation is in progress *and* is safe to
   // display to the user (see below), or the last committed entry otherwise.
-  // NOTE: This can be nullptr if no entry has been committed!
   //
   // A pending entry is safe to display if it started in the browser process or
   // if it's a renderer-initiated navigation in a new tab which hasn't been
@@ -368,12 +374,13 @@ class NavigationController {
   // it is the pending_entry_index_.
   virtual int GetCurrentEntryIndex() = 0;
 
-  // Returns the last committed entry, which may be null if there are no
-  // committed entries.
+  // Returns the last "committed" entry. Note that even when no navigation has
+  // actually committed, this will never return null as long as the FrameTree
+  // associated with the NavigationController is already initialized, as a
+  // FrameTree will always start with the initial NavigationEntry.
   virtual NavigationEntry* GetLastCommittedEntry() = 0;
 
-  // Returns the index of the last committed entry.  It will be -1 if there are
-  // no entries.
+  // Returns the index of the last committed entry.
   virtual int GetLastCommittedEntryIndex() = 0;
 
   // Returns true if the source for the current entry can be viewed.

@@ -226,7 +226,7 @@ AllowStatus BorealisFeatures::MightBeAllowed() {
   if (!profile_ || !profile_->IsRegularProfile())
     return AllowStatus::kBlockedOnIrregularProfile;
 
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile_))
+  if (!ash::ProfileHelper::IsPrimaryProfile(profile_))
     return AllowStatus::kBlockedOnNonPrimaryProfile;
 
   if (profile_->IsChild())
@@ -248,7 +248,7 @@ AllowStatus BorealisFeatures::MightBeAllowed() {
   if (c == version_info::Channel::STABLE)
     return AllowStatus::kBlockedOnStable;
 
-  if (!base::FeatureList::IsEnabled(chromeos::features::kBorealisPermitted))
+  if (!base::FeatureList::IsEnabled(ash::features::kBorealisPermitted))
     return AllowStatus::kBlockedByFlag;
 
   return AllowStatus::kAllowed;

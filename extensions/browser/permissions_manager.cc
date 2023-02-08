@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -18,6 +19,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -77,15 +79,15 @@ void RemoveSiteFromPrefs(ExtensionPrefs* extension_prefs,
 // Returns sites from `pref` in `extension_prefs`.
 std::set<url::Origin> GetSitesFromPrefs(ExtensionPrefs* extension_prefs,
                                         const char* pref) {
-  const base::Value* user_permissions =
+  const base::Value::Dict& user_permissions =
       extension_prefs->GetPrefAsDictionary(kUserPermissions);
   std::set<url::Origin> sites;
 
-  auto* list = user_permissions->FindListKey(pref);
+  auto* list = user_permissions.FindList(pref);
   if (!list)
     return sites;
 
-  for (const auto& site : list->GetList()) {
+  for (const auto& site : *list) {
     const std::string* site_as_string = site.GetIfString();
     if (!site_as_string)
       continue;
@@ -277,12 +279,12 @@ void PermissionsManager::AddUserPermittedSite(const url::Origin& origin) {
 void PermissionsManager::UpdatePermissionsWithUserSettings(
     const Extension& extension,
     const PermissionSet& user_permitted_set) {
-  // If either user cannot withhold permissions from the extension (as is the
-  // case for e.g. policy-installed extensions) or the user has not withheld
-  // any permissions for the extension, then we don't need to do anything - the
-  // extension already has all its requested permissions.
-  if (!util::CanWithholdPermissionsFromExtension(extension) ||
-      !HasWithheldHostPermissions(extension.id())) {
+  // If either user cannot be affected by hbe affected by host permissions
+  // policy-installed extensions) or the user has not withheld any permissions
+  // for the extension, then we don't need to do anything - the extension
+  // already has all its requested permissions.
+  if (!CanAffectExtension(extension) ||
+      !HasWithheldHostPermissions(extension)) {
     return;
   }
 
@@ -331,12 +333,16 @@ PermissionsManager::ExtensionSiteAccess PermissionsManager::GetSiteAccess(
     const GURL& url) const {
   PermissionsManager::ExtensionSiteAccess extension_access;
 
+  // Extension that cannot be affected by host permissions has no access.
+  if (!CanAffectExtension(extension))
+    return extension_access;
+
   // Awkward holder object because permission sets are immutable, and when
   // return from prefs, ownership is passed.
   std::unique_ptr<const PermissionSet> permission_holder;
 
   const PermissionSet* granted_permissions = nullptr;
-  if (!HasWithheldHostPermissions(extension.id())) {
+  if (!HasWithheldHostPermissions(extension)) {
     // If the extension doesn't have any withheld permissions, we look at the
     // current active permissions.
     // TODO(devlin): This is clunky. It would be nice to have runtime-granted
@@ -394,9 +400,38 @@ PermissionsManager::ExtensionSiteAccess PermissionsManager::GetSiteAccess(
   return extension_access;
 }
 
+bool PermissionsManager::CanAffectExtension(const Extension& extension) const {
+  // Certain extensions are always exempt from having permissions withheld.
+  if (!util::CanWithholdPermissionsFromExtension(extension))
+    return false;
+
+  // The extension can be affected by runtime host permissions if it requests
+  // host permissions.
+  return !PermissionsParser::GetRequiredPermissions(&extension).IsEmpty() ||
+         !PermissionsParser::GetOptionalPermissions(&extension).IsEmpty();
+}
+
+bool PermissionsManager::HasGrantedHostPermission(const Extension& extension,
+                                                  const GURL& url) const {
+  DCHECK(CanAffectExtension(extension));
+
+  return GetRuntimePermissionsFromPrefs(extension)
+      ->effective_hosts()
+      .MatchesSecurityOrigin(url);
+}
+
+bool PermissionsManager::HasBroadGrantedHostPermissions(
+    const Extension& extension) {
+  // Don't consider API permissions in this case.
+  constexpr bool kIncludeApiPermissions = false;
+  return GetRuntimePermissionsFromPrefs(extension)->ShouldWarnAllHosts(
+      kIncludeApiPermissions);
+}
+
 bool PermissionsManager::HasWithheldHostPermissions(
-    const ExtensionId& extension_id) const {
-  return extension_prefs_->GetWithholdingPermissions(extension_id);
+    const Extension& extension) const {
+  DCHECK(CanAffectExtension(extension));
+  return extension_prefs_->GetWithholdingPermissions(extension.id());
 }
 
 std::unique_ptr<PermissionSet>
@@ -531,7 +566,7 @@ PermissionsManager::GetEffectivePermissionsToGrant(
   if (extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS)
     should_withhold = true;
   else
-    should_withhold = HasWithheldHostPermissions(extension.id());
+    should_withhold = HasWithheldHostPermissions(extension);
 
   if (!should_withhold)
     return desired_permissions.Clone();
@@ -564,6 +599,57 @@ PermissionsManager::GetEffectivePermissionsToGrant(
   return GetAllowedPermissionsAfterWithholding(desired_permissions,
                                                *runtime_granted_permissions,
                                                user_granted_permissions);
+}
+
+std::unique_ptr<const PermissionSet>
+PermissionsManager::GetRevokablePermissions(const Extension& extension) const {
+  // No extra revokable permissions if the extension couldn't ever be affected.
+  if (!util::CanWithholdPermissionsFromExtension(extension))
+    return nullptr;
+
+  // If we aren't withholding host permissions, then there may be some
+  // permissions active on the extension that should be revokable. Otherwise,
+  // all granted permissions should be stored in the preferences (and these
+  // can be a superset of permissions on the extension, as in the case of e.g.
+  // granting origins when only a subset is requested by the extension).
+  // TODO(devlin): This is confusing and subtle. We should instead perhaps just
+  // add all requested hosts as runtime-granted hosts if we aren't withholding
+  // host permissions.
+  const PermissionSet* current_granted_permissions = nullptr;
+  std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+      GetRuntimePermissionsFromPrefs(extension);
+  std::unique_ptr<const PermissionSet> union_set;
+  if (runtime_granted_permissions) {
+    union_set = PermissionSet::CreateUnion(
+        *runtime_granted_permissions,
+        extension.permissions_data()->active_permissions());
+    current_granted_permissions = union_set.get();
+  } else {
+    current_granted_permissions =
+        &extension.permissions_data()->active_permissions();
+  }
+
+  // Unrevokable permissions include granted API permissions, manifest
+  // permissions, and host permissions that are always allowed.
+  PermissionSet unrevokable_permissions(
+      current_granted_permissions->apis().Clone(),
+      current_granted_permissions->manifest_permissions().Clone(),
+      URLPatternSet(), URLPatternSet());
+  {
+    // TODO(devlin): We do this pattern of "required + optional" enough. Make it
+    // a part of PermissionsParser and stop duplicating the set each time.
+    std::unique_ptr<PermissionSet> requested_permissions =
+        PermissionSet::CreateUnion(
+            PermissionsParser::GetRequiredPermissions(&extension),
+            PermissionsParser::GetOptionalPermissions(&extension));
+    ExtensionsBrowserClient::Get()->AddAdditionalAllowedHosts(
+        *requested_permissions, &unrevokable_permissions);
+  }
+
+  // Revokable permissions are, predictably, any in the current set that aren't
+  // considered unrevokable.
+  return PermissionSet::CreateDifference(*current_granted_permissions,
+                                         unrevokable_permissions);
 }
 
 void PermissionsManager::NotifyExtensionPermissionsUpdated(

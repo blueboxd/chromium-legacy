@@ -179,8 +179,8 @@ constexpr std::pair<const char*, const char*> kBrandNamesForCSQ[] = {
 // using the format_url binary (components/url_formatter/tools/format_url.cc)
 const char* kSkeletonsOfPopularKeywordsForCSQ[] = {
     // Security
-    "account", "activate", "active", "adrnin",   "login",  "logout",
-    "online",  "password", "secure", "security", "signin", "signout"};
+    "account",  "activate", "adrnin",   "login",  "logout",
+    "password", "secure",   "security", "signin", "signout"};
 
 // Minimum length of brand to be checked for Combo Squatting.
 const size_t kMinBrandNameLengthForComboSquatting = 4;
@@ -943,7 +943,7 @@ bool IsTopDomain(const DomainInfo& domain_info) {
 }
 
 bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type) {
-  if (match_type == LookalikeUrlMatchType::kSiteEngagement) {
+  if (match_type == LookalikeUrlMatchType::kSkeletonMatchSiteEngagement) {
     return true;
   }
   if (match_type == LookalikeUrlMatchType::kTargetEmbedding) {
@@ -980,7 +980,7 @@ bool GetMatchingDomain(
     DCHECK_NE(navigated_domain.domain_and_registry, matched_engaged_domain);
     if (!matched_engaged_domain.empty()) {
       *matched_domain = matched_engaged_domain;
-      *match_type = LookalikeUrlMatchType::kSiteEngagement;
+      *match_type = LookalikeUrlMatchType::kSkeletonMatchSiteEngagement;
       return true;
     }
 
@@ -1052,7 +1052,7 @@ bool GetMatchingDomain(
 
 void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
   switch (match_type) {
-    case LookalikeUrlMatchType::kSiteEngagement:
+    case LookalikeUrlMatchType::kSkeletonMatchSiteEngagement:
       RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
       break;
     case LookalikeUrlMatchType::kEditDistance:
@@ -1454,4 +1454,10 @@ ComboSquattingType GetComboSquattingType(
   }
 
   return ComboSquattingType::kNone;
+}
+
+bool IsSafeTLD(const std::string& hostname) {
+  // This is intentionally kept simple and currently ignores hostnames with
+  // ccTLDs (e.g. gov.in).
+  return base::EndsWith(hostname, ".gov") || base::EndsWith(hostname, ".mil");
 }

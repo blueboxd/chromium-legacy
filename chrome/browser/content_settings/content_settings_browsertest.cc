@@ -608,7 +608,8 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {
   settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
 
   const char kBaseExpected[] =
-      "%s - SecurityError: An attempt was made to break through the security "
+      "%s - SecurityError: Failed to execute '%s' on 'CacheStorage': An "
+      "attempt was made to break through the security "
       "policy of the user agent.";
 
   const char kBaseScript[] =
@@ -622,21 +623,25 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksCacheStorage) {
       "  return `${name} - success`;"
       "}())";
 
-  const std::vector<std::string> kTestOps({
-      "caches.open('foo')",
-      "caches.has('foo')",
-      "caches.keys()",
-      "caches.delete('foo')",
-      "caches.match('/')",
-  });
+  struct TestOp {
+    const char* cmd;
+    const char* name;
+  };
+
+  const TestOp kTestOps[] = {
+      {.cmd = "caches.open('foo')", .name = "open"},
+      {.cmd = "caches.has('foo')", .name = "has"},
+      {.cmd = "caches.keys()", .name = "keys"},
+      {.cmd = "caches.delete('foo')", .name = "delete"},
+      {.cmd = "caches.match('/')", .name = "match"},
+  };
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
   for (auto& op : kTestOps) {
-    EXPECT_EQ(
-        base::StringPrintf(kBaseExpected, op.data()),
-        EvalJs(tab, base::StringPrintf(kBaseScript, op.data(), op.data())));
+    EXPECT_EQ(base::StringPrintf(kBaseExpected, op.cmd, op.name),
+              EvalJs(tab, base::StringPrintf(kBaseScript, op.cmd, op.cmd)));
   }
 }
 
@@ -659,11 +664,7 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksIndexedDB) {
       "    });"
       "  }"
       "  try {"
-      "    let promiselike = indexedDB.%s%s;"
-      "    if (typeof promiselike.then !== 'undefined') {"
-      "      await promiselike;"
-      "    }"
-      "    await wrap(promiselike);"
+      "    await wrap(indexedDB.%s%s);"
       "  } catch(e) {"
       "    return `${name} - ${e.toString()}`;"
       "  }"
@@ -688,19 +689,45 @@ IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesAlsoBlocksIndexedDB) {
         base::StringPrintf(kBaseExpected, op.cmd),
         EvalJs(tab, base::StringPrintf(kBaseScript, op.cmd, op.cmd, op.args)));
   }
+}
+
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest,
+                       BlockCookiesAlsoBlocksIndexedDBPromiseBased) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetPageURL()));
+  content_settings::CookieSettings* settings =
+      CookieSettingsFactory::GetForProfile(browser()->profile()).get();
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const char kPromiseBaseScript[] =
+      "(async function() {"
+      "  const name = `%s`;"
+      "  try {"
+      "    await indexedDB.%s%s;"
+      "  } catch(e) {"
+      "    return `${name} - ${e.toString()}`;"
+      "  }"
+      "  return `${name} - success`;"
+      "}())";
+
+  struct TestOp {
+    const char* cmd;
+    const char* args;
+  };
 
   const TestOp kPromiseTestOps[] = {
       {.cmd = "databases", .args = "()"},
   };
 
-  const char kPromiseBaseExpected[] =
-      "%s - UnknownError: Failed to execute '%s' on 'IDBFactory': The user "
-      "denied permission to access the database.";
+  const char kBaseExpected[] =
+      "%s - UnknownError: The user denied permission to access the database.";
 
   for (auto& op : kPromiseTestOps) {
-    EXPECT_EQ(
-        base::StringPrintf(kPromiseBaseExpected, op.cmd, op.cmd),
-        EvalJs(tab, base::StringPrintf(kBaseScript, op.cmd, op.cmd, op.args)));
+    EXPECT_EQ(base::StringPrintf(kBaseExpected, op.cmd),
+              EvalJs(tab, base::StringPrintf(kPromiseBaseScript, op.cmd, op.cmd,
+                                             op.args)));
   }
 }
 

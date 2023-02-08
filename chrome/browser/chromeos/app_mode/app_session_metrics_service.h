@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -22,17 +23,12 @@ extern const char kKioskSessionDurationNormalHistogram[];
 extern const char kKioskSessionDurationInDaysNormalHistogram[];
 extern const char kKioskSessionDurationCrashedHistogram[];
 extern const char kKioskSessionDurationInDaysCrashedHistogram[];
-extern const char kKioskRamUsagePercentageHistogram[];
-extern const char kKioskSwapUsagePercentageHistogram[];
-extern const char kKioskDiskUsagePercentageHistogram[];
-extern const char kKioskChromeProcessCountHistogram[];
+extern const char kKioskSessionRestartReasonHistogram[];
 extern const char kKioskSessionLastDayList[];
 extern const char kKioskSessionStartTime[];
+extern const char kKioskSessionEndReason[];
 
 extern const base::TimeDelta kKioskSessionDurationHistogramLimit;
-extern const base::TimeDelta kPeriodicMetricsInterval;
-
-class DiskSpaceCalculator;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -50,13 +46,47 @@ enum class KioskSessionState {
   kMaxValue = kRestored,
 };
 
+// These values are used in UMA metrics. When a kiosk session is restarted,
+// ChromeOS logs a restart reason based on the previous kiosk session
+// ending. Actual device reboot and a session restart without reboot are
+// distinguished. Entries should not be renumbered and numeric values should
+// never be reused. Keep in sync with respective enum in
+// tools/metrics/histograms/enums.xml
+enum class KioskSessionRestartReason {
+  kStopped = 0,
+  kStoppedWithReboot = 1,
+  kCrashed = 2,
+  kCrashedWithReboot = 3,
+  kRebootPolicy = 4,
+  kRemoteActionReboot = 5,
+  kRestartApi = 6,
+  kLocalStateWasNotSaved = 7,
+  kLocalStateWasNotSavedWithReboot = 8,
+  kPluginCrashed = 9,
+  kPluginCrashedWithReboot = 10,
+  kPluginHung = 11,
+  kPluginHungWithReboot = 12,
+  kMaxValue = kPluginHungWithReboot,
+};
+
+// These values are saved to the local state during the ending of kiosk session.
+enum class KioskSessionEndReason {
+  kStopped = 0,
+  kRebootPolicy = 1,
+  kRemoteActionReboot = 2,
+  kRestartApi = 3,
+  kPluginCrashed = 4,
+  kPluginHung = 5,
+  kMaxValue = kPluginHung,
+};
+
 // This object accumulates and records kiosk UMA metrics.
-class AppSessionMetricsService {
+class AppSessionMetricsService : public chromeos::PowerManagerClient::Observer {
  public:
   explicit AppSessionMetricsService(PrefService* prefs);
   AppSessionMetricsService(AppSessionMetricsService&) = delete;
   AppSessionMetricsService& operator=(const AppSessionMetricsService&) = delete;
-  ~AppSessionMetricsService();
+  ~AppSessionMetricsService() override;
 
   static std::unique_ptr<AppSessionMetricsService> CreateForTesting(
       PrefService* prefs,
@@ -68,6 +98,9 @@ class AppSessionMetricsService {
   void RecordKioskSessionPluginCrashed();
   void RecordKioskSessionPluginHung();
 
+  // chromeos::PowerManagerClient::Observer:
+  void RestartRequested(power_manager::RequestRestartReason reason) override;
+
  protected:
   AppSessionMetricsService(PrefService* prefs,
                            const std::vector<std::string>& crash_dirs);
@@ -76,21 +109,6 @@ class AppSessionMetricsService {
   bool IsKioskSessionRunning() const;
 
   void RecordKioskSessionStarted(KioskSessionState started_state);
-
-  void StartMetricsTimer();
-
-  void RecordPeriodicMetrics();
-
-  void RecordRamUsage() const;
-
-  // Not recorded if Chrome fails to return the SystemMemoryInfo.
-  // This can happen, for example, if it fails to open /proc/meminfo
-  // on Linux.
-  void RecordSwapUsage() const;
-
-  void RecordDiskSpaceUsage() const;
-
-  void RecordChromeProcessCount() const;
 
   void RecordKioskSessionState(KioskSessionState state) const;
 
@@ -105,16 +123,22 @@ class AppSessionMetricsService {
       const std::string& kiosk_session_duration_in_days_histogram,
       const base::Time& start_time) const;
 
-  void RecordPreviousKioskSessionCrashIfAny();
+  void RecordPreviousKioskSessionEndState();
+
+  void RecordPreviousKioskSessionCrashed(const base::Time& start_time) const;
+
+  void RecordKioskSessionRestartReason(
+      const KioskSessionRestartReason& reason) const;
 
   size_t RetrieveLastDaySessionCount(base::Time session_start_time);
 
   void ClearStartTime();
 
-  void RecordPreviousKioskSessionCrashed(const base::Time& start_time) const;
-
   void OnPreviousKioskSessionResult(const base::Time& start_time,
+                                    bool has_recorded_session_restart_reason,
                                     bool crashed) const;
+
+  void SaveSessionEndReason(const KioskSessionEndReason& reason);
 
   raw_ptr<PrefService> prefs_;
 
@@ -125,13 +149,12 @@ class AppSessionMetricsService {
   // session startup.
   base::Time start_time_;
 
-  // Invokes callback to record continuously monitored metrics. Starts when
-  // the kiosk session is started.
-  base::RepeatingTimer metrics_timer_;
-
-  const std::unique_ptr<DiskSpaceCalculator> disk_space_calculator_;
-
   const std::vector<std::string> crash_dirs_;
+
+  // Observation of chromeos::PowerManagerClient.
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_client_observation_{this};
 
   base::WeakPtrFactory<AppSessionMetricsService> weak_ptr_factory_{this};
 };

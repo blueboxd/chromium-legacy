@@ -5,6 +5,7 @@
 import 'chrome://password-manager/password_manager.js';
 
 import {PasswordManagerImpl, PrefsBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
@@ -95,5 +96,81 @@ suite('SettingsSectionTest', function() {
         settings.$.blockedSitesList.querySelectorAll<HTMLElement>(
             '.blocked-site-content'),
         passwordManager.data.blockedSites);
+  });
+
+  test('blockedSites can be deleted', async function() {
+    const blockedId = 1;
+    passwordManager.data.blockedSites =
+        [createBlockedSiteEntry('test.com', blockedId)];
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+    await passwordManager.whenCalled('getBlockedSitesList');
+    assertTrue(isVisible(settings.$.blockedSitesList));
+
+    settings.$.blockedSitesList
+        .querySelector<HTMLElement>('#removeBlockedValueButton')!.click();
+    const removedId = await passwordManager.whenCalled('removeBlockedSite');
+    assertEquals(blockedId, removedId);
+  });
+
+  test('blockedSites listener updates the list', async function() {
+    passwordManager.data.blockedSites = [createBlockedSiteEntry('test.com', 1)];
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+    await passwordManager.whenCalled('getBlockedSitesList');
+    // Check that only one entry is shown.
+    assertTrue(isVisible(settings.$.blockedSitesList));
+    assertEquals(
+        settings.$.blockedSitesList
+            .querySelectorAll<HTMLElement>('.blocked-site-content')
+            .length,
+        1);
+
+    passwordManager.data.blockedSites.push(
+        createBlockedSiteEntry('test2.com', 2));
+    passwordManager.listeners.blockedSitesListChangedListener!
+        (passwordManager.data.blockedSites);
+    await flushTasks();
+    // Check that two entries are shown.
+    assertTrue(isVisible(settings.$.blockedSitesList));
+    assertEquals(
+        settings.$.blockedSitesList
+            .querySelectorAll<HTMLElement>('.blocked-site-content')
+            .length,
+        2);
+  });
+
+  // Add Shortcut banner is shown if the shortcut is not yet installed.
+  test('showAddShortcutBanner', async function() {
+    loadTimeData.overrideValues({isPasswordManagerShortcutInstalled: false});
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    assertTrue(!!settings!.shadowRoot!.querySelector('#addShortcutBanner'));
+  });
+
+  // Add Shortcut banner is not shown if the shortcut is already installed.
+  test('hideAddShortcutBanner', async function() {
+    loadTimeData.overrideValues({isPasswordManagerShortcutInstalled: true});
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    assertFalse(!!settings!.shadowRoot!.querySelector('#addShortcutBanner'));
+  });
+
+  test('Export dialog appears after clicking on banner', async function() {
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    settings.$.exportPasswordsBanner.click();
+    await flushTasks();
+    const exportPasswordsDialog =
+        settings!.shadowRoot!.querySelector('passwords-export-dialog');
+    assertTrue(!!exportPasswordsDialog);
   });
 });

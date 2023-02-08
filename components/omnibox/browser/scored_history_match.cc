@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/history_url_provider.h"
@@ -130,6 +131,7 @@ ScoredHistoryMatch::ScoredHistoryMatch()
                          RowWordStarts(),
                          false,
                          1,
+                         false,
                          base::Time::Max()) {}
 
 ScoredHistoryMatch::ScoredHistoryMatch(
@@ -141,6 +143,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     const RowWordStarts& word_starts,
     bool is_url_bookmarked,
     size_t num_matching_pages,
+    bool is_highly_visited_host,
     base::Time now)
     : raw_score(0) {
   // Initialize HistoryMatch fields. TODO(tommycli): Merge these two classes.
@@ -155,6 +158,16 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   // particular, this ensures that the class is initialized after an instance
   // has been constructed via the no-args constructor.
   ScoredHistoryMatch::Init();
+
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    // Populate the scoring signals available in the URL Row.
+    scoring_signals.set_typed_count(row.typed_count());
+    scoring_signals.set_visit_count(row.visit_count());
+    base::TimeDelta elapsed_time = now - row.last_visit();
+    scoring_signals.set_elapsed_time_last_visit_secs(elapsed_time.InSeconds());
+    scoring_signals.set_is_host_only(IsHostOnly());
+    scoring_signals.set_length_of_url(row.url().spec().length());
+  }
 
   // Figure out where each search term appears in the URL and/or page title
   // so that we can score as well as provide autocomplete highlighting.
@@ -226,7 +239,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(
       // following "x" or "xn" in this case because those characters no longer
       // exist in the displayed URL string.
       size_t offset =
-        best_inlineable_prefix->prefix.length() + terms_vector[0].length();
+          best_inlineable_prefix->prefix.length() + terms_vector[0].length();
       base::OffsetAdjuster::UnadjustOffset(adjustments, &offset);
       if (offset != std::u16string::npos) {
         // Initialize innermost_match.
@@ -269,8 +282,15 @@ ScoredHistoryMatch::ScoredHistoryMatch(
   const float frequency_score = GetFrequency(now, is_url_bookmarked, visits);
   const float specificity_score =
       GetDocumentSpecificityScore(num_matching_pages);
+
+  static float domain_suggestions_score_factor =
+      OmniboxFieldTrial::kDomainSuggestionsScoreFactor.Get();
+  DCHECK_GE(domain_suggestions_score_factor, 1);
+  const float domain_score =
+      is_highly_visited_host ? domain_suggestions_score_factor : 1;
+
   raw_score = base::saturated_cast<int>(GetFinalRelevancyScore(
-      topicality_score, frequency_score, specificity_score));
+      topicality_score, frequency_score, specificity_score, domain_score));
 
   if (also_do_hup_like_scoring_ && likely_can_inline) {
     // HistoryURL-provider-like scoring gives any match that is
@@ -492,8 +512,22 @@ float ScoredHistoryMatch::GetTopicalityScore(
         url_matches, terms_to_word_starts_offsets, word_starts.url_word_starts_,
         0, host_pos, true);
   }
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled() &&
+      !url_matches.empty()) {
+    // URL Matches are sorted by offsets. The first item in url_matches is the
+    // first URL match.
+    scoring_signals.set_first_url_match_position(url_matches[0].offset);
+  }
+
   url::Component query = parsed.query;
   url::Component key, value;
+
+  int32_t total_url_match_length = 0;
+  int32_t total_host_match_length = 0;
+  int32_t total_path_match_length = 0;
+  int32_t total_query_or_ref_match_length = 0;
+  int32_t total_title_match_length = 0;
+
   for (const auto& url_match : url_matches) {
     // Calculate the offset in the URL string where the meaningful (word) part
     // of the term starts.  This takes into account times when a term starts
@@ -527,10 +561,17 @@ float ScoredHistoryMatch::GetTopicalityScore(
       } else {
         term_scores[url_match.term_num] += 5;
       }
+      total_query_or_ref_match_length += url_match.length;
     } else if (term_word_offset >= path_pos) {
       // The match is in the path component.
       term_scores[url_match.term_num] += 8;
+      total_path_match_length += url_match.length;
     } else if (term_word_offset >= host_pos) {
+      if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+        scoring_signals.set_host_match_at_word_boundary(
+            scoring_signals.host_match_at_word_boundary() || at_word_boundary);
+      }
+      total_host_match_length += url_match.length;
       if (term_word_offset < last_part_of_host_pos) {
         // Either there are no dots in the hostname or this match isn't
         // the last dotted component.
@@ -547,6 +588,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
       if (allow_scheme_matches_)
         term_scores[url_match.term_num] += 10;
     }
+
+    total_url_match_length += url_match.length;
   }
   // Now do the analogous loop over all matches in the title.
   next_word_starts = word_starts.title_word_starts_.begin();
@@ -571,7 +614,34 @@ float ScoredHistoryMatch::GetTopicalityScore(
     if (word_num >= num_title_words_to_allow_)
       break;  // only count the first ten words
     term_scores[title_match.term_num] += 8;
+    total_title_match_length += title_match.length;
   }
+
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    scoring_signals.set_total_url_match_length(total_url_match_length);
+    scoring_signals.set_total_host_match_length(total_host_match_length);
+    scoring_signals.set_total_path_match_length(total_path_match_length);
+    scoring_signals.set_total_query_or_ref_match_length(
+        total_query_or_ref_match_length);
+    scoring_signals.set_total_title_match_length(total_title_match_length);
+
+    // The number of matching input terms is determined by finding the count of
+    // unique `term_num`s in the vector of TermMatches.  This is done after all
+    // filtering of discarded matches is done, and then recorded to
+    // `scoring_signals`.
+    const auto count_unique_term_nums = [&](const TermMatches& term_matches) {
+      std::set<int> unique_term_nums;
+      for (const auto& match : term_matches) {
+        unique_term_nums.insert(match.term_num);
+      }
+      return unique_term_nums.size();
+    };
+    scoring_signals.set_num_input_terms_matched_by_title(
+        count_unique_term_nums(title_matches));
+    scoring_signals.set_num_input_terms_matched_by_url(
+        count_unique_term_nums(url_matches));
+  }
+
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.
   // (Perhaps discount them by 0.8?)
   // TODO(mpearson): Consider: if the earliest match occurs late in the string,
@@ -669,7 +739,8 @@ float ScoredHistoryMatch::GetDocumentSpecificityScore(
 // static
 float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
                                                  float frequency_score,
-                                                 float specificity_score) {
+                                                 float specificity_score,
+                                                 float domain_score) {
   // |relevance_buckets| gives a mapping from intermediate score to the final
   // relevance score.
   static base::NoDestructor<ScoreMaxRelevances> default_relevance_buckets(
@@ -706,7 +777,7 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
   // The score maxes out at 1399 (i.e., cannot beat a good inlineable result
   // from HistoryURL provider).
   const float intermediate_score =
-      topicality_score * frequency_score * specificity_score;
+      topicality_score * frequency_score * specificity_score * domain_score;
 
   // Find the threshold where intermediate score is greater than bucket.
   size_t i = 1;

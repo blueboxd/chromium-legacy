@@ -133,26 +133,15 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [super tearDown];
 }
 
-// TODO(crbug.com/1379289): Test fails on simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testTrendingQueries DISABLED_testTrendingQueries
-#else
-#define MAYBE_testTrendingQueries testTrendingQueries
-#endif
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
-  config.features_enabled.push_back(kDiscoverFeedInNtp);
+  config.features_disabled.push_back(kEnableFeedAblation);
 
   config.features_enabled.push_back(kContentSuggestionsUIModuleRefresh);
-  if ([self isRunningTest:@selector(MAYBE_testTrendingQueries)]) {
-    // Enable arm that does not hide shortcuts.
-    config.features_enabled.push_back(kTrendingQueriesModule);
-    config.variations_enabled = {3350760};
-  }
   return config;
 }
 
@@ -454,6 +443,24 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       @"Fake omnibox width did not animate properly when scrolling.");
 }
 
+// Tests that the tap gesture recognizer that dismisses the keyboard and
+// defocuses the omnibox works.
+- (void)testDefocusOmniboxTapWorks {
+  // TODO(crbug.com/1394749): Test fails on iPad.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_DISABLED(@"Fails on iPad.");
+  }
+
+  [self focusFakebox];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
+      performAction:grey_tap()];
+
+  [ChromeEarlGreyUI waitForAppToIdle];
+  // Check the fake omnibox is displayed again at the same position.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the app doesn't crash when opening multiple tabs.
 - (void)testOpenMultipleTabs {
   NSInteger numberOfTabs = 10;
@@ -491,8 +498,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the trending queries module header is visible and all four
 // trending queries are interactable.
-// TODO(crbug.com/1379289): Test fails on simulator.
-- (void)MAYBE_testTrendingQueries {
+- (void)testTrendingQueries {
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.features_enabled.push_back(kTrendingQueriesModule);
+  config.variations_enabled = {3350760};
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID([NSString
@@ -501,7 +512,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                   l10n_util::GetNSString(
                       IDS_IOS_CONTENT_SUGGESTIONS_TRENDING_QUERIES_MODULE_TITLE)])]
       assertWithMatcher:grey_sufficientlyVisible()];
-
   for (int index = 0; index < 4; index++) {
     [[EarlGrey
         selectElementWithMatcher:
@@ -1004,7 +1014,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   }
 
   [ChromeEarlGreyUI openNewTabMenu];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kToolsMenuSearch)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_NEW_SEARCH)]
       performAction:grey_tap()];
   GREYWaitForAppToIdle(@"App failed to idle");
 
@@ -1037,7 +1049,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [self hideFeedFromNTPMenu];
 
   [ChromeEarlGreyUI openNewTabMenu];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kToolsMenuSearch)]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_NEW_SEARCH)]
       performAction:grey_tap()];
   GREYWaitForAppToIdle(@"App failed to idle");
 

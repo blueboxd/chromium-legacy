@@ -56,10 +56,14 @@ source_set("frame") {
     "multitask_menu/multitask_menu.cc",
     "multitask_menu/multitask_menu.h",
     "multitask_menu/multitask_menu_constants.h",
+    "multitask_menu/multitask_menu_metrics.cc",
+    "multitask_menu/multitask_menu_metrics.h",
     "multitask_menu/multitask_menu_view.cc",
     "multitask_menu/multitask_menu_view.h",
     "multitask_menu/split_button_view.cc",
     "multitask_menu/split_button_view.h",
+    "non_client_frame_view_base.cc",
+    "non_client_frame_view_base.h",
   ]
 
   deps = [
@@ -71,6 +75,8 @@ source_set("frame") {
     "//skia",
     "//ui/aura",
     "//ui/base",
+    "//ui/color",
+    "//ui/platform_window",
     "//ui/strings:ui_strings_grit",
     "//ui/views",
     "//ui/views/window/vector_icons",

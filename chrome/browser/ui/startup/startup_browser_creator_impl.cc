@@ -73,8 +73,10 @@
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/mac_util.h"
+#if BUILDFLAG(ENABLE_UPDATER)
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
+#endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
@@ -204,7 +206,7 @@ void StartupBrowserCreatorImpl::Launch(
 
   web_app::MaybeInstallAppFromCommandLine(*command_line_, *profile);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) && BUILDFLAG(ENABLE_UPDATER)
   if (process_startup == chrome::startup::IsProcessStartup::kYes) {
     // Check whether the auto-update system needs to be promoted from user
     // to system.
@@ -340,7 +342,19 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
       browser->tab_strip_model()->ActivateTabAt(0);
   }
 
-  browser->window()->Show();
+#if BUILDFLAG(IS_MAC)
+  // On Mac, LaunchServices will send activation events if necessary.
+  // Prefer not activating the browser window when opening new tabs, leaving the
+  // activation task to the system.
+  if (process_startup == chrome::startup::IsProcessStartup::kNo &&
+      BrowserList::GetInstance()->GetLastActive() == browser) {
+    browser->window()->ShowInactive();
+  } else {
+#endif
+    browser->window()->Show();
+#if BUILDFLAG(IS_MAC)
+  }
+#endif
 
   return browser;
 }

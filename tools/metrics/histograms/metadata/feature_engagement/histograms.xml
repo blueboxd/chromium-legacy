@@ -257,6 +257,8 @@ chromium-metrics-reviews@google.com.
       summary="Video tutorial card on NTP about voice search in chrome"/>
   <variant name="IPH_VideoTutorial_TryNow"
       summary="Video tutorial Try Now feature"/>
+  <variant name="IPH_WebFeedAwareness"
+      summary="proactive announcement of web feed on NTP/start surface"/>
   <variant name="IPH_WebFeedFollow"
       summary="proactive Web Feed follow recommendations"/>
   <variant name="IPH_WebFeedPostFollowDialog"
@@ -268,11 +270,13 @@ chromium-metrics-reviews@google.com.
 
 <variants name="TutorialID">
   <variant name="" summary="any tutorial"/>
+  <variant name=".SidePanelReadingList"
+      summary="the tutorial for the side panel reading list"/>
   <variant name=".TabGroup" summary="the tutorial for tab groups"/>
 </variants>
 
 <histogram name="InProductHelp.Config.ParsingEvent" enum="ConfigParsingEvent"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>nyquist@chromium.org</owner>
   <summary>
     Records if in-product help configuration is parsed correctly, and the
@@ -498,7 +502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.AbortStep" units="int"
-    expires_after="2022-12-31">
+    expires_after="2023-12-31">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>
@@ -509,7 +513,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.Completion" enum="BooleanSuccess"
-    expires_after="2022-12-31">
+    expires_after="2023-12-31">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>
@@ -520,7 +524,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.IPHLinkClicked" enum="BooleanSuccess"
-    expires_after="2022-12-31">
+    expires_after="2023-12-31">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>
@@ -532,7 +536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial{TutorialID}.StartedFromWhatsNewPage"
-    enum="BooleanSuccess" expires_after="2022-12-31">
+    enum="BooleanSuccess" expires_after="2023-12-31">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>

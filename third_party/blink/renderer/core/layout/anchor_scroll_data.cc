@@ -20,7 +20,8 @@ namespace {
 const LayoutObject* AnchorScrollObject(const LayoutObject* layout_object) {
   if (!layout_object || !layout_object->IsOutOfFlowPositioned())
     return nullptr;
-  if (!layout_object->StyleRef().AnchorScroll())
+  const AnchorScrollValue* value = layout_object->StyleRef().AnchorScroll();
+  if (!value)
     return nullptr;
 
   LayoutBox::NGPhysicalFragmentList containing_block_fragments =
@@ -35,15 +36,49 @@ const LayoutObject* AnchorScrollObject(const LayoutObject* layout_object) {
   if (!anchor_query)
     return nullptr;
 
-  if (const NGPhysicalFragment* fragment =
-          anchor_query->Fragment(*layout_object->StyleRef().AnchorScroll())) {
-    return fragment->GetLayoutObject();
+  const Element* element = DynamicTo<Element>(layout_object->GetNode());
+  const bool is_in_top_layer = element ? element->IsInTopLayer() : false;
+
+  const NGPhysicalFragment* fragment = nullptr;
+  if (value->IsImplicit()) {
+    Element* anchor = element ? element->ImplicitAnchorElement() : nullptr;
+    LayoutObject* anchor_layout_object =
+        anchor ? anchor->GetLayoutObject() : nullptr;
+    if (anchor_layout_object)
+      fragment = anchor_query->Fragment(anchor_layout_object, is_in_top_layer);
+  } else {
+    DCHECK(value->IsNamed());
+    fragment = anchor_query->Fragment(&value->GetName(), is_in_top_layer);
   }
-  return nullptr;
+
+  // |is_in_top_layer| allows NGPhysicalAnchorQuery to return elements that are
+  // rendered after, and hence, can't be used as anchors for |layout_object|.
+  if (is_in_top_layer && fragment &&
+      layout_object->IsBeforeInPreOrder(*fragment->GetLayoutObject())) {
+    return nullptr;
+  }
+
+  return fragment ? fragment->GetLayoutObject() : nullptr;
+}
+
+// Returns the PaintLayer of the scroll container of |anchor|.
+const PaintLayer* ContainingScrollContainerForAnchor(
+    const LayoutObject* anchor) {
+  if (!anchor->HasLayer())
+    return anchor->ContainingScrollContainer()->Layer();
+  // Normally, |scroller_layer| is the result. There's only one special case
+  // where |anchor| is fixed-positioned and |scroller_layer| is the LayoutView,
+  // then |anchor| doesn't actually scroll with |scroller_layer|, and null
+  // should be returned.
+  bool is_fixed_to_view = false;
+  const PaintLayer* scroller_layer =
+      To<LayoutBoxModelObject>(anchor)->Layer()->ContainingScrollContainerLayer(
+          &is_fixed_to_view);
+  return is_fixed_to_view ? nullptr : scroller_layer;
 }
 
 // Returns the PaintLayer of the scroll container of an anchor-positioned |box|.
-const PaintLayer* ContainingScrollContainerLayerForAnchorScroll(
+const PaintLayer* ContainingScrollContainerLayerForAnchorPositionedBox(
     const LayoutBox* box) {
   // Normally, |scroller_layer| is the result. There's only one special case
   // where |box| is fixed-positioned and |scroller_layer| is the LayoutView,
@@ -61,6 +96,8 @@ AnchorScrollData::AnchorScrollData(Element* element)
     : ScrollSnapshotClient(element->GetDocument().GetFrame()),
       owner_(element) {}
 
+AnchorScrollData::~AnchorScrollData() = default;
+
 bool AnchorScrollData::IsActive() const {
   return owner_->GetAnchorScrollData() == this;
 }
@@ -76,9 +113,10 @@ AnchorScrollData::SnapshotDiff AnchorScrollData::TakeAndCompareSnapshot(
   if (const LayoutObject* anchor =
           AnchorScrollObject(owner_->GetLayoutObject())) {
     const PaintLayer* starting_layer =
-        anchor->ContainingScrollContainer()->Layer();
+        ContainingScrollContainerForAnchor(anchor);
     const PaintLayer* bounding_layer =
-        ContainingScrollContainerLayerForAnchorScroll(owner_->GetLayoutBox());
+        ContainingScrollContainerLayerForAnchorPositionedBox(
+            owner_->GetLayoutBox());
     for (const PaintLayer* layer = starting_layer; layer != bounding_layer;
          layer = layer->ContainingScrollContainerLayer()) {
       // |bounding_layer| must be either null (for fixed-positioned |owner_|) or
@@ -96,14 +134,12 @@ AnchorScrollData::SnapshotDiff AnchorScrollData::TakeAndCompareSnapshot(
 
   SnapshotDiff diff;
   if (scroll_container_layers_ != new_scroll_container_layers) {
-    diff = SnapshotDiff::kScrollers;
+    diff = SnapshotDiff::kScrollersOrFallbackPosition;
   } else if (accumulated_scroll_offset_ != new_accumulated_scroll_offset ||
              accumulated_scroll_origin_ != new_accumulated_scroll_origin) {
-    // TODO(crbug.com/1309178): An offset-only change may result in a change in
-    // a different fallback position, which needs a re-layout and must be
-    // distinguished from a "pure" offset-only change that only needs a repaint.
-    // Implement that.
-    diff = SnapshotDiff::kOffsetOnly;
+    diff = IsFallbackPositionValid(new_accumulated_scroll_offset)
+               ? SnapshotDiff::kOffsetOnly
+               : SnapshotDiff::kScrollersOrFallbackPosition;
   } else {
     diff = SnapshotDiff::kNone;
   }
@@ -117,6 +153,23 @@ AnchorScrollData::SnapshotDiff AnchorScrollData::TakeAndCompareSnapshot(
   return diff;
 }
 
+bool AnchorScrollData::IsFallbackPositionValid(
+    const gfx::Vector2dF& accumulated_scroll_offset) const {
+  if (!non_overflowing_rects_.size())
+    return true;
+
+  PhysicalOffset old_translation = TranslationAsPhysicalOffset();
+  PhysicalOffset new_translation =
+      -PhysicalOffset::FromVector2dFFloor(accumulated_scroll_offset);
+  for (const PhysicalRect& rect : non_overflowing_rects_) {
+    if (rect.ContainsInclusive(old_translation) !=
+        rect.ContainsInclusive(new_translation)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void AnchorScrollData::UpdateSnapshot() {
   if (!IsActive())
     return;
@@ -128,7 +181,7 @@ void AnchorScrollData::UpdateSnapshot() {
     case SnapshotDiff::kOffsetOnly:
       InvalidatePaint();
       return;
-    case SnapshotDiff::kScrollers:
+    case SnapshotDiff::kScrollersOrFallbackPosition:
       InvalidateLayout();
       return;
   }
@@ -148,7 +201,7 @@ bool AnchorScrollData::ValidateSnapshot() {
       // function is called at LayoutClean during lifecycle update, and
       // offset-only diff only needs paint update.
       return true;
-    case SnapshotDiff::kScrollers:
+    case SnapshotDiff::kScrollersOrFallbackPosition:
       InvalidateLayout();
       return false;
   }
@@ -156,7 +209,7 @@ bool AnchorScrollData::ValidateSnapshot() {
 
 bool AnchorScrollData::ShouldScheduleNextService() {
   return IsActive() &&
-         TakeAndCompareSnapshot(false /*update*/) == SnapshotDiff::kNone;
+         TakeAndCompareSnapshot(false /*update*/) != SnapshotDiff::kNone;
 }
 
 void AnchorScrollData::InvalidateLayout() {
@@ -180,6 +233,7 @@ void AnchorScrollData::Trace(Visitor* visitor) const {
   visitor->Trace(owner_);
   visitor->Trace(scroll_container_layers_);
   ScrollSnapshotClient::Trace(visitor);
+  ElementRareDataField::Trace(visitor);
 }
 
 }  // namespace blink

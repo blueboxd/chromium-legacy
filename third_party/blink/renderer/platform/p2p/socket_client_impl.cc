@@ -60,14 +60,16 @@ void P2PSocketClientImpl::Init(
   CHECK(dispatcher);
   dispatcher->GetP2PSocketManager()->CreateSocket(
       type, local_address, network::P2PPortRange(min_port, max_port),
-      remote_address, receiver_.BindNewPipeAndPassRemote(),
+      remote_address,
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation_),
+      receiver_.BindNewPipeAndPassRemote(),
       socket_.BindNewPipeAndPassReceiver());
   receiver_.set_disconnect_handler(WTF::BindOnce(
       &P2PSocketClientImpl::OnConnectionError, WTF::Unretained(this)));
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
-                                   const Vector<int8_t>& data,
+                                   base::span<const uint8_t> data,
                                    const rtc::PacketOptions& options) {
   uint64_t unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
 
@@ -81,13 +83,12 @@ uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
 }
 
 void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
-                                           const Vector<int8_t>& data,
+                                           base::span<const uint8_t> data,
                                            const rtc::PacketOptions& options,
                                            uint64_t packet_id) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("p2p", "Send", packet_id);
 
-  socket_->Send(data, network::P2PPacketInfo(address, options, packet_id),
-                net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
+  socket_->Send(data, network::P2PPacketInfo(address, options, packet_id));
 }
 
 void P2PSocketClientImpl::SetOption(network::P2PSocketOption option,
@@ -133,7 +134,7 @@ void P2PSocketClientImpl::SendComplete(
 }
 
 void P2PSocketClientImpl::DataReceived(const net::IPEndPoint& socket_address,
-                                       const Vector<int8_t>& data,
+                                       base::span<const uint8_t> data,
                                        base::TimeTicks timestamp) {
   DCHECK_EQ(kStateOpen, state_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

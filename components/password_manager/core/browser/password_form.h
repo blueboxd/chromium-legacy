@@ -47,6 +47,17 @@ enum class InsecureType {
   kMaxValue = kReused
 };
 
+enum class PasswordNoteChangeResult {
+  // A new credential is added with the note field not empty.
+  kNoteAdded = 0,
+  // The note changed from a non-empty to another non-empty.
+  kNoteEdited = 1,
+  // The note changed from non-empty to empty.
+  kNoteRemoved = 2,
+  // The note did not change.
+  kNoteNotChanged = 3
+};
+
 // Metadata for insecure credentials
 struct InsecurityMetadata {
   InsecurityMetadata();
@@ -155,6 +166,13 @@ struct PasswordForm {
     kMinValue = kNoSignalSent,
     kMaxValue = kNegativeSignalSent,
   };
+
+  // The primary key of the password record in the logins database. This is only
+  // set when the credentials has been read from the login database. Password
+  // forms parsed from the web, or manually added in settings don't have this
+  // field set. Also credentials read from sources other than logins database
+  // (e.g. credential manager on Android) don't have this field set.
+  absl::optional<FormPrimaryKey> primary_key;
 
   Scheme scheme = Scheme::kHtml;
 
@@ -450,6 +468,15 @@ struct PasswordForm {
 
   // Returns true when |password_value| or |new_password_value| are non-empty.
   bool HasNonEmptyPasswordValue() const;
+
+  // Returns the value of the note with an empty `unique_display_name`,
+  // otherwise returns an nullopt.
+  absl::optional<std::u16string> GetNoteWithEmptyUniqueDisplayName() const;
+
+  // Updates the note with an empty `unique_display_name` and returns the status
+  // as `PasswordNoteAction`.
+  PasswordNoteChangeResult SetNoteWithEmptyUniqueDisplayName(
+      const std::u16string& new_note_value);
 
   PasswordForm();
   PasswordForm(const PasswordForm& other);

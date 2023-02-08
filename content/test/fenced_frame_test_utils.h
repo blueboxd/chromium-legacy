@@ -5,6 +5,7 @@
 #ifndef CONTENT_TEST_FENCED_FRAME_TEST_UTILS_H_
 #define CONTENT_TEST_FENCED_FRAME_TEST_UTILS_H_
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "net/base/net_errors.h"
 
@@ -37,38 +38,58 @@ class TestFencedFrameURLMappingResultObserver
   ~TestFencedFrameURLMappingResultObserver() override;
 
   void OnFencedFrameURLMappingComplete(
-      const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-          properties) override;
+      const absl::optional<FencedFrameProperties>& properties) override;
 
   bool mapping_complete_observed() const { return mapping_complete_observed_; }
 
-  const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-  fenced_frame_properties() {
-    return fenced_frame_properties_;
+  const absl::optional<FencedFrameProperties>& fenced_frame_properties() {
+    return observed_fenced_frame_properties_;
   }
 
-  const absl::optional<GURL>& mapped_url() const { return mapped_url_; }
-
-  const absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>&
-  pending_ad_components_map() const {
-    return pending_ad_components_map_;
+  absl::optional<GURL> mapped_url() const {
+    if (!observed_fenced_frame_properties_ ||
+        !observed_fenced_frame_properties_->mapped_url_) {
+      return absl::nullopt;
+    }
+    return observed_fenced_frame_properties_->mapped_url_
+        ->GetValueIgnoringVisibility();
   }
 
-  const absl::optional<AdAuctionData> ad_auction_data() const {
-    return ad_auction_data_;
+  absl::optional<std::vector<std::pair<GURL, FencedFrameConfig>>>
+  nested_urn_config_pairs() const {
+    if (!observed_fenced_frame_properties_ ||
+        !observed_fenced_frame_properties_->nested_urn_config_pairs_) {
+      return absl::nullopt;
+    }
+    return observed_fenced_frame_properties_->nested_urn_config_pairs_
+        ->GetValueIgnoringVisibility();
   }
 
-  ReportingMetadata reporting_metadata() { return reporting_metadata_; }
+  absl::optional<AdAuctionData> ad_auction_data() const {
+    if (!observed_fenced_frame_properties_ ||
+        !observed_fenced_frame_properties_->ad_auction_data_) {
+      return absl::nullopt;
+    }
+    return observed_fenced_frame_properties_->ad_auction_data_
+        ->GetValueIgnoringVisibility();
+  }
+
+  const base::RepeatingClosure& on_navigate_callback() const {
+    return observed_fenced_frame_properties_->on_navigate_callback_;
+  }
+
+  ReportingMetadata reporting_metadata() {
+    if (!observed_fenced_frame_properties_ ||
+        !observed_fenced_frame_properties_->reporting_metadata_) {
+      return {};
+    }
+    return observed_fenced_frame_properties_->reporting_metadata_
+        ->GetValueIgnoringVisibility();
+  }
 
  private:
   bool mapping_complete_observed_ = false;
-  absl::optional<FencedFrameURLMapping::FencedFrameProperties>
-      fenced_frame_properties_;
-  absl::optional<GURL> mapped_url_;
-  absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
-      pending_ad_components_map_;
-  absl::optional<AdAuctionData> ad_auction_data_;
-  ReportingMetadata reporting_metadata_;
+  absl::optional<FencedFrameProperties> observed_fenced_frame_properties_;
 };
 
 class FencedFrameURLMappingTestPeer {
@@ -95,7 +116,7 @@ class FencedFrameURLMappingTestPeer {
   void FillMap(const GURL& url);
 
  private:
-  FencedFrameURLMapping* fenced_frame_url_mapping_;
+  raw_ptr<FencedFrameURLMapping> fenced_frame_url_mapping_;
 };
 
 }  // namespace content

@@ -55,7 +55,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -161,7 +161,7 @@ OverviewSession::~OverviewSession() {
   // using it.
   if (window_drag_controller_) {
     window_drag_controller_->ResetOverviewSession();
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
         FROM_HERE, window_drag_controller_.release());
   }
 }
@@ -1104,6 +1104,11 @@ bool OverviewSession::IsShowingDesksTemplatesGrid() const {
                             : grid_list_.front()->IsShowingDesksTemplatesGrid();
 }
 
+bool OverviewSession::WillShowDesksTemplatesGrid() const {
+  return grid_list_.empty() ? false
+                            : grid_list_.front()->WillShowDesksTemplatesGrid();
+}
+
 void OverviewSession::UpdateAccessibilityFocus() {
   if (is_shutting_down())
     return;
@@ -1529,10 +1534,7 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
   // When the saved desk grid is on, do not switch focus to avoid unexpected
   // name commit.
   bool saved_desk_grid_should_keep_focus =
-      IsShowingDesksTemplatesGrid() && grid_list_.front()
-                                               ->saved_desk_library_widget()
-                                               ->GetLayer()
-                                               ->GetTargetOpacity() != 0.f;
+      IsShowingDesksTemplatesGrid() || WillShowDesksTemplatesGrid();
   if (saved_desk_grid_should_keep_focus)
     overview_focus_widget_->ShowInactive();
   else

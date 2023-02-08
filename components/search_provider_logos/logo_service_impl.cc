@@ -15,9 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -62,7 +61,7 @@ class ImageDecodedHandlerWithTimeout {
       base::OnceCallback<void(const SkBitmap&)> image_decoded_callback) {
     auto* handler =
         new ImageDecodedHandlerWithTimeout(std::move(image_decoded_callback));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
                        handler->weak_ptr_factory_.GetWeakPtr(), gfx::Image()),
@@ -321,8 +320,8 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks, bool for_webui_ntp) {
   if (is_idle_) {
     is_idle_ = false;
 
-    base::PostTaskAndReplyWithResult(
-        cache_task_runner_.get(), FROM_HERE,
+    cache_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&GetLogoFromCacheOnFileThread,
                        base::Unretained(logo_cache_.get()), logo_url_,
                        clock_->Now()),

@@ -18,6 +18,7 @@
 #include "components/payments/content/payment_app.h"
 #include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_request_converter.h"
+#include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/content/secure_payment_confirmation_no_creds.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/error_message_util.h"
@@ -67,28 +68,27 @@ mojom::PaymentAddressPtr RedactShippingAddress(
 }  // namespace
 
 PaymentRequest::PaymentRequest(
-    content::RenderFrameHost& render_frame_host,
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
-    base::WeakPtr<PaymentRequestDisplayManager> display_manager,
-    mojo::PendingReceiver<mojom::PaymentRequest> receiver,
-    SPCTransactionMode spc_transaction_mode,
-    base::WeakPtr<ObserverForTest> observer_for_testing)
-    : DocumentService(render_frame_host, std::move(receiver)),
-      WebContentsObserver(
-          content::WebContents::FromRenderFrameHost(&render_frame_host)),
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver)
+    : DocumentService(*delegate->GetRenderFrameHost(), std::move(receiver)),
+      WebContentsObserver(content::WebContents::FromRenderFrameHost(
+          delegate->GetRenderFrameHost())),
       log_(web_contents()),
       delegate_(std::move(delegate)),
-      display_manager_(display_manager),
+      display_manager_(delegate_->GetDisplayManager()->GetWeakPtr()),
       display_handle_(nullptr),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents()->GetLastCommittedURL())),
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
-          render_frame_host.GetLastCommittedURL())),
-      frame_security_origin_(render_frame_host.GetLastCommittedOrigin()),
-      spc_transaction_mode_(spc_transaction_mode),
-      observer_for_testing_(observer_for_testing),
+          delegate_->GetRenderFrameHost()->GetLastCommittedURL())),
+      frame_security_origin_(
+          delegate_->GetRenderFrameHost()->GetLastCommittedOrigin()),
+      spc_transaction_mode_(
+          PaymentRequestWebContentsManager::GetOrCreateForWebContents(
+              *web_contents())
+              ->transaction_mode()),
       journey_logger_(delegate_->IsOffTheRecord(),
-                      render_frame_host.GetPageUkmSourceId()) {
+                      delegate_->GetRenderFrameHost()->GetPageUkmSourceId()) {
   payment_handler_host_ = std::make_unique<PaymentHandlerHost>(
       web_contents(), weak_ptr_factory_.GetWeakPtr());
 }
@@ -196,6 +196,8 @@ void PaymentRequest::Init(
       /*observer=*/weak_ptr_factory_.GetWeakPtr(),
       delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
+      std::make_unique<PaymentAppService>(
+          render_frame_host().GetBrowserContext()),
       &render_frame_host(), top_level_origin_, frame_origin_,
       frame_security_origin_, spec(),
       /*delegate=*/weak_ptr_factory_.GetWeakPtr(),
@@ -627,6 +629,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
       // card art icon - because we download it in all cases, revealing a
       // failure doesn't leak any information about the user to the site.
       error_reason != AppCreationFailureReason::ICON_DOWNLOAD_FAILED) {
+    journey_logger_.SetNoMatchingCredentialsShown();
     auto opt_out_callback =
         spec_->method_data().front()->secure_payment_confirmation->show_opt_out
             ? base::BindOnce(&PaymentRequest::OnUserOptedOut,
@@ -740,8 +743,7 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
   // Only allowing URL based payment apps to skip the payment sheet.
   skipped_payment_request_ui_ =
       !spec()->IsSecurePaymentConfirmationRequested() &&
-      (spec()->url_payment_method_identifiers().size() > 0 ||
-       delegate_->SkipUiForBasicCard()) &&
+      spec()->url_payment_method_identifiers().size() > 0 &&
       base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
       base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
       state()->IsInitialized() && spec()->IsInitialized() &&
@@ -828,7 +830,7 @@ void PaymentRequest::OnUserOptedOut() {
   if (!client_.is_bound())
     return;
 
-  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
+  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_USER_OPTED_OUT);
 
   // This sends an error to the renderer, which informs the API user.
   client_->OnError(mojom::PaymentErrorReason::USER_OPT_OUT,

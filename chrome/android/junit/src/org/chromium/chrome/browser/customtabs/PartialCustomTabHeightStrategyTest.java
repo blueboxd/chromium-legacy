@@ -105,7 +105,6 @@ public class PartialCustomTabHeightStrategyTest {
     private static final int DEVICE_WIDTH = 1440;
 
     private static final int NAVBAR_HEIGHT = 160;
-    private static final int MAX_INIT_POS = DEVICE_HEIGHT / 2;
     private static final int INITIAL_HEIGHT = DEVICE_HEIGHT / 2 - NAVBAR_HEIGHT;
     private static final int FULL_HEIGHT = DEVICE_HEIGHT - NAVBAR_HEIGHT;
     private static final int MULTIWINDOW_HEIGHT = FULL_HEIGHT / 2;
@@ -217,6 +216,7 @@ public class PartialCustomTabHeightStrategyTest {
         doAnswer(invocation -> {
             WindowManager.LayoutParams attributes = new WindowManager.LayoutParams();
             attributes.copyFrom((WindowManager.LayoutParams) invocation.getArgument(0));
+            mAttributes.copyFrom(attributes);
             mAttributeResults.add(attributes);
             return null;
         })
@@ -434,7 +434,7 @@ public class PartialCustomTabHeightStrategyTest {
         mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
         mRealMetrics.widthPixels = DEVICE_WIDTH;
         mRealMetrics.heightPixels = DEVICE_HEIGHT;
-        when(mContentFrame.getHeight()).thenReturn(DEVICE_HEIGHT);
+        when(mContentFrame.getHeight()).thenReturn(DEVICE_HEIGHT - NAVBAR_HEIGHT);
         when(mDisplay.getRotation()).thenReturn(Surface.ROTATION_90);
     }
 
@@ -759,6 +759,8 @@ public class PartialCustomTabHeightStrategyTest {
         PartialCustomTabHeightStrategy strategy = createPcctAtHeight(500);
         assertEquals(1, mAttributeResults.size());
         assertTabIsAtInitialPos(mAttributeResults.get(0));
+        int expected = PartialCustomTabHeightStrategy.ResizeType.AUTO_EXPANSION;
+        HistogramDelta histogramExpansion = new HistogramDelta("CustomTabs.ResizeType2", expected);
 
         strategy.onShowSoftInput(() -> {});
         shadowOf(Looper.getMainLooper()).idle();
@@ -769,6 +771,10 @@ public class PartialCustomTabHeightStrategyTest {
 
         // Verify that the tab expands to full height.
         assertTabIsFullHeight(mAttributeResults.get(length - 1));
+        assertEquals("ResizeType.AUTO_EXPANSION should be recorded once.", 1,
+                histogramExpansion.getDelta());
+        waitForAnimationToFinish();
+        verify(mOnResizedCallback).onResized(eq(FULL_HEIGHT), anyInt());
     }
 
     @Test
@@ -841,15 +847,15 @@ public class PartialCustomTabHeightStrategyTest {
 
         PartialCustomTabHandleStrategy handleStrategy = strategy.createHandleStrategyForTesting();
 
-        int expected = PartialCustomTabHeightStrategy.ResizeType.EXPANSION;
-        HistogramDelta histogramExpansion = new HistogramDelta("CustomTabs.ResizeType", expected);
+        int expected = PartialCustomTabHeightStrategy.ResizeType.MANUAL_EXPANSION;
+        HistogramDelta histogramExpansion = new HistogramDelta("CustomTabs.ResizeType2", expected);
 
         // Drag to the top.
         assertTabIsFullHeight(dragTab(handleStrategy, 1500, 1000, 0));
 
-        // invokeResizeCallback() should have been called and ResizeType.EXPANSION logged once.
-        assertEquals(
-                "ResizeType.EXPANSION should be recorded once.", 1, histogramExpansion.getDelta());
+        // invokeResizeCallback() should have been called and MANUAL_EXPANSION logged once.
+        assertEquals("ResizeType.MANUAL_EXPANSION should be recorded once.", 1,
+                histogramExpansion.getDelta());
     }
 
     @Test
@@ -866,40 +872,54 @@ public class PartialCustomTabHeightStrategyTest {
         // Drag to the top so it can be minimized in the next step.
         assertTabIsFullHeight(dragTab(handleStrategy, 1500, 1000, 0));
 
-        int expected = PartialCustomTabHeightStrategy.ResizeType.MINIMIZATION;
+        int expected = PartialCustomTabHeightStrategy.ResizeType.MANUAL_MINIMIZATION;
         HistogramDelta histogramMinimization =
-                new HistogramDelta("CustomTabs.ResizeType", expected);
+                new HistogramDelta("CustomTabs.ResizeType2", expected);
 
         // Drag down enough -> slide to the initial position.
         assertTabIsAtInitialPos(dragTab(handleStrategy, 50, 650, 1300));
 
-        // invokeResizeCallback() should have been called and ResizeType.MINIMIZATION logged once.
-        assertEquals("ResizeType.MINIMIZATION should be recorded once.", 1,
+        // invokeResizeCallback() should have been called and MANUAL_MINIMIZATION logged once.
+        assertEquals("ResizeType.MANUAL_MINIMIZATION should be recorded once.", 1,
                 histogramMinimization.getDelta());
     }
 
     @Test
-    public void callbackWhenResized() {
+    public void callbackWhenHeightResized() {
         PartialCustomTabHeightStrategy strategy = createPcctAtHeight(500);
         assertTabIsAtInitialPos(mAttributeResults.get(0));
         PartialCustomTabHandleStrategy handleStrategy = strategy.createHandleStrategyForTesting();
 
         // Slide back to the initial height -> no resize happens.
         assertTabIsAtInitialPos(dragTab(handleStrategy, 1500, 1450, 1400));
-        verify(mOnResizedCallback, never()).onResized(anyInt());
+        verify(mOnResizedCallback, never()).onResized(anyInt(), anyInt());
 
         // Drag to the top -> resized.
         assertTabIsFullHeight(dragTab(handleStrategy, 1500, 1000, 500));
-        verify(mOnResizedCallback).onResized(eq(FULL_HEIGHT));
+        verify(mOnResizedCallback).onResized(eq(FULL_HEIGHT), anyInt());
         clearInvocations(mOnResizedCallback);
 
         // Slide back to the top -> no resize happens.
         assertTabIsFullHeight(dragTab(handleStrategy, 50, 100, 150));
-        verify(mOnResizedCallback, never()).onResized(anyInt());
+        verify(mOnResizedCallback, never()).onResized(anyInt(), anyInt());
 
         // Drag to the initial height -> resized.
         assertTabIsAtInitialPos(dragTab(handleStrategy, 50, 650, 1300));
-        verify(mOnResizedCallback).onResized(eq(INITIAL_HEIGHT));
+        verify(mOnResizedCallback).onResized(eq(INITIAL_HEIGHT), anyInt());
+    }
+
+    @Test
+    public void callbackUponRotation() {
+        PartialCustomTabHeightStrategy strategy = createPcctAtHeight(800);
+
+        configLandscapeMode();
+        strategy.onConfigurationChanged(mConfiguration);
+        verify(mOnResizedCallback).onResized(eq(DEVICE_WIDTH), eq(DEVICE_HEIGHT));
+        clearInvocations(mOnResizedCallback);
+
+        configPortraitMode();
+        strategy.onConfigurationChanged(mConfiguration);
+        verify(mOnResizedCallback).onResized(eq(INITIAL_HEIGHT), anyInt());
     }
 
     @Test
@@ -946,10 +966,13 @@ public class PartialCustomTabHeightStrategyTest {
 
         strategy.onEnterFullscreen(null, null);
         assertTrue(isFullscreen());
+        verify(mOnResizedCallback).onResized(eq(DEVICE_HEIGHT), eq(DEVICE_WIDTH));
+        clearInvocations(mOnResizedCallback);
 
         strategy.onExitFullscreen(null);
         assertFalse(isFullscreen());
         assertEquals(height, getWindowAttributes().height);
+        verify(mOnResizedCallback).onResized(eq(height), anyInt());
     }
 
     @Test
@@ -1067,17 +1090,36 @@ public class PartialCustomTabHeightStrategyTest {
     public void expandToFullHeightOnFindInPage() {
         PartialCustomTabHeightStrategy strategy = createPcctAtHeight(800);
         doReturn(mDragBarBackground).when(mDragBar).getBackground();
+        int expected = PartialCustomTabHeightStrategy.ResizeType.AUTO_EXPANSION;
+        HistogramDelta histogramExpansion = new HistogramDelta("CustomTabs.ResizeType2", expected);
         strategy.onFindToolbarShown();
-        WindowManager.LayoutParams attrs = mAttributeResults.get(mAttributeResults.size() - 1);
-        assertTabIsFullHeight(attrs);
+        waitForAnimationToFinish();
 
+        assertTabIsFullHeight(getWindowAttributes());
+        assertEquals("ResizeType.AUTO_EXPANSION should be recorded once.", 1,
+                histogramExpansion.getDelta());
+        verify(mOnResizedCallback).onResized(eq(FULL_HEIGHT), anyInt());
+        clearInvocations(mOnResizedCallback);
+
+        expected = PartialCustomTabHeightStrategy.ResizeType.AUTO_MINIMIZATION;
+        HistogramDelta histogramMinimization =
+                new HistogramDelta("CustomTabs.ResizeType2", expected);
         strategy.onFindToolbarHidden();
-        attrs = mAttributeResults.get(mAttributeResults.size() - 1);
-        assertTabIsAtInitialPos(attrs);
+        waitForAnimationToFinish();
+
+        assertTabIsAtInitialPos(getWindowAttributes());
+        assertEquals("ResizeType.AUTO_MINIMIZATION should be recorded once.", 1,
+                histogramMinimization.getDelta());
+        verify(mOnResizedCallback).onResized(eq(INITIAL_HEIGHT), anyInt());
     }
 
     private boolean isFullscreen() {
         WindowManager.LayoutParams attrs = mAttributeResults.get(mAttributeResults.size() - 1);
         return attrs.isFullscreen();
+    }
+
+    private static void waitForAnimationToFinish() {
+        shadowOf(Looper.getMainLooper()).idle();
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
     }
 }

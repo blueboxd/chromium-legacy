@@ -339,12 +339,8 @@ void PluginVmApps::LaunchAppWithIntent(const std::string& app_id,
 
 void PluginVmApps::LaunchAppWithParams(AppLaunchParams&& params,
                                        LaunchCallback callback) {
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
-  } else {
-    Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
-           nullptr);
-  }
+  Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
+
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
 }
@@ -394,27 +390,6 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
   }
 
   std::move(callback).Run(std::move(menu_items));
-}
-
-void PluginVmApps::Launch(const std::string& app_id,
-                          int32_t event_flags,
-                          apps::mojom::LaunchSource launch_source,
-                          apps::mojom::WindowInfoPtr window_info) {
-  DCHECK_EQ(plugin_vm::kPluginVmShelfAppId, app_id);
-  if (plugin_vm::PluginVmFeatures::Get()->IsEnabled(profile_)) {
-    plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->LaunchPluginVm(
-        base::DoNothing());
-  } else {
-    plugin_vm::ShowPluginVmInstallerView(profile_);
-  }
-}
-
-void PluginVmApps::GetMenuModel(const std::string& app_id,
-                                apps::mojom::MenuType menu_type,
-                                int64_t display_id,
-                                GetMenuModelCallback callback) {
-  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
-               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
 }
 
 void PluginVmApps::OnRegistryUpdated(

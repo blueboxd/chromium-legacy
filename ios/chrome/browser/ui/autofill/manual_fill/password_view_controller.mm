@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -98,14 +97,6 @@ NSString* const kPasswordTableViewAccessibilityIdentifier =
     [self addHeaderItem];
   }
 
-  // Center search bar vertically so it looks centered in the header when
-  // searching.  The cancel button is centered / decentered on
-  // viewWillAppear and viewDidDisappear.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-      offset;
-
   UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
@@ -113,33 +104,6 @@ NSString* const kPasswordTableViewAccessibilityIdentifier =
   doneButton.accessibilityIdentifier =
       manual_fill::kPasswordDoneButtonAccessibilityIdentifier;
   self.navigationItem.rightBarButtonItem = doneButton;
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
-  // Center search bar's cancel button vertically so it looks centered.
-  // We change the cancel button proxy styles, so we will return it to
-  // default in viewDidDisappear.
-  if (self.searchController) {
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
-  }
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-
-  // Restore to default origin offset for cancel button proxy style.
-  if (self.searchController) {
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
-    [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                               forBarMetrics:UIBarMetricsDefault];
-  }
 }
 
 #pragma mark - UITableViewDataSource

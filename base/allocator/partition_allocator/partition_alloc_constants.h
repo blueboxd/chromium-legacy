@@ -274,7 +274,11 @@ constexpr size_t kNumPools = 3;
 // Special-case Android and iOS, which incur test failures with larger
 // pools. Regardless, allocating >8GiB with malloc() on these platforms is
 // unrealistic as of 2022.
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+//
+// When pointer compression is enabled, we cannot use large pools (at most
+// 8GB for each of the glued pools).
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || \
+    defined(PA_POINTER_COMPRESSION)
 constexpr size_t kPoolMaxSize = 8 * kGiB;
 #else
 constexpr size_t kPoolMaxSize = 16 * kGiB;
@@ -485,6 +489,18 @@ using ::partition_alloc::internal::kNumBuckets;
 using ::partition_alloc::internal::kSuperPageSize;
 using ::partition_alloc::internal::MaxDirectMapped;
 using ::partition_alloc::internal::PartitionPageSize;
+
+// Return values to indicate where a pointer is pointing relative to the bounds
+// of an allocation.
+enum class PtrPosWithinAlloc {
+  // When PA_USE_OOB_POISON is disabled, end-of-allocation pointers are also
+  // considered in-bounds.
+  kInBounds,
+#if defined(PA_USE_OOB_POISON)
+  kAllocEnd,
+#endif
+  kFarOOB
+};
 
 }  // namespace partition_alloc
 

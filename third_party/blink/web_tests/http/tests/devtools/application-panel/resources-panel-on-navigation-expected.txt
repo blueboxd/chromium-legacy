@@ -15,13 +15,15 @@ Storage
   Session Storage
     http://127.0.0.1:8000/
   IndexedDB
-    Database1 - http://127.0.0.1:8000
+    Database1 - http://127.0.0.1:8000/
   Web SQL
     database-for-test
   Cookies
     http://127.0.0.1:8000
   Trust Tokens
   Interest Groups
+  Shared Storage
+    http://127.0.0.1:8000
 Cache
   Cache Storage
   Back/forward cache
@@ -53,12 +55,14 @@ Storage
   Session Storage
     http://127.0.0.1:8000/
   IndexedDB
-    Database1 - http://127.0.0.1:8000
+    Database1 - http://127.0.0.1:8000/
   Web SQL
   Cookies
     http://127.0.0.1:8000
   Trust Tokens
   Interest Groups
+  Shared Storage
+    http://127.0.0.1:8000
 Cache
   Cache Storage
   Back/forward cache

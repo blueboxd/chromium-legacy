@@ -21,8 +21,9 @@
 <translation id="1110914759170138831">O destaque foi abreviado</translation>
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
-<translation id="1118561384561215815">Obtenha ajuda com tarefas na Web</translation>
 <translation id="1123070903960493543">A forma como interage com o Chrome, as definições que selecionou, os detalhes das falhas do Chrome.</translation>
+<translation id="1126013303640354461">Os métodos de pagamento e as moradas do Google Pay não são encriptados. O histórico de navegação do Chrome não é sincronizado.
+Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google não recebe nem armazena a frase de acesso. Se se esquecer da frase de acesso ou quiser alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">Não protege contra transferências, extensões ou Websites perigosos. Continuará a obter a proteção da Navegação segura, quando disponível, noutros Serviços Google, como o Gmail e a Pesquisa.</translation>
 <translation id="1129510026454351943">Detalhes: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">Não se disponibilizar para traduzir estes sites</translation>
@@ -31,7 +32,6 @@
 <translation id="1149401351239820326">Mês de expiração</translation>
 <translation id="1150263420752757504">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização da Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e ChromeOS<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Página indisponível offline: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">Veja Websites populares ao tocar no botão "Principais sites"</translation>
 <translation id="1173894706177603556">Mudar nome</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1181037720776840403">Remover</translation>
@@ -123,11 +123,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="1571304935088121812">Copiar nome de utilizador</translation>
 <translation id="1592864538817356322">Proteção padrão:</translation>
 <translation id="1594635596540195766"><ph name="SUGGESTIONS_COUNT" /> itens sugeridos na lista abaixo.</translation>
-<translation id="161647866166517041">A redução de spam e fraudes depende de símbolos fidedignos para ajudar os sites a combater fraudes e distinguir bots de pessoas.
-
-Com base na sua interação com um site, como iniciar sessão regularmente numa conta, esse site pode emitir um símbolo fidedigno para o seu navegador. Posteriormente, se outros sites que visitar verificarem e encontrarem um símbolo fidedigno válido, é mais provável que tratem o utilizador como uma pessoa e não como um bot.
-
-Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados para descobrir a sua identidade.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Como pode gerir os seus dados:<ph name="END_BOLD" /> para proteger a sua privacidade, eliminamos automaticamente os seus interesses com mais de 4 semanas. Enquanto navega, um interesse pode aparecer novamente na lista. Em alternativa, pode remover os interesses que não quer que o Chrome considere.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remover 1 item selecionado}other{Remover # itens selecionados}}</translation>
 <translation id="1633659023549081553">Descubra novo conteúdo na página inicial do Chrome</translation>
@@ -240,7 +235,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="2286841657746966508">Endereço de faturação</translation>
 <translation id="228704530595896923">Lista de opções de partilha.</translation>
 <translation id="230115972905494466">Não foram encontrados dispositivos compatíveis.</translation>
-<translation id="230155349749732438">Para utilizar esta definição, a opção <ph name="BEGIN_LINK" />Melhorar as pesquisas e a navegação<ph name="END_LINK" /> tem de estar ativada.</translation>
 <translation id="2318045970523081853">Toque para efetuar uma chamada</translation>
 <translation id="2321086116217818302">A preparar palavras-passe…</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
@@ -266,7 +260,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="2472163211318554013">Inicie sessão para tirar o máximo partido do Chrome</translation>
 <translation id="247737702124049222">As descrições de imagens estão ativadas.</translation>
 <translation id="2482878487686419369">Notificações</translation>
-<translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2494974097748878569">Assistente Google no Chrome</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo gestor</translation>
@@ -289,6 +282,11 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="2569733278091928697">Vai poder gerir facilmente controlos de multimédia, sessões de Navegação anónima, transferências e muito mais</translation>
 <translation id="2571711316400087311">Disponibilizar-se para enviar páginas noutros idiomas para o Google Tradutor</translation>
 <translation id="2573452357057307036">Saiba como definir o Chrome como o seu navegador predefinido</translation>
+<translation id="2580436639406015883">A redução de spam e fraudes depende de símbolos de estado privados para ajudar os sites a combater fraudes e distinguir bots de pessoas.
+
+Com base na sua interação com um site, como iniciar sessão regularmente numa conta, esse site pode emitir um símbolo de estado privado para o seu navegador. Posteriormente, se outros sites que visitar verificarem e encontrarem um símbolo de estado privado válido, é mais provável que tratem o utilizador como uma pessoa e não como um bot.
+
+Os símbolos de estado privado melhoram a privacidade na Web e não podem ser usados para descobrir a sua identidade.</translation>
 <translation id="2581165646603367611">Esta ação elimina os cookies, a cache e outros dados de sites que o Chrome não considera importantes.</translation>
 <translation id="2587052924345400782">Versão mais recente dispon.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
@@ -324,7 +322,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="2781151931089541271">Falta 1 segundo</translation>
 <translation id="2788468313014644040">Número do grupo</translation>
 <translation id="2800066122460699237">O separador <ph name="TAB_TITLE" /> será fechado</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2806840421670364300">APC</translation>
 <translation id="281504910091592009">Veja e faça a gestão das palavras-passe guardadas na sua <ph name="BEGIN_LINK" />Conta Google<ph name="END_LINK" />.</translation>
 <translation id="2818669890320396765">Para obter os seus marcadores em todos os dispositivos, inicie sessão e ative a sincronização.</translation>
@@ -400,6 +397,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="3130863904455712965">Histórico e muito mais</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Página inicial do Chrome</translation>
+<translation id="3157931365184549694">Restaurar</translation>
 <translation id="3166827708714933426">Atalhos de separadores e de janelas</translation>
 <translation id="316694332262407393">O Chrome já está a ser executado aqui.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -429,7 +427,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="3269093882174072735">Carregar imagem</translation>
 <translation id="3280562213547448728">Pesquisa por voz</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
-<translation id="3284510035090979597">Ajuda proativa</translation>
 <translation id="3285080554353377245">Vídeos sobre como utilizar o Chrome</translation>
 <translation id="3288003805934695103">Atualizar a página</translation>
 <translation id="3290249595466894471">Envia também um pequeno exemplo de páginas, transferências, atividade de extensões e informações do sistema para ajudar a detetar novas ameaças</translation>
@@ -454,6 +451,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="3428747202529429621">Mantém a sua segurança no Chrome e pode ser utilizado para melhorar a sua segurança noutras apps Google quando tem sessão iniciada.</translation>
 <translation id="3429160811076349561">As funcionalidades de avaliação estão desativadas</translation>
 <translation id="3435465986463792564">Tem muitas janelas? Pode geri-las aqui</translation>
+<translation id="3435738964857648380">Segurança</translation>
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3444179773590444986">Pretende partilhar feedback sobre o tema escuro para os sites?</translation>
 <translation id="3452832259067974318">Para proteger a sua privacidade, o Chrome não irá preencher automaticamente a palavra-passe neste campo.</translation>
@@ -500,7 +498,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="371230970611282515">Prevê e envia-lhe avisos sobre eventos perigosos antes da sua ocorrência.</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
-<translation id="3721119614952978349">Eu e a Google</translation>
+<translation id="3721119614952978349">O utilizador e a Google</translation>
 <translation id="3737319253362202215">Definições de tradução</translation>
 <translation id="3737402728074743863">Para utilizar este dispositivo como uma chave de segurança, defina um bloqueio de ecrã</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
@@ -552,11 +550,13 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="4016425174436051808">Não é possível seguir. Algo correu mal.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4035877632587724847">Não permitir</translation>
+<translation id="4036177530563778041">Continue facilmente onde parou</translation>
 <translation id="4045764304651014138">Dados de utilização</translation>
 <translation id="405399507749852140">Obtenha alertas se o preço descer em qualquer site</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4060598801229743805">Opções disponíveis junto à parte superior do ecrã</translation>
 <translation id="4062305924942672200">Informações legais</translation>
+<translation id="4072805772816336153">Tente mais tarde.</translation>
 <translation id="4084682180776658562">Marcar</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />fornecido pela Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Pode usar este tablet para iniciar sessão no dispositivo que está a apresentar este código QR.</translation>
@@ -573,8 +573,12 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="4137746084635924146">Idioma do dispositivo atual</translation>
 <translation id="414128724510021958">Sites para computador pedidos por predefinição</translation>
 <translation id="4141536112466364990">Conheça o Chrome</translation>
+<translation id="4147131678541801076">Quando as avaliações estão ativadas, a redução de spam e fraudes depende de símbolos de estado privado para ajudar os sites a combater fraudes e distinguir bots de pessoas.
+
+Com base na sua interação com um site, como iniciar sessão regularmente numa conta, esse site pode emitir um símbolo de estado privado para o seu navegador. Posteriormente, se outros sites que visitar verificarem e encontrarem um símbolo de estado privado válido, é mais provável que tratem o utilizador como uma pessoa e não como um bot.
+
+Os símbolos de estado privado melhoram a privacidade na Web e não podem ser usados para descobrir a sua identidade.</translation>
 <translation id="4162867837470729563">Lista de opções de partilha à altura total.</translation>
-<translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente mais tarde.</translation>
 <translation id="4177222230309051052">Obtenha todos os marcadores</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -584,7 +588,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="4209895695669353772">Para obter conteúdo personalizado sugerido pelo Google, ative a sincronização.</translation>
 <translation id="4214315110991671325">Se permitir cookies, o Chrome pode utilizá-los para o pré-carregamento.</translation>
 <translation id="4225895483398857530">Atalho da barra de ferramentas</translation>
-<translation id="4227318652298512614">Siga os sites que quiser</translation>
 <translation id="4242533952199664413">Abrir definições</translation>
 <translation id="4248098802131000011">Mantenha as suas palavras-passe protegidas contra violações de dados e outros problemas de segurança.</translation>
 <translation id="424864128008805179">Pretende terminar sessão no Chrome?</translation>
@@ -681,6 +684,8 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4766313118839197559">As palavras-passe são guardadas no Gestor de Palavras-passe neste dispositivo</translation>
 <translation id="4766678251456904326">Adicionar conta ao dispositivo</translation>
+<translation id="4769095993849849966">Novo nome do ficheiro</translation>
+<translation id="4778653490315793244">Nada a apresentar de momento</translation>
 <translation id="4787736314074622408">Quer eliminar <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Ajuda a concluir tarefas, como pagamentos, na Web.</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
@@ -744,6 +749,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5032430150487044192">Não é possível criar o código QR</translation>
 <translation id="5039804452771397117">Permitir</translation>
+<translation id="5040262127954254034">Privacidade</translation>
 <translation id="504456571576643789">Aspetos a considerar</translation>
 <translation id="5054455334322721892">Podem ser guardadas <ph name="BEGIN_LINK1" />outras formas de atividade<ph name="END_LINK1" /> na sua Conta Google quando tem sessão iniciada. Pode eliminá-las em qualquer altura.</translation>
 <translation id="506254248375231072">Nenhum separador</translation>
@@ -872,7 +878,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5795872532621730126">Pesquisar e procurar</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Há # hora}other{Há # horas}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Todos os direitos reservados.</translation>
-<translation id="5810864297166300463">Assistência Web</translation>
 <translation id="5813552293717797987">Este navegador é gerido por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
 <translation id="5814131985548525293">Escreva aqui ou toque no ícone de voz para começar.</translation>
 <translation id="5814749351757353073">Mantenha-se a par dos seus sites favoritos</translation>
@@ -895,7 +900,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5869789175361934029">Continue a partir de outro dispositivo</translation>
 <translation id="587735546353481577">Para seguir um site, aceda ao site, abra o menu do Chrome e toque em Seguir.</translation>
 <translation id="5879072387416556377">Obtenha sugestões melhores</translation>
-<translation id="5884076754568147479">Para ajudar a concluir as tarefas, a Google vai receber os URLs e os conteúdos dos sites nos quais utiliza o Assistente, bem como as informações que envia através do mesmo</translation>
 <translation id="5906513782029855931">Conhecer os URLs dos sites permite que o Assistente Google ajude a concluir tarefas. Pode desativar o Assistente nas definições do Chrome.</translation>
 <translation id="5916664084637901428">Ativado</translation>
 <translation id="5919204609460789179">Atualizar <ph name="PRODUCT_NAME" /> para iniciar a sincronização</translation>
@@ -980,11 +984,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6363990818884053551">Para iniciar a sincronização, valide a sua identidade</translation>
 <translation id="6364438453358674297">Remover a sugestão do histórico?</translation>
 <translation id="6380100320871303656">Pré-carrega mais frequentemente páginas que o Chrome pensa que provavelmente irá visitar. Esta definição pode resultar numa maior utilização de dados.</translation>
-<translation id="6385407407546870227">Quando as avaliações estão ativadas, a redução de spam e fraudes depende de símbolos fidedignos para ajudar os sites a combater fraudes e distinguir bots de pessoas.
-
-Com base na sua interação com um site, como iniciar sessão regularmente numa conta, esse site pode emitir um símbolo fidedigno para o seu navegador. Posteriormente, se outros sites que visitar verificarem e encontrarem um símbolo fidedigno válido, é mais provável que tratem o utilizador como uma pessoa e não como um bot.
-
-Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados para descobrir a sua identidade.</translation>
 <translation id="6394791151443660613">Pesquisar: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Ligação retomada</translation>
@@ -1107,6 +1106,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6908998565271542516">Opção para aprovar ou não aprovar um Website aberto à altura total</translation>
 <translation id="6909589135458168665">Pré-carregar páginas</translation>
+<translation id="692924882724759447">Veja os sites que segue aqui</translation>
 <translation id="6942665639005891494">Altere a localização de transferência predefinida em qualquer altura ao utilizar a opção do menu Definições.</translation>
 <translation id="694267552845942083">Está atualmente a personalizar as suas definições de sincronização. Para concluir a ativação da sincronização, toque no botão Confirmar junto à parte inferior do ecrã. Navegar para cima</translation>
 <translation id="6945221475159498467">Selecionar</translation>
@@ -1123,6 +1123,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="7029390216614421513">Posicione o código QR ou o código de barras nesta moldura.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7030304022046916278">Envia URLs para a Navegação segura para os verificar</translation>
+<translation id="7030585293819777123">Retomar a última tarefa?</translation>
 <translation id="7037830628447527439">Inicie sessão no Chrome com a sua Conta Google</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="7054588988317389591">Pretende obter descrições de imagens?</translation>
@@ -1300,6 +1301,7 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="7971136598759319605">Ativo há 1 dia</translation>
 <translation id="7975379999046275268">Pré-visualizar página <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7986497153528221272">Para ver as palavras-passe, defina primeiro um bloqueio de ecrã no dispositivo.</translation>
+<translation id="7995059495660416932">É apresentado conteúdo quando este ficar disponível</translation>
 <translation id="799576009106109668">Irá navegar mais depressa porque os conteúdos são carregados proativamente com base na página Web que está a visitar</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -1340,7 +1342,6 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8127542551745560481">Editar página inicial</translation>
 <translation id="8130309322784422030">As suas informações de início de sessão armazenadas podem estar desatualizadas</translation>
 <translation id="813082847718468539">Ver informações do Website</translation>
-<translation id="8153351135626613369">O Assistente será apresentado quando detetar que pode ajudar nos Websites suportados.</translation>
 <translation id="8156139159503939589">Que idiomas lê?</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
 <translation id="8186512483418048923">Faltam <ph name="FILES" /> ficheiros</translation>
@@ -1372,7 +1373,6 @@ Os símbolos fidedignos melhoram a privacidade na Web e não podem ser usados pa
 <translation id="8352996530981010042">Não é possível transferir reações. Tente novamente.</translation>
 <translation id="8354977102499939946">Pesquise com a sua voz rapidamente. Para editar este atalho, aceda às Definições.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> transferências restauradas.</translation>
-<translation id="8364299278605033898">Veja Websites populares</translation>
 <translation id="8368001212524806591">Monitorizar preço</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Como usamos estes dados:<ph name="END_BOLD" /> o Chrome pode estimar os seus interesses. Posteriormente, um site que visitar pode pedir ao Chrome para ver os seus interesses para personalizar os anúncios que vê.</translation>
 <translation id="8387617938027387193">Valide a sua identidade</translation>

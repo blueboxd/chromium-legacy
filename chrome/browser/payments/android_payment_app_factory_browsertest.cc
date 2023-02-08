@@ -4,6 +4,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/test/payments/payment_app_install_util.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/core/features.h"
 #include "content/public/test/browser_test.h"
@@ -49,11 +50,15 @@ class AndroidPaymentAppFactoryTest
 // should be ignored.
 IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
                        IgnoreInstalledPlayBillingServiceWorker) {
-  NavigateTo("a.com", "/payment_handler_installer.html");
-  ASSERT_EQ("success",
-            content::EvalJs(GetActiveWebContents(),
-                            "install('alicepay.com/app1/app.js', "
-                            "['https://play.google.com/billing'], false)"));
+  GURL service_worker_javascript_file_url = https_server()->GetURL(
+      "a.com", "/alicepay.com/app1/app.js");
+  ASSERT_TRUE(
+      PaymentAppInstallUtil::InstallPaymentAppForPaymentMethodIdentifier(
+          *GetActiveWebContents(),
+          service_worker_javascript_file_url,
+          /*payment_method_identifier=*/"https://play.google.com/billing",
+          PaymentAppInstallUtil::IconInstall::kWithIcon));
+
   NavigateTo("b.com", "/can_make_payment_checker.html");
   ASSERT_EQ("false", content::EvalJs(
                          GetActiveWebContents(),
@@ -67,17 +72,9 @@ IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
                        IgnoreOtherPaymentAppsInTwaWhenHaveAppStoreBilling) {
   ScopedTestSupport scoped_test_support;
 
-  std::string method_name = https_server()->GetURL("a.com", "/").spec();
-  method_name = method_name.substr(0, method_name.length() - 1);
-  ASSERT_NE('/', method_name[method_name.length() - 1]);
-  NavigateTo("a.com", "/payment_handler_installer.html");
-  ASSERT_EQ(
-      "success",
-      content::EvalJs(
-          GetActiveWebContents(),
-          content::JsReplace(
-              "install('payment_request_success_responder.js', [$1], false)",
-              method_name)));
+  std::string method_name;
+  InstallPaymentApp("a.com", "/payment_request_success_responder.js",
+                    &method_name);
 
   // The "payment_request_success_responder.js" always replies with "{status:
   // success}", so the |response| here has to be distinct.
@@ -114,8 +111,8 @@ IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest, PlayBillingPaymentMethod) {
   std::string expected_response = response;
 #else
   std::string expected_response =
-      "The payment method \"https://play.google.com/billing\" is not "
-      "supported.";
+      "NotSupportedError: The payment method "
+      "\"https://play.google.com/billing\" is not supported.";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   NavigateTo("b.com", "/payment_handler_status.html");
@@ -139,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
   std::string expected_response = response;
 #else
   std::string expected_response =
-      "The payment method \"https://play.google.com/billing\" is not "
-      "supported.";
+      "NotSupportedError: The payment method "
+      "\"https://play.google.com/billing\" is not supported.";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   NavigateTo("b.com", "/payment_handler_status.html");
@@ -166,8 +163,8 @@ IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
   std::string expected_response = response;
 #else
   std::string expected_response =
-      "The payment method \"https://play.google.com/billing\" is not "
-      "supported.";
+      "NotSupportedError: The payment method "
+      "\"https://play.google.com/billing\" is not supported.";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   NavigateTo("b.com", "/payment_handler_status.html");

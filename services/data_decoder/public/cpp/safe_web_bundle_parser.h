@@ -12,14 +12,19 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace data_decoder {
 
 // A class to wrap remote web_package::mojom::WebBundleParserFactory and
 // web_package::mojom::WebBundleParser service.
+//
+// It is safe to delete this object from within the callbacks passed to its
+// methods.
 class SafeWebBundleParser {
  public:
-  SafeWebBundleParser();
+  explicit SafeWebBundleParser(const absl::optional<GURL>& base_url);
 
   SafeWebBundleParser(const SafeWebBundleParser&) = delete;
   SafeWebBundleParser& operator=(const SafeWebBundleParser&) = delete;
@@ -74,6 +79,7 @@ class SafeWebBundleParser {
                         web_package::mojom::BundleResponsePtr response,
                         web_package::mojom::BundleResponseParseErrorPtr error);
 
+  absl::optional<GURL> base_url_;
   DataDecoder data_decoder_;
   mojo::Remote<web_package::mojom::WebBundleParserFactory> factory_;
   mojo::Remote<web_package::mojom::WebBundleParser> parser_;

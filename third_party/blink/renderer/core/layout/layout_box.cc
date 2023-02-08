@@ -34,6 +34,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -121,6 +122,7 @@
 #include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -532,10 +534,6 @@ void LayoutBox::WillBeDestroyed() {
 
   if (!DocumentBeingDestroyed()) {
     DisassociatePhysicalFragments();
-    GetDocument()
-        .GetFrame()
-        ->GetInputMethodController()
-        .LayoutObjectWillBeDestroyed(*this);
     if (IsFixedPositioned())
       GetFrameView()->RemoveFixedPositionObject(*this);
   }
@@ -825,7 +823,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     GetCustomLayoutChild()->styleMap()->UpdateStyle(GetDocument(), StyleRef());
 
   if (diff.NeedsPaintInvalidation()) {
-    if (const ScopedCSSName* old_anchor_scroll =
+    if (const AnchorScrollValue* old_anchor_scroll =
             old_style ? old_style->AnchorScroll() : nullptr;
         !base::ValuesEquivalent(StyleRef().AnchorScroll().Get(),
                                 old_anchor_scroll)) {
@@ -1008,7 +1006,7 @@ void LayoutBox::UpdateFromStyle() {
 
   const ComputedStyle& style_to_use = StyleRef();
   SetFloating(style_to_use.IsFloating() && !IsOutOfFlowPositioned() &&
-              !style_to_use.IsFlexOrGridItem());
+              !style_to_use.IsInsideDisplayIgnoringFloatingChildren());
   SetHasTransformRelatedProperty(
       IsSVGChild() ? style_to_use.HasTransformRelatedPropertyForSVG()
                    : style_to_use.HasTransformRelatedProperty());
@@ -1302,7 +1300,8 @@ void LayoutBox::UpdateAfterLayout() {
   // We also want to make sure that if our entrance point into layout changes,
   // e.g. an OOF-positioned object is laid out by an NG containing block, then
   // Legacy, then NG again, NG won't use a stale layout result.
-  if (!IsLayoutNGObject() &&
+  if (!RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled() &&
+      !IsLayoutNGObject() &&
       // When side effects are disabled, it's not possible to disable side
       // effects completely for |RunLegacyLayout|, but at least keep the
       // fragment tree unaffected.
@@ -2792,13 +2791,13 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
       (StyleRef().MaskBoxImage().GetImage() &&
        StyleRef().MaskBoxImage().GetImage()->Data() == image) ||
       is_box_reflect_image) {
-    SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+    SetShouldDoFullPaintInvalidationWithoutLayoutChange(
         PaintInvalidationReason::kImage);
   } else {
     for (const FillLayer* layer = &StyleRef().MaskLayers(); layer;
          layer = layer->Next()) {
       if (layer->GetImage() && image == layer->GetImage()->Data()) {
-        SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+        SetShouldDoFullPaintInvalidationWithoutLayoutChange(
             PaintInvalidationReason::kImage);
         break;
       }
@@ -3483,6 +3482,16 @@ void LayoutBox::RebuildFragmentTreeSpine() {
     for (auto& result : container->layout_results_)
       result = NGLayoutResult::CloneWithPostLayoutFragments(*result);
     container = container->ContainingNGBox();
+  }
+
+  if (container && container->NeedsLayout()) {
+    // We stopped walking upwards because this container needs layout. This
+    // typically means that updating the associated layout results is waste of
+    // time, since we're probably going to lay it out anyway. However, in some
+    // cases the container is going to hit the cache and therefore not perform
+    // actual layout. If this happens, we need to update the layout results at
+    // that point.
+    container->SetHasBrokenSpine();
   }
 }
 
@@ -6928,19 +6937,6 @@ LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
   return LayoutOverflowIsSet()
              ? overflow_->layout_overflow->LayoutClientAfterEdge()
              : ClientLogicalBottom();
-}
-
-PhysicalRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
-  NOT_DESTROYED();
-  PhysicalRect bounds_rect = PhysicalVisualOverflowRect();
-  if (!StyleRef().HasFilter())
-    return bounds_rect;
-  gfx::RectF float_rect(bounds_rect);
-  gfx::RectF filter_reference_box = Layer()->FilterReferenceBox();
-  if (!filter_reference_box.size().IsZero())
-    float_rect.UnionEvenIfEmpty(filter_reference_box);
-  float_rect = Layer()->MapRectForFilter(float_rect);
-  return PhysicalRect::EnclosingRect(float_rect);
 }
 
 bool LayoutBox::HasTopOverflow() const {

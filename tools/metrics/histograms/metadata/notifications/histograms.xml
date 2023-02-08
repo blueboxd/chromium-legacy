@@ -28,7 +28,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -455,27 +455,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Notifications.Freedesktop.Capabilities"
-    enum="BooleanSupported" expires_after="M90">
-<!-- Name completed by histogram_suffixes name="FreedesktopNotificationCapabilitiesId" -->
-
-  <owner>thomasanderson@chromium.org</owner>
-  <summary>
-    Whether the notification server supports the capability in question. (Linux
-    only) Logged when the proxy to /org/Freedesktop/Notifications is set up
-    successfully, which happens at most once on startup.
-  </summary>
-</histogram>
-
-<histogram name="Notifications.Linux.BridgeInitializationStatus"
-    enum="LinuxNotificationBridgeStatusCode" expires_after="M77">
-  <owner>thomasanderson@chromium.org</owner>
-  <summary>
-    The status code for initializing NotificationPlatformBridgeLinux. (Linux
-    only) Logged on each start up.
-  </summary>
-</histogram>
-
 <histogram name="Notifications.LoadProfileResult" enum="BooleanSuccess"
     expires_after="2022-04-17">
   <owner>knollr@chromium.org</owner>
@@ -541,6 +520,18 @@ chromium-metrics-reviews@google.com.
     The runtime of the macOS notification service process to display alerts.
     Logged when we close the connection to the service process either on purpose
     or after it got killed unexpectedly.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.NonPersistentNotificationThirdPartyCount"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>awillia@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the number of non-persistent notifications that are displayed from a
+    third-party context. Logged from
+    BlinkNotificationServiceImpl::DisplayNonPersistentNotification after the
+    notification passes the permissions check.
   </summary>
 </histogram>
 
@@ -657,7 +648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2023-03-26">
+    enum="NotificationActionType" expires_after="2023-06-04">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -685,6 +676,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     The result of the promise returned by showNotification. Logged whenever
     showNotification is called.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.PersistentNotificationThirdPartyCount"
+    enum="Boolean" expires_after="2023-03-01">
+  <owner>awillia@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the number of persistent notifications that are displayed from a
+    third-party context. Logged from
+    BlinkNotificationServiceImpl::DisplayPersistentNotification after the
+    notification passes the permissions check.
   </summary>
 </histogram>
 
@@ -739,7 +742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Scheduler.BackgroundTask.NotificationShown"
-    units="notifications" expires_after="2023-03-12">
+    units="notifications" expires_after="2023-06-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <summary>

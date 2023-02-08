@@ -91,6 +91,19 @@ using chrome_test_util::SettingsDoneButton;
   [self verifyKeyboardCommandsAreRegistered];
 }
 
+// Tests that keyboard commands are registered when the BVC is showing in
+// MultiWindow mode.
+- (void)testKeyboardCommandsRegistered_MultiWindow {
+  if (![ChromeEarlGrey areMultipleWindowsSupported])
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
+  [ChromeEarlGrey waitForForegroundWindowCount:2];
+
+  [self verifyKeyboardCommandsAreRegistered];
+}
+
 // Tests that keyboard commands are not registered when Settings are shown.
 - (void)testKeyboardCommandsNotRegistered_SettingsPresented {
   [ChromeEarlGreyUI openSettingsMenu];
@@ -103,8 +116,7 @@ using chrome_test_util::SettingsDoneButton;
 
 // Tests that keyboard commands are not registered when the bookmark UI is
 // shown.
-// TODO(crbug.com/1341363): Disabled due to flakiness. Re-enabled when fixed.
-- (void)DISABLED_testKeyboardCommandsNotRegistered_AddBookmarkPresented {
+- (void)testKeyboardCommandsNotRegistered_AddBookmarkPresented {
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [ChromeEarlGrey clearBookmarks];
 
@@ -112,30 +124,21 @@ using chrome_test_util::SettingsDoneButton;
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/pony.html")];
 
-  // Bookmark page
-    [ChromeEarlGreyUI openToolsMenu];
-    [[[EarlGrey
-        selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                                kToolsMenuAddToBookmarks),
-                                            grey_sufficientlyVisible(), nil)]
-           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
-        onElementWithMatcher:grey_accessibilityID(
-                                 kPopupMenuToolsMenuTableViewId)]
-        performAction:grey_tap()];
+  // Bookmark the page.
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"d"
+                                          flags:UIKeyModifierCommand];
+  // Edit the bookmark.
+  [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"d"
+                                          flags:UIKeyModifierCommand];
 
-    // Tap on the HUD.
-    id<GREYMatcher> edit = chrome_test_util::ButtonWithAccessibilityLabelId(
-        IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(edit, grey_sufficientlyVisible(),
-                                            nil)] performAction:grey_tap()];
+  [self waitForSingleBookmarkEditorToDisplay];
 
-    [self waitForSingleBookmarkEditorToDisplay];
+  [self verifyNoKeyboardCommandsAreRegistered];
 
-    [self verifyNoKeyboardCommandsAreRegistered];
+  id<GREYMatcher> cancel = grey_accessibilityID(@"Cancel");
+  [[EarlGrey selectElementWithMatcher:cancel] performAction:grey_tap()];
 
-    id<GREYMatcher> cancel = grey_accessibilityID(@"Cancel");
-    [[EarlGrey selectElementWithMatcher:cancel] performAction:grey_tap()];
+  [self verifyKeyboardCommandsAreRegistered];
 }
 
 // Tests that keyboard commands are not registered when the Bookmarks UI is

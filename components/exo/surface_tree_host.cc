@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/shell_surface_base.h"
@@ -197,6 +197,10 @@ void SurfaceTreeHost::DidPresentCompositorFrame(
   active_presentation_callbacks_.erase(it);
 }
 
+void SurfaceTreeHost::SetScaleFactor(float scale_factor) {
+  pending_scale_factor_ = scale_factor;
+}
+
 void SurfaceTreeHost::SetSecurityDelegate(SecurityDelegate* security_delegate) {
   DCHECK(security_delegate_ == nullptr);
   security_delegate_ = security_delegate;
@@ -245,7 +249,7 @@ void SurfaceTreeHost::OnDisplayMetricsChanged(const display::Display& display,
 void SurfaceTreeHost::OnContextLost() {
   // Handle context loss in a new stack frame to avoid bugs from re-entrant
   // code.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&SurfaceTreeHost::HandleContextLost,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
@@ -258,10 +262,20 @@ void SurfaceTreeHost::UpdateDisplayOnTree() {
       display::Screen::GetScreen()->GetDisplayNearestWindow(host_window());
   if (display_id_ != display.id()) {
     if (root_surface_) {
-      if (root_surface_->UpdateDisplay(display_id_, display.id()))
+      if (root_surface_->UpdateDisplay(display_id_, display.id())) {
         display_id_ = display.id();
+      } else {
+        // The surface failed to update to the new display.
+        // Invalidate cached display id, so the surface always gets updated
+        // next time, even when it gets updated back to the previous display.
+        display_id_ = display::kInvalidDisplayId;
+      }
     }
   }
+}
+
+void SurfaceTreeHost::DidCommit() {
+  scale_factor_ = pending_scale_factor_;
 }
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
@@ -293,8 +307,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   }
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      gfx::PointF(root_surface_origin_),
-      host_window()->layer()->device_scale_factor(),
+      gfx::PointF(root_surface_origin_), GetScaleFactor(),
       layer_tree_frame_sink_holder_->resource_manager(), &frame);
 
   std::vector<GLbyte*> sync_tokens;
@@ -352,7 +365,7 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
   // synchronization.
   if (client_submits_surfaces_in_pixel_coordinates_) {
     gfx::Transform tr;
-    float scale = host_window_->layer()->device_scale_factor();
+    float scale = GetScaleFactor();
     tr.Scale(1.0f / scale, 1.0f / scale);
     if (host_window_->transform() != tr)
       host_window_->SetTransform(tr);
@@ -404,8 +417,7 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
   // compositor frame, otherwise we may set the Surface created by Viz to be the
   // wrong size. Then, trying to submit a regular compositor frame will fail
   // because  the size is different.
-  const float device_scale_factor =
-      host_window()->layer()->device_scale_factor();
+  const float device_scale_factor = GetScaleFactor();
   // TODO(crbug.com/1131628): Should this be ceil? Why do we choose floor?
   gfx::Size output_surface_size_in_pixels =
       gfx::ToFlooredSize(gfx::ConvertSizeToPixels(host_window_->bounds().size(),
@@ -438,6 +450,12 @@ void SurfaceTreeHost::HandleContextLost() {
 
   root_surface_->SurfaceHierarchyResourcesLost();
   SubmitCompositorFrame();
+}
+
+float SurfaceTreeHost::GetScaleFactor() {
+  if (scale_factor_)
+    return scale_factor_.value();
+  return host_window_->layer()->device_scale_factor();
 }
 
 }  // namespace exo

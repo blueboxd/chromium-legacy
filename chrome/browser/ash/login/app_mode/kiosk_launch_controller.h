@@ -25,6 +25,22 @@ namespace ash {
 class LoginDisplayHost;
 class OobeUI;
 
+extern const char kKioskLaunchStateCrashKey[];
+
+// Kiosk launch state for crash key.
+enum class KioskLaunchState {
+  kAttemptToLaunch,
+  kStartLaunch,
+  kLauncherStarted,
+  kLaunchFailed,
+  kAppWindowCreated,
+};
+
+std::string KioskLaunchStateToString(KioskLaunchState state);
+
+// Sets crash key for kiosk launch state.
+void SetKioskLaunchStateCrashKey(KioskLaunchState state);
+
 // Controller for the kiosk launch process, responsible for loading the kiosk
 // profile, and updating the splash screen UI.
 //
@@ -151,7 +167,6 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   void InitializeNetwork() override;
   bool IsNetworkReady() const override;
   bool IsShowingNetworkConfigScreen() const override;
-  bool ShouldSkipAppInstallation() const override;
   void OnLaunchFailed(KioskAppLaunchError::Error error) override;
   void OnAppInstalling() override;
   void OnAppPrepared() override;
@@ -162,7 +177,8 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
   // KioskProfileLoader::Delegate:
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
-  void OnOldEncryptionDetected(const UserContext& user_context) override;
+  void OnOldEncryptionDetected(
+      std::unique_ptr<UserContext> user_context) override;
 
   void OnOwnerSigninSuccess();
 
@@ -237,11 +253,5 @@ class KioskLaunchController : public KioskProfileLoader::Delegate,
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::KioskLaunchController;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_APP_MODE_KIOSK_LAUNCH_CONTROLLER_H_

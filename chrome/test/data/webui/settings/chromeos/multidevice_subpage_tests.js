@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {MultiDeviceBrowserProxyImpl, MultiDeviceFeature, MultiDeviceFeatureState, MultiDeviceSettingsMode, PhoneHubFeatureAccessStatus, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
@@ -254,30 +254,6 @@ suite('Multidevice', function() {
             !!multideviceSubpage.shadowRoot.querySelector('#phoneHubAppsItem'));
         assertFalse(!!multideviceSubpage.shadowRoot.querySelector(
             '#phoneHubCameraRollItem'));
-      });
-
-  test(
-      'SmartLock item routes to subpage with isSmartLockSignInRemoved disabled',
-      function() {
-        multideviceSubpage.remove();
-        loadTimeData.overrideValues({'isSmartLockSignInRemoved': false});
-        browserProxy = new TestMultideviceBrowserProxy();
-        MultiDeviceBrowserProxyImpl.setInstanceForTesting(browserProxy);
-
-        PolymerTest.clearBody();
-        multideviceSubpage =
-            document.createElement('settings-multidevice-subpage');
-        multideviceSubpage.pageContentData = {hostDeviceName: 'Pixel XL'};
-        setMode(MultiDeviceSettingsMode.HOST_SET_VERIFIED);
-        setSupportedFeatures(Object.values(MultiDeviceFeature));
-
-        document.body.appendChild(multideviceSubpage);
-        flush();
-
-        multideviceSubpage.shadowRoot.querySelector('#smartLockItem')
-            .shadowRoot.querySelector('.link-wrapper')
-            .click();
-        assertEquals(Router.getInstance().getCurrentRoute(), routes.SMART_LOCK);
       });
 
   test(

@@ -29,6 +29,7 @@
   width: 10px;
   height: 10px;
   view-transition-name: hidden;
+  contain: layout;
 }
 
 html::view-transition-group(target) {
@@ -64,6 +65,8 @@ html::view-transition { background: lightpink; }
 <div id=hidden></div>
 
 <script>
+failIfNot(document.startViewTransition, "Missing document.startViewTransition");
+
 async function runTest() {
   document.startViewTransition(() => {
     requestAnimationFrame(() => requestAnimationFrame(takeScreenshot));

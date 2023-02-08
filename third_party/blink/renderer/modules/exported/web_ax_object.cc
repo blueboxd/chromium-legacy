@@ -208,10 +208,6 @@ void WebAXObject::Serialize(ui::AXNodeData* node_data,
   private_->Serialize(node_data, accessibility_mode);
 }
 
-void WebAXObject::SerializerClearedNode(int node_id) const {
-  private_->AXObjectCache().SerializerClearedNode(node_id);
-}
-
 void WebAXObject::InvalidateSerializerSubtree() const {
   if (IsDetached())
     return;
@@ -549,22 +545,13 @@ WebAXObject WebAXObject::HitTest(const gfx::Point& point) const {
   if (IsDetached())
     return WebAXObject();
 
+  private_->GetDocument()->View()->CheckDoesNotNeedLayout();
+
   ScopedActionAnnotator annotater(private_.Get(),
                                   ax::mojom::blink::Action::kHitTest);
   gfx::Point contents_point =
       private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
           point);
-
-  Document* document = private_->GetDocument();
-  if (!document || !document->View())
-    return WebAXObject();
-  if (!document->View()->UpdateAllLifecyclePhasesExceptPaint(
-          DocumentUpdateReason::kAccessibility)) {
-    return WebAXObject();
-  }
-
-  if (IsDetached())
-    return WebAXObject();  // Updating lifecycle could detach object.
 
   AXObject* hit = private_->AccessibilityHitTest(contents_point);
 
@@ -1316,6 +1303,8 @@ WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
   auto* cache = To<AXObjectCacheImpl>(document->ExistingAXObjectCache());
   DCHECK(cache);
+  if (!cache->Root())
+    return WebAXObject();  // Accessibility not yet active in this cache.
   return WebAXObject(cache->GetOrCreate(document));
 }
 

@@ -67,11 +67,12 @@ struct CertVerifierDebugInfo {
   // used for the verification
   [EnableIf=is_mac]
   enum MacTrustImplType {
+    // Values 1 and 3 were used for implementation strategies that have since
+    // been removed.
     kUnknown = 0,
-    kDomainCache = 1,
     kSimple = 2,
-    kLruCache = 3,
     kDomainCacheFullCerts = 4,
+    kKeychainCacheFullCerts = 5,
   };
   [EnableIf=is_mac]
   MacTrustImplType mac_trust_impl;

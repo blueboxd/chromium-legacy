@@ -24,10 +24,27 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Settings.AdvancedSpellcheck.OnStartup" enum="BooleanEnabled"
     expires_after="2023-05-07">
+  <obsolete>
+    Logged on profile open, including for profiles such as guest profiles that
+    do not allow modification of this setting. (This value logged on those cases
+    is the default value for the setting.) Replaced in M-110 with the histogram
+    Settings.AdvancedSpellcheck.OnStartup2, which is similar but only emitted on
+    regular profiles.
+  </obsolete>
   <owner>harrisonsean@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
-    The state of the advanced spellcheck setting, recorded on profile startup.
+    The state of the advanced spellcheck setting, recorded on profile open.
+  </summary>
+</histogram>
+
+<histogram name="Settings.AdvancedSpellcheck.OnStartup2" enum="BooleanEnabled"
+    expires_after="2023-03-05">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    The state of the advanced spellcheck setting, recorded on profile open for
+    regular profiles (not Incognito, Guest, etc.).
   </summary>
 </histogram>
 
@@ -43,10 +60,27 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Settings.AutocompleteSearches.OnStartup" enum="BooleanEnabled"
     expires_after="2023-04-16">
+  <obsolete>
+    Logged on profile open, including for profiles such as guest profiles that
+    do not allow modification of this setting. (This value logged on those cases
+    is the default value for the setting.) Replaced in M-110 with the histogram
+    Settings.AutocompleteSearches.OnStartup2, which is similar but only emitted
+    on regular profiles.
+  </obsolete>
   <owner>harrisonsean@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
-    The state of the autocomplete searches setting, recorded on profile startup.
+    The state of the autocomplete searches setting, recorded on profile open.
+  </summary>
+</histogram>
+
+<histogram name="Settings.AutocompleteSearches.OnStartup2"
+    enum="BooleanEnabled" expires_after="2023-04-16">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    The state of the autocomplete searches setting, recorded on profile open,
+    only for regular profiles (not Incognito, Guest, etc.).
   </summary>
 </histogram>
 
@@ -174,7 +208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.OpenSettingsFromMenu.PerProfileType"
-    enum="BrowserProfileType" expires_after="2023-02-02">
+    enum="BrowserProfileType" expires_after="2023-06-04">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -195,11 +229,29 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Settings.PreloadStatus.OnStartup" enum="BooleanEnabled"
     expires_after="2023-04-30">
+  <obsolete>
+    Logged on profile open, including for profiles such as guest profiles that
+    do not allow modification of this setting. (This value logged on those cases
+    is the default value for the setting.) Replaced in M-110 with the histogram
+    Settings.PreloadStatus.OnStartup2, which is similar but only emitted on
+    regular profiles.
+  </obsolete>
   <owner>harrisonsean@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
-    The status of the preload setting, recorded on profile startup. Not recorded
+    The status of the preload setting, recorded on profile open. Not recorded
     for iOS where the setting does not exist.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PreloadStatus.OnStartup2" enum="BooleanEnabled"
+    expires_after="2023-04-30">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    The status of the preload setting, recorded on regular profile open (not
+    Incognito, Guest, etc.). Not recorded for iOS where the setting does not
+    exist.
   </summary>
 </histogram>
 
@@ -214,8 +266,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacyGuide.CanShowNTPPromo" enum="Boolean"
+    expires_after="2023-03-19">
+  <owner>msramek@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Recorded when we attempt to show a Privacy Guide NTP promotion as instructed
+    by the server. True if the conditions to do so are met.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacyGuide.EntryExit"
-    enum="SettingsPrivacyGuideInteractions" expires_after="2023-03-19">
+    enum="SettingsPrivacyGuideInteractions" expires_after="2023-05-27">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -226,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyGuide.NextNavigation"
-    enum="SettingsPrivacyGuideInteractions" expires_after="2023-03-19">
+    enum="SettingsPrivacyGuideInteractions" expires_after="2023-06-04">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
   <owner>chrome-friendly-settings@google.com</owner>
@@ -285,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacySandbox.InvalidTopicIdLocalized" units="units"
-    expires_after="M110">
+    expires_after="M118">
   <owner>sauski@google.com</owner>
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
@@ -341,7 +404,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.Interactions"
-    enum="SettingsSafetyCheckInteractions" expires_after="2023-03-19">
+    enum="SettingsSafetyCheckInteractions" expires_after="2023-06-04">
   <owner>rainhard@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>anaudrey@chromium.org</owner>
@@ -399,7 +462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SearchEngines.Interactions"
-    enum="SettingsSearchEnginesInteractions" expires_after="2023-03-19">
+    enum="SettingsSearchEnginesInteractions" expires_after="2023-06-04">
   <owner>yoangela@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -481,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartupPageEngineTypes"
-    enum="OmniboxSearchEngineType" expires_after="2023-03-19">
+    enum="OmniboxSearchEngineType" expires_after="2023-06-04">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -621,7 +684,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceWantedReset"
-    enum="TrackedPreference" expires_after="2023-02-26">
+    enum="TrackedPreference" expires_after="2023-05-14">
   <owner>proberge@chromium.org</owner>
   <owner>junhao.huang@microsoft.com</owner>
   <summary>

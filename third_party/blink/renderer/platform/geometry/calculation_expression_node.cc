@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
-#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 
 namespace blink {
 
@@ -262,8 +263,12 @@ bool CalculationExpressionOperationNode::operator==(
   if (!other.IsOperation())
     return false;
   const auto& other_operation = To<CalculationExpressionOperationNode>(other);
-  return operator_ == other_operation.GetOperator() &&
-         children_ == other_operation.GetChildren();
+  if (operator_ != other_operation.GetOperator())
+    return false;
+  using ValueType = Children::value_type;
+  return base::ranges::equal(
+      children_, other_operation.GetChildren(),
+      [](const ValueType& a, const ValueType& b) { return *a == *b; });
 }
 
 scoped_refptr<const CalculationExpressionNode>

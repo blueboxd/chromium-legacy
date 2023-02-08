@@ -6,8 +6,8 @@
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/portal/portal_navigation_throttle.h"
@@ -347,7 +347,7 @@ class PortalNavigationThrottleBrowserTestCrossOrigin
 
 void SleepWithRunLoop(base::TimeDelta delay, base::Location from_here) {
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       from_here, run_loop.QuitClosure(), delay);
   run_loop.Run();
 }
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(PortalNavigationThrottleFencedFrameBrowserTest,
   // A fenced frame's FrameTree embedded inside a portal is not considered to be
   // portal frame tree.
   FrameTreeNode* fenced_frame_root_node = fenced_frame_host->frame_tree_node();
-  EXPECT_FALSE(fenced_frame_root_node->frame_tree()->IsPortal());
+  EXPECT_FALSE(fenced_frame_root_node->frame_tree().IsPortal());
 }
 
 }  // namespace

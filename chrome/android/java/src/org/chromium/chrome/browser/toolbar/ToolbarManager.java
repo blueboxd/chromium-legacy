@@ -115,7 +115,7 @@ import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewResourceFrameLayout;
 import org.chromium.chrome.browser.toolbar.load_progress.LoadProgressCoordinator;
@@ -566,7 +566,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mActivityTabProvider = tabProvider;
         mIsStartSurfaceEnabled = ReturnToChromeUtil.isStartSurfaceEnabled(mActivity);
         mIsStartSurfaceRefactorEnabled =
-                ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mActivity);
+                ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mActivity);
 
         // clang-format off
         mToolbarTabController = new ToolbarTabControllerImpl(mLocationBarModel::getTab,
@@ -843,25 +843,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidStartNavigationInPrimaryMainFrame(
-                    Tab tab, NavigationHandle navigation) {
-                // Update URL as soon as it becomes available when it's a new tab.
-                // But we want to update only when it's a new tab. So we check whether the current
-                // navigation entry is initial, meaning whether it has the same target URL as the
-                // initial URL of the tab.
-                if (tab.getWebContents() != null
-                        && tab.getWebContents().getNavigationController() != null
-                        && tab.getWebContents().getNavigationController().isInitialNavigation()) {
-                    mLocationBarModel.notifyUrlChanged();
-                }
-            }
-
-            @Override
-            public void onDidStartNavigationNoop(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void onDidFinishNavigationInPrimaryMainFrame(
                     Tab tab, NavigationHandle navigation) {
                 if (navigation.hasCommitted() && !navigation.isSameDocument()) {
@@ -986,19 +967,30 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             @Override
             public void onStartedHiding(
                     @LayoutType int layoutType, boolean showToolbar, boolean delayAnimation) {
-                if (layoutType == LayoutType.TAB_SWITCHER) {
+                if (layoutType == LayoutType.TAB_SWITCHER
+                        || layoutType == LayoutType.START_SURFACE) {
                     mLocationBarModel.setIsShowingTabSwitcher(false);
                     mToolbar.setTabSwitcherMode(false, showToolbar, delayAnimation);
                     updateButtonStatus();
                     if (mToolbar.setForceTextureCapture(true)) {
                         mControlContainer.invalidateBitmap();
                     }
+                    if (mIsStartSurfaceRefactorEnabled) {
+                        @LayoutType
+                        int nextLayoutType = mLayoutManager.getNextLayoutType();
+                        mToolbar.updateStartSurfaceToolbarState(null,
+                                nextLayoutType == LayoutType.TAB_SWITCHER
+                                        || (nextLayoutType == LayoutType.START_SURFACE
+                                                && !isUrlBarFocused()),
+                                nextLayoutType);
+                    }
                 }
             }
 
             @Override
             public void onFinishedHiding(@LayoutType int layoutType) {
-                if (layoutType == LayoutType.TAB_SWITCHER) {
+                if (layoutType == LayoutType.TAB_SWITCHER
+                        || layoutType == LayoutType.START_SURFACE) {
                     mToolbar.onTabSwitcherTransitionFinished();
                     updateButtonStatus();
 
@@ -1086,7 +1078,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                             || (layoutType == LayoutType.START_SURFACE && !isUrlBarFocused()),
                     layoutType);
         }
-        if (layoutType == LayoutType.TAB_SWITCHER) {
+        if (layoutType == LayoutType.TAB_SWITCHER || layoutType == LayoutType.START_SURFACE) {
             mLocationBarModel.setIsShowingTabSwitcher(true);
             mToolbar.setTabSwitcherMode(true, showToolbar, false);
             updateButtonStatus();
@@ -1698,6 +1690,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public void onUrlFocusChange(boolean hasFocus) {
         mToolbar.onUrlFocusChange(hasFocus);
 
+        if (mIsStartSurfaceRefactorEnabled
+                && mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE)) {
+            mToolbar.updateStartSurfaceToolbarState(null, !hasFocus, LayoutType.START_SURFACE);
+        }
+
         if (mFindToolbarManager != null && hasFocus) mFindToolbarManager.hideToolbar();
 
         if (mControlsVisibilityDelegate == null) return;
@@ -2053,13 +2050,16 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mLayoutStateProvider = layoutStateProvider;
         mLayoutStateProvider.addObserver(mLayoutStateObserver);
 
+        // TODO(1222695): We shouldn't need to post this. Instead we should wait until the
+        //                dependencies are ready. This logic was introduced to move asynchronous
+        //                observer events from the infra (LayoutManager) into the feature using
+        //                it.
         if (mLayoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER)) {
-            // TODO(1222695): We shouldn't need to post this. Instead we should wait until the
-            //                dependencies are ready. This logic was introduced to move asynchronous
-            //                observer events from the infra (LayoutManager) into the feature using
-            //                it.
             mControlContainer.post(mCallbackController.makeCancelable(
                     () -> updateForLayout(LayoutType.TAB_SWITCHER, true)));
+        } else if (mLayoutStateProvider.isLayoutVisible(LayoutType.START_SURFACE)) {
+            mControlContainer.post(mCallbackController.makeCancelable(
+                    () -> updateForLayout(LayoutType.START_SURFACE, true)));
         }
 
         mAppThemeColorProvider.setLayoutStateProvider(mLayoutStateProvider);

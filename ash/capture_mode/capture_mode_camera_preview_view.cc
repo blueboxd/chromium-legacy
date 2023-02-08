@@ -65,7 +65,7 @@ CameraPreviewResizeButton::CameraPreviewResizeButton(
     views::Button::PressedCallback callback,
     const gfx::VectorIcon& icon)
     : IconButton(std::move(callback),
-                 IconButton::Type::kSmallFloating,
+                 IconButton::Type::kMediumFloating,
                  &icon,
                  // the tooltip depends on the current expanded state of the
                  // button and will be updated by `CameraPreviewView`.
@@ -133,12 +133,14 @@ CameraPreviewView::CameraPreviewView(
   accessibility_observation_.Observe(Shell::Get()->accessibility_controller());
   RefreshResizeButtonVisibility();
   UpdateResizeButtonTooltip();
+  capture_mode_util::MaybeUpdateCameraPrivacyIndicator(/*camera_on=*/true);
 }
 
 CameraPreviewView::~CameraPreviewView() {
   auto* controller = CaptureModeController::Get();
   if (controller->IsActive() && !controller->is_recording_in_progress())
     controller->capture_mode_session()->OnCameraPreviewDestroyed();
+  capture_mode_util::MaybeUpdateCameraPrivacyIndicator(/*camera_on=*/false);
 }
 
 void CameraPreviewView::SetIsCollapsible(bool value) {

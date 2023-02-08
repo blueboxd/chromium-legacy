@@ -175,7 +175,7 @@ bool CustomManagePasswordsUIController::WaitForFallbackForSaving(
   base::RunLoop run_loop;
   wait_for_fallback_ = true;
   run_loop_ = &run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop_->QuitClosure(), timeout);
   run_loop_->Run();
   bool shownFallbackForSaving = !wait_for_fallback_;
@@ -522,7 +522,7 @@ void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
   PasswordsNavigationObserver observer(WebContents());
   GURL url = embedded_test_server()->GetURL(path);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
 }
 
 void PasswordManagerBrowserTestBase::WaitForElementValue(

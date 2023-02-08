@@ -12,7 +12,6 @@
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_runner.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
@@ -120,9 +119,10 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
       GURL urn_uuid,
       AuctionRunner* auction,
       bool manually_aborted,
-      absl::optional<blink::InterestGroupKey> winning_group_id,
+      absl::optional<blink::InterestGroupKey> winning_group_key,
       absl::optional<GURL> render_url,
       std::vector<GURL> ad_component_urls,
+      std::string winning_group_ad_metadata,
       std::vector<GURL> report_urls,
       std::vector<GURL> debug_loss_report_urls,
       std::vector<GURL> debug_win_report_urls,
@@ -131,6 +131,11 @@ class CONTENT_EXPORT AdAuctionServiceImpl final
           url::Origin,
           std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
           private_aggregation_requests,
+      blink::InterestGroupSet interest_groups_that_bid,
+      absl::optional<GURL> render_url_without_kanon_enforced,
+      std::vector<GURL> ad_component_urls_without_kanon_enforced,
+      absl::optional<GURL> render_url_with_kanon_simulated,
+      std::vector<GURL> ad_component_urls_with_kanon_simulated,
       std::vector<std::string> errors);
 
   InterestGroupManagerImpl& GetInterestGroupManager() const;

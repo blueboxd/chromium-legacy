@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_policy_container_builder.h"
 #include "content/browser/renderer_host/navigation_throttle_runner.h"
+#include "content/browser/renderer_host/navigation_type.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/browser/renderer_host/render_frame_host_csp_context.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -41,7 +42,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -61,8 +61,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
+#include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom-forward.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "url/gurl.h"
@@ -207,11 +209,36 @@ class CONTENT_EXPORT NavigationRequest
   };
 
   // Creates a request for a browser-initiated navigation.
-  // Note: this is sometimes called for renderer-initiated navigations going
-  // through the OpenURL path. |browser_initiated| should be false in that case.
-  // TODO(clamy): Rename this function and consider merging it with
-  // CreateRendererInitiated.
   static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
+      FrameTreeNode* frame_tree_node,
+      blink::mojom::CommonNavigationParamsPtr common_params,
+      blink::mojom::CommitNavigationParamsPtr commit_params,
+      bool was_opener_suppressed,
+      const blink::LocalFrameToken* initiator_frame_token,
+      int initiator_process_id,
+      const std::string& extra_headers,
+      FrameNavigationEntry* frame_entry,
+      NavigationEntryImpl* entry,
+      bool is_form_submission,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
+      const absl::optional<blink::Impression>& impression,
+      bool is_pdf,
+      bool is_embedder_initiated_fenced_frame_navigation = false);
+
+  // Creates a request for either a browser-initiated navigation or a
+  // renderer-initiated navigation.  Normally, renderer-initiated navigations
+  // use CreateRendererInitiated(), but some legacy renderer-initiated
+  // navigation paths, such as OpenURL, are stuck using this path instead;
+  // these cases specify `browser_initiated` as false.
+  //
+  // Do NOT add more uses of this function.  Browser-initiated navigations
+  // should use CreateBrowserInitiated() and renderer-initiated navigations
+  // should use CreateRendererInitiated().
+  //
+  // TODO(crbug.com/1399292): Refactor the remaining uses of this function to
+  // use either CreateBrowserInitiated() or CreateRendererInitiated() and then
+  // remove this helper.
+  static std::unique_ptr<NavigationRequest> Create(
       FrameTreeNode* frame_tree_node,
       blink::mojom::CommonNavigationParamsPtr common_params,
       blink::mojom::CommitNavigationParamsPtr commit_params,
@@ -225,6 +252,8 @@ class CONTENT_EXPORT NavigationRequest
       bool is_form_submission,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const absl::optional<blink::Impression>& impression,
+      blink::mojom::NavigationInitiatorActivationAndAdStatus
+          initiator_activation_and_ad_status,
       bool is_pdf,
       bool is_embedder_initiated_fenced_frame_navigation = false);
 
@@ -310,6 +339,8 @@ class CONTENT_EXPORT NavigationRequest
   bool IsInFencedFrameTree() const override;
   FrameType GetNavigatingFrameType() const override;
   bool IsRendererInitiated() override;
+  blink::mojom::NavigationInitiatorActivationAndAdStatus
+  GetNavigationInitiatorActivationAndAdStatus() override;
   bool IsSameOrigin() override;
   bool WasServerRedirect() override;
   const std::vector<GURL>& GetRedirectChain() override;
@@ -390,6 +421,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsPdf() override;
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
+  void SetAllowCookiesFromBrowser(bool allow_cookies_from_browser) override;
   PrerenderTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
 #if BUILDFLAG(IS_ANDROID)
@@ -453,12 +485,9 @@ class CONTENT_EXPORT NavigationRequest
 
   bool from_begin_navigation() const { return from_begin_navigation_; }
 
-  AssociatedRenderFrameHostType associated_rfh_type() const {
-    return associated_rfh_type_;
-  }
-  void set_associated_rfh_type(AssociatedRenderFrameHostType type) {
-    associated_rfh_type_ = type;
-  }
+  AssociatedRenderFrameHostType GetAssociatedRFHType() const;
+
+  void SetAssociatedRFHType(AssociatedRenderFrameHostType type);
 
   void set_was_discarded() { commit_params_->was_discarded = true; }
 
@@ -575,12 +604,15 @@ class CONTENT_EXPORT NavigationRequest
   void DidCommitNavigation(const mojom::DidCommitProvisionalLoadParams& params,
                            bool navigation_entry_committed,
                            bool did_replace_entry,
-                           const GURL& previous_main_frame_url,
-                           NavigationType navigation_type);
+                           const GURL& previous_main_frame_url);
 
   NavigationType navigation_type() const {
     DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
     return navigation_type_;
+  }
+
+  void set_navigation_type(NavigationType navigation_type) {
+    navigation_type_ = navigation_type;
   }
 
   const std::string& post_commit_error_page_html() {
@@ -719,7 +751,7 @@ class CONTENT_EXPORT NavigationRequest
   void SetRequiredCSP(network::mojom::ContentSecurityPolicyPtr csp);
   network::mojom::ContentSecurityPolicyPtr TakeRequiredCSP();
 
-  bool is_anonymous() const { return is_anonymous_; }
+  bool is_credentialless() const { return is_credentialless_; }
 
   bool is_target_fenced_frame_root_originating_from_opaque_url() const {
     return is_target_fenced_frame_root_originating_from_opaque_url_;
@@ -962,14 +994,21 @@ class CONTENT_EXPORT NavigationRequest
     return prerender_frame_tree_node_id_.value();
   }
 
-  // TODO(crbug.com/1347953): Replace this function with
-  // NavigationRequest::ComputeFencedFrameProperties(), which falls back to
-  // frame_tree_node_->GetFencedFrameProperties() when the NavigationRequest
-  // itself doesn't have any properties.
-  const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-  fenced_frame_properties() const {
+  // Return the `FencedFrameProperties` attached to this `NavigationRequest`,
+  // if present. This will only return a non-null value during
+  // embedder-initiated fenced frame navigations of a fenced frame root (or
+  // urn iframe).
+  const absl::optional<FencedFrameProperties>& GetFencedFrameProperties()
+      const {
     return fenced_frame_properties_;
   }
+
+  // Compute and return the `FencedFrameProperties` that this
+  // `NavigationRequest` acts under, i.e. the properties attached to this
+  // `NavigationRequest` if present, or the properties attached to the fenced
+  // frame root (if present) otherwise.
+  const absl::optional<FencedFrameProperties>& ComputeFencedFrameProperties()
+      const;
 
   const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
 
@@ -1034,6 +1073,20 @@ class CONTENT_EXPORT NavigationRequest
   // for a ViewTransition.
   void SetViewTransitionState(blink::ViewTransitionState view_transition_state);
 
+  // Returns a mutable reference to a blink::RuntimeFeatureStateContext object,
+  // which exposes the getters and setters for Blink Runtime-Enabled Features to
+  // the browser process. Any feature set using the RuntimeFeatureStateContext
+  // before navigation commit will be communicated back to the renderer process.
+  //
+  // This function should not be called once the navigation has been committed.
+  // NOTE: these feature changes will apply to the "to-be-created" document.
+  blink::RuntimeFeatureStateContext& GetMutableRuntimeFeatureStateContext();
+
+  // Returns a const reference to a blink::RuntimeFeatureStateContext object.
+  // Once the commit params are sent to the renderer we no longer allow write
+  // access to the RFSC, but read access is still available.
+  const blink::RuntimeFeatureStateContext& GetRuntimeFeatureStateContext();
+
  private:
   friend class NavigationRequestTest;
 
@@ -1087,8 +1140,7 @@ class CONTENT_EXPORT NavigationRequest
   // Called from `FencedFrameURLMapping` when the mapping decision is made, and
   // resume the deferred navigation.
   void OnFencedFrameURLMappingComplete(
-      const absl::optional<FencedFrameURLMapping::FencedFrameProperties>&
-          properties) override;
+      const absl::optional<FencedFrameProperties>& properties) override;
 
   // Called from BeginNavigation(), OnPrerenderingActivationChecksComplete(),
   // or OnFencedFrameURLMappingComplete().
@@ -1496,10 +1548,16 @@ class CONTENT_EXPORT NavigationRequest
   // If they aren't, this returns false and emits a crash report.
   bool CoopCoepSanityCheck();
 
-  // Checks if all of the permissions policies that a fenced frame requires to
-  // be enabled for its origin are enabled. If not, it logs a console message
-  // and returns false.
+  // Checks that, given an origin to be committed, all of the permissions
+  // policies that a fenced frame requires to be enabled are enabled. If not, it
+  // logs a console message and returns false.
   bool CheckPermissionsPoliciesForFencedFrames(const url::Origin&);
+
+  // Helper function that determines if a given required permissions policy
+  // feature is properly enabled for a given origin to be committed.
+  bool IsFencedFrameRequiredPolicyFeatureAllowed(
+      const url::Origin&,
+      const blink::mojom::PermissionsPolicyFeature feature);
 
   // Returns the user-agent override, or an empty string if one isn't set.
   std::string GetUserAgentOverride();
@@ -2016,9 +2074,9 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::ContentSecurityPolicyPtr required_csp_;
 
   // Whether the document loaded by this navigation will be committed inside an
-  // anonymous iframe. Documents loaded inside anonymous iframes get partitioned
-  // storage and use a transient NetworkAnonymizationKey.
-  const bool is_anonymous_;
+  // iframe credentialless. Documents loaded inside credentialless iframes get
+  // partitioned storage and use a transient NetworkAnonymizationKey.
+  const bool is_credentialless_;
 
   // Non-nullopt from construction until |TakePolicyContainerHost()| is called.
   absl::optional<NavigationPolicyContainerBuilder> policy_container_builder_;
@@ -2090,6 +2148,9 @@ class CONTENT_EXPORT NavigationRequest
   // the mapping will finish asynchronously; otherwise, the mapping will finish
   // synchronously.
   bool is_deferred_on_fenced_frame_url_mapping_ = false;
+
+  // The start time of fenced frame url mapping.
+  base::TimeTicks fenced_frame_url_mapping_start_time_;
 
   // The root frame tree node id of the prerendered page. This will be a valid
   // FrameTreeNode id when this navigation will activate a prerendered page.
@@ -2190,8 +2251,7 @@ class CONTENT_EXPORT NavigationRequest
   //
   // If the navigation doesn't commit (e.g. an HTTP 204 response), the fenced
   // frame properties will not be stored in the fenced frame root.
-  absl::optional<FencedFrameURLMapping::FencedFrameProperties>
-      fenced_frame_properties_;
+  absl::optional<FencedFrameProperties> fenced_frame_properties_;
 
   // Prerender2:
   // The type to trigger prerendering. The value is valid only when Prerender2
@@ -2211,6 +2271,12 @@ class CONTENT_EXPORT NavigationRequest
 
   scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle_;
 
+  // Exposes getters and setters for Blink Runtime-Enabled Features to the
+  // browser process. Any feature set using the RuntimeFeatureStateContext
+  // before navigation commit will be communicated back to the renderer process.
+  // NOTE: these feature changes will apply to the "to-be-created" document.
+  blink::RuntimeFeatureStateContext runtime_feature_state_context_;
+
   // Renderer-initiated navigations can be canceled until the JS task that
   // started the navigation finishes. See RendererCancellationThrottle for more
   // details. The window of time in which the renderer can cancel the navigation
@@ -2227,6 +2293,10 @@ class CONTENT_EXPORT NavigationRequest
       renderer_cancellation_listener_{this};
   bool renderer_cancellation_window_ended_ = false;
   base::OnceClosure renderer_cancellation_window_ended_callback_;
+
+  // Whether a Cookie header added to this request should not be overwritten by
+  // the network service.
+  bool allow_cookies_from_browser_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

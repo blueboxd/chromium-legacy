@@ -211,7 +211,8 @@ class ResourceLoadingCancellingThrottle
         std::vector<blink::UseCounterFeature>(), resources,
         mojom::FrameRenderDataUpdatePtr(absl::in_place),
         mojom::CpuTimingPtr(absl::in_place),
-        mojom::InputTimingPtr(absl::in_place), blink::MobileFriendliness(), 0);
+        mojom::InputTimingPtr(absl::in_place),
+        mojom::SubresourceLoadMetricsPtr(absl::in_place), 0);
   }
 };
 
@@ -820,7 +821,6 @@ class AdsPageLoadMetricsObserverTest
         {
             {blink::features::kFencedFrames,
              {{"implementation_type", "mparch"}}},
-            {blink::features::kInitialNavigationEntry, {}},
         },
         {});
   }
@@ -3114,7 +3114,6 @@ class AdsMemoryMeasurementTest : public AdsPageLoadMetricsObserverTest {
         {
             {blink::features::kFencedFrames,
              {{"implementation_type", "mparch"}}},
-            {blink::features::kInitialNavigationEntry, {}},
             {::features::kV8PerFrameMemoryMonitoring, {}},
         },
         {});

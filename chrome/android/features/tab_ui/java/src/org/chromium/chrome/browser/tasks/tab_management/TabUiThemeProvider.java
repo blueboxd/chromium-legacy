@@ -19,13 +19,18 @@ import com.google.android.material.color.MaterialColors;
 import com.google.android.material.elevation.ElevationOverlayProvider;
 
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
+import org.chromium.ui.util.ColorUtils;
 
 /**
  * Utility class that provides theme related attributes for Tab UI.
  */
 public class TabUiThemeProvider {
     private static final String TAG = "TabUiThemeProvider";
+
+    private static final float DETACHED_TAB_OVERLAY_ALPHA = 0.85f;
+
     /**
      * Returns the color to use for the tab grid card view background based on incognito mode.
      *
@@ -52,6 +57,33 @@ public class TabUiThemeProvider {
                               .compositeOverlayWithThemeSurfaceColorIfNeeded(tabElevation);
             return colorInt;
         }
+    }
+
+    /**
+     * Returns the color for the tab strip background.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The {@link ColorInt} for tab strip redesign background.
+     */
+    public static @ColorInt int getTabStripBackgroundColor(Context context, boolean isIncognito) {
+        if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+            // Use black color for incognito and night mode for folio.
+            if (isIncognito || ColorUtils.inNightMode(context)) {
+                return Color.BLACK;
+            }
+            return ChromeColors.getSurfaceColor(
+                    context, org.chromium.chrome.R.dimen.default_elevation_2);
+        } else if (TabUiFeatureUtilities.isTabStripDetachedEnabled()) {
+            if (isIncognito) {
+                // Use a non-dynamic dark background color for incognito, slightly greyer than
+                // Color.BLACK
+                return ChromeColors.getPrimaryBackgroundColor(context, isIncognito);
+            }
+            return ChromeColors.getSurfaceColor(
+                    context, org.chromium.chrome.R.dimen.default_elevation_0);
+        }
+        return Color.BLACK;
     }
 
     /**
@@ -287,6 +319,32 @@ public class TabUiThemeProvider {
                 return ColorStateList.valueOf(
                         MaterialColors.compositeARGBWithAlpha(baseColor, alpha));
             }
+        }
+    }
+
+    /**
+     * Returns the color for the detached tab container based on the incognito mode.
+     *
+     * @param context {@link Context} used to retrieve color.
+     * @param isIncognito Whether the color is used for incognito mode.
+     * @return The color for the detached tab container.
+     */
+    public static int getTabStripDetachedTabColor(Context context, boolean isIncognito) {
+        assert TabUiFeatureUtilities.isTabStripDetachedEnabled();
+
+        if (isIncognito) return Color.BLACK;
+
+        if (ColorUtils.inNightMode(context)) {
+            final int baseColor =
+                    MaterialColors.getColor(context, org.chromium.chrome.R.attr.colorPrimary, TAG);
+            final int overlayColor = ChromeColors.getSurfaceColor(
+                    context, org.chromium.chrome.R.dimen.default_elevation_0);
+
+            return ColorUtils.getColorWithOverlay(
+                    baseColor, overlayColor, DETACHED_TAB_OVERLAY_ALPHA);
+        } else {
+            return ChromeColors.getSurfaceColor(
+                    context, org.chromium.chrome.R.dimen.default_elevation_5);
         }
     }
 

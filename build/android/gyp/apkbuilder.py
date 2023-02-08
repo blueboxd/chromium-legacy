@@ -55,9 +55,6 @@ def _ParseArgs(args):
                       default='apk', help='Specify output format.')
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
-  parser.add_argument(
-      '--jdk-libs-dex-file',
-      help='Path to classes.dex created by dex_jdk_libs.py')
   parser.add_argument('--uncompress-dex', action='store_true',
                       help='Store .dex files uncompressed in the APK')
   parser.add_argument('--native-libs',
@@ -112,10 +109,6 @@ def _ParseArgs(args):
       '--library-always-compress',
       action='append',
       help='The list of library files that we always compress.')
-  parser.add_argument(
-      '--library-renames',
-      action='append',
-      help='The list of library files that we prepend crazy. to their names.')
   parser.add_argument('--warnings-as-errors',
                       action='store_true',
                       help='Treat all warnings as errors.')
@@ -134,10 +127,6 @@ def _ParseArgs(args):
       options.secondary_native_libs)
   options.library_always_compress = build_utils.ParseGnList(
       options.library_always_compress)
-  options.library_renames = build_utils.ParseGnList(options.library_renames)
-
-  options.uncompress_shared_libraries = \
-      options.uncompress_shared_libraries in [ 'true', 'True' ]
 
   if not options.android_abi and (options.native_libs or
                                   options.native_lib_placeholders):
@@ -249,8 +238,8 @@ def _AddFiles(apk, details):
           alignment=alignment)
 
 
-def _GetNativeLibrariesToAdd(native_libs, android_abi, uncompress, fast_align,
-                             lib_always_compress, lib_renames):
+def _GetNativeLibrariesToAdd(native_libs, android_abi, fast_align,
+                             lib_always_compress):
   """Returns the list of file_detail tuples for native libraries in the apk.
 
   Returns: A list of (src_path, apk_path, compress, alignment) tuple
@@ -261,12 +250,7 @@ def _GetNativeLibrariesToAdd(native_libs, android_abi, uncompress, fast_align,
 
   for path in native_libs:
     basename = os.path.basename(path)
-    compress = not uncompress or any(lib_name in basename
-                                     for lib_name in lib_always_compress)
-    rename = any(lib_name in basename for lib_name in lib_renames)
-    if rename:
-      basename = 'crazy.' + basename
-
+    compress = any(lib_name in basename for lib_name in lib_always_compress)
     lib_android_abi = android_abi
     if path.startswith('android_clang_arm64_hwasan/'):
       lib_android_abi = 'arm64-v8a-hwasan'
@@ -371,15 +355,14 @@ def main(args):
                         allow_reads=allow_reads))
     return ret
 
-  libs_to_add = _GetNativeLibrariesToAdd(
-      native_libs, options.android_abi, options.uncompress_shared_libraries,
-      fast_align, options.library_always_compress, options.library_renames)
+  libs_to_add = _GetNativeLibrariesToAdd(native_libs, options.android_abi,
+                                         fast_align,
+                                         options.library_always_compress)
   if options.secondary_android_abi:
     libs_to_add.extend(
-        _GetNativeLibrariesToAdd(
-            secondary_native_libs, options.secondary_android_abi,
-            options.uncompress_shared_libraries, fast_align,
-            options.library_always_compress, options.library_renames))
+        _GetNativeLibrariesToAdd(secondary_native_libs,
+                                 options.secondary_android_abi,
+                                 fast_align, options.library_always_compress))
 
   if options.expected_file:
     # We compute expectations without reading the files. This allows us to check
@@ -459,13 +442,6 @@ def main(args):
                     apk_dex_dir + dex,
                     dex_zip.read(dex),
                     compress=not options.uncompress_dex)
-
-      if options.jdk_libs_dex_file:
-        with open(options.jdk_libs_dex_file, 'rb') as dex_file_obj:
-          add_to_zip(
-              apk_dex_dir + 'classes{}.dex'.format(max_dex_number + 1),
-              dex_file_obj.read(),
-              compress=not options.uncompress_dex)
 
       # 4. Native libraries.
       logging.debug('Adding lib/')

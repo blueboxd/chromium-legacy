@@ -41,42 +41,6 @@ bool IsVp9KSVCSupportedDriver(const std::string& driver_name) {
   const std::string kVP9KSVCSupportedDrivers[] = {"qcom-venus"};
   return base::Contains(kVP9KSVCSupportedDrivers, driver_name);
 }
-
-// Estimates the amount of buffers needed in the CAPTURE queue to serve both the
-// codec reference requirements and the Renderer pipeline.
-size_t EstimateRequiredNumCAPTUREBuffers(V4L2Device* const v4l2_device,
-                                         bool low_latency) {
-  DCHECK(v4l2_device);
-
-  // Estimate the amount of buffers needed for the CAPTURE queue and for codec
-  // reference requirements. For VP9 and AV1, the maximum number of reference
-  // frames is constant and 8 (for VP8 is 4); for H.264 and other ITU-T codecs,
-  // we query it from the driver.
-  constexpr size_t kDefaultNumReferenceFrames = 8;
-  size_t num_capture_buffers = kDefaultNumReferenceFrames;
-  // On QC Venus, this control ranges between 1 and 32 at the time of writing.
-  auto ctrl = v4l2_device->GetCtrl(V4L2_CID_MIN_BUFFERS_FOR_CAPTURE);
-  if (ctrl) {
-    VLOGF(2) << "V4L2_CID_MIN_BUFFERS_FOR_CAPTURE  = " << ctrl->value;
-    num_capture_buffers =
-        std::max(base::checked_cast<size_t>(ctrl->value), num_capture_buffers);
-  }
-
-  // kMaxVideoFrames is meant to be the amount of VideoFrames needed to populate
-  // the whole Renderer playback pipeline when there's no smoothing playback
-  // queue, i.e. in low latency scenarios such as WebRTC etc. For non-low
-  // latency scenarios, a large smoothing playback is used in the Renderer
-  // process. Heuristically, the extra depth needed is in the range of 15 or
-  // so, so we need to add a few extra buffers.
-  constexpr size_t kExpectedNonLatencyPipelineDepth = 16;
-  static_assert(kExpectedNonLatencyPipelineDepth > limits::kMaxVideoFrames,
-                "kMaxVideoFrames is expected to be relatively small");
-  if (low_latency)
-    return num_capture_buffers + limits::kMaxVideoFrames + 1;
-  else
-    return num_capture_buffers + kExpectedNonLatencyPipelineDepth;
-}
-
 }  // namespace
 
 V4L2StatefulVideoDecoderBackend::DecodeRequest::DecodeRequest(
@@ -102,13 +66,11 @@ V4L2StatefulVideoDecoderBackend::V4L2StatefulVideoDecoderBackend(
     scoped_refptr<V4L2Device> device,
     VideoCodecProfile profile,
     const VideoColorSpace& color_space,
-    bool low_latency,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : V4L2VideoDecoderBackend(client, std::move(device)),
       driver_name_(device_->GetDriverName()),
       profile_(profile),
       color_space_(color_space),
-      low_latency_(low_latency),
       task_runner_(task_runner) {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -269,7 +231,7 @@ void V4L2StatefulVideoDecoderBackend::DoDecodeWork() {
   size_t bytes_to_copy = 0;
 
   if (!frame_splitter_->AdvanceFrameFragment(data, data_size, &bytes_to_copy)) {
-    VLOGF(1) << "Invalid H.264 stream detected.";
+    VLOGF(1) << "Invalid bitstream detected.";
     std::move(current_decode_request_->decode_cb)
         .Run(DecoderStatus::Codes::kFailed);
     current_decode_request_.reset();
@@ -654,19 +616,32 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
     return;
   }
 
-  const size_t num_output_buffers =
-      EstimateRequiredNumCAPTUREBuffers(device_.get(), low_latency_);
-  VLOGF(2) << "Estimated " << num_output_buffers
-           << " buffers needed for the CAPTURE queue";
+  // Estimate the amount of buffers needed for the CAPTURE queue and for codec
+  // reference requirements. For VP9 and AV1, the maximum number of reference
+  // frames is constant and 8 (for VP8 is 4); for H.264 and other ITU-T codecs,
+  // it depends on the bitstream. Here we query it from the driver anyway.
+  constexpr size_t kDefaultNumReferenceFrames = 8;
+  size_t num_codec_reference_frames = kDefaultNumReferenceFrames;
+  // On QC Venus, this control ranges between 1 and 32 at the time of writing.
+  auto ctrl = device_->GetCtrl(V4L2_CID_MIN_BUFFERS_FOR_CAPTURE);
+  if (ctrl) {
+    VLOGF(2) << "V4L2_CID_MIN_BUFFERS_FOR_CAPTURE  = " << ctrl->value;
+    num_codec_reference_frames = std::max(
+        base::checked_cast<size_t>(ctrl->value), num_codec_reference_frames);
+  }
+  // Verify |num_codec_reference_frames| has a reasonable value. Anecdotally 16
+  // is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_codec_reference_frames, 32u);
 
   // Signal that we are flushing and initiate the resolution change.
   // Our flush will be done when we receive a buffer with the LAST flag on the
   // CAPTURE queue.
   client_->InitiateFlush();
   DCHECK(!resolution_change_cb_);
-  resolution_change_cb_ =
-      base::BindOnce(&V4L2StatefulVideoDecoderBackend::ContinueChangeResolution,
-                     weak_this_, pic_size, *visible_rect, num_output_buffers);
+  resolution_change_cb_ = base::BindOnce(
+      &V4L2StatefulVideoDecoderBackend::ContinueChangeResolution, weak_this_,
+      pic_size, *visible_rect, num_codec_reference_frames);
 
   // ...that is, unless we are not streaming yet, in which case the resolution
   // change can take place immediately.
@@ -677,19 +652,18 @@ void V4L2StatefulVideoDecoderBackend::ChangeResolution() {
 void V4L2StatefulVideoDecoderBackend::ContinueChangeResolution(
     const gfx::Size& pic_size,
     const gfx::Rect& visible_rect,
-    const size_t num_output_buffers) {
+    const size_t num_codec_reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
   // Flush is done, but stay in flushing state and ask our client to set the new
   // resolution.
-  client_->ChangeResolution(pic_size, visible_rect, num_output_buffers);
+  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames);
 }
 
 bool V4L2StatefulVideoDecoderBackend::ApplyResolution(
     const gfx::Size& pic_size,
-    const gfx::Rect& visible_rect,
-    const size_t num_output_frames) {
+    const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 
@@ -767,9 +741,12 @@ bool V4L2StatefulVideoDecoderBackend::IsSupportedProfile(
   DCHECK(device_);
   if (supported_profiles_.empty()) {
     constexpr uint32_t kSupportedInputFourccs[] = {
-        V4L2_PIX_FMT_H264,
-        V4L2_PIX_FMT_VP8,
-        V4L2_PIX_FMT_VP9,
+      V4L2_PIX_FMT_H264,
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+      V4L2_PIX_FMT_HEVC,
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+      V4L2_PIX_FMT_VP8,
+      V4L2_PIX_FMT_VP9,
     };
     scoped_refptr<V4L2Device> device = V4L2Device::Create();
     VideoDecodeAccelerator::SupportedProfiles profiles =

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string_piece.h"
 #include "components/metrics/metrics_logs_event_manager.h"
@@ -45,10 +46,8 @@ class MetricsServiceObserver : public MetricsLogsEventManager::Observer {
       MetricsLogsEventManager::LogEvent event;
 
       // The timestamp at which the event occurred. This is the number of
-      // seconds since Epoch. This field is a string for consistency reasons
-      // (the |timestamp| field of the Log struct is also a string, due to how
-      // logs are stored in the metrics systems).
-      std::string timestamp;
+      // milliseconds since Epoch.
+      double timestampMs;
 
       // An optional message associated with the event.
       absl::optional<std::string> message;
@@ -101,7 +100,7 @@ class MetricsServiceObserver : public MetricsLogsEventManager::Observer {
   // The format of the JSON object is as follows:
   //
   // {
-  //   log_type: string, // e.g. "UMA" or "UKM"
+  //   logType: string, // e.g. "UMA" or "UKM"
   //   logs: [
   //     {
   //       type?: string, // e.g. "Ongoing" (set only for UMA logs)
@@ -112,7 +111,7 @@ class MetricsServiceObserver : public MetricsLogsEventManager::Observer {
   //       events: [
   //         {
   //           event: string, // e.g. "Trimmed"
-  //           timestamp: string,
+  //           timestamp: number,
   //           message?: string
   //         },
   //         ...
@@ -126,6 +125,13 @@ class MetricsServiceObserver : public MetricsLogsEventManager::Observer {
   // "data" field is a base64 encoding of the log's compressed (gzipped)
   // serialized protobuf. The "size" field is the size (in bytes) of the log.
   bool ExportLogsAsJson(bool include_log_proto_data, std::string* json_output);
+
+  // Registers a callback. This callback will be run every time this observer is
+  // notified through OnLogCreated() or OnLogEvent(). When the returned
+  // CallbackListSubscription is destroyed, the callback is automatically
+  // de-registered.
+  [[nodiscard]] base::CallbackListSubscription AddNotifiedCallback(
+      base::RepeatingClosure callback);
 
   // Returns |logs_|.
   std::vector<std::unique_ptr<Log>>* logs_for_testing() { return &logs_; }
@@ -152,6 +158,10 @@ class MetricsServiceObserver : public MetricsLogsEventManager::Observer {
   // are being created. This should only be set for UMA logs, since the concept
   // of log type only exists in UMA.
   absl::optional<MetricsLog::LogType> uma_log_type_;
+
+  // List of callbacks to run whenever this observer is notified. Note that
+  // OnLogType() will not trigger the callbacks.
+  base::RepeatingClosureList notified_callbacks_;
 };
 
 }  // namespace metrics

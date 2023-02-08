@@ -33,22 +33,9 @@ const char kDynamicSchedulerPercentile[] = "percentile";
 
 namespace features {
 
-// Enables the use of power hint APIs on Android.
-BASE_FEATURE(kAdpf, "Adpf", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Target duration used for power hint on Android.
-// `0` indicates use hard coded default.
-const base::FeatureParam<int> kAdpfTargetDurationMs{&kAdpf,
-                                                    "AdpfTargetDurationMs", 0};
-
 BASE_FEATURE(kEnableOverlayPrioritization,
              "EnableOverlayPrioritization",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseMultipleOverlays,
              "UseMultipleOverlays",
@@ -75,12 +62,6 @@ BASE_FEATURE(kVideoDetectorIgnoreNonVideos,
 
 BASE_FEATURE(kSimpleFrameRateThrottling,
              "SimpleFrameRateThrottling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Kill-switch to disable de-jelly, even if flags/properties indicate it should
-// be enabled.
-BASE_FEATURE(kDisableDeJelly,
-             "DisableDeJelly",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -230,30 +211,26 @@ BASE_FEATURE(kOverrideThrottledFrameRateParams,
              "OverrideThrottledFrameRateParams",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Used to gate calling SetPurgeable on OutputPresenter::Image from
+// SkiaOutputDeviceBufferQueue.
+BASE_FEATURE(kBufferQueueImageSetPurgeable,
+             "BufferQueueImageSetPurgeable",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // On platforms using SkiaOutputDeviceBufferQueue, when this is true
 // SkiaRenderer will allocate and maintain a buffer queue of images for the root
 // render pass, instead of SkiaOutputDeviceBufferQueue itself.
 BASE_FEATURE(kRendererAllocatesImages,
              "RendererAllocatesImages",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_ASH)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
 
-bool IsAdpfEnabled() {
-  // TODO(crbug.com/1157620): Limit this to correct android version.
-  return base::FeatureList::IsEnabled(kAdpf);
-}
-
 bool IsOverlayPrioritizationEnabled() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // DelegatedCompositing in Lacros makes this feature a no-op.
-  return false;
-#else
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
-#endif
 }
 
 bool IsDelegatedCompositingEnabled() {

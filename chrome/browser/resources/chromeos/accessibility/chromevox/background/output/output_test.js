@@ -111,15 +111,18 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxNextE2ETest {
     await importModule(
         ['OutputEarconAction', 'OutputNodeSpan', 'OutputSelectionSpan'],
         '/chromevox/background/output/output_types.js');
+    await importModule('Earcon', '/chromevox/common/abstract_earcons.js');
     await importModule(
         'EventSourceType', '/chromevox/common/event_source_type.js');
     await importModule('Msgs', '/chromevox/common/msgs.js');
-    await importModule('TtsCategory', '/chromevox/common/tts_interface.js');
+    await importModule('TtsCategory', '/chromevox/common/tts_types.js');
     await importModule(
         'AutomationPredicate', '/common/automation_predicate.js');
     await importModule('AutomationUtil', '/common/automation_util.js');
     await importModule('Cursor', '/common/cursors/cursor.js');
     await importModule('CursorRange', '/common/cursors/range.js');
+
+    await importModule('LocalStorage', '/common/local_storage.js');
 
     window.Dir = AutomationUtil.Dir;
     this.forceContextualLastOutput();
@@ -140,7 +143,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Links', async function() {
           {value: 'name', start: 0, end: 10},
 
           // Link earcon (based on the name).
-          {value: {earconId: 'LINK'}, start: 0, end: 10},
+          {value: {earcon: Earcon.LINK}, start: 0, end: 10},
 
           {value: {'delay': true}, start: 25, end: 55},
         ],
@@ -159,7 +162,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Checkbox', async function() {
   checkSpeechOutput(
       '|Check box|Not checked|Press Search+Space to toggle',
       [
-        {value: new OutputEarconAction('CHECK_OFF'), start: 0, end: 0},
+        {value: new OutputEarconAction(Earcon.CHECK_OFF), start: 0, end: 0},
         {value: 'role', start: 1, end: 10},
         {value: {'delay': true}, start: 23, end: 51},
       ],
@@ -236,7 +239,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Headings', async function() {
         string_: 'b|Link|Heading 1',
         'spans_': [
           {value: 'name', start: 0, end: 1},
-          {value: new OutputEarconAction('LINK'), start: 0, end: 1},
+          {value: new OutputEarconAction(Earcon.LINK), start: 0, end: 1},
           {value: 'role', start: 2, end: 6},
         ],
       },
@@ -263,7 +266,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', async function() {
   checkSpeechOutput(
       'play|Disabled|Button|audio|Tool bar',
       [
-        {value: new OutputEarconAction('BUTTON'), start: 0, end: 4},
+        {value: new OutputEarconAction(Earcon.BUTTON), start: 0, end: 4},
         {value: 'name', start: 21, end: 26},
         {value: 'role', start: 27, end: 35},
       ],
@@ -287,7 +290,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'DISABLED_Audio', async function() {
       '|audio time scrubber|Slider|0:00|Min 0|Max 0',
       [
         {value: 'name', start: 0, end: 0},
-        {value: new OutputEarconAction('SLIDER'), start: 0, end: 0},
+        {value: new OutputEarconAction(Earcon.SLIDER), start: 0, end: 0},
         {value: 'description', start: 1, end: 20},
         {value: 'role', start: 21, end: 27},
         {value: 'value', start: 28, end: 32},
@@ -312,14 +315,14 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
       '<input type="invalidType"</input>');
   const expectedSpansNonSearchBox = [
     {value: 'name', start: 0, end: 0},
-    {value: new OutputEarconAction('EDITABLE_TEXT'), start: 0, end: 0},
+    {value: new OutputEarconAction(Earcon.EDITABLE_TEXT), start: 0, end: 0},
     {value: new OutputSelectionSpan(0, 0, 0), start: 1, end: 1},
     {value: 'value', start: 1, end: 1},
     {value: 'inputType', start: 2},
   ];
   const expectedSpansForSearchBox = [
     {value: 'name', start: 0, end: 0},
-    {value: new OutputEarconAction('EDITABLE_TEXT'), start: 0, end: 0},
+    {value: new OutputEarconAction(Earcon.EDITABLE_TEXT), start: 0, end: 0},
     {value: new OutputSelectionSpan(0, 0, 0), start: 1, end: 1},
     {value: 'value', start: 1, end: 1},
     {value: 'role', start: 2, end: 8},
@@ -334,7 +337,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
       '|Spin button',
       [
         {value: 'name', start: 0, end: 0},
-        {value: new OutputEarconAction('LISTBOX'), start: 0, end: 0},
+        {value: new OutputEarconAction(Earcon.LISTBOX), start: 0, end: 0},
         {value: 'role', start: 1, end: 12},
       ],
     ],
@@ -344,7 +347,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
       'No file chosen, Choose File|Button',
       [
         {value: 'name', start: 0, end: 27},
-        {value: new OutputEarconAction('BUTTON'), start: 0, end: 27},
+        {value: new OutputEarconAction(Earcon.BUTTON), start: 0, end: 27},
         {value: 'role', start: 28, end: 34},
       ],
     ],
@@ -426,7 +429,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'List', async function() {
   checkSpeechOutput(
       'a|List item|first|List|with 3 items',
       [
-        {value: {earconId: 'LIST_ITEM'}, start: 0, end: 1},
+        {value: {earcon: Earcon.LIST_ITEM}, start: 0, end: 1},
         {value: 'name', start: 12, end: 17},
         {value: 'role', start: 18, end: 22},
       ],
@@ -574,7 +577,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ListBox', async function() {
       '1|List item| 1 of 2 |Not selected|List box|with 2 items',
       [
         {value: 'name', start: 0, end: 1},
-        {value: new OutputEarconAction('LIST_ITEM'), start: 0, end: 1},
+        {value: new OutputEarconAction(Earcon.LIST_ITEM), start: 0, end: 1},
         {value: 'role', start: 34, end: 42},
       ],
       o);
@@ -647,9 +650,6 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       }
       assertFalse(/[A-Z]+/.test(value.msgId));
     }
-    if (value.earconId) {
-      assertNotNullNorUndefined(Earcon[value.earconId]);
-    }
   }
   for (const key in Output.STATE_INFO_) {
     const value = Output.STATE_INFO_[key];
@@ -662,9 +662,6 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       Msgs.getMsg(innerValue.msgId);
       Msgs.getMsg(innerValue.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(innerValue.msgId));
-      if (innerValue.earconId) {
-        assertNotNullNorUndefined(Earcon[innerValue.earconId]);
-      }
     }
   }
   for (const key in Output.INPUT_TYPE_MESSAGE_IDS_) {
@@ -725,7 +722,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Brief', async function() {
   const node = root.children[0].firstChild;
   const range = CursorRange.fromNode(node);
 
-  localStorage['useVerboseMode'] = 'false';
+  LocalStorage.set('useVerboseMode', false);
   const oWithoutPrev = new Output().withSpeech(range, null, 'navigate');
   assertEquals('inside', oWithoutPrev.speechOutputForTest.string_);
 });
@@ -770,7 +767,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', async function() {
         string_:
             '|Subscribe|Toggle Button|Pressed|Press Search+Space to toggle',
         spans_: [
-          {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
+          {value: {earcon: Earcon.CHECK_ON}, start: 0, end: 0},
           {value: 'name', start: 1, end: 10},
           {value: 'role', start: 11, end: 24},
           {value: {'delay': true}, start: 33, end: 61},
@@ -891,7 +888,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
       'volume|Slider|2|Min 1|Max 10',
       [
         {value: 'name', start: 0, end: 6},
-        {value: new OutputEarconAction('SLIDER'), start: 0, end: 6},
+        {value: new OutputEarconAction(Earcon.SLIDER), start: 0, end: 6},
         {value: 'role', start: 7, end: 13},
         {value: 'value', start: 14, end: 15},
       ],
@@ -925,7 +922,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RangeOutput', async function() {
       'volume|Spin button|2|Min 1|Max 10',
       [
         {value: 'name', start: 0, end: 6},
-        {value: new OutputEarconAction('LISTBOX'), start: 0, end: 6},
+        {value: new OutputEarconAction(Earcon.LISTBOX), start: 0, end: 6},
         {value: 'role', start: 7, end: 18},
         {value: 'value', start: 19, end: 20},
       ],
@@ -942,7 +939,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'RoleDescription', async function() {
       'hi|foo',
       [
         {value: 'name', start: 0, end: 2},
-        {value: new OutputEarconAction('BUTTON'), start: 0, end: 2},
+        {value: new OutputEarconAction(Earcon.BUTTON), start: 0, end: 2},
         {value: 'role', start: 3, end: 6},
       ],
       o);
@@ -1513,7 +1510,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'ARCCheckbox', async function() {
   checkSpeechOutput(
       '|Check box|checked state description',
       [
-        {value: new OutputEarconAction('CHECK_OFF'), start: 0, end: 0},
+        {value: new OutputEarconAction(Earcon.CHECK_OFF), start: 0, end: 0},
         {value: 'role', start: 1, end: 10},
         {value: 'checkedStateDescription', start: 11, end: 36},
       ],

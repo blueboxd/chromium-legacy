@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
@@ -126,7 +125,7 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
       const network::P2PSendPacketMetrics& send_metrics) override;
   void OnError() override;
   void OnDataReceived(const net::IPEndPoint& address,
-                      const Vector<int8_t>& data,
+                      base::span<const uint8_t> data,
                       const base::TimeTicks& timestamp) override;
 
  private:
@@ -197,10 +196,6 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
   // send_bytes_available_.
   size_t max_discard_bytes_sequence_;
   size_t current_discard_bytes_sequence_;
-
-  // Track the total number of packets and the number of packets discarded.
-  int packets_discarded_;
-  int total_packets_;
 };
 
 // Simple wrapper around P2PAsyncAddressResolver. The main purpose of this
@@ -240,9 +235,7 @@ IpcPacketSocket::IpcPacketSocket()
       writable_signal_expected_(false),
       error_(0),
       max_discard_bytes_sequence_(0),
-      current_discard_bytes_sequence_(0),
-      packets_discarded_(0),
-      total_packets_(0) {
+      current_discard_bytes_sequence_(0) {
   static_assert(kMaximumInFlightBytes > 0, "would send at zero rate");
   std::fill_n(options_, static_cast<int>(network::P2P_SOCKET_OPT_MAX),
               kDefaultNonSetOptionValue);
@@ -251,11 +244,6 @@ IpcPacketSocket::IpcPacketSocket()
 IpcPacketSocket::~IpcPacketSocket() {
   if (state_ == kIsOpening || state_ == kIsOpen || state_ == kIsError) {
     Close();
-  }
-
-  if (total_packets_ > 0) {
-    UMA_HISTOGRAM_PERCENTAGE("WebRTC.ApplicationPercentPacketsDiscarded",
-                             (packets_discarded_ * 100) / total_packets_);
   }
 }
 
@@ -268,7 +256,6 @@ void IpcPacketSocket::TraceSendThrottlingState() const {
 
 void IpcPacketSocket::IncrementDiscardCounters(size_t bytes_discarded) {
   current_discard_bytes_sequence_ += bytes_discarded;
-  packets_discarded_++;
 
   if (current_discard_bytes_sequence_ > max_discard_bytes_sequence_) {
     max_discard_bytes_sequence_ = current_discard_bytes_sequence_;
@@ -384,8 +371,6 @@ int IpcPacketSocket::SendTo(const void* data,
     return 0;
   }
 
-  total_packets_++;
-
   if (data_size > send_bytes_available_) {
     TRACE_EVENT_INSTANT1("p2p", "MaxPendingBytesWouldBlock",
                          TRACE_EVENT_SCOPE_THREAD, "id",
@@ -422,10 +407,10 @@ int IpcPacketSocket::SendTo(const void* data,
 
   send_bytes_available_ -= data_size;
 
-  Vector<int8_t> data_vector;
-  data_vector.Append(reinterpret_cast<const int8_t*>(data),
-                     base::checked_cast<wtf_size_t>(data_size));
-  uint64_t packet_id = client_->Send(address_chrome, data_vector, options);
+  uint64_t packet_id = client_->Send(
+      address_chrome,
+      base::make_span(reinterpret_cast<const uint8_t*>(data), data_size),
+      options);
 
   // Ensure packet_id is not 0. It can't be the case according to
   // P2PSocketClientImpl::Send().
@@ -609,7 +594,7 @@ void IpcPacketSocket::OnError() {
 }
 
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
-                                     const Vector<int8_t>& data,
+                                     base::span<const uint8_t> data,
                                      const base::TimeTicks& timestamp) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -628,8 +613,9 @@ void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
     }
   }
 
-  SignalReadPacket(this, reinterpret_cast<const char*>(&data[0]), data.size(),
-                   address_lj, timestamp.since_origin().InMicroseconds());
+  SignalReadPacket(this, reinterpret_cast<const char*>(data.data()),
+                   data.size(), address_lj,
+                   timestamp.since_origin().InMicroseconds());
 }
 
 AsyncAddressResolverImpl::AsyncAddressResolverImpl(

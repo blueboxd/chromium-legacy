@@ -291,6 +291,7 @@ source_set("browser") {
     "//third_party/blink/public/mojom:mojom_core",
     "//third_party/blink/public/mojom:mojom_platform",
     "//third_party/crashpad/crashpad/client",
+    "//third_party/zlib/google:compression_utils",
     "//ui/android",
     "//ui/display/util:util",
     "//ui/gl",
@@ -312,8 +313,5 @@ source_set("browser") {
     deps += [ "//components/spellcheck/browser" ]
   }
 
-  configs += [
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-    "//v8:external_startup_data",
-  ]
+  configs += [ "//v8:external_startup_data" ]
 }

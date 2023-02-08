@@ -22,9 +22,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/service_worker/service_worker_storage_control_impl.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -80,6 +80,13 @@ BASE_FEATURE(kServiceWorkerStorageControlOnIOThread,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+BASE_FEATURE(kServiceWorkerStorageControlOnThreadPool,
+             "ServiceWorkerStorageControlOnThreadPool",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+base::LazyInstance<ServiceWorkerContextWrapper::URLLoaderFactoryInterceptor>::
+    Leaky g_loader_factory_interceptor = LAZY_INSTANCE_INITIALIZER;
+
 void DidFindRegistrationForStartActiveWorker(
     ServiceWorkerContextWrapper::StatusCallback callback,
     blink::ServiceWorkerStatusCode status,
@@ -88,7 +95,7 @@ void DidFindRegistrationForStartActiveWorker(
 
   if (status != blink::ServiceWorkerStatusCode::kOk ||
       !registration->active_version()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        blink::ServiceWorkerStatusCode::kErrorNotFound));
@@ -100,7 +107,7 @@ void DidFindRegistrationForStartActiveWorker(
       base::BindOnce(
           [](ServiceWorkerContextWrapper::StatusCallback callback,
              blink::ServiceWorkerStatusCode status) {
-            base::SequencedTaskRunnerHandle::Get()->PostTask(
+            base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
                 FROM_HERE, base::BindOnce(std::move(callback), status));
           },
           std::move(callback)));
@@ -597,7 +604,7 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfo(
     GetUsageInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<StorageUsageInfo>()));
     return;
@@ -639,7 +646,7 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   ServiceWorkerCapability::NO_SERVICE_WORKER));
     return;
@@ -655,7 +662,7 @@ void ServiceWorkerContextWrapper::CheckOfflineCapability(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), OfflineCapability::kUnsupported,
                        blink::mojom::kInvalidServiceWorkerRegistrationId));
@@ -670,8 +677,8 @@ void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
     return;
   }
   context_core_->ClearAllServiceWorkersForTest(std::move(callback));
@@ -723,7 +730,7 @@ void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
                                base::BindOnce(std::move(callback), success));
                          },
                          std::move(wrapped_callback),
-                         base::ThreadTaskRunnerHandle::Get())));
+                         base::SingleThreadTaskRunner::GetCurrentDefault())));
 }
 
 void ServiceWorkerContextWrapper::
@@ -848,8 +855,8 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkers(
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context_core_.get()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
     return;
   }
 
@@ -940,7 +947,7 @@ void ServiceWorkerContextWrapper::HasMainFrameWindowClient(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
@@ -1051,7 +1058,7 @@ void ServiceWorkerContextWrapper::GetAllRegistrations(
     GetRegistrationsInfosCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -1066,7 +1073,7 @@ void ServiceWorkerContextWrapper::GetRegistrationsForStorageKey(
     GetRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
@@ -1084,7 +1091,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserData(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<std::string>(),
                        blink::ServiceWorkerStatusCode::kErrorAbort));
@@ -1101,7 +1108,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<std::string>(),
                        blink::ServiceWorkerStatusCode::kErrorAbort));
@@ -1118,7 +1125,7 @@ void ServiceWorkerContextWrapper::GetRegistrationUserKeysAndDataByKeyPrefix(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort,
                                   base::flat_map<std::string, std::string>()));
@@ -1136,7 +1143,7 @@ void ServiceWorkerContextWrapper::StoreRegistrationUserData(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
@@ -1153,7 +1160,7 @@ void ServiceWorkerContextWrapper::ClearRegistrationUserData(
 
   // Ensure the callback is called asynchronously.
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
@@ -1169,7 +1176,7 @@ void ServiceWorkerContextWrapper::ClearRegistrationUserDataByKeyPrefixes(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
@@ -1182,7 +1189,7 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrations(
     const std::string& key,
     GetUserDataForAllRegistrationsCallback callback) {
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        std::vector<std::pair<int64_t, std::string>>(),
@@ -1200,7 +1207,7 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
 
   // Ensure the callback is called asynchronously.
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        std::vector<std::pair<int64_t, std::string>>(),
@@ -1219,7 +1226,7 @@ void ServiceWorkerContextWrapper::ClearUserDataForAllRegistrationsByKeyPrefix(
 
   // Ensure the callback is called asynchronously.
   if (!context_core_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
@@ -1234,7 +1241,7 @@ void ServiceWorkerContextWrapper::StartActiveServiceWorker(
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context_core_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
@@ -1553,6 +1560,24 @@ void ServiceWorkerContextWrapper::BindStorageControl(
 
   if (storage_control_binder_for_test_) {
     storage_control_binder_for_test_.Run(std::move(receiver));
+  } else if (base::FeatureList::IsEnabled(
+                 kServiceWorkerStorageControlOnThreadPool)) {
+    // The database task runner is BLOCK_SHUTDOWN in order to support
+    // ClearSessionOnlyOrigins() (called due to the "clear on browser exit"
+    // content setting).
+    // The ServiceWorkerStorageControl receiver runs on thread pool by using
+    // |database_task_runner| SequencedTaskRunner.
+    // TODO(falken): Only block shutdown for that particular task, when someday
+    // task runners support mixing task shutdown behaviors.
+    scoped_refptr<base::SequencedTaskRunner> database_task_runner =
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+    database_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(
+                           &storage::ServiceWorkerStorageControlImpl::Create),
+                       std::move(receiver), user_data_directory_,
+                       database_task_runner));
   } else if (run_storage_control_on_ui_thread) {
     // TODO(crbug.com/1055677): Use storage_partition() to bind the control when
     // ServiceWorkerStorageControl is sandboxed in the Storage Service.
@@ -1603,6 +1628,14 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForUpdateCheck(
   return GetLoaderFactoryForBrowserInitiatedRequest(
       scope,
       /*version_id=*/absl::nullopt, std::move(client_security_state));
+}
+
+// static
+void ServiceWorkerContextWrapper::SetURLLoaderFactoryInterceptorForTesting(
+    const URLLoaderFactoryInterceptor& interceptor) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  g_loader_factory_interceptor.Get() = interceptor;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -1669,6 +1702,10 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
     DCHECK(storage_partition());
     if (base::FeatureList::IsEnabled(
             features::kPrivateNetworkAccessForWorkers)) {
+      if (g_loader_factory_interceptor.Get()) {
+        g_loader_factory_interceptor.Get().Run(&pending_receiver);
+      }
+
       network::mojom::URLLoaderFactoryParamsPtr params =
           storage_partition_->CreateURLLoaderFactoryParams();
       params->client_security_state = std::move(client_security_state);
@@ -1689,26 +1726,35 @@ ServiceWorkerContextWrapper::GetLoaderFactoryForBrowserInitiatedRequest(
       loader_factory_bundle_info =
           context()->loader_factory_bundle_for_update_check()->Clone();
 
-  if (base::FeatureList::IsEnabled(
-          features::kEnableServiceWorkersForChromeUntrusted) &&
-      scope.scheme_piece() == kChromeUIUntrustedScheme) {
-    // If this is a Service Worker for a WebUI, the WebUI's URLDataSource needs
-    // to be registered. Registering a URLDataSource allows the
+  if (auto* config = content::WebUIConfigMap::GetInstance().GetConfig(
+          browser_context(), scope_origin)) {
+    // If this is a Service Worker for a WebUI, the WebUI's URLDataSource
+    // needs to be registered. Registering a URLDataSource allows the
     // WebUIURLLoaderFactory below to serve the resources for the WebUI. We
-    // register the URLDataSource here because the WebUI's resources are needed
-    // for the Service Worker update check to be performed which fetches the
-    // service worker script.
+    // register the URLDataSource here because the WebUI's resources are
+    // needed for the Service Worker update check to be performed which
+    // fetches the service worker script.
     //
     // This is similar to how we create a `WebUI` object in
     // RenderFrameHostManager::GetFrameHostForNavigation(). Creating a `WebUI`
-    // also creates a `WebUIController` which register the URLDataSource for the
-    // WebUI which allows the navigation to be served correctly. We don't create
-    // a `WebUI` or a `WebUIController` for WebUI Service Workers so we
+    // also creates a `WebUIController` which register the URLDataSource for
+    // the WebUI which allows the navigation to be served correctly. We don't
+    // create a `WebUI` or a `WebUIController` for WebUI Service Workers so we
     // register the URLDataSource directly.
-    if (auto* config = content::WebUIConfigMap::GetInstance().GetConfig(
-            browser_context(), scope_origin)) {
+    if (base::FeatureList::IsEnabled(
+            features::kEnableServiceWorkersForChromeScheme) &&
+        scope.scheme_piece() == kChromeUIScheme) {
       config->RegisterURLDataSource(browser_context());
-
+      static_cast<blink::PendingURLLoaderFactoryBundle*>(
+          loader_factory_bundle_info.get())
+          ->pending_scheme_specific_factories()
+          .emplace(kChromeUIScheme, CreateWebUIServiceWorkerLoaderFactory(
+                                        browser_context(), kChromeUIScheme,
+                                        base::flat_set<std::string>()));
+    } else if (base::FeatureList::IsEnabled(
+                   features::kEnableServiceWorkersForChromeUntrusted) &&
+               scope.scheme_piece() == kChromeUIUntrustedScheme) {
+      config->RegisterURLDataSource(browser_context());
       static_cast<blink::PendingURLLoaderFactoryBundle*>(
           loader_factory_bundle_info.get())
           ->pending_scheme_specific_factories()

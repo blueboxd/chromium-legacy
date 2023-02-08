@@ -47,8 +47,8 @@ void AddEventListener(
     const std::string& extension_id,
     const std::string& service_type,
     extensions::EventListenerMap::ListenerList* listener_list) {
-  std::unique_ptr<base::DictionaryValue> filter(new base::DictionaryValue);
-  filter->SetStringKey(kEventFilterServiceTypeKey, service_type);
+  base::Value::Dict filter;
+  filter.Set(kEventFilterServiceTypeKey, service_type);
   listener_list->push_back(EventListener::ForExtension(
       kEventFilterServiceTypeKey, extension_id, nullptr, std::move(filter)));
 }
@@ -214,15 +214,16 @@ class MDnsAPITest : public extensions::ExtensionServiceTestBase {
       std::string name,
       bool is_platform_app,
       std::string extension_id) {
-    base::DictionaryValue manifest;
-    manifest.SetStringKey(extensions::manifest_keys::kVersion, "1.0.0.0");
-    manifest.SetStringKey(extensions::manifest_keys::kName, name);
-    manifest.SetIntKey(extensions::manifest_keys::kManifestVersion, 2);
+    base::Value::Dict manifest;
+    manifest.Set(extensions::manifest_keys::kVersion, "1.0.0.0");
+    manifest.Set(extensions::manifest_keys::kName, name);
+    manifest.Set(extensions::manifest_keys::kManifestVersion, 2);
     if (is_platform_app) {
       // Setting app.background.page = "background.html" is sufficient to make
       // the extension type TYPE_PLATFORM_APP.
-      manifest.Set(extensions::manifest_keys::kPlatformAppBackgroundPage,
-                   std::make_unique<base::Value>("background.html"));
+      manifest.SetByDottedPath(
+          extensions::manifest_keys::kPlatformAppBackgroundPage,
+          "background.html");
     }
 
     std::string error;
@@ -357,8 +358,8 @@ TEST_P(MDnsAPIExtensionTest, ExtensionRespectsAllowlist) {
   // There is a allowlist of mdns service types extensions may access, which
   // includes "_testing._tcp.local" and excludes "_trex._tcp.local"
   {
-    base::DictionaryValue filter;
-    filter.SetStringKey(kEventFilterServiceTypeKey, "_trex._tcp.local");
+    base::Value::Dict filter;
+    filter.Set(kEventFilterServiceTypeKey, "_trex._tcp.local");
 
     ASSERT_TRUE(dns_sd_registry());
     // Test that the extension is not able to listen to a non-allowlisted
@@ -378,8 +379,8 @@ TEST_P(MDnsAPIExtensionTest, ExtensionRespectsAllowlist) {
                                       absl::nullopt, filter, false);
   }
   {
-    base::DictionaryValue filter;
-    filter.SetStringKey(kEventFilterServiceTypeKey, "_testing._tcp.local");
+    base::Value::Dict filter;
+    filter.Set(kEventFilterServiceTypeKey, "_testing._tcp.local");
 
     ASSERT_TRUE(dns_sd_registry());
     // Test that the extension is able to listen to a allowlisted service
@@ -411,8 +412,8 @@ TEST_F(MDnsAPITest, PlatformAppsNotSubjectToAllowlist) {
   ASSERT_TRUE(extension->is_platform_app());
   auto param = mojom::EventListenerParam::NewExtensionId(kExtId);
 
-  base::DictionaryValue filter;
-  filter.SetStringKey(kEventFilterServiceTypeKey, "_trex._tcp.local");
+  base::Value::Dict filter;
+  filter.Set(kEventFilterServiceTypeKey, "_trex._tcp.local");
 
   ASSERT_TRUE(dns_sd_registry());
   // Test that the extension is able to listen to a non-allowlisted service

@@ -4,7 +4,7 @@
 
 import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {getDialogCaller, getDlpBlockedComponents, getPreferences} from '../../common/js/api.js';
@@ -26,6 +26,8 @@ import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
 import {ForegroundWindow} from '../../externs/foreground_window.js';
+import {PropStatus} from '../../externs/ts/state.js';
+import {updateSearch} from '../../state/actions.js';
 import {getStore} from '../../state/store.js';
 
 import {ActionsController} from './actions_controller.js';
@@ -884,7 +886,9 @@ export class FileManager extends EventTarget {
     const fileSystemUIPromise = this.initFileSystemUI_();
     // Initialize the Store for the whole app.
     const store = getStore();
-    store.init({});
+    store.init({
+      allEntries: {},
+    });
     this.initUIFocus_();
     metrics.recordInterval('Load.InitUI');
     return fileSystemUIPromise;
@@ -1102,11 +1106,6 @@ export class FileManager extends EventTarget {
         assert(this.ui_.listContainer), assert(this.metadataModel_),
         assert(this.volumeManager_), this.launchParams_.allowedPaths);
 
-    this.directoryModel_.getFileListSelection().addEventListener(
-        'change',
-        this.selectionHandler_.onFileSelectionChanged.bind(
-            this.selectionHandler_));
-
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
     const directoryTreePromise = this.initDirectoryTree_();
@@ -1142,7 +1141,7 @@ export class FileManager extends EventTarget {
 
     // Create search controller.
     this.searchController_ = new SearchController(
-        this.ui_.searchBox,
+        this.ui_.searchContainer,
         this.directoryModel_,
         this.volumeManager_,
         assert(this.taskController_),
@@ -1289,11 +1288,11 @@ export class FileManager extends EventTarget {
     // enabled status from it to determine whether 'Linux files' is shown.
     switch (event.eventType) {
       case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
-        this.crostini_.setEnabled(event.vmName, true);
+        this.crostini_.setEnabled(event.vmName, event.containerName, true);
         return this.crostiniController_.redraw();
 
       case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
-        this.crostini_.setEnabled(event.vmName, false);
+        this.crostini_.setEnabled(event.vmName, event.containerName, false);
         return this.crostiniController_.redraw();
 
       // Event is sent when a user drops an unshared file on Plugin VM.
@@ -1376,7 +1375,11 @@ export class FileManager extends EventTarget {
     const searchQuery = this.launchParams_.searchQuery;
     if (searchQuery) {
       metrics.startInterval('Load.ProcessInitialSearchQuery');
-      this.searchController_.setSearchQuery(searchQuery);
+      getStore().dispatch(updateSearch({
+        query: searchQuery,
+        status: PropStatus.STARTED,
+        options: undefined,
+      }));
       // Show a spinner, as the crossover search function call could be slow.
       const hideSpinnerCallback = this.spinnerController_.show();
       const queryMatchedDirEntry =
@@ -1441,6 +1444,16 @@ export class FileManager extends EventTarget {
             }
           }
         }
+      }
+    }
+
+    // If the resolved directory to be changed is blocked by DLP, we should
+    // fallback to the default display root.
+    if (nextCurrentDirEntry && util.isDlpEnabled()) {
+      const volumeInfo = this.volumeManager_.getVolumeInfo(nextCurrentDirEntry);
+      if (volumeInfo && this.volumeManager_.isDisabled(volumeInfo.volumeType)) {
+        console.warn('Target directory is DLP blocked, redirecting to MyFiles');
+        nextCurrentDirEntry = null;
       }
     }
 
@@ -1681,7 +1694,7 @@ export class FileManager extends EventTarget {
       if (!this.fakeTrashItem_) {
         this.fakeTrashItem_ = new NavigationModelFakeItem(
             str('TRASH_ROOT_LABEL'), NavigationModelItemType.TRASH,
-            new TrashRootEntry(this.volumeManager_));
+            new TrashRootEntry());
       }
       this.directoryTree.dataModel.fakeTrashItem = this.fakeTrashItem_;
       return;

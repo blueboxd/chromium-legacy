@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -31,7 +32,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
-#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -140,7 +140,8 @@ class AutofillMetrics {
     kStreetAddress = 8,
     kDependentLocality = 9,
     kHonorificPrefix = 10,
-    kMaxValue = kHonorificPrefix
+    kCompany = 11,
+    kMaxValue = kCompany
   };
 
   // Metric to measure if a submitted card's expiration date matches the same
@@ -220,17 +221,6 @@ class AutofillMetrics {
     // challenge option.
     kDismissedByUserAcceptanceNoServerRequestNeeded = 5,
     kMaxValue = kDismissedByUserAcceptanceNoServerRequestNeeded,
-  };
-
-  enum CreditCardUploadFeedbackMetric {
-    // The loading indicator animation which indicates uploading is in progress
-    // is successfully shown.
-    CREDIT_CARD_UPLOAD_FEEDBACK_LOADING_ANIMATION_SHOWN,
-    // The credit card icon with the saving failure badge is shown.
-    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_ICON_SHOWN,
-    // The failure icon is clicked and the save card failure bubble is shown.
-    CREDIT_CARD_UPLOAD_FEEDBACK_FAILURE_BUBBLE_SHOWN,
-    NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS,
   };
 
   // Metrics measuring how well we predict field types.  These metric values are
@@ -1009,14 +999,12 @@ class AutofillMetrics {
                           AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp,
                           FormSignature form_signature,
-                          const FormInteractionCounts& form_interaction_counts,
-                          autofill_assistant::AutofillAssistantIntent intent);
+                          const FormInteractionCounts& form_interaction_counts);
     void LogKeyMetrics(const DenseSet<FormType>& form_types,
                        bool data_to_fill_available,
                        bool suggestions_shown,
                        bool edited_autofilled_field,
                        bool suggestion_filled,
-                       autofill_assistant::AutofillAssistantIntent intent,
                        const FormInteractionCounts& form_interaction_counts,
                        const FormInteractionsFlowId& flow_id);
     void LogFormEvent(FormEvent form_event,
@@ -1035,6 +1023,14 @@ class AutofillMetrics {
         const FormSignature form_signature,
         const AutofillField& field,
         ServerFieldType old_type);
+
+    // Logs a hash of the `sectioning_signature` for a specific
+    // `form_signature`. This is useful for detecting sites where different
+    // sectioning algorithms yield different results. Emitted every time
+    // sectioning is performed and only when
+    // `AutofillUseParameterizedSectioning` is enabled.
+    void LogSectioningHash(FormSignature form_signature,
+                           uint32_t sectioning_signature);
 
    private:
     bool CanLog() const;
@@ -1122,8 +1118,6 @@ class AutofillMetrics {
       bool is_uploading,
       AutofillClient::SaveCreditCardOptions options);
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
-  static void LogCreditCardUploadFeedbackMetric(
-      CreditCardUploadFeedbackMetric metric);
   static void LogScanCreditCardPromptMetric(ScanCreditCardPromptMetric metric);
   static void LogProgressDialogResultMetric(
       bool is_canceled_by_user,
@@ -1425,10 +1419,6 @@ class AutofillMetrics {
   // Log the fact that an autocomplete popup was shown.
   static void OnAutocompleteSuggestionsShown();
 
-  // Log the number of autocomplete entries that were cleaned-up as a result
-  // of the Autocomplete Retention Policy.
-  static void LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries);
-
   // Log how many autofilled fields in a given form were edited before the
   // submission or when the user unfocused the form (depending on
   // |observed_submission|).
@@ -1441,6 +1431,10 @@ class AutofillMetrics {
   // fields.
   static void LogFieldFillingStats(FormType form_type,
                                    const FormGroupFillingStats& filling_stats);
+
+  // Logs the number of sections and the number of fields/section.
+  static void LogSectioningMetrics(
+      const base::flat_map<Section, size_t>& fields_per_section);
 
   // This should be called each time a server response is parsed for a form.
   static void LogServerResponseHasDataForForm(bool has_data);
@@ -1459,19 +1453,11 @@ class AutofillMetrics {
       const base::TimeTicks& form_parsed_timestamp,
       FormSignature form_signature,
       FormInteractionsUkmLogger* form_interactions_ukm_logger,
-      const FormInteractionCounts& form_interaction_counts,
-      const autofill_assistant::AutofillAssistantIntent intent);
+      const FormInteractionCounts& form_interaction_counts);
 
   // Logs if every non-empty field in a submitted form was filled by Autofill.
   // If |is_address| an address was filled, otherwise it was a credit card.
   static void LogAutofillPerfectFilling(bool is_address, bool perfect_filling);
-
-  // Log across how many frames the detected and/or autofilled [credit card]
-  // fields of a submitted form are distributed.
-  static void LogNumberOfFramesWithDetectedFields(size_t num_frames);
-  static void LogNumberOfFramesWithDetectedCreditCardFields(size_t num_frames);
-  static void LogNumberOfFramesWithAutofilledCreditCardFields(
-      size_t num_frames);
 
   struct LogCreditCardSeamlessnessParam {
     const raw_ref<const FormEventLoggerBase> event_logger;
@@ -1518,9 +1504,6 @@ class AutofillMetrics {
   // This should be called when the user selects the Form-Not-Secure warning
   // suggestion to show an explanation of the warning.
   static void LogShowedHttpNotSecureExplanation();
-
-  // Logs if an autocomplete query was created for a field.
-  static void LogAutocompleteQuery(bool created);
 
   // Logs if there is any suggestions for an autocomplete query.
   static void LogAutocompleteSuggestions(bool has_suggestions);

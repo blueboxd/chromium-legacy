@@ -566,6 +566,29 @@ bool VisitDatabase::GetVisitsInRangeForTransition(base::Time begin_time,
   return FillVisitVector(statement, visits);
 }
 
+bool VisitDatabase::GetSomeForeignVisits(VisitID max_visit_id,
+                                         int max_results,
+                                         VisitVector* visits) {
+  DCHECK(visits);
+  visits->clear();
+
+  // Exactly all foreign visits (i.e. coming from a different device) have an
+  // `originator_cache_guid` set. (This does *not* include legacy TypedURL
+  // visits though - those have SOURCE_SYNCED but are otherwise not considered
+  // "foreign".)
+  sql::Statement statement(GetDB().GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT" HISTORY_VISIT_ROW_FIELDS
+      "FROM visits "
+      "WHERE originator_cache_guid IS NOT NULL AND originator_cache_guid != '' "
+      "AND id <= ? "
+      "LIMIT ?"));
+  statement.BindInt64(0, max_visit_id);
+  statement.BindInt(1, max_results);
+
+  return FillVisitVector(statement, visits);
+}
+
 bool VisitDatabase::GetAllURLIDsForTransition(ui::PageTransition transition,
                                               std::vector<URLID>* urls) {
   DCHECK(urls);
@@ -949,6 +972,16 @@ bool VisitDatabase::GetStartDate(base::Time* first_visit) {
   }
   *first_visit = base::Time::FromInternalValue(statement.ColumnInt64(0));
   return true;
+}
+
+VisitID VisitDatabase::GetMaxVisitIDInUse() {
+  sql::Statement statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE, "SELECT MAX(id) FROM visits"));
+  if (!statement.Step()) {
+    // The visits table must be empty.
+    return kInvalidVisitID;
+  }
+  return statement.ColumnInt64(0);
 }
 
 void VisitDatabase::GetVisitsSource(const VisitVector& visits,

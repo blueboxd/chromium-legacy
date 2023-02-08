@@ -10,7 +10,7 @@ import '//resources/ash/common/multidevice_setup/multidevice_setup_shared.css.js
 import '//resources/ash/common/multidevice_setup/multidevice_setup.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/buttons/oobe_text_button.js';
-import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.m.js';
 import '../../components/throbber_notice.js';
 
 import {MultiDeviceSetupDelegate} from '//resources/ash/common/multidevice_setup/multidevice_setup_delegate.js';
@@ -20,7 +20,7 @@ import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/pol
 import {PrivilegedHostDeviceSetter, PrivilegedHostDeviceSetterRemote} from 'chrome://resources/mojo/chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-webui.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 
 // OOBE screen that wraps MultiDevice setup flow when displayed during the
 // user's onboarding on this Chromebook. Note that this flow is slightly

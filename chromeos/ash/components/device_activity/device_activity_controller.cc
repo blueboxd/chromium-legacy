@@ -156,24 +156,24 @@ DeviceActivityController::DeviceActivityController(
     const ChromeDeviceMetadataParameters& chrome_passed_device_params,
     PrefService* local_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    base::TimeDelta start_up_delay)
-    : chrome_passed_device_params_(chrome_passed_device_params),
+    base::Time chrome_first_run_time)
+    : chrome_first_run_time_(chrome_first_run_time),
+      chrome_passed_device_params_(chrome_passed_device_params),
       statistics_provider_(
           chromeos::system::StatisticsProvider::GetInstance()) {
   DeviceActivityClient::RecordDeviceActivityMethodCalled(
       DeviceActivityClient::DeviceActivityMethod::
           kDeviceActivityControllerConstructor);
 
-  DCHECK(local_state);
   DCHECK(!g_ash_device_activity_controller);
   g_ash_device_activity_controller = this;
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&device_activity::DeviceActivityController::Start,
                      weak_factory_.GetWeakPtr(), local_state,
                      url_loader_factory),
-      start_up_delay);
+      DeviceActivityController::DetermineStartUpDelay(chrome_first_run_time));
 }
 
 DeviceActivityController::~DeviceActivityController() {
@@ -251,7 +251,8 @@ void DeviceActivityController::OnMachineStatisticsLoaded(
   da_client_network_ = std::make_unique<DeviceActivityClient>(
       NetworkHandler::Get()->network_state_handler(), url_loader_factory,
       std::make_unique<base::RepeatingTimer>(), kFresnelBaseUrl,
-      google_apis::GetFresnelAPIKey(), std::move(use_cases));
+      google_apis::GetFresnelAPIKey(), std::move(use_cases),
+      chrome_first_run_time_);
 }
 
 void DeviceActivityController::Stop() {

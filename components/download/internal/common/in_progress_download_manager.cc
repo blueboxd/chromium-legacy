@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/download/database/download_db_entry.h"
 #include "components/download/database/download_db_impl.h"
@@ -108,7 +108,8 @@ void BeginResourceDownload(
           tab_referrer_url, is_new_download, false,
           std::move(wake_lock_provider), is_background_mode, main_task_runner)
           .release(),
-      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+      base::OnTaskRunnerDeleter(
+          base::SingleThreadTaskRunner::GetCurrentDefault()));
 
   OnUrlDownloadHandlerCreated(std::move(downloader), download_manager,
                               main_task_runner);
@@ -223,7 +224,7 @@ void InProgressDownloadManager::OnUrlDownloadStarted(
     std::unique_ptr<InputStream> input_stream,
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider,
-    UrlDownloadHandler* downloader,
+    UrlDownloadHandlerID downloader,
     DownloadUrlParameters::OnStartedCallback callback) {
   // If a new download's GUID already exists, skip it.
   if (!download_create_info->guid.empty() &&
@@ -236,16 +237,15 @@ void InProgressDownloadManager::OnUrlDownloadStarted(
   StartDownload(std::move(download_create_info), std::move(input_stream),
                 std::move(url_loader_factory_provider),
                 base::BindOnce(&InProgressDownloadManager::CancelUrlDownload,
-                               weak_factory_.GetWeakPtr(),
-                               base::UnsafeDanglingUntriaged(downloader)),
+                               weak_factory_.GetWeakPtr(), downloader),
                 std::move(callback));
 }
 
 void InProgressDownloadManager::OnUrlDownloadStopped(
-    UrlDownloadHandler* downloader) {
+    UrlDownloadHandlerID downloader) {
   for (auto ptr = url_download_handlers_.begin();
        ptr != url_download_handlers_.end(); ++ptr) {
-    if (ptr->get() == downloader) {
+    if (reinterpret_cast<UrlDownloadHandlerID>(ptr->get()) == downloader) {
       url_download_handlers_.erase(ptr);
       return;
     }
@@ -329,7 +329,7 @@ void InProgressDownloadManager::BeginDownload(
           is_new_download, weak_factory_.GetWeakPtr(),
           serialized_embedder_download_data, tab_url, tab_referrer_url,
           std::move(wake_lock_provider), !delegate_ /* is_background_mode */,
-          base::ThreadTaskRunnerHandle::Get()));
+          base::SingleThreadTaskRunner::GetCurrentDefault()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -362,7 +362,8 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
           std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints),
           std::move(pending_url_loader_factory), url_security_policy_,
-          std::move(wake_lock_provider), base::ThreadTaskRunnerHandle::Get()));
+          std::move(wake_lock_provider),
+          base::SingleThreadTaskRunner::GetCurrentDefault()));
 }
 
 void InProgressDownloadManager::Initialize(
@@ -596,7 +597,7 @@ void InProgressDownloadManager::OnDBInitialized(
         base::BindOnce(
             &DownloadCollectionBridge::GetDisplayNamesForDownloads,
             base::BindOnce(&OnDownloadDisplayNamesReturned, std::move(callback),
-                           base::ThreadTaskRunnerHandle::Get())));
+                           base::SingleThreadTaskRunner::GetCurrentDefault())));
     return;
   }
 #endif
@@ -675,7 +676,7 @@ void InProgressDownloadManager::SetDelegate(Delegate* delegate) {
 
 void InProgressDownloadManager::OnDownloadsInitialized() {
   if (delegate_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&InProgressDownloadManager::NotifyDownloadsInitialized,
                        weak_factory_.GetWeakPtr()));
@@ -694,7 +695,7 @@ void InProgressDownloadManager::AddInProgressDownloadForTest(
 }
 
 void InProgressDownloadManager::CancelUrlDownload(
-    UrlDownloadHandler* downloader,
+    UrlDownloadHandlerID downloader,
     bool user_cancel) {
   OnUrlDownloadStopped(downloader);
 }

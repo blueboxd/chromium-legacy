@@ -16,7 +16,7 @@
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
@@ -44,12 +44,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
                mojo::PendingRemote<mojom::P2PSocketClient> client,
                mojo::PendingReceiver<mojom::P2PSocket> socket,
                P2PMessageThrottler* throttler,
+               const net::NetworkTrafficAnnotationTag& traffic_annotation,
                net::NetLog* net_log,
                const DatagramServerSocketFactory& socket_factory);
   P2PSocketUdp(Delegate* delegate,
                mojo::PendingRemote<mojom::P2PSocketClient> client,
                mojo::PendingReceiver<mojom::P2PSocket> socket,
                P2PMessageThrottler* throttler,
+               const net::NetworkTrafficAnnotationTag& traffic_annotation,
                net::NetLog* net_log);
 
   P2PSocketUdp(const P2PSocketUdp&) = delete;
@@ -66,10 +68,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
       const net::NetworkAnonymizationKey& network_anonymization_key) override;
 
   // mojom::P2PSocket implementation:
-  void Send(const std::vector<int8_t>& data,
-            const P2PPacketInfo& packet_info,
-            const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-      override;
+  void Send(base::span<const uint8_t> data,
+            const P2PPacketInfo& packet_info) override;
   void SetOption(P2PSocketOption option, int32_t value) override;
 
  private:
@@ -79,10 +79,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
 
   struct PendingPacket {
     PendingPacket(const net::IPEndPoint& to,
-                  const std::vector<int8_t>& content,
+                  base::span<const uint8_t> content,
                   const rtc::PacketOptions& options,
-                  uint64_t id,
-                  const net::NetworkTrafficAnnotationTag traffic_annotation);
+                  uint64_t id);
     PendingPacket(const PendingPacket& other);
     ~PendingPacket();
     net::IPEndPoint to;
@@ -90,7 +89,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
     int size;
     rtc::PacketOptions packet_options;
     uint64_t id;
-    const net::NetworkTrafficAnnotationTag traffic_annotation;
   };
 
   void DoRead();
@@ -125,6 +123,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
   ConnectedPeerSet connected_peers_;
   raw_ptr<P2PMessageThrottler> throttler_;
 
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
   raw_ptr<net::NetLog> net_log_;
 
   // Callback object that returns a new socket when invoked.

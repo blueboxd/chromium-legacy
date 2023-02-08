@@ -8,27 +8,27 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/types/pass_key.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/commands/install_from_sync_command.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
-#include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/channel_info.h"
 #include "components/sync/base/model_type.h"
@@ -137,15 +137,15 @@ WebAppSyncBridge::~WebAppSyncBridge() = default;
 
 void WebAppSyncBridge::SetSubsystems(
     AbstractWebAppDatabaseFactory* database_factory,
-    SyncInstallDelegate* install_delegate,
-    WebAppCommandManager* command_manager) {
+    WebAppCommandManager* command_manager,
+    WebAppCommandScheduler* command_scheduler) {
   DCHECK(database_factory);
   database_ = std::make_unique<WebAppDatabase>(
       database_factory,
       base::BindRepeating(&WebAppSyncBridge::ReportErrorToChangeProcessor,
                           base::Unretained(this)));
-  install_delegate_ = install_delegate;
   command_manager_ = command_manager;
+  command_scheduler_ = command_scheduler;
 }
 
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
@@ -229,7 +229,9 @@ void WebAppSyncBridge::SetAppWindowControlsOverlayEnabled(const AppId& app_id,
     web_app->SetWindowControlsOverlayEnabled(enabled);
 }
 
-void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
+void WebAppSyncBridge::SetAppIsDisabled(AppLock& lock,
+                                        const AppId& app_id,
+                                        bool is_disabled) {
   if (!IsChromeOsDataMandatory())
     return;
 
@@ -345,26 +347,6 @@ void WebAppSyncBridge::SetUserLaunchOrdinal(
     web_app->SetUserLaunchOrdinal(std::move(launch_ordinal));
 }
 
-void WebAppSyncBridge::AddAllowedLaunchProtocol(
-    const AppId& app_id,
-    const std::string& protocol_scheme) {
-  // Use a scope here, so that the web app registry is updated when
-  // `update` goes out of scope. If it doesn't then observers will
-  // examine stale data.
-  {
-    ScopedRegistryUpdate update(this);
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    base::flat_set<std::string> protocol_handlers(
-        app_to_update->allowed_launch_protocols());
-
-    DCHECK(!base::Contains(protocol_handlers, protocol_scheme));
-    protocol_handlers.insert(protocol_scheme);
-    app_to_update->SetAllowedLaunchProtocols(std::move(protocol_handlers));
-  }
-  // Notify observers that the list of allowed protocols was updated.
-  registrar_->NotifyWebAppProtocolSettingsChanged();
-}
-
 void WebAppSyncBridge::RemoveAllowedLaunchProtocol(
     const AppId& app_id,
     const std::string& protocol_scheme) {
@@ -380,26 +362,6 @@ void WebAppSyncBridge::RemoveAllowedLaunchProtocol(
     app_to_update->SetAllowedLaunchProtocols(std::move(protocol_handlers));
   }
   // Notify observers that the list of allowed protocols was updated.
-  registrar_->NotifyWebAppProtocolSettingsChanged();
-}
-
-void WebAppSyncBridge::AddDisallowedLaunchProtocol(
-    const AppId& app_id,
-    const std::string& protocol_scheme) {
-  // Use a scope here, so that the web app registry is updated when
-  // `update` goes out of scope. If it doesn't then observers will
-  // examine stale data.
-  {
-    ScopedRegistryUpdate update(this);
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    base::flat_set<std::string> protocol_handlers(
-        app_to_update->disallowed_launch_protocols());
-
-    DCHECK(!base::Contains(protocol_handlers, protocol_scheme));
-    protocol_handlers.insert(protocol_scheme);
-    app_to_update->SetDisallowedLaunchProtocols(std::move(protocol_handlers));
-  }
-  // Notify observers that the list of disallowed protocols was updated.
   registrar_->NotifyWebAppProtocolSettingsChanged();
 }
 
@@ -691,11 +653,20 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
 
   // Initiate any uninstall actions to clean up os integration, disk data, etc.
   if (!apps_to_delete.empty()) {
-    command_manager_->NotifySyncSourceRemoved(apps_to_delete);
-    install_delegate_->UninstallFromSync(
-        apps_to_delete,
+    auto callback =
         base::BindRepeating(&WebAppSyncBridge::OnWebAppUninstallComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
+                            weak_ptr_factory_.GetWeakPtr());
+    if (uninstall_from_sync_before_registry_update_callback_for_testing_) {
+      uninstall_from_sync_before_registry_update_callback_for_testing_.Run(
+          apps_to_delete, callback);
+    } else {
+      for (const AppId& app_id : apps_to_delete) {
+        command_scheduler_->Uninstall(app_id,
+                                      /*external_install_source=*/absl::nullopt,
+                                      webapps::WebappUninstallSource::kSync,
+                                      base::BindOnce(callback, app_id));
+      }
+    }
   }
 
   // Do a full follow up install for all remote entities that don’t exist
@@ -703,8 +674,7 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   if (!apps_to_install.empty()) {
     // TODO(dmurph): Just call the InstallFromSync command.
     // https://crbug.com/1328968
-    install_delegate_->InstallWebAppsAfterSync(std::move(apps_to_install),
-                                               base::DoNothing());
+    InstallWebAppsAfterSync(std::move(apps_to_install), base::DoNothing());
   }
 }
 
@@ -802,6 +772,22 @@ std::string WebAppSyncBridge::GetStorageKey(
   return GetClientTag(entity_data);
 }
 
+void WebAppSyncBridge::SetRetryIncompleteUninstallsCallbackForTesting(
+    RetryIncompleteUninstallsCallback callback) {
+  retry_incomplete_uninstalls_callback_for_testing_ = std::move(callback);
+}
+
+void WebAppSyncBridge::SetInstallWebAppsAfterSyncCallbackForTesting(
+    InstallWebAppsAfterSyncCallback callback) {
+  install_web_apps_after_sync_callback_for_testing_ = std::move(callback);
+}
+
+void WebAppSyncBridge::SetUninstallFromSyncCallbackForTesting(
+    UninstallFromSyncCallback callback) {
+  uninstall_from_sync_before_registry_update_callback_for_testing_ =
+      std::move(callback);
+}
+
 void WebAppSyncBridge::MaybeUninstallAppsPendingUninstall() {
   std::vector<AppId> apps_uninstalling;
 
@@ -813,9 +799,22 @@ void WebAppSyncBridge::MaybeUninstallAppsPendingUninstall() {
   base::UmaHistogramCounts100("WebApp.Uninstall.NonSyncIncompleteCount",
                               apps_uninstalling.size());
 
-  if (!apps_uninstalling.empty())
-    install_delegate_->RetryIncompleteUninstalls(
-        base::flat_set<AppId>(std::move(apps_uninstalling)));
+  // Retrying incomplete uninstalls
+  if (!apps_uninstalling.empty()) {
+    if (retry_incomplete_uninstalls_callback_for_testing_) {
+      retry_incomplete_uninstalls_callback_for_testing_.Run(apps_uninstalling);
+      return;
+    }
+    auto callback =
+        base::BindRepeating(&WebAppSyncBridge::OnWebAppUninstallComplete,
+                            weak_ptr_factory_.GetWeakPtr());
+    for (const auto& app_id : apps_uninstalling) {
+      command_scheduler_->Uninstall(app_id,
+                                    /*external_install_source=*/absl::nullopt,
+                                    webapps::WebappUninstallSource::kSync,
+                                    base::BindOnce(callback, app_id));
+    }
+  }
 }
 
 void WebAppSyncBridge::MaybeInstallAppsFromSyncAndPendingInstallation() {
@@ -827,8 +826,25 @@ void WebAppSyncBridge::MaybeInstallAppsFromSyncAndPendingInstallation() {
   }
 
   if (!apps_in_sync_install.empty()) {
-    install_delegate_->InstallWebAppsAfterSync(std::move(apps_in_sync_install),
-                                               base::DoNothing());
+    if (install_web_apps_after_sync_callback_for_testing_) {
+      install_web_apps_after_sync_callback_for_testing_.Run(
+          std::move(apps_in_sync_install), base::DoNothing());
+      return;
+    }
+    InstallWebAppsAfterSync(std::move(apps_in_sync_install), base::DoNothing());
+  }
+}
+
+void WebAppSyncBridge::InstallWebAppsAfterSync(
+    std::vector<WebApp*> web_apps,
+    RepeatingInstallCallback callback) {
+  if (install_web_apps_after_sync_callback_for_testing_) {
+    install_web_apps_after_sync_callback_for_testing_.Run(std::move(web_apps),
+                                                          callback);
+    return;
+  }
+  for (WebApp* web_app : web_apps) {
+    command_scheduler_->InstallFromSync(*web_app, base::DoNothing());
   }
 }
 

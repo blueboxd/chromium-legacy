@@ -1,0 +1,44 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module attribution_reporting.mojom;
+
+enum TriggerRegistrationError {
+  kInvalidJson,
+  kRootWrongType,
+
+  kFiltersWrongType,
+  kFiltersTooManyKeys,
+  kFiltersKeyTooLong,
+  kFiltersListWrongType,
+  kFiltersListTooLong,
+  kFiltersValueWrongType,
+  kFiltersValueTooLong,
+
+  kAggregatableValuesWrongType,
+  kAggregatableValuesTooManyKeys,
+  kAggregatableValuesKeyTooLong,
+  kAggregatableValuesValueWrongType,
+  kAggregatableValuesValueOutOfRange,
+
+  kAggregatableTriggerDataWrongType,
+  kAggregatableTriggerDataKeyPieceMissing,
+  kAggregatableTriggerDataKeyPieceWrongType,
+  kAggregatableTriggerDataKeyPieceWrongFormat,
+  kAggregatableTriggerDataSourceKeysWrongType,
+  kAggregatableTriggerDataSourceKeysTooManyKeys,
+  kAggregatableTriggerDataSourceKeysKeyWrongType,
+  kAggregatableTriggerDataSourceKeysKeyTooLong,
+
+  kEventTriggerDataWrongType,
+
+  kEventTriggerDataListWrongType,
+  kEventTriggerDataListTooLong,
+
+  kAggregatableTriggerDataListWrongType,
+  kAggregatableTriggerDataListTooLong,
+
+  kAggregationCoordinatorWrongType,
+  kAggregationCoordinatorUnknownValue,
+};

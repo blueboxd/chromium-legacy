@@ -13,7 +13,7 @@ load("//project.star", "settings")
 try_.defaults.set(
     builder_group = "tryserver.chromium.android",
     cores = 8,
-    compilator_cores = 32,
+    compilator_cores = 16,
     orchestrator_cores = 4,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
@@ -24,9 +24,6 @@ try_.defaults.set(
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.list_view(
@@ -71,7 +68,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 60,
+        experiment_percentage = 100,
     ),
 )
 
@@ -80,6 +77,8 @@ try_.compilator_builder(
     # TODO(crbug.com/1225851): Enable it on branch after running on CQ
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "16|32",
 )
 
 try_.builder(
@@ -93,9 +92,8 @@ try_.builder(
 try_.orchestrator_builder(
     name = "android-arm64-rel",
     mirrors = [
-        # TODO(crbug.com/1367393): Enable mirroring pie builder.
-        #"ci/android-pie-arm64-rel",
-        "ci/Android Release (Nexus 5X)",
+        "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
+        "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
     ],
     description_html = "This builder may trigger tests on multiple Android versions.",
     try_settings = builder_config.try_settings(
@@ -105,23 +103,41 @@ try_.orchestrator_builder(
     ),
     compilator = "android-arm64-rel-compilator",
     check_for_flakiness = True,
-    # TODO(crbug.com/1367393): Enable on branch once not experimental.
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
+    tryjob = try_.job(),
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
 )
 
+try_.orchestrator_builder(
+    name = "android-arm64-rel-inverse-fyi",
+    mirrors = [
+        "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
+        "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
+    experiments = {
+        "chromium_rts.inverted_rts": 100,
+        "chromium_rts.inverted_rts_bail_early": 100,
+    },
+    compilator = "android-arm64-rel-compilator",
+    check_for_flakiness = True,
+    use_orchestrator_pool = True,
+)
+
 try_.compilator_builder(
     name = "android-arm64-rel-compilator",
-    # TODO(crbug.com/1367393): Enable on branch once not experimental.
-    # branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.STANDARD_MILESTONE,
     check_for_flakiness = True,
     main_list_view = "try",
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "16|32",
 )
 
 try_.builder(
@@ -143,9 +159,8 @@ try_.builder(
     name = "android-binary-size",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
-    # TODO (kimstephanie): Change to cores = 16 and ssd = True once bots have
-    # landed
-    cores = 16,
+    # TODO (gatong): Change to cores = 8 once we've migrated to n2s
+    cores = "8|16",
     executable = "recipe:binary_size_trybot",
     goma_backend = None,
     main_list_view = "try",
@@ -167,6 +182,9 @@ try_.builder(
     },
     tryjob = try_.job(),
     ssd = True,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -284,12 +302,18 @@ try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
     name = "android-deterministic-rel",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
+
+    # TODO(crbug.com/1362440): remove this.
+    omit_python2 = False,
 )
 
 try_.builder(
@@ -317,9 +341,6 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-    },
     # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
     # are addressed
     # use_orchestrator_pool = True,
@@ -353,10 +374,6 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "android-oreo-arm64-cts-networkservice-dbg",
-)
-
-try_.builder(
     name = "android-oreo-arm64-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
     mirrors = [
@@ -380,7 +397,7 @@ try_.builder(
     builderless = False,
     check_for_flakiness = True,
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -407,7 +424,7 @@ try_.builder(
     name = "android-pie-arm64-coverage-experimental-rel",
     builderless = True,
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     ssd = True,
     main_list_view = "try",
     use_clang_coverage = True,
@@ -416,66 +433,19 @@ try_.builder(
     ),
 )
 
-# TODO(crbug.com/1367393): Remove after android-arm64-rel is fully enabled.
-try_.orchestrator_builder(
-    name = "android-pie-arm64-rel",
-    mirrors = [
-        "ci/android-pie-arm64-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    compilator = "android-pie-arm64-rel-compilator",
-    check_for_flakiness = True,
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    tryjob = try_.job(),
-    # TODO(crbug.com/1372179): Use orchestrator pool once overloaded test pools
-    # are addressed
-    # use_orchestrator_pool = True,
-)
-
-try_.orchestrator_builder(
-    name = "android-pie-arm64-rel-inverse-fyi",
-    mirrors = [
-        "ci/android-pie-arm64-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    compilator = "android-pie-arm64-rel-compilator",
-    check_for_flakiness = True,
-    use_orchestrator_pool = True,
-)
-
-try_.compilator_builder(
-    name = "android-pie-arm64-rel-compilator",
-    branch_selector = branches.STANDARD_MILESTONE,
-    check_for_flakiness = True,
-    main_list_view = "try",
-)
-
 try_.builder(
     name = "android-pie-x86-rel",
     mirrors = [
         "ci/android-pie-x86-rel",
     ],
-    goma_jobs = goma.jobs.J150,
+    goma_backend = None,
 )
 
 # TODO(crbug/1182468) Remove when coverage is enabled on CQ.
 try_.builder(
     name = "android-pie-arm64-coverage-rel",
     cores = 16,
-    goma_jobs = goma.jobs.J300,
+    goma_backend = None,
     ssd = True,
     use_clang_coverage = True,
 )
@@ -509,6 +479,8 @@ try_.builder(
 
 try_.builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -517,6 +489,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -525,6 +499,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView O (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -533,10 +509,8 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView P (dbg)",
     ],
-)
-
-try_.builder(
-    name = "android-webview-pie-arm64-fyi-rel",
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -568,6 +542,26 @@ try_.builder(
 
 try_.builder(
     name = "android_blink_rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     goma_backend = None,
 )
 
@@ -585,8 +579,9 @@ try_.builder(
 try_.builder(
     name = "android_compile_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = "8|16",
     mirrors = [
-        "ci/Android arm Builder (dbg)",
+        "ci/Android arm64 Builder (dbg)",
     ],
     try_settings = builder_config.try_settings(
         include_all_triggered_testers = True,
@@ -595,7 +590,7 @@ try_.builder(
     builderless = not settings.is_main,
     goma_backend = None,
     main_list_view = "try",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
@@ -670,15 +665,6 @@ try_.builder(
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
-    goma_backend = None,
-)
-
-try_.builder(
-    name = "android_n5x_swarming_dbg",
-    mirrors = [
-        "ci/Android arm64 Builder (dbg)",
-        "ci/Marshmallow 64 bit Tester",
-    ],
     goma_backend = None,
 )
 

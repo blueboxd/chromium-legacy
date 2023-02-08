@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/constants/tray_background_view_catalog.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/notification_center/notification_center_bubble.h"
@@ -27,6 +28,7 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
                          RoundedCornerBehavior::kStartRounded),
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(shelf)) {
+  SetID(VIEW_ID_SA_NOTIFICATION_TRAY);
   SetLayoutManager(std::make_unique<views::FlexLayout>());
   set_use_bounce_in_animation(false);
 
@@ -45,9 +47,6 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
 }
 
 NotificationCenterTray::~NotificationCenterTray() {
-  if (GetBubbleWidget())
-    GetBubbleWidget()->RemoveObserver(this);
-
   message_center::MessageCenter::Get()->RemoveObserver(this);
 }
 
@@ -57,6 +56,10 @@ void NotificationCenterTray::OnSystemTrayVisibilityChanged(
   UpdateVisibility();
 }
 
+bool NotificationCenterTray::IsBubbleShown() const {
+  return !!bubble_;
+}
+
 std::u16string NotificationCenterTray::GetAccessibleNameForTray() {
   return std::u16string();
 }
@@ -64,7 +67,10 @@ std::u16string NotificationCenterTray::GetAccessibleNameForTray() {
 void NotificationCenterTray::HandleLocaleChange() {}
 
 void NotificationCenterTray::HideBubbleWithView(
-    const TrayBubbleView* bubble_view) {}
+    const TrayBubbleView* bubble_view) {
+  if (bubble_->GetBubbleView() == bubble_view)
+    CloseBubble();
+}
 
 void NotificationCenterTray::ClickedOutsideBubble() {
   CloseBubble();
@@ -74,11 +80,13 @@ void NotificationCenterTray::CloseBubble() {
   if (!bubble_)
     return;
 
-  if (GetBubbleWidget())
-    GetBubbleWidget()->RemoveObserver(this);
-
   bubble_.reset();
   SetIsActive(false);
+
+  // Inform the message center that the bubble has closed so that popups are
+  // created for new notifications.
+  message_center::MessageCenter::Get()->SetVisibility(
+      message_center::VISIBILITY_TRANSIENT);
 }
 
 void NotificationCenterTray::ShowBubble() {
@@ -86,14 +94,12 @@ void NotificationCenterTray::ShowBubble() {
     return;
 
   bubble_ = std::make_unique<NotificationCenterBubble>(this);
-
-  // Observe the bubble widget so that we can do proper clean up when it is
-  // being destroyed. If destruction is due to a call to `CloseBubble()` we will
-  // have already cleaned up state but there are cases where the bubble widget
-  // is destroyed independent of a call to `CloseBubble()`, e.g. ESC key press.
-  GetBubbleWidget()->AddObserver(this);
-
   SetIsActive(true);
+
+  // Inform the message center that the bubble is showing so that we do not
+  // create popups for incoming notifications and dismiss existing popups.
+  message_center::MessageCenter::Get()->SetVisibility(
+      message_center::VISIBILITY_MESSAGE_CENTER);
 }
 
 void NotificationCenterTray::UpdateAfterLoginStatusChange() {
@@ -106,6 +112,22 @@ TrayBubbleView* NotificationCenterTray::GetBubbleView() {
 
 views::Widget* NotificationCenterTray::GetBubbleWidget() const {
   return bubble_ ? bubble_->GetBubbleWidget() : nullptr;
+}
+
+void NotificationCenterTray::OnAnyBubbleVisibilityChanged(
+    views::Widget* bubble_widget,
+    bool visible) {
+  if (!IsBubbleShown())
+    return;
+
+  if (bubble_widget == GetBubbleWidget())
+    return;
+
+  if (visible) {
+    // Another bubble is becoming visible while this bubble is being shown, so
+    // hide this bubble.
+    CloseBubble();
+  }
 }
 
 void NotificationCenterTray::OnNotificationAdded(
@@ -128,13 +150,6 @@ void NotificationCenterTray::OnNotificationRemoved(
 void NotificationCenterTray::OnNotificationUpdated(
     const std::string& notification_id) {
   UpdateVisibility();
-}
-
-// We need to call `CloseBubble()` explicitly if the bubble's widget is
-// destroyed independently of `CloseBubble()` e.g. ESC key press. The bubble
-// needs to be cleaned up here since it is owned by `NotificationCenterTray`.
-void NotificationCenterTray::OnWidgetDestroying(views::Widget* widget) {
-  CloseBubble();
 }
 
 void NotificationCenterTray::UpdateVisibility() {

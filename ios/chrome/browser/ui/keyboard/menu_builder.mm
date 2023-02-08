@@ -10,6 +10,13 @@
 #error "This file requires ARC support."
 #endif
 
+// Note: this class can be called very early on in the start process, before
+// resource bundles are loaded. This means that to get localized strings, one
+// shouldn't use `l10n_util::GetNSString()` and instead should use
+// `NSLocalizedString(@"IDS_IOS_MY_STRING", @"")`, with
+// `IDS_IOS_MY_STRING` present in the allowlist at
+// //ios/chrome/app/resources/chrome_localize_strings_config.plist.
+
 @implementation MenuBuilder
 
 + (void)buildMainMenuWithBuilder:(id<UIMenuBuilder>)builder {
@@ -27,6 +34,7 @@
     UIKeyCommand.cr_openLocation,
     UIKeyCommand.cr_closeTab,
     UIKeyCommand.cr_voiceSearch,
+    UIKeyCommand.cr_closeAll,
   ]];
   [builder insertChildMenu:fileMenu atStartOfMenuForIdentifier:UIMenuFile];
 
@@ -76,8 +84,8 @@
   UIMenu* windowMenu = [UIMenu menuWithChildren:@[
     UIKeyCommand.cr_showNextTab,
     UIKeyCommand.cr_showPreviousTab,
-    UIKeyCommand.cr_showFirstTab,
-    UIKeyCommand.cr_showLastTab,
+    UIKeyCommand.cr_select1,
+    UIKeyCommand.cr_select9,
     UIKeyCommand.cr_showDownloads,
     UIKeyCommand.cr_showSettings,
   ]];

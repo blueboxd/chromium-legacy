@@ -25,8 +25,8 @@
 <translation id="1156488781945104845">زمان کنونی</translation>
 <translation id="1161762950103988776">پرش</translation>
 <translation id="1164857107703583584">از فرمان‌های پرش می‌توان برای پیمایش کارآمد در صفحه وب استفاده کرد.</translation>
+<translation id="116896278675803795">تغییر خودکار زبان برای مطابقت با محتوای انتخاب‌شده</translation>
 <translation id="1175914831232945926">ارقام</translation>
-<translation id="1181003590763099524">انتقال به ابتدا</translation>
 <translation id="1188858454923323853">تکمیلی</translation>
 <translation id="1189258430971676908">قسمت تمرین: فهرست‌های کرکره‌ای</translation>
 <translation id="1195238899008218998">سخن پایانی</translation>
@@ -66,7 +66,7 @@
 <translation id="1325946044405407859">برنزه کدر</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> از <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">بازگویی نویسه و کلمه</translation>
-<translation id="1334570596456017464">زیرنویس</translation>
+<translation id="1334570596456017464">زیرنگاشت</translation>
 <translation id="133801305381959373">فیلد نوشتاری قابل‌ویرایش بعدی وجود ندارد</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">نکته</translation>
@@ -151,7 +151,6 @@
 <translation id="1914424852593176649">اندازه <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> ترکیب کلید</translation>
 <translation id="1923956950274750765">بنفش ارکیده‌ای سیر</translation>
-<translation id="1928535370180099152">برجسته کردن نویسه قبلی</translation>
 <translation id="1928932365747995741">فیلد نوشتاری قابل ویرایش قبلی وجود ندارد</translation>
 <translation id="1964135212174907577">شیء بعدی</translation>
 <translation id="1966649499058910679">وقتی کلمه‌ای گفته می‌شود، برجسته شود</translation>
@@ -205,7 +204,6 @@
 <translation id="2381733276052567791">روشن یا خاموش کردن گفتار</translation>
 <translation id="2390264819538553347">‏برای ادامه، enter را فشار دهید، برای برگشتن به عقب، پس‌بر را فشار دهید.</translation>
 <translation id="2398579267367951220">‏برای جستجو در صفحه، تایپ کنید. برای رفتن به قسمت نتایج، دکمه Enter را فشار دهید؛ برای مرور کردن نتایج، پیکان بالا یا پایین را فشار دهید؛ برای تغییر دادن نوشتار جستجو، به تایپ کردن ادامه دهید؛ برای لغو کردن، دکمه Escape را فشار دهید.</translation>
-<translation id="2407047351320112166">برجسته کردن نویسه بعدی</translation>
 <translation id="240709722712693803">آبی-بنفش</translation>
 <translation id="2410298923485357543">وقتی دستگاه آنلاین است، از صدای طبیعی استفاده شود</translation>
 <translation id="2416512023405990736">چارگوش انتخاب لغو انتخاب‌شده</translation>
@@ -329,7 +327,6 @@
 <translation id="309749186376891736">حرکت دادن نشانگر</translation>
 <translation id="3103579948980282461">ارغوانی</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
-<translation id="3105857328626674463">برجسته کردن کلمه قبلی</translation>
 <translation id="3109724472072898302">جمع شده</translation>
 <translation id="311015743332597320">با چهار انگشت تند به‌راست بکشید</translation>
 <translation id="3112457281078985179">‏برای روشن یا خاموش کردن ChromeVox، از Control+Alt+Z استفاده کنید.</translation>
@@ -358,7 +355,6 @@
 <translation id="3241052487511142956">پیوند بازدید شده قبلی</translation>
 <translation id="3241638166094654466">تعداد سلول‌ها در هر خط:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
-<translation id="3247621388192105674">رفتن به انتها</translation>
 <translation id="3260949043575829030">مورد مشابه قبلی</translation>
 <translation id="3270069636408109001">جدول بعدی وجود ندارد</translation>
 <translation id="3273791280096244679">ذخیره برچسب</translation>
@@ -568,7 +564,6 @@
 <translation id="4780458943471935919">پیمایش به صفحه بعد</translation>
 <translation id="4784215347943747396">کنترل دستگاه تنها با ۱ یا ۲ کلید</translation>
 <translation id="4786285211967466855">عنوان سطح ۱ قبلی وجود ندارد</translation>
-<translation id="4786591486270126089">صدا به‌طور خودکار براساس زبان تغییر کند</translation>
 <translation id="4787577491510559358">اعلام قالب‌بندی برای مورد کنونی</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
@@ -894,7 +889,7 @@
 <translation id="7086377898680121060">زیاد کردن روشنایی</translation>
 <translation id="7088743565397416204">برای فعال کردن مورد کانونی‌شده، دو ضربه سریع بزنید</translation>
 <translation id="7088960765736518739">دسترسی کلیدی</translation>
-<translation id="7090715360595433170">همچنین ممکن است کارآمدتر از تند به‌چپ و راست کشیدن با یک انگشت عمل کند.</translation>
+<translation id="7090715360595433170">همچنین ممکن است کارآمدتر از تند کشیدن به چپ و راست با یک انگشت عمل کند.</translation>
 <translation id="7091296112653361280">کرم سیر</translation>
 <translation id="7095834689119144465">فقط ویرایش عددی نوشتار</translation>
 <translation id="7096001299300236431">رسانه قبلی</translation>
@@ -952,13 +947,11 @@
 <translation id="743783356331413498">مثال</translation>
 <translation id="7439060726180460871">فهرست راهنما</translation>
 <translation id="744163271241493234">pwded</translation>
-<translation id="7443479558101073378">برجسته کردن کلمه بعدی</translation>
 <translation id="7465123027577412805">از صدای طبیعی استفاده شود؟</translation>
 <translation id="7491962110804786152">برگه</translation>
 <translation id="7492497529767769458">به بخش بعدی بروید. نمونه‌ها شامل «سینی وضعیت» و «راه‌انداز» می‌شود.</translation>
 <translation id="7505149250476994901">‏گفتن «cap» (حرف بزرگ) قبل از حرف</translation>
 <translation id="7533226154149229506">لیمویی روشن</translation>
-<translation id="7541021454094606506">حذف همه</translation>
 <translation id="7543255924852002459">برچسب صرف‌نظر کردن</translation>
 <translation id="7552432549459840808">‏میان‌برهای مفید Chrome</translation>
 <translation id="7553679324939294712"><ph name="INSERT_PHRASE" /> را قبل‌از <ph name="BEFORE_PHRASE" /> وارد کن</translation>

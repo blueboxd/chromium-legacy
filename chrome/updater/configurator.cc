@@ -26,7 +26,7 @@
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/buildflags.h"
@@ -56,7 +56,14 @@ Configurator::Configurator(scoped_refptr<UpdaterPrefs> prefs,
       unzip_factory_(
           base::MakeRefCounted<update_client::InProcessUnzipperFactory>()),
       patch_factory_(
-          base::MakeRefCounted<update_client::InProcessPatcherFactory>()) {}
+          base::MakeRefCounted<update_client::InProcessPatcherFactory>()) {
+#if BUILDFLAG(IS_LINUX)
+  // On Linux creating the NetworkFetcherFactory requires performing blocking IO
+  // to load an external library. This should be done when the configurator is
+  // created.
+  GetNetworkFetcherFactory();
+#endif
+}
 Configurator::~Configurator() = default;
 
 double Configurator::InitialDelay() const {
@@ -171,12 +178,7 @@ update_client::ActivityDataService* Configurator::GetActivityDataService()
 }
 
 bool Configurator::IsPerUserInstall() const {
-  switch (GetUpdaterScope()) {
-    case UpdaterScope::kSystem:
-      return false;
-    case UpdaterScope::kUser:
-      return true;
-  }
+  return !IsSystemInstall();
 }
 
 std::unique_ptr<update_client::ProtocolHandlerFactory>

@@ -15,9 +15,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/embedder_support/android/util/input_stream.h"
 #include "components/embedder_support/android/util/input_stream_reader.h"
 #include "net/base/features.h"
@@ -149,7 +150,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
       response_delegate_(std::move(response_delegate)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                               base::SequencedTaskRunnerHandle::Get()),
+                               base::SequencedTaskRunner::GetCurrentDefault()),
       start_time_(base::Time::Now()) {
   DCHECK(response_delegate_);
   // If there is a client error, clean up the request.
@@ -203,7 +204,8 @@ void AndroidStreamReaderURLLoader::Start() {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(
-          &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
+          &OpenInputStreamOnWorkerThread,
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           // This is intentional - the loader could be deleted while the
           // callback is executing on the background thread. The delegate will
           // be "returned" to the loader once the InputStream open attempt is
@@ -452,7 +454,7 @@ void AndroidStreamReaderURLLoader::DidRead(int result) {
   pending_buffer_ = nullptr;
 
   // TODO(timvolodine): consider using a sequenced task runner.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&AndroidStreamReaderURLLoader::ReadMore,
                                 weak_factory_.GetWeakPtr()));
 }

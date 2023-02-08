@@ -10,21 +10,19 @@ source_set("core") {
     "offline_url_utils.h",
     "reading_list_entry.cc",
     "reading_list_entry.h",
-    "reading_list_model.cc",
     "reading_list_model.h",
     "reading_list_model_impl.cc",
     "reading_list_model_impl.h",
     "reading_list_model_observer.h",
-    "reading_list_model_storage.cc",
     "reading_list_model_storage.h",
+    "reading_list_model_storage_impl.cc",
+    "reading_list_model_storage_impl.h",
     "reading_list_pref_names.cc",
     "reading_list_pref_names.h",
-    "reading_list_store.cc",
-    "reading_list_store.h",
-    "reading_list_store_delegate.h",
+    "reading_list_sync_bridge.cc",
+    "reading_list_sync_bridge.h",
   ]
   deps = [
-    "//base",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/reading_list/features:flags",
@@ -32,7 +30,26 @@ source_set("core") {
     "//net",
     "//url",
   ]
-  public_deps = [ "//components/reading_list/core/proto" ]
+  public_deps = [
+    "//base",
+    "//components/reading_list/core/proto",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_reading_list_model.cc",
+    "fake_reading_list_model.h",
+    "fake_reading_list_model_storage.cc",
+    "fake_reading_list_model_storage.h",
+  ]
+  deps = [ "//components/sync/model" ]
+  public_deps = [
+    ":core",
+    "//base",
+  ]
 }
 
 source_set("unit_tests") {
@@ -40,11 +57,13 @@ source_set("unit_tests") {
   sources = [
     "offline_url_utils_unittest.cc",
     "reading_list_entry_unittest.cc",
+    "reading_list_model_storage_impl_unittest.cc",
     "reading_list_model_unittest.cc",
-    "reading_list_store_unittest.cc",
+    "reading_list_sync_bridge_unittest.cc",
   ]
   deps = [
     ":core",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/sync",

@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
-@protocol ApplicationCommands;
+#import "ios/chrome/browser/passwords/ios_chrome_password_infobar_metrics_recorder.h"
 
 namespace password_manager {
 class PasswordFormManagerForUI;
@@ -22,9 +22,9 @@ class PasswordFormManagerForUI;
 // with the "save password" infobar.
 // If `password_update` is true the delegate will use "Update" related strings,
 // and should Update the credentials instead of Saving new ones.
-class IOSChromeSavePasswordInfoBarDelegate
-    : public IOSChromePasswordManagerInfoBarDelegate {
+class IOSChromeSavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // If `is_sync_user` is true, `user_email` must be non-empty.
   IOSChromeSavePasswordInfoBarDelegate(
       NSString* user_email,
       bool is_sync_user,
@@ -43,7 +43,20 @@ class IOSChromeSavePasswordInfoBarDelegate
   static IOSChromeSavePasswordInfoBarDelegate* FromInfobarDelegate(
       infobars::InfoBarDelegate* delegate);
 
-  // InfoBarDelegate implementation
+  // Getter for the message displayed in addition to the title. If no message
+  // was set, this returns an empty string.
+  NSString* GetDetailsMessageText() const;
+
+  // The Username being saved or updated by the Infobar.
+  NSString* GetUserNameText() const;
+
+  // The Password being saved or updated by the Infobar.
+  NSString* GetPasswordText() const;
+
+  // The URL host for which the credentials are being saved for.
+  NSString* GetURLHostText() const;
+
+  // InfoBarDelegate implementation.
   bool ShouldExpire(const NavigationDetails& details) const override;
 
   // ConfirmInfoBarDelegate implementation.
@@ -71,36 +84,49 @@ class IOSChromeSavePasswordInfoBarDelegate
   // TODO(crbug.com/1040653): This function is only virtual so it can be mocked
   // for testing purposes.  It should become non-virtual once this test is
   // refactored for testability.
+  // TODO(crbug.com/1394793): Fix dismissal handlers.
   virtual void InfobarDismissed();
 
-  // true if password is being updated at the moment the InfobarModal is
+  // True if password is being updated at the moment the InfobarModal is
   // created.
   bool IsPasswordUpdate() const;
 
-  // true if the current set of credentials has already been saved at the moment
+  // True if the current set of credentials has already been saved at the moment
   // the InfobarModal is created.
   bool IsCurrentPasswordSaved() const;
-
-  // The title for the InfobarModal being presented.
-  NSString* GetInfobarModalTitleText() const;
 
  private:
   // ConfirmInfoBarDelegate implementation.
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
 
-  // true if password is being updated at the moment the InfobarModal is
+  // The password_manager::PasswordFormManager managing the form we're asking
+  // the user about, and should save as per their decision.
+  const std::unique_ptr<password_manager::PasswordFormManagerForUI>
+      form_to_save_;
+
+  // Whether to show the additional footer.
+  const bool is_sync_user_;
+
+  // The PasswordInfobarType for this delegate.
+  const PasswordInfobarType infobar_type_;
+
+  // Used to track the results we get from the info bar.
+  password_manager::metrics_util::UIDismissalReason infobar_response_ =
+      password_manager::metrics_util::NO_DIRECT_INTERACTION;
+
+  // The signed-in / syncing account. In particular if `is_sync_user_` is true,
+  // this is non-empty.
+  __strong NSString* user_email_;
+
+  // True if password is being updated at the moment the InfobarModal is
   // created.
   bool password_update_ = false;
 
-  // true if the current set of credentials has already been saved at the moment
+  // True if the current set of credentials has already been saved at the moment
   // the InfobarModal is created.
   bool current_password_saved_ = false;
 
-  // The PasswordInfobarType for this delegate. Set at initialization and won't
-  // change throughout the life of the delegate.
-  const PasswordInfobarType infobar_type_;
-
-  // YES if an Infobar is being presented by this delegate.
+  // True if an Infobar is being presented by this delegate.
   bool infobar_presenting_ = false;
 };
 

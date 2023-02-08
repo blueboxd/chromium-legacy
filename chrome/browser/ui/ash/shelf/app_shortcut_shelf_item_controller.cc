@@ -13,9 +13,9 @@
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/ranges/algorithm.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -35,6 +35,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "components/app_constants/constants.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -123,8 +124,8 @@ class AppMatcher {
     DCHECK(profile);
     if (web_app::WebAppProvider* provider =
             web_app::WebAppProvider::GetForLocalAppsUnchecked(profile)) {
-      if (provider->registrar().IsLocallyInstalled(app_id)) {
-        registrar_ = &provider->registrar();
+      if (provider->registrar_unsafe().IsLocallyInstalled(app_id)) {
+        registrar_ = &provider->registrar_unsafe();
       }
     }
     if (!registrar_)
@@ -147,6 +148,8 @@ class AppMatcher {
     return extension_ ? WebContentMatchesHostedApp(web_contents, browser)
                       : WebContentMatchesWebApp(web_contents, browser);
   }
+
+  bool IsAshBrowser() const { return app_id_ == app_constants::kChromeAppId; }
 
  private:
   bool WebContentMatchesHostedApp(content::WebContents* web_contents,
@@ -458,8 +461,10 @@ AppShortcutShelfItemController::GetAppWebContents(
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (matcher.WebContentMatchesApp(web_contents, browser))
+      if (matcher.IsAshBrowser() ||
+          matcher.WebContentMatchesApp(web_contents, browser)) {
         items.push_back(web_contents);
+      }
     }
   }
   return items;
@@ -555,7 +560,7 @@ bool AppShortcutShelfItemController::IsWindowedWebApp() {
   if (web_app::WebAppProvider* provider =
           web_app::WebAppProvider::GetForLocalAppsUnchecked(
               ChromeShelfController::instance()->profile())) {
-    web_app::WebAppRegistrar& registrar = provider->registrar();
+    web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
     if (registrar.IsLocallyInstalled(app_id())) {
       return registrar.GetAppUserDisplayMode(app_id()) !=
              web_app::UserDisplayMode::kBrowser;

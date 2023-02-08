@@ -183,10 +183,10 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
     test_extension_dirs_.push_back(std::move(dir));
     extensions_.push_back(extension);
 
-    ScriptingPermissionsModifier modifier(profile(), extension);
     if (withhold_permissions == WITHHOLD_PERMISSIONS &&
-        modifier.CanAffectExtension()) {
-      modifier.SetWithholdHostPermissions(true);
+        PermissionsManager::Get(profile())->CanAffectExtension(*extension)) {
+      ScriptingPermissionsModifier(profile(), extension)
+          .SetWithholdHostPermissions(true);
     }
   }
 
@@ -735,7 +735,7 @@ class ExtensionActionRunnerWithUserHostControlsBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  PermissionsManager* permissions_manager_;
+  raw_ptr<PermissionsManager, DanglingUntriaged> permissions_manager_;
 };
 
 // Tests changing user site settings when the extension has site access (which

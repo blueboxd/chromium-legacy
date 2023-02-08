@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -58,7 +59,7 @@ class PrimaryAccountPolicyManager::DeleteProfileDialogManager
     profile_path_ = profile->GetPath();
 
     if (auto_confirm_profile_deletion_for_testing) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&DeleteProfileDialogManager::
                              HandleUserConfirmedProfileDeletionAndDie,
@@ -92,7 +93,7 @@ class PrimaryAccountPolicyManager::DeleteProfileDialogManager
     // synchronously, it will create a nested run loop that will not return
     // from OnBrowserSetLastActive() until the dialog is dismissed. But the user
     // cannot dismiss the dialog because the browser is not even shown!
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DeleteProfileDialogManager::ShowDeleteProfileDialog,
                        weak_factory_.GetWeakPtr(), browser));
@@ -138,7 +139,7 @@ class PrimaryAccountPolicyManager::DeleteProfileDialogManager
         // the dialog by clicking on the close "X" button, then re-present the
         // dialog (the user should not be able to interact with the browser
         // window as the profile must be deleted).
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE,
             base::BindOnce(&DeleteProfileDialogManager::ShowDeleteProfileDialog,
                            weak_factory_.GetWeakPtr(), browser));
@@ -250,7 +251,7 @@ void PrimaryAccountPolicyManager::EnsurePrimaryAccountAllowedForProfile(
       // This may be called while the profile is initializing, so it must be
       // scheduled for later to allow the profile initialization to complete.
       CHECK(profiles::IsMultipleProfilesEnabled());
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&PrimaryAccountPolicyManager::ShowDeleteProfileDialog,
                          weak_pointer_factory_.GetWeakPtr(), profile,
@@ -296,10 +297,13 @@ void PrimaryAccountPolicyManager::OnUserConfirmedProfileDeletion(
 
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
-  g_browser_process->profile_manager()->MaybeScheduleProfileForDeletion(
-      profile_path,
-      hide_ui_for_testing_ ? base::DoNothing()
-                           : base::BindOnce(&webui::OpenNewWindowForProfile),
-      ProfileMetrics::DELETE_PROFILE_PRIMARY_ACCOUNT_NOT_ALLOWED);
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .MaybeScheduleProfileForDeletion(
+          profile_path,
+          hide_ui_for_testing_
+              ? base::DoNothing()
+              : base::BindOnce(&webui::OpenNewWindowForProfile),
+          ProfileMetrics::DELETE_PROFILE_PRIMARY_ACCOUNT_NOT_ALLOWED);
 }
 #endif  // defined(TOOLKIT_VIEWS) && !BUILDFLAG(IS_CHROMEOS)

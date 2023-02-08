@@ -7,20 +7,31 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/containers/flat_map.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
 
-namespace url {
-class Origin;
-}  // namespace url
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
 
 namespace content {
 
+struct AttributionInputEvent;
 class WebContents;
+
+#if BUILDFLAG(IS_ANDROID)
+class AttributionInputEventTrackerAndroid;
+#endif
 
 // Class responsible for listening to conversion events originating from blink,
 // and verifying that they are valid. Owned by the WebContents. Lifetime is
@@ -41,16 +52,24 @@ class CONTENT_EXPORT AttributionHost
       mojo::PendingAssociatedReceiver<blink::mojom::ConversionHost> receiver,
       RenderFrameHost* rfh);
 
+#if BUILDFLAG(IS_ANDROID)
+  AttributionInputEventTrackerAndroid* input_event_tracker() {
+    return input_event_tracker_android_.get();
+  }
+#endif
+
  private:
   friend class AttributionHostTestPeer;
   friend class WebContentsUserData<AttributionHost>;
 
   // blink::mojom::ConversionHost:
-  void RegisterDataHost(mojo::PendingReceiver<blink::mojom::AttributionDataHost>
-                            data_host) override;
+  void RegisterDataHost(
+      mojo::PendingReceiver<blink::mojom::AttributionDataHost>,
+      blink::mojom::AttributionRegistrationType) override;
   void RegisterNavigationDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-      const blink::AttributionSrcToken& attribution_src_token) override;
+      const blink::AttributionSrcToken& attribution_src_token,
+      blink::mojom::AttributionNavigationType nav_type) override;
 
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override;
@@ -58,14 +77,17 @@ class CONTENT_EXPORT AttributionHost
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   // Returns the top frame origin corresponding to the current target frame.
-  // Returns nullptr and reports a bad message if the top frame origin is not
-  // potentially trustworthy or the current target frame is not a secure
+  // Returns `absl::nullopt` and reports a bad message if the top frame origin
+  // is not potentially trustworthy or the current target frame is not a secure
   // context.
-  [[nodiscard]] const url::Origin* TopFrameOriginForSecureContext();
+  absl::optional<attribution_reporting::SuitableOrigin>
+  TopFrameOriginForSecureContext();
 
   // Notifies the `AttributionDataHostManager` that a navigation with an
   // associated `AttributionDataHost` failed, if necessary.
   void MaybeNotifyFailedSourceNavigation(NavigationHandle* navigation_handle);
+
+  AttributionInputEvent GetMostRecentNavigationInputEvent() const;
 
   // Map which stores the top-frame origin an impression occurred on for all
   // navigations with an associated impression, keyed by navigation ID.
@@ -79,10 +101,16 @@ class CONTENT_EXPORT AttributionHost
   //
   // A flat_map is used as the number of ongoing impression navigations is
   // expected to be very small in a given WebContents.
-  using NavigationSourceOriginMap = base::flat_map<int64_t, url::Origin>;
-  NavigationSourceOriginMap navigation_source_origins_;
+  struct NavigationInfo;
+  using NavigationInfoMap = base::flat_map<int64_t, NavigationInfo>;
+  NavigationInfoMap navigation_info_map_;
 
   RenderFrameHostReceiverSet<blink::mojom::ConversionHost> receivers_;
+
+#if BUILDFLAG(IS_ANDROID)
+  std::unique_ptr<AttributionInputEventTrackerAndroid>
+      input_event_tracker_android_;
+#endif
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

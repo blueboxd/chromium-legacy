@@ -120,11 +120,11 @@ class TracingSampleProfilerTest
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     PerfettoTracedProcess::GetTaskRunner()->ResetTaskRunnerForTesting(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     TracingSamplerProfiler::ResetDataSourceForTesting();
 #else
     auto perfetto_wrapper = std::make_unique<base::tracing::PerfettoTaskRunner>(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     producer_ =
         std::make_unique<TestProducerClient>(std::move(perfetto_wrapper),
                                              /*log_only_main_thread=*/false);
@@ -520,7 +520,7 @@ class TracingProfileBuilderTest : public TracingUnitTest {
     TracingUnitTest::SetUp();
 
     auto perfetto_wrapper = std::make_unique<base::tracing::PerfettoTaskRunner>(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     producer_client_ = std::make_unique<TestProducerClient>(
         std::move(perfetto_wrapper), /*log_only_main_thread=*/false);
   }
@@ -595,6 +595,42 @@ TEST_F(TracingProfileBuilderTest, TransformELFModuleIDToBreakpadFormat) {
   EXPECT_TRUE(found_build_id);
 }
 #endif
+#endif
+
+#if BUILDFLAG(IS_ANDROID) && \
+    (ANDROID_ARM64_UNWINDING_SUPPORTED || ANDROID_CFI_UNWINDING_SUPPORTED)
+TEST_F(TracingProfileBuilderTest, FullPathForJavaModulesWithMissingBuildId) {
+  base::NativeLibrary other_library = base::LoadOtherLibrary();
+  uintptr_t addr = base::GetAddressInOtherLibrary(other_library);
+
+  int non_zero_base_address = 1;
+  base::TestModule module(non_zero_base_address);
+  module.set_id("");
+  module.set_debug_basename(base::FilePath("other_library.so"));
+
+  TracingSamplerProfiler::TracingProfileBuilder profile_builder(
+      base::PlatformThreadId(), std::make_unique<TestTraceWriter>(producer()),
+      false);
+  profile_builder.OnSampleCompleted({base::Frame(addr, &module)},
+                                    base::TimeTicks());
+  producer()->FlushPacketIfPossible();
+
+  EXPECT_GT(producer()->GetFinalizedPacketCount(), 0u);
+
+  bool has_full_path = false;
+  for (size_t i = 0; i < producer()->GetFinalizedPacketCount(); ++i) {
+    const perfetto::protos::TracePacket* packet =
+        producer()->GetFinalizedPacket(i);
+    for (const auto& mapping : packet->interned_data().mapping_paths()) {
+      // Full path should start from leading '/'.
+      if (base::StartsWith(mapping.str(), "/")) {
+        has_full_path = true;
+        break;
+      }
+    }
+  }
+  EXPECT_TRUE(has_full_path);
+}
 #endif
 
 }  // namespace tracing

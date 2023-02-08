@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 
+#include <algorithm>
 #include <cmath>
 #include <memory>
 
@@ -15,7 +16,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasfilter_string.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_union_csscolorvalue_canvasgradient_canvaspattern_string.h"
 #include "third_party/blink/renderer/core/css/cssom/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/v8_canvas_style.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -106,7 +107,10 @@ BaseRenderingContext2D::BaseRenderingContext2D(
   state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>());
 }
 
-BaseRenderingContext2D::~BaseRenderingContext2D() = default;
+BaseRenderingContext2D::~BaseRenderingContext2D() {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.MaximumStateStackDepth",
+                              max_state_stack_depth_, 1, 33, 32);
+}
 
 void BaseRenderingContext2D::save() {
   if (isContextLost())
@@ -127,6 +131,8 @@ void BaseRenderingContext2D::save() {
   state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
       GetState(), CanvasRenderingContext2DState::kDontCopyClipList,
       CanvasRenderingContext2DState::SaveType::kSaveRestore));
+  max_state_stack_depth_ =
+      std::max(state_stack_.size(), max_state_stack_depth_);
 
   if (canvas)
     canvas->save();
@@ -181,6 +187,8 @@ void BaseRenderingContext2D::beginLayer() {
   state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
       GetState(), CanvasRenderingContext2DState::kDontCopyClipList,
       CanvasRenderingContext2DState::SaveType::kBeginEndLayer));
+  max_state_stack_depth_ =
+      std::max(state_stack_.size(), max_state_stack_depth_);
   layer_count_++;
 
   if (globalAlpha() != 1 &&
@@ -202,6 +210,8 @@ void BaseRenderingContext2D::beginLayer() {
     state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
         GetState(), CanvasRenderingContext2DState::kDontCopyClipList,
         CanvasRenderingContext2DState::SaveType::kInternalLayer));
+    max_state_stack_depth_ =
+        std::max(state_stack_.size(), max_state_stack_depth_);
 
     cc::PaintFlags extra_flags;
     GetState().FillStyle()->ApplyToFlags(extra_flags);
@@ -375,45 +385,23 @@ void BaseRenderingContext2D::reset() {
   ResetInternal();
 }
 
-static V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString*
-ConvertCanvasStyleToUnionType(CanvasStyle* style) {
-  if (CanvasGradient* gradient = style->GetCanvasGradient()) {
-    return MakeGarbageCollected<
-        V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString>(gradient);
-  }
-  if (CanvasPattern* pattern = style->GetCanvasPattern()) {
-    return MakeGarbageCollected<
-        V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString>(pattern);
-  }
-  return MakeGarbageCollected<
-      V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString>(
-      style->GetColorAsString());
-}
-
 void BaseRenderingContext2D::IdentifiabilityUpdateForStyleUnion(
-    const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style) {
-  switch (style->GetContentType()) {
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCSSColorValue:
+    const V8CanvasStyle& style) {
+  switch (style.type) {
+    case V8CanvasStyleType::kCSSColorValue:
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasGradient:
+    case V8CanvasStyleType::kGradient:
       identifiability_study_helper_.UpdateBuilder(
-          style->GetAsCanvasGradient()->GetIdentifiableToken());
+          style.gradient->GetIdentifiableToken());
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasPattern:
+    case V8CanvasStyleType::kPattern:
       identifiability_study_helper_.UpdateBuilder(
-          style->GetAsCanvasPattern()->GetIdentifiableToken());
+          style.pattern->GetIdentifiableToken());
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kString:
+    case V8CanvasStyleType::kString:
       identifiability_study_helper_.UpdateBuilder(
-          IdentifiabilityBenignStringToken(style->GetAsString()));
+          IdentifiabilityBenignStringToken(style.string));
       break;
-    default:
-      // TODO(crbug.com/1234113): Instrument new canvas APIs.
-      identifiability_study_helper_.set_encountered_skipped_ops();
   }
 }
 
@@ -426,120 +414,107 @@ BaseRenderingContext2D::RespectImageOrientationInternal(
   return RespectImageOrientation();
 }
 
-V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString*
-BaseRenderingContext2D::strokeStyle() const {
-  return ConvertCanvasStyleToUnionType(GetState().StrokeStyle());
+v8::Local<v8::Value> BaseRenderingContext2D::strokeStyle(
+    ScriptState* script_state) const {
+  return CanvasStyleToV8(script_state, GetState().StrokeStyle());
 }
 
-void BaseRenderingContext2D::setStrokeStyle(
-    const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style) {
-  DCHECK(style);
-
+void BaseRenderingContext2D::
+    UpdateIdentifiabilityStudyBeforeSettingStrokeOrFill(
+        const V8CanvasStyle& v8_style,
+        CanvasOps op) {
   if (identifiability_study_helper_.ShouldUpdateBuilder()) {
-    identifiability_study_helper_.UpdateBuilder(CanvasOps::kSetStrokeStyle);
-    IdentifiabilityUpdateForStyleUnion(style);
+    identifiability_study_helper_.UpdateBuilder(op);
+    IdentifiabilityUpdateForStyleUnion(v8_style);
   }
+}
 
-  String color_string;
-  CanvasStyle* canvas_style = nullptr;
-  switch (style->GetContentType()) {
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCSSColorValue:
-      canvas_style = MakeGarbageCollected<CanvasStyle>(
-          style->GetAsCSSColorValue()->ToColor().Rgb());
+void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
+                                            v8::Local<v8::Value> value,
+                                            ExceptionState& exception_state) {
+  V8CanvasStyle v8_style;
+  if (!ExtractV8CanvasStyle(isolate, value, v8_style, exception_state))
+    return;
+
+  UpdateIdentifiabilityStudyBeforeSettingStrokeOrFill(
+      v8_style, CanvasOps::kSetStrokeStyle);
+
+  switch (v8_style.type) {
+    case V8CanvasStyleType::kCSSColorValue:
+      GetState().SetStrokeColor(v8_style.css_color_value);
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasGradient:
-      canvas_style =
-          MakeGarbageCollected<CanvasStyle>(style->GetAsCanvasGradient());
+    case V8CanvasStyleType::kGradient:
+      GetState().SetStrokeGradient(v8_style.gradient);
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasPattern: {
-      CanvasPattern* canvas_pattern = style->GetAsCanvasPattern();
-      if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean())
+    case V8CanvasStyleType::kPattern:
+      if (!origin_tainted_by_content_ && !v8_style.pattern->OriginClean())
         SetOriginTaintedByContent();
-      canvas_style = MakeGarbageCollected<CanvasStyle>(canvas_pattern);
+      GetState().SetStrokePattern(v8_style.pattern);
       break;
-    }
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kString: {
-      color_string = style->GetAsString();
-      if (color_string == GetState().UnparsedStrokeColor())
+    case V8CanvasStyleType::kString: {
+      if (v8_style.string == GetState().UnparsedStrokeColor())
         return;
       Color parsed_color = Color::kTransparent;
-      if (!ParseColorOrCurrentColor(parsed_color, color_string))
+      if (!ParseColorOrCurrentColor(parsed_color, v8_style.string))
         return;
       if (GetState().StrokeStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
-        GetState().SetUnparsedStrokeColor(color_string);
+        GetState().SetUnparsedStrokeColor(v8_style.string);
         return;
       }
-      canvas_style = MakeGarbageCollected<CanvasStyle>(parsed_color.Rgb());
+      GetState().SetStrokeColor(parsed_color.Rgb());
       break;
     }
   }
 
-  DCHECK(canvas_style);
-  GetState().SetStrokeStyle(canvas_style);
-  GetState().SetUnparsedStrokeColor(color_string);
+  GetState().SetUnparsedStrokeColor(v8_style.string);
   GetState().ClearResolvedFilter();
 }
 
-V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString*
-BaseRenderingContext2D::fillStyle() const {
-  return ConvertCanvasStyleToUnionType(GetState().FillStyle());
+v8::Local<v8::Value> BaseRenderingContext2D::fillStyle(
+    ScriptState* script_state) const {
+  return CanvasStyleToV8(script_state, GetState().FillStyle());
 }
 
-void BaseRenderingContext2D::setFillStyle(
-    const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style) {
-  DCHECK(style);
+void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
+                                          v8::Local<v8::Value> value,
+                                          ExceptionState& exception_state) {
+  V8CanvasStyle v8_style;
+  if (!ExtractV8CanvasStyle(isolate, value, v8_style, exception_state))
+    return;
 
   ValidateStateStack();
-  if (identifiability_study_helper_.ShouldUpdateBuilder()) {
-    identifiability_study_helper_.UpdateBuilder(CanvasOps::kSetFillStyle);
-    IdentifiabilityUpdateForStyleUnion(style);
-  }
 
-  String color_string;
-  CanvasStyle* canvas_style = nullptr;
-  switch (style->GetContentType()) {
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCSSColorValue:
-      canvas_style = MakeGarbageCollected<CanvasStyle>(
-          style->GetAsCSSColorValue()->ToColor().Rgb());
+  UpdateIdentifiabilityStudyBeforeSettingStrokeOrFill(v8_style,
+                                                      CanvasOps::kSetFillStyle);
+
+  switch (v8_style.type) {
+    case V8CanvasStyleType::kCSSColorValue:
+      GetState().SetFillColor(v8_style.css_color_value);
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasGradient:
-      canvas_style =
-          MakeGarbageCollected<CanvasStyle>(style->GetAsCanvasGradient());
+    case V8CanvasStyleType::kGradient:
+      GetState().SetFillGradient(v8_style.gradient);
       break;
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kCanvasPattern: {
-      CanvasPattern* canvas_pattern = style->GetAsCanvasPattern();
-      if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean())
+    case V8CanvasStyleType::kPattern:
+      if (!origin_tainted_by_content_ && !v8_style.pattern->OriginClean())
         SetOriginTaintedByContent();
-      canvas_style = MakeGarbageCollected<CanvasStyle>(canvas_pattern);
+      GetState().SetFillPattern(v8_style.pattern);
       break;
-    }
-    case V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString::
-        ContentType::kString: {
-      color_string = style->GetAsString();
-      if (color_string == GetState().UnparsedFillColor())
+    case V8CanvasStyleType::kString: {
+      if (v8_style.string == GetState().UnparsedFillColor())
         return;
       Color parsed_color = Color::kTransparent;
-      if (!ParseColorOrCurrentColor(parsed_color, color_string))
+      if (!ParseColorOrCurrentColor(parsed_color, v8_style.string))
         return;
       if (GetState().FillStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
-        GetState().SetUnparsedFillColor(color_string);
+        GetState().SetUnparsedFillColor(v8_style.string);
         return;
       }
-      canvas_style = MakeGarbageCollected<CanvasStyle>(parsed_color.Rgb());
+      GetState().SetFillColor(parsed_color.Rgb());
       break;
     }
   }
 
-  DCHECK(canvas_style);
-  GetState().SetFillStyle(canvas_style);
-  GetState().SetUnparsedFillColor(color_string);
+  GetState().SetUnparsedFillColor(v8_style.string);
   GetState().ClearResolvedFilter();
 }
 
@@ -2038,9 +2013,12 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
     // In Desynchronized canvas disabling the acceleration will break
     // putImageData: crbug.com/1112060.
     if (IsAccelerated() && !IsDesynchronized()) {
-      DisableAcceleration();
-      base::UmaHistogramEnumeration("Blink.Canvas.GPUFallbackToCPU",
-                                    GPUFallbackToCPUScenario::kGetImageData);
+      read_count_++;
+      if (read_count_ >= kFallbackToCPUAfterReadbacks) {
+        DisableAcceleration();
+        base::UmaHistogramEnumeration("Blink.Canvas.GPUFallbackToCPU",
+                                      GPUFallbackToCPUScenario::kGetImageData);
+      }
     }
   }
 

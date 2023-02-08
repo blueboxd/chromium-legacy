@@ -40,7 +40,7 @@ class UnittestingSystemAppDelegate : public SystemWebAppDelegate {
 
   std::vector<std::string> GetAppIdsToUninstallAndReplace() const override;
   gfx::Size GetMinimumWindowSize() const override;
-  bool ShouldReuseExistingWindow() const override;
+  Browser* GetWindowForLaunch(Profile* profile, const GURL& url) const override;
   bool ShouldShowNewWindowMenuOption() const override;
   base::FilePath GetLaunchDirectory(
       const apps::AppLaunchParams& params) const override;
@@ -217,6 +217,8 @@ class TestSystemWebAppInstallation {
       absl::optional<SkColor> background_color,
       absl::optional<SkColor> dark_mode_background_color);
 
+  static std::unique_ptr<TestSystemWebAppInstallation> SetUpAppWithValidIcons();
+
   ~TestSystemWebAppInstallation();
 
   void WaitForAppInstall();
@@ -246,7 +248,7 @@ class TestSystemWebAppInstallation {
   // Must be called in SetUp*App() methods, before WebAppProvider is created.
   void RegisterAutoGrantedPermissions(ContentSettingsType permission);
 
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile, DanglingUntriaged> profile_;
   SystemWebAppManager::UpdatePolicy update_policy_ =
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
 

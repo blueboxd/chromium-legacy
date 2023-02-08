@@ -8,9 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
-#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/parsed_certificate.h"
@@ -172,7 +170,7 @@ class NET_EXPORT CertPathBuilder {
   //               path building to verify specific parts of certificates or the
   //               final chain. See CertPathBuilderDelegate and
   //               VerifyCertificateChainDelegate for more information.
-  CertPathBuilder(scoped_refptr<ParsedCertificate> cert,
+  CertPathBuilder(std::shared_ptr<const ParsedCertificate> cert,
                   TrustStore* trust_store,
                   CertPathBuilderDelegate* delegate,
                   const der::GeneralizedTime& time,

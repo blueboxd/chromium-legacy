@@ -4,7 +4,8 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 
-import {Route} from '../../router.js';
+import {loadTimeData} from '../../i18n_setup.js';
+import {Route} from '../router.js';
 import {routes} from '../os_route.js';
 
 import {getInputMethodSettings, SettingsType} from './input_method_settings.js';
@@ -20,6 +21,14 @@ import {JAPANESE_INPUT_MODE, JAPANESE_KEYMAP_STYLE, JAPANESE_PUNCTUATION_STYLE, 
  */
 export const FIRST_PARTY_INPUT_METHOD_ID_PREFIX =
     '_comp_ime_jkghodnilhceideoidjikpgommlajknk';
+
+/**
+ * The preference string used to indicate a user has autocorrect enabled by
+ * default for a particular engine. See the following for more details
+ * https://crsrc.org/chrome/browser/ash/input_method/autocorrect_prefs.cc
+ */
+export const PHYSICAL_KEYBOARD_AUTOCORRECT_ENABLED_BY_DEFAULT =
+    'physicalKeyboardAutoCorrectionEnabledByDefault';
 
 /**
  * All possible keyboard layouts. Should match Google3.
@@ -74,8 +83,6 @@ export const OptionType = {
   JAPANESE_USE_SYSTEM_DICTIONARY: 'UseSystemDictionary',
   JAPANESE_NUMBER_OF_SUGGESTIONS: 'numberOfSuggestions',
   JAPANESE_INPUT_MODE: 'JapaneseInputMode',
-  JAPANESE_INPUT_MODE_KANA: 'JapaneseInputModeKana',
-  JAPANESE_INPUT_MODE_ROMAJI: 'JapaneseInputModeRomaji',
   JAPANESE_PUNCTUATION_STYLE: 'JapanesePunctuationStyle',
   JAPANESE_SYMBOL_STYLE: 'JapaneseSymbolStyle',
   JAPANESE_SPACE_INPUT_STYLE: 'JapaneseSpaceInputStyle',
@@ -184,6 +191,40 @@ export const OPTION_DEFAULT = {
   [OptionType.ZHUYIN_KEYBOARD_LAYOUT]: KeyboardLayout.STANDARD,
   [OptionType.ZHUYIN_PAGE_SIZE]: '10',
   [OptionType.ZHUYIN_SELECT_KEYS]: '1234567890',
+};
+
+/**
+ * @param {OptionType} optionName The option we want the default value for.
+ * @param {Object<OptionType, *>} overrides List of values to use instead of
+ *    the default values.
+ * @return {*} The default, or overriden value.
+ */
+export function getDefaultValue(optionName, overrides) {
+  // Overrides are only coming from the following flag, let's be safe here and
+  // only enable this branch if the flag is also enabled.
+  if (!loadTimeData.getBoolean('autocorrectEnableByDefault')) {
+    return OPTION_DEFAULT[optionName];
+  }
+  return optionName in overrides ? overrides[optionName] :
+                                   OPTION_DEFAULT[optionName];
+}
+
+/**
+ * Type conversions functions for reading and writing options.
+ *
+ * WARNING: Keep this in sync with shouldStoreAsNumber
+ *
+ * @const
+ */
+export const OPTION_MAP = {
+  [OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL]: {
+    mapValueForDisplay: (value) => value > 0 ? true : false,
+    mapValueForWrite: (value) => value ? 1 : 0,
+  },
+  [OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL]: {
+    mapValueForDisplay: (value) => value > 0 ? true : false,
+    mapValueForWrite: (value) => value ? 1 : 0,
+  },
 };
 
 /**
@@ -487,6 +528,9 @@ export function getOptionUiType(option) {
       return UiType.TOGGLE_BUTTON;
     case OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL:
     case OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL:
+      return loadTimeData.getBoolean('allowAutocorrectToggle') ?
+          UiType.TOGGLE_BUTTON :
+          UiType.DROPDOWN;
     case OptionType.XKB_LAYOUT:
     case OptionType.JAPANESE_INPUT_MODE:
     case OptionType.JAPANESE_PUNCTUATION_STYLE:
@@ -580,10 +624,6 @@ export function getOptionLabelName(option) {
       return 'inputMethodOptionsJapaneseSectionShortcut';
     case OptionType.JAPANESE_KEYMAP_STYLE:
       return 'inputMethodOptionsJapaneseKeymapStyle';
-    case OptionType.JAPANESE_INPUT_MODE_KANA:
-      return 'inputMethodOptionsJapaneseInputModeKana';
-    case OptionType.JAPANESE_INPUT_MODE_ROMAJI:
-      return 'inputMethodOptionsJapaneseInputModeRomaji';
     case OptionType.JAPANESE_AUTOMATICALLY_SWITCH_TO_HALFWIDTH:
       return 'inputMethodOptionsJapaneseAutomaticallySwitchToHalfwidth';
     case OptionType.JAPANESE_SHIFT_KEY_MODE_STYLE:
@@ -886,11 +926,14 @@ export function getOptionMenuItems(option) {
 
 
 /**
+ * WARNING: Keep this in sync with OPTION_MAP
+ *
  * @param {!OptionType} option The option type.
  * @return {boolean} true if the value for |option| is a number.
  */
-export function shouldStoreNumberAsString(option) {
-  return option === OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL;
+export function shouldStoreAsNumber(option) {
+  return option === OptionType.PHYSICAL_KEYBOARD_AUTO_CORRECTION_LEVEL ||
+      option === OptionType.VIRTUAL_KEYBOARD_AUTO_CORRECTION_LEVEL;
 }
 /**
  * @param {!OptionType} option The option type.

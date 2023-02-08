@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/origin_trials_controller_delegate.h"
-#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -209,14 +208,14 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
         main_test_rfh()->frame_tree_node()->pending_frame_policy();
     auto request = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
-        std::move(commit_params), false /* browser-initiated */,
-        false /* was_opener_suppressed */, nullptr /* initiator_frame_token */,
+        std::move(commit_params), false /* was_opener_suppressed */,
+        nullptr /* initiator_frame_token */,
         ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, false /* is_form_submission */,
         nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
         false /* is_pdf */);
-    main_test_rfh()->frame_tree_node()->CreatedNavigationRequest(
+    main_test_rfh()->frame_tree_node()->TakeNavigationRequest(
         std::move(request));
     GetNavigationRequest()->StartNavigation();
   }
@@ -325,70 +324,6 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
                 ->request_context_type());
   EXPECT_EQ(net::ERR_CERT_DATE_INVALID,
             navigation->GetNavigationHandle()->GetNetErrorCode());
-}
-
-TEST_F(NavigationRequestTest, FencedFrameNavigationToPendingMappedURN) {
-  // Note that we only run this test for the ShadowDOM implementation of fenced
-  // frames, due to how they add subframes in a way that is very specific to the
-  // ShadowDOM implementation, and not suitable for the MPArch implementation.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kFencedFrames, {{"implementation_type", "shadow_dom"}});
-
-  FrameTree& frame_tree = contents()->GetPrimaryFrameTree();
-  FrameTreeNode* root = frame_tree.root();
-  int process_id = root->current_frame_host()->GetProcess()->GetID();
-
-  // Add a fenced frame.
-  constexpr auto kFencedframeOwnerType =
-      blink::FrameOwnerElementType::kFencedframe;
-  blink::FramePolicy policy;
-  policy.is_fenced = true;
-  AddFrame(frame_tree, root->current_frame_host(), process_id, 15, policy,
-           kFencedframeOwnerType);
-
-  FrameTreeNode* fenced_frame_tree_node = root->child_at(0);
-  EXPECT_TRUE(fenced_frame_tree_node->IsFencedFrameRoot());
-  EXPECT_TRUE(fenced_frame_tree_node->IsInFencedFrameTree());
-
-  FencedFrameURLMapping& fenced_frame_urls_map =
-      main_test_rfh()->GetPage().fenced_frame_urls_map();
-
-  auto pending_urn_uuid = fenced_frame_urls_map.GeneratePendingMappedURN();
-  EXPECT_TRUE(pending_urn_uuid.has_value());
-  GURL urn_uuid = pending_urn_uuid.value();
-  const GURL mapped_url = GURL("https://chromium.org");
-
-  auto navigation_simulator = NavigationSimulatorImpl::CreateRendererInitiated(
-      urn_uuid, fenced_frame_tree_node->current_frame_host());
-
-  auto response_headers =
-      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
-  response_headers->SetHeader("Supports-Loading-Mode", "fenced-frame");
-
-  navigation_simulator->SetAutoAdvance(false);
-  navigation_simulator->SetResponseHeaders(response_headers);
-  navigation_simulator->SetTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-
-  navigation_simulator->Start();
-
-  EXPECT_EQ(navigation_simulator->GetNavigationHandle()->GetURL(), urn_uuid);
-
-  SimulateSharedStorageURNMappingComplete(
-      fenced_frame_urls_map, urn_uuid, mapped_url,
-      /*shared_storage_origin=*/url::Origin::Create(GURL("https://bar.com")),
-      /*budget_to_charge=*/2.0);
-
-  // Expect that the url in the NavigationRequest is already mapped.
-  EXPECT_EQ(navigation_simulator->GetNavigationHandle()->GetURL(), mapped_url);
-
-  navigation_simulator->Wait();
-
-  navigation_simulator->SetAutoAdvance(true);
-  navigation_simulator->ReadyToCommit();
-  navigation_simulator->Commit();
-
-  EXPECT_EQ(fenced_frame_tree_node->current_url(), mapped_url);
 }
 
 // Checks that a navigation deferred during WillStartRequest can be properly
@@ -710,8 +645,7 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   TestRenderFrameHost* child_document = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_rfh())->AppendChild(""));
   auto attributes = child_document->frame_tree_node()->attributes_->Clone();
-  // Set |anonymous| to true.
-  attributes->anonymous = true;
+  attributes->credentialless = true;
   child_document->frame_tree_node()->SetAttributes(std::move(attributes));
 
   const GURL kUrl = GURL("http://chromium.org");
@@ -721,27 +655,26 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   NavigationRequest* request =
       NavigationRequest::From(navigation->GetNavigationHandle());
   EXPECT_TRUE(request->commit_params().storage_key.nonce().has_value());
-  EXPECT_EQ(child_document->GetMainFrame()->anonymous_iframes_nonce(),
+  EXPECT_EQ(child_document->GetMainFrame()->credentialless_iframes_nonce(),
             request->commit_params().storage_key.nonce().value());
 
   navigation->Commit();
   child_document =
       static_cast<TestRenderFrameHost*>(navigation->GetFinalRenderFrameHost());
-  EXPECT_TRUE(child_document->IsAnonymous());
+  EXPECT_TRUE(child_document->IsCredentialless());
   EXPECT_EQ(blink::StorageKey::CreateWithNonce(
                 url::Origin::Create(kUrl),
-                child_document->GetMainFrame()->anonymous_iframes_nonce()),
+                child_document->GetMainFrame()->credentialless_iframes_nonce()),
             child_document->storage_key());
 }
 
 TEST_F(NavigationRequestTest,
-       NavigationToAnonymousDocumentNetworkIsolationInfo) {
+       NavigationToCredentiallessDocumentNetworkIsolationInfo) {
   auto* child_frame = static_cast<TestRenderFrameHost*>(
       content::RenderFrameHostTester::For(main_test_rfh())
           ->AppendChild("child"));
   auto attributes = child_frame->frame_tree_node()->attributes_->Clone();
-  // Set |anonymous| to true.
-  attributes->anonymous = true;
+  attributes->credentialless = true;
   child_frame->frame_tree_node()->SetAttributes(std::move(attributes));
 
   std::unique_ptr<NavigationSimulator> navigation =
@@ -749,12 +682,12 @@ TEST_F(NavigationRequestTest,
           GURL("https://example.com/navigation.html"), child_frame);
   navigation->ReadyToCommit();
 
-  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->isolation_info_for_subresources()
                 .network_isolation_key()
                 .GetNonce());
-  EXPECT_EQ(main_test_rfh()->anonymous_iframes_nonce(),
+  EXPECT_EQ(main_test_rfh()->credentialless_iframes_nonce(),
             static_cast<NavigationRequest*>(navigation->GetNavigationHandle())
                 ->GetIsolationInfo()
                 .network_isolation_key()
@@ -763,8 +696,9 @@ TEST_F(NavigationRequestTest,
 
 class ScopedIsolatedAppBrowserClient : public ContentBrowserClient {
  public:
-  ScopedIsolatedAppBrowserClient()
-      : old_client_(SetBrowserClientForTesting(this)) {}
+  explicit ScopedIsolatedAppBrowserClient(const GURL& isolated_url)
+      : isolated_host_(isolated_url.host()),
+        old_client_(SetBrowserClientForTesting(this)) {}
 
   ~ScopedIsolatedAppBrowserClient() override {
     SetBrowserClientForTesting(old_client_);
@@ -774,20 +708,17 @@ class ScopedIsolatedAppBrowserClient : public ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url,
       bool origin_matches_flag) override {
-    return origin_matches_flag;
+    return url.host() == isolated_host_;
   }
 
  private:
+  std::string isolated_host_;
   raw_ptr<ContentBrowserClient> old_client_;
 };
 
 TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   const GURL kUrl = GURL("https://chromium.org");
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kIsolatedAppOrigins, kUrl.spec());
-  // Disable flag caching so the --isolated-app-origins value takes effect.
-  SiteIsolationPolicy::DisableFlagCachingForTesting();
-  ScopedIsolatedAppBrowserClient client;
+  ScopedIsolatedAppBrowserClient client(kUrl);
 
   auto navigation =
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());

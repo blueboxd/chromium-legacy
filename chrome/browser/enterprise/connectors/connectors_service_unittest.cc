@@ -11,7 +11,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
+#include "chrome/browser/enterprise/connectors/reporting/browser_crash_event_router.h"
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "chrome/browser/policy/dm_token_utils.h"
+#include "chrome/browser/profiles/profile_testing_helper.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -82,29 +86,6 @@ constexpr char kWildcardAnalysisSettingsPref[] = R"([
 constexpr char kNormalReportingSettingsPref[] = R"([
   {
     "service_provider": "google"
-  }
-])";
-
-constexpr char kNormalSendDownloadToCloudPref[] = R"([
-  {
-    "service_provider": "box",
-    "enterprise_id": "1234567890",
-    "enable": [
-      {
-        "url_list": ["*"],
-        "mime_types": ["text/plain", "image/png", "application/zip"]
-      }
-    ],
-    "disable": [
-      {
-        "url_list": ["no.text.com", "no.text.no.image.com"],
-        "mime_types": ["text/plain"]
-      },
-      {
-        "url_list": ["no.image.com", "no.text.no.image.com"],
-        "mime_types": ["image/png"]
-      }
-    ]
   }
 ])";
 
@@ -413,90 +394,6 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool(),
                      testing::ValuesIn({0, 1, 2})));
 
-// Tests to make sure file system settings work with both the feature flag
-// and the policy. The parameter for these tests is a tuple of:
-//
-//   enum class FileSystemConnector[]: array of all file system connectors.
-//   bool: enable feature flag.
-//   int: policy value.  0: don't set, 1: set to normal, 2: set to empty.
-class ConnectorsServiceFileSystemFeatureTest
-    : public ConnectorsServiceTest,
-      public testing::WithParamInterface<
-          std::tuple<FileSystemConnector, bool, int>> {
- public:
-  ConnectorsServiceFileSystemFeatureTest() {
-    if (enable_feature_flag()) {
-      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
-    }
-  }
-
-  FileSystemConnector connector() const { return std::get<0>(GetParam()); }
-  bool enable_feature_flag() const { return std::get<1>(GetParam()); }
-  int policy_value() const { return std::get<2>(GetParam()); }
-
-  const char* pref() const { return ConnectorPref(connector()); }
-
-  const char* pref_value() const {
-    switch (policy_value()) {
-      case 1:
-        return kNormalSendDownloadToCloudPref;
-      case 2:
-        return kEmptySettingsPref;
-    }
-    NOTREACHED();
-    return nullptr;
-  }
-
-  bool file_system_enabled() const {
-    return enable_feature_flag() && policy_value() == 1;
-  }
-
-  void ValidateSettings(const FileSystemSettings& settings) {
-    // Mime types are the only setting affect by the policy, the rest are
-    // just copied from the service provider comfig.  So only need to validate
-    // this in tests.
-    ASSERT_EQ(settings.mime_types, expected_mime_types_);
-  }
-
-  void set_expected_mime_types(std::set<std::string> expected_mime_types) {
-    expected_mime_types_ = std::move(expected_mime_types);
-  }
-
- private:
-  std::set<std::string> expected_mime_types_;
-};
-
-TEST_P(ConnectorsServiceFileSystemFeatureTest, Test) {
-  if (policy_value() != 0) {
-    profile_->GetPrefs()->Set(pref(), *base::JSONReader::Read(pref_value()));
-  }
-
-  auto settings =
-      ConnectorsServiceFactory::GetForBrowserContext(profile_)
-          ->GetFileSystemSettings(GURL("https://any.com"), connector());
-  EXPECT_EQ(file_system_enabled(), settings.has_value());
-  if (settings.has_value()) {
-    set_expected_mime_types({"text/plain", "image/png", "application/zip"});
-    ValidateSettings(settings.value());
-  }
-
-  EXPECT_EQ(enable_feature_flag() && policy_value() == 1,
-            !ConnectorsServiceFactory::GetForBrowserContext(profile_)
-                 ->ConnectorsManagerForTesting()
-                 ->GetFileSystemConnectorsSettingsForTesting()
-                 .empty());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    ConnectorsServiceFileSystemFeatureTest,
-    testing::Combine(
-        testing::Values(FileSystemConnector::SEND_DOWNLOAD_TO_CLOUD),
-        testing::Bool(),
-        testing::ValuesIn({0, 1, 2})));
-
 TEST_F(ConnectorsServiceTest, RealtimeURLCheck) {
   profile_->GetPrefs()->SetInteger(
       prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckMode,
@@ -576,5 +473,68 @@ INSTANTIATE_TEST_SUITE_P(,
                          testing::Values(FILE_ATTACHED,
                                          FILE_DOWNLOADED,
                                          BULK_DATA_ENTRY));
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
+class ConnectorsServiceProfileTypeBrowserTest : public testing::Test {
+ public:
+  ConnectorsServiceProfileTypeBrowserTest() {
+    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  }
+
+ protected:
+  TestingProfile* regular_profile() {
+    return profile_testing_helper_.regular_profile();
+  }
+  Profile* incognito_profile() {
+    return profile_testing_helper_.incognito_profile();
+  }
+
+  TestingProfile* guest_profile() {
+    return profile_testing_helper_.guest_profile();
+  }
+  Profile* guest_profile_otr() {
+    return profile_testing_helper_.guest_profile_otr();
+  }
+
+  TestingProfile* system_profile() {
+    return profile_testing_helper_.system_profile();
+  }
+  Profile* system_profile_otr() {
+    return profile_testing_helper_.system_profile_otr();
+  }
+
+  std::unique_ptr<ConnectorsService> CreateService(Profile* profile) {
+    ExtensionInstallEventRouter router(profile);
+
+    auto manager = std::make_unique<ConnectorsManager>(
+        nullptr, router, profile->GetPrefs(), GetServiceProviderConfig(),
+        false);
+
+    return std::make_unique<ConnectorsService>(profile, std::move(manager));
+  }
+
+ private:
+  void SetUp() override {
+    testing::Test::SetUp();
+    profile_testing_helper_.SetUp();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+  ProfileTestingHelper profile_testing_helper_;
+};
+
+TEST_F(ConnectorsServiceProfileTypeBrowserTest, IsEnabled) {
+  EXPECT_TRUE(CreateService(regular_profile())->ConnectorsEnabled());
+  EXPECT_FALSE(CreateService(incognito_profile())->ConnectorsEnabled());
+
+  EXPECT_FALSE(CreateService(guest_profile())->ConnectorsEnabled());
+  EXPECT_TRUE(CreateService(guest_profile_otr())->ConnectorsEnabled());
+
+  EXPECT_FALSE(CreateService(system_profile())->ConnectorsEnabled());
+  EXPECT_FALSE(CreateService(system_profile_otr())->ConnectorsEnabled());
+}
+
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 }  // namespace enterprise_connectors

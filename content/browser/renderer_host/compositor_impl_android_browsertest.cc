@@ -106,7 +106,7 @@ class ContextLostRunLoop : public viz::ContextLostObserver {
       return;
     }
     context_provider_->ContextGL()->Flush();
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ContextLostRunLoop::CheckForContextLoss,
                        base::Unretained(this)),
@@ -201,9 +201,8 @@ IN_PROC_BROWSER_TEST_F(CompositorImplBrowserTest,
   base::RunLoop loop;
   // The callback will cancel the loop used to wait.
   static_cast<content::Compositor*>(compositor_impl())
-      ->RequestPresentationTimeForNextFrame(base::BindOnce(
-          [](base::OnceClosure quit,
-             const gfx::PresentationFeedback& feedback) {
+      ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+          [](base::OnceClosure quit, base::TimeTicks presentation_timestamp) {
             std::move(quit).Run();
           },
           loop.QuitClosure()));

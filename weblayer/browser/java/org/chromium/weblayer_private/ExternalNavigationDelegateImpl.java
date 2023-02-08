@@ -10,11 +10,9 @@ import android.content.pm.ResolveInfo;
 import android.os.RemoteException;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Function;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
-import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -158,24 +156,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isIntentForTrustedCallingApp(
             Intent intent, Supplier<List<ResolveInfo>> resolveInfoSupplier) {
-        return false;
-    }
-
-    @Override
-    public boolean isIntentToAutofillAssistant(Intent intent) {
-        return false;
-    }
-
-    @Override
-    public @IntentToAutofillAllowingAppResult int isIntentToAutofillAssistantAllowingApp(
-            ExternalNavigationParams params, Intent targetIntent,
-            Function<Intent, Boolean> canExternalAppHandleIntent) {
-        return IntentToAutofillAllowingAppResult.NONE;
-    }
-
-    @Override
-    public boolean handleWithAutofillAssistant(ExternalNavigationParams params, Intent targetIntent,
-            GURL browserFallbackUrl, boolean isGoogleReferrer) {
         return false;
     }
 

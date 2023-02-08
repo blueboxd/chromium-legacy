@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -57,12 +58,14 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/events/before_toggle_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
@@ -272,11 +275,19 @@ unsigned HTMLElement::ParseBorderWidthAttribute(
 void HTMLElement::ApplyBorderAttributeToStyle(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderWidth,
-                                          ParseBorderWidthAttribute(value),
-                                          CSSPrimitiveValue::UnitType::kPixels);
-  AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kBorderStyle,
-                                          CSSValueID::kSolid);
+  unsigned width = ParseBorderWidthAttribute(value);
+  for (CSSPropertyID property_id :
+       {CSSPropertyID::kBorderTopWidth, CSSPropertyID::kBorderBottomWidth,
+        CSSPropertyID::kBorderLeftWidth, CSSPropertyID::kBorderRightWidth}) {
+    AddPropertyToPresentationAttributeStyle(
+        style, property_id, width, CSSPrimitiveValue::UnitType::kPixels);
+  }
+  for (CSSPropertyID property_id :
+       {CSSPropertyID::kBorderTopStyle, CSSPropertyID::kBorderBottomStyle,
+        CSSPropertyID::kBorderLeftStyle, CSSPropertyID::kBorderRightStyle}) {
+    AddPropertyToPresentationAttributeStyle(style, property_id,
+                                            CSSValueID::kSolid);
+  }
 }
 
 bool HTMLElement::IsPresentationAttribute(const QualifiedName& name) const {
@@ -430,6 +441,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        event_type_names::kBeforeinput, nullptr},
       {html_names::kOnbeforepasteAttr, kNoWebFeature,
        event_type_names::kBeforepaste, nullptr},
+      {html_names::kOnbeforetoggleAttr, kNoWebFeature,
+       event_type_names::kBeforetoggle, nullptr},
       {html_names::kOnblurAttr, kNoWebFeature, event_type_names::kBlur,
        nullptr},
       {html_names::kOncancelAttr, kNoWebFeature, event_type_names::kCancel,
@@ -555,10 +568,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        event_type_names::kPointerup, nullptr},
       {html_names::kOnprogressAttr, kNoWebFeature, event_type_names::kProgress,
        nullptr},
-      {html_names::kOnpopoverhideAttr, kNoWebFeature,
-       event_type_names::kPopoverhide, nullptr},
-      {html_names::kOnpopovershowAttr, kNoWebFeature,
-       event_type_names::kPopovershow, nullptr},
       {html_names::kOnratechangeAttr, kNoWebFeature,
        event_type_names::kRatechange, nullptr},
       {html_names::kOnresetAttr, kNoWebFeature, event_type_names::kReset,
@@ -771,13 +780,6 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
     EnsureElementInternals().ReadonlyAttributeChanged();
     return;
   }
-  if (params.reason == AttributeModificationReason::kByParser &&
-      params.name == html_names::kDefaultopenAttr && HasPopoverAttribute()) {
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        GetDocument().GetExecutionContext()));
-    DCHECK(!isConnected());
-    GetPopoverData()->setHadDefaultOpenWhenParsed(true);
-  }
 
   if (params.reason != AttributeModificationReason::kDirectly)
     return;
@@ -809,6 +811,10 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
     GetDocument().UpdateStyleAndLayoutTreeForNode(this);
     if (!SupportsFocus())
       blur();
+  } else if (params.name == html_names::kAnchorAttr && HasPopoverAttribute()) {
+    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+        GetDocument().GetExecutionContext()));
+    ResetPopoverAnchorObserver();
   }
 }
 
@@ -1220,6 +1226,7 @@ void HTMLElement::UpdatePopoverAttribute(String value) {
   DCHECK_EQ(type, GetPopoverTypeFromAttributeValue(
                       FastGetAttribute(html_names::kPopoverAttr)));
   EnsurePopoverData()->setType(type);
+  ResetPopoverAnchorObserver();
 }
 
 bool HTMLElement::HasPopoverAttribute() const {
@@ -1239,22 +1246,67 @@ bool HTMLElement::popoverOpen() const {
   return false;
 }
 
+const char* HTMLElement::IsPopoverNotReady(
+    PopoverTriggerAction action,
+    DOMExceptionCode& exception_code) const {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      GetDocument().GetExecutionContext()));
+  DCHECK_NE(action, PopoverTriggerAction::kNone);
+  DCHECK_NE(action, PopoverTriggerAction::kToggle);
+  if (!HasPopoverAttribute()) {
+    exception_code = DOMExceptionCode::kNotSupportedError;
+    return "Not supported on elements that do not have a valid value for the "
+           "'popover' attribute";
+  }
+  exception_code = DOMExceptionCode::kInvalidStateError;
+  if (!isConnected()) {
+    return "Invalid on disconnected popover elements";
+  }
+  if (action == PopoverTriggerAction::kShow &&
+      GetPopoverData()->visibilityState() != PopoverVisibilityState::kHidden) {
+    return "Invalid on popover elements which aren't hidden";
+  }
+  if (action == PopoverTriggerAction::kHide &&
+      GetPopoverData()->visibilityState() != PopoverVisibilityState::kShowing) {
+    // Important to check that visibility is not kShowing (rather than
+    // popoverOpen()), because a hide transition might have been started on this
+    // popover already, and we don't want to allow a double-hide.
+    return "Invalid on popover elements that aren't already showing";
+  }
+  if (action == PopoverTriggerAction::kShow && IsA<HTMLDialogElement>(this) &&
+      hasAttribute(html_names::kOpenAttr)) {
+    return "The dialog is already open as a dialog, and therefore cannot be "
+           "opened as a popover.";
+  }
+  if (action == PopoverTriggerAction::kShow &&
+      Fullscreen::IsFullscreenElement(*this)) {
+    return "This element is already in fullscreen mode, and therefore cannot "
+           "be opened as a popover.";
+  }
+  return nullptr;
+}
+
+bool HTMLElement::IsPopoverReady(PopoverTriggerAction action) const {
+  DOMExceptionCode exception_code;
+  return !IsPopoverNotReady(action, exception_code);
+}
+
 void HTMLElement::togglePopover(ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
-  if (!HasPopoverAttribute()) {
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Not supported on elements that do not have a valid value for the "
-        "'popover' attribute");
-  } else if (!isConnected()) {
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Invalid disconnected popover elements");
-  }
   if (popoverOpen()) {
     hidePopover(exception_state);
   } else {
+    showPopover(exception_state);
+  }
+}
+
+void HTMLElement::togglePopover(bool force, ExceptionState& exception_state) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+      GetDocument().GetExecutionContext()));
+  if (!force && popoverOpen()) {
+    hidePopover(exception_state);
+  } else if (force && !popoverOpen()) {
     showPopover(exception_state);
   }
 }
@@ -1270,24 +1322,25 @@ void HTMLElement::togglePopover(ExceptionState& exception_state) {
 void HTMLElement::showPopover(ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
-  if (!HasPopoverAttribute()) {
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Not supported on elements that do not have a valid value for the "
-        "'popover' attribute");
-  } else if (popoverOpen() || !isConnected()) {
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Invalid on already-showing or disconnected popover elements");
+  DOMExceptionCode exception_code;
+  if (auto* error =
+          IsPopoverNotReady(PopoverTriggerAction::kShow, exception_code)) {
+    return exception_state.ThrowDOMException(exception_code, error);
   }
 
-  // Fire the popovershow event (bubbles, cancelable).
-  Event* event = Event::CreateCancelableBubble(event_type_names::kPopovershow);
+  // Fire the "opening" beforetoggle event.
+  auto* event = BeforeToggleEvent::CreateBubble(
+      event_type_names::kBeforetoggle, Event::Cancelable::kYes,
+      /*current_state*/ "closed", /*new_state*/ "open");
+  DCHECK(event->bubbles());
+  DCHECK(event->cancelable());
+  DCHECK_EQ(event->currentState(), "closed");
+  DCHECK_EQ(event->newState(), "open");
   event->SetTarget(this);
   if (DispatchEvent(*event) != DispatchEventResult::kNotCanceled)
     return;
 
-  // The 'popovershow' event handler could have changed this popover, e.g. by
+  // The 'beforetoggle' event handler could have changed this popover, e.g. by
   // changing its type, removing it from the document, or calling showPopover().
   if (!HasPopoverAttribute() || !isConnected() || popoverOpen())
     return;
@@ -1305,8 +1358,8 @@ void HTMLElement::showPopover(ExceptionState& exception_state) {
                          HidePopoverFocusBehavior::kNone,
                          HidePopoverForcingLevel::kHideAfterAnimations);
 
-    // The 'popoverhide' event handlers could have changed this popover, e.g. by
-    // changing its type, removing it from the document, or calling
+    // The 'beforetoggle' event handlers could have changed this popover, e.g.
+    // by changing its type, removing it from the document, or calling
     // showPopover().
     if (!HasPopoverAttribute() || !isConnected() || popoverOpen() ||
         PopoverType() != original_type)
@@ -1403,19 +1456,10 @@ void HTMLElement::HideAllPopoversUntil(const HTMLElement* endpoint,
 void HTMLElement::hidePopover(ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
-  if (!HasPopoverAttribute()) {
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Not supported on elements that do not have a valid value for the "
-        "'popover' attribute");
-  } else if (GetPopoverData()->visibilityState() !=
-             PopoverVisibilityState::kShowing) {
-    // Important to check that visibility is not kShowing (rather than
-    // popoverOpen()), because a hide transition might have been started on this
-    // popover already, and we don't want to allow a double-hide.
-    return exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Invalid on popover elements that aren't already showing");
+  DOMExceptionCode exception_code;
+  if (auto* error =
+          IsPopoverNotReady(PopoverTriggerAction::kHide, exception_code)) {
+    return exception_state.ThrowDOMException(exception_code, error);
   }
   HidePopoverInternal(HidePopoverFocusBehavior::kFocusPreviousElement,
                       HidePopoverForcingLevel::kHideAfterAnimations);
@@ -1426,7 +1470,7 @@ void HTMLElement::hidePopover(ExceptionState& exception_state) {
 // 1. Capture any already-running animations via getAnimations(), including
 //    animations on descendant elements.
 // 2. Remove the `:open` pseudo class.
-// 3. Fire the 'popoverhide' event.
+// 3. Fire the 'beforetoggle' event.
 // 4. If the hidePopover() call is *not* the result of the popover being "forced
 //    out" of the top layer, e.g. by a modal dialog or fullscreen element:
 //   a. Restore focus to the previously-focused element.
@@ -1441,25 +1485,19 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
       GetDocument().GetExecutionContext()));
   DCHECK(HasPopoverAttribute());
   auto& document = GetDocument();
-  auto original_type = PopoverType();
-  if (original_type == PopoverValueType::kAuto) {
+  if (PopoverType() == PopoverValueType::kAuto) {
     // Hide any popovers above us in the stack.
     HideAllPopoversUntil(this, document, focus_behavior, forcing_level);
 
-    // The 'popoverhide' event handlers could have changed this popover, e.g. by
-    // changing its type, removing it from the document, or calling
+    // The 'beforetoggle' event handlers could have changed this popover, e.g.
+    // by changing its type, removing it from the document, or calling
     // hidePopover().
-    if (!HasPopoverAttribute() || !isConnected() ||
-        GetPopoverData()->visibilityState() !=
-            PopoverVisibilityState::kShowing ||
-        PopoverType() != original_type) {
-      DCHECK(!GetDocument().PopoverStack().Contains(this));
+    auto& stack = document.PopoverStack();
+    if (!stack.Contains(this)) {
       return;
     }
 
-    // Then remove this popover from the stack, if present. If the popover
-    // is already hidden, it won't be in the stack.
-    auto& stack = document.PopoverStack();
+    // Then remove this popover from the stack.
     DCHECK(!stack.empty());
     DCHECK_EQ(stack.back(), this);
     stack.pop_back();
@@ -1474,15 +1512,22 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
   }
 
   GetPopoverData()->setInvoker(nullptr);
-  GetPopoverData()->setNeedsRepositioningForSelectMenu(false);
-  // Stop matching `:open`:
-  GetPopoverData()->setVisibilityState(PopoverVisibilityState::kTransitioning);
-  PseudoStateChanged(CSSSelector::kPseudoOpen);
 
-  // Fire the popoverhide event (bubbles, not cancelable).
-  Event* event = Event::CreateBubble(event_type_names::kPopoverhide);
+  // Fire the "closing" beforetoggle event.
+  auto* event = BeforeToggleEvent::CreateBubble(
+      event_type_names::kBeforetoggle, Event::Cancelable::kNo,
+      /*current_state*/ "open", /*new_state*/ "closed");
+  DCHECK(event->bubbles());
+  DCHECK(!event->cancelable());
+  DCHECK_EQ(event->currentState(), "open");
+  DCHECK_EQ(event->newState(), "closed");
   event->SetTarget(this);
   if (force_hide) {
+    // Stop matching `:open` now:
+    GetPopoverData()->setVisibilityState(
+        PopoverVisibilityState::kTransitioning);
+    PseudoStateChanged(CSSSelector::kPseudoOpen);
+
     // We will be force-hidden when the popover element is being removed from
     // the document, during which event dispatch is prohibited.
     GetDocument().EnqueueAnimationFrameEvent(event);
@@ -1492,13 +1537,15 @@ void HTMLElement::HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
   auto result = DispatchEvent(*event);
   DCHECK_EQ(result, DispatchEventResult::kNotCanceled);
 
-  // The 'popoverhide' event handler could have changed this popover, e.g. by
+  // The 'beforetoggle' event handler could have changed this popover, e.g. by
   // changing its type, removing it from the document, or calling showPopover().
-  if (!isConnected() || !HasPopoverAttribute() ||
-      GetPopoverData()->visibilityState() !=
-          PopoverVisibilityState::kTransitioning) {
+  if (!isConnected() || !popoverOpen()) {
     return;
   }
+
+  // Stop matching `:open`:
+  GetPopoverData()->setVisibilityState(PopoverVisibilityState::kTransitioning);
+  PseudoStateChanged(CSSSelector::kPseudoOpen);
 
   // Grab all animations, so that we can "finish" the hide operation once
   // they complete. This will *also* force a style update, ensuring property
@@ -1751,28 +1798,26 @@ const HTMLElement* HTMLElement::NearestOpenAncestralPopover(
 }
 
 // static
-void HTMLElement::HandlePopoverLightDismiss(const Event& event) {
-  if (event.GetEventPath().IsEmpty())
+void HTMLElement::HandlePopoverLightDismiss(const Event& event,
+                                            const Node& target_node) {
+  DCHECK(event.isTrusted());
+  auto& document = target_node.GetDocument();
+  if (!RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+          document.GetExecutionContext()))
     return;
-  DCHECK_NE(Event::PhaseType::kNone, event.eventPhase());
-  if (event.eventPhase() == Event::PhaseType::kBubblingPhase)
+  if (!document.TopmostPopover())
     return;
-  if (!event.isTrusted())
-    return;
-  // Ensure that shadow DOM event retargeting is considered when computing
-  // the event target node.
-  auto* target_node = event.GetEventPath()[0].Target()->ToNode();
-  if (!target_node)
-    return;
-  auto& document = target_node->GetDocument();
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      document.GetExecutionContext()));
-  DCHECK(document.TopmostPopover());
+
   const AtomicString& event_type = event.type();
   if (IsA<PointerEvent>(event)) {
+    // PointerEventManager will call this function before actually dispatching
+    // the event.
+    DCHECK(!event.HasEventPath());
+    DCHECK_EQ(Event::PhaseType::kNone, event.eventPhase());
+
     if (event_type == event_type_names::kPointerdown) {
       document.SetPopoverPointerdownTarget(NearestOpenAncestralPopover(
-          *target_node, PopoverAncestorType::kInclusive));
+          target_node, PopoverAncestorType::kInclusive));
     } else if (event_type == event_type_names::kPointerup) {
       // Hide everything up to the clicked element. We do this on pointerup,
       // rather than pointerdown or click, primarily for accessibility concerns.
@@ -1785,7 +1830,7 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event) {
       // text), the ancestral popover is stored in pointerdown and compared
       // here.
       auto* ancestor_popover = NearestOpenAncestralPopover(
-          *target_node, PopoverAncestorType::kInclusive);
+          target_node, PopoverAncestorType::kInclusive);
       bool same_target =
           ancestor_popover == document.PopoverPointerdownTarget();
       document.SetPopoverPointerdownTarget(nullptr);
@@ -1798,6 +1843,8 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event) {
   } else if (event_type == event_type_names::kKeydown) {
     const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event);
     if (key_event && key_event->key() == "Escape") {
+      DCHECK(!event.GetEventPath().IsEmpty());
+      DCHECK_EQ(Event::PhaseType::kNone, event.eventPhase());
       // Escape key just pops the topmost popover off the stack.
       document.TopmostPopover()->HidePopoverInternal(
           HidePopoverFocusBehavior::kFocusPreviousElement,
@@ -1816,33 +1863,42 @@ void HTMLElement::InvokePopover(Element* invoker) {
 }
 
 Element* HTMLElement::anchorElement() const {
-  if (!RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-          GetDocument().GetExecutionContext()))
-    return nullptr;
-  if (!HasPopoverAttribute())
-    return nullptr;
-  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
-  if (anchor_id.IsNull())
-    return nullptr;
-  if (!IsInTreeScope())
-    return nullptr;
-  return GetTreeScope().getElementById(anchor_id);  // may be null
+  if (PopoverData* data = GetPopoverData())
+    return data->anchorElement();
+  return nullptr;
 }
 
-void HTMLElement::SetNeedsRepositioningForSelectMenu(bool flag) {
-  DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
+void HTMLElement::ResetPopoverAnchorObserver() {
+  DCHECK(GetPopoverData());
+  DCHECK(HasPopoverAttribute());
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
+  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
+  GetPopoverData()->setAnchorObserver(
+      IsInTreeScope() && anchor_id
+          ? MakeGarbageCollected<PopoverAnchorObserver>(anchor_id, this)
+          : nullptr);
+  PopoverAnchorElementChanged();
+}
+
+void HTMLElement::PopoverAnchorElementChanged() {
+  DCHECK(GetPopoverData());
   DCHECK(HasPopoverAttribute());
-  auto* popover_data = GetPopoverData();
-  if (popover_data->needsRepositioningForSelectMenu() == flag)
+  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
+  Element* new_anchor = IsInTreeScope() && anchor_id
+                            ? GetTreeScope().getElementById(anchor_id)
+                            : nullptr;
+  Element* old_anchor = anchorElement();
+  if (new_anchor == old_anchor)
     return;
-  popover_data->setNeedsRepositioningForSelectMenu(flag);
-  if (flag) {
-    SetHasCustomStyleCallbacks();
-    SetNeedsStyleRecalc(kLocalStyleChange,
-                        StyleChangeReasonForTracing::Create(
-                            style_change_reason::kPopoverVisibilityChange));
+  if (old_anchor)
+    old_anchor->DecrementAnchoredPopoverCount();
+  if (new_anchor)
+    new_anchor->IncrementAnchoredPopoverCount();
+  GetPopoverData()->setAnchorElement(new_anchor);
+  if (GetLayoutObject()) {
+    GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
+        layout_invalidation_reason::kAnchorPositioning);
   }
 }
 
@@ -1854,91 +1910,9 @@ void HTMLElement::SetOwnerSelectMenuElement(HTMLSelectMenuElement* element) {
   GetPopoverData()->setOwnerSelectMenuElement(element);
 }
 
-// TODO(crbug.com/1197720): The popover position should be provided by the new
-// anchored positioning scheme.
-scoped_refptr<ComputedStyle> HTMLElement::StyleForSelectMenuPopoverstyle(
-    const StyleRecalcContext& style_recalc_context) {
-  DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-  DCHECK(HasPopoverAttribute());
-  DCHECK(GetPopoverData()->needsRepositioningForSelectMenu());
-  auto* owner_select = GetPopoverData()->ownerSelectMenuElement();
-  DCHECK(owner_select);
-
-  scoped_refptr<ComputedStyle> original_style =
-      OriginalStyleForLayoutObject(style_recalc_context);
-
-  LocalDOMWindow* window = GetDocument().domWindow();
-  if (!window)
-    return original_style;
-
-  ComputedStyleBuilder style_builder(*original_style);
-
-  gfx::RectF anchor_rect_in_screen =
-      owner_select->GetBoundingClientRectNoLifecycleUpdate();
-  const float anchor_zoom =
-      owner_select->GetLayoutObject()
-          ? owner_select->GetLayoutObject()->StyleRef().EffectiveZoom()
-          : 1;
-  anchor_rect_in_screen.Scale(anchor_zoom);
-  // Don't use the LocalDOMWindow innerHeight/innerWidth getters, as those can
-  // trigger a re-entrant style and layout update.
-  int avail_width = GetDocument().View()->Size().width();
-  int avail_height = GetDocument().View()->Size().height();
-  gfx::Rect avail_rect = gfx::Rect(0, 0, avail_width, avail_height);
-
-  // Remove any margins on the listbox part, so we can position it correctly.
-  style_builder.SetMarginTop(Length::Fixed(0));
-  style_builder.SetMarginLeft(Length::Fixed(0));
-  style_builder.SetMarginRight(Length::Fixed(0));
-  style_builder.SetMarginBottom(Length::Fixed(0));
-
-  // Position the listbox part where is more space available.
-  const float available_space_above =
-      anchor_rect_in_screen.y() - avail_rect.y();
-  const float available_space_below =
-      avail_rect.bottom() - anchor_rect_in_screen.bottom();
-  if (available_space_below < available_space_above) {
-    style_builder.SetMaxHeight(Length::Fixed(available_space_above));
-    style_builder.SetBottom(
-        Length::Fixed(avail_rect.bottom() - anchor_rect_in_screen.y()));
-    style_builder.SetTop(Length::Auto());
-  } else {
-    style_builder.SetMaxHeight(Length::Fixed(available_space_below));
-    style_builder.SetTop(Length::Fixed(anchor_rect_in_screen.bottom()));
-  }
-
-  const float available_space_if_left_anchored =
-      avail_rect.right() - anchor_rect_in_screen.x();
-  const float available_space_if_right_anchored =
-      anchor_rect_in_screen.right() - avail_rect.x();
-  style_builder.SetMinWidth(Length::Fixed(anchor_rect_in_screen.width()));
-  if (available_space_if_left_anchored > anchor_rect_in_screen.width() ||
-      available_space_if_left_anchored > available_space_if_right_anchored) {
-    style_builder.SetLeft(Length::Fixed(anchor_rect_in_screen.x()));
-    style_builder.SetMaxWidth(Length::Fixed(available_space_if_left_anchored));
-  } else {
-    style_builder.SetRight(
-        Length::Fixed(avail_rect.right() - anchor_rect_in_screen.right()));
-    style_builder.SetLeft(Length::Auto());
-    style_builder.SetMaxWidth(Length::Fixed(available_space_if_right_anchored));
-  }
-
-  return style_builder.TakeStyle();
-}
-
-scoped_refptr<ComputedStyle> HTMLElement::CustomStyleForLayoutObject(
-    const StyleRecalcContext& style_recalc_context) {
-  DCHECK(HasCustomStyleCallbacks());
-  // TODO(crbug.com/1197720): This logic is for positioning the selectmenu
-  // popover. This should be replaced by the new anchored positioning scheme.
-  if (HasPopoverAttribute() &&
-      GetPopoverData()->needsRepositioningForSelectMenu()) {
-    DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        GetDocument().GetExecutionContext()));
-    return StyleForSelectMenuPopoverstyle(style_recalc_context);
-  }
-  return Element::CustomStyleForLayoutObject(style_recalc_context);
+HTMLSelectMenuElement* HTMLElement::ownerSelectMenuElement() const {
+  return GetPopoverData() ? GetPopoverData()->ownerSelectMenuElement()
+                          : nullptr;
 }
 
 bool HTMLElement::DispatchFocusEvent(
@@ -2360,40 +2334,23 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   if (IsFormAssociatedCustomElement())
     EnsureElementInternals().InsertedInto(insertion_point);
 
-  if (GetPopoverData() && GetPopoverData()->hadDefaultOpenWhenParsed()) {
-    // If a Popover element has the `defaultopen` attribute upon page
-    // load, and it is the *first* such popover, show it.
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        GetDocument().GetExecutionContext()));
-    DCHECK(isConnected());
-    GetPopoverData()->setHadDefaultOpenWhenParsed(false);
-    auto maybe_show_popover = [](HTMLElement* popover) {
-      // The `defaultopen` attribute can only be used on popover=manual and
-      // popover=auto popovers.
-      if (popover && popover->isConnected() &&
-          (popover->PopoverType() == PopoverValueType::kManual ||
-           (popover->PopoverType() == PopoverValueType::kAuto &&
-            !popover->GetDocument().PopoverAutoShowing()))) {
-        popover->showPopover(ASSERT_NO_EXCEPTION);
-      }
-    };
-    GetDocument()
-        .GetTaskRunner(TaskType::kDOMManipulation)
-        ->PostTask(FROM_HERE,
-                   WTF::BindOnce(maybe_show_popover, WrapWeakPersistent(this)));
-  }
+  if (HasPopoverAttribute())
+    ResetPopoverAnchorObserver();
 
   return kInsertionDone;
 }
 
 void HTMLElement::RemovedFrom(ContainerNode& insertion_point) {
-  // If a popover is removed from the document, make sure it gets
-  // removed from the popover element stack and the top layer.
-  bool was_in_document = insertion_point.isConnected();
-  if (was_in_document && HasPopoverAttribute()) {
-    // We can't run focus event handlers while removing elements.
-    HidePopoverInternal(HidePopoverFocusBehavior::kNone,
-                        HidePopoverForcingLevel::kHideImmediately);
+  if (HasPopoverAttribute()) {
+    ResetPopoverAnchorObserver();
+    // If a popover is removed from the document, make sure it gets
+    // removed from the popover element stack and the top layer.
+    bool was_in_document = insertion_point.isConnected();
+    if (was_in_document) {
+      // We can't run focus event handlers while removing elements.
+      HidePopoverInternal(HidePopoverFocusBehavior::kNone,
+                          HidePopoverForcingLevel::kHideImmediately);
+    }
   }
 
   Element::RemovedFrom(insertion_point);

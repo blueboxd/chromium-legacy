@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -21,12 +20,12 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -41,6 +40,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "net/base/filename_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -217,17 +217,17 @@ scoped_refptr<Extension> LoadExtension(
     ManifestLocation location,
     int flags,
     std::string* error) {
-  std::unique_ptr<base::DictionaryValue> manifest;
+  absl::optional<base::Value::Dict> manifest;
   if (!manifest_file) {
     manifest = LoadManifest(extension_path, error);
   } else {
     manifest = LoadManifest(extension_path, manifest_file, error);
   }
-  if (!manifest.get())
+  if (!manifest)
     return nullptr;
 
   if (!extension_l10n_util::LocalizeExtension(
-          extension_path, &manifest->GetDict(),
+          extension_path, &manifest.value(),
           extension_l10n_util::GetGzippedMessagesPermissionForLocation(
               location),
           error)) {
@@ -247,20 +247,20 @@ scoped_refptr<Extension> LoadExtension(
   return extension;
 }
 
-std::unique_ptr<base::DictionaryValue> LoadManifest(
+absl::optional<base::Value::Dict> LoadManifest(
     const base::FilePath& extension_path,
     std::string* error) {
   return LoadManifest(extension_path, kManifestFilename, error);
 }
 
-std::unique_ptr<base::DictionaryValue> LoadManifest(
+absl::optional<base::Value::Dict> LoadManifest(
     const base::FilePath& extension_path,
     const base::FilePath::CharType* manifest_filename,
     std::string* error) {
   base::FilePath manifest_path = extension_path.Append(manifest_filename);
   if (!base::PathExists(manifest_path)) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
-    return nullptr;
+    return absl::nullopt;
   }
 
   JSONFileValueDeserializer deserializer(manifest_path);
@@ -276,15 +276,15 @@ std::unique_ptr<base::DictionaryValue> LoadManifest(
       *error = base::StringPrintf(
           "%s  %s", manifest_errors::kManifestParseError, error->c_str());
     }
-    return nullptr;
+    return absl::nullopt;
   }
 
   if (!root->is_dict()) {
     *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
-    return nullptr;
+    return absl::nullopt;
   }
 
-  return base::DictionaryValue::From(std::move(root));
+  return std::move(*root).TakeDict();
 }
 
 bool ValidateExtension(const Extension* extension,
@@ -480,7 +480,6 @@ void SetReportErrorForInvisibleIconForTesting(bool value) {
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               const char* manifest_key,
-                              SkColor background_color,
                               std::string* error) {
   for (const auto& entry : icon_set.map()) {
     const base::FilePath path =
@@ -496,15 +495,6 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
     if (extension->location() == ManifestLocation::kUnpacked) {
       const bool is_sufficiently_visible =
           image_util::IsIconAtPathSufficientlyVisible(path);
-      const bool is_sufficiently_visible_rendered =
-          image_util::IsRenderedIconAtPathSufficientlyVisible(path,
-                                                              background_color);
-      UMA_HISTOGRAM_BOOLEAN(
-          "Extensions.ManifestIconSetIconWasVisibleForUnpacked",
-          is_sufficiently_visible);
-      UMA_HISTOGRAM_BOOLEAN(
-          "Extensions.ManifestIconSetIconWasVisibleForUnpackedRendered",
-          is_sufficiently_visible_rendered);
       if (!is_sufficiently_visible && g_report_error_for_invisible_icon) {
         constexpr char kIconNotSufficientlyVisibleError[] =
             "Icon '%s' specified in '%s' is not sufficiently visible.";

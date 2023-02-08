@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
 
@@ -167,7 +168,7 @@ static void PaintWorkletBasedClip(GraphicsContext& context,
 
       dst_rect.size(), *clip_path_owner.GetNode());
   // Dark mode should always be disabled for clip mask.
-  context.DrawImage(paint_worklet_image.get(), Image::kSyncDecode,
+  context.DrawImage(*paint_worklet_image, Image::kSyncDecode,
                     ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                     dst_rect, &src_rect, SkBlendMode::kSrcOver,
                     kRespectImageOrientation);

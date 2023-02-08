@@ -54,6 +54,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
@@ -473,10 +474,6 @@
     if (!GetFirstResponder()) {
       // It is possible to already have a first responder (for example the
       // omnibox). In that case, we don't want to mark BVC as first responder.
-      // TODO(crbug.com/1223090): Adding DCHECK below to confirm hypothesis
-      // that `-becomeFirstResponder` is crashing due to `currentBVC` not
-      // being in the view hierarchy.
-      DCHECK(self.bvcContainer.currentBVC.view.window);
       [self.bvcContainer.currentBVC becomeFirstResponder];
     }
     if (completion) {
@@ -953,6 +950,7 @@
 
   const TemplateURL* searchURLTemplate =
       templateURLService->GetDefaultSearchProvider();
+  DCHECK(searchURLTemplate);
 
   TemplateURLRef::SearchTermsArgs searchArgs(
       base::SysNSStringToUTF16(searchText));

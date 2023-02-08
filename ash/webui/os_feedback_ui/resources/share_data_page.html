@@ -84,13 +84,10 @@
     width: 50%;
   }
 
-  #userEmail {
-    height: 70px;
-  }
-
   .md-select {
     --md-select-side-padding: 16px;
     height: 32px;
+    margin-bottom: 8px;
     width: 248px;
   }
 
@@ -192,7 +189,8 @@
   <div id="header">
     <h1 class="page-title">[[i18n('pageTitle')]]</h1>
   </div>
-  <div id="content">
+  <div id="shadowElevation"></div>
+  <div id="content" on-scroll="onContainerScroll_">
     <!-- Attach files -->
     <div id="attachFiles">
       <div id="attachFilesLabelContainer">
@@ -230,13 +228,10 @@
       <h2 id="userEmailLabel">[[i18n('userEmailLabel')]]</h2>
       <select id="userEmailDropDown" class="md-select"
           aria-label="[[i18n('userEmailAriaLabel')]]">
-        <option value$="[[feedbackContext.email]]"
-            aria-label="user email"
-            class="email-dropdown">
+        <option value$="[[feedbackContext.email]]" class="email-dropdown">
           [[feedbackContext.email]]
         </option>
-        <option value="" aria-label="anonymous user"
-          id="anonymousUser" class="email-dropdown">
+        <option id="anonymousUser" value="" class="email-dropdown">
           [[i18n('anonymousUser')]]
         </option>
       </select>
@@ -282,7 +277,7 @@
       <div id="bluetoothCheckboxContainer" class="checkbox-field-container"
           hidden="[[!shouldShowBluetoothCheckbox]]">
         <cr-checkbox id="bluetoothLogsCheckbox" aria-labelledby="bluetoothInfoLabel" checked>
-          <div id="bluetoothInfoLabel" class="checkbox-label" 
+          <div id="bluetoothInfoLabel" class="checkbox-label"
               inner-h-t-m-l="[[bluetoothLogsCheckboxLabel_]]"></div>
         </cr-checkbox>
       </div>
@@ -299,7 +294,9 @@
     </div>
     <!-- Privacy note -->
     <div id="privacyNote" inner-h-t-m-l="[[privacyNote_]]"></div>
+    <div id="shadowShield"></div>
   </div>
+  <div id="separator"></div>
   <div id="navButtons">
     <cr-button id="buttonBack" class="cancel-button"
         on-click="handleBackButtonClicked_">

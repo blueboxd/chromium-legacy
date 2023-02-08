@@ -46,7 +46,7 @@ class ArcAppSingleRestoreHandlerTest : public testing::Test {
   ArcAppSingleRestoreHandlerTest()
       : profile_manager_(CreateTestingProfileManager()),
         profile_(profile_manager_->CreateTestingProfile(kTestProfileName)),
-        user_manager_(new ash::FakeChromeUserManager),
+        user_manager_(new FakeChromeUserManager),
         user_manager_owner_(base::WrapUnique(user_manager_)),
         wm_helper_(std::make_unique<exo::WMHelperChromeOS>()) {
     const user_manager::User* user =
@@ -62,8 +62,8 @@ class ArcAppSingleRestoreHandlerTest : public testing::Test {
 
   TestingProfile* profile() const { return profile_; }
 
-  ash::full_restore::ArcGhostWindowHandler* window_handler() {
-    return static_cast<ash::full_restore::ArcGhostWindowHandler*>(
+  full_restore::ArcGhostWindowHandler* window_handler() {
+    return static_cast<full_restore::ArcGhostWindowHandler*>(
         &ghost_window_handler_);
   }
 
@@ -74,7 +74,7 @@ class ArcAppSingleRestoreHandlerTest : public testing::Test {
  private:
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
-  ash::FakeChromeUserManager* user_manager_;  // Not own.
+  FakeChromeUserManager* user_manager_;  // Not own.
   user_manager::ScopedUserManager user_manager_owner_;
 
   // Initialize WMHelper to create ARC ghost window handler.
@@ -85,7 +85,7 @@ class ArcAppSingleRestoreHandlerTest : public testing::Test {
 TEST_F(ArcAppSingleRestoreHandlerTest, NotLaunchIfShelfNotReady) {
   ArcAppSingleRestoreHandler handler;
   handler.LaunchGhostWindowWithApp(
-      profile(), "not_exist_app_id", 0 /*event_flags*/,
+      profile(), "not_exist_app_id", nullptr, 0 /*event_flags*/,
       arc::GhostWindowType::kAppLaunch, arc::mojom::WindowInfoPtr());
   ASSERT_FALSE(handler.app_id_.has_value());
 }
@@ -101,9 +101,9 @@ TEST_F(ArcAppSingleRestoreHandlerTest, PendingLaunchIfShelfHasReady) {
 
   handler.OnShelfReady();
   handler.ghost_window_handler_ = window_handler();
-  handler.LaunchGhostWindowWithApp(profile(), fake_app_id, 0 /*event_flags*/,
-                                   arc::GhostWindowType::kAppLaunch,
-                                   std::move(window_info));
+  handler.LaunchGhostWindowWithApp(
+      profile(), fake_app_id, nullptr, 0 /*event_flags*/,
+      arc::GhostWindowType::kAppLaunch, std::move(window_info));
   ASSERT_TRUE(handler.app_id_.has_value());
   ASSERT_TRUE(handler.IsAppPendingRestore(fake_app_id));
   ASSERT_FALSE(handler.IsAppPendingRestore(fake_app_id + "_not_equal_real_id"));
@@ -121,8 +121,8 @@ TEST_F(ArcAppSingleRestoreHandlerTest, NullBoundsNotCauseCrash) {
   handler.OnShelfReady();
   handler.ghost_window_handler_ = window_handler();
   handler.LaunchGhostWindowWithApp(
-      profile(), fake_app_id, 0 /*event_flags*/, arc::GhostWindowType::kAppLaunch,
-      std::move(window_info));
+      profile(), fake_app_id, nullptr, 0 /*event_flags*/,
+      arc::GhostWindowType::kAppLaunch, std::move(window_info));
 }
 
 }  // namespace ash::app_restore

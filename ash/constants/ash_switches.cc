@@ -45,6 +45,11 @@ const char kAllowOsInstall[] = "allow-os-install";
 // mode. This can be enabled by this flag.
 const char kAllowRAInDevMode[] = "allow-ra-in-dev-mode";
 
+// Override for the URL used for the ChromeOS Almanac API. Used for local
+// testing with a non-production server (e.g.
+// "--almanac-api-url=http://localhost:8000").
+const char kAlmanacApiUrl[] = "almanac-api-url";
+
 // Causes HDCP of the specified type to always be enabled when an external
 // display is connected. Used for HDCP compliance testing on ChromeOS.
 const char kAlwaysEnableHdcp[] = "always-enable-hdcp";
@@ -257,10 +262,6 @@ const char kAshUiMode[] = "force-tablet-mode";
 const char kAshUiModeClamshell[] = "clamshell";
 const char kAshUiModeTablet[] = "touch_view";
 
-// Makes ash use ChromeOS mojo service manager as the mojo broker.
-const char kAshUseCrOSMojoServiceManager[] =
-    "ash-use-cros-mojo-service-manager";
-
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we
 // lock the screen or shutdown the system immediately in response to a press
@@ -312,6 +313,14 @@ const char kDefaultWallpaperLarge[] = "default-wallpaper-large";
 // Default small wallpaper to use (as path to trusted, non-user-writable JPEG
 // file).
 const char kDefaultWallpaperSmall[] = "default-wallpaper-small";
+
+// Test Organization Unit (OU) user to use for demo mode. Only pass the part
+// before "@cros-demo-mode.com".
+const char kDemoModeEnrollingUsername[] = "demo-mode-enrolling-username";
+
+// Force ARC provision to take code path for offline demo mode.
+const char kDemoModeForceArcOfflineProvision[] =
+    "demo-mode-force-arc-offline-provision";
 
 // App ID to use for highlights app in demo mode.
 const char kDemoModeHighlightsApp[] = "demo-mode-highlights-extension";
@@ -769,6 +778,13 @@ const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
 
+// Removes the condition that a network has had to existed for at least two
+// weeks and allows the user to provide the frequency at which the
+// HiddenNetworkHandler class checks for and removes wrongly hidden networks.
+// The frequency should be provided in seconds, should follow the format
+// "--force-hidden-network-migration=#", and should be >= 1.
+const char kForceHiddenNetworkMigration[] = "force-hidden-network-migration";
+
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
@@ -780,6 +796,9 @@ const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 
 // Adds fake Bluetooth devices to the quick settings menu for UI testing.
 const char kQsAddFakeBluetoothDevices[] = "qs-add-fake-bluetooth-devices";
+
+// Adds fake Cast devices to the quick settings menu for UI testing.
+const char kQsAddFakeCastDevices[] = "qs-add-fake-cast-devices";
 
 // The name of the per-model directory which contains per-region
 // subdirectories with regulatory label files for this model.

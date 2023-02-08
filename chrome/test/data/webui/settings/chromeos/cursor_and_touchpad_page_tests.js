@@ -4,74 +4,46 @@
 
 import 'chrome://os-settings/chromeos/lazy_load.js';
 
-import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {CrSettingsPrefs, DevicePageBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {TestDevicePageBrowserProxy} from './test_device_page_browser_proxy.js';
+
+const DEFAULT_BLACK_CURSOR_COLOR = 0;
+const RED_CURSOR_COLOR = 0xd93025;
+
+/**
+ * Possible control types for settings.
+ * @enum {string}
+ */
+export const ControlType = {
+  DROPDOWN: 'dropdown',
+  TOGGLE: 'toggle',
+};
 
 suite('CursorAndTouchpadPageTests', function() {
   let page = null;
   let deviceBrowserProxy = null;
 
-  /** @implements {DevicePageBrowserProxy} */
-  class TestDevicePageBrowserProxy {
-    constructor() {
-      /** @private {boolean} */
-      this.hasMouse_ = true;
-      /** @private {boolean} */
-      this.hasTouchpad_ = true;
-    }
+  async function initPage() {
+    const prefElement = document.createElement('settings-prefs');
+    document.body.appendChild(prefElement);
 
-    /** @param {boolean} hasMouse */
-    set hasMouse(hasMouse) {
-      this.hasMouse_ = hasMouse;
-      webUIListenerCallback('has-mouse-changed', this.hasMouse_);
-    }
-
-    /** @param {boolean} hasTouchpad */
-    set hasTouchpad(hasTouchpad) {
-      this.hasTouchpad_ = hasTouchpad;
-      webUIListenerCallback('has-touchpad-changed', this.hasTouchpad_);
-    }
-
-    /** @override */
-    initializePointers() {
-      webUIListenerCallback('has-mouse-changed', this.hasMouse_);
-      webUIListenerCallback('has-touchpad-changed', this.hasTouchpad_);
-    }
-  }
-
-  function initPage(opt_prefs) {
+    await CrSettingsPrefs.initialized;
     page = document.createElement('settings-cursor-and-touchpad-page');
-    page.prefs = opt_prefs || getDefaultPrefs();
+    page.prefs = prefElement.prefs;
     document.body.appendChild(page);
-  }
-
-  function getDefaultPrefs() {
-    return {
-      'settings': {
-        'a11y': {
-          'tablet_mode_shelf_nav_buttons_enabled': {
-            key: 'settings.a11y.tablet_mode_shelf_nav_buttons_enabled',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: false,
-          },
-        },
-        'accessibility': {
-          key: 'settings.accessibility',
-          type: chrome.settingsPrivate.PrefType.BOOLEAN,
-          value: false,
-        },
-      },
-    };
+    flush();
   }
 
   setup(function() {
     deviceBrowserProxy = new TestDevicePageBrowserProxy();
+    deviceBrowserProxy.hasMouse = true;
+    deviceBrowserProxy.hasTouchpad = true;
+    deviceBrowserProxy.hasPointingStick = false;
     DevicePageBrowserProxyImpl.setInstanceForTesting(deviceBrowserProxy);
 
     PolymerTest.clearBody();
@@ -85,12 +57,40 @@ suite('CursorAndTouchpadPageTests', function() {
     Router.getInstance().resetRouteForTesting();
   });
 
+  test('cursor color prefs and dropdown synced', async function() {
+    await initPage();
+
+    // Make sure cursor color dropdown is black, matching default pref state.
+    const cursorColorDropdown =
+        page.shadowRoot.querySelector('#cursorColorDropdown');
+    await waitAfterNextRender(cursorColorDropdown);
+    const cursorColorSelectElement =
+        cursorColorDropdown.shadowRoot.querySelector('select');
+    assertEquals(
+        String(DEFAULT_BLACK_CURSOR_COLOR), cursorColorSelectElement.value);
+
+    // Turn cursor color to red, and verify pref is also red.
+    cursorColorSelectElement.value = RED_CURSOR_COLOR;
+    cursorColorSelectElement.dispatchEvent(new CustomEvent('change'));
+    const cursorColorPref = page.getPref('settings.a11y.cursor_color');
+    const cursorColorEnabledPref =
+        page.getPref('settings.a11y.cursor_color_enabled');
+    assertEquals(RED_CURSOR_COLOR, cursorColorPref.value);
+    assertTrue(cursorColorEnabledPref.value);
+
+    // Turn cursor color back to default, and verify pref is also default.
+    cursorColorSelectElement.value = DEFAULT_BLACK_CURSOR_COLOR;
+    cursorColorSelectElement.dispatchEvent(new CustomEvent('change'));
+    assertEquals(DEFAULT_BLACK_CURSOR_COLOR, cursorColorPref.value);
+    assertFalse(cursorColorEnabledPref.value);
+  });
+
   test(
       'should focus pointerSubpageButton button when returning from Pointers subpage',
       async () => {
         const selector = '#pointerSubpageButton';
         const route = routes.POINTERS;
-        initPage();
+        await initPage();
         flush();
         const router = Router.getInstance();
 
@@ -114,8 +114,8 @@ suite('CursorAndTouchpadPageTests', function() {
             `${selector} should be focused`);
       });
 
-  test('Pointers row only visible if mouse/touchpad present', function() {
-    initPage();
+  test('Pointers row only visible if mouse/touchpad present', async function() {
+    await initPage();
     const row = page.shadowRoot.querySelector('#pointerSubpageButton');
     assertFalse(row.hidden);
 
@@ -136,24 +136,24 @@ suite('CursorAndTouchpadPageTests', function() {
     assertFalse(row.hidden);
   });
 
-  test('tablet mode buttons visible', function() {
+  test('tablet mode buttons visible', async function() {
     loadTimeData.overrideValues({
       isKioskModeActive: false,
       showTabletModeShelfNavigationButtonsSettings: true,
     });
-    initPage();
+    await initPage();
     flush();
 
     assertTrue(isVisible(page.shadowRoot.querySelector(
         '#shelfNavigationButtonsEnabledControl')));
   });
 
-  test('toggle tablet mode buttons', function() {
+  test('toggle tablet mode buttons', async function() {
     loadTimeData.overrideValues({
       isKioskModeActive: false,
       showTabletModeShelfNavigationButtonsSettings: true,
     });
-    initPage();
+    await initPage();
     flush();
 
     const navButtonsToggle =
@@ -181,62 +181,63 @@ suite('CursorAndTouchpadPageTests', function() {
         page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
   });
 
-  test('tablet mode buttons toggle disabled with spoken feedback', function() {
-    loadTimeData.overrideValues({
-      isKioskModeActive: false,
-      showTabletModeShelfNavigationButtonsSettings: true,
-    });
+  test(
+      'tablet mode buttons toggle disabled with spoken feedback',
+      async function() {
+        loadTimeData.overrideValues({
+          isKioskModeActive: false,
+          showTabletModeShelfNavigationButtonsSettings: true,
+        });
 
-    const prefs = getDefaultPrefs();
-    // Enable spoken feedback.
-    prefs.settings.accessibility.value = true;
+        await initPage();
+        flush();
 
-    initPage(prefs);
-    flush();
+        // Enable spoken feedback (ChromeVox).
+        page.setPrefValue('settings.accessibility', true);
 
-    const navButtonsToggle =
-        page.shadowRoot.querySelector('#shelfNavigationButtonsEnabledControl');
-    assertTrue(isVisible(navButtonsToggle));
+        const navButtonsToggle = page.shadowRoot.querySelector(
+            '#shelfNavigationButtonsEnabledControl');
+        assertTrue(isVisible(navButtonsToggle));
 
-    // If spoken feedback is enabled, the shelf nav buttons toggle should be
-    // disabled and checked.
-    assertTrue(navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
+        // If spoken feedback is enabled, the shelf nav buttons toggle should be
+        // disabled and checked.
+        assertTrue(navButtonsToggle.disabled);
+        assertTrue(navButtonsToggle.checked);
 
-    // Clicking the toggle should have no effect.
-    navButtonsToggle.click();
-    flush();
+        // Clicking the toggle should have no effect.
+        navButtonsToggle.click();
+        flush();
 
-    assertTrue(navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
-    assertFalse(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
+        assertTrue(navButtonsToggle.disabled);
+        assertTrue(navButtonsToggle.checked);
+        assertFalse(page.prefs.settings.a11y
+                        .tablet_mode_shelf_nav_buttons_enabled.value);
 
-    // The toggle should be enabled if the spoken feedback gets disabled.
-    page.set('prefs.settings.accessibility.value', false);
-    flush();
+        // The toggle should be enabled if the spoken feedback gets disabled.
+        page.set('prefs.settings.accessibility.value', false);
+        flush();
 
-    assertFalse(!!navButtonsToggle.disabled);
-    assertFalse(navButtonsToggle.checked);
-    assertFalse(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
+        assertFalse(!!navButtonsToggle.disabled);
+        assertFalse(navButtonsToggle.checked);
+        assertFalse(page.prefs.settings.a11y
+                        .tablet_mode_shelf_nav_buttons_enabled.value);
 
-    // Clicking the toggle should update the backing pref.
-    navButtonsToggle.click();
-    flush();
+        // Clicking the toggle should update the backing pref.
+        navButtonsToggle.click();
+        flush();
 
-    assertFalse(!!navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
-    assertTrue(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
-  });
+        assertFalse(!!navButtonsToggle.disabled);
+        assertTrue(navButtonsToggle.checked);
+        assertTrue(page.prefs.settings.a11y
+                       .tablet_mode_shelf_nav_buttons_enabled.value);
+      });
 
-  test('some parts are hidden in kiosk mode', function() {
+  test('some parts are hidden in kiosk mode', async function() {
     loadTimeData.overrideValues({
       isKioskModeActive: true,
       showTabletModeShelfNavigationButtonsSettings: true,
     });
-    initPage();
+    await initPage();
     // Add mouse and touchpad to show some hidden settings.
     deviceBrowserProxy.hasMouse = true;
     deviceBrowserProxy.hasTouchpad = true;
@@ -250,4 +251,111 @@ suite('CursorAndTouchpadPageTests', function() {
     const subpageLinks = page.root.querySelectorAll('cr-link-row');
     subpageLinks.forEach(subpageLink => assertFalse(isVisible(subpageLink)));
   });
+
+  test('large cursor options appear when large cursor enabled', async () => {
+    await initPage();
+    const largeCursorToggle =
+        page.shadowRoot.querySelector('#largeCursorEnabledControl');
+    const largeCursorSizeSlider =
+        page.shadowRoot.querySelector('#largeCursorSizeSlider');
+    assertFalse(isVisible(largeCursorSizeSlider));
+    assertTrue(isVisible(largeCursorToggle));
+    assertFalse(largeCursorToggle.checked);
+    assertFalse(page.prefs.settings.a11y.large_cursor_enabled.value);
+    largeCursorToggle.click();
+
+    await waitBeforeNextRender(page);
+    flush();
+    assertTrue(largeCursorToggle.checked);
+    assertTrue(page.prefs.settings.a11y.large_cursor_enabled.value);
+    assertTrue(isVisible(largeCursorSizeSlider));
+  });
+
+  const settingsControls = [
+    {
+      id: 'autoClickToggle',
+      prefKey: 'settings.a11y.autoclick',
+      defaultValue: false,
+      alternateValue: true,
+      type: ControlType.TOGGLE,
+    },
+    {
+      id: 'delayBeforeClickDropdown',
+      prefKey: 'settings.a11y.autoclick_delay_ms',
+      defaultValue: 1000,
+      alternateValue: 2000,
+      type: ControlType.DROPDOWN,
+    },
+    {
+      id: 'autoClickStabilizePositionToggle',
+      prefKey: 'settings.a11y.autoclick_stabilize_position',
+      defaultValue: false,
+      alternateValue: true,
+      type: ControlType.TOGGLE,
+    },
+    {
+      id: 'autoclickMovementThresholdDropdown',
+      prefKey: 'settings.a11y.autoclick_movement_threshold',
+      defaultValue: 20,
+      alternateValue: 5,
+      type: ControlType.DROPDOWN,
+    },
+    {
+      id: 'autoClickRevertToLeftClickToggle',
+      prefKey: 'settings.a11y.autoclick_revert_to_left_click',
+      defaultValue: true,
+      alternateValue: false,
+      type: ControlType.TOGGLE,
+    },
+  ];
+
+  settingsControls.forEach(control => {
+    const {id, prefKey, defaultValue, alternateValue, type} = control;
+
+    test(`Autoclick ${type} ${id} syncs to Pref: ${prefKey}`, async () => {
+      await initPage();
+
+      // Ensure control exists.
+      const control = page.shadowRoot.querySelector(`#${id}`);
+      assertTrue(!!control);
+
+      // Ensure pref is set to the default value.
+      let pref = page.getPref(prefKey);
+      assertEquals(defaultValue, pref.value);
+
+      // Update control to alternate value.
+      switch (type) {
+        case ControlType.TOGGLE:
+          control.click();
+          break;
+        case ControlType.DROPDOWN:
+          await waitAfterNextRender(control);
+          const controlElement = control.shadowRoot.querySelector('select');
+          controlElement.value = alternateValue;
+          controlElement.dispatchEvent(new CustomEvent('change'));
+          break;
+      }
+
+      // Ensure pref is set to the alternate value.
+      pref = page.getPref(prefKey);
+      assertEquals(alternateValue, pref.value);
+    });
+  });
+
+  test(
+      'cursor highlight pref enabled when cursor highlight enabled',
+      async () => {
+        await initPage();
+        const cursorHighlightToggle =
+            page.shadowRoot.querySelector('#cursorHighlightToggle');
+        assertTrue(isVisible(cursorHighlightToggle));
+        assertFalse(cursorHighlightToggle.checked);
+        assertFalse(page.prefs.settings.a11y.cursor_highlight.value);
+        cursorHighlightToggle.click();
+
+        await waitBeforeNextRender(page);
+        flush();
+        assertTrue(cursorHighlightToggle.checked);
+        assertTrue(page.prefs.settings.a11y.cursor_highlight.value);
+      });
 });

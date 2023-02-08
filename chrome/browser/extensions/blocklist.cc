@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/blocklist_factory.h"
 #include "chrome/browser/extensions/blocklist_state_fetcher.h"
@@ -101,7 +100,8 @@ class SafeBrowsingClientImpl
 
   SafeBrowsingClientImpl(const std::set<std::string>& extension_ids,
                          OnResultCallback callback)
-      : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      : callback_task_runner_(
+            base::SingleThreadTaskRunner::GetCurrentDefault()),
         callback_(std::move(callback)) {}
 
   ~SafeBrowsingClientImpl() override {}
@@ -189,7 +189,7 @@ void Blocklist::GetBlocklistedIDs(const std::set<std::string>& ids,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (ids.empty() || !GetDatabaseManager().get()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), BlocklistStateMap()));
     return;
   }
@@ -199,8 +199,8 @@ void Blocklist::GetBlocklistedIDs(const std::set<std::string>& ids,
   // extensions returned by SafeBrowsing will then be passed to
   // GetBlocklistStateIDs to get the particular BlocklistState for each id.
   SafeBrowsingClientImpl::Start(
-      ids, base::BindOnce(&Blocklist::GetBlocklistStateForIDs, AsWeakPtr(),
-                          std::move(callback)));
+      ids, base::BindOnce(&Blocklist::GetBlocklistStateForIDs,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void Blocklist::GetMalwareIDs(const std::set<std::string>& ids,
@@ -245,8 +245,9 @@ void Blocklist::GetBlocklistStateForIDs(
     // these extensions.
     RequestExtensionsBlocklistState(
         ids_unknown_state,
-        base::BindOnce(&Blocklist::ReturnBlocklistStateMap, AsWeakPtr(),
-                       std::move(callback), blocklisted_ids));
+        base::BindOnce(&Blocklist::ReturnBlocklistStateMap,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       blocklisted_ids));
   }
 }
 
@@ -275,9 +276,9 @@ void Blocklist::RequestExtensionsBlocklistState(
   state_requests_.emplace_back(std::vector<std::string>(ids.begin(), ids.end()),
                                std::move(callback));
   for (const auto& id : ids) {
-    state_fetcher_->Request(
-        id,
-        base::BindOnce(&Blocklist::OnBlocklistStateReceived, AsWeakPtr(), id));
+    state_fetcher_->Request(id,
+                            base::BindOnce(&Blocklist::OnBlocklistStateReceived,
+                                           weak_ptr_factory_.GetWeakPtr(), id));
   }
 }
 
@@ -354,7 +355,7 @@ void Blocklist::IsDatabaseReady(DatabaseReadyCallback callback) {
                DatabaseReadyCallback callback, bool is_ready) {
               std::move(callback).Run(blocklist_service && is_ready);
             },
-            AsWeakPtr(), std::move(callback)));
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 }
 

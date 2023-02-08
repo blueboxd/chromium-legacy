@@ -951,8 +951,6 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange& range,
       case CSSPrimitiveValue::UnitType::kContainerBlockSize:
       case CSSPrimitiveValue::UnitType::kContainerMin:
       case CSSPrimitiveValue::UnitType::kContainerMax:
-        if (!RuntimeEnabledFeatures::CSSContainerRelativeUnitsEnabled())
-          return nullptr;
         break;
       case CSSPrimitiveValue::UnitType::kIcs:
         if (!RuntimeEnabledFeatures::CSSIcUnitEnabled())
@@ -1596,27 +1594,33 @@ static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
   DCHECK(function_id == CSSValueID::kLab || function_id == CSSValueID::kOklab);
   CSSParserTokenRange args = ConsumeFunction(range);
   // Consume lightness, either a percentage or a number or "none"
-  CSSPrimitiveValue* value;
   absl::optional<double> lightness;
   if (!ConsumeIdent<CSSValueID::kNone>(args)) {
-    value = ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    if (!value) {
-      value =
-          ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    }
-    if (!value)
+    if (CSSPrimitiveValue* value_percent =
+            ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+        value_percent) {
+      lightness = std::max(0.0, value_percent->GetDoubleValue());
+    } else if (CSSPrimitiveValue* value = ConsumeNumber(
+                   args, context, CSSPrimitiveValue::ValueRange::kAll);
+               value) {
+      lightness = std::max(0.0, value->GetDoubleValue()) *
+                  (function_id == CSSValueID::kLab ? 1.0 : 100.0);
+    } else {
       return false;
-    lightness = std::max(0.0, value->GetDoubleValue());
+    }
   }
 
   absl::optional<double> ab[2];
   for (absl::optional<double>& i : ab) {
     if (ConsumeIdent<CSSValueID::kNone>(args))
       continue;
-    value = ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    if (!value)
+    if (CSSPrimitiveValue* value =
+            ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
+        value) {
+      i = value->GetDoubleValue();
+    } else {
       return false;
-    i = value->GetDoubleValue();
+    }
   }
 
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
@@ -1634,34 +1638,42 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
   CSSValueID function_id = range.Peek().FunctionId();
   DCHECK(function_id == CSSValueID::kLch || function_id == CSSValueID::kOklch);
   CSSParserTokenRange args = ConsumeFunction(range);
-  CSSPrimitiveValue* value;
   // Consume lightness, either a percentage or a number
   absl::optional<double> lightness;
   if (!ConsumeIdent<CSSValueID::kNone>(args)) {
-    value = ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    if (!value) {
-      value =
-          ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    }
-    if (!value)
+    if (CSSPrimitiveValue* value_percent =
+            ConsumePercent(args, context, CSSPrimitiveValue::ValueRange::kAll);
+        value_percent) {
+      lightness = std::max(0.0, value_percent->GetDoubleValue());
+    } else if (CSSPrimitiveValue* value = ConsumeNumber(
+                   args, context, CSSPrimitiveValue::ValueRange::kAll);
+               value) {
+      lightness = std::max(0.0, value->GetDoubleValue()) *
+                  (function_id == CSSValueID::kLch ? 1.0 : 100.0);
+    } else {
       return false;
-    lightness = std::max(0.0, value->GetDoubleValue());
+    }
   }
 
   absl::optional<double> chroma;
   if (!ConsumeIdent<CSSValueID::kNone>(args)) {
-    value = ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
-    if (!value)
+    if (CSSPrimitiveValue* value =
+            ConsumeNumber(args, context, CSSPrimitiveValue::ValueRange::kAll);
+        value) {
+      chroma = std::max(0.0, value->GetDoubleValue());
+    } else {
       return false;
-    chroma = std::max(0.0, value->GetDoubleValue());
+    }
   }
 
   absl::optional<double> hue;
   if (!ConsumeIdent<CSSValueID::kNone>(args)) {
-    value = ConsumeHue(args, context, absl::nullopt);
-    if (!value)
+    if (CSSPrimitiveValue* value = ConsumeHue(args, context, absl::nullopt);
+        value) {
+      hue = std::max(0.0, value->GetDoubleValue());
+    } else {
       return false;
-    hue = value->GetDoubleValue();
+    }
   }
 
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
@@ -3089,9 +3101,25 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
     image_set->Append(*CSSNumericLiteralValue::Create(
         image_scale_factor, CSSPrimitiveValue::UnitType::kNumber));
   } while (ConsumeCommaIncludingWhitespace(args));
+
   if (!args.AtEnd())
     return nullptr;
-  context.Count(WebFeature::kWebkitImageSet);
+
+  switch (range.Peek().FunctionId()) {
+    case CSSValueID::kWebkitImageSet:
+      context.Count(WebFeature::kWebkitImageSet);
+      image_set->MarkWebkitPrefixed();
+      break;
+
+    case CSSValueID::kImageSet:
+      context.Count(WebFeature::kImageSet);
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+
   range = range_copy;
   return image_set;
 }
@@ -3119,7 +3147,9 @@ CSSValue* ConsumeImage(CSSParserTokenRange& range,
     return CreateCSSImageValueWithReferrer(uri, context);
   if (range.Peek().GetType() == kFunctionToken) {
     CSSValueID id = range.Peek().FunctionId();
-    if (id == CSSValueID::kWebkitImageSet)
+    if (id == CSSValueID::kWebkitImageSet ||
+        (id == CSSValueID::kImageSet &&
+         RuntimeEnabledFeatures::CSSImageSetEnabled()))
       return ConsumeImageSet(range, context);
     if (generated_image == ConsumeGeneratedImagePolicy::kAllow &&
         IsGeneratedImage(id)) {
@@ -3223,6 +3253,7 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
                   "' specified to an 'appearance' property is not "
                   "standardized. It will be removed in the future."));
         }
+        context.Count(WebFeature::kCSSValueAppearanceNonStandard);
       }
       [[fallthrough]];
       // This function distinguishes 'appearance' and '-webkit-appearance'
@@ -3694,17 +3725,26 @@ CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range,
   return nullptr;
 }
 
-CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
-                                const CSSParserContext& context) {
-  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
-  if (CSSPrimitiveValue* time =
-          ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll)) {
-    return time;
+CSSValue* ConsumeAnimationDuration(CSSParserTokenRange& range,
+                                   const CSSParserContext& context) {
+  if (RuntimeEnabledFeatures::CSSScrollTimelineEnabled()) {
+    if (CSSValue* ident = ConsumeIdent<CSSValueID::kAuto>(range)) {
+      return ident;
+    }
   }
+  return ConsumeTime(range, context,
+                     CSSPrimitiveValue::ValueRange::kNonNegative);
+}
+
+CSSValue* ConsumeTimelineRangeName(CSSParserTokenRange& range) {
+  return ConsumeIdent<CSSValueID::kContain, CSSValueID::kCover,
+                      CSSValueID::kEnter, CSSValueID::kExit>(range);
+}
+
+CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange& range,
+                                             const CSSParserContext& context) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  CSSValue* range_name =
-      ConsumeIdent<CSSValueID::kContain, CSSValueID::kCover, CSSValueID::kEnter,
-                   CSSValueID::kExit>(range);
+  CSSValue* range_name = ConsumeTimelineRangeName(range);
   if (!range_name)
     return nullptr;
   list->Append(*range_name);
@@ -3714,6 +3754,16 @@ CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
     return nullptr;
   list->Append(*percentage);
   return list;
+}
+
+CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  if (CSSPrimitiveValue* time =
+          ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll)) {
+    return time;
+  }
+  return ConsumeTimelineRangeNameAndPercent(range, context);
 }
 
 bool ConsumeAnimationShorthand(

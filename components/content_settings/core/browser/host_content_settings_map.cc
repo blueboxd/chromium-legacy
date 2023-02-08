@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -48,8 +48,8 @@
 #include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
-using content_settings::WebsiteSettingsInfo;
 using content_settings::ContentSettingsInfo;
+using content_settings::WebsiteSettingsInfo;
 
 namespace {
 
@@ -244,7 +244,7 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
                                                bool store_last_modified,
                                                bool restore_session,
                                                bool should_record_metrics)
-    : RefcountedKeyedService(base::ThreadTaskRunnerHandle::Get()),
+    : RefcountedKeyedService(base::SingleThreadTaskRunner::GetCurrentDefault()),
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
@@ -516,7 +516,7 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
                                constraints);
 }
 
-content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns (
+content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType type) const {
@@ -535,8 +535,8 @@ content_settings::PatternPair HostContentSettingsMap::GetNarrowestPatterns (
     return content_settings::PatternPair();
   }
 
-  content_settings::PatternPair patterns = GetPatternsForContentSettingsType(
-      primary_url, secondary_url, type);
+  content_settings::PatternPair patterns =
+      GetPatternsForContentSettingsType(primary_url, secondary_url, type);
 
   ContentSettingsPattern::Relation r1 =
       info.primary_pattern.Compare(patterns.first);

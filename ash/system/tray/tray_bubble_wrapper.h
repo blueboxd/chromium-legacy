@@ -16,7 +16,6 @@ class TrayBackgroundView;
 class TrayBubbleView;
 
 // Creates and manages the Widget and EventFilter components of a bubble.
-// TODO(tetsui): Remove this and use TrayBubbleBase for all bubbles.
 class ASH_EXPORT TrayBubbleWrapper : public TrayBubbleBase,
                                      public ::wm::ActivationChangeObserver {
  public:
@@ -25,14 +24,15 @@ class ASH_EXPORT TrayBubbleWrapper : public TrayBubbleBase,
   // case in which we do not want the keyboard events (both inside and outside
   // of the bubble) be filtered and also we do not want activaion of other
   // windows closes the bubble.
-  TrayBubbleWrapper(TrayBackgroundView* tray,
-                    TrayBubbleView* bubble_view,
-                    bool event_handling = true);
+  explicit TrayBubbleWrapper(TrayBackgroundView* tray,
+                             bool event_handling = true);
 
   TrayBubbleWrapper(const TrayBubbleWrapper&) = delete;
   TrayBubbleWrapper& operator=(const TrayBubbleWrapper&) = delete;
 
   ~TrayBubbleWrapper() override;
+
+  void ShowBubble(std::unique_ptr<TrayBubbleView> bubble_view);
 
   // TrayBubbleBase overrides:
   TrayBackgroundView* GetTray() const override;
@@ -55,8 +55,10 @@ class ASH_EXPORT TrayBubbleWrapper : public TrayBubbleBase,
 
  private:
   TrayBackgroundView* tray_;
-  TrayBubbleView* bubble_view_;  // unowned
-  views::Widget* bubble_widget_;
+  views::Widget* bubble_widget_ = nullptr;
+
+  // Owned by `bubble_widget_`
+  TrayBubbleView* bubble_view_ = nullptr;
 
   // When set to false disables the tray's event filtering
   // and also ignores the activation events. Eche window is an example of a use

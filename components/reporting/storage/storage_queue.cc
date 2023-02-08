@@ -17,7 +17,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_list.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
@@ -200,8 +199,6 @@ StorageQueue::StorageQueue(
       low_priority_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
       options_(options),
-      upload_timer_(options.clock()),
-      check_back_timer_(options.clock()),
       async_start_upload_cb_(async_start_upload_cb),
       encryption_module_(encryption_module),
       compression_module_(compression_module) {
@@ -1081,7 +1078,8 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
           base::BindPostTask(
               storage_queue_->sequenced_task_runner_,
               base::BindRepeating(
-                  &StorageQueue::CheckBackUpload, storage_queue_, status,
+                  &StorageQueue::CheckBackUpload,
+                  storage_queue_->weakptr_factory_.GetWeakPtr(), status,
                   /*next_sequencing_id=*/sequence_info_.sequencing_id())));
     }
   }

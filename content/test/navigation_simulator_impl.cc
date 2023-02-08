@@ -283,11 +283,9 @@ NavigationSimulatorImpl::CreateRendererInitiated(
   if (render_frame_host->IsNestedWithinFencedFrame()) {
     sim->set_supports_loading_mode_header("fenced-frame");
     sim->SetTransition(ui::PAGE_TRANSITION_AUTO_SUBFRAME);
-    // When InitialNavigationEntry is enabled, set should_replace_current_entry
-    // to true, to pass the DidCommitParams check that expects the initial
-    // NavigationEntry to always be replaced.
-    sim->set_should_replace_current_entry(
-        blink::features::IsInitialNavigationEntryEnabled());
+    // Set should_replace_current_entry to true, to pass the DidCommitParams
+    // check that expects the initial NavigationEntry to always be replaced.
+    sim->set_should_replace_current_entry(true);
   }
   return sim;
 }
@@ -1302,7 +1300,9 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
 bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   if (session_history_offset_) {
     static_cast<NavigationControllerImpl&>(web_contents_->GetController())
-        .GoToOffsetFromRenderer(session_history_offset_, render_frame_host_);
+        .GoToOffsetFromRenderer(
+            session_history_offset_, render_frame_host_,
+            /*soft_navigation_heuristic_task_id=*/absl::nullopt);
     request_ = render_frame_host_->frame_tree_node()->navigation_request();
     return true;
   }
@@ -1320,7 +1320,9 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           nullptr /* trust_token_params */, impression_,
           base::TimeTicks() /* renderer_before_unload_start */,
           base::TimeTicks() /* renderer_before_unload_end */,
-          absl::nullopt /* web_bundle_token */);
+          absl::nullopt /* web_bundle_token */,
+          blink::mojom::NavigationInitiatorActivationAndAdStatus::
+              kDidNotStartWithTransientActivation);
   auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->input_start = navigation_input_start_;
@@ -1499,12 +1501,10 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
 
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
-  params->should_replace_current_entry =
+  params->did_create_new_entry = DidCreateNewEntry(
+      same_document,
       should_replace_current_entry_ ||
-      (request_ && request_->common_params().should_replace_current_entry);
-
-  params->did_create_new_entry =
-      DidCreateNewEntry(same_document, params->should_replace_current_entry);
+          (request_ && request_->common_params().should_replace_current_entry));
 
   // See CalculateTransition() in render_frame_host_impl.cc.
   if (frame_tree_node_->IsMainFrame() && request_) {

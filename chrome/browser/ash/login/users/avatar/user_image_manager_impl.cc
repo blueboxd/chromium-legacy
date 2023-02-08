@@ -21,9 +21,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -64,6 +63,8 @@ const int kProfileRefreshIntervalSec = 24 * 3600;
 static bool g_ignore_profile_data_download_delay_ = false;
 
 static bool g_skip_profile_download = false;
+
+static bool g_skip_default_user_image_download = false;
 
 // Saves `image_bytes` at `image_path`, and delete the old file at
 // `old_image_path` if needed.
@@ -326,6 +327,17 @@ void UserImageManagerImpl::Job::SetToDefaultImage(int default_image_index) {
   if (ash::features::IsAvatarsCloudMigrationEnabled()) {
     // Fetch the default image from cloud before caching it.
     image_url_ = default_user_image::GetDefaultImageUrl(image_index_);
+
+    if (g_skip_default_user_image_download) {
+      auto user_image = std::make_unique<user_manager::UserImage>(
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGIN_DEFAULT_USER));
+      UpdateUser(std::move(user_image));
+      UpdateLocalState();
+      NotifyJobDone();
+      return;
+    }
+
     user_image_loader::StartWithGURLAnimated(
         image_url_, base::BindOnce(&Job::OnLoadImageDone,
                                    weak_factory_.GetWeakPtr(), true));
@@ -482,8 +494,8 @@ void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
       old_image_path = base::FilePath::FromUTF8Unsafe(*value);
   }
 
-  base::PostTaskAndReplyWithResult(
-      parent_->background_task_runner_.get(), FROM_HERE,
+  parent_->background_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SaveAndDeleteImage, image_bytes, image_path_,
                      old_image_path),
       base::BindOnce(&Job::OnSaveImageDone, weak_factory_.GetWeakPtr()));
@@ -783,6 +795,11 @@ void UserImageManagerImpl::SkipProfileImageDownloadForTesting() {
   g_skip_profile_download = true;
 }
 
+// static
+void UserImageManagerImpl::SkipDefaultUserImageDownloadForTesting() {
+  g_skip_default_user_image_download = true;
+}
+
 bool UserImageManagerImpl::NeedsProfilePicture() const {
   return downloading_profile_image_;
 }
@@ -948,7 +965,8 @@ void UserImageManagerImpl::OnJobChangedUserImage() {
 
 void UserImageManagerImpl::OnJobDone() {
   if (job_.get())
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, job_.release());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
+        FROM_HERE, job_.release());
   else
     NOTREACHED();
 }

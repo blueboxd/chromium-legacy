@@ -152,7 +152,7 @@ AccessibilityPrivateGetDlcContentsFunction::Run() {
       dlc,
       base::BindOnce(
           &AccessibilityPrivateGetDlcContentsFunction::OnDlcContentsRetrieved,
-          base::RetainedRef(this)));
+          this));
   return RespondLater();
 }
 
@@ -229,7 +229,7 @@ AccessibilityPrivateInstallPumpkinForDictationFunction::Run() {
   AccessibilityManager::Get()->InstallPumpkinForDictation(
       base::BindOnce(&AccessibilityPrivateInstallPumpkinForDictationFunction::
                          OnPumpkinInstallFinished,
-                     base::RetainedRef(this)));
+                     this));
   return RespondLater();
 }
 
@@ -253,10 +253,6 @@ AccessibilityPrivateIsFeatureEnabledFunction::Run() {
   bool enabled;
   switch (params_feature) {
     case accessibility_private::AccessibilityFeature::
-        ACCESSIBILITY_FEATURE_ENHANCEDNETWORKVOICES:
-      enabled = ::features::IsEnhancedNetworkVoicesEnabled();
-      break;
-    case accessibility_private::AccessibilityFeature::
         ACCESSIBILITY_FEATURE_GOOGLETTSLANGUAGEPACKS:
       enabled = ::features::
           IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled();
@@ -270,6 +266,11 @@ AccessibilityPrivateIsFeatureEnabledFunction::Run() {
         ACCESSIBILITY_FEATURE_DICTATIONMORECOMMANDS:
       enabled =
           ::features::IsExperimentalAccessibilityDictationMoreCommandsEnabled();
+      break;
+    case accessibility_private::AccessibilityFeature::
+        ACCESSIBILITY_FEATURE_DICTATIONCONTEXTCHECKING:
+      enabled = ::features::
+          IsExperimentalAccessibilityDictationContextCheckingEnabled();
       break;
     case accessibility_private::
         ACCESSIBILITY_FEATURE_SELECTTOSPEAKCONTEXTMENUOPTION:
@@ -394,8 +395,19 @@ AccessibilityPrivateSendSyntheticKeyEventFunction::Run() {
   auto* host = ash::GetWindowTreeHostForDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   DCHECK(host);
-  // This skips rewriters.
-  host->DeliverEventToSink(synthetic_key_event.get());
+
+  bool dictation_enabled = AccessibilityManager::Get()->IsDictationEnabled();
+  bool from_accessibility_common =
+      extension_id() == extension_misc::kAccessibilityCommonExtensionId;
+  if (dictation_enabled && from_accessibility_common &&
+      params->use_rewriters.has_value() && params->use_rewriters.value()) {
+    // TODO(b/259397131): Remove the `useRewriters` property and remove this
+    // if statement.
+    host->SendEventToSink(synthetic_key_event.get());
+  } else {
+    host->DeliverEventToSink(synthetic_key_event.get());
+  }
+
   return RespondNow(WithArguments());
 }
 
@@ -764,13 +776,13 @@ AccessibilityPrivateShowConfirmationDialogFunction::Run() {
       title, description,
       base::BindOnce(
           &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
-          base::RetainedRef(this), /* confirmed */ true),
+          this, /* confirmed */ true),
       base::BindOnce(
           &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
-          base::RetainedRef(this), /* not confirmed */ false),
+          this, /* not confirmed */ false),
       base::BindOnce(
           &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
-          base::RetainedRef(this), /* not confirmed */ false));
+          this, /* not confirmed */ false));
 
   return RespondLater();
 }

@@ -18,11 +18,6 @@ ChromeVoxE2ETest = class extends E2ETestBase {
   testGenCppIncludes() {
     super.testGenCppIncludes();
     GEN(`
-  #include "ash/accessibility/accessibility_delegate.h"
-  #include "ash/shell.h"
-  #include "base/bind.h"
-  #include "base/callback.h"
-  #include "chrome/browser/ash/accessibility/accessibility_manager.h"
   #include "extensions/common/extension_l10n_util.h"
       `);
   }
@@ -47,17 +42,18 @@ ChromeVoxE2ETest = class extends E2ETestBase {
     await super.setUpDeferred();
 
     // Alphabetical based on file path.
+    await importModule(
+        'BrailleInterface',
+        '/chromevox/background/braille/braille_interface.js');
     await importModule('ChromeVox', '/chromevox/background/chromevox.js');
     await importModule(
         'ChromeVoxState', '/chromevox/background/chromevox_state.js');
     await importModule(
-        'BrailleInterface', '/chromevox/common/braille/braille_interface.js');
-    await importModule(
         'NavBraille', '/chromevox/common/braille/nav_braille.js');
     await importModule(
         ['AbstractEarcons', 'Earcon'], '/chromevox/common/abstract_earcons.js');
-    await importModule(
-        ['QueueMode', 'TtsInterface'], '/chromevox/common/tts_interface.js');
+    await importModule('TtsInterface', '/chromevox/common/tts_interface.js');
+    await importModule('QueueMode', '/chromevox/common/tts_types.js');
 
     await ChromeVoxState.ready();
   }

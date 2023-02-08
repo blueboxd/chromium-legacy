@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 
 namespace chromeos {
@@ -34,7 +34,7 @@ void FakeDlpClient::SetDlpFilesPolicy(
     SetDlpFilesPolicyCallback callback) {
   ++set_dlp_files_policy_count_;
   dlp::SetDlpFilesPolicyResponse response;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), response));
 }
 
@@ -84,6 +84,10 @@ void FakeDlpClient::CheckFilesTransfer(
 void FakeDlpClient::RequestFileAccess(
     const dlp::RequestFileAccessRequest request,
     RequestFileAccessCallback callback) {
+  if (request_file_access_mock_.has_value()) {
+    request_file_access_mock_->Run(request, std::move(callback));
+    return;
+  }
   dlp::RequestFileAccessResponse response;
   response.set_allowed(file_access_allowed_);
   std::move(callback).Run(response, base::ScopedFD());
@@ -121,6 +125,7 @@ void FakeDlpClient::SetIsAlive(bool is_alive) {
 void FakeDlpClient::SetAddFileMock(AddFileCall mock) {
   add_file_mock_ = mock;
 }
+
 void FakeDlpClient::SetGetFilesSourceMock(GetFilesSourceCall mock) {
   get_files_source_mock_ = mock;
 }
@@ -128,6 +133,10 @@ void FakeDlpClient::SetGetFilesSourceMock(GetFilesSourceCall mock) {
 dlp::CheckFilesTransferRequest FakeDlpClient::GetLastCheckFilesTransferRequest()
     const {
   return last_check_files_transfer_request_;
+}
+
+void FakeDlpClient::SetRequestFileAccessMock(RequestFileAccessCall mock) {
+  request_file_access_mock_ = std::move(mock);
 }
 
 }  // namespace chromeos

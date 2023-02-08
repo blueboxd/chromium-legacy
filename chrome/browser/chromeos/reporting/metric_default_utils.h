@@ -28,10 +28,6 @@ constexpr base::TimeDelta kDefaultNetworkTelemetryCollectionRate =
 constexpr base::TimeDelta kDefaultNetworkTelemetryEventCheckingRate =
     base::Minutes(10);
 
-// Default graphics telemetry collection rate.
-constexpr base::TimeDelta kDefaultGraphicsTelemetryCollectionRate =
-    base::Hours(3);
-
 // Default record upload frequency.
 constexpr base::TimeDelta kDefaultReportUploadFrequency = base::Hours(3);
 
@@ -53,6 +49,9 @@ constexpr bool kReportDevicePeripheralsDefaultValue = false;
 
 // Default value for reporting device graphics status.
 constexpr bool kReportDeviceGraphicsStatusDefaultValue = false;
+
+// Default value for reporting device app info and usage.
+constexpr bool kReportDeviceAppInfoDefaultValue = false;
 
 // Returns the default report upload frequency for the current environment.
 const base::TimeDelta GetDefaultReportUploadFrequency();

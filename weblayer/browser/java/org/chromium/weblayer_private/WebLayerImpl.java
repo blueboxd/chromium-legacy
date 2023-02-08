@@ -45,7 +45,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -88,8 +87,6 @@ import org.chromium.weblayer_private.interfaces.ICrashReporterController;
 import org.chromium.weblayer_private.interfaces.IMediaRouteDialogFragment;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
-import org.chromium.weblayer_private.interfaces.ISettingsFragment;
-import org.chromium.weblayer_private.interfaces.ISiteSettingsFragment;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -100,7 +97,6 @@ import org.chromium.weblayer_private.media.MediaSessionManager;
 import org.chromium.weblayer_private.media.MediaStreamManager;
 import org.chromium.weblayer_private.metrics.MetricsServiceClient;
 import org.chromium.weblayer_private.metrics.UmaUtils;
-import org.chromium.weblayer_private.settings.SettingsFragmentImpl;
 
 import java.io.File;
 import java.io.IOException;
@@ -255,11 +251,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         mIsWebViewCompatMode = remoteContext != null
                 && !remoteContext.getClassLoader().equals(WebLayerImpl.class.getClassLoader());
         if (mIsWebViewCompatMode) {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                // Load the library with the crazy linker.
-                LibraryLoader.getInstance().setLinkerImplementation(true, false);
-                WebViewCompatibilityHelperImpl.setRequiresManualJniRegistration(true);
-            }
             notifyWebViewRunningInProcess(remoteContext.getClassLoader());
         }
 
@@ -386,20 +377,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
         BrowserFragmentImpl fragment = new BrowserFragmentImpl(mProfileManager, unwrappedArgs);
         return fragment.asIBrowserFragment();
-    }
-
-    @Override
-    public ISettingsFragment createSettingsFragmentImpl(IObjectWrapper fragmentArgs) {
-        StrictModeWorkaround.apply();
-        Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
-        return new SettingsFragmentImpl(mProfileManager, unwrappedArgs).asISettingsFragment();
-    }
-
-    @Override
-    public ISiteSettingsFragment createSiteSettingsFragmentImpl(IObjectWrapper fragmentArgs) {
-        StrictModeWorkaround.apply();
-        Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
-        return new SettingsFragmentImpl(mProfileManager, unwrappedArgs).asISiteSettingsFragment();
     }
 
     @Override
@@ -982,7 +959,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             ApplicationInfo appInfo = packageInfo.applicationInfo;
-            String[] splitNames = ApiHelperForO.getSplitNames(appInfo);
+            String[] splitNames = appInfo.splitNames;
             if (splitNames == null) {
                 return;
             }

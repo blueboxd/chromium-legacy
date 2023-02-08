@@ -5,16 +5,20 @@
 #ifndef ASH_SYSTEM_UNIFIED_QUICK_SETTINGS_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_QUICK_SETTINGS_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
+#include "ash/system/brightness/unified_brightness_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
 class FlexLayoutView;
-}
+}  // namespace views
 
 namespace ash {
 
+class FeatureTile;
 class FeatureTilesContainerView;
 class PageIndicatorView;
 class QuickSettingsFooter;
@@ -39,6 +43,9 @@ class ASH_EXPORT QuickSettingsView : public views::View {
   // Sets the maximum height that the view can take.
   void SetMaxHeight(int max_height);
 
+  // Adds tiles to the FeatureTile container view.
+  void AddTiles(std::vector<std::unique_ptr<FeatureTile>> tiles);
+
   // Adds slider view.
   void AddSliderView(views::View* slider_view);
 
@@ -46,7 +53,7 @@ class ASH_EXPORT QuickSettingsView : public views::View {
   void AddMediaControlsView(views::View* media_controls);
 
   // Hides the main view and shows the given `detailed_view`.
-  void SetDetailedView(views::View* detailed_view);
+  void SetDetailedView(std::unique_ptr<views::View> detailed_view);
 
   // Removes the detailed view set by SetDetailedView, and shows the main view.
   // It deletes `detailed_view` and children.
@@ -93,6 +100,8 @@ class ASH_EXPORT QuickSettingsView : public views::View {
 
  private:
   class SystemTrayContainer;
+  friend class UnifiedBrightnessViewTest;
+  friend class UnifiedVolumeViewTest;
 
   // Adds buttons that load some of the tray detailed pages.
   // TODO(b/255993869): Delete this when feature tiles are working.

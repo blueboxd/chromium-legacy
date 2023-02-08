@@ -43,8 +43,10 @@
 <translation id="1378727793141957596">Google Driveకు స్వాగతం!</translation>
 <translation id="1379911846207762492">మీకు ఇంటర్నెట్ కనెక్షన్ లేనప్పుడు యాక్సెస్ చేయడం కోసం ఫైల్స్‌ను మీరు ఆఫ్‌లైన్‌లో అందుబాటులో ఉంచుకోవచ్చు.</translation>
 <translation id="1383876407941801731">సెర్చ్</translation>
+<translation id="1388045380422025115">అన్ని రకాలు</translation>
 <translation id="1395262318152388157">సీక్ స్లయిడర్</translation>
 <translation id="1399511500114202393">వినియోగదారు సర్టిఫికెట్ లేదు</translation>
+<translation id="1403008701842173542">ప్రతిచోటా</translation>
 <translation id="1404323374378969387">నార్వేజియన్</translation>
 <translation id="1433628812591023318">Parallels Desktopలో ఫైళ్లను డ్రాప్ చేయడానికి, ఫైల్ తప్పనిసరిగా Windows ఫైళ్లకు తరలించాల్సి ఉంటుంది.</translation>
 <translation id="1435838927755162558">Parallels Desktopతో ఫోల్డర్‌ను షేర్ చేయండి</translation>
@@ -102,6 +104,7 @@
 <translation id="1834290891154666894">చెల్లని సబ్జెక్ట్ ప్రత్యామ్నాయ పేరుకు సంబంధించిన మ్యాచ్ ఎంటర్ చేయబడింది</translation>
 <translation id="1838709767668011582">Google సైట్</translation>
 <translation id="1853795129690976061">ఈ ఫోల్డర్ Linuxతో షేర్ చేయబడింది</translation>
+<translation id="1859422890169495746">ఈ Chromebook</translation>
 <translation id="1864756863218646478">ఫైల్‌ను కనుగొనబడలేదు.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, కనెక్ట్ చేయండి</translation>
 <translation id="1920670151694390848">మలయాళం ట్రాన్స్‌లిటరేషన్</translation>
@@ -133,6 +136,7 @@
 <translation id="2143778271340628265">మాన్యువల్ ప్రాక్సీ కాన్ఫిగరేషన్</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
 <translation id="2163152940313951844">చెల్లని అక్షరం: <ph name="CHARACTER_NAME" /></translation>
+<translation id="2178056538281447670">Microsoft 365</translation>
 <translation id="2184934335987813305">US అంతర్జాతీయ PC కీబోర్డ్‌తో పోర్చుగీస్</translation>
 <translation id="2193661397560634290"><ph name="SPACE_USED" /> ఉపయోగించారు</translation>
 <translation id="2198315389084035571">సరళీకృత చైనీస్</translation>
@@ -152,6 +156,7 @@
 <translation id="2307462900900812319">నెట్‌వర్క్‌ను కాన్ఫిగర్ చేయి</translation>
 <translation id="2325650632570794183">ఈ ఫైల్ రకానికి మద్దతు లేదు. దయచేసి ఈ రకమైన ఫైల్‌ను తెరవగల యాప్‌ను కనుగొనడానికి Chrome వెబ్ స్టోర్‌ను సందర్శించండి.</translation>
 <translation id="2326539130272988168">బల్గేరియన్</translation>
+<translation id="2337715497728194187">Bruschettaతో షేర్ చేయండి</translation>
 <translation id="23721837607121582"><ph name="NETWORK_NAME" />, <ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" />వ నెట్‌వర్క్ మొబైల్ ప్రొఫైల్‌ను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="2377319039870049694">లిస్ట్‌ వీక్షణకు మార్చు</translation>
 <translation id="2377590462528165447">Linuxతో <ph name="NUMBER_OF_ITEMS" /> ఫోల్డర్‌లు షేర్ చేయబడ్డాయి</translation>
@@ -181,6 +186,7 @@
 <translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
 <translation id="255937426064304553">యుఎస్ అంతర్జాతీయం</translation>
 <translation id="2563185590376525700">కప్ప</translation>
+<translation id="2574327434504608656">Bruschettaతో 1 ఫోల్డర్ షేర్ చేయబడింది</translation>
 <translation id="2578394532502990878">తమిళం ఫొనెటిక్</translation>
 <translation id="2579959351793446050">ఒడియా</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" />‌లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ బ్లాక్ చేశారు, వివరాలు</translation>
@@ -274,6 +280,7 @@
 <translation id="3408072735282270043"><ph name="NETWORK_NAME" />, యాక్టివేట్ చేయి</translation>
 <translation id="3408236822532681288">నియో 2 కీబోర్డ్‌తో జర్మన్ (జర్మనీ)</translation>
 <translation id="3414856743105198592">తొలగించగల మీడియాను ఫార్మాట్ చేయడం వలన మొత్తం డేటా తుడిచి వేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
+<translation id="3435143625481187092"><ph name="FOLDER_NAME" /> ఫోల్డర్‌లో ఉన్న ఫైల్స్‌ను యాక్సెస్ చేయడానికి Bruschettaకు అనుమతినివ్వండి</translation>
 <translation id="3437801641691368414">క్రియేట్ చేసిన సమయం</translation>
 <translation id="343907260260897561">ఇన్‌స్టంట్ కెమెరా</translation>
 <translation id="3455931012307786678">ఎస్టోనియన్</translation>
@@ -303,7 +310,7 @@
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది, వివరాలు</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లు తరలించబడ్డాయి.</translation>
 <translation id="3685122418104378273">మొబైల్ డేటాను ఉపయోగిస్తున్నప్పుడు Google Drive సింక్ డిఫాల్ట్‌గా నిలిపివేయబడుతుంది.</translation>
-<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" />ను రద్దు చేయండి.</translation>
+<translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" />ను రద్దు చేయి.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" />లోని నెట్‌వర్క్ <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, యాక్టివేట్ చేయబడలేదు, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, వివరాలు</translation>
 <translation id="3691184985318546178">సింహళం</translation>
 <translation id="3722341589402358578">ఎర్రర్ ఏర్పడింది. కొన్ని ఐటెమ్‌లు ట్రాష్ చేయబడకపోవచ్చు.</translation>
@@ -319,6 +326,7 @@
 <translation id="3801082500826908679">ఫారోస్</translation>
 <translation id="3809272675881623365">కుందేలు</translation>
 <translation id="3810973564298564668">మేనేజ్ చేయండి</translation>
+<translation id="3811408895933919563">ఇంగ్లీష్ (పాకిస్థాన్)</translation>
 <translation id="3811494700605067549">1 ఫైల్ ఎంచుకోబడింది</translation>
 <translation id="3817579325494460411">అందించబడలేదు</translation>
 <translation id="3819448694985509187">పిన్ తప్పు. మీకు 1 ప్రయత్నం మిగిలి ఉంది.</translation>
@@ -353,6 +361,7 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> తరలించబడింది.</translation>
 <translation id="4176286497474237543">ఇప్పుడే ట్రాష్‌ను ఖాళీ చేయండి</translation>
 <translation id="4179621117429069925">ఈ ఐటెమ్ మీ ట్రాష్‌లో ఉంది</translation>
+<translation id="4181839429935094755">Bruschettaతో <ph name="NUMBER_OF_ITEMS" /> ఫోల్డర్‌లు షేర్ చేయబడ్డాయి</translation>
 <translation id="4186579485882418952">ఆఫ్‌లైన్ మోడ్‌ను ఎనేబుల్ చేయి</translation>
 <translation id="4193154014135846272">Google డాక్యుమెంట్‌</translation>
 <translation id="4197674956721858839">జిప్ ఎంపిక</translation>
@@ -414,6 +423,7 @@
 <translation id="4646813851450205600">Qwerty కీబోర్డ్‌తో చెక్(Czech)</translation>
 <translation id="4656777537938206294">ఫైళ్లను ఆఫ్‌లైన్‌లో అందుబాటులో ఉంచండి</translation>
 <translation id="4658782175094886150">మంచు ప్రదేశంలో ఉన్న వ్యక్తి</translation>
+<translation id="466782788172479199">మీ Google Driveలోని ఫైల్స్‌ను యాక్సెస్ చేయడానికి Bruschettaకు అనుమతినివ్వండి. మార్పులు మీ ఇతర పరికరాలలో కూడా సింక్ చేయబడతాయి.</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' యొక్క సభ్యులతో ఈ అంశాలను షేర్ చేస్తే మినహా వారు యాక్సెస్‌ను కోల్పోతారు.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">స్వీడిష్</translation>
@@ -447,6 +457,7 @@
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="485316830061041779">జర్మన్</translation>
 <translation id="4867079195717347957">నిలువు వరుసను అవరోహణ క్రమంలో వర్గీకరించడానికి క్లిక్ చేయండి.</translation>
+<translation id="4867297348137739678">గత వారం</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> బైట్‌లు</translation>
 <translation id="4874569719830985133">శాశ్వతంగా తొలగించండి</translation>
 <translation id="4880214202172289027">వాల్యూమ్ స్లయిడర్</translation>
@@ -498,7 +509,7 @@
 <translation id="5194713942430106590">నిలువు వరుసను ఆరోహణ క్రమంలో వర్గీకరించడానికి క్లిక్ చేయండి.</translation>
 <translation id="5211614973734216083">ఫారోస్</translation>
 <translation id="5218183485292899140">స్విస్ ఫ్రెంచ్</translation>
-<translation id="5234764350956374838">తొలగించండి</translation>
+<translation id="5234764350956374838">తొలగించు</translation>
 <translation id="5253070652067921974">సృష్టించినవారు</translation>
 <translation id="5257456363153333584">తూనీగ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ఫైళ్లను ఎక్కడి నుండైనా యాక్సెస్ చేయండి, ఆఫ్‌లైన్‌లో ఉన్నా కూడా.<ph name="MARKUP_2" />
@@ -520,6 +531,7 @@
 <translation id="5330145655348521461">ఈ ఫైల్స్ వేరే డెస్క్‌టాప్‌లో తెరవబడ్డాయి. దీన్ని చూడటానికి <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)కు తరలించండి.</translation>
 <translation id="5330512191124428349">సమాచారం పొందండి</translation>
 <translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" />‌ను మినహాయించి అన్ని URLలకు ఫైల్ యాక్సెస్</translation>
+<translation id="5344246330454251646">Bruschetta షేరింగ్‌ను మేనేజ్ చేయండి</translation>
 <translation id="535792325654997756">పిల్లులతో ఉన్న వ్యక్తి</translation>
 <translation id="5358764674931277">ఫ్రేమ్ రేట్</translation>
 <translation id="5363339716524495120">ఇన్‌పుట్ భాష చైనీస్</translation>
@@ -565,6 +577,7 @@
 <translation id="5700087501958648444">ఆడియో సమాచారం</translation>
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> ట్రాష్‌కు తరలించబడింది</translation>
 <translation id="5724172041621205163">పట్టచోటె కీబోర్డ్‌తో థాయ్</translation>
+<translation id="57383366388012121">గత నెల</translation>
 <translation id="5756666464756035725">హంగేరియన్ QWERTY</translation>
 <translation id="5763377084591234761">జర్మన్ (స్విట్జర్లాండ్)</translation>
 <translation id="5769519078756170258">మినహాయించాల్సిన హోస్ట్ లేదా డొమైన్</translation>
@@ -674,6 +687,7 @@
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6732801395666424405">ప్రమాణపత్రాలు లోడ్ కాలేదు</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
+<translation id="6740270213273127264">Bruschettaతో ఫోల్డర్‌ను షేర్ చేయండి</translation>
 <translation id="6751256176799620176">1 ఫోల్డర్ ఎంచుకోబడింది</translation>
 <translation id="6755827872271341378">ChromeOS Flex పరికరం</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
@@ -693,7 +707,6 @@
 <translation id="6874758081814639712">తాయ్ చి చేస్తున్న వ్యక్తి</translation>
 <translation id="6876155724392614295">బైక్</translation>
 <translation id="6878261347041253038">దేవనగరీ కీబోర్డ్ (ఫొనెటిక్)</translation>
-<translation id="6881853403185175088">ఆఫీస్</translation>
 <translation id="6885780034956018177">నత్త</translation>
 <translation id="6896758677409633944">కాపీ చేయి</translation>
 <translation id="6898028766943174120">మరిన్ని ఉప-ఫోల్డర్‌లు...</translation>
@@ -703,14 +716,16 @@
 <translation id="6935521024859866267">తలక్రిందులుగా</translation>
 <translation id="6943836128787782965">HTTP పొందడంలో విఫలమైంది</translation>
 <translation id="6949408524333579394">సెర్బియన్ ట్రాన్స్‌లిటరేషన్</translation>
+<translation id="69548399407432279">గత సంవత్సరం</translation>
 <translation id="6960565108681981554">యాక్టివేట్ చేయబడలేదు. మీ క్యారియర్‌ను సంప్రదించండి.</translation>
-<translation id="696203921837389374">మొబైల్ డేటా ఉపయోగించి సింక్ చేయడం ప్రారంభించండి</translation>
+<translation id="696203921837389374">మొబైల్ డేటా ఉపయోగించి సింక్ చేయడం ప్రారంభించు</translation>
 <translation id="6965382102122355670">సరే</translation>
 <translation id="6965648386495488594">పోర్ట్</translation>
 <translation id="6970230597523682626">బల్గేరియన్</translation>
 <translation id="6973630695168034713">ఫోల్డర్‌లు</translation>
 <translation id="6976795442547527108">సింహం</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6979737339423435258">మొత్తం సమయం</translation>
 <translation id="6989942356279143254">స్వీడిష్</translation>
 <translation id="6990081529015358884">మీకు ఖాళీ స్థలం లేదు</translation>
 <translation id="6993826899923627728">ఈ ఐటెమ్‌లు మీ ట్రాష్‌లో ఉన్నాయి</translation>
@@ -735,9 +750,9 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165320105431587207">నెట్‌వర్క్‌ను కాన్ఫిగర్ చేయడంలో విఫలమైంది</translation>
 <translation id="7170041865419449892">పరిధిని దాటింది</translation>
-<translation id="7180611975245234373">రిఫ్రెష్ చేయండి</translation>
+<translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
 <translation id="7189874332498648577"><ph name="NUMBER_OF_GB" /> GB</translation>
-<translation id="7191454237977785534">ఫైల్‌ను ఇలా సేవ్ చేయండి</translation>
+<translation id="7191454237977785534">ఫైల్‌ను ఇలా సేవ్ చేయి</translation>
 <translation id="7229570126336867161">EVDO అవసరం</translation>
 <translation id="7230898482850090046">మీరు "లాక్ SIM" సెట్టింగ్‌ను ఆఫ్ చేయవలసిందిగా మీ అడ్మినిస్ట్రేటర్ రిక్వెస్ట్ చేశారు</translation>
 <translation id="7238097264433196391">డ్రైవ్ పేరు</translation>
@@ -819,9 +834,9 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7831491651892296503">నెట్‌వర్క్‌ను కాన్ఫిగర్ చేయడంలో ఎర్రర్</translation>
 <translation id="7839804798877833423">ఈ ఫైళ్లను పొందడానికి మొబైల్ డేటాలో సుమారుగా <ph name="FILE_SIZE" /> ఉపయోగించబడుతుంది.</translation>
-<translation id="7846076177841592234">ఎంపికను రద్దు చేయండి</translation>
+<translation id="7846076177841592234">ఎంపికను రద్దు చేయి</translation>
 <translation id="7853966320808728790">ఫ్రెంచ్ BÉPO</translation>
-<translation id="7857117644404132472">మినహాయింపును జోడించండి</translation>
+<translation id="7857117644404132472">మినహాయింపును జోడించు</translation>
 <translation id="7868774406711971383">పోలిష్</translation>
 <translation id="7874321682039004450">ఫిలిప్పినో</translation>
 <translation id="78946041517601018">షేర్ చేసిన డ్రైవ్‌లు</translation>
@@ -845,6 +860,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> ఆడియో</translation>
 <translation id="8045462269890919536">రొమేనియన్</translation>
 <translation id="8049184478152619004">వ్యక్తిగత అన్‌బ్లాకింగ్ కీ(PUK)ని ఎంటర్ చేయండి</translation>
+<translation id="8055538340801153769">ఈ ఫోల్డర్</translation>
 <translation id="807187749540895545"><ph name="FILE_NAME" />ను సంగ్రహిస్తోంది…</translation>
 <translation id="8087576439476816834">డౌన్‌లోడ్ చేయి, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">నాతో షేర్ చేసినవి</translation>
@@ -864,7 +880,7 @@
 <translation id="8250690786522693009">లాటిన్</translation>
 <translation id="8250920743982581267">డాక్యుమెంట్లు</translation>
 <translation id="8255595130163158297">ట్రాష్‌లోని అన్ని ఐటెమ్‌లు తొలగించబడతాయి, ఇంకా మీరు వాటిని రీస్టోర్ చేయలేరు.</translation>
-<translation id="8261506727792406068">తొలగించండి</translation>
+<translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8261561378965667560">చైనీస్ శ్రేణి</translation>
 <translation id="8262872909443689080">అడ్మినిస్ట్రేటర్ పాలసీ</translation>
 <translation id="8264024885325823677">ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా నిర్వహించబడుతుంది.</translation>
@@ -971,7 +987,7 @@
 <translation id="9133055936679483811">జిప్ చేయడంలో విఫలమైంది. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="9144340019284012223">కేటలాన్</translation>
 <translation id="914873105831852105">పిన్ చెల్లదు. మీకు 1 ప్రయత్నం మిగిలి ఉంది.</translation>
-<translation id="9153934054460603056">గుర్తింపు మరియు పాస్‌వర్డ్‌ సేవ్ చేయండి</translation>
+<translation id="9153934054460603056">గుర్తింపు మరియు పాస్‌వర్డ్‌ సేవ్ చేయి</translation>
 <translation id="9171921933192916600">పుస్తకాలను తినే పురుగు</translation>
 <translation id="9172592259078059678">గుజరాతీ ట్రాన్స్‌లిటరేషన్</translation>
 <translation id="9173120999827300720">అంతర్జాతీయ కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>

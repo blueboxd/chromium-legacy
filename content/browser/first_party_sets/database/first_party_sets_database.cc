@@ -37,7 +37,7 @@ namespace content {
 namespace {
 
 // Version number of the database.
-const int kCurrentVersionNumber = 3;
+const int kCurrentVersionNumber = 4;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
@@ -115,15 +115,15 @@ const char kRunCountKey[] = "run_count";
   if (!db.Execute(kPolicyConfigurationsSql))
     return false;
 
-  static constexpr char kManualSetsSql[] =
-      "CREATE TABLE IF NOT EXISTS manual_sets("
+  static constexpr char kManualConfigurationsSql[] =
+      "CREATE TABLE IF NOT EXISTS manual_configurations("
       "browser_context_id TEXT NOT NULL,"
       "site TEXT NOT NULL,"
-      "primary_site TEXT NOT NULL,"
-      "site_type INTEGER NOT NULL,"
+      "primary_site TEXT,"  // May be NULL if this row represents a deletion.
+      "site_type INTEGER,"  // May be NULL if this row represents a deletion.
       "PRIMARY KEY(browser_context_id,site)"
       ")WITHOUT ROWID";
-  if (!db.Execute(kManualSetsSql))
+  if (!db.Execute(kManualConfigurationsSql))
     return false;
 
   return true;
@@ -146,7 +146,6 @@ FirstPartySetsDatabase::~FirstPartySetsDatabase() {
 
 bool FirstPartySetsDatabase::PersistSets(
     const std::string& browser_context_id,
-    const base::Version& public_sets_version,
     const net::GlobalFirstPartySets& sets,
     const net::FirstPartySetsContextConfig& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -158,12 +157,12 @@ bool FirstPartySetsDatabase::PersistSets(
     return false;
 
   // Only persist public sets if the version is valid.
-  if (public_sets_version.IsValid() &&
-      !SetPublicSets(browser_context_id, public_sets_version, sets)) {
+  if (sets.public_sets_version().IsValid() &&
+      !SetPublicSets(browser_context_id, sets)) {
     return false;
   }
 
-  if (!InsertManualSets(browser_context_id, sets.manual_sets()))
+  if (!InsertManualConfiguration(browser_context_id, sets))
     return false;
 
   if (!InsertPolicyConfigurations(browser_context_id, config))
@@ -174,13 +173,13 @@ bool FirstPartySetsDatabase::PersistSets(
 
 bool FirstPartySetsDatabase::SetPublicSets(
     const std::string& browser_context_id,
-    const base::Version& sets_version,
     const net::GlobalFirstPartySets& sets) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(db_status_, InitStatus::kSuccess);
-  DCHECK(sets_version.IsValid());
+  DCHECK(db_->HasActiveTransactions());
+  DCHECK(sets.public_sets_version().IsValid());
 
-  const std::string& version = sets_version.GetString();
+  const std::string& version = sets.public_sets_version().GetString();
   // Checks if the version of the current public sets is referenced by *any*
   // browser context in the public_sets_version table. If so, that means the
   // sets already exist in public_sets table and we don't need to write them to
@@ -295,6 +294,7 @@ bool FirstPartySetsDatabase::InsertPolicyConfigurations(
     const net::FirstPartySetsContextConfig& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(db_->HasActiveTransactions());
 
   static constexpr char kDeleteSql[] =
       "DELETE FROM policy_configurations WHERE browser_context_id=?";
@@ -326,46 +326,75 @@ bool FirstPartySetsDatabase::InsertPolicyConfigurations(
       });
 }
 
-bool FirstPartySetsDatabase::InsertManualSets(
+bool FirstPartySetsDatabase::InsertManualConfiguration(
     const std::string& browser_context_id,
-    const base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>&
-        manual_sets) {
+    const net::GlobalFirstPartySets& global_first_party_sets) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(db_->HasActiveTransactions());
 
   static constexpr char kDeleteSql[] =
-      "DELETE FROM manual_sets WHERE browser_context_id=?";
+      "DELETE FROM manual_configurations WHERE browser_context_id=?";
   sql::Statement delete_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kDeleteSql));
   delete_statement.BindString(0, browser_context_id);
   if (!delete_statement.Run())
     return false;
 
-  for (const auto& [site, entry] : manual_sets) {
-    DCHECK(!site.opaque());
-    static constexpr char kInsertSql[] =
-        "INSERT INTO "
-        "manual_sets(browser_context_id,site,primary_site,site_type)"
-        "VALUES(?,?,?,?)";
-    sql::Statement insert_statement(
-        db_->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
-    insert_statement.BindString(0, browser_context_id);
-    insert_statement.BindString(1, site.Serialize());
-    insert_statement.BindString(2, entry.primary().Serialize());
-    insert_statement.BindInt(3, static_cast<int>(entry.site_type()));
-
-    if (!insert_statement.Run())
-      return false;
-  }
+  global_first_party_sets.ForEachManualConfigEntry(
+      [&](const net::SchemefulSite& site,
+          const absl::optional<net::FirstPartySetEntry>& entry) -> bool {
+        DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+        DCHECK(!site.opaque());
+        static constexpr char kInsertSql[] =
+            "INSERT INTO manual_configurations"
+            "(browser_context_id,site,primary_site,site_type)"
+            "VALUES(?,?,?,?)";
+        sql::Statement insert_statement(
+            db_->GetCachedStatement(SQL_FROM_HERE, kInsertSql));
+        insert_statement.BindString(0, browser_context_id);
+        insert_statement.BindString(1, site.Serialize());
+        if (entry.has_value()) {
+          insert_statement.BindString(2, entry->primary().Serialize());
+          insert_statement.BindInt(3, static_cast<int>(entry->site_type()));
+        } else {
+          insert_statement.BindNull(2);
+          insert_statement.BindNull(3);
+        }
+        return insert_statement.Run();
+      });
   return true;
+}
+
+std::pair<net::GlobalFirstPartySets, net::FirstPartySetsContextConfig>
+FirstPartySetsDatabase::GetGlobalSetsAndConfig(
+    const std::string& browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!browser_context_id.empty());
+  if (!LazyInit())
+    return {};
+
+  sql::Transaction transaction(db_.get());
+  if (!transaction.Begin())
+    return {};
+
+  net::GlobalFirstPartySets global_sets = GetGlobalSets(browser_context_id);
+
+  net::FirstPartySetsContextConfig config =
+      FetchPolicyConfigurations(browser_context_id);
+
+  if (!transaction.Commit())
+    return {};
+
+  return std::make_pair(std::move(global_sets), std::move(config));
 }
 
 net::GlobalFirstPartySets FirstPartySetsDatabase::GetGlobalSets(
     const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!LazyInit())
-    return {};
+  DCHECK(db_->HasActiveTransactions());
+  DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(!browser_context_id.empty());
 
   // Query public sets entries.
   std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>> entries;
@@ -376,8 +405,9 @@ net::GlobalFirstPartySets FirstPartySetsDatabase::GetGlobalSets(
       db_->GetCachedStatement(SQL_FROM_HERE, kVersionSql));
   version_statement.BindString(0, browser_context_id);
 
+  std::string version;
   if (version_statement.Step()) {
-    const std::string version = version_statement.ColumnString(0);
+    version = version_statement.ColumnString(0);
 
     static constexpr char kSelectSql[] =
         "SELECT site,primary_site,site_type FROM public_sets WHERE version=?";
@@ -414,10 +444,14 @@ net::GlobalFirstPartySets FirstPartySetsDatabase::GetGlobalSets(
 
   // Aliases are merged with entries inside of the public sets table so it is
   // sufficient to declare the global sets object with only the entries field.
-  net::GlobalFirstPartySets global_sets(entries, /*aliases=*/{});
+  net::GlobalFirstPartySets global_sets(base::Version(version), entries,
+                                        /*aliases=*/{});
 
-  // Query & apply manual set.
-  global_sets.ApplyManuallySpecifiedSet(FetchManualSets(browser_context_id));
+  // Query & apply manual configuration. Safe because this config and this
+  // public sets data were written during the same run of Chrome, and the config
+  // was computed from that data.
+  global_sets.UnsafeSetManualConfig(
+      FetchManualConfiguration(browser_context_id));
 
   return global_sets;
 }
@@ -459,6 +493,7 @@ std::vector<net::SchemefulSite> FirstPartySetsDatabase::FetchSitesToClear(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!browser_context_id.empty());
   DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(db_->HasActiveTransactions());
 
   // Gets the sites that were marked to clear but haven't been cleared yet for
   // the given `browser_context_id`. Use 0 as the default
@@ -498,6 +533,7 @@ FirstPartySetsDatabase::FetchAllSitesToClearFilter(
     const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(db_->HasActiveTransactions());
 
   std::vector<std::pair<net::SchemefulSite, int64_t>> results;
   static constexpr char kSelectSql[] =
@@ -530,9 +566,9 @@ net::FirstPartySetsContextConfig
 FirstPartySetsDatabase::FetchPolicyConfigurations(
     const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!LazyInit())
-    return {};
+  DCHECK(db_->HasActiveTransactions());
+  DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(!browser_context_id.empty());
 
   std::vector<
       std::pair<net::SchemefulSite, absl::optional<net::FirstPartySetEntry>>>
@@ -599,17 +635,20 @@ bool FirstPartySetsDatabase::HasEntryInBrowserContextsClearedForTesting(
   return statement.Step() && statement.Succeeded();
 }
 
-base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>
-FirstPartySetsDatabase::FetchManualSets(const std::string& browser_context_id) {
+net::FirstPartySetsContextConfig
+FirstPartySetsDatabase::FetchManualConfiguration(
+    const std::string& browser_context_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_->HasActiveTransactions());
+  DCHECK_EQ(db_status_, InitStatus::kSuccess);
+  DCHECK(!browser_context_id.empty());
 
-  if (!LazyInit())
-    return {};
-
-  std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>> results;
+  std::vector<
+      std::pair<net::SchemefulSite, absl::optional<net::FirstPartySetEntry>>>
+      results;
   static constexpr char kSelectSql[] =
       // clang-format off
-      "SELECT site,primary_site,site_type FROM manual_sets "
+      "SELECT site,primary_site,site_type FROM manual_configurations "
       "WHERE browser_context_id=?";
   // clang-format on
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSelectSql));
@@ -620,27 +659,39 @@ FirstPartySetsDatabase::FetchManualSets(const std::string& browser_context_id) {
         FirstPartySetParser::CanonicalizeRegisteredDomain(
             statement.ColumnString(0), /*emit_errors=*/false);
 
-    absl::optional<net::SchemefulSite> primary =
-        FirstPartySetParser::CanonicalizeRegisteredDomain(
-            statement.ColumnString(1), /*emit_errors=*/false);
+    absl::optional<net::SchemefulSite> maybe_primary_site;
+    absl::optional<net::SiteType> maybe_site_type;
+    // DB entry for "deleted"  site will have null `primary_site` and
+    // `site_type`.
+    if (std::string primary_site = statement.ColumnString(1);
+        !primary_site.empty()) {
+      maybe_primary_site = FirstPartySetParser::CanonicalizeRegisteredDomain(
+          primary_site, /*emit_errors=*/false);
 
-    absl::optional<net::SiteType> site_type =
-        net::FirstPartySetEntry::DeserializeSiteType(statement.ColumnInt(2));
+      maybe_site_type =
+          net::FirstPartySetEntry::DeserializeSiteType(statement.ColumnInt(2));
+    }
 
     // TODO(crbug.com/1314039): Invalid entries should be rare case but
     // possible. Consider deleting them from DB.
-    if (site.has_value() && primary.has_value() && site_type.has_value()) {
+    if (site.has_value()) {
       results.emplace_back(
           std::move(site.value()),
-          net::FirstPartySetEntry(primary.value(), site_type.value(),
-                                  /*site_index=*/absl::nullopt));
+          maybe_primary_site.has_value() && maybe_site_type.has_value()
+              ? absl::make_optional(net::FirstPartySetEntry(
+                    maybe_primary_site.value(),
+                    // TODO(https://crbug.com/1219656): May change to use the
+                    // real site_index in the future, depending on the design
+                    // details. Use null site index for now.
+                    maybe_site_type.value(), absl::nullopt))
+              : absl::nullopt);
     }
   }
 
   if (!statement.Succeeded())
     return {};
 
-  return results;
+  return net::FirstPartySetsContextConfig(std::move(results));
 }
 
 bool FirstPartySetsDatabase::LazyInit() {
@@ -761,10 +812,12 @@ FirstPartySetsDatabase::InitStatus FirstPartySetsDatabase::InitializeTables() {
 }
 
 bool FirstPartySetsDatabase::UpgradeSchema() {
-  if (meta_table_.GetVersionNumber() == 2) {
-    if (!MigrateToVersion3())
-      return false;
-  }
+  if (meta_table_.GetVersionNumber() == 2 && !MigrateToVersion3())
+    return false;
+
+  if (meta_table_.GetVersionNumber() == 3 && !MigrateToVersion4())
+    return false;
+
   // Add similar if () blocks for new versions here.
 
   return true;
@@ -779,6 +832,34 @@ bool FirstPartySetsDatabase::MigrateToVersion3() {
     return false;
 
   meta_table_.SetVersionNumber(3);
+  return true;
+}
+
+bool FirstPartySetsDatabase::MigrateToVersion4() {
+  DCHECK(db_->HasActiveTransactions());
+  // Create manual_configurations table; transfer data from manual_sets table to
+  // manual_configurations table; drop manual_sets table.
+  bool success = db_->Execute(
+                     "CREATE TABLE manual_configurations("
+                     "browser_context_id TEXT NOT NULL,"
+                     "site TEXT NOT NULL,"
+                     "primary_site TEXT,"  // May be NULL if this row represents
+                                           // a deletion.
+                     "site_type INTEGER,"  // May be NULL if this row represents
+                                           // a deletion.
+                     "PRIMARY KEY(browser_context_id,site)"
+                     ")WITHOUT ROWID") &&
+                 db_->Execute(
+                     "INSERT INTO manual_configurations"
+                     "(browser_context_id,site,primary_site,site_type) "
+                     "SELECT browser_context_id,site,primary_site,site_type "
+                     "FROM manual_sets") &&
+                 db_->Execute("DROP TABLE manual_sets");
+
+  if (!success)
+    return false;
+
+  meta_table_.SetVersionNumber(4);
   return true;
 }
 

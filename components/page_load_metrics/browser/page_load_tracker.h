@@ -202,20 +202,21 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsUpdateDispatcher::Client implementation:
   bool IsPageMainFrame(content::RenderFrameHost* rfh) const override;
   void OnTimingChanged() override;
-  void OnPageInputTimingChanged(uint64_t num_input_events) override;
+  void OnPageInputTimingChanged(uint64_t num_interactions,
+                                uint64_t num_input_events) override;
   void OnSubFrameTimingChanged(content::RenderFrameHost* rfh,
                                const mojom::PageLoadTiming& timing) override;
   void OnSubFrameInputTimingChanged(
       content::RenderFrameHost* rfh,
       const mojom::InputTiming& input_timing_delta) override;
+  void OnPageRenderDataChanged(const mojom::FrameRenderDataUpdate& render_data,
+                               bool is_main_frame) override;
   void OnSubFrameRenderDataChanged(
       content::RenderFrameHost* rfh,
       const mojom::FrameRenderDataUpdate& render_data) override;
   void OnMainFrameMetadataChanged() override;
   void OnSubframeMetadataChanged(content::RenderFrameHost* rfh,
                                  const mojom::FrameMetadata& metadata) override;
-  void OnSubFrameMobileFriendlinessChanged(
-      const blink::MobileFriendliness&) override;
   void OnSoftNavigationCountChanged(uint32_t soft_navigation_count) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
@@ -261,8 +262,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const NormalizedResponsivenessMetrics& GetNormalizedResponsivenessMetrics()
       const override;
   const mojom::InputTiming& GetPageInputTiming() const override;
-  const absl::optional<blink::MobileFriendliness>& GetMobileFriendliness()
-      const override;
+  const absl::optional<mojom::SubresourceLoadMetrics>&
+  GetSubresourceLoadMetrics() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
@@ -410,17 +411,16 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Checks if this tracker is for outermost pages.
   bool IsOutermostTracker() const { return !parent_tracker_; }
 
-  void UpdateMetrics(
-      content::RenderFrameHost* render_frame_host,
-      mojom::PageLoadTimingPtr new_timing,
-      mojom::FrameMetadataPtr new_metadata,
-      const std::vector<blink::UseCounterFeature>& new_features,
-      const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-      mojom::FrameRenderDataUpdatePtr render_data,
-      mojom::CpuTimingPtr new_cpu_timing,
-      mojom::InputTimingPtr input_timing_delta,
-      const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
-      uint32_t soft_navigation_count);
+  void UpdateMetrics(content::RenderFrameHost* render_frame_host,
+                     mojom::PageLoadTimingPtr new_timing,
+                     mojom::FrameMetadataPtr new_metadata,
+                     const std::vector<blink::UseCounterFeature>& new_features,
+                     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
+                     mojom::FrameRenderDataUpdatePtr render_data,
+                     mojom::CpuTimingPtr new_cpu_timing,
+                     mojom::InputTimingPtr input_timing_delta,
+                     mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
+                     uint32_t soft_navigation_count);
 
   // Set RenderFrameHost for the main frame of the page this tracker instance is
   // bound. This is called on moving the tracker to the active / inactive
@@ -515,7 +515,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   absl::optional<base::TimeDelta> activation_start_ = absl::nullopt;
 
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
-  blink::MobileFriendliness latest_mobile_friendliness_;
 
   absl::optional<content::GlobalRequestID> navigation_request_id_;
 
@@ -548,7 +547,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Holds the RenderFrameHost for the main frame of the page that this tracker
   // instance is bound. Safe to use raw_ptr as the tracker instance is accessed
   // via a map that uses the RenderFrameHost as the key while it's valid.
-  raw_ptr<content::RenderFrameHost> page_main_frame_;
+  raw_ptr<content::RenderFrameHost, DanglingUntriaged> page_main_frame_;
 
   const bool is_first_navigation_in_web_contents_;
 

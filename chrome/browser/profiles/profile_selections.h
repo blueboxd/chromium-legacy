@@ -25,6 +25,13 @@ BASE_DECLARE_FEATURE(kGuestProfileSelectionDefaultNone);
 
 class Profile;
 
+// A helper function that checks whether Keyed Services should be created for
+// the given `profile` based on the default profile type value. Currently checks
+// if it is the System Profile and if it's equivalent feature flag to disable
+// the creation of Keyed Services (`kSystemProfileSelectionDefaultNone`) is
+// activated.
+bool AreKeyedServicesDisabledForProfileByDefault(const Profile* profile);
+
 // The class `ProfileSelections` and enum `ProfileSelection` are not coupled
 // with the usage of `ProfileKeyedServiceFactory`, however the experiment of
 // changing the default value of `ProfileSelections` behavior is mainly done for
@@ -53,6 +60,11 @@ class ProfileSelections {
   ProfileSelections(const ProfileSelections& other);
   ~ProfileSelections();
 
+  static const ProfileSelection kRegularProfileDefault =
+      ProfileSelection::kOriginalOnly;
+  static const ProfileSelection kSystemProfileExperimentDefault =
+      ProfileSelection::kNone;
+
   // Builder to construct the `ProfileSelections` parameters.
   class Builder {
    public:
@@ -72,6 +84,11 @@ class ProfileSelections {
     // fixed.
     Builder& WithGuest(ProfileSelection selection);
     Builder& WithSystem(ProfileSelection selection);
+    // In Ash there are internal profiles that are not user profiles, such as a
+    // the signin or the lockscreen profile.
+    // Note: ash internal profiles are regular profiles. If the value is not
+    // set, they will default to the regular profiles behavior.
+    Builder& WithAshInternals(ProfileSelection selection);
 
     // Builds the `ProfileSelections`.
     ProfileSelections Build();
@@ -91,6 +108,7 @@ class ProfileSelections {
   // | Regular | self       | self       |
   // | Guest   | self       | self       |
   // | System  | self       | self       |
+  // | Ash Int.| self       | self       |
   // +---------+------------+------------+
   static ProfileSelections BuildForAllProfiles();
 
@@ -101,16 +119,22 @@ class ProfileSelections {
   // | Regular | no profile | no profile |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| no profile | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildNoProfilesSelected();
 
   // Only select the regular profile.
+  // Note: Ash internal profiles are of type Regular. In order to have a
+  // different filter for those profiles, a specific builder should be
+  // constructed with a value for
+  // `ProfileSelections::Builder::WithAshInternals()`.
   // +---------+------------+------------+
   // |         |  Original  |    OTR     |
   // +---------+------------+------------+
   // | Regular | self       | no profile |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | no profile |
   // +---------+------------+------------+
   static ProfileSelections BuildForRegularProfile();
 
@@ -118,12 +142,17 @@ class ProfileSelections {
   // profiles for Guest and System profiles. "NonExperimental" is added to
   // differentiate with the experimental behavior during the experiment, once
   // done it will be the equivalent builder.
+  // Note: Ash internal profiles are of type Regular. In order to have a
+  // different filter for those profiles, a specific builder should be
+  // constructed with a value for
+  // `ProfileSelections::Builder::WithAshInternals()`.
   // +---------+------------+------------+
   // |         |  Original  |    OTR     |
   // +---------+------------+------------+
   // | Regular | self       | self       |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | self       |
   // +---------+------------+------------+
   static ProfileSelections BuildForRegularAndIncognitoNonExperimental();
 
@@ -131,12 +160,17 @@ class ProfileSelections {
   // profiles for Guest and System profiles. "NonExperimental" is added to
   // differentiate with the experimental behavior during the experiment, once
   // done it will be the equivalent builder.
+  // Note: Ash internal profiles are of type Regular. In order to have a
+  // different filter for those profiles, a specific builder should be
+  // constructed with a value for
+  // `ProfileSelections::Builder::WithAshInternals()`.
   // +---------+------------+------------+
   // |         |  Original  |    OTR     |
   // +---------+------------+------------+
   // | Regular | self       | original   |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | original   |
   // +---------+------------+------------+
   static ProfileSelections BuildRedirectedInIncognitoNonExperimental();
 
@@ -148,6 +182,7 @@ class ProfileSelections {
   // | Regular | self       | original   |
   // | Guest   | self       | original   |
   // | System  | self       | original   |
+  // | Ash Int.| self       | original   |
   // +---------+------------+------------+
   static ProfileSelections BuildRedirectedToOriginal();
 
@@ -171,6 +206,7 @@ class ProfileSelections {
   // | Regular | self       | no profile |
   // | Guest   | self       | no profile |
   // | System  | self       | no profile |
+  // | Ash Int.| self       | no profile |
   // +---------+------------+------------+
   //
   // After the migration(crbug.com/1284664) this default behaviour will change.
@@ -180,6 +216,7 @@ class ProfileSelections {
   // | Regular | self       | no profile |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | no profile |
   // +---------+------------+------------+
   //
   // Parameters: (used during the experiment)
@@ -205,6 +242,7 @@ class ProfileSelections {
   // | Regular | self       | original   |
   // | Guest   | self       | original   |
   // | System  | self       | original   |
+  // | Ash Int.| self       | original   |
   // +---------+------------+------------+
   //
   // With the experiment:
@@ -214,6 +252,7 @@ class ProfileSelections {
   // | Regular | self       | original   |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | original   |
   // +---------+------------+------------+
   //
   // Parameters: (used during the experiment)
@@ -232,6 +271,7 @@ class ProfileSelections {
   // | Regular | self       | self       |
   // | Guest   | self       | self       |
   // | System  | self       | self       |
+  // | Ash Int.| self       | self       |
   // +---------+------------+------------+
   //
   // With the experiment:
@@ -241,6 +281,7 @@ class ProfileSelections {
   // | Regular | self       | self       |
   // | Guest   | no profile | no profile |
   // | System  | no profile | no profile |
+  // | Ash Int.| self       | self       |
   // +---------+------------+------------+
   //
   // Parameters: (used during the experiment)
@@ -257,26 +298,28 @@ class ProfileSelections {
  private:
   // Default constructor settings sets Regular Profile ->
   // `ProfileSelection::kOriginalOnly`. It should be constructed through the
-  // Builder. Value for Guest and System profile not being overridden will
-  // default to the behaviour of Regular Profile.
+  // Builder. Value for Guest, System and Ash internals profile not being
+  // overridden will default to the behaviour of Regular Profile.
   ProfileSelections();
 
   void SetProfileSelectionForRegular(ProfileSelection selection);
   void SetProfileSelectionForGuest(ProfileSelection selection);
   void SetProfileSelectionForSystem(ProfileSelection selection);
+  void SetProfileSelectionForAshInternals(ProfileSelection selection);
 
   // Returns the `ProfileSelection` based on the profile information through the
   // set mapping.
-  ProfileSelection GetProfileSelection(Profile* profile) const;
+  ProfileSelection GetProfileSelection(const Profile* profile) const;
 
   // Default value for the mapping of
   // Regular Profile -> `ProfileSelection::kOriginalOnly`
   // Not assigning values for Guest and System Profiles now defaults to the
   // behavior of regular profiles. This will change later on to default to
   // `ProfileSelection::kNone`.
-  ProfileSelection regular_profile_selection_ = ProfileSelection::kOriginalOnly;
+  ProfileSelection regular_profile_selection_ = kRegularProfileDefault;
   absl::optional<ProfileSelection> guest_profile_selection_;
   absl::optional<ProfileSelection> system_profile_selection_;
+  absl::optional<ProfileSelection> ash_internals_profile_selection_;
 };
 
 #endif  // !CHROME_BROWSER_PROFILES_PROFILE_SELECTIONS_H_

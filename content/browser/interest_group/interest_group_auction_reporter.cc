@@ -23,12 +23,14 @@
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction.h"
+#include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -153,7 +155,12 @@ void InterestGroupAuctionReporter::OnSellerWorkletReceived(
   }
 
   seller_worklet_handle_->GetSellerWorklet()->ReportResult(
-      seller_info->auction_config->non_shared_params, std::move(other_seller),
+      seller_info->auction_config->non_shared_params,
+      InterestGroupAuction::GetDirectFromSellerSellerSignals(
+          *seller_info->subresource_url_builder),
+      InterestGroupAuction::GetDirectFromSellerAuctionSignals(
+          *seller_info->subresource_url_builder),
+      std::move(other_seller),
       winning_bid_info_.storage_interest_group->interest_group.owner,
       winning_bid_info_.render_url, seller_info->bid, seller_info->score,
       seller_info->highest_scoring_other_bid,
@@ -205,11 +212,12 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
     }
     if (!has_bad_beacon_map) {
       if (seller_info == &top_level_seller_winning_bid_info_) {
-        ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kSeller] =
+        ad_beacon_map_
+            .metadata[blink::FencedFrame::ReportingDestination::kSeller] =
             seller_ad_beacon_map;
       } else {
-        ad_beacon_map_
-            .metadata[blink::mojom::ReportingDestination::kComponentSeller] =
+        ad_beacon_map_.metadata
+            [blink::FencedFrame::ReportingDestination::kComponentSeller] =
             seller_ad_beacon_map;
       }
     }
@@ -293,9 +301,43 @@ void InterestGroupAuctionReporter::OnBidderWorkletReceived(
           *auction_config,
           winning_bid_info_.storage_interest_group->interest_group.owner);
 
+  std::string group_name =
+      winning_bid_info_.storage_interest_group->interest_group.name;
+  // if k-anonymity enforcement is on we can only reveal the winning interest
+  // group name in reportWin if the winning ad's reporting_ads_kanon entry is
+  // k-anonymous. Otherwise we simply provide the empty string instead of the
+  // group name.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kFledgeConsiderKAnonymity) &&
+      base::FeatureList::IsEnabled(blink::features::kFledgeEnforceKAnonymity)) {
+    auto chosen_ad = base::ranges::find(
+        *winning_bid_info_.storage_interest_group->interest_group.ads,
+        winning_bid_info_.render_url,
+        [](const blink::InterestGroup::Ad& ad) { return ad.render_url; });
+    CHECK(chosen_ad !=
+          winning_bid_info_.storage_interest_group->interest_group.ads->end());
+    std::string reporting_key = KAnonKeyForAdNameReporting(
+        winning_bid_info_.storage_interest_group->interest_group, *chosen_ad);
+    auto kanon = base::ranges::find(
+        winning_bid_info_.storage_interest_group->reporting_ads_kanon,
+        reporting_key, [](const StorageInterestGroup::KAnonymityData& data) {
+          return data.key;
+        });
+    if (kanon == winning_bid_info_.storage_interest_group->reporting_ads_kanon
+                     .end() ||
+        !kanon->is_k_anonymous) {
+      group_name = "";
+    }
+  }
+
   bidder_worklet_handle_->GetBidderWorklet()->ReportWin(
-      winning_bid_info_.storage_interest_group->interest_group.name,
-      auction_config->non_shared_params.auction_signals, per_buyer_signals,
+      group_name, auction_config->non_shared_params.auction_signals,
+      per_buyer_signals,
+      InterestGroupAuction::GetDirectFromSellerPerBuyerSignals(
+          *seller_info.subresource_url_builder,
+          winning_bid_info_.storage_interest_group->interest_group.owner),
+      InterestGroupAuction::GetDirectFromSellerAuctionSignals(
+          *seller_info.subresource_url_builder),
       signals_for_winner, winning_bid_info_.render_url, winning_bid_info_.bid,
       /*browser_signal_highest_scoring_other_bid=*/
       seller_info.highest_scoring_other_bid,
@@ -365,7 +407,8 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
       }
     }
     if (!has_bad_beacon_map) {
-      ad_beacon_map_.metadata[blink::mojom::ReportingDestination::kBuyer] =
+      ad_beacon_map_
+          .metadata[blink::FencedFrame::ReportingDestination::kBuyer] =
           bidder_ad_beacon_map;
     }
   }

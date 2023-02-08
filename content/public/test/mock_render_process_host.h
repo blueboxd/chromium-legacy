@@ -220,6 +220,10 @@ class MockRenderProcessHost : public RenderProcessHost {
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver)
       override {}
+  void GetSandboxedFileSystemForBucket(
+      const storage::BucketLocator& bucket,
+      blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+          callback) override;
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
@@ -238,6 +242,11 @@ class MockRenderProcessHost : public RenderProcessHost {
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::QuotaManagerHost> receiver) override {
   }
+#if BUILDFLAG(IS_FUCHSIA)
+  void BindMediaCodecProvider(
+      mojo::PendingReceiver<media::mojom::FuchsiaMediaCodecProvider> receiver)
+      override {}
+#endif
   void CreateLockManager(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
@@ -260,7 +269,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void CreateNotificationService(
       GlobalRenderFrameHostId rfh_id,
       RenderProcessHost::NotificationServiceCreatorType creator_type,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override {}
   void CreateWebSocketConnector(

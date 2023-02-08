@@ -4,19 +4,9 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
-#include <alpha-compositing-unstable-v1-client-protocol.h>
 #include <content-type-v1-client-protocol.h>
 #include <extended-drag-unstable-v1-client-protocol.h>
-#include <keyboard-extension-unstable-v1-client-protocol.h>
-#include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
-#include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
-#include <stylus-unstable-v2-client-protocol.h>
-#include <text-input-extension-unstable-v1-client-protocol.h>
-#include <text-input-unstable-v1-client-protocol.h>
-#include <viewporter-client-protocol.h>
-#include <xdg-decoration-unstable-v1-client-protocol.h>
-#include <xdg-output-unstable-v1-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
 #include <algorithm>
@@ -73,18 +63,13 @@
 #include "ui/ozone/platform/wayland/host/zwp_primary_selection_device_manager.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 
-#if defined(USE_LIBWAYLAND_STUBS)
-#include <dlfcn.h>
-
-#include "third_party/wayland/libwayland_stubs.h"  // nogncheck
-#endif
-
 namespace ui {
 
 namespace {
 
 // The maximum supported versions for a given interface.
-// The version bound will be calculated using wl::CalcBindVersion().
+// The version bound will be the minimum of the value and the version
+// advertised by the server.
 constexpr uint32_t kMaxCompositorVersion = 4;
 constexpr uint32_t kMaxKeyboardExtensionVersion = 2;
 constexpr uint32_t kMaxXdgShellVersion = 5;
@@ -141,35 +126,6 @@ WaylandConnection::WaylandConnection() = default;
 WaylandConnection::~WaylandConnection() = default;
 
 bool WaylandConnection::Initialize() {
-#if defined(USE_LIBWAYLAND_STUBS)
-  // Use RTLD_NOW to load all symbols, since the stubs will try to load all of
-  // them anyway.  Use RTLD_GLOBAL to add the symbols to the global namespace.
-  auto dlopen_flags = RTLD_NOW | RTLD_GLOBAL;
-  if (void* libwayland_client =
-          dlopen("libwayland-client.so.0", dlopen_flags)) {
-    third_party_wayland::InitializeLibwaylandclient(libwayland_client);
-  } else {
-    LOG(ERROR) << "Failed to load wayland client libraries.";
-    return false;
-  }
-
-  if (void* libwayland_egl = dlopen("libwayland-egl.so.1", dlopen_flags))
-    third_party_wayland::InitializeLibwaylandegl(libwayland_egl);
-
-  // TODO(crbug.com/1081784): consider handling this in more flexible way.
-  // libwayland-cursor is said to be part of the standard shipment of Wayland,
-  // and it seems unlikely (although possible) that it would be unavailable
-  // while libwayland-client was present.  To handle that gracefully, chrome can
-  // fall back to the generic Ozone behaviour.
-  if (void* libwayland_cursor =
-          dlopen("libwayland-cursor.so.0", dlopen_flags)) {
-    third_party_wayland::InitializeLibwaylandcursor(libwayland_cursor);
-  } else {
-    LOG(ERROR) << "Failed to load libwayland-cursor.so.0.";
-    return false;
-  }
-#endif
-
   // Register factories for classes that implement wl::GlobalObjectRegistrar<T>.
   // Keep alphabetical order for convenience.
   RegisterGlobalObjectFactory(GtkPrimarySelectionDeviceManager::kInterfaceName,
@@ -249,7 +205,7 @@ bool WaylandConnection::Initialize() {
   // estabilished, initialize the event source and input objects.
   DCHECK(!event_source_);
   event_source_ = std::make_unique<WaylandEventSource>(
-      display(), event_queue_.get(), wayland_window_manager(), this);
+      display(), event_queue_.get(), window_manager(), this);
 
   // Create the buffer factory before registry listener is set so that shm, drm,
   // zwp_linux_dmabuf objects are able to be stored.
@@ -443,9 +399,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->compositor_ &&
              strcmp(interface, "wl_compositor") == 0) {
     connection->compositor_ = wl::Bind<wl_compositor>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxCompositorVersion,
-                                 wl_compositor_interface.version));
+        registry, name, std::min(version, kMaxCompositorVersion));
     connection->compositor_version_ = version;
     if (!connection->compositor_) {
       LOG(ERROR) << "Failed to bind to wl_compositor global";
@@ -460,9 +414,7 @@ void WaylandConnection::Global(void* data,
     }
   } else if (!connection->shell_ && strcmp(interface, "xdg_wm_base") == 0) {
     connection->shell_ = wl::Bind<xdg_wm_base>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxXdgShellVersion,
-                                 xdg_wm_base_interface.version));
+        registry, name, std::min(version, kMaxXdgShellVersion));
     if (!connection->shell_) {
       LOG(ERROR) << "Failed to bind to xdg_wm_base global";
       return;
@@ -473,9 +425,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->alpha_compositing_ &&
              (strcmp(interface, "zcr_alpha_compositing_v1") == 0)) {
     connection->alpha_compositing_ = wl::Bind<zcr_alpha_compositing_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxAlphaCompositingVersion,
-                                 zcr_alpha_compositing_v1_interface.version));
+        registry, name, std::min(version, kMaxAlphaCompositingVersion));
     if (!connection->alpha_compositing_) {
       LOG(ERROR) << "Failed to bind zcr_alpha_compositing_v1";
       return;
@@ -485,10 +435,7 @@ void WaylandConnection::Global(void* data,
               0)) {
     connection->linux_explicit_synchronization_ =
         wl::Bind<zwp_linux_explicit_synchronization_v1>(
-            registry, name,
-            wl::CalculateBindVersion(
-                version, kMaxExplicitSyncVersion,
-                zwp_linux_explicit_synchronization_v1_interface.version));
+            registry, name, std::min(version, kMaxExplicitSyncVersion));
     if (!connection->linux_explicit_synchronization_) {
       LOG(ERROR) << "Failed to bind zwp_linux_explicit_synchronization_v1";
       return;
@@ -496,9 +443,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->content_type_manager_v1_ &&
              (strcmp(interface, "wp_content_type_manager_v1") == 0)) {
     connection->content_type_manager_v1_ = wl::Bind<wp_content_type_manager_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxWpContentTypeVersion,
-                                 wp_content_type_manager_v1_interface.version));
+        registry, name, std::min(version, kMaxWpContentTypeVersion));
     if (!connection->content_type_manager_v1_) {
       LOG(ERROR) << "Failed to bind wp_content_type_v1";
       return;
@@ -506,9 +451,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->presentation_ &&
              (strcmp(interface, "wp_presentation") == 0)) {
     connection->presentation_ = wl::Bind<wp_presentation>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxWpPresentationVersion,
-                                 wp_presentation_interface.version));
+        registry, name, std::min(version, kMaxWpPresentationVersion));
     if (!connection->presentation_) {
       LOG(ERROR) << "Failed to bind wp_presentation";
       return;
@@ -518,9 +461,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->viewporter_ &&
              (strcmp(interface, "wp_viewporter") == 0)) {
     connection->viewporter_ = wl::Bind<wp_viewporter>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxWpViewporterVersion,
-                                 wp_viewporter_interface.version));
+        registry, name, std::min(version, kMaxWpViewporterVersion));
     if (!connection->viewporter_) {
       LOG(ERROR) << "Failed to bind wp_viewporter";
       return;
@@ -528,9 +469,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->keyboard_extension_v1_ &&
              strcmp(interface, "zcr_keyboard_extension_v1") == 0) {
     connection->keyboard_extension_v1_ = wl::Bind<zcr_keyboard_extension_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxKeyboardExtensionVersion,
-                                 zcr_keyboard_extension_v1_interface.version));
+        registry, name, std::min(version, kMaxKeyboardExtensionVersion));
     if (!connection->keyboard_extension_v1_) {
       LOG(ERROR) << "Failed to bind zcr_keyboard_extension_v1";
       return;
@@ -545,9 +484,7 @@ void WaylandConnection::Global(void* data,
     connection->keyboard_shortcuts_inhibit_manager_v1_ =
         wl::Bind<zwp_keyboard_shortcuts_inhibit_manager_v1>(
             registry, name,
-            wl::CalculateBindVersion(
-                version, kMaxKeyboardShortcutsInhibitManagerVersion,
-                zwp_keyboard_shortcuts_inhibit_manager_v1_interface.version));
+            std::min(version, kMaxKeyboardShortcutsInhibitManagerVersion));
     if (!connection->keyboard_shortcuts_inhibit_manager_v1_) {
       LOG(ERROR) << "Failed to bind zwp_keyboard_shortcuts_inhibit_manager_v1";
       return;
@@ -555,9 +492,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->text_input_manager_v1_ &&
              strcmp(interface, "zwp_text_input_manager_v1") == 0) {
     connection->text_input_manager_v1_ = wl::Bind<zwp_text_input_manager_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxTextInputManagerVersion,
-                                 zwp_text_input_manager_v1_interface.version));
+        registry, name, std::min(version, kMaxTextInputManagerVersion));
     if (!connection->text_input_manager_v1_) {
       LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
       return;
@@ -566,18 +501,12 @@ void WaylandConnection::Global(void* data,
              strcmp(interface, "zcr_text_input_extension_v1") == 0) {
     connection->text_input_extension_v1_ =
         wl::Bind<zcr_text_input_extension_v1>(
-            registry, name,
-            wl::CalculateBindVersion(
-                version, kMaxTextInputExtensionVersion,
-                zcr_text_input_extension_v1_interface.version));
+            registry, name, std::min(version, kMaxTextInputExtensionVersion));
   } else if (!connection->xdg_decoration_manager_ &&
              strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
     connection->xdg_decoration_manager_ =
         wl::Bind<struct zxdg_decoration_manager_v1>(
-            registry, name,
-            wl::CalculateBindVersion(
-                version, kMaxXdgDecorationVersion,
-                zxdg_decoration_manager_v1_interface.version));
+            registry, name, std::min(version, kMaxXdgDecorationVersion));
     if (!connection->xdg_decoration_manager_) {
       LOG(ERROR) << "Failed to bind zxdg_decoration_manager_v1";
       return;
@@ -585,9 +514,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->extended_drag_v1_ &&
              strcmp(interface, "zcr_extended_drag_v1") == 0) {
     connection->extended_drag_v1_ = wl::Bind<zcr_extended_drag_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxExtendedDragVersion,
-                                 zcr_extended_drag_v1_interface.version));
+        registry, name, std::min(version, kMaxExtendedDragVersion));
     if (!connection->extended_drag_v1_) {
       LOG(ERROR) << "Failed to bind to zcr_extended_drag_v1 global";
       return;
@@ -595,9 +522,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->xdg_output_manager_ &&
              strcmp(interface, "zxdg_output_manager_v1") == 0) {
     connection->xdg_output_manager_ = wl::Bind<struct zxdg_output_manager_v1>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxXdgOutputManagerVersion,
-                                 zxdg_output_manager_v1_interface.version));
+        registry, name, std::min(version, kMaxXdgOutputManagerVersion));
     if (!connection->xdg_output_manager_) {
       LOG(ERROR) << "Failed to bind zxdg_output_manager_v1";
       return;
@@ -615,9 +540,7 @@ void WaylandConnection::Global(void* data,
   } else if (!connection->zcr_stylus_v2_ &&
              strcmp(interface, "zcr_stylus_v2") == 0) {
     connection->zcr_stylus_v2_ = wl::Bind<zcr_stylus_v2>(
-        registry, name,
-        wl::CalculateBindVersion(version, kMaxStylusVersion,
-                                 zcr_stylus_v2_interface.version));
+        registry, name, std::min(version, kMaxStylusVersion));
     if (!connection->zcr_stylus_v2_) {
       LOG(ERROR) << "Failed to bind to zcr_stylus_v2";
       return;
@@ -666,7 +589,7 @@ const gfx::PointF WaylandConnection::MaybeConvertLocation(
   if (!surface_submission_in_pixel_coordinates_ || !window)
     return location;
   gfx::PointF converted(location);
-  converted.Scale(1.0f / window->window_scale());
+  converted.InvScale(window->window_scale());
   return converted;
 }
 

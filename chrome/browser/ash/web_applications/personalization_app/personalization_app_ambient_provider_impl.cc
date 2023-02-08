@@ -15,6 +15,7 @@
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/shell.h"
@@ -81,6 +82,8 @@ PersonalizationAppAmbientProviderImpl::PersonalizationAppAmbientProviderImpl(
       base::BindRepeating(
           &PersonalizationAppAmbientProviderImpl::OnAnimationThemeChanged,
           base::Unretained(this)));
+  ambient_ui_model_observer_.Observe(
+      Shell::Get()->ambient_controller()->ambient_ui_model());
 }
 
 PersonalizationAppAmbientProviderImpl::
@@ -176,7 +179,7 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
     case (ash::AmbientModeTopicSource::kGooglePhotos): {
       ash::PersonalAlbum* target_personal_album = FindPersonalAlbumById(id);
       if (!target_personal_album) {
-        mojo::ReportBadMessage("Invalid album id.");
+        ambient_receiver_.ReportBadMessage("Invalid album id.");
         return;
       }
       target_personal_album->selected = selected;
@@ -214,7 +217,7 @@ void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
       // based on the selections.
       auto* art_setting = FindArtAlbumById(id);
       if (!art_setting || !art_setting->visible) {
-        mojo::ReportBadMessage("Invalid album id.");
+        ambient_receiver_.ReportBadMessage("Invalid album id.");
         return;
       }
       art_setting->enabled = selected;
@@ -573,7 +576,14 @@ void PersonalizationAppAmbientProviderImpl::ResetLocalSettings() {
 }
 
 void PersonalizationAppAmbientProviderImpl::StartScreenSaverPreview() {
-  Shell::Get()->ambient_controller()->ShowUi();
+  Shell::Get()->ambient_controller()->StartScreenSaverPreview();
+}
+
+void PersonalizationAppAmbientProviderImpl::OnAmbientUiVisibilityChanged(
+    ash::AmbientUiVisibility visibility) {
+  if (ambient_observer_remote_.is_bound()) {
+    ambient_observer_remote_->OnAmbientUiVisibilityChanged(visibility);
+  }
 }
 
 }  // namespace ash::personalization_app

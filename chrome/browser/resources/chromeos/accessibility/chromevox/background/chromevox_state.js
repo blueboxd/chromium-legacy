@@ -13,7 +13,7 @@ import {BrailleKeyEvent} from '../common/braille/braille_key_types.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
-import {TtsSpeechProperties} from '../common/tts_interface.js';
+import {TtsSpeechProperties} from '../common/tts_types.js';
 
 import {UserActionMonitor} from './user_action_monitor.js';
 
@@ -101,12 +101,6 @@ export class ChromeVoxState {
    */
   set pageSel(newPageSel) {}
 
-  /** @return {number} */
-  get typingEcho() {}
-
-  /** @param {number} newTypingEcho */
-  set typingEcho(newTypingEcho) {}
-
   /**
    * Navigate to the given range - it both sets the range and outputs it.
    * @param {!CursorRange} range The new range.
@@ -130,11 +124,6 @@ export class ChromeVoxState {
    * @return {boolean} True if evt was processed.
    */
   onBrailleKeyEvent(evt, content) {}
-
-  /**
-   * Forces the reading of the next change to the clipboard.
-   */
-  readNextClipboardDataChange() {}
 }
 
 /** @type {ChromeVoxState} */

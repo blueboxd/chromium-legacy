@@ -172,7 +172,6 @@ void SubAppsServiceImpl::Add(std::vector<SubAppsServiceAddInfoPtr> sub_apps,
       *parent_app_id, AddOptionsFromMojo(std::move(sub_apps)),
       base::BindOnce(&OnAdd, std::move(result_callback)),
       Profile::FromBrowserContext(render_frame_host().GetBrowserContext()),
-      &provider->registrar(), &provider->install_finalizer(),
       std::make_unique<WebAppUrlLoader>(),
       std::make_unique<WebAppDataRetriever>());
 
@@ -197,7 +196,7 @@ void SubAppsServiceImpl::List(ListCallback result_callback) {
     return;
   }
 
-  WebAppRegistrar& registrar = provider->registrar();
+  WebAppRegistrar& registrar = provider->registrar_unsafe();
 
   std::vector<SubAppsServiceListInfoPtr> sub_apps;
   for (const AppId& web_app_id : registrar.GetAllSubAppIds(*parent_app_id)) {
@@ -237,7 +236,7 @@ void SubAppsServiceImpl::Remove(const UnhashedAppId& unhashed_app_id,
   }
 
   AppId sub_app_id = GenerateAppIdFromUnhashed(unhashed_app_id);
-  const WebApp* app = provider->registrar().GetAppById(sub_app_id);
+  const WebApp* app = provider->registrar_unsafe().GetAppById(sub_app_id);
 
   // Verify that the app we're trying to remove exists, that its parent_app is
   // the one doing the current call, and that the app was locally installed.

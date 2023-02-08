@@ -10,13 +10,10 @@
 #include <unordered_map>
 
 #include "base/memory/raw_ptr.h"
+#include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 struct BrowserInfo;
 class DevToolsClient;
@@ -61,11 +58,15 @@ class NavigationTracker : public DevToolsEventListener,
   Status OnConnected(DevToolsClient* client) override;
   Status OnEvent(DevToolsClient* client,
                  const std::string& method,
-                 const base::DictionaryValue& params) override;
+                 const base::Value::Dict& params) override;
   Status OnCommandSuccess(DevToolsClient* client,
                           const std::string& method,
                           const base::DictionaryValue* result,
                           const Timeout& command_timeout) override;
+  Status OnCommandSuccess(DevToolsClient* client,
+                          const std::string& method,
+                          const base::Value::Dict* result,
+                          const Timeout& command_timeout);
 
  private:
   Status UpdateCurrentLoadingState();

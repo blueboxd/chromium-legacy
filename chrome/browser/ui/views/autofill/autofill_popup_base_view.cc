@@ -196,6 +196,7 @@ void AutofillPopupBaseView::DoHide() {
     // navigates into the menu, otherwise some screen readers will ignore
     // any focus events outside of the menu, including a focus event on
     // the form control itself.
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupEnd, true);
     NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
     GetViewAccessibility().EndPopupFocusOverride();
 
@@ -235,6 +236,8 @@ void AutofillPopupBaseView::NotifyAXSelection(View* selected_view) {
     // reader will restore the focus back to the appropriate textfield when the
     // menu closes.
     NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kMenuPopupStart, true);
+
     is_ax_menu_start_event_fired_ = true;
   }
   selected_view->GetViewAccessibility().SetPopupFocusOverride();
@@ -336,6 +339,11 @@ gfx::Rect AutofillPopupBaseView::GetOptionalPositionAndPlaceArrowOnPopup(
 
   gfx::Rect popup_bounds;
 
+  int maximum_pixel_offset_to_center =
+      base::FeatureList::IsEnabled(features::kAutofillMoreProminentPopup)
+          ? features::kAutofillMoreProminentPopupMaxOffsetToCenterParam.Get()
+          : kMaximumPixelsToMoveSuggstionToCenter;
+
   // Deduce the arrow and the position.
   views::BubbleBorder::Arrow arrow = GetOptimalPopupPlacement(
       /*content_area_bounds=*/max_bounds_for_popup,
@@ -344,11 +352,9 @@ gfx::Rect AutofillPopupBaseView::GetOptionalPositionAndPlaceArrowOnPopup(
       /*right_to_left=*/delegate_->IsRTL(),
       /*scrollbar_width=*/gfx::scrollbar_size(),
       /*maximum_pixel_offset_to_center=*/
-      autofill::features::kAutofillMaximumPixelsToMoveSuggestionopupToCenter
-          .Get(),
+      maximum_pixel_offset_to_center,
       /*maximum_width_percentage_to_center=*/
-      autofill::features::
-          kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter.Get(),
+      kMaximumWidthPercentageToMoveTheSuggestionToCenter,
       /*popup_bounds=*/popup_bounds);
 
   // Those values are not supported for adding an arrow.
@@ -358,8 +364,8 @@ gfx::Rect AutofillPopupBaseView::GetOptionalPositionAndPlaceArrowOnPopup(
 
   // Set the arrow position to the border.
   border->set_arrow(arrow);
-  border->AddArrowToBubbleCornerAndPointTowardsAnchor(
-      element_bounds, /*move_bubble_to_add_arrow=*/true, popup_bounds);
+  border->AddArrowToBubbleCornerAndPointTowardsAnchor(element_bounds,
+                                                      popup_bounds);
 
   return popup_bounds;
 }
@@ -399,14 +405,8 @@ bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
     return false;
   }
 
-  gfx::Rect popup_bounds =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillCenterAlignedSuggestions)
-          ? GetOptionalPositionAndPlaceArrowOnPopup(
-                element_bounds, max_bounds_for_popup, preferred_size)
-          : CalculatePopupBounds(preferred_size, max_bounds_for_popup,
-                                 element_bounds, delegate_->IsRTL(),
-                                 /*horizontally_centered=*/false);
+  gfx::Rect popup_bounds = GetOptionalPositionAndPlaceArrowOnPopup(
+      element_bounds, max_bounds_for_popup, preferred_size);
 
   if (BoundsOverlapWithPictureInPictureWindow(popup_bounds)) {
     HideController(PopupHidingReason::kOverlappingWithPictureInPictureWindow);
@@ -428,9 +428,12 @@ std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
       views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
       ui::kColorDropdownBackground);
   border->SetCornerRadius(GetCornerRadius());
+  views::Emphasis emphasis =
+      base::FeatureList::IsEnabled(features::kAutofillMoreProminentPopup)
+          ? views::Emphasis::kMaximum
+          : views::Emphasis::kMedium;
   border->set_md_shadow_elevation(
-      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::Emphasis::kMedium));
+      ChromeLayoutProvider::Get()->GetShadowElevationMetric(emphasis));
   return border;
 }
 

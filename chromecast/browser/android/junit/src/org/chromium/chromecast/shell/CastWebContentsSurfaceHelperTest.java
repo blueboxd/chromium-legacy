@@ -26,14 +26,17 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.Consumer;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chromecast.base.Controller;
 import org.chromium.chromecast.base.Observer;
 import org.chromium.chromecast.base.Scope;
+import org.chromium.chromecast.base.Unit;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.MediaSessionGetter;
 import org.chromium.chromecast.shell.CastWebContentsSurfaceHelper.StartParams;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.function.Consumer;
 
 /**
  * Tests for CastWebContentsSurfaceHelper.
@@ -46,6 +49,7 @@ public class CastWebContentsSurfaceHelperTest {
     private CastWebContentsSurfaceHelper mSurfaceHelper;
     private @Mock MediaSessionGetter mMediaSessionGetter;
     private @Mock MediaSessionImpl mMediaSessionImpl;
+    private Controller<Unit> mSurfaceAvailable = new Controller<>();
 
     private static class StartParamsBuilder {
         private String mId = "0";
@@ -88,7 +92,8 @@ public class CastWebContentsSurfaceHelperTest {
         MockitoAnnotations.initMocks(this);
         when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
         when(mWebContentsView.open(any())).thenReturn(mock(Scope.class));
-        mSurfaceHelper = new CastWebContentsSurfaceHelper(mWebContentsView, mFinishCallback);
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(
+                mWebContentsView, mFinishCallback, mSurfaceAvailable);
         mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
     }
 
@@ -292,5 +297,18 @@ public class CastWebContentsSurfaceHelperTest {
         mSurfaceHelper.onNewStartParams(params);
         mSurfaceHelper.onDestroy();
         verify(scope).close();
+    }
+
+    @Test
+    public void testWindowAndroidPreSurfaceDestroy() {
+        WebContents webContents = mock(WebContents.class);
+
+        StartParams params = new StartParamsBuilder().withWebContents(webContents).build();
+        mSurfaceHelper.onNewStartParams(params);
+
+        mSurfaceAvailable.set(Unit.unit());
+        mSurfaceAvailable.reset();
+
+        verify(webContents).tearDownDialogOverlays();
     }
 }

@@ -693,6 +693,122 @@ service supports. This is used as:
 [application commands](functional_spec.md#application-commands-applicable-to-the-windows-version-of-the-updater)
 in the functional spec.
 
+#### COM interface versioning
+
+The COM interfaces are declared in `updater_idl.template`,
+`updater_internal_idl.template`, and `updater_legacy_idl.template`.
+
+* `updater_idl.template`:
+  * contains the interfaces for the currently active updater version.
+  * the interface IDs are `uuid5-generated` and are distinct based on branding.
+
+* `updater_internal_idl.template`:
+  * contains the side-by-side interfaces which allow each updater COM client to
+    talk to the same version COM server.
+  * the interface IDs are `uuid5-generated` and are distinct based on branding
+    and version.
+
+* `updater_legacy_idl.template`:
+  * contains legacy interfaces for the currently active updater version.
+  * the interface IDs are hardcoded and based on branding.
+
+The interface ID generation and substitution can be seen in the
+[build file](https://source.chromium.org/chromium/chromium/src/+/main:chrome/updater/app/server/win/BUILD.gn).
+
+The `uuid5-generation` and substitutions are done via `midl.gni` using the
+values provided via the `dynamic_guids` property.
+
+`dynamic_guids` can contain hardcoded values, for instance, in the case of
+`updater_internal_idl.template`. Or it can contain `uuid5:`-prefixed values, in
+which case the IDs are `uuid5-generated`.
+
+More information on how `uuid5-generation` works can be found
+[here](http://crrev.com/825994).
+
+#### COM Marshaling
+
+Typelib marshaling is used to marshal the updater interfaces. Each interface is
+registered with the typelib marshaler `{00020424-0000-0000-C000-000000000046}`
+as the proxy/stub.
+
+The type libraries are stored in three distinct typelibs
+within `updater.exe` with resource index `1, 2, 3` respectively for the active,
+side-by-side, and legacy interfaces respectively. The typelib registrations in
+the registry are made accordingly with the complete path to updater.exe suffixed
+with the typelib resource index.
+
+For instance, the typelib registration for the active interfaces would be of the
+form `C:\Path\To\updater.exe\1`.
+
+##### Side-by-side user/system interface registration
+The updater has marshaling and registration logic to make different (but
+binary-identical) COM interfaces for user and system respectively to work
+seamlessly.
+
+The distinct interface IDs are suffixed with `User` and `System` respectively.
+Most of the codebase uses the interface without the `User` or `System` suffix,
+except for the code that does the marshaling.
+
+The interfaces with `User` and `System` suffixes have (and always need to have)
+the exact same vtable and parameter layout as the interfaces without the
+suffixes, which is what makes it possible for the marshaling framework to think
+that it is marshaling the distinct `User` or `System` interfaces, while the
+majority of the codebase thinks it is working with the non-suffixed interfaces.
+
+The `User` interfaces are only registered for the user case in HKCU, while
+the corresponding `System` interfaces are only registered for the system case
+in HKLM.
+
+This isolates the installs from causing side-effects, and makes user and system
+installs fully SxS.
+
+Without this change, marshaling can load the typelib from `HKCU` for a system
+install with UAC off, because when COM looks up registration, entries in `HKCU`
+take priority over `HKLM` entries when UAC is off.
+
+When introducing a new interface, or making an existing interface to be SxS,
+the following steps need to be followed:
+* Add corresponding interfaces with `User` and `System` suffixes that are
+  binary-identical to the non-suffixed interface, to the `.template` IDL file
+  and BUILD files.
+* IDL file changes use the following rules:
+  * If there are no interface parameters in any of the methods of the interface,
+    simply derive the `User` and `System` suffixed interfaces from the
+    non-suffixed interface.
+
+    Example: `IUpdaterInternalCallbackUser` and `IUpdaterInternalCallbackSystem`
+    derive from `IUpdaterInternalCallback` in `updater_internal_idl.template`.
+  * If there are interface parameters in any of the methods of the interface,
+    make an exact copy of the non-suffixed interface, but replace any interface
+    parameters with the `User` and `System` suffixed interface equivalents.
+
+    Example: `IUpdaterInternalUser` and `IUpdaterInternalSystem` are copies of
+    `IUpdaterInternal`, but with the interface parameters of type
+    `IUpdaterInternalCallback` replaced with `IUpdaterInternalCallbackUser` and
+    `IUpdaterInternalCallbackSystem` respectively for the methods `Run` and
+    `Hello` in `updater_internal_idl.template`.
+* Code changes:
+  * Derive the COM class that implements interface `Interface` from
+    `DynamicIIDsImpl<Interface, iid_user, iid_system>`. `iid_user` and
+    `iid_system` are the ids of the interface `Interface` for user and system
+    installs respectively.
+
+    Example: class `UpdaterInternalImpl` derives from
+    `DynamicIIDsImpl<IUpdaterInternal, __uuidof(IUpdaterInternalUser),
+    __uuidof(IUpdaterInternalSystem)>`
+
+  * Use the distinct `User` or `System` IID when querying for the non-suffixed interface.
+
+    Example:
+
+    ```
+        Microsoft::WRL::ComPtr<Interface> server_interface;
+        REFIID iid = scope_ == UpdaterScope::kSystem ? iid_system : iid_user;
+        hr = server.CopyTo(iid, IID_PPV_ARGS_Helper(&server_interface));
+    ```
+  * Register either the `User` or the `System` interface (but not both) with COM
+    in setup. The non-suffixed interface is not registered with COM at all.
+
 #### COM Security
 
 The legacy COM classes in
@@ -754,7 +870,7 @@ considers it uninstalled and ceases attempting to update it.
 ### Periodic Task Scheduling
 On Mac, the scheduler is implemented via LaunchAgents (for user-level installs)
 and LaunchDaemons (for system-level installs). The scheduled task is defined by
-the `org.chromium.ChromiumUpdater.wake.1.2.3.4.plist`, which contains a Label
+the `org.chromium.ChromiumUpdater.wake.plist`, which contains a Label
 corresponding to the name of the plist, program arguments, which contains the
 path to the executable and the arguments it'll run with, and a StartInterval,
 which denotes interval for when launchctl should invoke the program. An example:
@@ -767,13 +883,13 @@ which denotes interval for when launchctl should invoke the program. An example:
 	<key>AbandonProcessGroup</key>
 	<true/>
 	<key>Label</key>
-	<string>org.chromium.ChromiumUpdater.wake.1.2.3.4</string>
+	<string>org.chromium.ChromiumUpdater.wake</string>
 	<key>LimitLoadToSessionType</key>
 	<string>Aqua</string>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/Users/user/Library/Chromium/ChromiumUpdater/1.2.3.4/ChromiumUpdater.app/Contents/MacOS/ChromiumUpdater</string>
-		<string>--wake</string>
+		<string>--wake-all</string>
 		<string>--vmodule=*/chrome/updater/*=2,*/components/update_client/*=2</string>
 		<string>--enable-logging</string>
 	</array>
@@ -783,21 +899,37 @@ which denotes interval for when launchctl should invoke the program. An example:
 </plist>
 ```
 
+macOS 13 notifies the user each time a new task is created. Since it is not
+useful to notify the user each time the updater sets up a new version of
+itself, the scheduled task is not side-by-side on macOS 13. The task is
+replaced during each activation of each new instance, and calls --wake-all for
+the active version of the updater. --wakeall will then --wake every version of
+the updater that is present in the base install directory.
+
 ### Legacy State
 TODO(crbug.com/1035895): Document usage of Keystone tickets on macOS.
 
 ### IPC
-On Mac, the IPC utilized for the updater is XPC, which is the macOS native IPC
-system controlled by launchd. The main portion to utilize XPC is to create
-launch agent plists under `${HOME}/Library/LaunchAgents` for user level installs
-and launch daemon plists under `/Library/LaunchDaemons` for system level
-installs.
+On macOS, the updater uses both XPC (for non-side-by-side communications) and
+mojo (for communications within a single version of the program). XPC is the
+macOS native IPC system controlled by launchd. The main portion to utilize XPC
+is to create launch agent plists under `${HOME}/Library/LaunchAgents` for user
+level installs and launch daemon plists under `/Library/LaunchDaemons` for
+system level installs. XPC should be replaced with mojo in the future.
 
-The updater uses multiple layers of XPC to start-up separate processes
-that are responsible for different actions. There are two XPC plists that the
-updater creates for the server. The first is the `.internal` plist, which goes
-through some control tasks first, and then there's the `.service` plist, which
-actually performs the update check and the update itself.
+The updater uses multiple layers of RPC to start-up separate processes that are
+responsible for different actions. Mojo is used for UpdateServiceInternal,
+while the `.service` plist covers UpdateService, which actually performs the
+update check and the update itself.
+
+Mojo does not orchestrate process launches and connections. When using mojo,
+the updater first attempts to connect to an existing process, and if this
+fails, launches the server process and then repeatedly retries to connect.
+
+Since Mojo's NamedPlatformChannel is not reusable for multiple connections, the
+updater relies on NamedMojoIpcServer's utilities to bootstrap mojo connections
+using multiple connections on a mach port, and for messages to that port to
+contain a reply port.
 
 The XPC interface is also utilized to communicate between the browser and the
 updater for on-demand updates. The protocol utilized by the browser has to be in

@@ -90,6 +90,12 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   void SetViewState(PartialTranslateBubbleModel::ViewState view_state,
                     translate::TranslateErrors error_type);
 
+  // Update the source language combobox's selected index to match the current
+  // index in the model. These values desynchronize when a request does not
+  // specify a source language, such as with initial translations from the menu,
+  // or when "Detected Language" is used.
+  void MaybeUpdateSourceLanguageCombobox();
+
   // LocationBarBubbleDelegateView:
   void CloseBubble() override;
 
@@ -181,6 +187,12 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   // is not shown, for accessibility purposes.
   void SetWindowTitle(PartialTranslateBubbleModel::ViewState view_state);
 
+  // Finds and saves the width of the bubble's largest child view, excluding
+  // |translate_view_|. This value is needed to properly resize
+  // |partial_text_label_| as the width of the tabbed pane changes with changes
+  // in selected languages.
+  void ComputeLargestViewStateWidth();
+
   // Updates the view state. Whenever the view state is updated, the title needs
   // to be updated for accessibility.
   void UpdateViewState(PartialTranslateBubbleModel::ViewState view_state);
@@ -241,7 +253,7 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   raw_ptr<views::View, DanglingUntriaged> advanced_view_source_ = nullptr;
   raw_ptr<views::View, DanglingUntriaged> advanced_view_target_ = nullptr;
 
-  views::Throbber* throbber_;
+  raw_ptr<views::Throbber, DanglingUntriaged> throbber_;
 
   raw_ptr<views::Combobox, DanglingUntriaged> source_language_combobox_ =
       nullptr;
@@ -279,6 +291,10 @@ class PartialTranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<WebContentMouseHandler> mouse_handler_;
 
   std::u16string text_selection_;
+
+  // The width of the largest non-|translate_view_| child view at
+  // initialization.
+  int largest_view_state_width_ = 0;
 
   base::OnceClosure on_closing_;
 

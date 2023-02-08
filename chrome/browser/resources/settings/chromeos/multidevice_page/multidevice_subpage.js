@@ -25,7 +25,7 @@ import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route} from '../../router.js';
+import {Route} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
 import {OsSettingsRoutes} from '../os_settings_routes.js';
@@ -243,19 +243,6 @@ class SettingsMultideviceSubpageElement extends
       return '';
     }
     return this.i18n('multideviceItemDisabledByPhoneAdminTooltip');
-  }
-
-  /**
-   * TODO(b/227674947): Delete method when Sign in with Smart Lock is removed.
-   * If Smart Lock Sign in is removed there is no subpage to navigate to, so we
-   * set the subpageRoute to undefined.
-   * @return {undefined | Object}
-   * @private
-   */
-  getSmartLockSubpageRoute_() {
-    return loadTimeData.getBoolean('isSmartLockSignInRemoved') ?
-        undefined :
-        routes.SMART_LOCK;
   }
 
   /**

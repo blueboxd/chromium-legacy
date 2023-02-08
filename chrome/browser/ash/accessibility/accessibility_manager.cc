@@ -106,6 +106,7 @@
 #include "url/gurl.h"
 
 namespace ash {
+
 namespace {
 
 using ::extensions::api::accessibility_private::DlcType;
@@ -130,10 +131,6 @@ const char kUserBluetoothBrailleDisplayAddress[] =
 
 // The name of the Brltty upstart job.
 constexpr char kBrlttyUpstartJobName[] = "brltty";
-
-// The path to the tts-es-us DLC.
-constexpr char kTtsEsUsDlcPath[] =
-    "/run/imageloader/tts-es-us/package/root/voice.zvoice";
 
 // The path to the pumpkin DLC directory.
 constexpr char kPumpkinDlcRootPath[] = "/run/imageloader/pumpkin/package/root/";
@@ -785,6 +782,8 @@ bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
 void AccessibilityManager::HandleAccessibilityGesture(
     ax::mojom::Gesture gesture,
     gfx::PointF location) {
+  if (!profile_)
+    return;
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
@@ -1011,7 +1010,7 @@ void AccessibilityManager::SetDictationEnabled(bool enabled) const {
     return;
 
   PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, enabled);
+  pref_service->SetBoolean(prefs::kAccessibilityDictationEnabled, enabled);
   pref_service->CommitPendingWrite();
 }
 
@@ -1332,8 +1331,7 @@ void AccessibilityManager::CheckBrailleState() {
 }
 
 void AccessibilityManager::ReceiveBrailleDisplayState(
-    std::unique_ptr<extensions::api::braille_display_private::DisplayState>
-        state) {
+    std::unique_ptr<DisplayState> state) {
   OnBrailleDisplayStateChanged(*state);
 }
 
@@ -1892,8 +1890,7 @@ void AccessibilityManager::LoadEnhancedNetworkTts() {
           ->extension_service()
           ->component_loader();
 
-  if (!::features::IsEnhancedNetworkVoicesEnabled() ||
-      component_loader->Exists(extension_misc::kEnhancedNetworkTtsExtensionId))
+  if (component_loader->Exists(extension_misc::kEnhancedNetworkTtsExtensionId))
     return;
 
   base::FilePath resources_path;
@@ -2023,15 +2020,10 @@ void AccessibilityManager::SetFocusRing(
     std::unique_ptr<AccessibilityFocusRingInfo> focus_ring) {
   AccessibilityFocusRingController::Get()->SetFocusRing(focus_ring_id,
                                                         std::move(focus_ring));
-
-  if (focus_ring_observer_for_test_)
-    focus_ring_observer_for_test_.Run();
 }
 
 void AccessibilityManager::HideFocusRing(std::string focus_ring_id) {
   AccessibilityFocusRingController::Get()->HideFocusRing(focus_ring_id);
-  if (focus_ring_observer_for_test_)
-    focus_ring_observer_for_test_.Run();
 }
 
 void AccessibilityManager::SetHighlights(
@@ -2120,7 +2112,8 @@ void AccessibilityManager::SetBrailleControllerForTest(
 
 void AccessibilityManager::SetFocusRingObserverForTest(
     base::RepeatingCallback<void()> observer) {
-  focus_ring_observer_for_test_ = observer;
+  AccessibilityFocusRingController::Get()->SetFocusRingObserverForTesting(
+      observer);
 }
 
 void AccessibilityManager::SetHighlightsObserverForTest(
@@ -2460,22 +2453,40 @@ void AccessibilityManager::OnPumpkinError(const std::string& error) {
 
 void AccessibilityManager::GetDlcContents(DlcType dlc,
                                           GetDlcContentsCallback callback) {
-  base::FilePath path = DlcTypeToPath(dlc);
+  // This API currently only supports TTS DLCs.
+  base::FilePath path = TtsDlcTypeToPath(dlc);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce(&ReadDlcFile, path),
       base::BindOnce(&OnReadDlcFile, std::move(callback)));
 }
 
-base::FilePath AccessibilityManager::DlcTypeToPath(DlcType dlc) {
-  bool use_test_dlc_path = !dlc_path_for_test_.empty();
-  switch (dlc) {
-    case DlcType::DLC_TYPE_TTSESUS:
-      return use_test_dlc_path ? dlc_path_for_test_.Append("voice.zvoice")
-                               : base::FilePath(kTtsEsUsDlcPath);
-    case DlcType::DLC_TYPE_NONE:
-      NOTREACHED();
-      return base::FilePath();
+base::FilePath AccessibilityManager::TtsDlcTypeToPath(DlcType dlc) {
+  if (!dlc_path_for_test_.empty())
+    return dlc_path_for_test_.Append("voice.zvoice");
+
+  // Paths to TTS DLCs.
+  static constexpr auto kTtsDlcTypeToSubDir =
+      base::MakeFixedFlatMap<DlcType, base::StringPiece>(
+          {{DlcType::DLC_TYPE_TTSESES, "tts-es-es/"},
+           {DlcType::DLC_TYPE_TTSESUS, "tts-es-us/"},
+           {DlcType::DLC_TYPE_TTSFRFR, "tts-fr-fr/"},
+           {DlcType::DLC_TYPE_TTSHIIN, "tts-hi-in/"},
+           {DlcType::DLC_TYPE_TTSNLNL, "tts-nl-nl/"},
+           {DlcType::DLC_TYPE_TTSPTBR, "tts-pt-br/"},
+           {DlcType::DLC_TYPE_TTSSVSE, "tts-sv-se/"}});
+
+  if (!base::Contains(kTtsDlcTypeToSubDir, dlc)) {
+    NOTREACHED();
+    return base::FilePath();
   }
+
+  // TODO(akihiroota): Add these to a DLC constants file.
+  static constexpr char kDlcRootDir[] = "/run/imageloader/";
+  static constexpr char kVoicePath[] = "package/root/voice.zvoice";
+  // Example final path: /run/imageloader/tts-fr-fr/package/root/voice.zvoice.
+  return base::FilePath(kDlcRootDir)
+      .Append(kTtsDlcTypeToSubDir.find(dlc)->second)
+      .Append(kVoicePath);
 }
 
 void AccessibilityManager::SetDlcPathForTest(base::FilePath path) {

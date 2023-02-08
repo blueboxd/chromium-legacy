@@ -246,12 +246,12 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   virtual void GetKeyboardBrightnessPercent(
       DBusMethodCallback<double> callback) = 0;
 
-  // Set the toggled-off state of the keyboard backlight.
-  virtual void SetKeyboardBacklightToggledOff(bool toggled_off) = 0;
+  // Sets the keyboard backlight brightness per |request|.
+  virtual void SetKeyboardBrightness(
+      const power_manager::SetBacklightBrightnessRequest& request) = 0;
 
-  // Get the toggled-off state of the keyboard backlight.
-  virtual void GetKeyboardBacklightToggledOff(
-      DBusMethodCallback<bool> callback) = 0;
+  // Toggle the keyboard backlight on or off.
+  virtual void ToggleKeyboardBacklight() = 0;
 
   // Returns the last power status that was received from D-Bus, if any.
   virtual const absl::optional<power_manager::PowerSupplyProperties>&
@@ -339,9 +339,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   // ready for a suspend.
   virtual void UnblockSuspend(const base::UnguessableToken& token) = 0;
 
-  // Whether the device supports Ambient color.
-  virtual bool SupportsAmbientColor() = 0;
-
   // Creates timers corresponding to clocks present in |arc_timer_requests|.
   // ScopedFDs are used to indicate timer expiration as described in
   // |StartArcTimer|. Aysnchronously runs |callback| with the created timers'
@@ -374,10 +371,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
 
   // The time power manager will wait before resuspending from a dark resume.
   virtual base::TimeDelta GetDarkSuspendDelayTimeout() = 0;
-
-  // Refreshes the battery signal of the specified Bluetooth device.
-  // TODO(b/166543531): Remove after migrating to BlueZ Battery Provider API.
-  virtual void RefreshBluetoothBattery(const std::string& address) = 0;
 
   // On devices that support external displays with ambient light sensors, this
   // enables/disables the ALS-based brightness adjustment on those displays.

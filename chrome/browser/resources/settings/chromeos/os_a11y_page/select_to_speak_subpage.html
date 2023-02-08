@@ -1,0 +1,242 @@
+<!--
+Copyright 2022 The Chromium Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<style include="settings-shared">
+  :host {
+    --cr-section-indent-width: 60px;
+    --focus-ring-highlight-color: rgb(218, 54, 232);
+  }
+
+  h2 {
+    padding-inline-start: var(--cr-section-padding);
+  }
+
+  .sub-item {
+    padding-inline-start: var(--cr-section-indent-width);
+  }
+
+  .indented {
+    margin-inline-start: 32px;
+  }
+
+  .settings-box {
+    padding-inline-start: 0;
+  }
+
+  settings-toggle-button {
+    padding-inline-end: var(--cr-section-padding);
+    padding-inline-start: var(--cr-section-padding);
+  }
+
+  .highlight-example-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-inline-end: var(--cr-section-padding);
+  }
+
+  .example {
+    display: flex;
+    flex: 1;
+    font-size: 1em;
+    height: 60px;
+    justify-content: center;
+    line-height: 60px;
+    padding: 0 3px;
+    vertical-align: middle;
+  }
+
+  .light {
+    background-color: var(--google-grey-100);
+    border-radius: 4px 0 0 4px;
+    color: black;
+  }
+
+  .dark {
+    background-color: var(--google-grey-900);
+    border-radius: 0 4px 4px 0;
+    color: white;
+  }
+
+  .highlight {
+    height: 20px;
+    opacity: .3;
+    position: relative;
+    top: -40px;
+    width: 100%;
+    z-index: 10;
+  }
+
+  .background-preview {
+    background-color: RGBA(0, 0, 0, .4);
+    border-radius: 4px;
+    line-height: 1.5;
+    margin-inline-end: var(--cr-section-padding);
+    padding: 16px 24px 16px 24px;
+    position: relative;
+  }
+
+  .background-preview-selected {
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 0 4px 4px var(--focus-ring-highlight-color);
+    color: black;
+    display: inline-block;
+    margin: 0;
+    padding: 6px 4px 6px 4px;
+  }
+
+  .background-preview-unselected {
+    margin: 2px 0 2px 0;
+    padding: 0 4px 0 4px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .background-preview-selected {
+      background-color: var(--google-grey-900);
+      color: var(--cros-text-color-primary);
+    }
+
+    .background-preview-unselected {
+      color: var(--cros-text-color-secondary);
+      margin: 2px 0 2px 0;
+      padding: 0 4px 0 4px;
+    }
+  }
+</style>
+
+<h2>$i18n{selectToSpeakOptionsSpeech}</h2>
+<div class="sub-item">
+  <div class="settings-box continuation">
+    <div class="start settings-box-text">
+      $i18n{selectToSpeakOptionsLanguagesFilterDescription}
+    </div>
+    <settings-dropdown-menu
+        label="$i18n{selectToSpeakOptionsLanguagesFilterDescription}"
+        pref="{{languageFilterVirtualPref_}}"
+        menu-options="[[languagesMenuOptions_]]">
+    </settings-dropdown-menu>
+  </div>
+  <div class="settings-box continuation">
+    <div class="start settings-box-text">
+      $i18n{selectToSpeakOptionsVoiceDescription}
+    </div>
+    <settings-dropdown-menu id="voiceDropdown"
+        label="$i18n{selectToSpeakOptionsVoiceDescription}"
+        pref="{{prefs.settings.a11y.select_to_speak_voice_name}}"
+        menu-options="[[localVoicesMenuOptions_]]"
+        deep-link-focus-id$="[[Setting.kSelectToSpeakVoice]]">
+      </settings-dropdown-menu>
+  </div>
+  <template is="dom-if"
+      if="[[isExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled_]]">
+    <!-- TODO(crbug.com/1354821): Figure out how to make settings-toggle-button
+    and other control labels speakable with Select-to-speak. -->
+    <!-- TODO(crbug.com/1354821): Disable and turn off or hide
+    voiceSwitchingToggle when enhanced network voices is enabled. -->
+    <settings-toggle-button
+        id="voiceSwitchingToggle"
+        class="settings-box"
+        pref="{{prefs.settings.a11y.select_to_speak_voice_switching}}"
+        label="$i18n{selectToSpeakOptionsVoiceSwitchingDescription}"
+        deep-link-focus-id$="[[Setting.kSelectToSpeakVoiceSwitching]]">
+    </settings-toggle-button>
+  </template>
+  <!-- TODO(crbug.com/1354821): Disable and turn off or hide enhanced network
+  voices settings when disabled by policy. -->
+  <settings-toggle-button
+      id="enhancedNetworkVoicesToggle"
+      class="settings-box"
+      pref="{{prefs.settings.a11y.select_to_speak_enhanced_network_voices}}"
+      label="$i18n{selectToSpeakOptionsEnhancedNetworkVoicesDescription}"
+      sub-label="$i18n{selectToSpeakOptionsEnhancedNetworkVoicesSubtitle}"
+      learn-more-url="$i18n{selectToSpeakLearnMoreUrl}"
+      deep-link-focus-id$="[[Setting.kSelectToSpeakEnhancedNetworkVoices]]">
+  </settings-toggle-button>
+  <template is="dom-if"
+      if="[[prefs.settings.a11y.select_to_speak_enhanced_network_voices.value]]">
+    <div class="indented">
+      <div class="settings-box">
+        <div class="start settings-box-text">
+          $i18n{selectToSpeakOptionsEnhancedNetworkVoice}
+        </div>
+        <settings-dropdown-menu id="enhancedNetworkVoiceDropdown"
+            label="$i18n{selectToSpeakOptionsEnhancedNetworkVoice}"
+            pref="{{prefs.settings.a11y.select_to_speak_enhanced_voice_name}}"
+            menu-options="[[networkVoicesMenuOptions_]]"
+            deep-link-focus-id$="[[Setting.kSelectToSpeakEnhancedNetworkVoice]]">
+        </settings-dropdown-menu>
+      </div>
+    </div>
+  </template>
+</div>
+
+<h2>$i18n{selectToSpeakOptionsHighlight}</h2>
+<div class="highlight-example-container sub-item">
+  <div class="example light">
+    <div>
+      <span>$i18n{selectToSpeakOptionsHighlightLight}</span>
+      <div id="lightHighlight" class="highlight"></div>
+    </div>
+  </div>
+  <div class="example dark">
+    <div>
+      <span>$i18n{selectToSpeakOptionsHighlightDark}</span>
+      <div id="darkHighlight" class="highlight"></div>
+    </div>
+  </div>
+</div>
+<div class="sub-item">
+  <settings-toggle-button
+      id="wordHighlightToggle"
+      class="settings-box continuation"
+      pref="{{prefs.settings.a11y.select_to_speak_word_highlight}}"
+      label="$i18n{selectToSpeakOptionsHighlightDescription}"
+      deep-link-focus-id$="[[Setting.kSelectToSpeakWordHighlight]]">
+  </settings-toggle-button>
+  <template is="dom-if"
+      if="[[prefs.settings.a11y.select_to_speak_word_highlight.value]]">
+    <div class="indented">
+      <div class="settings-box continuation">
+        <div class="start settings-box-text">
+          $i18n{selectToSpeakOptionsHighlightColorDescription}
+        </div>
+        <settings-dropdown-menu id="highlightColorDropdown"
+            label="$i18n{selectToSpeakOptionsHighlightColorDescription}"
+            pref="{{prefs.settings.a11y.select_to_speak_highlight_color}}"
+            menu-options="[[highlightColorOptions_]]">
+        </settings-dropdown-menu>
+      </div>
+    </div>
+  </template>
+  <div class="background-preview">
+    <p class="background-preview-unselected">
+      $i18n{selectToSpeakOptionsSampleText}
+    </p>
+    <p class="background-preview-selected">
+      $i18n{selectToSpeakOptionsSampleText}
+    </p>
+    <p class="background-preview-unselected">
+      $i18n{selectToSpeakOptionsSampleText}
+    </p>
+  </div>
+  <settings-toggle-button
+      id="backgroundShadingToggle"
+      class="settings-box continuation"
+      pref="{{prefs.settings.a11y.select_to_speak_background_shading}}"
+      label="$i18n{selectToSpeakOptionsBackgroundShadingDescription}"
+      deep-link-focus-id$="[[Setting.kSelectToSpeakBackgroundShading]]">
+  </settings-toggle-button>
+</div>
+<settings-toggle-button
+    id="navigationControlsToggle"
+    class="hr"
+    pref="{{prefs.settings.a11y.select_to_speak_navigation_controls}}"
+    label="$i18n{selectToSpeakOptionsNavigationControlsDescription}"
+    sub-label="$i18n{selectToSpeakOptionsNavigationControlsSubtitle}"
+    deep-link-focus-id$="[[Setting.kSelectToSpeakNavigationControls]]">
+</settings-toggle-button>
+

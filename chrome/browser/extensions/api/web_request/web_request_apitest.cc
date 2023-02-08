@@ -1020,7 +1020,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 
   GURL url = https_test_server.GetURL("/webrequest/simulate_click.html");
 
-  base::ListValue custom_args;
+  base::Value::List custom_args;
   custom_args.Append(url.spec());
   custom_args.Append(insecure_destination.spec());
 
@@ -1905,8 +1905,8 @@ class ExtensionWebRequestApiWebTransportTest
   void SetUpOnMainThread() override {
     ExtensionWebRequestApiTest::SetUpOnMainThread();
     ASSERT_TRUE(StartEmbeddedTestServer());
-    GetTestConfig()->SetInteger("testWebTransportPort",
-                                server_.server_address().port());
+    GetTestConfig()->Set("testWebTransportPort",
+                         server_.server_address().port());
   }
 
  protected:
@@ -2796,8 +2796,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestMockedClockTest,
   const std::string extension_id_2 = extension_2->id();
 
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  EXPECT_LT(prefs->GetInstallTime(extension_id_1),
-            prefs->GetInstallTime(extension_id_2));
+  EXPECT_LT(prefs->GetLastUpdateTime(extension_id_1),
+            prefs->GetLastUpdateTime(extension_id_2));
 
   // The extensions will notify the browser if their proposed redirect was
   // successful or not.
@@ -2833,8 +2833,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestMockedClockTest,
   ReloadExtension(extension_id_1);
   ASSERT_TRUE(ready_1_listener.WaitUntilSatisfied());
 
-  EXPECT_LT(prefs->GetInstallTime(extension_id_2),
-            prefs->GetInstallTime(extension_id_1));
+  EXPECT_LT(prefs->GetLastUpdateTime(extension_id_2),
+            prefs->GetLastUpdateTime(extension_id_1));
 
   redirect_ignored_listener.Reset();
   redirect_successful_listener.Reset();
@@ -4120,11 +4120,10 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a web bundle.
-  std::string script_url_str =
-      embedded_test_server()->GetURL("/test.js").spec();
+  GURL script_url = embedded_test_server()->GetURL("/test.js");
   web_package::WebBundleBuilder builder;
   builder.AddExchange(
-      script_url_str,
+      script_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'ScriptDone';");
   builder.AddExchange(
@@ -4244,17 +4243,15 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a web bundle.
-  std::string pass_js_url_str =
-      embedded_test_server()->GetURL("/pass.js").spec();
-  std::string cancel_js_url_str =
-      embedded_test_server()->GetURL("/cancel.js").spec();
+  GURL pass_js_url = embedded_test_server()->GetURL("/pass.js");
+  GURL cancel_js_url = embedded_test_server()->GetURL("/cancel.js");
   web_package::WebBundleBuilder builder;
   builder.AddExchange(
-      pass_js_url_str,
+      pass_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'script loaded';");
   builder.AddExchange(
-      cancel_js_url_str,
+      cancel_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}}, "");
   builder.AddExchange(
       pass_uuid_in_package_js_url,
@@ -4371,11 +4368,10 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest, ChangeHeader) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a web bundle.
-  std::string target_txt_url_str =
-      embedded_test_server()->GetURL("/target.txt").spec();
+  GURL target_txt_url = embedded_test_server()->GetURL("/target.txt");
   web_package::WebBundleBuilder builder;
   builder.AddExchange(
-      target_txt_url_str,
+      target_txt_url,
       {{":status", "200"}, {"content-type", "text/plain"}, {"foo", "bar"}},
       "Hello world");
   std::vector<uint8_t> bundle = builder.CreateBundle();
@@ -4581,35 +4577,33 @@ IN_PROC_BROWSER_TEST_P(SubresourceWebBundlesWebRequestApiTest,
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Create a web bundle.
-  std::string redirect_js_url_str =
-      embedded_test_server()->GetURL("/redirect.js").spec();
-  std::string redirected_js_url_str =
-      embedded_test_server()->GetURL("/redirected.js").spec();
-  std::string redirect_to_unlisted_js_url_str =
-      embedded_test_server()->GetURL("/redirect_to_unlisted.js").spec();
-  std::string redirected_to_unlisted_js_url_str =
-      embedded_test_server()->GetURL("/redirected_to_unlisted.js").spec();
-  std::string redirect_to_server_js_url_str =
-      embedded_test_server()->GetURL("/redirect_to_server.js").spec();
+  GURL redirect_js_url = embedded_test_server()->GetURL("/redirect.js");
+  GURL redirected_js_url = embedded_test_server()->GetURL("/redirected.js");
+  GURL redirect_to_unlisted_js_url =
+      embedded_test_server()->GetURL("/redirect_to_unlisted.js");
+  GURL redirected_to_unlisted_js_url =
+      embedded_test_server()->GetURL("/redirected_to_unlisted.js");
+  GURL redirect_to_server_js_url =
+      embedded_test_server()->GetURL("/redirect_to_server.js");
   web_package::WebBundleBuilder builder;
   builder.AddExchange(
-      redirect_js_url_str,
+      redirect_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect';");
   builder.AddExchange(
-      redirected_js_url_str,
+      redirected_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected';");
   builder.AddExchange(
-      redirect_to_unlisted_js_url_str,
+      redirect_to_unlisted_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_unlisted';");
   builder.AddExchange(
-      redirected_to_unlisted_js_url_str,
+      redirected_to_unlisted_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirected_to_unlisted';");
   builder.AddExchange(
-      redirect_to_server_js_url_str,
+      redirect_to_server_js_url,
       {{":status", "200"}, {"content-type", "application/javascript"}},
       "document.title = 'redirect_to_server';");
   std::vector<uint8_t> bundle = builder.CreateBundle();
@@ -5201,13 +5195,11 @@ IN_PROC_BROWSER_TEST_P(ProxyCORSWebRequestApiTest,
 }
 
 class ExtensionWebRequestApiFencedFrameTest
-    : public ExtensionWebRequestApiTest,
-      public testing::WithParamInterface<bool /* shadow_dom_fenced_frame */> {
+    : public ExtensionWebRequestApiTest {
  protected:
   ExtensionWebRequestApiFencedFrameTest() {
     feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kFencedFrames,
-          {{"implementation_type", GetParam() ? "shadow_dom" : "mparch"}}},
+        {{blink::features::kFencedFrames, {{}}},
          {features::kPrivacySandboxAdsAPIsOverride, {}}},
         {/* disabled_features */});
     // Fenced frames are only allowed in secure contexts.
@@ -5219,26 +5211,20 @@ class ExtensionWebRequestApiFencedFrameTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiFencedFrameTest, Load) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiFencedFrameTest, Load) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      "webrequest", {.extension_url = "test_fenced_frames.html",
-                     .custom_arg = !GetParam() ? R"({"mparch": true})" : ""}))
+  ASSERT_TRUE(RunExtensionTest("webrequest",
+                               {.extension_url = "test_fenced_frames.html"}))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiFencedFrameTest,
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiFencedFrameTest,
                        DeclarativeSendMessage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest(
-      "webrequest", {.extension_url = "test_fenced_frames_send_message.html",
-                     .custom_arg = !GetParam() ? R"({"mparch": true})" : ""}))
+      "webrequest", {.extension_url = "test_fenced_frames_send_message.html"}))
       << message_;
 }
-
-INSTANTIATE_TEST_SUITE_P(ExtensionWebRequestApiFencedFrameTest,
-                         ExtensionWebRequestApiFencedFrameTest,
-                         testing::Bool());
 
 class ExtensionWebRequestApiPrerenderingTest
     : public ExtensionWebRequestApiTest {
@@ -5264,16 +5250,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiPrerenderingTest, Load) {
 class WebRequestPersistentListenersTest
     : public ExtensionWebRequestApiTestWithContextType {
  public:
-  WebRequestPersistentListenersTest() = default;
+  WebRequestPersistentListenersTest()
+      // Note: Set the listener before triggering the parent
+      // SetUpOnMainThread to ensure it happens before extensions start
+      // loading.
+      : test_listener_(
+            std::make_unique<ExtensionTestMessageListener>("ready")) {}
   ~WebRequestPersistentListenersTest() override = default;
-
-  void SetUpOnMainThread() override {
-    // Note: Set the listener before triggering the parent SetUpOnMainThread
-    // to ensure it happens before extensions start loading.
-    test_listener_ = std::make_unique<ExtensionTestMessageListener>("ready");
-
-    ExtensionWebRequestApiTestWithContextType::SetUpOnMainThread();
-  }
 
   void TearDownOnMainThread() override {
     test_listener_.reset();
@@ -5325,14 +5308,8 @@ IN_PROC_BROWSER_TEST_P(WebRequestPersistentListenersTest,
   EXPECT_EQ(1, request_count.GetInt());
 }
 
-// TODO(https://crbug.com/1361941): Fix flakes under ASAN/LSAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_TestListenersArePersistent DISABLED_TestListenersArePersistent
-#else
-#define MAYBE_TestListenersArePersistent TestListenersArePersistent
-#endif
 IN_PROC_BROWSER_TEST_P(WebRequestPersistentListenersTest,
-                       MAYBE_TestListenersArePersistent) {
+                       TestListenersArePersistent) {
   // Find the installed extension and wait for it to fully load.
   ASSERT_TRUE(StartEmbeddedTestServer());
   const Extension* extension = nullptr;

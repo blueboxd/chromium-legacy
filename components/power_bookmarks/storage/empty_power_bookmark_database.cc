@@ -4,8 +4,9 @@
 
 #include "components/power_bookmarks/storage/empty_power_bookmark_database.h"
 
-#include "components/power_bookmarks/core/proto/power_bookmark_specifics.pb.h"
-#include "url/origin.h"
+#include "components/power_bookmarks/core/powers/search_params.h"
+#include "components/sync/protocol/power_bookmark_specifics.pb.h"
+#include "url/gurl.h"
 
 namespace power_bookmarks {
 
@@ -23,14 +24,20 @@ bool EmptyPowerBookmarkDatabase::IsOpen() {
 
 std::vector<std::unique_ptr<Power>> EmptyPowerBookmarkDatabase::GetPowersForURL(
     const GURL& url,
-    const PowerType& power_type) {
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   return std::vector<std::unique_ptr<Power>>();
 }
 
 std::vector<std::unique_ptr<PowerOverview>>
 EmptyPowerBookmarkDatabase::GetPowerOverviewsForType(
-    const PowerType& power_type) {
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   return std::vector<std::unique_ptr<PowerOverview>>();
+}
+
+std::vector<std::unique_ptr<Power>>
+EmptyPowerBookmarkDatabase::GetPowersForSearchParams(
+    const SearchParams& search_params) {
+  return std::vector<std::unique_ptr<Power>>();
 }
 
 bool EmptyPowerBookmarkDatabase::CreatePower(std::unique_ptr<Power> power) {
@@ -47,7 +54,7 @@ bool EmptyPowerBookmarkDatabase::DeletePower(const base::GUID& guid) {
 
 bool EmptyPowerBookmarkDatabase::DeletePowersForURL(
     const GURL& url,
-    const PowerType& power_type) {
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   return false;
 }
 

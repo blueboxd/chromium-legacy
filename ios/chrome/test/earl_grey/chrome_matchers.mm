@@ -46,8 +46,8 @@ id<GREYMatcher> ImageViewWithImageNamed(NSString* imageName) {
   return [ChromeMatchersAppInterface imageViewWithImageNamed:imageName];
 }
 
-id<GREYMatcher> ImageViewWithImage(int image_id) {
-  return [ChromeMatchersAppInterface imageViewWithImage:image_id];
+id<GREYMatcher> ImageViewWithImage(UIImage* image) {
+  return [ChromeMatchersAppInterface imageViewWithImage:image];
 }
 
 id<GREYMatcher> ButtonWithImage(int image_id) {
@@ -674,6 +674,10 @@ id<GREYMatcher> HistoryEntry(const std::string& url, const std::string& title) {
 
 id<GREYMatcher> SettingsToolbarAddButton() {
   return [ChromeMatchersAppInterface settingsToolbarAddButton];
+}
+
+id<GREYMatcher> CellCanBeSwipedToDismissed() {
+  return [ChromeMatchersAppInterface cellCanBeSwipedToDismissed];
 }
 
 #pragma mark - Overflow Menu Destinations

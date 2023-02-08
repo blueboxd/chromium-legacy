@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/permissions/chip_controller.h"
-#include "components/accuracy_tips/accuracy_service.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/security_state/core/security_state.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
@@ -77,9 +76,10 @@ class LocationBarView : public LocationBar,
                         public IconLabelBubbleView::Delegate,
                         public LocationIconView::Delegate,
                         public ContentSettingImageView::Delegate,
-                        public PageActionIconView::Delegate,
+#if BUILDFLAG(IS_MAC)
                         public device::GeolocationManager::PermissionObserver,
-                        public accuracy_tips::AccuracyService::Observer {
+#endif
+                        public PageActionIconView::Delegate {
  public:
   METADATA_HEADER(LocationBarView);
 
@@ -210,13 +210,11 @@ class LocationBarView : public LocationBar,
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
+#if BUILDFLAG(IS_MAC)
   // GeolocationManager::PermissionObserver:
   void OnSystemPermissionUpdated(
       device::LocationSystemPermissionStatus new_status) override;
-
-  // accuracy_tips::AccuracyService::Observer:
-  void OnAccuracyTipShown() override;
-  void OnAccuracyTipClosed() override;
+#endif
 
   static bool IsVirtualKeyboardVisible(views::Widget* widget);
 
@@ -481,10 +479,6 @@ class LocationBarView : public LocationBar,
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&LocationBarView::OnTouchUiChanged,
                               base::Unretained(this)));
-
-  base::ScopedObservation<accuracy_tips::AccuracyService,
-                          accuracy_tips::AccuracyService::Observer>
-      accuracy_service_observation_{this};
 
   base::WeakPtrFactory<LocationBarView> weak_factory_{this};
 };

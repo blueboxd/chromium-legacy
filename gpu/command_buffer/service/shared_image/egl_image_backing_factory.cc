@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -69,7 +68,6 @@ std::unique_ptr<SharedImageBacking> EGLImageBackingFactory::CreateSharedImage(
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -86,6 +84,10 @@ bool EGLImageBackingFactory::IsSupported(uint32_t usage,
                                          gfx::GpuMemoryBufferType gmb_type,
                                          GrContextType gr_context_type,
                                          base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane()) {
+    return false;
+  }
+
   if (!pixel_data.empty() && gr_context_type != GrContextType::kGL) {
     return false;
   }

@@ -14,6 +14,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '../settings_shared.css.js';
 import './recent_site_permissions.js';
+import './unused_site_permissions.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
@@ -276,6 +277,14 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       disabledLabel: 'siteSettingsSerialPortsBlocked',
     },
     {
+      route: routes.SITE_SETTINGS_SITE_DATA,
+      id: Id.SITE_DATA,
+      // TODO(crbug/1378703): Replace label.
+      label: 'privacyPageTitle',
+      icon: 'settings:database',
+      shouldShow: () => loadTimeData.getBoolean('isPrivacySandboxSettings4'),
+    },
+    {
       route: routes.SITE_SETTINGS_SOUND,
       id: Id.SOUND,
       label: 'siteSettingsSound',
@@ -395,6 +404,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
               Id.PROTECTED_CONTENT,
               Id.MIXEDSCRIPT,
               Id.FEDERATED_IDENTITY_API,
+              Id.SITE_DATA,
             ]),
           };
         },
@@ -408,6 +418,15 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
       permissionsExpanded_: Boolean,
       contentExpanded_: Boolean,
       noRecentSitePermissions_: Boolean,
+
+      // TODO(crbug.com/1345920): Also hide the element if it would be empty.
+      showUnusedSitePermissions_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'safetyCheckUnusedSitePermissionsEnabled');
+        },
+      },
     };
   }
 
@@ -416,6 +435,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
   private permissionsExpanded_: boolean;
   private contentExpanded_: boolean;
   private noRecentSitePermissions_: boolean;
+  private showUnusedSitePermissions_: boolean;
 
   private lists_: {
     all: CategoryListItem[],

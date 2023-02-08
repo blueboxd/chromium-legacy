@@ -5,7 +5,7 @@
 #include "components/commerce/core/mock_shopping_service.h"
 
 #include "base/callback.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 
 namespace commerce {
 
@@ -15,7 +15,9 @@ std::unique_ptr<KeyedService> MockShoppingService::Build() {
 }
 
 MockShoppingService::MockShoppingService()
-    : commerce::ShoppingService(nullptr,
+    : commerce::ShoppingService("us",
+                                "en-us",
+                                nullptr,
                                 nullptr,
                                 nullptr,
                                 nullptr,
@@ -28,7 +30,7 @@ MockShoppingService::~MockShoppingService() = default;
 void MockShoppingService::GetProductInfoForUrl(
     const GURL& url,
     commerce::ProductInfoCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), url, product_info_));
 }
 
@@ -41,7 +43,7 @@ void MockShoppingService::GetUpdatedProductInfoForBookmarks(
     if (it == bookmark_updates_map_.end())
       continue;
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(info_updated_callback, it->first, GURL(""), it->second));
   }
@@ -64,7 +66,7 @@ void MockShoppingService::SetResponsesForGetUpdatedProductInfoForBookmarks(
 
 void MockShoppingService::GetMerchantInfoForUrl(const GURL& url,
                                                 MerchantInfoCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), url, std::move(merchant_info_)));
 }
@@ -77,7 +79,7 @@ void MockShoppingService::SetResponseForGetMerchantInfoForUrl(
 void MockShoppingService::Subscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), subscribe_callback_value_));
 }
@@ -90,7 +92,7 @@ void MockShoppingService::SetSubscribeCallbackValue(
 void MockShoppingService::Unsubscribe(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions,
     base::OnceCallback<void(bool)> callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), unsubscribe_callback_value_));
 }
@@ -113,7 +115,7 @@ void MockShoppingService::SetIsShoppingListEligible(bool eligible) {
 void MockShoppingService::IsClusterIdTrackedByUser(
     uint64_t cluster_id,
     base::OnceCallback<void(bool)> callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), is_cluster_id_tracked_));
 }
 

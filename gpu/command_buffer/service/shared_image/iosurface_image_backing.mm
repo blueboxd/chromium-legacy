@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -20,10 +21,8 @@
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_gl_api_implementation.h"
-#include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/scoped_binders.h"
-#include "ui/gl/trace_util.h"
 
 #include <EGL/egl.h>
 
@@ -35,10 +34,46 @@ namespace {
 
 using ScopedRestoreTexture = GLTextureImageBackingHelper::ScopedRestoreTexture;
 
-using InitializeGLTextureParams =
-    GLTextureImageBackingHelper::InitializeGLTextureParams;
-
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+// IOSurfaceBackingEGLState
+
+IOSurfaceBackingEGLState::IOSurfaceBackingEGLState(
+    Client* client,
+    EGLDisplay egl_display,
+    GLuint gl_target,
+    scoped_refptr<gles2::TexturePassthrough> gl_texture)
+    : client_(client),
+      egl_display_(egl_display),
+      gl_target_(gl_target),
+      gl_texture_(gl_texture) {
+  client_->IOSurfaceBackingEGLStateBeingCreated(this);
+}
+
+IOSurfaceBackingEGLState::~IOSurfaceBackingEGLState() {
+  client_->IOSurfaceBackingEGLStateBeingDestroyed(this, !context_lost_);
+  DCHECK(!gl_texture_);
+}
+
+GLuint IOSurfaceBackingEGLState::GetGLServiceId() const {
+  return gl_texture_->service_id();
+}
+
+bool IOSurfaceBackingEGLState::BeginAccess(bool readonly) {
+  gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
+  if (!display || display->GetDisplay() != egl_display_)
+    LOG(FATAL) << "Expected GLDisplayEGL not current.";
+  return client_->IOSurfaceBackingEGLStateBeginAccess(this, readonly);
+}
+
+void IOSurfaceBackingEGLState::EndAccess(bool readonly) {
+  client_->IOSurfaceBackingEGLStateEndAccess(this, readonly);
+}
+
+void IOSurfaceBackingEGLState::WillRelease(bool have_context) {
+  context_lost_ |= !have_context;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLTextureIOSurfaceRepresentation
@@ -46,34 +81,28 @@ using InitializeGLTextureParams =
 GLTextureIOSurfaceRepresentation::GLTextureIOSurfaceRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
-    GLTextureIOSurfaceRepresentationClient* client,
-    MemoryTypeTracker* tracker,
-    scoped_refptr<gles2::TexturePassthrough> texture_passthrough)
+    scoped_refptr<IOSurfaceBackingEGLState> egl_state,
+    MemoryTypeTracker* tracker)
     : GLTexturePassthroughImageRepresentation(manager, backing, tracker),
-      client_(client),
-      texture_(std::move(texture_passthrough)) {
-  // TODO(https://crbug.com/1172769): Remove this CHECK.
-  CHECK(texture_);
-}
+      egl_state_(egl_state) {}
 
 GLTextureIOSurfaceRepresentation::~GLTextureIOSurfaceRepresentation() {
-  texture_.reset();
-  if (client_)
-    client_->GLTextureImageRepresentationRelease(has_context());
+  egl_state_->WillRelease(has_context());
+  egl_state_.reset();
 }
 
 const scoped_refptr<gles2::TexturePassthrough>&
 GLTextureIOSurfaceRepresentation::GetTexturePassthrough(int plane_index) {
   DCHECK_EQ(plane_index, 0);
-  return texture_;
+  return egl_state_->GetGLTexture();
 }
 
 bool GLTextureIOSurfaceRepresentation::BeginAccess(GLenum mode) {
   DCHECK(mode_ == 0);
   mode_ = mode;
   bool readonly = mode_ != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
-  if (client_ && mode != GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
-    return client_->GLTextureImageRepresentationBeginAccess(readonly);
+  if (mode != GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM)
+    return egl_state_->BeginAccess(readonly);
   return true;
 }
 
@@ -81,9 +110,8 @@ void GLTextureIOSurfaceRepresentation::EndAccess() {
   DCHECK(mode_ != 0);
   GLenum current_mode = mode_;
   mode_ = 0;
-  if (client_)
-    return client_->GLTextureImageRepresentationEndAccess(
-        current_mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  egl_state_->EndAccess(current_mode !=
+                        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,12 +120,12 @@ void GLTextureIOSurfaceRepresentation::EndAccess() {
 SkiaIOSurfaceRepresentation::SkiaIOSurfaceRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
-    GLTextureIOSurfaceRepresentationClient* client,
+    scoped_refptr<IOSurfaceBackingEGLState> egl_state,
     scoped_refptr<SharedContextState> context_state,
     sk_sp<SkPromiseImageTexture> promise_texture,
     MemoryTypeTracker* tracker)
     : SkiaImageRepresentation(manager, backing, tracker),
-      client_(client),
+      egl_state_(egl_state),
       context_state_(std::move(context_state)),
       promise_texture_(promise_texture) {
   DCHECK(promise_texture_);
@@ -113,9 +141,10 @@ SkiaIOSurfaceRepresentation::~SkiaIOSurfaceRepresentation() {
                 << "open for write access.";
   }
   promise_texture_.reset();
-  if (client_) {
+  if (egl_state_) {
     DCHECK(context_state_->GrContextIsGL());
-    client_->GLTextureImageRepresentationRelease(has_context());
+    egl_state_->WillRelease(has_context());
+    egl_state_.reset();
   }
 }
 
@@ -127,10 +156,9 @@ std::vector<sk_sp<SkSurface>> SkiaIOSurfaceRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   CheckContext();
-  if (client_) {
+  if (egl_state_) {
     DCHECK(context_state_->GrContextIsGL());
-    if (!client_->GLTextureImageRepresentationBeginAccess(
-            /*readonly=*/false)) {
+    if (!egl_state_->BeginAccess(/*readonly=*/false)) {
       return {};
     }
   }
@@ -141,7 +169,7 @@ std::vector<sk_sp<SkSurface>> SkiaIOSurfaceRepresentation::BeginWriteAccess(
   if (!promise_texture_)
     return {};
 
-  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+  SkColorType sk_color_type = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   // Gray is not a renderable single channel format, but alpha is.
   if (sk_color_type == kGray_8_SkColorType)
@@ -164,10 +192,9 @@ SkiaIOSurfaceRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   CheckContext();
-  if (client_) {
+  if (egl_state_) {
     DCHECK(context_state_->GrContextIsGL());
-    if (!client_->GLTextureImageRepresentationBeginAccess(
-            /*readonly=*/false)) {
+    if (!egl_state_->BeginAccess(/*readonly=*/false)) {
       return {};
     }
   }
@@ -184,8 +211,8 @@ void SkiaIOSurfaceRepresentation::EndWriteAccess() {
     write_surface_.reset();
   }
 
-  if (client_)
-    client_->GLTextureImageRepresentationEndAccess(false /* readonly */);
+  if (egl_state_)
+    egl_state_->EndAccess(false /* readonly */);
 }
 
 std::vector<sk_sp<SkPromiseImageTexture>>
@@ -194,10 +221,9 @@ SkiaIOSurfaceRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* end_semaphores,
     std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
   CheckContext();
-  if (client_) {
+  if (egl_state_) {
     DCHECK(context_state_->GrContextIsGL());
-    if (!client_->GLTextureImageRepresentationBeginAccess(
-            /*readonly=*/true)) {
+    if (!egl_state_->BeginAccess(/*readonly=*/true)) {
       return {};
     }
   }
@@ -207,8 +233,8 @@ SkiaIOSurfaceRepresentation::BeginReadAccess(
 }
 
 void SkiaIOSurfaceRepresentation::EndReadAccess() {
-  if (client_)
-    client_->GLTextureImageRepresentationEndAccess(true /* readonly */);
+  if (egl_state_)
+    egl_state_->EndAccess(true /* readonly */);
 }
 
 bool SkiaIOSurfaceRepresentation::SupportsMultipleConcurrentReadAccess() {
@@ -229,9 +255,9 @@ OverlayIOSurfaceRepresentation::OverlayIOSurfaceRepresentation(
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker,
-    scoped_refptr<gl::GLImage> gl_image)
+    gfx::ScopedIOSurface io_surface)
     : OverlayImageRepresentation(manager, backing, tracker),
-      gl_image_(gl_image) {}
+      io_surface_(std::move(io_surface)) {}
 
 OverlayIOSurfaceRepresentation::~OverlayIOSurfaceRepresentation() = default;
 
@@ -251,9 +277,7 @@ void OverlayIOSurfaceRepresentation::EndReadAccess(
 }
 
 gfx::ScopedIOSurface OverlayIOSurfaceRepresentation::GetIOSurface() const {
-  if (gl_image_->GetType() != gl::GLImage::Type::IOSURFACE)
-    return gfx::ScopedIOSurface();
-  return static_cast<gl::GLImageIOSurface*>(gl_image_.get())->io_surface();
+  return io_surface_;
 }
 
 bool OverlayIOSurfaceRepresentation::IsInUseByWindowServer() const {
@@ -263,11 +287,7 @@ bool OverlayIOSurfaceRepresentation::IsInUseByWindowServer() const {
   if (backing()->usage() & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX)
     return false;
 
-  if (gl_image_->GetType() != gl::GLImage::Type::IOSURFACE)
-    return false;
-
-  return IOSurfaceIsInUse(
-      static_cast<gl::GLImageIOSurface*>(gl_image_.get())->io_surface());
+  return IOSurfaceIsInUse(io_surface_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,7 +316,10 @@ SharedEventAndSignalValue::~SharedEventAndSignalValue() {
 // IOSurfaceImageBacking
 
 IOSurfaceImageBacking::IOSurfaceImageBacking(
-    scoped_refptr<gl::GLImage> image,
+    gfx::ScopedIOSurface io_surface,
+    uint32_t io_surface_plane,
+    gfx::BufferFormat io_surface_format,
+    gfx::GenericSharedMemoryId io_surface_id,
     const Mailbox& mailbox,
     viz::SharedImageFormat format,
     const gfx::Size& size,
@@ -304,7 +327,9 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
-    const InitializeGLTextureParams& params)
+    GLenum gl_target,
+    bool framebuffer_attachment_angle,
+    bool is_cleared)
     : SharedImageBacking(
           mailbox,
           format,
@@ -315,11 +340,15 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
           usage,
           viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format),
           false /* is_thread_safe */),
-      image_(image),
-      gl_params_(params),
-      cleared_rect_(params.is_cleared ? gfx::Rect(size) : gfx::Rect()),
+      io_surface_(std::move(io_surface)),
+      io_surface_plane_(io_surface_plane),
+      io_surface_format_(io_surface_format),
+      io_surface_id_(io_surface_id),
+      gl_target_(gl_target),
+      framebuffer_attachment_angle_(framebuffer_attachment_angle),
+      cleared_rect_(is_cleared ? gfx::Rect(size) : gfx::Rect()),
       weak_factory_(this) {
-  DCHECK(image_);
+  DCHECK(io_surface_);
 
   // If this will be bound to different GL backends, then make RetainGLTexture
   // and ReleaseGLTexture actually create and destroy the texture.
@@ -329,72 +358,67 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
 
   // NOTE: Mac currently retains GLTexture and reuses it. Not sure if this is
   // best approach as it can lead to issues with context losses.
-  if (!gl_texture_retained_for_legacy_mailbox_) {
-    RetainGLTexture();
-    gl_texture_retained_for_legacy_mailbox_ = true;
-  }
+  egl_state_for_legacy_mailbox_ = RetainGLTexture();
 }
 
 IOSurfaceImageBacking::~IOSurfaceImageBacking() {
-  if (gl_texture_retained_for_legacy_mailbox_)
-    ReleaseGLTexture(have_context());
-  DCHECK_EQ(gl_texture_retain_count_, 0u);
+  if (egl_state_for_legacy_mailbox_) {
+    egl_state_for_legacy_mailbox_->WillRelease(have_context());
+    egl_state_for_legacy_mailbox_ = nullptr;
+  }
+  DCHECK(egl_state_map_.empty());
 }
 
-void IOSurfaceImageBacking::RetainGLTexture() {
-  gl_texture_retain_count_ += 1;
-  if (gl_texture_retain_count_ > 1)
-    return;
+scoped_refptr<IOSurfaceBackingEGLState>
+IOSurfaceImageBacking::RetainGLTexture() {
+  gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
+  if (!display) {
+    LOG(ERROR) << "No GLDisplayEGL current.";
+    return nullptr;
+  }
+  const EGLDisplay egl_display = display->GetDisplay();
+
+  auto found = egl_state_map_.find(egl_display);
+  if (found != egl_state_map_.end())
+    return found->second;
 
   // Allocate the GL texture.
+  scoped_refptr<gles2::TexturePassthrough> gl_texture;
   GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-      gl_params_.target, 0 /* service_id */,
-      gl_params_.framebuffer_attachment_angle, &gl_texture_, nullptr);
+      gl_target_, /*service_id=*/0, framebuffer_attachment_angle_, &gl_texture,
+      nullptr);
 
-  // Set the GLImage to be initially unbound from the GL texture.
-  gl_texture_->SetEstimatedSize(
+  // Set the IOSurface to be initially unbound from the GL texture.
+  gl_texture->SetEstimatedSize(
       viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size(), format()));
-  gl_texture_->SetLevelImage(gl_params_.target, 0, image_.get());
-  gl_texture_->set_is_bind_pending(true);
+  gl_texture->set_bind_pending();
+
+  return new IOSurfaceBackingEGLState(this, egl_display, gl_target_,
+                                      gl_texture);
 }
 
-void IOSurfaceImageBacking::ReleaseGLTexture(bool have_context) {
-  DCHECK_GT(gl_texture_retain_count_, 0u);
-  gl_texture_retain_count_ -= 1;
-  if (gl_texture_retain_count_ > 0)
-    return;
-
-  // If the cached promise texture is referencing the GL texture, then it needs
-  // to be deleted, too.
-  if (cached_promise_texture_) {
-    if (cached_promise_texture_->backendTexture().backend() ==
-        GrBackendApi::kOpenGL) {
-      cached_promise_texture_.reset();
-    }
+void IOSurfaceImageBacking::ReleaseGLTexture(
+    IOSurfaceBackingEGLState* egl_state,
+    bool have_context) {
+  // The cached promise texture is referencing the GL texture so it needs to be
+  // deleted, too.
+  if (egl_state->cached_promise_texture_) {
+    egl_state->cached_promise_texture_.reset();
   }
 
-  if (gl_texture_) {
+  if (egl_state->gl_texture_) {
     if (have_context) {
-      if (egl_surface_) {
+      if (egl_state->egl_surface_) {
         ScopedRestoreTexture scoped_restore(gl::g_current_gl_context,
-                                            GetGLTarget(), GetGLServiceId());
-        egl_surface_.reset();
+                                            egl_state->GetGLTarget(),
+                                            egl_state->GetGLServiceId());
+        egl_state->egl_surface_.reset();
       }
     } else {
-      gl_texture_->MarkContextLost();
+      egl_state->gl_texture_->MarkContextLost();
     }
-    gl_texture_.reset();
+    egl_state->gl_texture_.reset();
   }
-}
-
-GLenum IOSurfaceImageBacking::GetGLTarget() const {
-  return gl_params_.target;
-}
-
-GLuint IOSurfaceImageBacking::GetGLServiceId() const {
-  if (gl_texture_)
-    return gl_texture_->service_id();
-  return 0;
 }
 
 std::unique_ptr<gfx::GpuFence> IOSurfaceImageBacking::GetLastWriteGpuFence() {
@@ -425,14 +449,43 @@ void IOSurfaceImageBacking::OnMemoryDump(
   SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
                                    client_tracing_id);
 
-  // Add a |service_guid| which expresses shared ownership between the
-  // various GPU dumps.
-  if (auto service_id = GetGLServiceId()) {
-    auto service_guid = gl::GetGLTextureServiceGUIDForTracing(GetGLServiceId());
-    pmd->CreateSharedGlobalAllocatorDump(service_guid);
-    pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
+  size_t size_bytes =
+      IOSurfaceGetBytesPerRowOfPlane(io_surface_, io_surface_plane_) *
+      IOSurfaceGetHeightOfPlane(io_surface_, io_surface_plane_);
+
+  base::trace_event::MemoryAllocatorDump* dump =
+      pmd->CreateAllocatorDump(dump_name);
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  static_cast<uint64_t>(size_bytes));
+
+  // The client tracing id is to identify the GpuMemoryBuffer client that
+  // created the allocation. For CVPixelBufferRefs, there is no corresponding
+  // GpuMemoryBuffer, so use an invalid client id.
+  if (usage() & SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX) {
+    client_tracing_id =
+        base::trace_event::MemoryDumpManager::kInvalidTracingProcessId;
   }
-  image_->OnMemoryDump(pmd, client_tracing_id, dump_name);
+
+  // Create an edge using the GMB GenericSharedMemoryId if the image is not
+  // anonymous. Otherwise, add another nested node to account for the anonymous
+  // IOSurface.
+  if (io_surface_id_.is_valid()) {
+    auto guid = GetGenericSharedGpuMemoryGUIDForTracing(client_tracing_id,
+                                                        io_surface_id_);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
+  } else {
+    std::string anonymous_dump_name = dump_name + "/anonymous-iosurface";
+    base::trace_event::MemoryAllocatorDump* anonymous_dump =
+        pmd->CreateAllocatorDump(anonymous_dump_name);
+    anonymous_dump->AddScalar(
+        base::trace_event::MemoryAllocatorDump::kNameSize,
+        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+        static_cast<uint64_t>(size_bytes));
+    anonymous_dump->AddScalar("width", "pixels", size().width());
+    anonymous_dump->AddScalar("height", "pixels", size().height());
+  }
 }
 
 SharedImageBackingType IOSurfaceImageBacking::GetType() const {
@@ -457,27 +510,27 @@ std::unique_ptr<GLTexturePassthroughImageRepresentation>
 IOSurfaceImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
                                                    MemoryTypeTracker* tracker) {
   // The corresponding release will be done when the returned representation is
-  // destroyed, in GLTextureImageRepresentationRelease.
-  RetainGLTexture();
-  DCHECK(gl_texture_);
+  // destroyed, in GLTextureImageRepresentationBeingDestroyed.
   return std::make_unique<GLTextureIOSurfaceRepresentation>(
-      manager, this, this, tracker, gl_texture_);
+      manager, this, RetainGLTexture(), tracker);
 }
 
 std::unique_ptr<OverlayImageRepresentation>
 IOSurfaceImageBacking::ProduceOverlay(SharedImageManager* manager,
                                       MemoryTypeTracker* tracker) {
   return std::make_unique<OverlayIOSurfaceRepresentation>(manager, this,
-                                                          tracker, image_);
+                                                          tracker, io_surface_);
 }
 
 std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   auto result = IOSurfaceImageBackingFactory::ProduceDawn(
-      manager, this, tracker, device, image_);
+      manager, this, tracker, device, view_formats, io_surface_,
+      io_surface_plane_);
   if (result)
     return result;
 
@@ -487,66 +540,67 @@ std::unique_ptr<DawnImageRepresentation> IOSurfaceImageBacking::ProduceDawn(
   }
 
   return GLTextureImageBackingHelper::ProduceDawnCommon(
-      factory(), manager, tracker, device, backend_type, this, IsPassthrough());
+      factory(), manager, tracker, device, backend_type,
+      std::move(view_formats), this,
+      /*use_passthrough=*/true);
 }
 
 std::unique_ptr<SkiaImageRepresentation> IOSurfaceImageBacking::ProduceSkia(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
-  GLTextureIOSurfaceRepresentationClient* gl_client = nullptr;
+  scoped_refptr<IOSurfaceBackingEGLState> egl_state;
+  sk_sp<SkPromiseImageTexture> promise_texture;
+
   if (context_state->GrContextIsGL()) {
-    // The corresponding release will be done when the returned representation
-    // is destroyed, in GLTextureImageRepresentationRelease.
-    RetainGLTexture();
-    gl_client = this;
+    egl_state = RetainGLTexture();
+    promise_texture = egl_state->cached_promise_texture_;
   }
 
-  if (!cached_promise_texture_) {
+  if (!promise_texture) {
     if (context_state->GrContextIsMetal()) {
-      cached_promise_texture_ =
+      promise_texture =
           IOSurfaceImageBackingFactory::ProduceSkiaPromiseTextureMetal(
-              this, context_state, image_);
-      DCHECK(cached_promise_texture_);
+              this, context_state, io_surface_, io_surface_plane_);
+      DCHECK(promise_texture);
     } else {
+      bool angle_rgbx_internal_format = context_state->feature_info()
+                                            ->feature_flags()
+                                            .angle_rgbx_internal_format;
+      GLenum gl_texture_storage_format = TextureStorageFormat(
+          format(), angle_rgbx_internal_format, /*plane_index=*/0);
       GrBackendTexture backend_texture;
-      GetGrBackendTexture(context_state->feature_info(), GetGLTarget(), size(),
-                          GetGLServiceId(), format().resource_format(),
-                          context_state->gr_context()->threadSafeProxy(),
-                          &backend_texture);
-      cached_promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+      GetGrBackendTexture(
+          context_state->feature_info(), egl_state->GetGLTarget(), size(),
+          egl_state->GetGLServiceId(), gl_texture_storage_format,
+          context_state->gr_context()->threadSafeProxy(), &backend_texture);
+      promise_texture = SkPromiseImageTexture::Make(backend_texture);
     }
   }
+
+  if (egl_state)
+    egl_state->cached_promise_texture_ = promise_texture;
+
   return std::make_unique<SkiaIOSurfaceRepresentation>(
-      manager, this, gl_client, std::move(context_state),
-      cached_promise_texture_, tracker);
+      manager, this, egl_state, std::move(context_state), promise_texture,
+      tracker);
 }
 
-MemoryIOSurfaceRepresentation::MemoryIOSurfaceRepresentation(
-    SharedImageManager* manager,
-    SharedImageBacking* backing,
-    MemoryTypeTracker* tracker,
-    scoped_refptr<gl::GLImageMemory> image_memory)
-    : MemoryImageRepresentation(manager, backing, tracker),
-      image_memory_(std::move(image_memory)) {}
+void IOSurfaceImageBacking::SetPurgeable(bool purgeable) {
+  if (purgeable_ == purgeable)
+    return;
+  purgeable_ = purgeable;
 
-MemoryIOSurfaceRepresentation::~MemoryIOSurfaceRepresentation() = default;
+  if (purgeable) {
+    // It is in error to purge the surface while reading or writing to it.
+    DCHECK(!ongoing_write_access_);
+    DCHECK(!num_ongoing_read_accesses_);
 
-SkPixmap MemoryIOSurfaceRepresentation::BeginReadAccess() {
-  return SkPixmap(backing()->AsSkImageInfo(), image_memory_->memory(),
-                  image_memory_->stride());
-}
+    SetClearedRect(gfx::Rect());
+  }
 
-std::unique_ptr<MemoryImageRepresentation> IOSurfaceImageBacking::ProduceMemory(
-    SharedImageManager* manager,
-    MemoryTypeTracker* tracker) {
-  gl::GLImageMemory* image_memory =
-      gl::GLImageMemory::FromGLImage(image_.get());
-  if (!image_memory)
-    return nullptr;
-
-  return std::make_unique<MemoryIOSurfaceRepresentation>(
-      manager, this, tracker, base::WrapRefCounted(image_memory));
+  uint32_t old_state;
+  IOSurfaceSetPurgeable(io_surface_, purgeable, &old_state);
 }
 
 void IOSurfaceImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
@@ -559,12 +613,16 @@ void IOSurfaceImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
         gl::GLFence::CreateFromGpuFence(*in_fence.get());
     egl_fence->ServerWait();
   }
-  if (gl_texture_)
-    gl_texture_->set_is_bind_pending(true);
+  for (auto iter : egl_state_map_) {
+    iter.second->gl_texture_->set_bind_pending();
+  }
 }
 
-bool IOSurfaceImageBacking::GLTextureImageRepresentationBeginAccess(
+bool IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeginAccess(
+    IOSurfaceBackingEGLState* egl_state,
     bool readonly) {
+  // It is in error to read or write an IOSurface while it is purgeable.
+  DCHECK(!purgeable_);
   DCHECK(!ongoing_write_access_);
   if (readonly) {
     num_ongoing_read_accesses_++;
@@ -586,7 +644,7 @@ bool IOSurfaceImageBacking::GLTextureImageRepresentationBeginAccess(
 
   // If the GL texture is already bound (the bind is not marked as pending),
   // then early-out.
-  if (!gl_texture_->is_bind_pending())
+  if (!egl_state->gl_texture_->is_bind_pending())
     return true;
 
   if (usage() & SHARED_IMAGE_USAGE_WEBGPU &&
@@ -609,40 +667,35 @@ bool IOSurfaceImageBacking::GLTextureImageRepresentationBeginAccess(
 
   // Create the EGL surface to bind to the GL texture, if it doesn't exist
   // already.
-  if (!egl_surface_) {
-    auto* gl_image_io_surface =
-        static_cast<gl::GLImageIOSurface*>(image_.get());
-    gl::GLDisplayEGL* display = gl::GLDisplayEGL::GetDisplayForCurrentContext();
-    if (!display) {
-      LOG(ERROR) << "No GLDisplayEGL current.";
-      return false;
-    }
-    egl_surface_ = gl::ScopedEGLSurfaceIOSurface::Create(
-        display->GetDisplay(), GetGLTarget(), gl_image_io_surface->io_surface(),
-        gl_image_io_surface->io_surface_plane(), gl_image_io_surface->format());
-    if (!egl_surface_) {
+  if (!egl_state->egl_surface_) {
+    egl_state->egl_surface_ = gl::ScopedEGLSurfaceIOSurface::Create(
+        egl_state->egl_display_, egl_state->GetGLTarget(), io_surface_,
+        io_surface_plane_, io_surface_format_);
+    if (!egl_state->egl_surface_) {
       LOG(ERROR) << "Failed to create ScopedEGLSurfaceIOSurface.";
       return false;
     }
   }
 
-  ScopedRestoreTexture scoped_restore(gl::g_current_gl_context, GetGLTarget(),
-                                      GetGLServiceId());
+  ScopedRestoreTexture scoped_restore(gl::g_current_gl_context,
+                                      egl_state->GetGLTarget(),
+                                      egl_state->GetGLServiceId());
 
   // Un-bind the IOSurface from the GL texture (this will be a no-op if it is
   // not yet bound).
-  egl_surface_->ReleaseTexImage();
+  egl_state->egl_surface_->ReleaseTexImage();
 
   // Bind the IOSurface to the GL texture.
-  if (!egl_surface_->BindTexImage()) {
+  if (!egl_state->egl_surface_->BindTexImage()) {
     LOG(ERROR) << "Failed to bind ScopedEGLSurfaceIOSurface to target";
     return false;
   }
-  gl_texture_->set_is_bind_pending(false);
+  egl_state->gl_texture_->clear_bind_pending();
   return true;
 }
 
-void IOSurfaceImageBacking::GLTextureImageRepresentationEndAccess(
+void IOSurfaceImageBacking::IOSurfaceBackingEGLStateEndAccess(
+    IOSurfaceBackingEGLState* egl_state,
     bool readonly) {
   if (readonly) {
     DCHECK(num_ongoing_read_accesses_ > 0);
@@ -700,7 +753,7 @@ void IOSurfaceImageBacking::GLTextureImageRepresentationEndAccess(
   if (needs_synchronization) {
     if (needs_sync_for_metal) {
       if (@available(macOS 10.14, *)) {
-        if (egl_surface_) {
+        if (egl_state->egl_surface_) {
           gl::GLDisplayEGL* display =
               gl::GLDisplayEGL::GetDisplayForCurrentContext();
           if (display) {
@@ -716,26 +769,42 @@ void IOSurfaceImageBacking::GLTextureImageRepresentationEndAccess(
       }
     }
 
-    if (!gl_texture_->is_bind_pending()) {
-      if (egl_surface_) {
+    if (!egl_state->gl_texture_->is_bind_pending()) {
+      if (egl_state->egl_surface_) {
         ScopedRestoreTexture scoped_restore(gl::g_current_gl_context,
-                                            GetGLTarget(), GetGLServiceId());
-        egl_surface_->ReleaseTexImage();
+                                            egl_state->GetGLTarget(),
+                                            egl_state->GetGLServiceId());
+        egl_state->egl_surface_->ReleaseTexImage();
       }
-      gl_texture_->set_is_bind_pending(true);
+      egl_state->gl_texture_->set_bind_pending();
     }
   }
 }
 
-void IOSurfaceImageBacking::GLTextureImageRepresentationRelease(
+void IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeingCreated(
+    IOSurfaceBackingEGLState* egl_state) {
+  auto insert_result =
+      egl_state_map_.insert(std::make_pair(egl_state->egl_display_, egl_state));
+  CHECK(insert_result.second);
+}
+
+void IOSurfaceImageBacking::IOSurfaceBackingEGLStateBeingDestroyed(
+    IOSurfaceBackingEGLState* egl_state,
     bool has_context) {
-  ReleaseGLTexture(has_context);
+  ReleaseGLTexture(egl_state, has_context);
+
+  // Remove `egl_state` from `egl_state_map_`.
+  auto found = egl_state_map_.find(egl_state->egl_display_);
+  CHECK(found != egl_state_map_.end());
+  CHECK(found->second == egl_state);
+  egl_state_map_.erase(found);
 }
 
 void IOSurfaceImageBacking::InitializePixels(GLenum format,
                                              GLenum type,
                                              const uint8_t* data) {
-  if (IOSurfaceImageBackingFactory::InitializePixels(this, image_, data))
+  if (IOSurfaceImageBackingFactory::InitializePixels(this, io_surface_,
+                                                     io_surface_plane_, data))
     return;
 }
 

@@ -30,53 +30,6 @@ chromium-metrics-reviews@google.com.
   <summary>Specified DevTools action has been taken.</summary>
 </histogram>
 
-<histogram name="DevTools.BackgroundService.ClearEvents"
-    enum="ServiceWorkerStatusCode" expires_after="M99">
-  <owner>yangguo@chromium.org</owner>
-  <owner>rayankans@chromium.org</owner>
-  <owner>bmeurer@chromium.org</owner>
-  <summary>
-    The result of clearing all stored events for a Background Service feature.
-    This is called if a developer clicks on a delete button in a Background
-    Service DevTools panel.
-  </summary>
-</histogram>
-
-<histogram name="DevTools.BackgroundService.GetEvents"
-    enum="ServiceWorkerStatusCode" expires_after="M99">
-  <owner>rayankans@chromium.org</owner>
-  <owner>yangguo@chromium.org</owner>
-  <owner>bmeurer@chromium.org</owner>
-  <summary>
-    The result of loading all stored events for a Background Service feature.
-    This is called when the a Bakground Service DevTools panel is opened.
-  </summary>
-</histogram>
-
-<histogram name="DevTools.BackgroundService.LogEvent"
-    enum="ServiceWorkerStatusCode" expires_after="M99">
-  <owner>rayankans@chromium.org</owner>
-  <owner>yangguo@chromium.org</owner>
-  <owner>bmeurer@chromium.org</owner>
-  <summary>
-    The result of logging a Background Service event. An event is logged if
-    `Recording` mode is on and a relevant Background Service event is taking
-    place.
-  </summary>
-</histogram>
-
-<histogram name="DevTools.BackgroundService.StartRecording"
-    enum="DevToolsBackgroundService" expires_after="2022-07-09">
-  <owner>yangguo@chromium.org</owner>
-  <owner>bmeurer@chromium.org</owner>
-  <owner>rayankans@chromium.org</owner>
-  <summary>
-    Records the Background Service for which `Recording` mode was enabled. This
-    is called if the developer toggles the record button in the relevant
-    Bakground Service DevTools panel.
-  </summary>
-</histogram>
-
 <histogram name="DevTools.BreakpointEditDialogRevealedFrom"
     enum="DevToolsBreakpointEditDialogRevealedFrom" expires_after="2023-12-01">
   <owner>yangguo@chromium.org</owner>
@@ -99,7 +52,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.CDPCommandFrom{ClientType}" enum="CDPCommands"
-    expires_after="2022-12-16">
+    expires_after="2023-12-16">
   <owner>wolfi@chromium.org</owner>
   <owner>dsv@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
@@ -113,16 +66,6 @@ chromium-metrics-reviews@google.com.
     <variant name="Other" summary="other sources"/>
     <variant name="RemoteDebugger" summary="remote debugging"/>
   </token>
-</histogram>
-
-<histogram name="DevTools.ConsoleShowsCorsErrors"
-    enum="DevToolsConsoleShowsCorsErrors" expires_after="2022-12-01">
-  <owner>dsv@chromium.org</owner>
-  <owner>bmeurer@chromium.org</owner>
-  <owner>yangguo@chromium.org</owner>
-  <summary>
-    Records if showing CORS erros in DevTools Console is enabled.
-  </summary>
 </histogram>
 
 <histogram name="DevTools.CSSHintShown" enum="DevToolsCSSHintShown"
@@ -217,7 +160,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="DevTools.InspectElement" units="ms" expires_after="2022-12-01">
+<histogram name="DevTools.InspectElement" units="ms" expires_after="2023-12-01">
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
   <summary>
@@ -308,6 +251,14 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="DevTools.LighthouseModeRun" enum="DevToolsLighthouseModeRun"
+    expires_after="2023-12-01">
+  <owner>asraine@chromium.org</owner>
+  <owner>paulirish@chromium.org</owner>
+  <owner>cjamcl@chromium.org</owner>
+  <summary>Records which Lighthouse mode was used to audit the page.</summary>
+</histogram>
+
 <histogram name="DevTools.LinearMemoryInspector.RevealedFrom"
     enum="DevToolsLinearMemoryInspectorRevealedFrom" expires_after="2023-03-19">
   <owner>yangguo@chromium.org</owner>
@@ -343,6 +294,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the invocation of actions like /json/new on the HTTP server exposed
     with running with --remote-debugging-port.
+  </summary>
+</histogram>
+
+<histogram name="DevTools.NetworkPanelResponsePreviewOpened"
+    enum="DevToolsMediaType" expires_after="2023-12-31">
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
+  <summary>
+    Records the media types of files opened in the DevTools Network panel
+    response preview.
   </summary>
 </histogram>
 
@@ -428,11 +389,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DevTools.SidebarPaneShown" enum="DevToolsSidebarPane"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>changhaohan@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
   <owner>bmeurer@chromium.org</owner>
   <summary>Specified DevTools sidebar pane was shown.</summary>
+</histogram>
+
+<histogram name="DevTools.SourcesPanelFileOpened" enum="DevToolsMediaType"
+    expires_after="2023-12-31">
+  <owner>yangguo@chromium.org</owner>
+  <owner>bmeurer@chromium.org</owner>
+  <summary>
+    Records the media types of files opened in the DevTools Sources panel.
+  </summary>
 </histogram>
 
 <histogram name="DevTools.StyleTextCopied" enum="DevToolsStyleTextCopied"

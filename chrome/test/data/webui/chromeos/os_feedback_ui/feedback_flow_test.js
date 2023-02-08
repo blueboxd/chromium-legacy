@@ -10,11 +10,11 @@ import {FeedbackAppExitPath, FeedbackAppHelpContentOutcome, FeedbackAppPreSubmit
 import {OS_FEEDBACK_TRUSTED_ORIGIN} from 'chrome://os-feedback/help_content.js';
 import {setFeedbackServiceProviderForTesting, setHelpContentProviderForTesting} from 'chrome://os-feedback/mojo_interface_provider.js';
 import {SearchPageElement} from 'chrome://os-feedback/search_page.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {eventToPromise, isVisible} from '../../test_util.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
+import {eventToPromise, isVisible} from '../test_util.js';
 
 export function FeedbackFlowTestSuite() {
   /** @type {?FeedbackFlowElement} */

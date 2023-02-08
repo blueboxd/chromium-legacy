@@ -111,6 +111,7 @@
 #include "net/cert/x509_certificate.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
@@ -128,6 +129,16 @@ namespace {
 const char kAuthIframeParentName[] = "signin-frame";
 
 const char kEndpointGen[] = "1.0";
+
+constexpr char kLeadingWhitespaceRegex[] = R"(^[\x{0000}-\x{0020}].*)";
+constexpr char kTrailingWhitespaceRegex[] = R"(.*[\x{0000}-\x{0020}]$)";
+
+// Returns `true` if the provided string has leading or trailing whitespaces.
+// Whitespace is defined as a character with code from '\u0000' to '\u0020'.
+bool HasLeadingOrTrailingWhitespaces(const std::string& str) {
+  return RE2::FullMatch(str, kLeadingWhitespaceRegex) ||
+         RE2::FullMatch(str, kTrailingWhitespaceRegex);
+}
 
 absl::optional<SyncTrustedVaultKeys> GetSyncTrustedVaultKeysForUserContext(
     const base::Value::Dict& js_object,
@@ -690,6 +701,13 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
       std::make_unique<LoginClientCertUsageObserver>();
+
+  // Clear old storage partitions after a new sign-in page is loaded. All
+  // reference to the old storage partitions should be cleared.
+  login::SigninPartitionManager* signin_partition_manager =
+      login::SigninPartitionManager::Factory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  signin_partition_manager->DisposeOldStoragePartitions();
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
@@ -761,6 +779,10 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   if (!using_saml) {
     base::UmaHistogramEnumeration("OOBE.GaiaScreen.SuccessLoginRequests",
                                   login_request_variant_);
+    // Report whether the password has characters ignored by Gaia
+    // (leading/trailing whitespaces).
+    base::UmaHistogramBoolean("OOBE.GaiaScreen.PasswordIgnoredChars",
+                              HasLeadingOrTrailingWhitespaces(password_value));
   }
   auto scraped_saml_passwords =
       ::login::ConvertToStringList(scraped_saml_passwords_value);

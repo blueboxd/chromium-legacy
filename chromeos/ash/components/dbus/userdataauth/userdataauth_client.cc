@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "dbus/bus.h"
@@ -117,13 +117,6 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
                     std::move(callback));
   }
 
-  void Mount(const ::user_data_auth::MountRequest& request,
-             MountCallback callback) override {
-    CallProtoMethod(::user_data_auth::kMount,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
   void Remove(const ::user_data_auth::RemoveRequest& request,
               RemoveCallback callback) override {
     CallProtoMethod(::user_data_auth::kRemove,
@@ -155,20 +148,6 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
   void RemoveKey(const ::user_data_auth::RemoveKeyRequest& request,
                  RemoveKeyCallback callback) override {
     CallProtoMethod(::user_data_auth::kRemoveKey,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
-  void MassRemoveKeys(const ::user_data_auth::MassRemoveKeysRequest& request,
-                      MassRemoveKeysCallback callback) override {
-    CallProtoMethod(::user_data_auth::kMassRemoveKeys,
-                    ::user_data_auth::kUserDataAuthInterface, request,
-                    std::move(callback));
-  }
-
-  void MigrateKey(const ::user_data_auth::MigrateKeyRequest& request,
-                  MigrateKeyCallback callback) override {
-    CallProtoMethod(::user_data_auth::kMigrateKey,
                     ::user_data_auth::kUserDataAuthInterface, request,
                     std::move(callback));
   }
@@ -346,6 +325,14 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
                     std::move(callback));
   }
 
+  void GetAuthFactorExtendedInfo(
+      const ::user_data_auth::GetAuthFactorExtendedInfoRequest& request,
+      GetAuthFactorExtendedInfoCallback callback) override {
+    CallProtoMethod(::user_data_auth::kGetAuthFactorExtendedInfo,
+                    ::user_data_auth::kUserDataAuthInterface, request,
+                    std::move(callback));
+  }
+
   void GetRecoveryRequest(
       const ::user_data_auth::GetRecoveryRequestRequest& request,
       GetRecoveryRequestCallback callback) override {
@@ -395,7 +382,7 @@ class UserDataAuthClientImpl : public UserDataAuthClient {
       LOG(ERROR)
           << "Failed to append protobuf when calling UserDataAuth method "
           << method_name;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
       return;
     }

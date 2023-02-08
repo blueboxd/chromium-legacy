@@ -260,14 +260,14 @@ class DataTransferDlpBrowserTest : public InProcessBrowserTest {
         widget_->GetNativeWindow()->GetRootWindow());
   }
 
-  raw_ptr<MockDlpRulesManager> rules_manager_;
+  raw_ptr<MockDlpRulesManager, DanglingUntriaged> rules_manager_;
   std::unique_ptr<DlpReportingManager> reporting_manager_;
   std::vector<DlpPolicyEvent> events_;
   FakeClipboardNotifier helper_;
   std::unique_ptr<FakeDlpController> dlp_controller_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   std::unique_ptr<views::Widget> widget_;
-  raw_ptr<views::Textfield> textfield_ = nullptr;
+  raw_ptr<views::Textfield, DanglingUntriaged> textfield_ = nullptr;
 };
 
 // Flaky on MSan bots: http://crbug.com/1178328
@@ -522,13 +522,7 @@ class DataTransferDlpBlinkBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<FakeDlpController> dlp_controller_;
 };
 
-// Flaky on MSan bots: crbug.com/1230617
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_ProceedOnWarn DISABLED_ProceedOnWarn
-#else
-#define MAYBE_ProceedOnWarn ProceedOnWarn
-#endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, ProceedOnWarn) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/title1.html")));
@@ -614,8 +608,8 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_ProceedOnWarn) {
   EXPECT_TRUE(!widget || widget->IsClosed());
 }
 
-// Flaky on MSan bots: crbug.com/1230617
-#if defined(MEMORY_SANITIZER)
+// TODO(crbug.com/1395711): The test is flaky. Re-enable it.
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_CancelWarn DISABLED_CancelWarn
 #else
 #define MAYBE_CancelWarn CancelWarn
@@ -780,13 +774,7 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest,
 }
 
 // Test case for crbug.com/1213143
-// Flaky on MSan bots: crbug.com/1230617
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_Reporting DISABLED_Reporting
-#else
-#define MAYBE_Reporting Reporting
-#endif
-IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
+IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, Reporting) {
   base::HistogramTester histogram_tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -61,6 +61,9 @@ TrustedVaultDegradedRecoverabilityHandler::
       account_info_(account_info) {
   degraded_recoverability_value_ =
       degraded_recoverability_state.degraded_recoverability_value();
+  base::UmaHistogramExactLinear("Sync.TrustedVaultDegradedRecoverabilityValue",
+                                degraded_recoverability_value_,
+                                sync_pb::DegradedRecoverabilityValue_ARRAYSIZE);
   if (degraded_recoverability_state
           .has_last_refresh_time_millis_since_unix_epoch()) {
     base::Time last_refresh_time =
@@ -85,10 +88,15 @@ TrustedVaultDegradedRecoverabilityHandler::
 void TrustedVaultDegradedRecoverabilityHandler::
     HintDegradedRecoverabilityChanged(
         TrustedVaultHintDegradedRecoverabilityChangedReasonForUMA reason) {
-  if (next_refresh_timer_.IsRunning()) {
-    RecordTrustedVaultHintDegradedRecoverabilityChangedReason(reason);
-    next_refresh_timer_.FireNow();
+  RecordTrustedVaultHintDegradedRecoverabilityChangedReason(reason);
+  RefreshImmediately();
+}
+
+void TrustedVaultDegradedRecoverabilityHandler::RefreshImmediately() {
+  if (!next_refresh_timer_.IsRunning()) {
+    return;
   }
+  next_refresh_timer_.FireNow();
 }
 
 void TrustedVaultDegradedRecoverabilityHandler::GetIsRecoverabilityDegraded(
@@ -114,9 +122,6 @@ void TrustedVaultDegradedRecoverabilityHandler::UpdateCurrentRefreshPeriod() {
 }
 
 void TrustedVaultDegradedRecoverabilityHandler::Start() {
-  base::UmaHistogramExactLinear("Sync.TrustedVaultDegradedRecoverabilityValue2",
-                                degraded_recoverability_value_,
-                                sync_pb::DegradedRecoverabilityValue_ARRAYSIZE);
   next_refresh_timer_.Start(
       FROM_HERE,
       ComputeTimeUntilNextRefresh(current_refresh_period_, last_refresh_time_),

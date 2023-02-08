@@ -4,6 +4,7 @@
 
 #include "base/memory/raw_ptr.h"
 
+#include "base/task/single_thread_task_runner.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
 
 #import <Cocoa/Cocoa.h>
@@ -11,7 +12,6 @@
 #include "base/bind.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/dragdrop/drag_drop_types.h"
@@ -45,8 +45,7 @@
 @property BOOL animatesToDestination;
 @property NSInteger numberOfValidItemsForDrop;
 @property NSDraggingFormation draggingFormation;
-@property(readonly)
-    NSSpringLoadingHighlight springLoadingHighlight API_AVAILABLE(macos(10.11));
+@property(readonly) NSSpringLoadingHighlight springLoadingHighlight;
 
 @end
 
@@ -118,8 +117,7 @@ enumerateDraggingItemsWithOptions:(NSDraggingItemEnumerationOptions)enumOpts
 
 @end
 
-namespace views {
-namespace test {
+namespace views::test {
 
 using ::base::ASCIIToUTF16;
 using ::ui::mojom::DragOperation;
@@ -267,7 +265,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
       @selector(cr_beginDraggingSessionWithItems:event:source:));
 
   // Immediately quit drag'n'drop, or we'll hang.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&DragDropClientMac::EndDrag,
                                 base::Unretained(drag_drop_client())));
 
@@ -317,7 +315,7 @@ TEST_F(DragDropClientMacTest, PasteboardToOSExchangeTest) {
 // View object that will close Widget on drop.
 class DragDropCloseView : public DragDropView {
  public:
-  DragDropCloseView() {}
+  DragDropCloseView() = default;
 
   DragDropCloseView(const DragDropCloseView&) = delete;
   DragDropCloseView& operator=(const DragDropCloseView&) = delete;
@@ -357,5 +355,4 @@ TEST_F(DragDropClientMacTest, CloseWidgetOnDrop) {
   widget_ = nullptr;
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test

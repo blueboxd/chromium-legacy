@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/process/launch.h"
@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/ipc/ipc_support.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
@@ -37,7 +38,8 @@
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -47,12 +49,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #endif  // BUILDFLAG(IS_WIN)
-
-// TODO(noahrose): Enable tests once updater is implemented for Linux
-#if !BUILDFLAG(IS_LINUX)
 
 namespace updater::test {
 namespace {
@@ -92,27 +91,31 @@ class IntegrationTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    logging::SetLogItems(true,    // enable_process_id
-                         true,    // enable_thread_id
-                         true,    // enable_timestamp
-                         false);  // enable_tickcount
-    Clean();
-    ExpectClean();
+    ASSERT_NO_FATAL_FAILURE(CleanProcesses());
+    ASSERT_TRUE(WaitForUpdaterExit());
+    ASSERT_NO_FATAL_FAILURE(Clean());
+    ASSERT_NO_FATAL_FAILURE(ExpectClean());
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // SetUpTestService();
-    EnterTestMode(GURL("http://localhost:1234"));
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
   }
 
   void TearDown() override {
     ExitTestMode();
-    if (!HasFatalFailure())
+    if (!HasFatalFailure()) {
       ExpectClean();
+    }
     PrintLog();
+
     // TODO(crbug.com/1159189): Use a specific test output directory
     // because Uninstall() deletes the files under GetDataDirPath().
     CopyLog();
+
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
+
+    // Updater process must not be running for `Clean()` to succeed.
+    EXPECT_TRUE(WaitForUpdaterExit());
     Clean();
   }
 
@@ -249,7 +252,15 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->UninstallApp(app_id);
   }
 
-  void RunWake(int exit_code) { test_commands_->RunWake(exit_code); }
+  void RunWake(int exit_code) {
+    EXPECT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunWake(exit_code);
+  }
+
+  void RunWakeAll() {
+    EXPECT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunWakeAll();
+  }
 
   void RunWakeActive(int exit_code) {
     test_commands_->RunWakeActive(exit_code);
@@ -342,6 +353,10 @@ class IntegrationTest : public ::testing::Test {
 
  private:
   base::test::TaskEnvironment environment_;
+
+#if BUILDFLAG(IS_POSIX)
+  ScopedIPCSupportWrapper ipc_support_;
+#endif
 };
 
 // The project's position is that component builds are not portable outside of
@@ -353,7 +368,7 @@ class IntegrationTest : public ::testing::Test {
 // Tests the setup and teardown of the fixture.
 TEST_F(IntegrationTest, DoNothing) {}
 
-TEST_F(IntegrationTest, InstallUninstall) {
+TEST_F(IntegrationTest, Install) {
   Install();
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectInstalled();
@@ -368,6 +383,9 @@ TEST_F(IntegrationTest, InstallUninstall) {
   Uninstall();
 }
 
+// TODO(crbug.com/1398845) Enable test once SetupRealUpdaterLowerVersion
+// is implemented.
+#if !BUILDFLAG(IS_LINUX)
 TEST_F(IntegrationTest, OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   EXPECT_TRUE(WaitForUpdaterExit());
@@ -395,6 +413,7 @@ TEST_F(IntegrationTest, OverinstallBroken) {
 
   Uninstall();
 }
+#endif  // !BUILDFLAG(IS_LINUX)
 
 TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   Install();
@@ -458,6 +477,21 @@ TEST_F(IntegrationTest, SelfUpdate) {
                        base::Version(kUpdaterVersion), next_version);
 
   RunWake(0);
+  EXPECT_TRUE(WaitForUpdaterExit());
+  ExpectAppVersion(kUpdaterAppId, next_version);
+
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, SelfUpdateWithWakeAll) {
+  ScopedServer test_server(test_commands_);
+  Install();
+
+  base::Version next_version(base::StringPrintf("%s1", kUpdaterVersion));
+  ExpectUpdateSequence(&test_server, kUpdaterAppId, "",
+                       base::Version(kUpdaterVersion), next_version);
+
+  RunWakeAll();
   EXPECT_TRUE(WaitForUpdaterExit());
   ExpectAppVersion(kUpdaterAppId, next_version);
 
@@ -532,7 +566,7 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   Install();
 
   base::Value::Dict group_policies;
-  group_policies.Set("Installtest1", GetTestScope() == UpdaterScope::kSystem
+  group_policies.Set("Installtest1", IsSystemInstall(GetTestScope())
                                          ? kPolicyForceInstallMachine
                                          : kPolicyForceInstallUser);
   SetGroupPolicies(group_policies);
@@ -752,6 +786,9 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
+// TODO(crbug.com/1398845): Enable test once SetupRealUpdaterLowerVersion
+// is implemented.
+#if !BUILDFLAG(IS_LINUX)
 TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
@@ -778,7 +815,7 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
-TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
+TEST_F(IntegrationTest, InstallLowerVersion) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ExpectVersionNotActive(kUpdaterVersion);
   Uninstall();
@@ -795,6 +832,7 @@ TEST_F(IntegrationTest, InstallUninstallLowerVersion) {
 #endif  // IS_WIN
 }
 
+#endif  // !BUILDFLAG(IS_LINUX)
 #endif
 #endif
 
@@ -928,5 +966,3 @@ TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
 
 }  // namespace updater::test
-
-#endif  // !BUILDFLAG(IS_LINUX)

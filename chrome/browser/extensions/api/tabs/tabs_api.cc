@@ -27,9 +27,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -1623,18 +1624,6 @@ ExtensionFunction::ResponseValue TabsUpdateFunction::GetResult() {
       web_contents_, extension(), source_context_type(), nullptr, -1)));
 }
 
-void TabsUpdateFunction::OnExecuteCodeFinished(
-    const std::string& error,
-    const GURL& url,
-    const base::ListValue& script_result) {
-  if (!error.empty()) {
-    Respond(Error(error));
-    return;
-  }
-
-  return Respond(GetResult());
-}
-
 ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
   std::unique_ptr<tabs::Move::Params> params(
       tabs::Move::Params::Create(args()));
@@ -1642,7 +1631,7 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
 
   int new_index = params->move_properties.index;
   const auto& window_id = params->move_properties.window_id;
-  base::ListValue tab_values;
+  base::Value::List tab_values;
 
   size_t num_tabs = 0;
   std::string error;
@@ -1650,14 +1639,14 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
     std::vector<int>& tab_ids = *params->tab_ids.as_integers;
     num_tabs = tab_ids.size();
     for (int tab_id : tab_ids) {
-      if (!MoveTab(tab_id, &new_index, &tab_values, window_id, &error))
+      if (!MoveTab(tab_id, &new_index, tab_values, window_id, &error))
         return RespondNow(Error(std::move(error)));
     }
   } else {
     EXTENSION_FUNCTION_VALIDATE(params->tab_ids.as_integer);
     num_tabs = 1;
-    if (!MoveTab(*params->tab_ids.as_integer, &new_index, &tab_values,
-                 window_id, &error)) {
+    if (!MoveTab(*params->tab_ids.as_integer, &new_index, tab_values, window_id,
+                 &error)) {
       return RespondNow(Error(std::move(error)));
     }
   }
@@ -1670,9 +1659,8 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
   if (num_tabs == 0)
     return RespondNow(Error("No tabs given."));
   if (num_tabs == 1) {
-    CHECK_EQ(1u, tab_values.GetList().size());
-    base::Value::List tabs = std::move(tab_values).TakeList();
-    return RespondNow(WithArguments(std::move(tabs[0])));
+    CHECK_EQ(1u, tab_values.size());
+    return RespondNow(WithArguments(std::move(tab_values[0])));
   }
 
   // Return the results as an array if there are multiple tabs.
@@ -1681,7 +1669,7 @@ ExtensionFunction::ResponseAction TabsMoveFunction::Run() {
 
 bool TabsMoveFunction::MoveTab(int tab_id,
                                int* new_index,
-                               base::ListValue* tab_values,
+                               base::Value::List& tab_values,
                                const absl::optional<int>& window_id,
                                std::string* error) {
   Browser* source_browser = nullptr;
@@ -1724,10 +1712,10 @@ bool TabsMoveFunction::MoveTab(int tab_id,
       content::WebContents* web_contents =
           tab_strip_model->GetWebContentsAt(inserted_index);
 
-      tab_values->Append(CreateTabObjectHelper(web_contents, extension(),
-                                               source_context_type(),
-                                               tab_strip_model, inserted_index)
-                             .ToValue());
+      tab_values.Append(CreateTabObjectHelper(web_contents, extension(),
+                                              source_context_type(),
+                                              tab_strip_model, inserted_index)
+                            .ToValue());
     }
 
     // Insert the tabs one after another.
@@ -1748,10 +1736,10 @@ bool TabsMoveFunction::MoveTab(int tab_id,
         source_tab_strip->MoveWebContentsAt(tab_index, *new_index, false);
 
   if (has_callback()) {
-    tab_values->Append(CreateTabObjectHelper(contents, extension(),
-                                             source_context_type(),
-                                             source_tab_strip, *new_index)
-                           .ToValue());
+    tab_values.Append(CreateTabObjectHelper(contents, extension(),
+                                            source_context_type(),
+                                            source_tab_strip, *new_index)
+                          .ToValue());
   }
 
   // Insert the tabs one after another.
@@ -2130,10 +2118,14 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   if (!contents)
     return RespondNow(Error(std::move(error)));
 
+  // NOTE: CaptureAsync() may invoke its callback from a background thread,
+  // hence the BindPostTask().
   const CaptureResult capture_result = CaptureAsync(
       contents, image_details.get(),
-      base::BindOnce(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
-                     this));
+      base::BindPostTask(
+          base::SequencedTaskRunner::GetCurrentDefault(),
+          base::BindOnce(
+              &TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete, this)));
   if (capture_result == OK) {
     // CopyFromSurfaceComplete might have already responded.
     return did_respond() ? AlreadyResponded() : RespondLater();
@@ -2161,7 +2153,8 @@ void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&TabsCaptureVisibleTabFunction::EncodeBitmapOnWorkerThread,
-                     this, base::ThreadTaskRunnerHandle::Get(), bitmap));
+                     this, base::SingleThreadTaskRunner::GetCurrentDefault(),
+                     bitmap));
 }
 
 void TabsCaptureVisibleTabFunction::EncodeBitmapOnWorkerThread(
@@ -2270,7 +2263,7 @@ ExtensionFunction::ResponseAction TabsDetectLanguageFunction::Run() {
   if (!chrome_translate_client->GetLanguageState().source_language().empty()) {
     // Delay the callback invocation until after the current JS call has
     // returned.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &TabsDetectLanguageFunction::RespondWithLanguage, this,

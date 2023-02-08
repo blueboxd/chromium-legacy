@@ -81,14 +81,12 @@ generate_grd("build_grd") {
       ":build_cros_styles_grdp",
       "//ash/webui/common/resources:build_grdp",
       "//ash/webui/common/resources:build_html_css_wrapper_files_grdp",
-      "//chromeos/ash/components/cros_elements:build_grdp",
       "//third_party/material_web_components:build_grdp",
       "//third_party/web-animations-js:build_grdp",
     ]
     grdp_files += [
       "$root_gen_dir/ash/webui/common/resources/ash_common_resources.grdp",
       "$root_gen_dir/ash/webui/common/resources/html_css_wrapper_files_resources.grdp",
-      "$root_gen_dir/chromeos/ash/components/cros_elements/cros_elements_resources.grdp",
       "$root_gen_dir/third_party/material_web_components/material_web_components_resources.grdp",
       "$root_gen_dir/third_party/web-animations-js/web_animations_resources.grdp",
       "$target_gen_dir/cros_styles_resources.grdp",
@@ -141,25 +139,22 @@ group("closure_compile") {
 
 preprocessed_folder = "$target_gen_dir/preprocessed"
 
-checked_in_dts_files = [
-  "js/cr.m.d.ts",
-  "js/promise_resolver.d.ts",
-]
+if (is_chromeos_ash) {
+  checked_in_dts_files = [
+    "js/cr.m.d.ts",
+    "js/load_time_data.m.d.ts",
+  ]
 
-# Copies checked-in .d.ts files to the preprocess folder so that they are
-# discovered by TSC the same way generated .d.ts files are.
-copy("copy_checked_in_dts_files") {
-  sources = checked_in_dts_files
-  outputs = [ "$preprocessed_folder/{{source_target_relative}}" ]
+  # Copies checked-in .d.ts files to the preprocess folder so that they are
+  # discovered by TSC the same way generated .d.ts files are.
+  copy("copy_checked_in_dts_files") {
+    sources = checked_in_dts_files
+    outputs = [ "$preprocessed_folder/{{source_target_relative}}" ]
+  }
 }
 
 # Files for which .d.ts files will be auto-generated with ts_definitions().
-generate_definitions_js_files = [
-  "js/assert.js",
-  "js/cr/event_target.js",
-  "js/load_time_data.m.js",
-  "js/util.js",
-]
+generate_definitions_js_files = [ "js/assert.js" ]
 
 if (is_ios) {
   generate_definitions_js_files += [ "js/ios/web_ui.js" ]
@@ -185,13 +180,16 @@ ts_library("library") {
                "js/focus_outline_manager.ts",
                "js/icon.ts",
                "js/keyboard_shortcut_list.ts",
+               "js/load_time_data.ts",
                "js/parse_html_subset.ts",
+               "js/promise_resolver.ts",
                "js/platform.ts",
                "js/plural_string_proxy.ts",
                "js/static_types.ts",
                "js/store_ts.ts",
                "js/test_loader.ts",
                "js/test_loader_util.ts",
+               "js/util_ts.ts",
              ]
 
   if (include_polymer) {
@@ -219,8 +217,10 @@ ts_library("library") {
   ]
 
   # Checked-in .d.ts files.
-  foreach(_file, checked_in_dts_files) {
-    definitions += [ "$root_dir/$_file" ]
+  if (is_chromeos_ash) {
+    foreach(_file, checked_in_dts_files) {
+      definitions += [ "$root_dir/$_file" ]
+    }
   }
 
   # Auto-generated .d.ts files.
@@ -230,10 +230,13 @@ ts_library("library") {
 
   deps = [ "//third_party/polymer/v3_0:library" ]
   extra_deps += [
-    ":copy_checked_in_dts_files",
     ":generate_definitions",
     ":preprocess",
   ]
+
+  if (is_chromeos_ash) {
+    extra_deps += [ ":copy_checked_in_dts_files" ]
+  }
 }
 
 generate_grd("build_ts_grdp") {
@@ -249,10 +252,12 @@ ts_definitions("generate_definitions") {
   out_dir = preprocessed_folder
   js_files = generate_definitions_js_files
   extra_deps = [
-    # Copy checked-in d.ts files first, so that |generate_definitions| leverages
-    # these files, instead of accidentally auto-generating them.
-    ":copy_checked_in_dts_files",
     ":preprocess",
     "mojo:library",
   ]
+  if (is_chromeos_ash) {
+    # Copy checked-in d.ts files first, so that |generate_definitions| leverages
+    # these files, instead of accidentally auto-generating them.
+    extra_deps += [ ":copy_checked_in_dts_files" ]
+  }
 }

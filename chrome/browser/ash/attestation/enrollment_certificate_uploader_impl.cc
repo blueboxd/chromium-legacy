@@ -17,12 +17,15 @@
 #include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace ash::attestation {
 
 namespace {
 
@@ -32,15 +35,14 @@ const int kRetryLimit = 100;
 
 void DBusPrivacyCACallback(
     const base::RepeatingCallback<void(const std::string&)> on_success,
-    const base::RepeatingCallback<void(ash::attestation::AttestationStatus)>
-        on_failure,
+    const base::RepeatingCallback<void(AttestationStatus)> on_failure,
     const base::Location& from_here,
-    ash::attestation::AttestationStatus status,
+    AttestationStatus status,
     const std::string& data) {
   DCHECK(on_success);
   DCHECK(on_failure);
 
-  if (status == ash::attestation::ATTESTATION_SUCCESS) {
+  if (status == ATTESTATION_SUCCESS) {
     on_success.Run(data);
     return;
   }
@@ -51,9 +53,6 @@ void DBusPrivacyCACallback(
 }
 
 }  // namespace
-
-namespace ash {
-namespace attestation {
 
 EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
@@ -106,8 +105,7 @@ void EnrollmentCertificateUploaderImpl::GetCertificate(bool force_new_key) {
       /*request_origin=*/std::string(),  // Not used.
       /*force_new_key=*/force_new_key,
       /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
-      /*key_name=*/std::string(),  // Leave key name empty to generate a default
-                                   // name.
+      /*key_name=*/kEnterpriseEnrollmentKey,
       /*profile_specific_data=*/absl::nullopt,
       /*callback=*/
       base::BindOnce(
@@ -241,5 +239,4 @@ void EnrollmentCertificateUploaderImpl::RunCallbacks(Status status) {
     std::move(callbacks.front()).Run(status);
 }
 
-}  // namespace attestation
-}  // namespace ash
+}  // namespace ash::attestation

@@ -4,8 +4,8 @@
 
 import 'chrome://resources/js/jstemplate_compiled.js';
 
-import {addWebUIListener, sendWithPromise} from 'chrome://resources/js/cr.m.js';
-import {$} from 'chrome://resources/js/util.js';
+import {addWebUiListener, sendWithPromise} from 'chrome://resources/js/cr.js';
+import {$} from 'chrome://resources/js/util_ts.js';
 
 function initialize() {
   function submitURL(event) {
@@ -24,9 +24,9 @@ function initialize() {
   // Make the prototype jscontent element disappear.
   jstProcess({}, $('filtering-results-container'));
 
-  addWebUIListener('basic-info-received', receiveBasicInfo);
-  addWebUIListener('user-settings-received', receiveUserSettings);
-  addWebUIListener('filtering-result-received', receiveFilteringResult);
+  addWebUiListener('basic-info-received', receiveBasicInfo);
+  addWebUiListener('user-settings-received', receiveUserSettings);
+  addWebUiListener('filtering-result-received', receiveFilteringResult);
 
   chrome.send('registerForEvents');
 

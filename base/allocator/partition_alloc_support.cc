@@ -35,9 +35,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/base_tracing.h"
@@ -181,7 +181,7 @@ void RunThreadCachePeriodicPurge() {
   instance.RunPeriodicPurge();
   TimeDelta delay =
       Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, BindOnce(RunThreadCachePeriodicPurge), delay);
 }
 
@@ -207,7 +207,7 @@ void StartThreadCachePeriodicPurge() {
   auto& instance = ::partition_alloc::ThreadCacheRegistry::Instance();
   TimeDelta delay =
       Microseconds(instance.GetPeriodicPurgeNextIntervalInMicroseconds());
-  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, BindOnce(RunThreadCachePeriodicPurge), delay);
 }
 
@@ -261,7 +261,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   // e.g. disabled-but-3-way-split, do something (hence can't be considered the
   // default behavior), but don't enable BRP protection.
   [[maybe_unused]] bool brp_truly_enabled = false;
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   if (FeatureList::IsEnabled(features::kPartitionAllocBackupRefPtr))
     brp_finch_enabled = true;
   if (brp_finch_enabled && features::kBackupRefPtrModeParam.Get() !=
@@ -270,7 +270,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   if (brp_finch_enabled && features::kBackupRefPtrModeParam.Get() ==
                                features::BackupRefPtrMode::kEnabled)
     brp_truly_enabled = true;
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   [[maybe_unused]] bool pcscan_enabled =
 #if defined(PA_ALLOW_PCSCAN)
       FeatureList::IsEnabled(features::kPartitionAllocPCScanBrowserOnly);
@@ -279,7 +279,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
 #endif
 
   std::string brp_group_name = "Unavailable";
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   if (pcscan_enabled) {
     // If PCScan is enabled, just ignore the population.
     brp_group_name = "Ignore_PCScanIsOn";
@@ -314,6 +314,9 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
       case features::BackupRefPtrMode::kDisabledButSplitPartitions3Way:
         brp_group_name = "DisabledBut3WaySplit";
         break;
+      case features::BackupRefPtrMode::kDisabledButAddDummyRefCount:
+        brp_group_name = "DisabledButAddDummyRefCount";
+        break;
     }
 
     if (features::kBackupRefPtrModeParam.Get() !=
@@ -337,7 +340,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
       brp_group_name += ("_" + process_selector);
     }
   }
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   trials.emplace("BackupRefPtr_Effective", brp_group_name);
 
   // On 32-bit architectures, PCScan is not supported and permanently disabled.
@@ -495,19 +498,28 @@ void DanglingRawPtrReleasedCrash(uintptr_t id) {
   debug::TaskTrace task_trace_release;
   absl::optional<debug::StackTrace> stack_trace_free = TakeStackTrace(id);
 
+  static const char dangling_ptr_footer[] =
+      "\n"
+      "\n"
+      "Please check for more information on:\n"
+      "https://chromium.googlesource.com/chromium/src/+/main/docs/"
+      "dangling_ptr_guide.md\n";
+
   if (stack_trace_free) {
     LOG(ERROR) << "Detected dangling raw_ptr with id="
                << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
                << "The memory was freed at:\n"
                << *stack_trace_free << "\n"
                << "The dangling raw_ptr was released at:\n"
-               << stack_trace_release << task_trace_release;
+               << stack_trace_release << task_trace_release
+               << dangling_ptr_footer;
   } else {
     LOG(ERROR) << "Detected dangling raw_ptr with id="
                << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
                << "It was not recorded where the memory was freed.\n\n"
                << "The dangling raw_ptr was released at:\n"
-               << stack_trace_release << task_trace_release;
+               << stack_trace_release << task_trace_release
+               << dangling_ptr_footer;
   }
   ImmediateCrash();
 }

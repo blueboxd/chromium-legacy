@@ -58,19 +58,22 @@ class PrivacySandboxSettings : public KeyedService {
    public:
     virtual ~Delegate() = default;
 
-    // Allows the delegate to restirct access to the Privacy Sandbox. When
+    // Allows the delegate to restrict access to the Privacy Sandbox. When
     // the Privacy Sandbox is restricted, all API access is disabled. This is
     // consulted on every access check, and it is acceptable for this to change
     // return value over the life of the service.
-    virtual bool IsPrivacySandboxRestricted() = 0;
+    virtual bool IsPrivacySandboxRestricted() const = 0;
+
+    // Whether the current profile is Incognito or not. For Incognito, the
+    // privacy sandbox APIs are restricted.
+    virtual bool IsIncognitoProfile() const = 0;
   };
 
   PrivacySandboxSettings(
       std::unique_ptr<Delegate> delegate,
       HostContentSettingsMap* host_content_settings_map,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      PrefService* pref_service,
-      bool incognito_profile);
+      PrefService* pref_service);
   ~PrivacySandboxSettings() override;
 
   // Returns whether the Topics API is allowed at all. If false, Topics API
@@ -140,23 +143,30 @@ class PrivacySandboxSettings : public KeyedService {
   // combined with the more generic IsFledgeAllowed().
   bool IsFledgeJoiningAllowed(const url::Origin& top_frame_origin) const;
 
-  // Determine whether |auction_party| can register an interest group, or sell /
+  // Determine whether |auction_party| can register an interest group, or sell
   // buy in an auction, on |top_frame_origin|.
+  // TODO(crbug.com/1378703): Remove |top_frame_origin| after m1 is launched.
   bool IsFledgeAllowed(const url::Origin& top_frame_origin,
-                       const url::Origin& auction_party);
-
-  // Filter |auction_parties| down to those that may participate as a buyer for
-  // auctions run on |top_frame_origin|. Logically equivalent to calling
-  // IsFledgeAllowed() for each element of |auction_parties|.
-  std::vector<GURL> FilterFledgeAllowedParties(
-      const url::Origin& top_frame_origin,
-      const std::vector<GURL>& auction_parties);
+                       const url::Origin& auction_party) const;
 
   // Determines whether Shared Storage is allowable in a particular context.
   // `top_frame_origin` can be the same as `accessing_origin` in the case of a
   // top-level document calling Shared Storage.
   bool IsSharedStorageAllowed(const url::Origin& top_frame_origin,
                               const url::Origin& accessing_origin) const;
+
+  // Stubs for updated Shared Storage access controls.
+  // TODO(crbug.com/1378703): These just redirect to the general
+  // IsSharedStorageAllowed(). The implementation needs to be updated to reflect
+  // the M1 preferences when release 4 is enabled. It's also not clear that the
+  // top frame is required, exact details of site data exceptions remain TBD.
+  bool IsSharedStorageWriteAllowed(const url::Origin& top_frame_origin,
+                                   const url::Origin& accessing_origin);
+  bool IsSharedStorageSelectURLAllowed(const url::Origin& top_frame_origin,
+                                       const url::Origin& accessing_origin);
+  bool IsSharedStorageAggregateReportingAllowed(
+      const url::Origin& top_frame_origin,
+      const url::Origin& accessing_origin);
 
   // Determines whether the Private Aggregation API is allowable in a particular
   // context. `top_frame_origin` is the associated top-frame origin of the
@@ -185,7 +195,7 @@ class PrivacySandboxSettings : public KeyedService {
   // Returns whether the Privacy Sandbox is being restricted by the associated
   // delegate. Forwards directly to the corresponding delegate function.
   // Virtual to allow mocking in tests.
-  virtual bool IsPrivacySandboxRestricted();
+  virtual bool IsPrivacySandboxRestricted() const;
 
   // Called when there's a broad cookies clearing action. For example, this
   // should be called on "Clear browsing data", but shouldn't be called on the
@@ -220,6 +230,13 @@ class PrivacySandboxSettings : public KeyedService {
   void SetTopicsDataAccessibleFromNow() const;
 
  private:
+  // Whether the site associated with the URL is allowed to access site data or
+  // not, as a primary context.
+  bool IsSiteDataAllowed(const GURL& url) const;
+  // Whether the privacy sandbox associated with  the |pref_name| is enabled.
+  // For individual sites, check as well with IsSiteDataAllowed.
+  bool IsM1PrivacySandboxApiEnabled(const std::string& pref_name) const;
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   std::unique_ptr<Delegate> delegate_;
@@ -227,7 +244,6 @@ class PrivacySandboxSettings : public KeyedService {
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<PrefService, DanglingUntriaged> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
-  bool incognito_profile_;
 };
 
 }  // namespace privacy_sandbox

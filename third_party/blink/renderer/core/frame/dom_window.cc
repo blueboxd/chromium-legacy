@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/action_after_pagehide.h"
+#include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
@@ -170,7 +171,7 @@ DOMWindow* DOMWindow::parent() const {
       WebFeature::kWindowProxyCrossOriginAccessParent,
       WebFeature::kWindowProxyCrossOriginAccessFromOtherPageParent);
 
-  Frame* parent = GetFrame()->Tree().Parent(FrameTreeBoundary::kFenced);
+  Frame* parent = GetFrame()->Tree().Parent();
   return parent ? parent->DomWindow() : GetFrame()->DomWindow();
 }
 
@@ -182,7 +183,7 @@ DOMWindow* DOMWindow::top() const {
       WebFeature::kWindowProxyCrossOriginAccessTop,
       WebFeature::kWindowProxyCrossOriginAccessFromOtherPageTop);
 
-  return GetFrame()->Tree().Top(FrameTreeBoundary::kFenced).DomWindow();
+  return GetFrame()->Tree().Top().DomWindow();
 }
 
 void DOMWindow::postMessage(v8::Isolate* isolate,
@@ -403,14 +404,21 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
   bool allow_scripts_to_close_windows =
       settings && settings->GetAllowScriptsToCloseWindows();
 
-  if (!page->OpenedByDOM() && GetFrame()->Client()->BackForwardLength() > 1 &&
-      !allow_scripts_to_close_windows) {
-    active_document->domWindow()->GetFrameConsole()->AddMessage(
-        MakeGarbageCollected<ConsoleMessage>(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "Scripts may close only the windows that were opened by them."));
-    return;
+  if (!page->OpenedByDOM() && !allow_scripts_to_close_windows) {
+    if (GetFrame()->Client()->BackForwardLength() > 1) {
+      active_document->domWindow()->GetFrameConsole()->AddMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kJavaScript,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "Scripts may close only the windows that were opened by them."));
+      return;
+    } else {
+      // https://html.spec.whatwg.org/multipage/nav-history-apis.html#script-closable
+      // allows a window to be closed if its history length is 1, even if it was
+      // not opened by script.
+      UseCounter::Count(active_document,
+                        WebFeature::kWindowCloseHistoryLengthOne);
+    }
   }
 
   if (!GetFrame()->ShouldClose())

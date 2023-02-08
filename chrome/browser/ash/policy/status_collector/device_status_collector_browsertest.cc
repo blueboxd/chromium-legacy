@@ -27,11 +27,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_chromeos_version_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -45,6 +45,7 @@
 #include "chrome/browser/ash/crostini/crostini_test_helper.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
@@ -77,6 +78,7 @@
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/disks/mock_disk_mount_manager.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -88,7 +90,6 @@
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/mock_owner_key_util.h"
@@ -485,7 +486,7 @@ void CallAndroidStatusReceiver(StatusCollector::AndroidStatusReceiver receiver,
 
 bool GetEmptyAndroidStatus(StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver), "", ""));
   return true;
@@ -495,7 +496,7 @@ bool GetFakeAndroidStatus(const std::string& status,
                           const std::string& droid_guard_info,
                           StatusCollector::AndroidStatusReceiver receiver) {
   // Post it to the thread because this call is expected to be asynchronous.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&CallAndroidStatusReceiver, std::move(receiver),
                                 status, droid_guard_info));
   return true;
@@ -878,6 +879,13 @@ class DeviceStatusCollectorTest : public testing::Test {
     TestingDeviceStatusCollector::RegisterProfilePrefs(
         profile_pref_service_.registry());
 
+    // This pref registration is temporarily added because crrev/c/4076557 makes
+    // SystemWebAppManager (which is instantiated during creation of a
+    // TestProfile) dependent on the kDemoModeConfig pref.
+    // TODO(b/260117078): Delete this line after the DemoModeConfig pref is
+    // deprecated.
+    ash::DemoSetupController::RegisterLocalStatePrefs(local_state_.registry());
+
     // Set up a fake local state for KioskAppManager and KioskCryptohomeRemover.
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
     ash::KioskAppManager::RegisterLocalStatePrefs(local_state_.registry());
@@ -891,7 +899,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     chromeos::PowerManagerClient::InitializeFake();
     ash::AttestationClient::InitializeFake();
     chromeos::TpmManagerClient::InitializeFake();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
     ash::cros_healthd::FakeCrosHealthd::Initialize();
     ash::FakeSpacedClient::InitializeFake();
 
@@ -910,7 +918,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     testing_profile_.reset();
     ash::ConciergeClient::Shutdown();
     ash::CiceroneClient::Shutdown();
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
     ash::AttestationClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
@@ -1123,7 +1131,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   void MockAutoLaunchArcKioskApp(
       const DeviceLocalAccount& auto_launch_app_account) {
-    arc_kiosk_app_manager_ = std::make_unique<chromeos::ArcKioskAppManager>();
+    arc_kiosk_app_manager_ = std::make_unique<ash::ArcKioskAppManager>();
     arc_kiosk_app_manager_->AddAutoLaunchAppForTest(
         auto_launch_app_account.arc_kiosk_app_info.package_name(),
         auto_launch_app_account.arc_kiosk_app_info,
@@ -1181,7 +1189,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   // Only set after MockRunningKioskApp was called.
   std::unique_ptr<TestingProfile> testing_profile_;
   // Only set after MockAutoLaunchArcKioskApp was called.
-  std::unique_ptr<chromeos::ArcKioskAppManager> arc_kiosk_app_manager_;
+  std::unique_ptr<ash::ArcKioskAppManager> arc_kiosk_app_manager_;
   // Only set after MockAutoLaunchWebKioskApp was called.
   std::unique_ptr<ash::WebKioskAppManager> web_kiosk_app_manager_;
   ash::MockUserManager* const user_manager_;
@@ -1287,9 +1295,8 @@ TEST_F(DeviceStatusCollectorTest, MixedStatesForKiosk) {
       ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_ACTIVE,
       ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_IDLE,
   };
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_KIOSK);
+  ash::LoginState::Get()->SetLoggedInState(
+      ash::LoginState::LOGGED_IN_ACTIVE, ash::LoginState::LOGGED_IN_USER_KIOSK);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
@@ -1306,9 +1313,8 @@ TEST_F(DeviceStatusCollectorTest, MixedStatesForArcKiosk) {
       ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE, ui::IDLE_STATE_ACTIVE,
       ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_IDLE,
   };
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_KIOSK);
+  ash::LoginState::Get()->SetLoggedInState(
+      ash::LoginState::LOGGED_IN_ACTIVE, ash::LoginState::LOGGED_IN_USER_KIOSK);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
@@ -3849,9 +3855,6 @@ static const FakeNetworkState kFakeNetworks[] = {
      shill::kStateReady, em::NetworkState::READY, "", "", true},
     {"failure", "/device/wifi", shill::kTypeWifi, 1, -87, shill::kStateFailure,
      em::NetworkState::FAILURE, "", "", true},
-    {"activation-failure", "/device/cellular1", shill::kTypeCellular, 0, 0,
-     shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE, "",
-     "", true},
     {"unknown", "", shill::kTypeWifi, 1, -87, shill::kStateIdle,
      em::NetworkState::IDLE, "", "", true},
 };

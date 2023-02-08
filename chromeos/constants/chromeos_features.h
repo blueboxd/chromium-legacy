@@ -31,6 +31,10 @@ BASE_DECLARE_FEATURE(kDisableOfficeEditingComponentApp);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kDisableQuickAnswersV2Translation);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+BASE_DECLARE_FEATURE(kPasswordManagerSystemAuthentication);
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+BASE_DECLARE_FEATURE(kQuickAnswersRichCard);
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 BASE_DECLARE_FEATURE(kQuickAnswersV2SettingsSubToggle);
 
 // Keep alphabetized.
@@ -38,9 +42,13 @@ BASE_DECLARE_FEATURE(kQuickAnswersV2SettingsSubToggle);
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDarkLightModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCloudGamingDeviceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDemoModeSWAEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsPasswordManagerSystemAuthenticationEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersV2TranslationDisabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsQuickAnswersV2SettingsSubToggleEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsQuickAnswersRichCardEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsQuickAnswersAlwaysTriggerForSingleWord();
 

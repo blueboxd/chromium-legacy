@@ -37,6 +37,10 @@ class WaylandManager {
   using KeyboardModifiersCallbackSignature = void(uint32_t group);
   using KeyboardModifiersCallback =
       base::RepeatingCallback<KeyboardModifiersCallbackSignature>;
+  using ClipboardMetadataCallbackSignature =
+      void(webrtc::DesktopCaptureMetadata);
+  using ClipboardMetadataCallback =
+      base::RepeatingCallback<ClipboardMetadataCallbackSignature>;
 
   WaylandManager();
   ~WaylandManager();
@@ -44,6 +48,9 @@ class WaylandManager {
   WaylandManager& operator=(const WaylandManager&) = delete;
 
   static WaylandManager* Get();
+
+  // Cleans up reference to runner. (Needed only for testing)
+  void CleanupRunnerForTest();
 
   // The singleton instance should be initialized by the host process on the
   // UI thread right after creation.
@@ -54,6 +61,12 @@ class WaylandManager {
 
   // Invoked by the desktop capturer(s), upon successful start.
   void OnDesktopCapturerMetadata(webrtc::DesktopCaptureMetadata metadata);
+
+  // Adds callback to be invoked when clipboard has metadata available.
+  void AddClipboardMetadataCallback(DesktopMetadataCallback callback);
+
+  // Invoked by the clipboard portal upon a successful start.
+  void OnClipboardMetadata(webrtc::DesktopCaptureMetadata metadata);
 
   // Adds callback to be invoked when screen resolution is updated by the
   // desktop resizer.
@@ -95,6 +108,8 @@ class WaylandManager {
       GUARDED_BY_CONTEXT(sequence_checker_);
   base::RepeatingCallbackList<KeyboardModifiersCallbackSignature>
       keyboard_modifier_callbacks_ GUARDED_BY_CONTEXT(sequence_checker_);
+  ClipboardMetadataCallback clipboard_metadata_callback_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Keeps track of the latest keymap for the case where the keyboard layout
   // monitor has not yet registered a callback.

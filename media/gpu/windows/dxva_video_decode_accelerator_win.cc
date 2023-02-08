@@ -34,7 +34,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_local_storage.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
@@ -42,7 +41,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/pbuffer_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -57,6 +56,7 @@
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
+#include "media/gpu/windows/gl_image_pbuffer.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/parsers/vp8_parser.h"
 #include "media/video/h264_parser.h"
@@ -717,7 +717,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
 
   client_ = client;
 
-  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  main_thread_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
 
   if (!config.supported_output_formats.empty() &&
       !base::Contains(config.supported_output_formats, PIXEL_FORMAT_NV12)) {
@@ -1170,7 +1170,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
         // texture ids. This call just causes the texture manager to hold a
         // reference to the GLImage as long as either texture exists.
         bind_image_cb_.Run(client_id, GetTextureTarget(),
-                           picture_buffer->gl_image(), false);
+                           picture_buffer->gl_image());
       }
     }
 
@@ -1239,7 +1239,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
       for (uint32_t client_id :
            it->second->picture_buffer().client_texture_ids()) {
         bind_image_cb_.Run(client_id, GetTextureTarget(),
-                           it->second->gl_image(), false);
+                           it->second->gl_image());
       }
     }
 
@@ -3254,7 +3254,7 @@ DXVAVideoDecodeAccelerator::GetSharedImagesFromPictureBuffer(
     std::unique_ptr<gpu::SharedImageBacking> shared_image;
     // Check if this picture buffer has a DX11 texture.
     gl::GLImageDXGI* gl_image_dxgi =
-        gl::GLImageDXGI::FromGLImage(picture_buffer->gl_image().get());
+        gl::GLImage::ToGLImageDXGI(picture_buffer->gl_image().get());
     if (gl_image_dxgi) {
       shared_image = gpu::D3DImageBacking::CreateFromGLTexture(
           mailbox, viz_formats[texture_idx],
@@ -3263,11 +3263,32 @@ DXVAVideoDecodeAccelerator::GetSharedImagesFromPictureBuffer(
           kPremul_SkAlphaType, shared_image_usage, gl_image_dxgi->texture(),
           std::move(gl_texture));
     } else {
-      shared_image = gpu::GLImageBacking::CreateFromGLTexture(
-          picture_buffer->gl_image(), mailbox, viz_formats[texture_idx],
+      auto gl_image_pbuffer_ref = scoped_refptr<GLImagePbuffer>(
+          gl::GLImage::ToGLImagePbuffer(picture_buffer->gl_image().get()));
+      DCHECK(gl_image_pbuffer_ref.get());
+
+      // GLImagePbuffer is only created by PbufferPictureBuffer, which itself
+      // is only created by DXVAPictureBuffer::Create() when
+      // GetPictureBufferMechanism() returns COPY_TO_RGB. In this case,
+      // GetTextureTarget() returns GL_TEXTURE_2D. Note that
+      // PbufferImageBacking assumes this texture target.
+      DCHECK_EQ(GetTextureTarget(), static_cast<uint32_t>(GL_TEXTURE_2D));
+
+      // GLImagePbuffer scopes the lifetime of the underlying image content,
+      // which is not itself refcounted. PbufferImageBacking previously held a
+      // ref to GLImagePbuffer that it released on its destruction; however, (by
+      // design) it no longer knows about GLImage. To maintain the previous
+      // semantics, this class creates a OnceClosure that owns the ref and drops
+      // it when run on destruction of the PbufferImageBacking instance.
+      // TODO(crbug.com/1378004): Eliminate the need for GLImage in this code
+      // altogether.
+      shared_image = std::make_unique<gpu::PbufferImageBacking>(
+          base::DoNothingWithBoundArgs(std::move(gl_image_pbuffer_ref)),
+          mailbox,
+          viz::SharedImageFormat::SinglePlane(viz_formats[texture_idx]),
           picture_buffer->size(), picture_buffer->color_space(),
           kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, shared_image_usage,
-          GetTextureTarget(), std::move(gl_texture));
+          std::move(gl_texture));
     }
 
     DCHECK(shared_image);

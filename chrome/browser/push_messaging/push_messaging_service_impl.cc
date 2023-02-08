@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -64,6 +64,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
@@ -188,9 +189,10 @@ void LogMessageReceivedEventToDevTools(
   else if (was_encrypted)
     event_metadata["Payload"] = payload;
 
+  url::Origin origin = url::Origin::Create(app_identifier.origin());
   devtools_context->LogBackgroundServiceEvent(
       app_identifier.service_worker_registration_id(),
-      url::Origin::Create(app_identifier.origin()),
+      blink::StorageKey(origin),
       content::DevToolsBackgroundService::kPushMessaging,
       "Push message received" /* event_name */, message_id, event_metadata);
 }
@@ -238,11 +240,12 @@ void PushMessagingServiceImpl::RemoveExpiredSubscriptions() {
 
   for (const auto& identifier : PushMessagingAppIdentifier::GetAll(profile_)) {
     if (!identifier.IsExpired()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, barrier_closure);
       continue;
     }
     content::BrowserThread::PostBestEffortTask(
-        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+        FROM_HERE, base::SingleThreadTaskRunner::GetCurrentDefault(),
         base::BindOnce(
             &PushMessagingServiceImpl::UnexpectedChange,
             weak_factory_.GetWeakPtr(), identifier,
@@ -651,12 +654,13 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     if (app_identifier.is_null())
       return;
 
+    url::Origin origin = url::Origin::Create(app_identifier.origin());
     if (auto* devtools_context = GetDevToolsContext(app_identifier.origin())) {
       std::stringstream ss;
       ss << unsubscribe_reason;
       devtools_context->LogBackgroundServiceEvent(
           app_identifier.service_worker_registration_id(),
-          url::Origin::Create(app_identifier.origin()),
+          blink::StorageKey(origin),
           content::DevToolsBackgroundService::kPushMessaging,
           "Unsubscribed due to error" /* event_name */, message.message_id,
           {{"Reason", ss.str()}});
@@ -721,10 +725,11 @@ void PushMessagingServiceImpl::DidHandleMessage(
   if (app_identifier.is_null() || !did_show_generic_notification)
     return;
 
+  url::Origin origin = url::Origin::Create(app_identifier.origin());
   if (auto* devtools_context = GetDevToolsContext(app_identifier.origin())) {
     devtools_context->LogBackgroundServiceEvent(
         app_identifier.service_worker_registration_id(),
-        url::Origin::Create(app_identifier.origin()),
+        blink::StorageKey(origin),
         content::DevToolsBackgroundService::kPushMessaging,
         "Generic notification shown" /* event_name */, push_message_id,
         {} /* event_metadata */);
@@ -1348,7 +1353,7 @@ void PushMessagingServiceImpl::DidDeleteID(const std::string& app_id,
   // |app_id_when_instance_id|, since it calls
   // InstanceIDDriver::RemoveInstanceID which deletes the InstanceID itself.
   // Calling that immediately would cause a use-after-free in our caller.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PushMessagingServiceImpl::DidUnsubscribe,
                      weak_factory_.GetWeakPtr(), app_id, was_subscribed));

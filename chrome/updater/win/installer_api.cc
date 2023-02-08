@@ -24,9 +24,9 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/enum_traits.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -340,9 +340,8 @@ AppInstallerResult RunApplicationInstaller(
 
   base::LaunchOptions options;
   options.start_hidden = true;
-  options.environment = {
-      {ENV_GOOGLE_UPDATE_IS_MACHINE,
-       app_info.scope == UpdaterScope::kSystem ? L"1" : L"0"}};
+  options.environment = {{ENV_GOOGLE_UPDATE_IS_MACHINE,
+                          IsSystemInstall(app_info.scope) ? L"1" : L"0"}};
 
   auto process = base::LaunchProcess(cmdline, options);
   if (!process.IsValid()) {

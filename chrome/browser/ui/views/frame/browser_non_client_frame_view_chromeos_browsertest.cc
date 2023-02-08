@@ -46,7 +46,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_future.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -428,8 +427,9 @@ IN_PROC_BROWSER_TEST_F(
   ash::SplitViewTestApi().SnapWindow(widget->GetNativeWindow(),
                                      ash::SplitViewTestApi::SnapPosition::LEFT);
 
-  // A point above the window.
-  gfx::Point edge_point(widget->GetWindowBoundsInScreen().width() / 2, -1);
+  // A point above the window, but not in the center horizontally, as a swipe
+  // down from the top center will show the chromeos tablet mode multitask menu.
+  gfx::Point edge_point(100, -1);
 
   ASSERT_FALSE(browser_view->webui_tab_strip()->GetVisible());
   aura::Window* window = widget->GetNativeWindow();
@@ -1057,20 +1057,14 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ContentSettingIcons) {
     bool is_geolocation_icon = view == geolocation_icon;
     EXPECT_EQ(is_geolocation_icon, view->GetVisible());
   }
+  EXPECT_FALSE(geolocation_icon->IsBubbleShowing());
 
   // Press the geolocation button.
-  base::HistogramTester histograms;
   geolocation_icon->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE));
   geolocation_icon->OnKeyReleased(
       ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE));
-
-  histograms.ExpectBucketCount(
-      "HostedAppFrame.ContentSettings.ImagePressed",
-      static_cast<int>(ContentSettingImageModel::ImageType::GEOLOCATION), 1);
-  histograms.ExpectBucketCount(
-      "ContentSettings.ImagePressed",
-      static_cast<int>(ContentSettingImageModel::ImageType::GEOLOCATION), 1);
+  EXPECT_TRUE(geolocation_icon->IsBubbleShowing());
 }
 
 // Regression test for https://crbug.com/839955

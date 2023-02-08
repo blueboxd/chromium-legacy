@@ -156,6 +156,9 @@ ConvertSettingsVisibleFieldTypeForMetrics(ServerFieldType field_type) {
       return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
           kHonorificPrefix;
 
+    case ServerFieldType::COMPANY_NAME:
+      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCompany;
+
     default:
       return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kUndefined;
   }
@@ -903,14 +906,6 @@ void AutofillMetrics::LogCreditCardFillingInfoBarMetric(InfoBarMetric metric) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardFillingInfoBar", metric,
                             NUM_INFO_BAR_METRICS);
-}
-
-// static
-void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
-    CreditCardUploadFeedbackMetric metric) {
-  DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadFeedback", metric,
-                            NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);
 }
 
 // static
@@ -2042,6 +2037,18 @@ void AutofillMetrics::LogFieldFillingStats(
                               filling_stats.Total());
 }
 
+void AutofillMetrics::LogSectioningMetrics(
+    const base::flat_map<Section, size_t>& fields_per_section) {
+  constexpr base::StringPiece kBaseHistogramName = "Autofill.Sectioning.";
+  UMA_HISTOGRAM_COUNTS_100(
+      base::StrCat({kBaseHistogramName, "NumberOfSections"}),
+      fields_per_section.size());
+  for (auto& [_, section_size] : fields_per_section) {
+    UMA_HISTOGRAM_COUNTS_100(
+        base::StrCat({kBaseHistogramName, "FieldsPerSection"}), section_size);
+  }
+}
+
 // static
 void AutofillMetrics::LogServerResponseHasDataForForm(bool has_data) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.ServerResponseHasDataForForm", has_data);
@@ -2063,8 +2070,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
-    const FormInteractionCounts& form_interaction_counts,
-    const autofill_assistant::AutofillAssistantIntent intent) {
+    const FormInteractionCounts& form_interaction_counts) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
                             AUTOFILL_FORM_SUBMITTED_STATE_ENUM_SIZE);
 
@@ -2100,7 +2106,7 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
   }
   form_interactions_ukm_logger->LogFormSubmitted(
       is_for_credit_card, has_upi_vpa_field, form_types, state,
-      form_parsed_timestamp, form_signature, form_interaction_counts, intent);
+      form_parsed_timestamp, form_signature, form_interaction_counts);
 }
 
 // static
@@ -2112,34 +2118,6 @@ void AutofillMetrics::LogAutofillPerfectFilling(bool is_address,
     UMA_HISTOGRAM_BOOLEAN("Autofill.PerfectFilling.CreditCards",
                           perfect_filling);
   }
-}
-
-// static
-void AutofillMetrics::LogNumberOfFramesWithDetectedFields(size_t num_frames) {
-  if (num_frames == 0)
-    return;
-  base::UmaHistogramCounts100(
-      "Autofill.Iframes.NumberOfFramesWithDetectedFields", num_frames);
-}
-
-// static
-void AutofillMetrics::LogNumberOfFramesWithDetectedCreditCardFields(
-    size_t num_frames) {
-  if (num_frames == 0)
-    return;
-  base::UmaHistogramCounts100(
-      "Autofill.Iframes.NumberOfFramesWithDetectedCreditCardFields",
-      num_frames);
-}
-
-// static
-void AutofillMetrics::LogNumberOfFramesWithAutofilledCreditCardFields(
-    size_t num_frames) {
-  if (num_frames == 0)
-    return;
-  base::UmaHistogramCounts100(
-      "Autofill.Iframes.NumberOfFramesWithAutofilledCreditCardFields",
-      num_frames);
 }
 
 AutofillMetrics::CreditCardSeamlessness::CreditCardSeamlessness(
@@ -2433,22 +2411,8 @@ void AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(int index) {
 }
 
 // static
-void AutofillMetrics::LogAutocompleteQuery(bool created) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteQuery", created);
-}
-
-// static
-void AutofillMetrics::LogAutocompleteSuggestions(bool has_suggestions) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteSuggestions", has_suggestions);
-}
-
-// static
 void AutofillMetrics::OnAutocompleteSuggestionsShown() {
   AutofillMetrics::Log(AutocompleteEvent::AUTOCOMPLETE_SUGGESTIONS_SHOWN);
-}
-
-void AutofillMetrics::LogNumberOfAutocompleteEntriesCleanedUp(int nb_entries) {
-  UMA_HISTOGRAM_COUNTS_1000("Autocomplete.Cleanup", nb_entries);
 }
 
 // static
@@ -2734,6 +2698,15 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       .Record(ukm_recorder_);
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::LogSectioningHash(
+    FormSignature form_signature,
+    uint32_t sectioning_signature) {
+  ukm::builders::Autofill_Sectioning(source_id_)
+      .SetFormSignature(HashFormSignature(form_signature))
+      .SetSectioningSignature(sectioning_signature % 1024)
+      .Record(ukm_recorder_);
+}
+
 int64_t AutofillMetrics::FormTypesToBitVector(
     const DenseSet<FormType>& form_types) {
   int64_t form_type_bv = 0;
@@ -2776,8 +2749,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     AutofillFormSubmittedState state,
     const base::TimeTicks& form_parsed_timestamp,
     FormSignature form_signature,
-    const FormInteractionCounts& form_interaction_counts,
-    autofill_assistant::AutofillAssistantIntent intent) {
+    const FormInteractionCounts& form_interaction_counts) {
   if (!CanLog())
     return;
 
@@ -2800,9 +2772,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     builder.SetMillisecondsSinceFormParsed(
         MillisecondsSinceFormParsed(form_parsed_timestamp));
 
-  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
-    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
-
   builder.Record(ukm_recorder_);
 }
 
@@ -2812,7 +2781,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
     bool suggestions_shown,
     bool edited_autofilled_field,
     bool suggestion_filled,
-    autofill_assistant::AutofillAssistantIntent intent,
     const FormInteractionCounts& form_interaction_counts,
     const FormInteractionsFlowId& flow_id) {
   if (!CanLog())
@@ -2826,9 +2794,6 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
       .SetFormElementUserModifications(
           form_interaction_counts.form_element_user_modifications)
       .SetFlowId(flow_id.value());
-
-  if (intent != autofill_assistant::AutofillAssistantIntent::UNDEFINED_INTENT)
-    builder.SetAutofillAssistantIntent(static_cast<int64_t>(intent));
 
   if (suggestions_shown)
     builder.SetFillingAcceptance(suggestion_filled);

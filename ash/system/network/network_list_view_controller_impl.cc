@@ -4,6 +4,9 @@
 
 #include "ash/system/network/network_list_view_controller_impl.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -22,6 +25,8 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
+#include "chromeos/ash/components/network/network_state.h"
+#include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,10 +43,12 @@ using bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
 using bluetooth_config::mojom::BluetoothSystemState;
 using ::chromeos::network_config::NetworkTypeMatchesType;
 using ::chromeos::network_config::StateIsConnected;
+using ::chromeos::network_config::mojom::CrosNetworkConfig;
 using ::chromeos::network_config::mojom::DeviceStateProperties;
 using ::chromeos::network_config::mojom::DeviceStateType;
 using ::chromeos::network_config::mojom::FilterType;
 using ::chromeos::network_config::mojom::GlobalPolicy;
+using ::chromeos::network_config::mojom::ManagedPropertiesPtr;
 using ::chromeos::network_config::mojom::NetworkFilter;
 using ::chromeos::network_config::mojom::NetworkStateProperties;
 using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
@@ -184,7 +191,7 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
 
   // Show a warning that the connection might be monitored if connected to a VPN
   // or if the default network has a proxy installed.
-  index = ShowConnectionWarningIfVpnOrProxy(index);
+  index = ShowConnectionWarningIfNetworkMonitored(index);
 
   // Show Ethernet section first.
   index = CreateItemViewsIfMissingAndReorder(NetworkType::kEthernet, index,
@@ -244,8 +251,42 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
   network_detailed_network_view()->network_list()->ReorderChildView(
       wifi_header_view_, index++);
 
-  index = CreateItemViewsIfMissingAndReorder(NetworkType::kWiFi, index,
-                                             networks, &previous_network_views);
+  // In the revamped view the wifi networks are grouped into known and unknown
+  // groups.
+  if (features::IsQsRevampEnabled()) {
+    std::vector<NetworkStatePropertiesPtr> known_networks;
+    std::vector<NetworkStatePropertiesPtr> unknown_networks;
+    for (NetworkStatePropertiesPtr& network : networks) {
+      const NetworkState* network_state =
+          NetworkHandler::Get()
+              ->network_state_handler()
+              ->GetNetworkStateFromGuid(network->guid);
+      if (network_state && network_state->IsInProfile() &&
+          NetworkTypeMatchesType(network->type, NetworkType::kWiFi)) {
+        known_networks.push_back(std::move(network));
+      } else if (NetworkTypeMatchesType(network->type, NetworkType::kWiFi)) {
+        unknown_networks.push_back(std::move(network));
+      }
+    }
+    if (!known_networks.empty()) {
+      index = CreateWifiGroupHeader(index, /*is_known=*/true);
+      index = CreateItemViewsIfMissingAndReorder(
+          NetworkType::kWiFi, index, known_networks, &previous_network_views);
+    } else {
+      RemoveAndResetViewIfExists(&known_header_);
+    }
+    if (!unknown_networks.empty()) {
+      index = CreateWifiGroupHeader(index, /*is_known=*/false);
+      index = CreateItemViewsIfMissingAndReorder(
+          NetworkType::kWiFi, index, unknown_networks, &previous_network_views);
+    } else {
+      RemoveAndResetViewIfExists(&unknown_header_);
+    }
+  } else {
+    index = CreateItemViewsIfMissingAndReorder(
+        NetworkType::kWiFi, index, networks, &previous_network_views);
+  }
+
   if (wifi_status_message_) {
     network_detailed_network_view()->network_list()->ReorderChildView(
         wifi_status_message_, index++);
@@ -268,7 +309,7 @@ void NetworkListViewControllerImpl::UpdateNetworkTypeExistence(
     const std::vector<NetworkStatePropertiesPtr>& networks) {
   has_mobile_networks_ = false;
   has_wifi_networks_ = false;
-  is_vpn_connected_ = false;
+  connected_vpn_guid_ = std::string();
 
   for (auto& network : networks) {
     if (NetworkTypeMatchesType(network->type, NetworkType::kMobile)) {
@@ -277,7 +318,7 @@ void NetworkListViewControllerImpl::UpdateNetworkTypeExistence(
       has_wifi_networks_ = true;
     } else if (NetworkTypeMatchesType(network->type, NetworkType::kVPN) &&
                StateIsConnected(network->connection_state)) {
-      is_vpn_connected_ = true;
+      connected_vpn_guid_ = network->guid;
     }
   }
 
@@ -291,23 +332,141 @@ void NetworkListViewControllerImpl::UpdateNetworkTypeExistence(
       model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
 }
 
-size_t NetworkListViewControllerImpl::ShowConnectionWarningIfVpnOrProxy(
+size_t NetworkListViewControllerImpl::ShowConnectionWarningIfNetworkMonitored(
     size_t index) {
-  const NetworkStateProperties* default_network = model()->default_network();
+  const NetworkStateProperties* default_network = GetDefaultNetwork();
   bool using_proxy =
       default_network && default_network->proxy_mode != ProxyMode::kDirect;
+  bool dns_queries_monitored =
+      default_network && default_network->dns_queries_monitored;
 
-  if (is_vpn_connected_ || using_proxy) {
+  if (!connected_vpn_guid_.empty() || using_proxy || dns_queries_monitored) {
     if (!connection_warning_)
-      ShowConnectionWarning();
+      ShowConnectionWarning(/*show_managed_icon=*/dns_queries_monitored);
+
+    if (!dns_queries_monitored)
+      MaybeShowConnectionWarningManagedIcon(using_proxy);
 
     network_detailed_network_view()->network_list()->ReorderChildView(
         connection_warning_, index++);
-  } else if (!is_vpn_connected_ && !using_proxy) {
+  } else if (connected_vpn_guid_.empty() && !using_proxy) {
     RemoveAndResetViewIfExists(&connection_warning_);
   }
 
   return index;
+}
+
+void NetworkListViewControllerImpl::SetDefaultNetworkForTesting(
+    NetworkStatePropertiesPtr default_network) {
+  default_network_for_testing_ = std::move(default_network);
+}
+
+void NetworkListViewControllerImpl::SetManagedNetworkPropertiesForTesting(
+    ManagedPropertiesPtr managed_properties) {
+  managed_network_properties_for_testing_ = std::move(managed_properties);
+}
+
+void NetworkListViewControllerImpl::MaybeShowConnectionWarningManagedIcon(
+    bool using_proxy) {
+  is_proxy_managed_.reset();
+  is_vpn_managed_.reset();
+
+  // If the proxy is set, check if it's a managed setting.
+  const NetworkStateProperties* default_network = GetDefaultNetwork();
+  if (using_proxy && default_network) {
+    GetManagedProperties(
+        default_network->guid,
+        base::BindOnce(
+            &NetworkListViewControllerImpl::OnGetManagedPropertiesResult,
+            weak_ptr_factory_.GetWeakPtr(), default_network->guid));
+  } else {
+    is_proxy_managed_ = false;
+  }
+
+  // If the vpn is set, check if it's a managed setting.
+  if (!connected_vpn_guid_.empty()) {
+    GetManagedProperties(
+        connected_vpn_guid_,
+        base::BindOnce(
+            &NetworkListViewControllerImpl::OnGetManagedPropertiesResult,
+            weak_ptr_factory_.GetWeakPtr(), connected_vpn_guid_));
+  } else {
+    is_vpn_managed_ = false;
+  }
+}
+
+void NetworkListViewControllerImpl::OnGetManagedPropertiesResult(
+    const std::string& guid,
+    ManagedPropertiesPtr properties) {
+  // Check if the proxy is managed.
+  const NetworkStateProperties* default_network = GetDefaultNetwork();
+  if (default_network && default_network->guid == guid) {
+    is_proxy_managed_ =
+        properties && properties->proxy_settings &&
+        properties->proxy_settings->type->policy_source !=
+            chromeos::network_config::mojom::PolicySource::kNone;
+  }
+
+  // Check if the VPN is managed.
+  if (guid == connected_vpn_guid_) {
+    // TODO(b/261009968): Add check for managed WireGuard settings.
+    is_vpn_managed_ =
+        properties && properties->type_properties->is_vpn() &&
+        properties->type_properties->get_vpn()->host &&
+        properties->type_properties->get_vpn()->host->policy_source !=
+            chromeos::network_config::mojom::PolicySource::kNone;
+  }
+
+  bool setManagedIcon = is_proxy_managed_.has_value() &&
+                        is_vpn_managed_.has_value() &&
+                        (is_proxy_managed_.value() || is_vpn_managed_.value());
+
+  if (setManagedIcon) {
+    SetConnectionWarningIcon(connection_warning_, /*use_managed_icon=*/true);
+  }
+}
+
+void NetworkListViewControllerImpl::SetConnectionWarningIcon(
+    TriView* parent,
+    bool use_managed_icon) {
+  DCHECK(parent) << "The connection warning parent view should not be null";
+
+  // Remove the previous icon if set.
+  RemoveAndResetViewIfExists(&connection_warning_icon_);
+
+  // Set 'info' icon on left side.
+  std::unique_ptr<views::ImageView> image_view = base::WrapUnique(
+      TrayPopupUtils::CreateMainImageView(/*use_wide_layout=*/false));
+  image_view->SetImage(gfx::CreateVectorIcon(
+      use_managed_icon ? kSystemTrayManagedIcon : kSystemMenuInfoIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary)));
+  image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  image_view->SetID(static_cast<int>(
+      NetworkListViewControllerViewChildId::kConnectionWarningIcon));
+  connection_warning_icon_ = image_view.get();
+  parent->AddView(TriView::Container::START, image_view.release());
+}
+
+const NetworkStateProperties*
+NetworkListViewControllerImpl::GetDefaultNetwork() {
+  if (default_network_for_testing_)
+    return default_network_for_testing_.get();
+  return model()->default_network();
+}
+
+void NetworkListViewControllerImpl::GetManagedProperties(
+    const std::string& guid,
+    CrosNetworkConfig::GetManagedPropertiesCallback callback) {
+  if (managed_network_properties_for_testing_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       managed_network_properties_for_testing_.Clone()));
+    return;
+  }
+  model()->cros_network_config()->GetManagedProperties(guid,
+                                                       std::move(callback));
 }
 
 bool NetworkListViewControllerImpl::ShouldMobileDataSectionBeShown() {
@@ -365,6 +524,42 @@ size_t NetworkListViewControllerImpl::CreateSeparatorIfMissingAndReorder(
   *separator_view =
       network_detailed_network_view()->network_list()->AddChildViewAt(
           std::move(separator), index++);
+  return index;
+}
+
+size_t NetworkListViewControllerImpl::CreateWifiGroupHeader(
+    size_t index,
+    const bool is_known) {
+  DCHECK(index);
+
+  // If the headers are already created, reorder the child views and return.
+  if (is_known && known_header_) {
+    network_detailed_network_view()->network_list()->ReorderChildView(
+        known_header_, index++);
+    return index;
+  }
+  if (!is_known && unknown_header_) {
+    network_detailed_network_view()->network_list()->ReorderChildView(
+        unknown_header_, index++);
+    return index;
+  }
+
+  auto header = std::make_unique<views::Label>();
+  header->SetText(l10n_util::GetStringUTF16(
+      is_known ? IDS_ASH_QUICK_SETTINGS_KNOWN_NETWORKS
+               : IDS_ASH_QUICK_SETTINGS_UNKNOWN_NETWORKS));
+  header->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_TO_HEAD);
+
+  if (is_known) {
+    known_header_ =
+        network_detailed_network_view()->network_list()->AddChildViewAt(
+            std::move(header), index++);
+    return index;
+  }
+
+  unknown_header_ =
+      network_detailed_network_view()->network_list()->AddChildViewAt(
+          std::move(header), index++);
   return index;
 }
 
@@ -598,7 +793,6 @@ size_t NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
     network_view->UpdateViewForNetwork(network);
     network_detailed_network_view()->network_list()->ReorderChildView(
         network_view, index);
-    network_view->SetEnabled(!IsNetworkDisabled(network));
 
     // Only emit ethernet metric each time we show Ethernet section
     // for the first time. We use |has_reordered_a_network| to determine
@@ -615,21 +809,15 @@ size_t NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
   return index;
 }
 
-void NetworkListViewControllerImpl::ShowConnectionWarning() {
+void NetworkListViewControllerImpl::ShowConnectionWarning(
+    bool show_managed_icon) {
   // Set up layout and apply sticky row property.
   std::unique_ptr<TriView> connection_warning(
-      TrayPopupUtils::CreateDefaultRowView());
+      TrayPopupUtils::CreateDefaultRowView(/*use_wide_layout=*/false));
   TrayPopupUtils::ConfigureAsStickyHeader(connection_warning.get());
 
-  // Set 'info' icon on left side.
-  std::unique_ptr<views::ImageView> image_view =
-      base::WrapUnique(TrayPopupUtils::CreateMainImageView());
-  image_view->SetImage(gfx::CreateVectorIcon(
-      kSystemMenuInfoIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary)));
-  image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  connection_warning->AddView(TriView::Container::START, std::move(image_view));
+  SetConnectionWarningIcon(connection_warning.get(),
+                           /*use_managed_icon=*/show_managed_icon);
 
   // Set message label in middle of row.
   std::unique_ptr<views::Label> label =

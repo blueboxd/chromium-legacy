@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
@@ -29,10 +28,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 
-using base::DictionaryValue;
-using base::ListValue;
 using base::Value;
 using content::WebContents;
 using zoom::ZoomController;
@@ -47,9 +46,9 @@ bool WillDispatchTabUpdatedEvent(
     content::BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
-    std::unique_ptr<base::Value::List>* event_args_out,
-    mojom::EventFilteringInfoPtr* event_filtering_info_out) {
+    const base::Value::Dict* listener_filter,
+    absl::optional<base::Value::List>& event_args_out,
+    mojom::EventFilteringInfoPtr& event_filtering_info_out) {
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
       ExtensionTabUtil::GetScrubTabBehavior(extension, target_context,
                                             contents);
@@ -64,10 +63,10 @@ bool WillDispatchTabUpdatedEvent(
       changed_properties.Set(property, value->Clone());
   }
 
-  *event_args_out = std::make_unique<base::Value::List>();
-  (*event_args_out)->Append(ExtensionTabUtil::GetTabId(contents));
-  (*event_args_out)->Append(std::move(changed_properties));
-  (*event_args_out)->Append(std::move(tab_value));
+  event_args_out.emplace();
+  event_args_out->Append(ExtensionTabUtil::GetTabId(contents));
+  event_args_out->Append(std::move(changed_properties));
+  event_args_out->Append(std::move(tab_value));
   return true;
 }
 
@@ -77,9 +76,9 @@ bool WillDispatchTabCreatedEvent(
     content::BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
-    std::unique_ptr<base::Value::List>* event_args_out,
-    mojom::EventFilteringInfoPtr* event_filtering_info_out) {
+    const base::Value::Dict* listener_filter,
+    absl::optional<base::Value::List>& event_args_out,
+    mojom::EventFilteringInfoPtr& event_filtering_info_out) {
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
       ExtensionTabUtil::GetScrubTabBehavior(extension, target_context,
                                             contents);
@@ -89,8 +88,8 @@ bool WillDispatchTabCreatedEvent(
   tab_value.Set(tabs_constants::kSelectedKey, active);
   tab_value.Set(tabs_constants::kActiveKey, active);
 
-  *event_args_out = std::make_unique<base::Value::List>();
-  (*event_args_out)->Append(std::move(tab_value));
+  event_args_out.emplace();
+  event_args_out->Append(std::move(tab_value));
   return true;
 }
 
@@ -445,7 +444,7 @@ void TabsEventRouter::DispatchTabSelectionChanged(
     const ui::ListSelectionModel& old_model) {
   ui::ListSelectionModel::SelectedIndices new_selection =
       tab_strip_model->selection_model().selected_indices();
-  base::ListValue all_tabs;
+  base::Value::List all_tabs;
 
   for (int index : new_selection) {
     WebContents* contents = tab_strip_model->GetWebContentsAt(index);

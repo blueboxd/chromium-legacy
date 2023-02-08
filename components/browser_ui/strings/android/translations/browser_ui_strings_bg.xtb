@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Разрешаване на достъпа на сайтовете до сензорите за движение (препоръчително)</translation>
 <translation id="5050380848339752099">Този сайт е напът да сподели информация с приложение, което не е в режим „инкогнито“.</translation>
 <translation id="5063480226653192405">Употреба</translation>
-<translation id="5082281938627763039">„Бисквитките“ и другите данни за <ph name="FPS_MEMBER" /> и за сайтовете в групата на <ph name="FPS_OWNER" /> ще бъдат изтрити</translation>
 <translation id="5091013926750941408">Мобилен сайт</translation>
 <translation id="509133520954049755">Заявяване на изглед за настолни компютри</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Плъзнете пръст от горната част на екрана и докоснете бутона за връщане назад, за да излезете от режима на цял екран.</translation>
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5301954838959518834">Добре, разбрах</translation>
-<translation id="5313967007315987356">Добавяне на сайт</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
 <translation id="534295439873310000">Устройства с NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Екранът ви се споделя</translation>
 <translation id="5922967540311291836">Блокиране на „бисквитките“ на трети страни:</translation>
 <translation id="5939518447894949180">Нулиране</translation>
+<translation id="5968921426641056619">Въведете уеб адрес</translation>
 <translation id="5975083100439434680">Намаляване на мащаба</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Контролирайте достъпа на този сайт до устройството ви</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">Избрани: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Достъпът до <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /> е разрешен</translation>
 <translation id="7302486331832100261">Обикновено блокирате известията. За да разрешите, докоснете „Подробности“.</translation>
+<translation id="7366415735885268578">Добавяне на сайт</translation>
 <translation id="7383715096023715447">Настройки за <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Първо ще се извежда запитване</translation>
 <translation id="7423538860840206698">Достъпът за четене до буферната памет е блокиран</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">На този сайт се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="8394832520002899662">Докоснете, за да се върнете към сайта</translation>
 <translation id="8409345997656833551">Получаване на известие, когато дадена статия може да бъде показана в опростен изглед</translation>
+<translation id="8423565414844018592">Мащабирането на текста е зададено на <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8441146129660941386">Придвижване назад</translation>
 <translation id="8444433999583714703">За да разрешите на <ph name="APP_NAME" /> да осъществява достъп до местоположението ви, то трябва да бъде включено и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Блокиране на сайтовете, така че да не могат да четат и променят информация на устройства с NFC (препоръчително)</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блокиране на „бисквитките“ за конкретен сайт.</translation>
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Забравяне</translation>

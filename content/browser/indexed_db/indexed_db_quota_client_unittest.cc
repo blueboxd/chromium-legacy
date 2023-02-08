@@ -15,13 +15,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/mojom/storage_usage_info.mojom.h"
@@ -74,15 +74,16 @@ class IndexedDBQuotaClientTest : public testing::Test,
     CreateTempDir();
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*in_memory=*/false, temp_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
+        special_storage_policy_);
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_->proxy(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*file_system_access_context=*/mojo::NullRemote(),
-        base::SequencedTaskRunnerHandle::Get(),
-        base::SequencedTaskRunnerHandle::Get());
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        base::SequencedTaskRunner::GetCurrentDefault());
     base::RunLoop().RunUntilIdle();
     SetupTempDir();
   }
@@ -145,6 +146,11 @@ class IndexedDBQuotaClientTest : public testing::Test,
   void AddFakeIndexedDB(const StorageKey& storage_key, int size) {
     // Create default bucket for `storage_key`.
     auto bucket = GetOrCreateBucket(storage_key, storage::kDefaultBucketName);
+    AddFakeIndexedDBForBucket(bucket, size);
+  }
+
+  void AddFakeIndexedDBForBucket(const storage::BucketLocator& bucket,
+                                 int size) {
     base::FilePath file_path_storage_key;
     {
       base::test::TestFuture<base::FilePath> future;
@@ -277,6 +283,21 @@ TEST_P(IndexedDBQuotaClientTest, GetBucketUsageMixedParty) {
   }
 }
 
+TEST_P(IndexedDBQuotaClientTest, GetBucketUsageCustom) {
+  IndexedDBQuotaClient client(*idb_context());
+
+  auto bucket_a = GetOrCreateBucket(kStorageKeyFirstPartyA, "inbox");
+  auto bucket_b = GetOrCreateBucket(kStorageKeyFirstPartyB, "drafts");
+  AddFakeIndexedDBForBucket(bucket_a, 6);
+  AddFakeIndexedDBForBucket(bucket_b, 3);
+  EXPECT_EQ(6, GetBucketUsage(client, bucket_a));
+  EXPECT_EQ(3, GetBucketUsage(client, bucket_b));
+
+  AddFakeIndexedDBForBucket(bucket_a, 1000);
+  EXPECT_EQ(1000, GetBucketUsage(client, bucket_a));
+  EXPECT_EQ(3, GetBucketUsage(client, bucket_b));
+}
+
 TEST_P(IndexedDBQuotaClientTest, GetStorageKeysForTypeFirstParty) {
   IndexedDBQuotaClient client(*idb_context());
 
@@ -369,6 +390,23 @@ TEST_P(IndexedDBQuotaClientTest, DeleteBucketMixedParty) {
   }
 }
 
+TEST_P(IndexedDBQuotaClientTest, DeleteBucketCustom) {
+  IndexedDBQuotaClient client(*idb_context());
+
+  auto bucket_a = GetOrCreateBucket(kStorageKeyFirstPartyA, "inbox");
+  auto bucket_b = GetOrCreateBucket(kStorageKeyFirstPartyB, "drafts");
+  AddFakeIndexedDBForBucket(bucket_a, 1000);
+  AddFakeIndexedDBForBucket(bucket_b, 50);
+  EXPECT_EQ(1000, GetBucketUsage(client, bucket_a));
+  EXPECT_EQ(50, GetBucketUsage(client, bucket_b));
+
+  blink::mojom::QuotaStatusCode delete_status =
+      DeleteBucketData(client, bucket_a);
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
+  EXPECT_EQ(0, GetBucketUsage(client, bucket_a));
+  EXPECT_EQ(50, GetBucketUsage(client, bucket_b));
+}
+
 TEST_P(IndexedDBQuotaClientTest, NonDefaultBucketFirstParty) {
   IndexedDBQuotaClient client(*idb_context());
   auto bucket = GetOrCreateBucket(kStorageKeyFirstPartyA, "logs_bucket");
@@ -439,15 +477,16 @@ TEST_P(IndexedDBQuotaClientTest,
 
 TEST_P(IndexedDBQuotaClientTest, IncognitoQuotaFirstParty) {
   auto quota_manager = base::MakeRefCounted<storage::MockQuotaManager>(
-      /*in_memory=*/true, base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
+      /*in_memory=*/true, base::FilePath(),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
       special_storage_policy_);
   auto incognito_idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       base::FilePath(), quota_manager->proxy(),
       base::DefaultClock::GetInstance(),
       /*blob_storage_context=*/mojo::NullRemote(),
       /*file_system_access_context=*/mojo::NullRemote(),
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      base::SequencedTaskRunner::GetCurrentDefault());
   base::RunLoop().RunUntilIdle();
 
   IndexedDBQuotaClient client(*incognito_idb_context.get());
@@ -467,15 +506,16 @@ TEST_P(IndexedDBQuotaClientTest, IncognitoQuotaFirstParty) {
 
 TEST_P(IndexedDBQuotaClientTest, IncognitoQuotaThirdParty) {
   auto quota_manager = base::MakeRefCounted<storage::MockQuotaManager>(
-      /*in_memory=*/true, base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
+      /*in_memory=*/true, base::FilePath(),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
       special_storage_policy_);
   auto incognito_idb_context = base::MakeRefCounted<IndexedDBContextImpl>(
       base::FilePath(), quota_manager->proxy(),
       base::DefaultClock::GetInstance(),
       /*blob_storage_context=*/mojo::NullRemote(),
       /*file_system_access_context=*/mojo::NullRemote(),
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      base::SequencedTaskRunner::GetCurrentDefault());
   base::RunLoop().RunUntilIdle();
 
   IndexedDBQuotaClient client(*incognito_idb_context.get());

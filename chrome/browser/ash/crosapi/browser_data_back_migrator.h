@@ -56,6 +56,8 @@ class BrowserDataBackMigrator {
   // 1. The kForceBrowserDataBackwardMigration debug flag.
   // 2. The LacrosDataBackwardMigrationMode policy.
   // 3. The kLacrosProfileBackwardMigration feature flag.
+  // The policy value is cached at the beginning of the session and not
+  // updated.
   static bool IsBackMigrationEnabled(
       crosapi::browser_util::PolicyInitState policy_init_state);
 
@@ -70,6 +72,12 @@ class BrowserDataBackMigrator {
       crosapi::browser_util::PolicyInitState policy_init_state);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest, PreMigrationCleanUp);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest,
+                           MergeCommonExtensionsDataFiles);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
+                           MergeCommonIndexedDB);
+
   // A list of all the possible results of migration, including success and all
   // failure types in each step of the migration.
   //
@@ -198,11 +206,11 @@ class BrowserDataBackMigrator {
 
   // Merge IndexedDB objects for extensions that are both in Ash and Lacros.
   // If both exists, delete Ash version and move Lacros version to its place.
-  // If only Ash exists, do not delete it.
+  // If only Ash exists, do not delete it, i.e. do nothing.
   // If only Lacros exists, move to the expected Ash location.
   // If neither exists, do nothing.
-  static bool MergeCommonIndexedDB(const base::FilePath& ash_indexed_db_dir,
-                                   const base::FilePath& lacros_indexed_db_dir,
+  static bool MergeCommonIndexedDB(const base::FilePath& ash_profile_dir,
+                                   const base::FilePath& lacros_profile_dir,
                                    const char* extension_id);
 
   // Merge Preferences.

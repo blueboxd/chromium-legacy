@@ -617,7 +617,7 @@ class ProfileNetworkContextTrustTokensBrowsertest
     feature_list_.InitWithFeaturesAndParameters(
         // Enabled Features:
         {{privacy_sandbox::kPrivacySandboxSettings3, {}},
-         {network::features::kTrustTokens,
+         {network::features::kPrivateStateTokens,
           {{field_trial_param.name,
             field_trial_param.GetName(
                 network::features::TrustTokenOriginTrialSpec::
@@ -687,7 +687,10 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextTrustTokensBrowsertest,
       PrivacySandboxSettingsFactory::GetForProfile(browser()->profile());
   auto privacy_sandbox_delegate = std::make_unique<
       privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
-  privacy_sandbox_delegate->SetUpDefaultResponse(/*restricted=*/false);
+  privacy_sandbox_delegate->SetUpIsPrivacySandboxRestrictedResponse(
+      /*restricted=*/false);
+  privacy_sandbox_delegate->SetUpIsIncognitoProfileResponse(
+      /*incognito=*/browser()->profile()->IsIncognitoProfile());
   privacy_sandbox_settings->SetDelegateForTesting(
       std::move(privacy_sandbox_delegate));
   privacy_sandbox_settings->SetPrivacySandboxEnabled(true);
@@ -707,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextTrustTokensBrowsertest,
   (async () => {
     try {
       await fetch("/issue", {trustToken: {type: 'token-request'}});
-      return await document.hasTrustToken($1);
+      return await document.hasPrivateStateToken($1);
     } catch {
       return false;
     }

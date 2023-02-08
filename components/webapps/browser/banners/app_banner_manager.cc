@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
+#include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
@@ -263,9 +264,12 @@ bool AppBannerManager::ShouldIgnore(content::RenderFrameHost* render_frame_host,
   if (render_frame_host && !render_frame_host->IsInPrimaryMainFrame())
     return true;
 
-  // There is never a need to trigger a banner for a WebUI page.
-  if (content::HasWebUIScheme(url))
+  // There is never a need to trigger a banner for a WebUI page, except
+  // for PasswordManager WebUI.
+  if (content::HasWebUIScheme(url) &&
+      (url.host() != password_manager::kChromeUIPasswordManagerHost)) {
     return true;
+  }
 
   return false;
 }
@@ -380,6 +384,23 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   manifest_url_ = *(data.manifest_url);
   manifest_ = data.manifest->Clone();
   manifest_id_ = blink::GetIdFromManifest(manifest());
+
+  // Skip checks for PasswordManager WebUI page.
+  if (content::HasWebUIScheme(validated_url_) &&
+      (validated_url_.host() ==
+       password_manager::kChromeUIPasswordManagerHost)) {
+    if (IsWebAppConsideredInstalled()) {
+      TrackDisplayEvent(DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+      SetInstallableWebAppCheckResult(
+          InstallableWebAppCheckResult::kNo_AlreadyInstalled);
+      Stop(ALREADY_INSTALLED);
+    } else {
+      SetInstallableWebAppCheckResult(
+          InstallableWebAppCheckResult::kYes_ByUserRequest);
+      Stop(NO_ERROR_DETECTED);
+    }
+    return;
+  }
 
   PerformInstallableChecks();
 }
@@ -710,30 +731,11 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
     return;
   }
 
-  // If the page gets stored in the back-forward cache we will not trigger the
-  // pipeline again when navigating back (DidFinishLoad will not trigger). So
-  // only allow the page to enter the cache if we know for sure that no
-  // installation is needed. Note: this check must happen before calling
-  // Terminate as it might set the installable_web_app_check_result_ to kNo.
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheAppBanner)) {
-    if (installable_web_app_check_result_ !=
-            InstallableWebAppCheckResult::kNo &&
-        state_ != State::INACTIVE) {
-      content::BackForwardCache::DisableForRenderFrameHost(
-          handle->GetPreviousRenderFrameHostId(),
-          back_forward_cache::DisabledReason(
-              back_forward_cache::DisabledReasonId::kAppBannerManager));
-    }
-  }
-
   if (state_ != State::COMPLETE && state_ != State::INACTIVE)
     Terminate();
   ResetCurrentPageData();
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kBackForwardCacheAppBanner) &&
-      handle->IsServedFromBackForwardCache()) {
+  if (handle->IsServedFromBackForwardCache()) {
     UpdateState(State::INACTIVE);
     RequestAppBanner(validated_url_);
   }
@@ -1024,17 +1026,6 @@ void AppBannerManager::ShowBanner() {
 
   install_source =
       status_reporter_->GetInstallSource(contents, InstallTrigger::API);
-
-  // If this is the first time that we are showing the banner for this site,
-  // record how long it's been since the first visit.
-  absl::optional<base::Time> did_show_time =
-      AppBannerSettingsHelper::GetSingleBannerEvent(
-          web_contents(), validated_url_, GetAppIdentifier(),
-          AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW);
-  if (did_show_time && did_show_time->is_null()) {
-    AppBannerSettingsHelper::RecordMinutesFromFirstVisitToShow(
-        web_contents(), validated_url_, GetAppIdentifier(), GetCurrentTime());
-  }
 
   DCHECK(!manifest_url_.is_empty());
   DCHECK(!blink::IsEmptyManifest(manifest()));

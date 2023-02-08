@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_MEDIA_SESSION_CONTROLLER_H_
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/common/content_export.h"
@@ -66,6 +65,7 @@ class CONTENT_EXPORT MediaSessionController
   void OnSetAudioSinkId(int player_id,
                         const std::string& raw_device_id) override;
   void OnSetMute(int player_id, bool mute) override;
+  void OnRequestMediaRemoting(int player_id) override;
   RenderFrameHost* render_frame_host() const override;
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override;

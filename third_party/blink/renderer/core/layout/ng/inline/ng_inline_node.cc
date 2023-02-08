@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
@@ -119,7 +120,7 @@ class ReusingTextShaper final {
 
     const Vector<const ShapeResult*> reusable_shape_results =
         CollectReusableShapeResults(start_offset, end_offset,
-                                    start_item.Direction());
+                                    font.PrimaryFont(), start_item.Direction());
     if (reusable_shape_results.empty())
       return Reshape(start_item, font, start_offset, end_offset);
 
@@ -164,6 +165,7 @@ class ReusingTextShaper final {
   Vector<const ShapeResult*> CollectReusableShapeResults(
       unsigned start_offset,
       unsigned end_offset,
+      const SimpleFontData* primary_font,
       TextDirection direction) {
     DCHECK_LT(start_offset, end_offset);
     Vector<const ShapeResult*> shape_results;
@@ -179,11 +181,14 @@ class ReusingTextShaper final {
         break;
       if (item->EndOffset() < start_offset)
         continue;
-      if (!item->TextShapeResult() || item->Direction() != direction)
+      const ShapeResult* const shape_result = item->TextShapeResult();
+      if (!shape_result || item->Direction() != direction)
         continue;
-      if (item->TextShapeResult()->IsAppliedSpacing())
+      if (shape_result->PrimaryFont() != primary_font)
         continue;
-      shape_results.push_back(item->TextShapeResult());
+      if (shape_result->IsAppliedSpacing())
+        continue;
+      shape_results.push_back(shape_result);
     }
     return shape_results;
   }
@@ -1808,10 +1813,22 @@ static LayoutUnit ComputeContentSize(
         ForceLineBreak(line_info);
     }
   };
+
+  if (UNLIKELY(node.IsInitialLetterBox())) {
+    LayoutUnit inline_size = LayoutUnit();
+    do {
+      NGLineInfo line_info;
+      line_breaker.NextLine(&line_info);
+      if (line_info.Results().empty())
+        break;
+      inline_size =
+          std::max(CalculateInitialLetterBoxInlineSize(line_info), inline_size);
+    } while (!line_breaker.IsFinished());
+    return inline_size;
+  }
+
   FloatsMaxSize floats_max_size(float_input);
-  // Because `NGLineBreaker` has a special logic for initial letter text,
-  // `ComputeContentSize()` for `kMaxContent` doesn't work well.
-  bool can_compute_max_size_from_min_size = !node.IsInitialLetterBox();
+  bool can_compute_max_size_from_min_size = true;
   MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
                                             &floats_max_size);
 

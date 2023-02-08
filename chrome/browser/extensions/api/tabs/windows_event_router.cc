@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/mojom/event_dispatcher.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using content::BrowserContext;
 
@@ -36,15 +37,16 @@ namespace {
 
 bool ControllerVisibleToListener(WindowController* window_controller,
                                  const Extension* extension,
-                                 const base::DictionaryValue* listener_filter) {
+                                 const base::Value::Dict* listener_filter) {
   if (!window_controller)
     return false;
 
   // If there is no filter the visibility is based on the extension.
-  const base::ListValue* filter_value = nullptr;
-  if (listener_filter)
-    listener_filter->GetList(extensions::tabs_constants::kWindowTypesKey,
-                             &filter_value);
+  const base::Value::List* filter_value = nullptr;
+  if (listener_filter) {
+    filter_value =
+        listener_filter->FindList(extensions::tabs_constants::kWindowTypesKey);
+  }
 
   // TODO(https://crbug.com/807313): Remove this.
   bool allow_dev_tools_windows = !!filter_value;
@@ -63,12 +65,12 @@ bool WillDispatchWindowEvent(
     BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
-    std::unique_ptr<base::Value::List>* event_args_out,
-    mojom::EventFilteringInfoPtr* event_filtering_info_out) {
+    const base::Value::Dict* listener_filter,
+    absl::optional<base::Value::List>& event_args_out,
+    mojom::EventFilteringInfoPtr& event_filtering_info_out) {
   bool has_filter =
       listener_filter &&
-      listener_filter->FindKey(extensions::tabs_constants::kWindowTypesKey);
+      listener_filter->contains(extensions::tabs_constants::kWindowTypesKey);
   // TODO(https://crbug.com/807313): Remove this.
   bool allow_dev_tools_windows = has_filter;
   if (!window_controller->IsVisibleToTabsAPIForExtension(
@@ -76,15 +78,15 @@ bool WillDispatchWindowEvent(
     return false;
   }
 
-  *event_filtering_info_out = mojom::EventFilteringInfo::New();
+  event_filtering_info_out = mojom::EventFilteringInfo::New();
   // Only set the window type if the listener has set a filter.
   // Otherwise we set the window visibility relative to the extension.
   if (has_filter) {
-    (*event_filtering_info_out)->window_type =
+    event_filtering_info_out->window_type =
         window_controller->GetWindowTypeText();
   } else {
-    (*event_filtering_info_out)->has_window_exposed_by_default = true;
-    (*event_filtering_info_out)->window_exposed_by_default = true;
+    event_filtering_info_out->has_window_exposed_by_default = true;
+    event_filtering_info_out->window_exposed_by_default = true;
   }
   return true;
 }
@@ -94,14 +96,14 @@ bool WillDispatchWindowFocusedEvent(
     BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
-    std::unique_ptr<base::Value::List>* event_args_out,
-    mojom::EventFilteringInfoPtr* event_filtering_info_out) {
+    const base::Value::Dict* listener_filter,
+    absl::optional<base::Value::List>& event_args_out,
+    mojom::EventFilteringInfoPtr& event_filtering_info_out) {
   int window_id = extension_misc::kUnknownWindowId;
   Profile* new_active_context = nullptr;
   bool has_filter =
       listener_filter &&
-      listener_filter->FindKey(extensions::tabs_constants::kWindowTypesKey);
+      listener_filter->contains(extensions::tabs_constants::kWindowTypesKey);
 
   // We might not have a window controller if the focus moves away
   // from chromium's windows.
@@ -110,18 +112,18 @@ bool WillDispatchWindowFocusedEvent(
     new_active_context = window_controller->profile();
   }
 
-  *event_filtering_info_out = mojom::EventFilteringInfo::New();
+  event_filtering_info_out = mojom::EventFilteringInfo::New();
   // Only set the window type if the listener has set a filter,
   // otherwise set the visibility to true (if the window is not
   // supposed to be visible by the extension, we will clear out the
   // window id later).
   if (has_filter) {
-    (*event_filtering_info_out)->window_type =
+    event_filtering_info_out->window_type =
         window_controller ? window_controller->GetWindowTypeText()
                           : extensions::tabs_constants::kWindowTypeValueNormal;
   } else {
-    (*event_filtering_info_out)->has_window_exposed_by_default = true;
-    (*event_filtering_info_out)->window_exposed_by_default = true;
+    event_filtering_info_out->has_window_exposed_by_default = true;
+    event_filtering_info_out->window_exposed_by_default = true;
   }
 
   // When switching between windows in the default and incognito profiles,
@@ -136,11 +138,11 @@ bool WillDispatchWindowFocusedEvent(
   bool visible_to_listener = ControllerVisibleToListener(
       window_controller, extension, listener_filter);
 
-  *event_args_out = std::make_unique<base::Value::List>();
+  event_args_out.emplace();
   if (cant_cross_incognito || !visible_to_listener) {
-    (*event_args_out)->Append(extension_misc::kUnknownWindowId);
+    event_args_out->Append(extension_misc::kUnknownWindowId);
   } else {
-    (*event_args_out)->Append(window_id);
+    event_args_out->Append(window_id);
   }
   return true;
 }

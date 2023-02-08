@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//base/allocator/partition_allocator/partition_alloc.gni")
-import("//build/config/chromecast_build.gni")
-import("//build/config/sanitizers/sanitizers.gni")
 import("//build_overrides/partition_alloc.gni")
 
 if (is_ios) {
@@ -32,53 +30,23 @@ if (is_win && use_allocator_shim) {
          "The allocator shim doesn't work for the component build on Windows.")
 }
 
-# |use_backup_ref_ptr| and |use_mte_checked_ptr|, if true, compile
-# BackupRefPtrImpl and MTECheckedPtrImp, respectively, as the implementation of
-# raw_ptr<T>. They're mutually exclusive.
-#
-# To enable them, we need:
-# - PartitionAlloc to be compiled in to begin with,
-# - BackupRefPtr/MTECheckedPtr support to be compiled into PartitionAlloc,
-# - PartitionAlloc-Everywhere to be enabled(*),
-# - not be built for NaCl, as it doesn't use PartitionAlloc-Everywhere (but is
-#   somehow part of the build process with all other non-NaCl goods); moreover,
-#   MTECheckedPtr works only with 64-bit pointers, which NaCl doesn't have.
-#
-# Note that making BackupRefPtrImpl the implementation of raw_ptr<T> doesn't
-# necessarily enable BackupRefPtr (BRP) protection. One has to additionally
-# enable PartitionAllocBackupRefPtr feature flag.
-#
-# (*) In theory, BRP/MTECheckedPtr will work just fine without
-#     PartitionAlloc-Everywhere, but their scope would be limited to partitions
-#     that are invoked explicitly (not via malloc). These are only Blink
-#     partition, where we currently don't even use raw_ptr<T>.
+# Chromium-specific asserts. External embedders _may_ elect to use these
+# features even without PA-E.
 if (!use_partition_alloc_as_malloc) {
-  # Chromium-specific asserts. External embedders _may_ elect to use
-  # specific `raw_ptr<T>` implementations even without PA-E.
+  # In theory, BackupRefPtr/MTECheckedPtr will work just fine without
+  # PartitionAlloc-Everywhere, but their scope would be limited to partitions
+  # that are invoked explicitly (not via malloc). These are only Blink
+  # partition, where we currently don't even use raw_ptr<T>.
   assert(!enable_backup_ref_ptr_support,
          "Chromium does not use BRP without PA-E")
   assert(!enable_mte_checked_ptr_support,
          "Chromium does not use MTECheckedPtr without PA-E")
+
+  # Pointer compression works only if all pointers are guaranteed to be
+  # allocated by PA (in one of its core pools, to be precise). In theory,
+  # this could be useful with partitions that are invoked explicitly. In
+  # practice, the pointers we have in mind for compression (scoped_refptr<>,
+  # unique_ptr<>) require PA-E.
+  assert(!enable_pointer_compression_support,
+         "Pointer compressions likely doesn't make sense without PA-E")
 }
-use_backup_ref_ptr = use_partition_alloc && enable_backup_ref_ptr_support &&
-                     use_partition_alloc_as_malloc && !is_nacl
-use_mte_checked_ptr = use_partition_alloc && enable_mte_checked_ptr_support &&
-                      use_partition_alloc_as_malloc && !is_nacl
-
-assert(!(use_backup_ref_ptr && use_mte_checked_ptr),
-       "MTECheckedPtr conflicts with BRP.")
-
-declare_args() {
-  # The supported platforms are supposed to match `_is_brp_supported`, but we
-  # enable the feature on Linux early because it's most widely used for security
-  # research
-  use_asan_backup_ref_ptr = is_asan && (is_win || is_android || is_linux)
-}
-
-# BackupRefPtr and AsanBackupRefPtr are mutually exclusive variants of raw_ptr.
-assert(
-    !use_backup_ref_ptr || !use_asan_backup_ref_ptr,
-    "Both BackupRefPtr and AsanBackupRefPtr can't be enabled at the same time")
-
-assert(!use_asan_backup_ref_ptr || is_asan,
-       "AsanBackupRefPtr requires AddressSanitizer")

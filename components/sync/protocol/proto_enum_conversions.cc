@@ -160,6 +160,30 @@ const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type) {
 }
 
 const char* ProtoEnumToString(
+    sync_pb::PowerBookmarkSpecifics::PowerType power_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::PowerBookmarkSpecifics, PowerType,
+                     POWER_TYPE_UNSPECIFIED, POWER_TYPE_NOTE);
+  switch (power_type) {
+    ENUM_CASE(sync_pb::PowerBookmarkSpecifics, POWER_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::PowerBookmarkSpecifics, POWER_TYPE_MOCK);
+    ENUM_CASE(sync_pb::PowerBookmarkSpecifics, POWER_TYPE_NOTE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(sync_pb::NoteEntity::TargetType target_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::NoteEntity, TargetType, TARGET_TYPE_UNSPECIFIED,
+                     TARGET_TYPE_PAGE);
+  switch (target_type) {
+    ENUM_CASE(sync_pb::NoteEntity, TARGET_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::NoteEntity, TARGET_TYPE_PAGE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::ReadingListSpecifics::ReadingListEntryStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::ReadingListSpecifics, ReadingListEntryStatus,
                      UNREAD, UNSEEN);
@@ -272,6 +296,24 @@ const char* ProtoEnumToString(sync_pb::SyncEnums::DeviceType device_type) {
     ENUM_CASE(sync_pb::SyncEnums, TYPE_OTHER);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_PHONE);
     ENUM_CASE(sync_pb::SyncEnums, TYPE_TABLET);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(sync_pb::SyncEnums::OsType os_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, OsType, OS_TYPE_UNSPECIFIED,
+                     OS_TYPE_FUCHSIA);
+  switch (os_type) {
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_WINDOWS);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_MAC);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_LINUX);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_CHROME_OS_ASH);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_ANDROID);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_IOS);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_CHROME_OS_LACROS);
+    ENUM_CASE(sync_pb::SyncEnums, OS_TYPE_FUCHSIA);
   }
   NOTREACHED();
   return "";
@@ -745,7 +787,7 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::WorkspaceDeskSpecifics::WindowState window_state) {
   ASSERT_ENUM_BOUNDS(sync_pb::WorkspaceDeskSpecifics, WindowState,
-                     UNKNOWN_WINDOW_STATE, SECONDARY_SNAPPED);
+                     UNKNOWN_WINDOW_STATE, FLOATED);
   switch (window_state) {
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, UNKNOWN_WINDOW_STATE);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, NORMAL);
@@ -754,6 +796,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, FULLSCREEN);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, PRIMARY_SNAPPED);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, SECONDARY_SNAPPED);
+    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, FLOATED);
   }
   NOTREACHED();
   return "";
@@ -817,11 +860,12 @@ const char* ProtoEnumToString(
 
 const char* ProtoEnumToString(sync_pb::WorkspaceDeskSpecifics::DeskType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::WorkspaceDeskSpecifics, DeskType, UNKNOWN_TYPE,
-                     SAVE_AND_RECALL);
+                     FLOATING_WORKSPACE);
   switch (type) {
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, UNKNOWN_TYPE);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, TEMPLATE);
     ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, SAVE_AND_RECALL);
+    ENUM_CASE(sync_pb::WorkspaceDeskSpecifics, FLOATING_WORKSPACE);
   }
   NOTREACHED();
   return "";

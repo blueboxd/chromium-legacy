@@ -27,7 +27,6 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/thread_annotations.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -144,7 +143,7 @@ class RenderFrameHostDestructionObserver : public WebContentsObserver {
     }
 
     if (deleted_ && message_loop_runner_->loop_running()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, message_loop_runner_->QuitClosure());
     }
   }
@@ -997,7 +996,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
   RenderFrameHostManager* opener_manager =
       static_cast<WebContentsImpl*>(opener_contents)
-          ->GetRenderManagerForTesting();
+          ->GetPrimaryFrameTree()
+          .root()
+          ->render_manager();
 
   // 1) Open two more windows, one named.  These initially have openers but no
   // reference to each other.  We will later post a message between them.
@@ -1045,7 +1046,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       new_shell2, embedded_test_server()->GetURL("/post_message.html")));
   EXPECT_EQ(orig_site_instance.get(), new_contents->GetSiteInstance());
   RenderFrameHostManager* new_manager =
-      static_cast<WebContentsImpl*>(new_contents)->GetRenderManagerForTesting();
+      static_cast<WebContentsImpl*>(new_contents)
+          ->GetPrimaryFrameTree()
+          .root()
+          ->render_manager();
 
   // We now have three windows.  The opener should have a RenderFrameProxyHost
   // for the new SiteInstanceGroup, but the _blank window should not.
@@ -1158,7 +1162,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
   RenderFrameHostManager* opener_manager =
       static_cast<WebContentsImpl*>(opener_contents)
-          ->GetRenderManagerForTesting();
+          ->GetPrimaryFrameTree()
+          .root()
+          ->render_manager();
 
   // 1) Open a named target=foo window. We will later post a message between the
   // opener and the new window.
@@ -2155,14 +2161,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // navigation.
   WebContents* contents = new_shell->web_contents();
   EXPECT_FALSE(contents->GetController().IsInitialNavigation());
-  // The visible entry should either be null or the entry for the synchronously
-  // committed about:blank, resulting in about:blank in the address bar
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(GURL(url::kAboutBlankURL),
-              contents->GetController().GetVisibleEntry()->GetURL());
-  } else {
-    EXPECT_FALSE(contents->GetController().GetVisibleEntry());
-  }
+  // The visible entry should be the entry for the synchronously committed
+  // about:blank, resulting in about:blank in the address bar.
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            contents->GetController().GetVisibleEntry()->GetURL());
 }
 
 // Crashes under ThreadSanitizer, http://crbug.com/356758.
@@ -3418,9 +3420,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // This should delete the RVH as well. Check this by verifying that there's
   // only one RVH in the frame tree, and it's for the current SiteInstanceGroup,
   // not |site_instance_group_a|.
-  EXPECT_TRUE(root->frame_tree()->GetRenderViewHost(
+  EXPECT_TRUE(root->frame_tree().GetRenderViewHost(
       root->current_frame_host()->GetSiteInstance()->group()));
-  EXPECT_EQ(1u, root->frame_tree()->render_view_host_map_.size());
+  EXPECT_EQ(1u, root->frame_tree().render_view_host_map_.size());
 
   // Go back in the main frame from b.com to a.com. In https://crbug.com/581912,
   // the browser process would crash here because there was no main frame
@@ -3532,22 +3534,27 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* next_rfh =
-      web_contents->GetRenderManagerForTesting()->speculative_frame_host();
+  RenderFrameHostImpl* next_rfh = web_contents->GetPrimaryFrameTree()
+                                      .root()
+                                      ->render_manager()
+                                      ->speculative_frame_host();
   ASSERT_TRUE(next_rfh);
 
   // Navigate to the same new site and verify that we commit in the same RFH.
   GURL cross_site_url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestNavigationObserver navigation_observer(web_contents, 1);
   shell()->LoadURL(cross_site_url2);
-  EXPECT_EQ(
-      next_rfh,
-      web_contents->GetRenderManagerForTesting()->speculative_frame_host());
+  EXPECT_EQ(next_rfh, web_contents->GetPrimaryFrameTree()
+                          .root()
+                          ->render_manager()
+                          ->speculative_frame_host());
   navigation_observer.Wait();
   EXPECT_EQ(cross_site_url2, web_contents->GetLastCommittedURL());
   EXPECT_EQ(next_rfh, web_contents->GetPrimaryMainFrame());
-  EXPECT_FALSE(
-      web_contents->GetRenderManagerForTesting()->speculative_frame_host());
+  EXPECT_FALSE(web_contents->GetPrimaryFrameTree()
+                   .root()
+                   ->render_manager()
+                   ->speculative_frame_host());
 }
 
 // Check that if a sandboxed subframe opens a cross-process popup such that the
@@ -6154,7 +6161,7 @@ class AssertForegroundHelper {
   void AssertForegroundAndRepost(const base::Process& renderer_process,
                                  base::PortProvider* port_provider) {
     ASSERT_FALSE(renderer_process.IsProcessBackgrounded(port_provider));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -6165,7 +6172,7 @@ class AssertForegroundHelper {
   // Same as above without the Mac specific base::PortProvider.
   void AssertForegroundAndRepost(const base::Process& renderer_process) {
     ASSERT_FALSE(renderer_process.IsProcessBackgrounded());
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),

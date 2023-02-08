@@ -247,7 +247,7 @@ void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* frame_host)
-    : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
+    : DevToolsAgentHostImpl(frame_host->devtools_frame_token().ToString()),
       auto_attacher_(std::make_unique<FrameAutoAttacher>(GetRendererChannel())),
       frame_tree_node_(nullptr) {
   SetFrameTreeNode(frame_tree_node);
@@ -326,8 +326,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
     session->CreateAndAddHandler<protocol::OverlayHandler>();
   session->CreateAndAddHandler<protocol::NetworkHandler>(
       GetId(),
-      frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
-                       : base::UnguessableToken(),
+      frame_host_ ? frame_host_->devtools_frame_token()
+                  : base::UnguessableToken(),
       GetIOContext(),
       base::BindRepeating(
           &RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories,
@@ -697,7 +697,9 @@ std::string RenderFrameDevToolsAgentHost::GetOpenerId() {
     return std::string();
   FrameTreeNode* opener =
       frame_tree_node_->first_live_main_frame_in_original_opener_chain();
-  return opener ? opener->devtools_frame_token().ToString() : std::string();
+  return opener
+             ? opener->current_frame_host()->devtools_frame_token().ToString()
+             : std::string();
 }
 
 std::string RenderFrameDevToolsAgentHost::GetOpenerFrameId() {
@@ -748,7 +750,7 @@ std::string RenderFrameDevToolsAgentHost::GetTitle() {
     if (!frame_host_->GetPage().IsPrimary()) {
       NavigationEntryImpl* entry = frame_host_->frame_tree_node()
                                        ->frame_tree()
-                                       ->controller()
+                                       .controller()
                                        .GetLastCommittedEntry();
       return entry ? base::UTF16ToUTF8(entry->GetTitleForDisplay())
                    : std::string();
@@ -887,20 +889,18 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
 }
 
 void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {
-  if (!frame_tree_node_)
+  if (!frame_host_)
     return;
-  base::queue<FrameTreeNode*> queue;
-  queue.push(frame_tree_node_);
-  while (!queue.empty()) {
-    FrameTreeNode* node = queue.front();
-    queue.pop();
-    RenderFrameHostImpl* host = node->current_frame_host();
-    if (node != frame_tree_node_ && host->is_local_root_subframe())
-      continue;
-    host->UpdateSubresourceLoaderFactories();
-    for (size_t i = 0; i < node->child_count(); ++i)
-      queue.push(node->child_at(i));
-  }
+
+  frame_host_->ForEachRenderFrameHostWithAction([this](
+                                                    RenderFrameHostImpl* rfh) {
+    if (frame_host_ != rfh && (rfh->is_local_root_subframe() ||
+                               &frame_host_->GetPage() != &rfh->GetPage())) {
+      return content::RenderFrameHost::FrameIterationAction::kSkipChildren;
+    }
+    rfh->UpdateSubresourceLoaderFactories();
+    return content::RenderFrameHost::FrameIterationAction::kContinue;
+  });
 }
 
 absl::optional<network::CrossOriginEmbedderPolicy>

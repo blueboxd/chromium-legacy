@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
+#include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -186,7 +187,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   // logging UMA, UKM and calling DidChangeVisibleSecurityState() through this
   // throttle.
   if (mixed_content_frame->CancelPrerendering(
-          PrerenderFinalStatus::kMixedContent)) {
+          PrerenderCancellationReason(PrerenderFinalStatus::kMixedContent))) {
     return true;
   }
 
@@ -198,10 +199,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
       allowed = !strict_mode;
       if (allowed) {
         frame_host_delegate->PassiveInsecureContentFound(request->GetURL());
-        node->frame_tree()
-            ->controller()
-            .ssl_manager()
-            ->DidDisplayMixedContent();
+        node->frame_tree().controller().ssl_manager()->DidDisplayMixedContent();
       }
       break;
 
@@ -233,10 +231,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
     case blink::mojom::MixedContentContextType::kShouldBeBlockable:
       allowed = !strict_mode;
       if (allowed)
-        node->frame_tree()
-            ->controller()
-            .ssl_manager()
-            ->DidDisplayMixedContent();
+        node->frame_tree().controller().ssl_manager()->DidDisplayMixedContent();
       break;
 
     case blink::mojom::MixedContentContextType::kNotMixedContent:

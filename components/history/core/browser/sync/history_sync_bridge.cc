@@ -33,12 +33,33 @@ namespace {
 
 constexpr base::TimeDelta kMaxWriteToTheFuture = base::Days(2);
 
+// Redirect chains have theoretically unbounded size, and in excessive cases
+// they can become so large that the whole entity may fail to sync due to its
+// size. Avoid even trying to commit such entities.
+constexpr int kMaxRedirectsPerEntity = 10;
+
 // Some pages embed the favicon image itself in the URL, using the data: scheme.
 // These cases, or more generally any favicon URL that is unreasonably large,
 // should simply be ignored, because it otherwise runs into the risk that the
 // whole entity may fail to sync due to max size limits imposed by the sync
 // server. And after all, the favicon is somewhat optional.
 constexpr int kMaxFaviconUrlSizeToSync = 2048;
+
+bool ShouldSync(const GURL& url) {
+  // Note: Several types of uninteresting/undesired URLs are already excluded by
+  // the history system itself via CanAddURLToHistory(). No need to exclude them
+  // again here.
+  // "file:", "filesystem:", or "blob:" URLs don't make sense to sync.
+  if (url.SchemeIsFile() || url.SchemeIsFileSystem() || url.SchemeIsBlob()) {
+    return false;
+  }
+  // "data:" URLs can be arbitrarily large, and thus shouldn't be synced.
+  // (It's also questionable if it'd be at all useful to sync them.)
+  if (url.SchemeIs(url::kDataScheme)) {
+    return false;
+  }
+  return true;
+}
 
 std::string GetStorageKeyFromVisitRow(const VisitRow& row) {
   DCHECK(!row.visit_time.is_null());
@@ -55,7 +76,7 @@ enum class SyncHistoryDatabaseError {
   // Deprecated (call sites were removed):
   // kOnURLVisitedGetVisit = 4,
   // kOnURLsDeletedReadMetadata = 5,
-  kOnVisitUpdatedGetURL = 6,
+  // kOnVisitUpdatedGetURL = 6,
   kGetAllDataReadMetadata = 7,
   kMaxValue = kGetAllDataReadMetadata
 };
@@ -252,6 +273,7 @@ absl::optional<VisitContentAnnotations> MakeContentAnnotations(
 std::unique_ptr<syncer::EntityData> MakeEntityData(
     const std::string& local_cache_guid,
     const std::vector<AnnotatedVisit>& redirect_visits,
+    bool redirect_chain_middle_trimmed,
     const GURL& referrer_url,
     const std::vector<GURL>& favicon_urls) {
   DCHECK(!local_cache_guid.empty());
@@ -323,6 +345,8 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   // redirects), a single redirect chain may be split up over multiple entities,
   // in which case one (or even both) might be true.
 
+  history->set_redirect_chain_middle_trimmed(redirect_chain_middle_trimmed);
+
   // Referring visit and opener visit are taken from the *first* visit in the
   // chain, since they only make sense for that one.
   history->set_originator_referring_visit_id(first_visit.referring_visit);
@@ -378,13 +402,31 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
   return entity_data;
 }
 
+// Returns whether all of the URLs in `specifics` are actually considered
+// syncable, and eligible for being added to the history DB.
+bool SpecificsContainsOnlyValidURLs(
+    const sync_pb::HistorySpecifics& specifics,
+    const HistoryBackendForSync* history_backend) {
+  for (int i = 0; i < specifics.redirect_entries_size(); i++) {
+    GURL url(specifics.redirect_entries(i).url());
+    // Note: If HistoryBackend::CanAddURL() is false, then the backend would
+    // reject this item anyway. But checking it here allows for better error
+    // recording (as a specifics error, rather than a DB error).
+    if (!ShouldSync(url) || !history_backend->CanAddURL(url)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SpecificsError {
   kMissingRequiredFields = 0,
   kTooOld = 1,
   kTooNew = 2,
-  kMaxValue = kTooNew
+  kUnwantedURL = 3,
+  kMaxValue = kUnwantedURL
 };
 
 // Checks the given `specifics` for validity, i.e. whether it passes some basic
@@ -413,6 +455,14 @@ absl::optional<SpecificsError> GetSpecificsError(
     return SpecificsError::kTooNew;
   }
 
+  // Visits to "unwanted" URLs are not valid. Such "unwanted" URLs usually
+  // shouldn't end up on the server in the first place, but in some cases they
+  // might (e.g. due to older clients still using SESSIONS, which is less
+  // strict about filtering URLs).
+  if (!SpecificsContainsOnlyValidURLs(specifics, history_backend)) {
+    return SpecificsError::kUnwantedURL;
+  }
+
   return {};
 }
 
@@ -437,19 +487,6 @@ HistorySyncBridge::HistorySyncBridge(
 
 HistorySyncBridge::~HistorySyncBridge() = default;
 
-void HistorySyncBridge::OnSyncStarting(
-    const syncer::DataTypeActivationRequest& request) {
-  // TODO(crbug.com/1366759): Starting to track local changes only here means
-  // that we might miss some visits that happen soon (within a few seconds)
-  // after browser startup. Consider either (a) finding a way to figure out
-  // earlier whether Sync is enabled (not paused), or (b) caching changes in
-  // memory for some time and sending them to the processor here, or (likely the
-  // preferred option) (c) optimistically assuming Sync will become active and
-  // immediately send updates to the processor, but cancel (untrack) them if it
-  // doesn't actually become active after a few seconds.
-  sync_started_ = true;
-}
-
 std::unique_ptr<syncer::MetadataChangeList>
 HistorySyncBridge::CreateMetadataChangeList() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -472,7 +509,6 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(sync_started_);
   DCHECK(!processing_syncer_changes_);
   DCHECK(sync_metadata_database_);
   // Set flag to stop accepting history change notifications from backend.
@@ -490,8 +526,8 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
     absl::optional<SpecificsError> specifics_error =
         GetSpecificsError(specifics, history_backend_);
     if (specifics_error.has_value()) {
-      DLOG(ERROR) << "Skipping invalid visit, reason "
-                  << static_cast<int>(*specifics_error);
+      DVLOG(1) << "Skipping invalid visit, reason "
+               << static_cast<int>(*specifics_error);
       RecordSpecificsError(*specifics_error);
       continue;
     }
@@ -524,6 +560,9 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
           // Updating didn't work, so actually add the data instead.
           if (!AddEntityInBackend(&id_remapper, specifics)) {
             // Something went wrong.
+            // TODO(crbug.com/1364576): This can happen if the incoming URL
+            // shouldn't be added to the history DB. In that case, we should
+            // *not* record a DB error here.
             RecordDatabaseError(
                 SyncHistoryDatabaseError::kApplySyncChangesAddSyncedVisit);
             break;
@@ -564,6 +603,20 @@ absl::optional<syncer::ModelError> HistorySyncBridge::ApplySyncChanges(
   UntrackAndClearMetadataForSyncedEntities();
 
   return metadata_error;
+}
+
+void HistorySyncBridge::ApplyStopSyncChanges(
+    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
+  if (delete_metadata_change_list) {
+    // A non-null `delete_metadata_change_list` indicates that Sync is being
+    // turned off only permanently. Delete all foreign visits from the DB.
+    // TODO(crbug.com/1383912): The signal to delete metadata currently doesn't
+    // reliably arrive here.
+    history_backend_->DeleteAllForeignVisits();
+  }
+
+  ModelTypeSyncBridge::ApplyStopSyncChanges(
+      std::move(delete_metadata_change_list));
 }
 
 void HistorySyncBridge::GetData(StorageKeyList storage_keys,
@@ -670,54 +723,38 @@ syncer::ConflictResolution HistorySyncBridge::ResolveConflict(
   return ModelTypeSyncBridge::ResolveConflict(storage_key, remote_data);
 }
 
-void HistorySyncBridge::ApplyStopSyncChanges(
-    std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  ModelTypeSyncBridge::ApplyStopSyncChanges(
-      std::move(delete_metadata_change_list));
-
-  sync_started_ = false;
-}
-
 void HistorySyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                      const URLRow& url_row,
                                      const VisitRow& visit_row) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  MaybeCommit(visit_row);
+}
+
+void HistorySyncBridge::OnURLsModified(HistoryBackend* history_backend,
+                                       const URLRows& changed_urls,
+                                       bool is_from_expiration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ShouldCommitRightNow()) {
     return;
   }
 
-  // If this visit is not the end of a redirect chain, ignore it. Note that
-  // visits that are not part of a redirect chain are considered to be both
-  // start and end of a chain, so these are *not* ignored here.
-  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
+  // Not interested in expirations - both the server side and other clients have
+  // their own, independent expiration logic, so no need to send any updates.
+  if (is_from_expiration) {
     return;
   }
 
-  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-      QueryRedirectChainAndMakeEntityData(visit_row);
-
-  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-
-  for (auto& entity_data : entity_data_list) {
-    std::string storage_key = GetStorageKey(*entity_data);
-    change_processor()->Put(storage_key, std::move(entity_data),
-                            metadata_change_list.get());
+  for (const URLRow& url_row : changed_urls) {
+    VisitRow visit_row;
+    if (history_backend_->GetMostRecentVisitForURL(url_row.id(), &visit_row) &&
+        visit_row.originator_cache_guid.empty()) {
+      // It's the URL corresponding to a local visit - probably the title got
+      // updated.
+      MaybeCommit(visit_row);
+    }
   }
-}
-
-void HistorySyncBridge::OnURLsModified(HistoryBackend* history_backend,
-                                       const URLRows& changed_urls,
-                                       bool is_from_expiration) {
-  // Not interested: This class is watching visits rather than URLs, so
-  // modifications are handled in OnVisitUpdated().
-  // TODO(crbug.com/1318028): The title *can* get updated without a new visit,
-  // so watch for and commit such changes. Basically:
-  // - Get most recent visit for the URL.
-  // - If it's a local visit, and is tracked (and, maybe, is the end of a
-  //   redirect chain):
-  // - Build the specifics and Put() it.
 }
 
 void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
@@ -742,35 +779,14 @@ void HistorySyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   // No need to send any actual deletions: A HistoryDeleteDirective will take
   // care of that. Just untrack all entities and clear their metadata. (The only
   // case where such metadata actually exists is if there are entities that are
-  // waiting for a commit. Clear their metadata, to cancel those commits.
+  // waiting for a commit. Clear their metadata, to cancel those commits.)
   UntrackAndClearMetadataForAllEntities();
 }
 
 void HistorySyncBridge::OnVisitUpdated(const VisitRow& visit_row) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!ShouldCommitRightNow()) {
-    return;
-  }
-
-  // If this visit is not the end of a redirect chain, ignore it. Note that
-  // visits that are not part of a redirect chain are considered to be both
-  // start and end of a chain, so these are *not* ignored here.
-  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
-    return;
-  }
-
-  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
-      QueryRedirectChainAndMakeEntityData(visit_row);
-
-  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
-      CreateMetadataChangeList();
-
-  for (auto& entity_data : entity_data_list) {
-    std::string storage_key = GetStorageKey(*entity_data);
-    change_processor()->Put(storage_key, std::move(entity_data),
-                            metadata_change_list.get());
-  }
+  MaybeCommit(visit_row);
 }
 
 void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
@@ -786,8 +802,23 @@ void HistorySyncBridge::OnVisitDeleted(const VisitRow& visit_row) {
   // delete its metadata (just in case this entity was waiting to be committed -
   // otherwise no metadata exists anyway).
   std::string storage_key = GetStorageKeyFromVisitRow(visit_row);
-  sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
+  sync_metadata_database_->ClearEntityMetadata(syncer::HISTORY, storage_key);
   change_processor()->UntrackEntityForStorageKey(storage_key);
+}
+
+void HistorySyncBridge::SetSyncTransportState(
+    syncer::SyncService::TransportState state) {
+  sync_transport_state_ = state;
+
+  // TODO(crbug.com/1383912): Currently ApplyStopSyncChanges() doesn't always
+  // get called with a non-null MetadataChangeList when Sync is turned off. This
+  // is a workaround to still clear foreign history in that case. Remove once
+  // that bug is fixed.
+  if (sync_transport_state_ == syncer::SyncService::TransportState::DISABLED) {
+    // DeleteAllForeignVisits() is cheap if there is no foreign history in the
+    // DB, so it's okay to call this somewhat too often.
+    history_backend_->DeleteAllForeignVisits();
+  }
 }
 
 void HistorySyncBridge::OnDatabaseError() {
@@ -822,15 +853,64 @@ bool HistorySyncBridge::ShouldCommitRightNow() const {
     return false;  // These are changes originating from us, ignore.
   }
 
-  if (!change_processor()->IsTrackingMetadata()) {
-    return false;  // Processor isn't ready (most likely Sync is disabled).
+  switch (sync_transport_state_) {
+    case syncer::SyncService::TransportState::DISABLED:
+    case syncer::SyncService::TransportState::PAUSED:
+      // Sync is disabled or paused, nothing should be committed.
+      return false;
+    case syncer::SyncService::TransportState::START_DEFERRED:
+    case syncer::SyncService::TransportState::INITIALIZING:
+    case syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION:
+    case syncer::SyncService::TransportState::CONFIGURING:
+    case syncer::SyncService::TransportState::ACTIVE:
+      // In all of these states, Sync is enabled in principle and expected to
+      // start up soon, so changes may be committed (subject to further
+      // conditions below).
+      break;
   }
 
-  if (!sync_started_) {
-    return false;  // Sync hasn't started yet or is paused.
+  if (!change_processor()->IsTrackingMetadata()) {
+    // The processor isn't ready - either Sync is disabled for this data type,
+    // or the initial download is still ongoing.
+    return false;
   }
 
   return true;
+}
+
+void HistorySyncBridge::MaybeCommit(const VisitRow& visit_row) {
+  // First check if the overall state allows committing right now.
+  if (!ShouldCommitRightNow()) {
+    return;
+  }
+
+  // If this visit is not the end of a redirect chain, ignore it. Note that
+  // visits that are not part of a redirect chain are considered to be both
+  // start and end of a chain, so these are *not* ignored here.
+  if (!(visit_row.transition & ui::PAGE_TRANSITION_CHAIN_END)) {
+    return;
+  }
+
+  // If this visit originally came from a different device, don't update it.
+  // This shouldn't usually happen, but if it does happen for some reason (e.g.
+  // due to a bug elsewhere), better not to mess up other clients.
+  if (!visit_row.originator_cache_guid.empty()) {
+    return;
+  }
+
+  // All conditions are fulfilled - convert the visit into Sync's format and
+  // send it on.
+  std::vector<std::unique_ptr<syncer::EntityData>> entity_data_list =
+      QueryRedirectChainAndMakeEntityData(visit_row);
+
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+
+  for (auto& entity_data : entity_data_list) {
+    std::string storage_key = GetStorageKey(*entity_data);
+    change_processor()->Put(storage_key, std::move(entity_data),
+                            metadata_change_list.get());
+  }
 }
 
 std::vector<std::unique_ptr<syncer::EntityData>>
@@ -868,11 +948,20 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
         std::make_move_iterator(subchain_begin),
         std::make_move_iterator(subchain_end));
 
+    // If the redirect chain is excessively long, trim it at the middle.
+    bool chain_middle_trimmed = false;
+    if (subchain_visits.size() > kMaxRedirectsPerEntity) {
+      int keep = kMaxRedirectsPerEntity / 2;
+      subchain_visits.erase(subchain_visits.begin() + keep,
+                            subchain_visits.end() - keep);
+      chain_middle_trimmed = true;
+    }
+
     // Make `subchain_begin` point to the beginning of the *next* subchain, for
     // the next iteration.
     subchain_begin = subchain_end;
 
-    // Convert the current subchain into a SyncEntity.
+    // Query the URL and annotation info for the current subchain.
     std::vector<AnnotatedVisit> annotated_visits =
         history_backend_->ToAnnotatedVisits(subchain_visits);
     if (annotated_visits.empty()) {
@@ -880,13 +969,25 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
       // skip this subchain but still try to handle any others.
       continue;
     }
+
+    // If there are any unsyncable URLs in the chain, skip the whole thing.
+    // (Typically, unsyncable URLs like file:// or data:// shouldn't have
+    // redirects anyway.)
+    for (const AnnotatedVisit& visit : annotated_visits) {
+      if (!ShouldSync(visit.url_row.url())) {
+        return {};
+      }
+    }
+
+    // Convert the current subchain into a SyncEntity.
     GURL referrer_url =
         GetURLForVisit(annotated_visits.front().visit_row.referring_visit);
     std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
         annotated_visits.back().url_row.url());
     // Note: `favicon_urls` may legitimately be empty, that's fine.
     entities.push_back(MakeEntityData(GetLocalCacheGuid(), annotated_visits,
-                                      referrer_url, favicon_urls));
+                                      chain_middle_trimmed, referrer_url,
+                                      favicon_urls));
   }
   return entities;
 }
@@ -970,16 +1071,15 @@ bool HistorySyncBridge::UpdateEntityInBackend(
   // Note: UpdateSyncedVisit() keeps any existing local referrer/opener IDs in
   // place, and the originator IDs are never updated in practice, so there's no
   // need to invoke the ID remapper here (in contrast to AddEntityInBackend()).
-  // TODO(crbug.com/1341636): Add an integration test to ensure that updates
-  // don't break referrer/opener links.
   VisitID updated_visit_id = history_backend_->UpdateSyncedVisit(
-      final_visit_row, context_annotations, content_annotations);
+      GURL(specifics.redirect_entries(index).url()),
+      base::UTF8ToUTF16(specifics.redirect_entries(index).title()),
+      specifics.redirect_entries(index).hidden(), final_visit_row,
+      context_annotations, content_annotations);
   if (updated_visit_id == 0) {
     return false;
   }
 
-  // TODO(crbug.com/1318028): Handle updates to the URL-related fields
-  // (notably the title - other fields probably can't change).
   return true;
 }
 
@@ -1001,7 +1101,7 @@ void HistorySyncBridge::UntrackAndClearMetadataForSyncedEntities() {
       // be committed) have to be tracked, so *don't* clear their metadata.
       continue;
     }
-    sync_metadata_database_->ClearSyncMetadata(syncer::HISTORY, storage_key);
+    sync_metadata_database_->ClearEntityMetadata(syncer::HISTORY, storage_key);
     change_processor()->UntrackEntityForStorageKey(storage_key);
   }
 }

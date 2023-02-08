@@ -40,10 +40,7 @@
 namespace blink {
 
 CSSFontSelector::CSSFontSelector(const TreeScope& tree_scope)
-    : CSSFontSelectorBase(
-          tree_scope.GetDocument().GetExecutionContext()->GetTaskRunner(
-              TaskType::kInternalDefault)),
-      tree_scope_(&tree_scope) {
+    : tree_scope_(&tree_scope) {
   DCHECK(tree_scope.GetDocument().GetExecutionContext()->IsContextThread());
   DCHECK(tree_scope.GetDocument().GetFrame());
   generic_font_family_settings_ = tree_scope.GetDocument()
@@ -125,6 +122,44 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
       }
       request_description.SetFontPalette(new_request_palette);
     }
+  }
+
+  if (request_description.GetFontVariantAlternates()) {
+    StyleRuleFontFeatureValues* font_feature_values =
+        document.GetStyleEngine().FontFeatureValuesForFamily(family_name);
+    scoped_refptr<FontVariantAlternates> new_alternates = nullptr;
+    if (font_feature_values) {
+      new_alternates = request_description.GetFontVariantAlternates()->Resolve(
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveStylistic(alias);
+          },
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveStyleset(alias);
+          },
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveCharacterVariant(alias);
+          },
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveSwash(alias);
+          },
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveOrnaments(alias);
+          },
+          [font_feature_values](AtomicString alias) {
+            return font_feature_values->ResolveAnnotation(alias);
+          });
+    } else {
+      // If no StyleRuleFontFeature alias table values for this font was found,
+      // it still needs a resolve call to convert historical-forms state (which
+      // is not looked-up against StyleRuleFontFeatureValues) to an internal
+      // feature.
+      auto no_lookup = [](AtomicString) -> Vector<uint32_t> { return {}; };
+      new_alternates = request_description.GetFontVariantAlternates()->Resolve(
+          no_lookup, no_lookup, no_lookup, no_lookup, no_lookup, no_lookup);
+    }
+
+    if (new_alternates)
+      request_description.SetFontVariantAlternates(new_alternates);
   }
 
   if (!font_family.FamilyIsGeneric()) {

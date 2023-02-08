@@ -12,18 +12,17 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 public class CreatorProfileViewBinder {
     public static void bind(PropertyModel model, CreatorProfileView view, PropertyKey propertyKey) {
-        if (CreatorProfileProperties.TITLE_KEY == propertyKey) {
-            view.setTitle(model.get(CreatorProfileProperties.TITLE_KEY));
-        } else if (CreatorProfileProperties.URL_KEY == propertyKey) {
-            view.setUrl(model.get(CreatorProfileProperties.URL_KEY));
-        } else if (CreatorProfileProperties.IS_FOLLOWED_KEY == propertyKey) {
-            view.setIsFollowedStatus(model.get(CreatorProfileProperties.IS_FOLLOWED_KEY));
-        } else if (CreatorProfileProperties.ON_FOLLOW_CLICK_KEY == propertyKey) {
-            view.setFollowButtonOnClickListener(
-                    model.get(CreatorProfileProperties.ON_FOLLOW_CLICK_KEY));
-        } else if (CreatorProfileProperties.ON_FOLLOWING_CLICK_KEY == propertyKey) {
+        if (CreatorProperties.TITLE_KEY == propertyKey) {
+            view.setTitle(model.get(CreatorProperties.TITLE_KEY));
+        } else if (CreatorProperties.URL_KEY == propertyKey) {
+            view.setUrl(model.get(CreatorProperties.URL_KEY));
+        } else if (CreatorProperties.IS_FOLLOWED_KEY == propertyKey) {
+            view.setIsFollowedStatus(model.get(CreatorProperties.IS_FOLLOWED_KEY));
+        } else if (CreatorProperties.ON_FOLLOW_CLICK_KEY == propertyKey) {
+            view.setFollowButtonOnClickListener(model.get(CreatorProperties.ON_FOLLOW_CLICK_KEY));
+        } else if (CreatorProperties.ON_FOLLOWING_CLICK_KEY == propertyKey) {
             view.setFollowingButtonOnClickListener(
-                    model.get(CreatorProfileProperties.ON_FOLLOWING_CLICK_KEY));
+                    model.get(CreatorProperties.ON_FOLLOWING_CLICK_KEY));
         }
     }
 }

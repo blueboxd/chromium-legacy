@@ -31,7 +31,7 @@
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
@@ -296,8 +296,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   TableViewDetailIconItem* _autoFillCreditCardDetailItem;
   TableViewItem* _syncItem;
 
-  // YES if view has been dismissed.
-  BOOL _settingsHasBeenDismissed;
+  // Whether Settings have been dismissed.
+  BOOL _settingsAreDismissed;
 }
 
 // The item related to the switch for the show feed settings.
@@ -312,10 +312,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 // YES if the sign-in is in progress.
 @property(nonatomic, assign) BOOL isSigninInProgress;
-
-// Stops observing browser state services. This is required during the shutdown
-// phase to avoid observing services for a profile that is being killed.
-- (void)stopBrowserStateServiceObservers;
 
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
@@ -429,19 +425,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (void)dealloc {
-  DCHECK(_settingsHasBeenDismissed)
+  DCHECK(_settingsAreDismissed)
       << "-settingsWillBeDismissed must be called before -dealloc";
-}
-
-- (void)stopBrowserStateServiceObservers {
-  _syncObserverBridge.reset();
-  _identityObserverBridge.reset();
-  _accountManagerServiceObserver.reset();
-  [_showMemoryDebugToolsEnabled setObserver:nil];
-  [_articlesEnabled setObserver:nil];
-  [_allowChromeSigninPreference setObserver:nil];
-  [_contentSuggestionPolicyEnabled setObserver:nil];
-  [_contentSuggestionForSupervisedUsersEnabled setObserver:nil];
 }
 
 #pragma mark View lifecycle
@@ -1069,11 +1054,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (TableViewItem*)privacyDetailItem {
   NSString* title = nil;
-  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-    title = l10n_util::GetNSString(IDS_IOS_SETTINGS_PRIVACY_TITLE);
-  } else {
-    title = l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
-  }
+  title = l10n_util::GetNSString(IDS_IOS_SETTINGS_PRIVACY_TITLE);
 
   if (UseSymbols()) {
     return [self detailItemWithType:SettingsItemTypePrivacy
@@ -1371,13 +1352,14 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       [[TableViewInfoButtonItem alloc] initWithType:type];
   infoButton.text = text;
   infoButton.statusText = status;
-  if (image)
+  if (image) {
     infoButton.iconImage = image;
-  if (UseSymbols()) {
-    DCHECK(imageBackground);
-    infoButton.iconBackgroundColor = imageBackground;
-    infoButton.iconTintColor = UIColor.whiteColor;
-    infoButton.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
+    if (UseSymbols()) {
+      DCHECK(imageBackground);
+      infoButton.iconBackgroundColor = imageBackground;
+      infoButton.iconTintColor = UIColor.whiteColor;
+      infoButton.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
+    }
   }
   infoButton.accessibilityHint = accessibilityHint;
   infoButton.accessibilityIdentifier = accessibilityIdentifier;
@@ -1390,6 +1372,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
+  if (_settingsAreDismissed)
+    return cell;
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
   if ([cell isKindOfClass:[TableViewDetailIconCell class]]) {
@@ -1496,6 +1480,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (_settingsAreDismissed)
+    return;
+
   id object = [self.tableViewModel itemAtIndexPath:indexPath];
   if ([object respondsToSelector:@selector(isEnabled)] &&
       ![object performSelector:@selector(isEnabled)]) {
@@ -1911,9 +1898,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     case kSyncConsentOff: {
       googleSyncItem.detailText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
       if (UseSymbols()) {
-        googleSyncItem.iconImage =
-            CustomSettingsRootSymbol(kSyncDisabledSymbol);
-        googleSyncItem.iconBackgroundColor = [UIColor colorNamed:kGrey400Color];
+        googleSyncItem.iconImage = DefaultSettingsRootSymbol(kSyncErrorSymbol);
+        googleSyncItem.iconBackgroundColor = UIColor.redColor;
         googleSyncItem.iconTintColor = UIColor.whiteColor;
         googleSyncItem.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
 
@@ -1925,6 +1911,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     case kSyncOff:
     case kSyncEnabledWithNoSelectedTypes: {
       googleSyncItem.detailText = nil;
+      googleSyncItem.iconImage = [UIImage imageNamed:kSyncOffImageName];
       if (UseSymbols()) {
         googleSyncItem.iconImage =
             CustomSettingsRootSymbol(kSyncDisabledSymbol);
@@ -2045,11 +2032,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (void)didFinishSignin:(BOOL)signedIn {
+  if (_settingsAreDismissed)
+    return;
+
   // The sign-in is done. The sign-in promo cell or account cell can be
   // reloaded.
   DCHECK(self.isSigninInProgress);
   self.isSigninInProgress = NO;
-  DCHECK(!_settingsHasBeenDismissed);
   [self reloadData];
 }
 
@@ -2065,10 +2054,14 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (void)settingsWillBeDismissed {
-  DCHECK(!_settingsHasBeenDismissed);
+  DCHECK(!_settingsAreDismissed);
 
-  _passwordCheckObserver.reset();
+  // Disconnect the sign-in mediator.
+  DCHECK(!self.isSigninInProgress);
+  [_signinPromoViewMediator disconnect];
+  _signinPromoViewMediator = nil;
 
+  // Stop children coordinators.
   [_googleServicesSettingsCoordinator stop];
   _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
@@ -2089,28 +2082,45 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_manageSyncSettingsCoordinator stop];
   _manageSyncSettingsCoordinator = nil;
 
-  _settingsHasBeenDismissed = YES;
-  DCHECK(!self.isSigninInProgress);
-  [_signinPromoViewMediator disconnect];
-  _signinPromoViewMediator = nil;
-  [self stopBrowserStateServiceObservers];
-
-  // Stop observing preferences.
+  // Stop observable prefs.
   [_showMemoryDebugToolsEnabled stop];
+  [_showMemoryDebugToolsEnabled setObserver:nil];
   _showMemoryDebugToolsEnabled = nil;
+
   [_articlesEnabled stop];
+  [_articlesEnabled setObserver:nil];
   _articlesEnabled = nil;
+
   [_allowChromeSigninPreference stop];
+  [_allowChromeSigninPreference setObserver:nil];
   _allowChromeSigninPreference = nil;
+
   [_contentSuggestionPolicyEnabled stop];
+  [_contentSuggestionPolicyEnabled setObserver:nil];
   _contentSuggestionPolicyEnabled = nil;
+
   [_contentSuggestionForSupervisedUsersEnabled stop];
+  [_contentSuggestionForSupervisedUsersEnabled setObserver:nil];
   _contentSuggestionForSupervisedUsersEnabled = nil;
 
-  _voiceLocaleCode.Destroy();
-
+  // Remove pref changes registrations.
   _prefChangeRegistrar.RemoveAll();
+
+  // Remove observer bridges.
   _prefObserverBridge.reset();
+  _passwordCheckObserver.reset();
+  _searchEngineObserverBridge.reset();
+  _syncObserverBridge.reset();
+  _identityObserverBridge.reset();
+  _accountManagerServiceObserver.reset();
+
+  // Clear C++ ivars.
+  _voiceLocaleCode.Destroy();
+  _passwordCheckManager.reset();
+  _browser = nullptr;
+  _browserState = nullptr;
+
+  _settingsAreDismissed = YES;
 }
 
 #pragma mark SyncObserverModelBridge

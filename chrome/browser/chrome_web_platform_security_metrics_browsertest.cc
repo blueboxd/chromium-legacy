@@ -1792,10 +1792,12 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
   EXPECT_TRUE(content::ExecJs(web_contents(), R"(
     const iframe = document.createElement("iframe");
-    iframe.anonymous = false;
+    iframe.credentialless = false;
     document.body.appendChild(iframe);
   )"));
   CheckCounter(WebFeature::kAnonymousIframe, 0);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 0);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -1804,10 +1806,12 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
   EXPECT_TRUE(content::NavigateToURL(web_contents(), url));
   EXPECT_TRUE(content::ExecJs(web_contents(), R"(
     const iframe = document.createElement("iframe");
-    iframe.anonymous = true;
+    iframe.credentialless = true;
     document.body.appendChild(iframe);
   )"));
   CheckCounter(WebFeature::kAnonymousIframe, 1);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 1);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -1818,12 +1822,14 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
     new Promise(resolve => {
       let iframe = document.createElement("iframe");
       iframe.src = location.href;
-      iframe.anonymous = false;
+      iframe.credentialless = false;
       iframe.onload = resolve;
       document.body.appendChild(iframe);
     });
   )"));
   CheckCounter(WebFeature::kAnonymousIframe, 0);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 0);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -1834,12 +1840,14 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
     new Promise(resolve => {
       let iframe = document.createElement("iframe");
       iframe.src = location.href;
-      iframe.anonymous = true;
+      iframe.credentialless = true;
       iframe.onload = resolve;
       document.body.appendChild(iframe);
     });
   )"));
   CheckCounter(WebFeature::kAnonymousIframe, 1);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 1);
+  CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
@@ -1854,6 +1862,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
       document.body.appendChild(iframe);
     });
   )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 0);
   CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 0);
   CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 0);
 }
@@ -1866,7 +1875,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
     const createIframe = sandbox => {
       let iframe = document.createElement("iframe");
       iframe.src = location.href;
-      iframe.anonymous = true;
+      iframe.credentialless = true;
       if (sandbox)
         iframe.sandbox = "";
       document.body.appendChild(iframe);
@@ -1880,6 +1889,7 @@ IN_PROC_BROWSER_TEST_F(ChromeWebPlatformSecurityMetricsBrowserTest,
       createIframe(true),
     ]);
   )"));
+  CheckCounter(WebFeature::kAnonymousIframe, 1);
   CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", false, 3);
   CheckHistogramCount("Navigation.AnonymousIframeIsSandboxed", true, 2);
 }

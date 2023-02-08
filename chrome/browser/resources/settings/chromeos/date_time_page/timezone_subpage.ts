@@ -14,16 +14,15 @@ import '../../settings_shared.css.js';
 import './timezone_selector.js';
 
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsDropdownMenuElement} from '../../controls/settings_dropdown_menu.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route} from '../../router.js';
+import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
-import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {TimeZoneAutoDetectMethod} from './date_time_types.js';
 import {TimeZoneBrowserProxy, TimeZoneBrowserProxyImpl} from './timezone_browser_proxy.js';
@@ -37,17 +36,16 @@ interface TimezoneSubpageElement {
   };
 }
 
-const TimezoneSubpageElementBase = mixinBehaviors(
-                                       [
-                                         DeepLinkingBehavior,
-                                         PrefsBehavior,
-                                         RouteObserverBehavior,
-                                       ],
-                                       WebUiListenerMixin(PolymerElement)) as {
-  new (): PolymerElement & DeepLinkingBehaviorInterface &
-      PrefsBehaviorInterface & RouteObserverBehaviorInterface &
-      WebUiListenerMixinInterface,
-};
+const TimezoneSubpageElementBase =
+    mixinBehaviors(
+        [
+          DeepLinkingBehavior,
+        ],
+        RouteObserverMixin(PrefsMixin(WebUiListenerMixin(PolymerElement)))) as {
+      new (): PolymerElement & WebUiListenerMixinInterface &
+          PrefsMixinInterface & RouteObserverMixinInterface &
+          DeepLinkingBehaviorInterface,
+    };
 
 class TimezoneSubpageElement extends TimezoneSubpageElementBase {
   static get is() {
@@ -87,7 +85,7 @@ class TimezoneSubpageElement extends TimezoneSubpageElementBase {
   }
 
   /**
-   * RouteObserverBehavior
+   * RouteObserverMixin
    * Called when the timezone subpage is hit. Child accounts need parental
    * approval to modify their timezone, this method starts this process on the
    * C++ side, and timezone setting will be disable. Once it is complete the
@@ -102,7 +100,7 @@ class TimezoneSubpageElement extends TimezoneSubpageElementBase {
     // Check if should ask for parent access code.
     if (loadTimeData.getBoolean('isChild')) {
       this.disableTimeZoneSetting_();
-      this.addWebUIListener(
+      this.addWebUiListener(
           'access-code-validation-complete',
           this.enableTimeZoneSetting_.bind(this));
       this.browserProxy_.showParentAccessForTimeZone();

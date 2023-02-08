@@ -86,7 +86,7 @@ public final class Website implements WebsiteEntry {
                 && !mEmbedder.getTitle().equals(SITE_WILDCARD);
     }
 
-    private WebsiteAddress getMainAddress() {
+    public WebsiteAddress getMainAddress() {
         if (representsThirdPartiesOnSite()) {
             return mEmbedder;
         }
@@ -363,5 +363,11 @@ public final class Website implements WebsiteEntry {
     @Override
     public boolean matches(String search) {
         return getTitle().contains(search);
+    }
+
+    @Override
+    public boolean isCookieDeletionDisabled(BrowserContextHandle browserContextHandle) {
+        return WebsitePreferenceBridge.isCookieDeletionDisabled(
+                browserContextHandle, mOrigin.getOrigin());
     }
 }

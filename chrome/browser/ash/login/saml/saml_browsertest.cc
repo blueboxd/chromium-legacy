@@ -122,15 +122,14 @@
 #include "url/gurl.h"
 
 namespace ash {
+
 namespace {
 
 namespace em = ::enterprise_management;
 
 using ::base::test::RunOnceCallback;
-using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
-using ::testing::Return;
 using ::testing::WithArgs;
 
 const test::UIPath kPasswordInput = {"saml-confirm-password", "passwordInput"};
@@ -197,15 +196,16 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
   SecretInterceptingFakeUserDataAuthClient& operator=(
       const SecretInterceptingFakeUserDataAuthClient&) = delete;
 
+  // Key-based API for AuthSessions.
+  // TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
   void AuthenticateAuthSession(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override;
+
   void AddAuthFactor(const ::user_data_auth::AddAuthFactorRequest& request,
                      AddAuthFactorCallback callback) override;
   void AddCredentials(const ::user_data_auth::AddCredentialsRequest& request,
                       AddCredentialsCallback callback) override;
-  void Mount(const ::user_data_auth::MountRequest& request,
-             MountCallback callback) override;
 
   const std::string& salted_hashed_secret() { return salted_hashed_secret_; }
 
@@ -216,6 +216,8 @@ class SecretInterceptingFakeUserDataAuthClient : public FakeUserDataAuthClient {
 SecretInterceptingFakeUserDataAuthClient::
     SecretInterceptingFakeUserDataAuthClient() = default;
 
+// Key-based API for AuthSessions.
+// TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
 void SecretInterceptingFakeUserDataAuthClient::AuthenticateAuthSession(
     const ::user_data_auth::AuthenticateAuthSessionRequest& request,
     AuthenticateAuthSessionCallback callback) {
@@ -223,6 +225,8 @@ void SecretInterceptingFakeUserDataAuthClient::AuthenticateAuthSession(
   FakeUserDataAuthClient::AuthenticateAuthSession(request, std::move(callback));
 }
 
+// Key-based API for AuthSessions.
+// TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
 void SecretInterceptingFakeUserDataAuthClient::AddCredentials(
     const ::user_data_auth::AddCredentialsRequest& request,
     AddCredentialsCallback callback) {
@@ -237,15 +241,6 @@ void SecretInterceptingFakeUserDataAuthClient::AddAuthFactor(
         user_data_auth::AUTH_FACTOR_TYPE_PASSWORD);
   salted_hashed_secret_ = request.auth_input().password_input().secret();
   FakeUserDataAuthClient::AddAuthFactor(request, std::move(callback));
-}
-
-void SecretInterceptingFakeUserDataAuthClient::Mount(
-    const ::user_data_auth::MountRequest& request,
-    MountCallback callback) {
-  if (request.has_authorization()) {
-    salted_hashed_secret_ = request.authorization().key().secret();
-  }
-  FakeUserDataAuthClient::Mount(request, std::move(callback));
 }
 
 }  // namespace
@@ -1321,7 +1316,7 @@ void SAMLPolicyTest::SetLoginVideoCaptureAllowedUrls(
 }
 
 void SAMLPolicyTest::ShowGAIALoginForm() {
-  ash::LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
+  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
   content::DOMMessageQueue message_queue(GetLoginUI()->GetWebContents());
   ASSERT_TRUE(content::ExecuteScript(
@@ -2164,10 +2159,10 @@ class SAMLDeviceTrustTest
 
     if (std::get<1>(GetParam())) {
       enabled_features.push_back(
-          ash::features::kLoginScreenDeviceTrustConnectorEnabled);
+          features::kLoginScreenDeviceTrustConnectorEnabled);
     } else {
       disabled_features.push_back(
-          ash::features::kLoginScreenDeviceTrustConnectorEnabled);
+          features::kLoginScreenDeviceTrustConnectorEnabled);
     }
 
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);

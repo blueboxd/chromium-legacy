@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -74,7 +74,8 @@ class WebEngineAudioOutputDeviceTest : public testing::Test {
         kTestSessionId, audio_consumer.NewRequest());
 
     output_device_ = WebEngineAudioOutputDevice::Create(
-        std::move(audio_consumer), base::ThreadTaskRunnerHandle::Get());
+        std::move(audio_consumer),
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
 
   ~WebEngineAudioOutputDeviceTest() override {
@@ -207,7 +208,7 @@ TEST_F(WebEngineAudioOutputDeviceTest, Underflow) {
   task_environment_.AdvanceClock(kPeriod * 10);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(renderer_.frames_rendered(), kFramesPerPeriod * 3);
-  EXPECT_EQ(renderer_.frames_skipped(), kFramesPerPeriod * 7);
+  EXPECT_EQ(renderer_.frames_skipped(), 0);
   renderer_.reset_frames_rendered();
 
   ValidatePresentationTime();

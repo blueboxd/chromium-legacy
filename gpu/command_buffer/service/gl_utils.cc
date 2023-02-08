@@ -317,13 +317,15 @@ void PopulateDRMCapabilities(Capabilities* caps,
                         "EGL_EXT_device_drm_render_node")) {
     const char* path =
         eglQueryDeviceStringEXT(egl_device, EGL_DRM_RENDER_NODE_FILE_EXT);
-    caps->drm_render_node = std::string(path);
+    if (path)
+      caps->drm_render_node = std::string(path);
   }
   if (caps->drm_render_node.empty() &&
       gfx::HasExtension(device_extension_set, "EGL_EXT_device_drm")) {
     const char* path =
         eglQueryDeviceStringEXT(egl_device, EGL_DRM_DEVICE_FILE_EXT);
-    caps->drm_render_node = std::string(path);
+    if (path)
+      caps->drm_render_node = std::string(path);
   }
 
   EGLint num_formats = 0;
@@ -1222,6 +1224,7 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
       source_internal_format == GL_LUMINANCE_ALPHA ||
       source_internal_format == GL_BGRA_EXT ||
       source_internal_format == GL_BGRA8_EXT ||
+      source_internal_format == GL_RGB_YCRCB_420_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_P010_CHROMIUM ||

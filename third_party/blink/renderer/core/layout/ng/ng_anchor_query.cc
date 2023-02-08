@@ -13,6 +13,49 @@
 
 namespace blink {
 
+namespace {
+
+AnchorValue PhysicalAnchorValueUsing(AnchorValue x,
+                                     AnchorValue flipped_x,
+                                     AnchorValue y,
+                                     AnchorValue flipped_y,
+                                     WritingDirectionMode writing_direction,
+                                     bool is_y_axis) {
+  if (is_y_axis)
+    return writing_direction.IsFlippedY() ? flipped_y : y;
+  return writing_direction.IsFlippedX() ? flipped_x : x;
+}
+
+// The logical <anchor-side> keywords map to one of the physical keywords
+// depending on the property the function is being used in and the writing mode.
+// https://drafts.csswg.org/css-anchor-1/#anchor-pos
+AnchorValue PhysicalAnchorValueFromLogical(
+    AnchorValue anchor_value,
+    WritingDirectionMode writing_direction,
+    WritingDirectionMode self_writing_direction,
+    bool is_y_axis) {
+  switch (anchor_value) {
+    case AnchorValue::kSelfStart:
+      writing_direction = self_writing_direction;
+      [[fallthrough]];
+    case AnchorValue::kStart:
+      return PhysicalAnchorValueUsing(AnchorValue::kLeft, AnchorValue::kRight,
+                                      AnchorValue::kTop, AnchorValue::kBottom,
+                                      writing_direction, is_y_axis);
+    case AnchorValue::kSelfEnd:
+      writing_direction = self_writing_direction;
+      [[fallthrough]];
+    case AnchorValue::kEnd:
+      return PhysicalAnchorValueUsing(AnchorValue::kRight, AnchorValue::kLeft,
+                                      AnchorValue::kBottom, AnchorValue::kTop,
+                                      writing_direction, is_y_axis);
+    default:
+      return anchor_value;
+  }
+}
+
+}  // namespace
+
 NGPhysicalAnchorReference::NGPhysicalAnchorReference(
     const NGLogicalAnchorReference& logical_reference,
     const WritingModeConverter& converter)
@@ -51,79 +94,61 @@ const NGLogicalAnchorQuery& NGLogicalAnchorQuery::Empty() {
 }
 
 const NGPhysicalAnchorReference* NGPhysicalAnchorQuery::AnchorReference(
-    const ScopedCSSName& name) const {
-  const auto& it = anchor_references_.find(&name);
-  if (it != anchor_references_.end()) {
-    const NGPhysicalAnchorReference& result = *it->value;
-    if (!result.is_invalid)
-      return &result;
+    const NGAnchorKey& key,
+    bool can_use_invalid_anchors) const {
+  if (const NGPhysicalAnchorReference* reference = Base::AnchorReference(key)) {
+    if (can_use_invalid_anchors || !reference->is_invalid)
+      return reference;
   }
   return nullptr;
 }
 
-const PhysicalRect* NGPhysicalAnchorQuery::Rect(
-    const ScopedCSSName& name) const {
-  if (const NGPhysicalAnchorReference* reference = AnchorReference(name))
-    return &reference->rect;
-  return nullptr;
-}
-
 const NGPhysicalFragment* NGPhysicalAnchorQuery::Fragment(
-    const ScopedCSSName& name) const {
-  if (const NGPhysicalAnchorReference* reference = AnchorReference(name))
+    const NGAnchorKey& key,
+    bool can_use_invalid_anchors) const {
+  if (const NGPhysicalAnchorReference* reference =
+          AnchorReference(key, can_use_invalid_anchors)) {
     return reference->fragment.Get();
+  }
   return nullptr;
 }
 
 const NGLogicalAnchorReference* NGLogicalAnchorQuery::AnchorReference(
-    const ScopedCSSName& name) const {
-  const auto& it = anchor_references_.find(&name);
-  if (it != anchor_references_.end()) {
-    for (const NGLogicalAnchorReference* result = it->value; result;
+    const NGAnchorKey& key,
+    bool can_use_invalid_anchor) const {
+  if (const NGLogicalAnchorReference* reference = Base::AnchorReference(key)) {
+    for (const NGLogicalAnchorReference* result = reference; result;
          result = result->next) {
-      if (!result->is_invalid)
+      if (can_use_invalid_anchor || !result->is_invalid)
         return result;
     }
   }
   return nullptr;
 }
 
-const LogicalRect* NGLogicalAnchorQuery::Rect(const ScopedCSSName& name) const {
-  if (const NGLogicalAnchorReference* reference = AnchorReference(name))
-    return &reference->rect;
-  return nullptr;
-}
-
-const NGPhysicalFragment* NGLogicalAnchorQuery::Fragment(
-    const ScopedCSSName& name) const {
-  if (const NGLogicalAnchorReference* reference = AnchorReference(name))
-    return reference->fragment;
-  return nullptr;
-}
-
-void NGLogicalAnchorQuery::Set(const ScopedCSSName& name,
+void NGLogicalAnchorQuery::Set(const NGAnchorKey& key,
                                const NGPhysicalFragment& fragment,
                                const LogicalRect& rect,
                                SetOptions options) {
   DCHECK(fragment.GetLayoutObject());
-  Set(name,
+  Set(key,
       MakeGarbageCollected<NGLogicalAnchorReference>(
           fragment, rect, options == SetOptions::kInvalid),
       options == SetOptions::kValidOutOfOrder);
 }
 
-void NGLogicalAnchorQuery::Set(const ScopedCSSName& name,
+void NGLogicalAnchorQuery::Set(const NGAnchorKey& key,
                                NGLogicalAnchorReference* reference,
                                bool maybe_out_of_order) {
   DCHECK(reference);
   DCHECK(!reference->next);
-  const auto result = anchor_references_.insert(&name, reference);
+  const auto result = Base::insert(key, reference);
   if (result.is_new_entry)
     return;
 
   // If this is a fragment of the existing |LayoutObject|, unite the rect.
   Member<NGLogicalAnchorReference>* const existing_head_ptr =
-      &result.stored_value->value;
+      result.stored_value;
   NGLogicalAnchorReference* const existing_head = *existing_head_ptr;
   DCHECK(existing_head);
   const NGLogicalAnchorReference* last_valid_existing = nullptr;
@@ -160,13 +185,13 @@ void NGPhysicalAnchorQuery::SetFromLogical(
   // This function assumes |this| is empty on the entry. Merging multiple
   // references is not supported.
   DCHECK(IsEmpty());
-  for (const auto& it : logical_query.anchor_references_) {
+  for (const auto entry : logical_query) {
     // For each key, only the first one in the tree order, valid or invalid, is
     // needed to be propagated, because the validity is re-computed for each
     // containing block. Please see |SetFromPhysical|.
-    const auto result = anchor_references_.Set(
-        it.key,
-        MakeGarbageCollected<NGPhysicalAnchorReference>(*it.value, converter));
+    const auto result =
+        Base::insert(entry.key, MakeGarbageCollected<NGPhysicalAnchorReference>(
+                                    *entry.value, converter));
     DCHECK(result.is_new_entry);
   }
 }
@@ -176,31 +201,42 @@ void NGLogicalAnchorQuery::SetFromPhysical(
     const WritingModeConverter& converter,
     const LogicalOffset& additional_offset,
     SetOptions options) {
-  for (const auto& it : physical_query.anchor_references_) {
-    LogicalRect rect = converter.ToLogical(it.value->rect);
+  for (auto entry : physical_query) {
+    LogicalRect rect = converter.ToLogical(entry.value->rect);
     rect.offset += additional_offset;
-    Set(*it.key,
+    Set(entry.key,
         MakeGarbageCollected<NGLogicalAnchorReference>(
-            *it.value->fragment, rect, options == SetOptions::kInvalid),
+            *entry.value->fragment, rect, options == SetOptions::kInvalid),
         options == SetOptions::kValidOutOfOrder);
   }
 }
 
 absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
-    const ScopedCSSName& anchor_name,
+    const NGLogicalAnchorReference& reference,
     AnchorValue anchor_value,
+    float percentage,
     LayoutUnit available_size,
     const WritingModeConverter& container_converter,
+    WritingDirectionMode self_writing_direction,
     const PhysicalOffset& offset_to_padding_box,
     bool is_y_axis,
     bool is_right_or_bottom) const {
-  const NGLogicalAnchorReference* reference = AnchorReference(anchor_name);
-  if (!reference)
-    return absl::nullopt;  // No targets.
-
-  const PhysicalRect anchor = container_converter.ToPhysical(reference->rect);
+  const PhysicalRect anchor = container_converter.ToPhysical(reference.rect);
+  anchor_value = PhysicalAnchorValueFromLogical(
+      anchor_value, container_converter.GetWritingDirection(),
+      self_writing_direction, is_y_axis);
   LayoutUnit value;
   switch (anchor_value) {
+    case AnchorValue::kCenter: {
+      const LayoutUnit start = is_y_axis
+                                   ? anchor.Y() - offset_to_padding_box.top
+                                   : anchor.X() - offset_to_padding_box.left;
+      const LayoutUnit end = is_y_axis
+                                 ? anchor.Bottom() - offset_to_padding_box.top
+                                 : anchor.Right() - offset_to_padding_box.left;
+      value = start + LayoutUnit::FromFloatRound((end - start) * 0.5);
+      break;
+    }
     case AnchorValue::kLeft:
       if (is_y_axis)
         return absl::nullopt;  // Wrong axis.
@@ -227,7 +263,32 @@ absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
       // See |AnchorValue::kLeft|.
       value = anchor.Bottom() - offset_to_padding_box.top;
       break;
-    default:
+    case AnchorValue::kPercentage: {
+      LayoutUnit size;
+      if (is_y_axis) {
+        value = anchor.Y() - offset_to_padding_box.top;
+        size = anchor.Height();
+        // The percentage is logical, between the `start` and `end` sides.
+        // Convert to the physical percentage.
+        // https://drafts.csswg.org/css-anchor-1/#anchor-pos
+        if (container_converter.GetWritingDirection().IsFlippedY())
+          percentage = 100 - percentage;
+      } else {
+        value = anchor.X() - offset_to_padding_box.left;
+        size = anchor.Width();
+        // Convert the logical percentage to physical. See above.
+        if (container_converter.GetWritingDirection().IsFlippedX())
+          percentage = 100 - percentage;
+      }
+      value += LayoutUnit::FromFloatRound(size * percentage / 100);
+      break;
+    }
+    case AnchorValue::kStart:
+    case AnchorValue::kEnd:
+    case AnchorValue::kSelfStart:
+    case AnchorValue::kSelfEnd:
+      // These logical values should have been converted to corresponding
+      // physical values in `PhysicalAnchorValueFromLogical`.
       NOTREACHED();
       return absl::nullopt;
   }
@@ -239,16 +300,12 @@ absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateAnchor(
   return value;
 }
 
-absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateSize(
-    const ScopedCSSName& anchor_name,
+LayoutUnit NGLogicalAnchorQuery::EvaluateSize(
+    const NGLogicalAnchorReference& reference,
     AnchorSizeValue anchor_size_value,
     WritingMode container_writing_mode,
     WritingMode self_writing_mode) const {
-  const NGLogicalAnchorReference* reference = AnchorReference(anchor_name);
-  if (!reference)
-    return absl::nullopt;  // No targets.
-
-  const LogicalSize& anchor = reference->rect.size;
+  const LogicalSize& anchor = reference.rect.size;
   switch (anchor_size_value) {
     case AnchorSizeValue::kInline:
       return anchor.inline_size;
@@ -274,7 +331,7 @@ absl::optional<LayoutUnit> NGLogicalAnchorQuery::EvaluateSize(
                  : anchor.inline_size;
   }
   NOTREACHED();
-  return absl::nullopt;
+  return LayoutUnit();
 }
 
 const NGLogicalAnchorQuery* NGAnchorEvaluatorImpl::AnchorQuery() const {
@@ -296,7 +353,8 @@ absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::Evaluate(
   switch (anchor_query.Type()) {
     case AnchorQueryType::kAnchor:
       return EvaluateAnchor(anchor_query.AnchorName(),
-                            anchor_query.AnchorSide());
+                            anchor_query.AnchorSide(),
+                            anchor_query.AnchorSidePercentageOrZero());
     case AnchorQueryType::kAnchorSize:
       return EvaluateAnchorSize(anchor_query.AnchorName(),
                                 anchor_query.AnchorSize());
@@ -304,29 +362,47 @@ absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::Evaluate(
 }
 
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchor(
-    const ScopedCSSName& anchor_name,
-    AnchorValue anchor_value) const {
+    const ScopedCSSName* anchor_name,
+    AnchorValue anchor_value,
+    float percentage) const {
   has_anchor_functions_ = true;
-  // TODO(crbug.com/1380112): Support implicit anchor.
-  if (const NGLogicalAnchorQuery* anchor_query = AnchorQuery()) {
-    return anchor_query->EvaluateAnchor(
-        anchor_name, anchor_value, available_size_, container_converter_,
-        offset_to_padding_box_, is_y_axis_, is_right_or_bottom_);
-  }
-  return absl::nullopt;
+  if (!anchor_name && !implicit_anchor_)
+    return absl::nullopt;
+  const NGLogicalAnchorQuery* anchor_query = AnchorQuery();
+  if (!anchor_query)
+    return absl::nullopt;
+  const NGLogicalAnchorReference* anchor_reference =
+      anchor_name
+          ? anchor_query->AnchorReference(anchor_name, is_in_top_layer_)
+          : anchor_query->AnchorReference(implicit_anchor_, is_in_top_layer_);
+  if (!anchor_reference)
+    return absl::nullopt;
+
+  return anchor_query->EvaluateAnchor(
+      *anchor_reference, anchor_value, percentage, available_size_,
+      container_converter_, self_writing_direction_, offset_to_padding_box_,
+      is_y_axis_, is_right_or_bottom_);
 }
 
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchorSize(
-    const ScopedCSSName& anchor_name,
+    const ScopedCSSName* anchor_name,
     AnchorSizeValue anchor_size_value) const {
   has_anchor_functions_ = true;
-  // TODO(crbug.com/1380112): Support implicit anchor.
-  if (const NGLogicalAnchorQuery* anchor_query = AnchorQuery()) {
-    return anchor_query->EvaluateSize(anchor_name, anchor_size_value,
-                                      container_converter_.GetWritingMode(),
-                                      self_writing_mode_);
-  }
-  return absl::nullopt;
+  if (!anchor_name && !implicit_anchor_)
+    return absl::nullopt;
+  const NGLogicalAnchorQuery* anchor_query = AnchorQuery();
+  if (!anchor_query)
+    return absl::nullopt;
+  const NGLogicalAnchorReference* anchor_reference =
+      anchor_name
+          ? anchor_query->AnchorReference(anchor_name, is_in_top_layer_)
+          : anchor_query->AnchorReference(implicit_anchor_, is_in_top_layer_);
+  if (!anchor_reference)
+    return absl::nullopt;
+
+  return anchor_query->EvaluateSize(*anchor_reference, anchor_size_value,
+                                    container_converter_.GetWritingMode(),
+                                    self_writing_direction_.GetWritingMode());
 }
 
 void NGLogicalAnchorReference::Trace(Visitor* visitor) const {
@@ -336,14 +412,6 @@ void NGLogicalAnchorReference::Trace(Visitor* visitor) const {
 
 void NGPhysicalAnchorReference::Trace(Visitor* visitor) const {
   visitor->Trace(fragment);
-}
-
-void NGLogicalAnchorQuery::Trace(Visitor* visitor) const {
-  visitor->Trace(anchor_references_);
-}
-
-void NGPhysicalAnchorQuery::Trace(Visitor* visitor) const {
-  visitor->Trace(anchor_references_);
 }
 
 }  // namespace blink

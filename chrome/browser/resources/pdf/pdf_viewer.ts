@@ -16,8 +16,8 @@ import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {listenOnce} from 'chrome://resources/js/util.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {listenOnce} from 'chrome://resources/js/util_ts.js';
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
@@ -287,6 +287,10 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     return BACKGROUND_COLOR;
   }
 
+  setPluginSrc(plugin: HTMLEmbedElement) {
+    plugin.src = this.browserApi!.getStreamInfo().streamUrl;
+  }
+
   init(browserApi: BrowserApi) {
     this.initInternal(
         browserApi, this.$.scroller, this.$.sizer, this.$.content);
@@ -449,6 +453,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
       const result =
           await this.pluginController_!.save(SaveRequestType.ANNOTATION);
       // Data always exists when save is called with requestType = ANNOTATION.
+      assert(result);
 
       record(UserAction.ENTER_ANNOTATION_MODE);
       this.annotationMode_ = true;
@@ -578,9 +583,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
    * @param message Message received from the plugin containing the x and y to
    *     navigate to in screen coordinates.
    */
-  private goToPageAndXY_(
+  private goToPageAndXy_(
       origin: ChangePageOrigin, page: number, message: Point) {
-    this.viewport.goToPageAndXY(page, message.x, message.y);
+    this.viewport.goToPageAndXy(page, message.x, message.y);
     if (origin === ChangePageOrigin.BOOKMARK) {
       record(UserAction.FOLLOW_BOOKMARK);
     }
@@ -641,7 +646,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     this.pluginController_!.getPasswordComplete(event.detail.password);
   }
 
-  updateUIForViewportChange() {
+  updateUiForViewportChange() {
     // Update toolbar elements.
     this.clockwiseRotations_ = this.viewport.getClockwiseRotations();
     this.pageNo_ = this.viewport.getMostVisiblePage() + 1;
@@ -935,7 +940,7 @@ export class PdfViewerElement extends PdfViewerBaseElement {
 
   private onChangePageAndXy_(e: CustomEvent<ChangePageAndXyDetail>) {
     const point = this.viewport.convertPageToScreen(e.detail.page, e.detail);
-    this.goToPageAndXY_(e.detail.origin, e.detail.page, point);
+    this.goToPageAndXy_(e.detail.origin, e.detail.page, point);
   }
 
   private onNavigate_(e: CustomEvent<NavigateDetail>) {

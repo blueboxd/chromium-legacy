@@ -12,6 +12,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/types/expected.h"
+#include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/source_registration_error.mojom-shared.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom-shared.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/structured_headers.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -26,7 +32,6 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/attribution_response_parsing.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -51,11 +56,14 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 namespace {
+
+using ::blink::mojom::blink::AttributionRegistrationType;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -108,12 +116,6 @@ void MaybeLogTriggerIgnored(ExecutionContext* execution_context,
                 /*invalid_parameter=*/json);
 }
 
-bool IsValidReportingOrigin(const SecurityOrigin* origin) {
-  return origin && origin->IsPotentiallyTrustworthy() &&
-         (origin->Protocol() == WTF::g_https_atom ||
-          origin->Protocol() == WTF::g_http_atom);
-}
-
 bool SubframeHasAllowedContainerPolicy(LocalFrame* frame) {
   DCHECK(frame->Parent());
   const FramePolicy& frame_policy = frame->Owner()->GetFramePolicy();
@@ -134,11 +136,12 @@ class AttributionSrcLoader::ResourceClient
     : public GarbageCollected<AttributionSrcLoader::ResourceClient>,
       public RawResourceClient {
  public:
-  // `associated_with_navigation` indicates whether the attribution data
+  // `nav_type` being non-nullopt indicates whether the attribution data
   // produced by this client will need to be associated with a navigation.
-  ResourceClient(AttributionSrcLoader* loader,
-                 SrcType type,
-                 bool associated_with_navigation)
+  ResourceClient(
+      AttributionSrcLoader* loader,
+      AttributionRegistrationType type,
+      absl::optional<mojom::blink::AttributionNavigationType> nav_type)
       : loader_(loader), type_(type) {
     DCHECK(loader_);
     DCHECK(loader_->local_frame_);
@@ -148,16 +151,17 @@ class AttributionSrcLoader::ResourceClient
     loader_->local_frame_->GetRemoteNavigationAssociatedInterfaces()
         ->GetInterface(&conversion_host);
 
-    if (associated_with_navigation) {
+    if (nav_type.has_value()) {
       // Create a new token which will be used to identify `data_host_` in the
       // browser process.
       attribution_src_token_ = AttributionSrcToken();
       conversion_host->RegisterNavigationDataHost(
-          data_host_.BindNewPipeAndPassReceiver(), *attribution_src_token_);
+          data_host_.BindNewPipeAndPassReceiver(), *attribution_src_token_,
+          *nav_type);
     } else {
       // Send the data host normally.
-      conversion_host->RegisterDataHost(
-          data_host_.BindNewPipeAndPassReceiver());
+      conversion_host->RegisterDataHost(data_host_.BindNewPipeAndPassReceiver(),
+                                        type);
     }
   }
 
@@ -179,7 +183,7 @@ class AttributionSrcLoader::ResourceClient
   }
 
   void HandleResponseHeaders(
-      scoped_refptr<const SecurityOrigin> reporting_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
       const AtomicString& source_json,
       const AtomicString& trigger_json,
       uint64_t request_id);
@@ -192,11 +196,11 @@ class AttributionSrcLoader::ResourceClient
 
   void HandleSourceRegistration(
       const AtomicString& json,
-      scoped_refptr<const SecurityOrigin> reporting_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
       uint64_t request_id);
   void HandleTriggerRegistration(
       const AtomicString& json,
-      scoped_refptr<const SecurityOrigin> reporting_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
       uint64_t request_id);
 
   // RawResourceClient:
@@ -213,7 +217,7 @@ class AttributionSrcLoader::ResourceClient
   // Type of events this request can register. In some cases, this will not be
   // assigned until the first event is received. A single attributionsrc
   // request can only register one type of event across redirects.
-  SrcType type_;
+  AttributionRegistrationType type_;
 
   // Token used to identify an attributionsrc request in the browser process.
   // Only generated for attributionsrc requests that are associated with a
@@ -238,31 +242,34 @@ void AttributionSrcLoader::Trace(Visitor* visitor) const {
 }
 
 void AttributionSrcLoader::Register(const KURL& src_url, HTMLElement* element) {
-  CreateAndSendRequest(src_url, element, SrcType::kUndetermined,
-                       /*associated_with_navigation=*/false);
+  CreateAndSendRequest(src_url, element,
+                       AttributionRegistrationType::kSourceOrTrigger,
+                       /*nav_type=*/absl::nullopt);
 }
 
 absl::optional<Impression> AttributionSrcLoader::RegisterNavigation(
     const KURL& src_url,
+    mojom::blink::AttributionNavigationType nav_type,
     HTMLElement* element) {
   // TODO(apaseltiner): Add tests to ensure that this method can't be used to
   // register triggers.
-  ResourceClient* client =
-      CreateAndSendRequest(src_url, element, SrcType::kSource,
-                           /*associated_with_navigation=*/true);
+  ResourceClient* client = CreateAndSendRequest(
+      src_url, element, AttributionRegistrationType::kSource, nav_type);
   if (!client)
     return absl::nullopt;
 
   DCHECK(client->attribution_src_token());
-  return blink::Impression{.attribution_src_token =
-                               *client->attribution_src_token()};
+  return blink::Impression{
+      .attribution_src_token = *client->attribution_src_token(),
+      .nav_type = nav_type};
 }
 
 AttributionSrcLoader::ResourceClient*
-AttributionSrcLoader::CreateAndSendRequest(const KURL& src_url,
-                                           HTMLElement* element,
-                                           SrcType src_type,
-                                           bool associated_with_navigation) {
+AttributionSrcLoader::CreateAndSendRequest(
+    const KURL& src_url,
+    HTMLElement* element,
+    AttributionRegistrationType src_type,
+    absl::optional<mojom::blink::AttributionNavigationType> nav_type) {
   // Detached frames cannot/should not register new attributionsrcs.
   if (!local_frame_->IsAttached())
     return nullptr;
@@ -283,20 +290,19 @@ AttributionSrcLoader::CreateAndSendRequest(const KURL& src_url,
   Document* document = window->document();
 
   if (document->IsPrerendering()) {
-    document->AddPostPrerenderingActivationStep(
-        WTF::BindOnce(base::IgnoreResult(&AttributionSrcLoader::DoRegistration),
-                      WrapPersistentIfNeeded(this), src_url, src_type,
-                      associated_with_navigation));
+    document->AddPostPrerenderingActivationStep(WTF::BindOnce(
+        base::IgnoreResult(&AttributionSrcLoader::DoRegistration),
+        WrapPersistentIfNeeded(this), src_url, src_type, nav_type));
     return nullptr;
   }
 
-  return DoRegistration(src_url, src_type, associated_with_navigation);
+  return DoRegistration(src_url, src_type, nav_type);
 }
 
 AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
     const KURL& src_url,
-    SrcType src_type,
-    bool associated_with_navigation) {
+    AttributionRegistrationType src_type,
+    absl::optional<mojom::blink::AttributionNavigationType> nav_type) {
   if (!local_frame_->IsAttached())
     return nullptr;
 
@@ -308,16 +314,17 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
   request.SetKeepalive(true);
   request.SetRequestContext(mojom::blink::RequestContextType::ATTRIBUTION_SRC);
 
+  bool associated_with_navigation = nav_type.has_value();
   const char* eligible = [src_type,
                           associated_with_navigation]() -> const char* {
     switch (src_type) {
-      case SrcType::kSource:
+      case AttributionRegistrationType::kSource:
         return associated_with_navigation ? kAttributionEligibleNavigationSource
                                           : kAttributionEligibleEventSource;
-      case SrcType::kTrigger:
+      case AttributionRegistrationType::kTrigger:
         NOTREACHED();
         return nullptr;
-      case SrcType::kUndetermined:
+      case AttributionRegistrationType::kSourceOrTrigger:
         DCHECK(!associated_with_navigation);
         return kAttributionEligibleEventSourceAndTrigger;
     }
@@ -331,8 +338,7 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
   params.MutableOptions().initiator_info.name =
       fetch_initiator_type_names::kAttributionsrc;
 
-  auto* client = MakeGarbageCollected<ResourceClient>(
-      this, src_type, associated_with_navigation);
+  auto* client = MakeGarbageCollected<ResourceClient>(this, src_type, nav_type);
   ++num_resource_clients_;
 
   // TODO(https://crbug.com/1374121): If this registration is
@@ -348,7 +354,7 @@ AttributionSrcLoader::ResourceClient* AttributionSrcLoader::DoRegistration(
   return client;
 }
 
-scoped_refptr<const SecurityOrigin>
+absl::optional<attribution_reporting::SuitableOrigin>
 AttributionSrcLoader::ReportingOriginForUrlIfValid(
     const KURL& url,
     HTMLElement* element,
@@ -369,13 +375,13 @@ AttributionSrcLoader::ReportingOriginForUrlIfValid(
   };
 
   if (!RuntimeEnabledFeatures::AttributionReportingEnabled(window))
-    return nullptr;
+    return absl::nullopt;
 
   if (!window->IsFeatureEnabled(
           mojom::blink::PermissionsPolicyFeature::kAttributionReporting)) {
     maybe_log_audit_issue(
         AttributionReportingIssueType::kPermissionPolicyDisabled);
-    return nullptr;
+    return absl::nullopt;
   }
 
   if (local_frame_->Parent() &&
@@ -387,17 +393,21 @@ AttributionSrcLoader::ReportingOriginForUrlIfValid(
   if (!window->IsSecureContext()) {
     maybe_log_audit_issue(AttributionReportingIssueType::kInsecureContext,
                           window->GetSecurityContext().GetSecurityOrigin());
-    return nullptr;
+    return absl::nullopt;
   }
 
-  scoped_refptr<const SecurityOrigin> reporting_origin =
+  scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::Create(url);
-  if (!url.ProtocolIsInHTTPFamily() ||
-      !reporting_origin->IsPotentiallyTrustworthy()) {
+
+  absl::optional<attribution_reporting::SuitableOrigin> reporting_origin =
+      attribution_reporting::SuitableOrigin::Create(
+          security_origin->ToUrlOrigin());
+
+  if (!url.ProtocolIsInHTTPFamily() || !reporting_origin) {
     maybe_log_audit_issue(
         AttributionReportingIssueType::kUntrustworthyReportingOrigin,
-        reporting_origin.get());
-    return nullptr;
+        security_origin.get());
+    return absl::nullopt;
   }
 
   UseCounter::Count(window, mojom::blink::WebFeature::kConversionAPIAll);
@@ -461,13 +471,14 @@ bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
     return false;
 
   const uint64_t request_id = request.InspectorId();
-  scoped_refptr<const SecurityOrigin> reporting_origin =
+  absl::optional<attribution_reporting::SuitableOrigin> reporting_origin =
       ReportingOriginForUrlIfValid(response.ResponseUrl(),
                                    /*element=*/nullptr, request_id);
   if (!reporting_origin)
     return false;
 
-  SrcType src_type = SrcType::kUndetermined;
+  AttributionRegistrationType src_type =
+      AttributionRegistrationType::kSourceOrTrigger;
 
   // Determine eligibility for this registration by considering first request
   // for a resource (even if `response` is for a redirect). This indicates
@@ -480,7 +491,7 @@ bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
   if (eligible_header.IsNull()) {
     // All subresources are eligible to register triggers if they do *not*
     // specify the header.
-    src_type = SrcType::kTrigger;
+    src_type = AttributionRegistrationType::kTrigger;
   } else {
     absl::optional<net::structured_headers::Dictionary> dict =
         net::structured_headers::ParseDictionary(
@@ -498,13 +509,11 @@ bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
     const bool allows_trigger = dict->contains(kAttributionEligibleTrigger);
 
     if (allows_event_source && allows_trigger) {
-      // We use an undetermined SrcType which indicates either a source or
-      // trigger may be registered.
-      src_type = SrcType::kUndetermined;
+      src_type = AttributionRegistrationType::kSourceOrTrigger;
     } else if (allows_event_source) {
-      src_type = SrcType::kSource;
+      src_type = AttributionRegistrationType::kSource;
     } else if (allows_trigger) {
-      src_type = SrcType::kTrigger;
+      src_type = AttributionRegistrationType::kTrigger;
     } else {
       MaybeLogSourceIgnored(local_frame_->DomWindow(), request_id, source_json);
       MaybeLogTriggerIgnored(local_frame_->DomWindow(), request_id,
@@ -516,17 +525,36 @@ bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
   // TODO(johnidel): We should consider updating the eligibility header based on
   // previously registered requests in the chain.
 
+  if (Document* document = local_frame_->DomWindow()->document();
+      document->IsPrerendering()) {
+    document->AddPostPrerenderingActivationStep(WTF::BindOnce(
+        &AttributionSrcLoader::RegisterAttributionHeaders,
+        WrapPersistentIfNeeded(this), src_type, std::move(*reporting_origin),
+        source_json, trigger_json, resource->InspectorId()));
+  } else {
+    RegisterAttributionHeaders(src_type, std::move(*reporting_origin),
+                               source_json, trigger_json,
+                               resource->InspectorId());
+  }
+
+  return true;
+}
+
+void AttributionSrcLoader::RegisterAttributionHeaders(
+    AttributionRegistrationType src_type,
+    attribution_reporting::SuitableOrigin reporting_origin,
+    const AtomicString& source_json,
+    const AtomicString& trigger_json,
+    uint64_t request_id) {
   // Create a client to mimic processing of attributionsrc requests. Note we do
   // not share `AttributionDataHosts` for redirects chains.
   // TODO(johnidel): Consider refactoring this such that we can share clients
   // for redirect chain, or not create the client at all.
-
   auto* client = MakeGarbageCollected<ResourceClient>(
-      this, src_type, /*associated_with_navigation=*/false);
+      this, src_type, /*nav_type=*/absl::nullopt);
   client->HandleResponseHeaders(std::move(reporting_origin), source_json,
-                                trigger_json, resource->InspectorId());
+                                trigger_json, request_id);
   client->Finish();
-  return true;
 }
 
 String AttributionSrcLoader::ResourceClient::DebugName() const {
@@ -586,7 +614,7 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
   if (source_json.IsNull() && trigger_json.IsNull())
     return;
 
-  scoped_refptr<const SecurityOrigin> reporting_origin =
+  absl::optional<attribution_reporting::SuitableOrigin> reporting_origin =
       loader_->ReportingOriginForUrlIfValid(response.ResponseUrl(),
                                             /*element=*/nullptr, request_id);
   if (!reporting_origin)
@@ -598,20 +626,19 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
     // Attribution-Reporting-Register-OS-Trigger headers.
   }
 
-  HandleResponseHeaders(std::move(reporting_origin), source_json, trigger_json,
+  HandleResponseHeaders(std::move(*reporting_origin), source_json, trigger_json,
                         request_id);
 }
 
 void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
-    scoped_refptr<const SecurityOrigin> reporting_origin,
+    attribution_reporting::SuitableOrigin reporting_origin,
     const AtomicString& source_json,
     const AtomicString& trigger_json,
     uint64_t request_id) {
-  DCHECK(IsValidReportingOrigin(reporting_origin.get()));
   DCHECK(!source_json.IsNull() || !trigger_json.IsNull());
 
   switch (type_) {
-    case SrcType::kSource:
+    case AttributionRegistrationType::kSource:
       MaybeLogTriggerIgnored(loader_->local_frame_->DomWindow(), request_id,
                              trigger_json);
 
@@ -620,7 +647,7 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
                                  request_id);
       }
       break;
-    case SrcType::kTrigger:
+    case AttributionRegistrationType::kTrigger:
       MaybeLogSourceIgnored(loader_->local_frame_->DomWindow(), request_id,
                             source_json);
 
@@ -629,7 +656,7 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
                                   request_id);
       }
       break;
-    case SrcType::kUndetermined:
+    case AttributionRegistrationType::kSourceOrTrigger:
       if (!source_json.IsNull() && !trigger_json.IsNull()) {
         LogAuditIssue(loader_->local_frame_->DomWindow(),
                       AttributionReportingIssueType::kSourceAndTriggerHeaders,
@@ -639,14 +666,14 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
       }
 
       if (!source_json.IsNull()) {
-        type_ = SrcType::kSource;
+        type_ = AttributionRegistrationType::kSource;
         HandleSourceRegistration(source_json, std::move(reporting_origin),
                                  request_id);
         return;
       }
 
       if (!trigger_json.IsNull()) {
-        type_ = SrcType::kTrigger;
+        type_ = AttributionRegistrationType::kTrigger;
         HandleTriggerRegistration(trigger_json, std::move(reporting_origin),
                                   request_id);
       }
@@ -657,17 +684,14 @@ void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
 
 void AttributionSrcLoader::ResourceClient::HandleSourceRegistration(
     const AtomicString& json,
-    scoped_refptr<const SecurityOrigin> reporting_origin,
+    attribution_reporting::SuitableOrigin reporting_origin,
     uint64_t request_id) {
-  DCHECK_EQ(type_, SrcType::kSource);
+  DCHECK_EQ(type_, AttributionRegistrationType::kSource);
   DCHECK(!json.IsNull());
-  DCHECK(IsValidReportingOrigin(reporting_origin.get()));
 
-  auto source_data = mojom::blink::AttributionSourceData::New();
-  source_data->reporting_origin = std::move(reporting_origin);
-
-  if (!attribution_response_parsing::ParseSourceRegistrationHeader(
-          json, *source_data)) {
+  auto source_data = attribution_reporting::SourceRegistration::Parse(
+      StringUTF8Adaptor(json).AsStringPiece());
+  if (!source_data.has_value()) {
     LogAuditIssue(loader_->local_frame_->DomWindow(),
                   AttributionReportingIssueType::kInvalidRegisterSourceHeader,
                   /*element=*/nullptr, request_id,
@@ -675,22 +699,20 @@ void AttributionSrcLoader::ResourceClient::HandleSourceRegistration(
     return;
   }
 
-  data_host_->SourceDataAvailable(std::move(source_data));
+  data_host_->SourceDataAvailable(std::move(reporting_origin),
+                                  std::move(*source_data));
 }
 
 void AttributionSrcLoader::ResourceClient::HandleTriggerRegistration(
     const AtomicString& json,
-    scoped_refptr<const SecurityOrigin> reporting_origin,
+    attribution_reporting::SuitableOrigin reporting_origin,
     uint64_t request_id) {
-  DCHECK_EQ(type_, SrcType::kTrigger);
+  DCHECK_EQ(type_, AttributionRegistrationType::kTrigger);
   DCHECK(!json.IsNull());
-  DCHECK(IsValidReportingOrigin(reporting_origin.get()));
 
-  auto trigger_data = mojom::blink::AttributionTriggerData::New();
-  trigger_data->reporting_origin = std::move(reporting_origin);
-
-  if (!attribution_response_parsing::ParseTriggerRegistrationHeader(
-          json, *trigger_data)) {
+  auto trigger_data = attribution_reporting::TriggerRegistration::Parse(
+      StringUTF8Adaptor(json).AsStringPiece(), std::move(reporting_origin));
+  if (!trigger_data.has_value()) {
     LogAuditIssue(loader_->local_frame_->DomWindow(),
                   AttributionReportingIssueType::kInvalidRegisterTriggerHeader,
                   /*element=*/nullptr, request_id,
@@ -698,7 +720,7 @@ void AttributionSrcLoader::ResourceClient::HandleTriggerRegistration(
     return;
   }
 
-  data_host_->TriggerDataAvailable(std::move(trigger_data));
+  data_host_->TriggerDataAvailable(std::move(*trigger_data));
 }
 
 }  // namespace blink

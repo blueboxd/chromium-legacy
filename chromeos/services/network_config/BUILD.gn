@@ -15,9 +15,9 @@ static_library("network_config") {
     "//base",
     "//chromeos/ash/components/dbus/hermes",
     "//chromeos/ash/components/dbus/shill",
+    "//chromeos/ash/components/login/login_state",
     "//chromeos/ash/components/network",
     "//chromeos/ash/components/sync_wifi:network_eligibility_checker",
-    "//chromeos/login/login_state",
     "//chromeos/services/network_config/public/cpp",
     "//chromeos/services/network_config/public/mojom",
     "//components/captive_portal/core",
@@ -65,6 +65,8 @@ source_set("test_support") {
   sources = [
     "test_apn_data.cc",
     "test_apn_data.h",
+    "test_network_configuration_observer.cc",
+    "test_network_configuration_observer.h",
   ]
 }
 
@@ -80,14 +82,16 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/ash/components/dbus/shill:test_support",
+    "//chromeos/ash/components/login/login_state",
     "//chromeos/ash/components/network:test_support",
-    "//chromeos/login/login_state",
     "//chromeos/services/network_config/public/cpp:test_support",
     "//components/captive_portal/core",
     "//components/onc",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
+    "//mojo/public/cpp/bindings",
     "//services/network/public/mojom:mojom_ip_address",
     "//testing/gtest",
+    "//third_party/re2",
   ]
 }

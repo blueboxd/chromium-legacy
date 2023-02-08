@@ -126,7 +126,7 @@ message AppProvisioningResponse {
 
     // Width of the icon in pixels. While App icons are typically square
     // note there is no guarantee the image provided will be.
-    optional int32 width_in_pixels = 2;
+    optional uint32 width_in_pixels = 2;
 
     // Mime type of the icon.
     optional string mime_type = 3;
@@ -146,12 +146,14 @@ message AppProvisioningResponse {
 
   // For Web-only metadata.
   message WebExtras {
-    // |start_url| and |manifest_id| uniquely identify each Web app.
-    optional string start_url = 1;
-    optional string manifest_id = 2;
+    // |manifest_id| uniquely identifies a web app.
+    optional string manifest_id = 1;
 
     // The navigation scope of the web app.
-    optional string scope = 3;
+    optional string scope = 2;
+
+    // The start url that is loaded into the web app when it opens up.
+    optional string start_url = 3;
 
     // The display mode of the web app.
     optional DisplayMode display_mode = 4;
@@ -183,9 +185,9 @@ message AppProvisioningResponse {
     }
 
     // The shelf order for this app.
-    optional int32 shelf_order = 8;
+    optional uint32 shelf_order = 8;
 
     // The launcher order for this app.
-    optional int32 launcher_order = 9;
+    optional uint32 launcher_order = 9;
   }
 }

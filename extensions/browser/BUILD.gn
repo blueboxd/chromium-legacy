@@ -9,8 +9,14 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 assert(enable_extensions)
 
-# TODO(devlin): Document these build targets and the scope each.
-
+# The overarching "build all the things" for the browser side of the
+# //extensions module. In particular, this includes:
+# - The core extensions system
+# - The API implementations for the given platform and gn args
+# - The glue to fit them together (though some of this is left to the
+#   embedder).
+# Typically, embedders should depend on this, rather than any of the
+# subtargets.
 group("browser") {
   public_deps = [
     "//extensions/browser:browser_context_keyed_service_factories",
@@ -23,7 +29,8 @@ group("browser") {
   ]
 }
 
-# Isolate the instantiation of BrowserContextKeyedServiceFactories.
+# A group of helpers to instantiate the set of all browser context keyed service
+# factories, including both the API methods and core system services.
 source_set("browser_context_keyed_service_factories") {
   visibility = [ ":*" ]
 
@@ -38,6 +45,8 @@ source_set("browser_context_keyed_service_factories") {
   ]
 }
 
+# A helper to instantiate all the necessary core system keyed services
+# factories.
 source_set("core_keyed_service_factories") {
   visibility = [ ":*" ]
 
@@ -54,6 +63,11 @@ source_set("core_keyed_service_factories") {
   ]
 }
 
+# The set of all sources that are related to the core extensions system.
+# Ideally, this would be isolated from all API targets (so that APIs are "leaf
+# nodes" and could be easily toggled on-and-off through dependencies for
+# different platforms).
+# See also https://crbug.com/883570.
 source_set("browser_sources") {
   visibility = [ "./*" ]
 
@@ -62,7 +76,8 @@ source_set("browser_sources") {
     "activity.h",
     "allowlist_state.h",
 
-    # TODO(ghazale): anything under api/ should be moved out of this target.
+    # TODO(https://crbug.com/883570): Anything under api/ should be moved out of
+    # this target.
     "api/activity_log/web_request_constants.cc",
     "api/activity_log/web_request_constants.h",
     "api/api_resource.cc",
@@ -95,6 +110,8 @@ source_set("browser_sources") {
     "api/declarative_net_request/constants.h",
     "api/declarative_net_request/declarative_net_request_api.cc",
     "api/declarative_net_request/declarative_net_request_api.h",
+    "api/declarative_net_request/declarative_net_request_prefs_helper.cc",
+    "api/declarative_net_request/declarative_net_request_prefs_helper.h",
     "api/declarative_net_request/extension_url_pattern_index_matcher.cc",
     "api/declarative_net_request/extension_url_pattern_index_matcher.h",
     "api/declarative_net_request/file_backed_ruleset_source.cc",
@@ -640,7 +657,7 @@ source_set("browser_sources") {
   if (is_chromeos_ash) {
     deps += [
       "//chrome/browser/ash/crosapi:browser_util",
-      "//chromeos/login/login_state",
+      "//chromeos/ash/components/login/login_state",
     ]
   }
 
@@ -669,21 +686,10 @@ source_set("browser_sources") {
   ]
 }
 
-# NOTE: This is separate from ":browser" because it depends on
-# //extensions/browser/api:api_registration, which in turn depends on
-# :browser.
-source_set("core_api_provider") {
-  sources = [
-    "core_extensions_browser_api_provider.cc",
-    "core_extensions_browser_api_provider.h",
-  ]
-
-  deps = [
-    ":browser",
-    "//extensions/browser/api:api_registration",
-  ]
-}
-
+# The set of all browsertests for anything defined under the
+# //extensions/browser module. Note that, unlike the production build targets
+# above, this is a monolithic target that includes all tests for both the core
+# system and relevant APIs.
 source_set("browser_tests") {
   testonly = true
   sources = [
@@ -755,17 +761,18 @@ source_set("browser_tests") {
       "//chromeos/ash/components/dbus/media_analytics",
       "//chromeos/ash/components/dbus/media_analytics:media_perception_proto",
       "//chromeos/ash/components/dbus/upstart",
+      "//chromeos/ash/components/login/login_state",
       "//chromeos/ash/components/network",
       "//chromeos/dbus/permission_broker",
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
-      "//chromeos/login/login_state",
       "//components/crash/content/browser/error_reporting:mock_crash_endpoint",
       "//extensions/common:mojom",
     ]
   }
 }
 
+# The set of sources that are needed for both browser and unit tests.
 source_set("test_support") {
   testonly = true
   sources = [
@@ -829,6 +836,10 @@ source_set("test_support") {
   }
 }
 
+# The set of all unittests for anything defined under the //extensions/browser
+# module. Note that, unlike the production build targets above, this is a
+# monolithic target that includes all tests for both the core system and
+# relevant APIs.
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -842,6 +853,7 @@ source_set("unit_tests") {
     "api/declarative/deduping_factory_unittest.cc",
     "api/declarative/rules_registry_unittest.cc",
     "api/declarative_net_request/composite_matcher_unittest.cc",
+    "api/declarative_net_request/declarative_net_request_prefs_helper_unittest.cc",
     "api/declarative_net_request/file_sequence_helper_unittest.cc",
     "api/declarative_net_request/flat_ruleset_indexer_unittest.cc",
     "api/declarative_net_request/indexed_rule_unittest.cc",
@@ -999,10 +1011,10 @@ source_set("unit_tests") {
       "//chromeos/ash/components/dbus/media_analytics:media_perception_proto",
       "//chromeos/ash/components/dbus/shill",
       "//chromeos/ash/components/dbus/upstart",
+      "//chromeos/ash/components/login/login_state",
       "//chromeos/ash/components/network:test_support",
       "//chromeos/dbus/permission_broker",
       "//chromeos/dbus/power",
-      "//chromeos/login/login_state",
       "//components/feedback",
       "//components/prefs:prefs",
       "//extensions/shell:app_shell_lib",
@@ -1039,6 +1051,8 @@ fuzzer_test("extension_declarative_net_request_indexed_rule_fuzzer") {
   deps = [
     ":browser",
     "//base",
+    "//extensions/common",
+    "//extensions/common/api",
     "//third_party/abseil-cpp:absl",
     "//url",
   ]

@@ -132,8 +132,7 @@ std::unique_ptr<ui::InteractionSequence::Step> Tutorial::StepBuilder::Build(
       interaction_sequence_step_builder =
           std::make_unique<ui::InteractionSequence::StepBuilder>();
 
-  interaction_sequence_step_builder->SetFindElementInAnyContext(
-      step_.in_any_context);
+  interaction_sequence_step_builder->SetContext(step_.context_mode);
 
   if (step_.element_id)
     interaction_sequence_step_builder->SetElementID(step_.element_id);
@@ -310,7 +309,8 @@ std::unique_ptr<Tutorial> Tutorial::Builder::BuildFromDescription(
       [](int step_number, TutorialService* tutorial_service, int sequence_step,
          ui::TrackedElement* last_element, ui::ElementIdentifier last_id,
          ui::InteractionSequence::StepType last_step_type,
-         ui::InteractionSequence::AbortedReason aborted_reason) {
+         ui::InteractionSequence::AbortedReason aborted_reason,
+         std::string description) {
         tutorial_service->AbortTutorial(step_number);
       },
       current_step, tutorial_service));

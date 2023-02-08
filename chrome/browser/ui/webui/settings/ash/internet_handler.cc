@@ -15,25 +15,24 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/tether/tether_service.h"
 #include "chrome/browser/chromeos/extensions/vpn_provider/vpn_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/network_event_log.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/events/event_constants.h"
 
-namespace ash {
+namespace ash::settings {
 
 namespace {
 
@@ -59,8 +58,6 @@ bool IsVpnConfigAllowed() {
 }
 
 }  // namespace
-
-namespace settings {
 
 InternetHandler::InternetHandler(Profile* profile) : profile_(profile) {
   DCHECK(profile_);
@@ -138,14 +135,8 @@ void InternetHandler::AddThirdPartyVpn(const base::Value::List& args) {
   if (arc_app_list_prefs && arc_app_list_prefs->GetApp(app_id)) {
     DCHECK(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
         profile_));
-    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
-          app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
-    } else {
-      apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
-          app_id, ui::EF_NONE,
-          apps::mojom::LaunchSource::kFromParentalControls);
-    }
+    apps::AppServiceProxyFactory::GetForProfile(profile_)->Launch(
+        app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
     return;
   }
 
@@ -287,5 +278,4 @@ void InternetHandler::SetGmsCoreNotificationsStateTrackerForTesting(
   gms_core_notifications_state_tracker_->AddObserver(this);
 }
 
-}  // namespace settings
-}  // namespace ash
+}  // namespace ash::settings

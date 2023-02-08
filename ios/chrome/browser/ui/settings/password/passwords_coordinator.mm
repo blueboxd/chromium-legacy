@@ -162,6 +162,10 @@
   self.passwordsInOtherAppsCoordinator.delegate = nil;
   self.passwordsInOtherAppsCoordinator = nil;
 
+  [self.passwordSettingsCoordinator stop];
+  self.passwordSettingsCoordinator.delegate = nil;
+  self.passwordSettingsCoordinator = nil;
+
   [self.mediator disconnect];
 }
 
@@ -185,6 +189,19 @@
       initWithBaseNavigationController:self.baseNavigationController
                                browser:self.browser
                             credential:credential
+                          reauthModule:self.reauthModule
+                  passwordCheckManager:[self passwordCheckManager].get()];
+  self.passwordDetailsCoordinator.delegate = self;
+  [self.passwordDetailsCoordinator start];
+}
+
+- (void)showDetailedViewForAffiliatedGroup:
+    (const password_manager::AffiliatedGroup&)affiliatedGroup {
+  DCHECK(!self.passwordDetailsCoordinator);
+  self.passwordDetailsCoordinator = [[PasswordDetailsCoordinator alloc]
+      initWithBaseNavigationController:self.baseNavigationController
+                               browser:self.browser
+                       affiliatedGroup:affiliatedGroup
                           reauthModule:self.reauthModule
                   passwordCheckManager:[self passwordCheckManager].get()];
   self.passwordDetailsCoordinator.delegate = self;

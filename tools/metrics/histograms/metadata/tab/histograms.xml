@@ -446,7 +446,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.Preview.MemoryUsage.CompressedData.TotalKiB" units="KB"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -457,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToFirstUsableFrameAfterStartCapture"
-    units="ms" expires_after="2023-04-02">
+    units="ms" expires_after="2023-06-04">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -531,7 +531,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.AliveRenderersCount" units="renderers"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
   <summary>
@@ -559,7 +559,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.TotalTabCount" units="tabs"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>ajuma@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
@@ -594,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.Screenshot.Action" enum="TabScreenshotAction"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>skare@chromium.org</owner>
   <summary>
     Records actions taken after one or more screenshots of a page were taken.
@@ -616,7 +616,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.StateAtRendererTermination" enum="TabForegroundState"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>gambard@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -834,6 +834,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="TabHoverCards.LastTabHoverCardPreviewTime{TabCountMetrics}"
     units="ms" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -863,6 +867,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="TabHoverCards.LastTabHoverCardViewedTime{TabCountMetrics}"
     units="ms" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -890,6 +898,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="TabHoverCards.TabHoverCardPreviewTime{TabCountMetrics}"
     units="ms" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -919,6 +931,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="TabHoverCards.TabHoverCardsSeenBeforeTabSelection{TabCountMetrics}"
     units="hover cards" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -944,6 +960,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="TabHoverCards.TabHoverCardViewedTime{TabCountMetrics}"
     units="ms" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -972,6 +992,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="TabHoverCards.TabPreviewsSeenBeforeTabSelection{TabCountMetrics}"
     units="previews" expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -998,6 +1022,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="TabHoverCards.TimeSinceLastVisible" units="ms"
     expires_after="2023-01-01">
+  <obsolete>
+    Removed 12/2022. Not actively used because reported values are 0 most of the
+    time. It would be more useful to report number of discards per day.
+  </obsolete>
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1007,22 +1035,6 @@ chromium-metrics-reviews@google.com.
     unintentionally exited the tab strip. If the user reenters the tab strip
     within X ms we want to reshow the hover card immediately. This histogram
     will help to better refine that number.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.BackgroundTabOpening.SwitchToTab"
-    enum="TabLoadingState" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The loading state of a tab at the time the user switches to it during a
-    background tab opening session (the duration of time from when the browser
-    starts to open background tabs until the time the browser has finished
-    loading those tabs or otherwise decided to stop loading them). The metric is
-    only recorded when a tab is switched to from another tab within the same
-    tabstrip. As a result, the case when switching between different windows is
-    not included, either between two tabs in different browser windows, or when
-    switching to a different application and switching back to the browser. The
-    metric is not recorded when the session overlaps with session restore.
   </summary>
 </histogram>
 
@@ -1133,7 +1145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.DiscardToReloadTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1165,195 +1177,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadToCloseTime" units="ms"
-    expires_after="M112">
+    expires_after="2023-05-14">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
     Elapsed time between the last time a discarded tab was reloaded and the time
     it gets closed.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.BackgroundTabOpening.CompressedPagesPerSecond"
-    units="pages/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of pages compressed per second when opening background tabs. This
-    is recorded at the end of the background tab opening session as an average
-    over the entire period (the duration of time from when the browser starts to
-    open background tabs until the time the browser has finished loading those
-    tabs or otherwise decided to stop loading them). The metric is not recorded
-    when the session overlaps with session restore. Only recorded on macOS.
-    Warning: This metric is a ratio and the session interval differs for each
-    session. It is hard to tell if it is average rate for each second in the
-    interval or it has a huge spike.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.BackgroundTabOpening.DecompressedPagesPerSecond"
-    units="pages/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of pages decompressed per second when opening background tabs.
-    This is recorded at the end of the background tab opening session as an
-    average over the entire period (the duration of time from when the browser
-    starts to open background tabs until the time the browser has finished
-    loading those tabs or otherwise decided to stop loading them). The metric is
-    not recorded when the session overlaps with session restore. Only recorded
-    on macOS. Warning: This metric is a ratio and the session interval differs
-    for each session. It is hard to tell if it is average rate for each second
-    in the interval or it has a huge spike.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Experimental.BackgroundTabOpening.SwapInPerSecond"
-    units="swaps/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of swap-ins per second when opening background tabs. This is
-    recorded at the end of the background tab opening session as an average over
-    the entire period (the duration of time from when the browser starts to open
-    background tabs until the time the browser has finished loading those tabs
-    or otherwise decided to stop loading them). The metric is not recorded when
-    the session overlaps with session restore. Warning: This metric is a ratio
-    and the session interval differs for each session. It is hard to tell if it
-    is average rate for each second in the interval or it has a huge spike.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Experimental.BackgroundTabOpening.SwapOutPerSecond"
-    units="swaps/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of swap-outs per second when opening background tabs. This is
-    recorded at the end of the background tab opening session as an average over
-    the entire period (the duration of time from when the browser starts to open
-    background tabs until the time the browser has finished loading those tabs
-    or otherwise decided to stop loading them). The metric is not recorded when
-    the session overlaps with session restore. Warning: This metric is a ratio
-    and the session interval differs for each session. It is hard to tell if it
-    is average rate for each second in the interval or it has a huge spike.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadTime.UntilTabIsLoaded"
-    units="ms" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The tab load time of a tab that is switched to during a background tab
-    opening session (the duration of time from when the browser starts to open
-    background tabs until the time the browser has finished loading those tabs
-    or otherwise decided to stop loading them). Tab load time is defined as the
-    time between when the user switches to a backround tab, and the time when
-    that tab finishes loading in the foreground. If the user switches away
-    before the tab finishes loading, a metric will not be recorded unless the
-    user switches back, in which case the tab load time is measured from that
-    point in time. The metric is only recorded when a tab is switched to from
-    another tab within the same tabstrip. As a result, the initial forground tab
-    is not included in this metric since it was not switched to from another
-    tab. The metric is not recorded when the session overlaps with session
-    restore.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.SessionRestore.CompressedPagesPerSecond"
-    units="pages/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of pages compressed per second during session restore. Recorded
-    at the end of session restore as an average over the entire period, defined
-    as the period of time when session restore is actively loading tabs, which
-    ends when either all tabs have been loaded and their pages rendered, or tab
-    loading needs to be deferred in cases where the system is under memory
-    pressure. The metric is not recorded when the session overlaps with
-    background tab opening session. Only recorded on macOS. Warning: This metric
-    is a ratio and the session interval differs for each session. It is hard to
-    tell if it is average rate for each second in the interval or it has a huge
-    spike.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.SessionRestore.DecompressedPagesPerSecond"
-    units="pages/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of pages decompressed per second during session restore. Recorded
-    at the end of session restore as an average over the entire period, defined
-    as the period of time when session restore is actively loading tabs, which
-    ends when either all tabs have been loaded and their pages rendered, or tab
-    loading needs to be deferred in cases where the system is under memory
-    pressure. The metric is not recorded when the session overlaps with
-    background tab opening session. Only recorded on macOS. Warning: This metric
-    is a ratio and the session interval differs for each session. It is hard to
-    tell if it is average rate for each second in the interval or it has a huge
-    spike.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstContentfulPaint"
-    units="ms" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    Elapsed time between the start of the loading and the first contentful paint
-    of foreground tabs when the browser loads tabs in session restore.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstMeaningfulPaint"
-    units="ms" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    Elapsed time between the start of the loading and the first meaningful paint
-    of foreground tabs when the browser loads tabs in session restore.
-  </summary>
-</histogram>
-
-<histogram
-    name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstPaint"
-    units="ms" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    Elapsed time between the start of the loading and the first paint of
-    foreground tabs when the browser loads tabs in session restore.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Experimental.SessionRestore.SwapInPerSecond"
-    units="swaps/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of swap-ins per second during session restore. Recorded at the
-    end of session restore as an average over the entire period, defined as the
-    period of time when session restore is actively loading tabs, which ends
-    when either all tabs have been loaded and their pages rendered, or tab
-    loading needs to be deferred in cases where the system is under memory
-    pressure. The metric is not recorded when the session overlaps with
-    background tab opening session. Warning: This metric is a ratio and the
-    session interval differs for each session. It is hard to tell if it is
-    average rate for each second in the interval or it has a huge spike.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Experimental.SessionRestore.SwapOutPerSecond"
-    units="swaps/s" expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The number of swap-outs per second during session restore. Recorded at the
-    end of session restore as an average over the entire period, defined as the
-    period of time when session restore is actively loading tabs, which ends
-    when either all tabs have been loaded and their pages rendered, or tab
-    loading needs to be deferred in cases where the system is under memory
-    pressure. The metric is not recorded when the session overlaps with
-    background tab opening session. Warning: This metric is a ratio and the
-    session interval differs for each session. It is hard to tell if it is
-    average rate for each second in the interval or it has a huge spike.
   </summary>
 </histogram>
 
@@ -1428,38 +1257,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="TabManager.SessionOverlap.SessionRestore"
-    enum="BooleanOverlap" expires_after="M77">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    Whether session restore is overlapped with other types of session, e.g.,
-    background tab opening. Session restore is the duration from the time when
-    the browser starts to restore tabs until the time when the browser has
-    finished loading those tabs or when the browser stops loading tabs due to
-    memory pressure. This metric helps to understand how often session restore
-    has overlap with other sessions.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.SessionRestore.SwitchToTab" enum="TabLoadingState"
-    expires_after="M79">
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The loading state of a tab at the time the user switched to it during a
-    session restore. The metric is only recorded when a tab is switched to from
-    another tab within the same tabstrip. As a result, there are two cases where
-    tabs are not included. The first case is when the initial forground tab is
-    shown, since it was not switched to from another tab. The second case is
-    when switching between different windows, either between two tabs in
-    different browser windows, or when switching to a different application and
-    switching back to the browser. The metric is only recorded when session
-    restore is actively loading tabs, which ends when either all tabs have been
-    loaded and their pages rendered, or tab loading needs to be deferred in
-    cases where the system is under memory pressure. The metric is not recorded
-    when the session overlaps with background tab opening session.
-  </summary>
-</histogram>
-
 <histogram name="TabManager.TabRanker.Result" enum="TabManagerTabRankerResult"
     expires_after="M85">
   <owner>michaelpg@chromium.org</owner>
@@ -1510,39 +1307,6 @@ chromium-metrics-reviews@google.com.
 <histogram name="Tabs.CountAtStartup" units="tabs" expires_after="2023-05-07">
   <owner>marq@chromium.org</owner>
   <summary>[Android and iOS] The number of tabs open at cold launch.</summary>
-</histogram>
-
-<histogram name="Tabs.DesktopTabOffsetFromLeftOfSwitch" units="units"
-    expires_after="2021-06-30">
-  <owner>connily@chromium.org</owner>
-  <owner>chrome-desktop-ui-sea@google.com</owner>
-  <summary>
-    The tab index from the beginning of the tab strip when switching into a tab.
-  </summary>
-</histogram>
-
-<histogram name="Tabs.DesktopTabOffsetFromRightOfSwitch" units="units"
-    expires_after="2021-06-30">
-  <owner>connily@chromium.org</owner>
-  <owner>chrome-desktop-ui-sea@google.com</owner>
-  <summary>
-    The tab index from the end of the tab strip when switching into a tab.
-  </summary>
-</histogram>
-
-<histogram name="Tabs.DesktopTabOffsetOfSwitch" units="units"
-    expires_after="2021-06-30">
-  <owner>connily@chromium.org</owner>
-  <owner>chrome-desktop-ui-sea@google.com</owner>
-  <summary>
-    The offset between the tab currently selected tab and the newly selected
-    tab.
-
-    If the user switches to a tab to the left of their currently selected tab,
-    we log a positive offset value indicating how many tabs to the left they
-    moved. If the user switches to a tab to the right of their currently
-    selected tab, we log a negative offset value.
-  </summary>
 </histogram>
 
 <histogram name="Tabs.FirstSwitchedToForegroundCreationRank" units="units"
@@ -1656,7 +1420,20 @@ chromium-metrics-reviews@google.com.
   <token key="BatteryState" variants="BatteryState"/>
 </histogram>
 
-<histogram name="Tabs.NTPCountAtResume" units="tabs" expires_after="2023-02-26">
+<histogram name="Tabs.NewNavigationWithSameOriginTab" enum="Boolean"
+    expires_after="2023-06-04">
+  <owner>gjc@google.com</owner>
+  <owner>blink-network-dev@chromium.org</owner>
+  <summary>
+    Whether another tab under the same origin can be found when a tab has
+    finished a navigation to a new security origin. This can happen when a new
+    tab is added with a website or the user navigates to another security
+    origin. The browser will iterate over all the tabs to find if there is a tab
+    with content under the same origin as the new link.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.NTPCountAtResume" units="tabs" expires_after="2023-06-04">
   <owner>gogerald@chromium.org</owner>
   <owner>nasims@google.com</owner>
   <summary>
@@ -1665,7 +1442,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.NTPCountAtStartup" units="tabs"
-    expires_after="2023-02-26">
+    expires_after="2023-05-14">
   <owner>gogerald@chromium.org</owner>
   <owner>nasims@google.com</owner>
   <summary>[iOS] The number of NTP tabs open at cold launch.</summary>
@@ -1810,7 +1587,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.PersistedTabData.Storage.Restore.File"
-    enum="BooleanSuccess" expires_after="2022-11-21">
+    enum="BooleanSuccess" expires_after="2023-11-21">
   <owner>yusufo@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -2699,7 +2476,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Tabs.TabState.LoadTime" units="ms" expires_after="2023-03-19">
+<histogram name="Tabs.TabState.LoadTime" units="ms" expires_after="2023-05-27">
   <owner>yusufo@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -2981,7 +2758,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.{TabActiveState}TabWidth" units="px"
-    expires_after="2023-01-01">
+    expires_after="2023-12-01">
   <owner>dpenning@chromium.org</owner>
   <owner>tbergquist@chromium.org</owner>
   <summary>

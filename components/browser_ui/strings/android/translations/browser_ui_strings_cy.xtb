@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Caniatáu i wefannau gael mynediad at synwyryddion symudiad (argymhellir)</translation>
 <translation id="5050380848339752099">Mae'r wefan hon ar fin rhannu gwybodaeth ag ap y tu allan i'r modd Anhysbys.</translation>
 <translation id="5063480226653192405">Defnydd</translation>
-<translation id="5082281938627763039">Mae hyn yn dileu cwcis a data gwefan eraill ar gyfer <ph name="FPS_MEMBER" /> ac ar gyfer gwefannau yng ngrŵp gwefannau <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Gwefan symudol</translation>
 <translation id="509133520954049755">Gofyn am wedd bwrdd gwaith</translation>
 <translation id="5100237604440890931">Wedi'i grebachu - cliciwch i'w ehangu.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Llusgwch o'r brig a chyffyrddwch â'r botwm nôl i adael y sgrîn lawn.</translation>
 <translation id="5300589172476337783">Arddangos</translation>
 <translation id="5301954838959518834">Iawn</translation>
-<translation id="5313967007315987356">Ychwanegu gwefan</translation>
 <translation id="5317780077021120954">Cadw</translation>
 <translation id="5335288049665977812">Caniatáu i wefannau redeg JavaScript (argymhellir)</translation>
 <translation id="534295439873310000">Dyfeisiau NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Wrthi'n rhannu eich sgrîn</translation>
 <translation id="5922967540311291836">Rhwystro cwcis trydydd parti:</translation>
 <translation id="5939518447894949180">Ailosod</translation>
+<translation id="5968921426641056619">Rhowch gyfeiriad gwe</translation>
 <translation id="5975083100439434680">Pellhau</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Rheoli mynediad y wefan hon at eich dyfais</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">Mae <ph name="ITEM_COUNT" /> wedi'u dewis</translation>
 <translation id="7260727271532453612">Caniateir <ph name="PERMISSION_1" /> a <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Rydych fel arfer yn rhwystro hysbysiadau. I'w caniatáu, tapiwch Manylion.</translation>
+<translation id="7366415735885268578">Ychwanegu gwefan</translation>
 <translation id="7383715096023715447">Gosodiadau ar gyfer <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Gofyn yn gyntaf</translation>
 <translation id="7423538860840206698">Wedi'i rwystro rhag darllen y clipfwrdd</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Mae'r wefan hon yn dangos hysbysebion ymwthiol neu gamarweiniol</translation>
 <translation id="8394832520002899662">Tapiwch i ddychwelyd i'r wefan</translation>
 <translation id="8409345997656833551">Cael hysbysiadau pan fydd erthygl yn gallu cael ei dangos yn y wedd syml</translation>
+<translation id="8423565414844018592">Graddio testun wedi'i osod i <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Gosodiadau</translation>
 <translation id="8441146129660941386">Mynd yn ôl</translation>
 <translation id="8444433999583714703">I ganiatáu i <ph name="APP_NAME" /> gael mynediad at eich lleoliad, trowch leoliad ymlaen yn <ph name="BEGIN_LINK" />Gosodiadau Android<ph name="END_LINK" /> hefyd.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Mae NFC wedi'i ddiffodd ar gyfer y ddyfais hon. Trowch ef ymlaen yn <ph name="BEGIN_LINK" />Gosodiadau Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Rhwystro gwefannau rhag gweld a newid gwybodaeth ar ddyfeisiau NFC</translation>
-<translation id="8941729603749328384">www.enghraifft.com</translation>
 <translation id="8958424370300090006">Rhwystro cwcis ar gyfer gwefan benodol.</translation>
 <translation id="8959122750345127698">Mae llywio yn anghyraeddadwy: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Anghofio</translation>

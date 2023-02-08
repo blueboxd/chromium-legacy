@@ -51,8 +51,8 @@ class WebViewImpl : public WebView {
   bool IsServiceWorker() const override;
   std::string GetId() override;
   bool WasCrashed() override;
-  Status ConnectIfNecessary() override;
   Status AttachTo(DevToolsClient* parent);
+  Status AttachChildView(WebViewImpl* child);
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
@@ -238,7 +238,7 @@ class WebViewImplHolder {
 
  private:
   struct Item {
-    WebViewImpl* web_view;
+    raw_ptr<WebViewImpl> web_view;
     bool was_locked;
   };
   std::vector<Item> items_;

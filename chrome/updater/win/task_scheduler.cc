@@ -33,10 +33,9 @@
 #include "base/win/windows_version.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/win/win_util.h"
+#include "chrome/updater/util/win_util.h"
 
 namespace updater {
-
 namespace {
 
 // Names of the TaskSchedulerV2 libraries so we can pin them below.
@@ -50,6 +49,13 @@ const wchar_t kOneDayText[] = L"P1D";
 
 const size_t kNumDeleteTaskRetry = 3;
 const size_t kDeleteRetryDelayInMs = 100;
+
+// Returns true if `error` is HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) or
+// HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND).
+bool IsFileOrPathNotFoundError(HRESULT hr) {
+  return hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) ||
+         hr == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
+}
 
 // Return |timestamp| in the following string format YYYY-MM-DDTHH:MM:SS.
 std::wstring GetTimestampString(const base::Time& timestamp) {
@@ -138,7 +144,7 @@ Microsoft::WRL::ComPtr<ITaskService> GetTaskService() {
 // folders have a "System" suffix, and User task folders have a "User" suffix.
 std::wstring GetTaskCompanyFolder(UpdaterScope scope) {
   return base::StrCat({L"\\" COMPANY_SHORTNAME_STRING,
-                       scope == UpdaterScope::kSystem ? L"System " : L"User "});
+                       IsSystemInstall(scope) ? L"System" : L"User"});
 }
 
 // A task scheduler class uses the V2 API of the task scheduler.
@@ -398,7 +404,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
       return false;
     }
 
-    bool is_system = scope == UpdaterScope::kSystem;
+    bool is_system = IsSystemInstall(scope);
     base::win::ScopedBstr user_name(L"NT AUTHORITY\\SYSTEM");
     if (!is_system && !GetCurrentUser(&user_name))
       return false;
@@ -620,8 +626,11 @@ class TaskSchedulerV2 final : public TaskScheduler {
       return false;
     }
 
-    base::win::ScopedBstr path(run_command.GetProgram().value());
-    hr = exec_action->put_Path(path.Get());
+    // Quotes the command line before `put_Path`.
+    hr = exec_action->put_Path(
+        base::win::ScopedBstr(
+            base::CommandLine(run_command.GetProgram()).GetCommandLineString())
+            .Get());
     if (FAILED(hr)) {
       PLOG(ERROR) << "Can't set path of exec action. " << std::hex << hr;
       return false;
@@ -650,8 +659,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
         TASK_CREATE_OR_UPDATE,
         *user.AsInput(),  // Not really input, but API expect non-const.
         base::win::ScopedVariant::kEmptyVariant,
-        scope == UpdaterScope::kSystem ? TASK_LOGON_SERVICE_ACCOUNT
-                                       : TASK_LOGON_INTERACTIVE_TOKEN,
+        IsSystemInstall(scope) ? TASK_LOGON_SERVICE_ACCOUNT
+                               : TASK_LOGON_INTERACTIVE_TOKEN,
         base::win::ScopedVariant::kEmptyVariant, &registered_task);
     if (FAILED(hr)) {
       LOG(ERROR) << "RegisterTaskDefinition failed. " << std::hex << hr << ": "
@@ -726,9 +735,9 @@ class TaskSchedulerV2 final : public TaskScheduler {
       DCHECK(task_folder);
       HRESULT hr = task_folder->GetTasks(TASK_ENUM_HIDDEN, &tasks_);
       if (FAILED(hr)) {
-        if (hr != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+        if (!IsFileOrPathNotFoundError(hr)) {
           LOG(ERROR) << "Failed to get tasks from folder." << std::hex << hr;
-
+        }
         done_ = true;
         return;
       }
@@ -1022,8 +1031,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
     hr = root_task_folder->GetFolder(task_subfolder_name.Get(), &folder);
 
     // Try creating the folder it wasn't there.
-    if (FAILED(hr) && (hr == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND) ||
-                       hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))) {
+    if (IsFileOrPathNotFoundError(hr)) {
       // Use default SDDL.
       hr = root_task_folder->CreateFolder(
           task_subfolder_name.Get(), base::win::ScopedVariant::kEmptyVariant,
@@ -1090,7 +1098,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
                                      &task_folder);
     if (FAILED(hr)) {
       // If we failed because the task folder is not present our job is done.
-      if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
+      if (IsFileOrPathNotFoundError(hr)) {
         return true;
       }
       LOG(ERROR) << "Failed to get sub-folder. " << std::hex << hr;

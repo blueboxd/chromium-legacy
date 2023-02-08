@@ -5,8 +5,8 @@
 #include "gpu/command_buffer/service/shared_image/test_image_backing.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -120,7 +120,7 @@ class TestSkiaImageRepresentation : public SkiaImageRepresentation {
         size().width(), size().height(), GrMipMapped::kNo,
         GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES,
                         static_cast<TestImageBacking*>(backing())->service_id(),
-                        static_cast<GrGLenum>(viz::TextureStorageFormat(
+                        static_cast<GrGLenum>(TextureStorageFormat(
                             format(), /*use_angle_rgbx_format=*/false))});
   }
 };
@@ -144,6 +144,8 @@ class TestDawnImageRepresentation : public DawnImageRepresentation {
   void EndAccess() override {}
 };
 
+}  // namespace
+
 class TestOverlayImageRepresentation : public OverlayImageRepresentation {
  public:
   TestOverlayImageRepresentation(SharedImageManager* manager,
@@ -158,7 +160,7 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
 
 #if BUILDFLAG(IS_WIN)
   gl::GLImage* GetGLImage() override {
-    gl_image_ = base::MakeRefCounted<gl::GLImage>();
+    gl_image_ = base::WrapRefCounted<gl::GLImage>(new gl::GLImage());
     return gl_image_.get();
   }
 #endif
@@ -172,8 +174,6 @@ class TestOverlayImageRepresentation : public OverlayImageRepresentation {
  private:
   scoped_refptr<gl::GLImage> gl_image_;
 };
-
-}  // namespace
 
 TestImageBacking::TestImageBacking(const Mailbox& mailbox,
                                    viz::SharedImageFormat format,
@@ -262,6 +262,16 @@ void TestImageBacking::SetClearedRect(const gfx::Rect& cleared_rect) {
   texture_->SetLevelClearedRect(texture_->target(), 0, cleared_rect);
 }
 
+void TestImageBacking::SetPurgeable(bool purgeable) {
+  if (purgeable) {
+    if (set_purgeable_callback_)
+      set_purgeable_callback_.Run(mailbox());
+  } else {
+    if (set_not_purgeable_callback_)
+      set_not_purgeable_callback_.Run(mailbox());
+  }
+}
+
 bool TestImageBacking::UploadFromMemory(const SkPixmap& pixmap) {
   upload_from_memory_called_ = true;
   return true;
@@ -297,7 +307,8 @@ std::unique_ptr<DawnImageRepresentation> TestImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   return std::make_unique<TestDawnImageRepresentation>(manager, this, tracker);
 }
 

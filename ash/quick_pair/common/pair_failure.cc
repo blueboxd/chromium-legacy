@@ -87,6 +87,13 @@ std::ostream& operator<<(std::ostream& stream, PairFailure failure) {
       stream << "[[BLE device instance lost mid pair with classic device "
                 "instance]]";
       break;
+    case PairFailure::kCreateBondTimeout:
+      stream << "[Timed out while attempting to create bond with device]";
+      break;
+    case PairFailure::kPairingDeviceLostBetweenGattConnectionAttempts:
+      stream
+          << "[Potential pairing device lost between GATT connection attempts]";
+      break;
   }
 
   return stream;

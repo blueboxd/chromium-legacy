@@ -52,12 +52,6 @@ BASE_FEATURE(kAnonymousUpdateChecks,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppDiscoveryForOobe,
-             "AppDiscoveryForOobe",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppManagementAppDetails,
              "AppManagementAppDetails",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -72,12 +66,6 @@ BASE_FEATURE(kAppDeduplicationService,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppPreloadService,
              "AppPreloadService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppProvisioningStatic,
-             "AppProvisioningStatic",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -134,12 +122,6 @@ BASE_FEATURE(kBackgroundModeAllowRestart,
              "BackgroundModeAllowRestart",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-
-#if !BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kBlockMigratedDefaultChromeAppSync,
-             "BlockMigratedDefaultChromeAppSync",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
@@ -267,6 +249,22 @@ BASE_FEATURE(kPreinstalledWebAppInstallation,
 BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
              "PreinstalledWebAppDuplicationFixer",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables OS Integration sub managers to execute the
+// registration/unregistration functionality and write the new OS states to the
+// DB.
+BASE_FEATURE(kOsIntegrationSubManagers,
+             "OsIntegrationSubManagers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<OsIntegrationSubManagersStage>::Option
+    sub_manager_stages[] = {
+        {OsIntegrationSubManagersStage::kWriteConfig, "write_config"},
+        {OsIntegrationSubManagersStage::kExecuteAndWriteConfig,
+         "execute_and_write_config"}};
+const base::FeatureParam<OsIntegrationSubManagersStage>
+    kOsIntegrationSubManagersStageParam{
+        &kOsIntegrationSubManagers, "stage",
+        OsIntegrationSubManagersStage::kWriteConfig, &sub_manager_stages};
 #endif
 
 // Generates customised default offline page that is shown when web app is
@@ -341,11 +339,14 @@ BASE_FEATURE(kDesktopPWAsWebBundles,
 BASE_FEATURE(kChromeAppsDeprecation,
              "ChromeAppsDeprecation",
              base::FEATURE_ENABLED_BY_DEFAULT);
-//  Controls whether force installed and preinstalled apps should be exempt from
-//  deprecation.
+// Controls whether force installed and preinstalled apps should be exempt from
+// deprecation.
 BASE_FEATURE(kKeepForceInstalledPreinstalledApps,
              "KeepForceInstalledPreinstalledApps",
              base::FEATURE_ENABLED_BY_DEFAULT);
+// Controls if the 'launch anyways' button is shown.
+const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
+    &kChromeAppsDeprecation, "HideLaunchAnyways", false};
 #endif
 
 // Enables notification permission revocation for origins that may send
@@ -402,15 +403,6 @@ BASE_FEATURE(kEarlyLibraryLoad,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
-// Under this flag Java bootstrap (aka startup) tasks that are run before native
-// initialization will not be specially prioritized by being posted at the front
-// of the Looper's queue.
-BASE_FEATURE(kElidePrioritizationOfPreNativeBootstrapTasks,
-             "ElidePrioritizationOfPreNativeBootstrapTasks",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 // Enable the restricted web APIs for high-trusted apps.
 BASE_FEATURE(kEnableRestrictedWebApis,
              "EnableRestrictedWebApis",
@@ -440,7 +432,7 @@ BASE_FEATURE(kExtensionDeferredIndividualSettings,
 // extension request dialog.
 BASE_FEATURE(kExtensionWorkflowJustification,
              "ExtensionWorkflowJustification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the
@@ -646,6 +638,11 @@ BASE_FEATURE(kHideWebAppOriginText,
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables automatically upgrading main frame navigations to HTTPS.
+BASE_FEATURE(kHttpsUpgrades,
+             "HttpsUpgrades",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if BUILDFLAG(IS_MAC)
 BASE_FEATURE(kImmersiveFullscreen,
              "ImmersiveFullscreen",
@@ -691,6 +688,12 @@ BASE_FEATURE(kIncognitoDownloadsWarning,
 // When enabled, users will see updated UI in Incognito NTP
 BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Isolated Web App Developer Mode, which allows developers to
+// install untrusted Isolated Web Apps.
+BASE_FEATURE(kIsolatedWebAppDevMode,
+             "IsolatedWebAppDevMode",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -958,10 +961,6 @@ BASE_FEATURE(kAbusiveNotificationPermissionRevocation,
              "AbusiveOriginNotificationPermissionRevocation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRemoveStatusBarInWebApps,
-             "RemoveStatusBarInWebApps",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables permanent removal of Legacy Supervised Users on startup.
 BASE_FEATURE(kRemoveSupervisedUsersOnStartup,
@@ -1081,11 +1080,6 @@ BASE_FEATURE(kTPMFirmwareUpdate,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_ANDROID)
-// Enables logging UKMs for background tab activity by TabActivityWatcher.
-BASE_FEATURE(kTabMetricsLogging,
-             "TabMetricsLogging",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables the demo version of the Support Tool. The tool will be available in
 // chrome://support-tool. See go/support-tool-v1-design for more details.
 BASE_FEATURE(kSupportTool, "SupportTool", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1231,7 +1225,7 @@ const base::FeatureParam<base::TimeDelta>
 // Enables the second version of the sentiment survey for users of Trust &
 // Safety features, using HaTS.
 BASE_FEATURE(kTrustSafetySentimentSurveyV2,
-             "kTrustSafetySentimentSurveyV2",
+             "TrustSafetySentimentSurveyV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 // The minimum and maximum time after a user has interacted with a Trust and
 // Safety feature that they are eligible to be surveyed.
@@ -1249,6 +1243,59 @@ const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMinRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-min-range", 2};
 const base::FeatureParam<int> kTrustSafetySentimentSurveyV2NtpVisitsMaxRange{
     &kTrustSafetySentimentSurveyV2, "ntp-visits-max-range", 4};
+// The minimum time that has to pass in the current session before a user can be
+// eligible to be considered for the baseline control group.
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2MinSessionTime{
+        &kTrustSafetySentimentSurveyV2, "min-session-time", base::Seconds(30)};
+// The feature area probabilities for each feature area considered as part of
+// the Trust & Safety sentiment survey.
+// TODO(crbug.com/1382134): Calculate initial probabilities and remove 0.0
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2BrowsingDataProbability{
+        &kTrustSafetySentimentSurveyV2, "browsing-data-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2ControlGroupProbability{
+        &kTrustSafetySentimentSurveyV2, "control-group-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PasswordCheckProbability{
+        &kTrustSafetySentimentSurveyV2, "password-check-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2SafetyCheckProbability{
+        &kTrustSafetySentimentSurveyV2, "safety-check-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceProbability{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacyGuideProbability{
+        &kTrustSafetySentimentSurveyV2, "privacy-guide-probability", 0.0};
+// The HaTS trigger IDs, which determine which survey is delivered from the HaTS
+// backend.
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2BrowsingDataTriggerId{
+        &kTrustSafetySentimentSurveyV2, "browsing-data-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2ControlGroupTriggerId{
+        &kTrustSafetySentimentSurveyV2, "control-group-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PasswordCheckTriggerId{
+        &kTrustSafetySentimentSurveyV2, "password-check-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2SafetyCheckTriggerId{
+        &kTrustSafetySentimentSurveyV2, "safety-check-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceTriggerId{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-trigger-id", ""};
+const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId{
+        &kTrustSafetySentimentSurveyV2, "privacy-guide-trigger-id", ""};
+// The time the user must have the Trusted Surface bubble open to be considered.
+// Alternatively the user can interact with the bubble, in which case this time
+// is irrelevant.
+const base::FeatureParam<base::TimeDelta>
+    kTrustSafetySentimentSurveyV2TrustedSurfaceTime{
+        &kTrustSafetySentimentSurveyV2, "trusted-surface-time",
+        base::Seconds(5)};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

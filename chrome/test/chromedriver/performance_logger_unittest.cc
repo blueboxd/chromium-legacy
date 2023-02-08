@@ -26,15 +26,14 @@
 namespace {
 
 struct DevToolsCommand {
-  DevToolsCommand(const std::string& in_method,
-                  base::DictionaryValue* in_params)
+  DevToolsCommand(const std::string& in_method, base::Value::Dict* in_params)
       : method(in_method) {
     params.reset(in_params);
   }
   ~DevToolsCommand() {}
 
   std::string method;
-  std::unique_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::Value::Dict> params;
 };
 
 class FakeDevToolsClient : public StubDevToolsClient {
@@ -51,30 +50,24 @@ class FakeDevToolsClient : public StubDevToolsClient {
     return false;
   }
 
-  Status TriggerEvent(const std::string& method) {
-    base::Value::Dict empty_params;
-    return listener_->OnEvent(
-        this, method,
-        base::Value::AsDictionaryValue(base::Value(std::move(empty_params))));
-  }
-
   Status TriggerEvent(const std::string& method,
                       const base::Value::Dict& params) {
-    return listener_->OnEvent(
-        this, method,
-        base::Value::AsDictionaryValue(base::Value(params.Clone())));
+    return listener_->OnEvent(this, method, params);
+  }
+
+  Status TriggerEvent(const std::string& method) {
+    return TriggerEvent(method, base::Value::Dict());
   }
 
   // Overridden from DevToolsClient:
-  Status ConnectIfNecessary() override { return listener_->OnConnected(this); }
+  Status Connect() override { return listener_->OnConnected(this); }
 
   Status SendCommandAndGetResult(const std::string& method,
                                  const base::Value::Dict& params,
                                  base::Value* result) override {
-    sent_commands_.push_back(std::make_unique<DevToolsCommand>(
-        method, base::DictionaryValue::From(
-                    base::Value::ToUniquePtrValue(base::Value(params.Clone())))
-                    .release()));
+    auto dict = std::make_unique<base::Value::Dict>(params.Clone());
+    sent_commands_.push_back(
+        std::make_unique<DevToolsCommand>(method, dict.release()));
     *result = base::Value(base::Value::Type::DICTIONARY);
     return Status(kOk);
   }
@@ -231,7 +224,7 @@ TEST(PerformanceLogger, TwoWebViews) {
   ExpectEnableDomains(&client1);
   ExpectEnableDomains(&client2);
   // OnConnected sends the enable command only to that client, not others.
-  client1.ConnectIfNecessary();
+  client1.Connect();
   ExpectEnableDomains(&client1);
   DevToolsCommand* cmd;
   ASSERT_FALSE(client2.PopSentCommand(&cmd));
@@ -303,16 +296,16 @@ TEST(PerformanceLogger, TracingStartStop) {
   DevToolsCommand* cmd;
   ASSERT_TRUE(client.PopSentCommand(&cmd));
   EXPECT_EQ("Tracing.start", cmd->method);
-  base::ListValue* categories;
-  EXPECT_TRUE(cmd->params->GetList("traceConfig.includedCategories",
-                                   &categories));
-  ASSERT_EQ(2u, categories->GetList().size());
-  ASSERT_TRUE(categories->GetList()[0].is_string());
-  EXPECT_EQ("benchmark", categories->GetList()[0].GetString());
-  ASSERT_TRUE(categories->GetList()[1].is_string());
-  EXPECT_EQ("blink.console", categories->GetList()[1].GetString());
+  const base::Value::List* categories =
+      cmd->params->FindListByDottedPath("traceConfig.includedCategories");
+  ASSERT_TRUE(categories);
+  ASSERT_EQ(2u, categories->size());
+  ASSERT_TRUE((*categories)[0].is_string());
+  EXPECT_EQ("benchmark", (*categories)[0].GetString());
+  ASSERT_TRUE((*categories)[1].is_string());
+  EXPECT_EQ("blink.console", (*categories)[1].GetString());
   int expected_interval =
-      cmd->params->FindIntKey("bufferUsageReportingInterval").value_or(-1);
+      cmd->params->FindInt("bufferUsageReportingInterval").value_or(-1);
   EXPECT_GT(expected_interval, 0);
   ASSERT_FALSE(client.PopSentCommand(&cmd));
 

@@ -155,7 +155,7 @@ class MediaStreamVideoTrackTest
   void DepleteIOCallbacks() {
     base::RunLoop run_loop;
     base::RepeatingClosure quit_closure = run_loop.QuitClosure();
-    mock_source()->io_task_runner()->PostTask(
+    mock_source()->video_task_runner()->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting([&] { std::move(quit_closure).Run(); }));
     run_loop.Run();
@@ -189,7 +189,7 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
       gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                 MediaStreamVideoSource::kDefaultHeight));
   mock_source()->DeliverVideoFrame(frame);
-  // Wait for the IO thread to complete delivering frames.
+  // Wait for the video task runner to complete delivering frames.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, sink.number_of_frames());
 }

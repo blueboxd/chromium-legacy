@@ -154,9 +154,13 @@ void HTMLIFrameElement::CollectStyleForPresentationAttribute(
     // off if set to zero.
     if (!value.ToInt()) {
       // Add a rule that nulls out our border width.
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kBorderWidth, 0,
-          CSSPrimitiveValue::UnitType::kPixels);
+      for (CSSPropertyID property_id :
+           {CSSPropertyID::kBorderTopWidth, CSSPropertyID::kBorderBottomWidth,
+            CSSPropertyID::kBorderLeftWidth,
+            CSSPropertyID::kBorderRightWidth}) {
+        AddPropertyToPresentationAttributeStyle(
+            style, property_id, 0, CSSPrimitiveValue::UnitType::kPixels);
+      }
     }
   } else {
     HTMLFrameElementBase::CollectStyleForPresentationAttribute(name, value,
@@ -268,11 +272,11 @@ void HTMLIFrameElement::ParseAttribute(
       should_call_did_change_attributes = true;
       UseCounter::Count(GetDocument(), WebFeature::kIFrameCSPAttribute);
     }
-  } else if (name == html_names::kAnonymousAttr &&
+  } else if (name == html_names::kCredentiallessAttr &&
              AnonymousIframeEnabled(GetExecutionContext())) {
     bool new_value = !value.IsNull();
-    if (anonymous_ != new_value) {
-      anonymous_ = new_value;
+    if (credentialless_ != new_value) {
+      credentialless_ = new_value;
       should_call_did_change_attributes = true;
     }
   } else if (name == html_names::kAllowAttr) {
@@ -532,8 +536,8 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
     GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kError,
-        "Trust Tokens issuance is disabled except in "
-        "contexts with the TrustTokens Origin Trial enabled."));
+        "Private State Tokens issuance is disabled except in "
+        "contexts with the PrivateStateTokens Origin Trial enabled."));
     return nullptr;
   }
 
@@ -563,7 +567,7 @@ void HTMLIFrameElement::DidChangeAttributes() {
 
   auto attributes = mojom::blink::IframeAttributes::New();
   attributes->parsed_csp_attribute = csp.empty() ? nullptr : std::move(csp[0]);
-  attributes->anonymous = anonymous_;
+  attributes->credentialless = credentialless_;
 
   attributes->id = ConvertToReportValue(id_);
   attributes->name = ConvertToReportValue(name_);

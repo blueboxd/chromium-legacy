@@ -12,12 +12,11 @@ import("//testing/test.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 import("//ui/base/ui_features.gni")
 
-if (is_android) {
-  import("//build/config/android/rules.gni")
-}
-
 if (is_win) {
   import("//build/toolchain/win/midl.gni")
+}
+if (is_android) {
+  import("//build/config/android/rules.gni")
 }
 
 mojom("ax_constants_mojo") {
@@ -118,7 +117,14 @@ component("ax_base") {
 #  }
 #}
 
-component("accessibility") {
+group("accessibility") {
+  public_deps = [
+    ":accessibility_internal",
+    "//ui/accessibility/platform",
+  ]
+}
+
+component("accessibility_internal") {
   defines = [ "AX_IMPLEMENTATION" ]
 
   sources = [
@@ -138,14 +144,13 @@ component("accessibility") {
     "ax_hypertext.h",
     "ax_language_detection.cc",
     "ax_language_detection.h",
-    "ax_live_region_tracker.cc",
-    "ax_live_region_tracker.h",
     "ax_mode_observer.h",
     "ax_node.cc",
     "ax_node.h",
     "ax_node_position.cc",
     "ax_node_position.h",
     "ax_offscreen_result.h",
+    "ax_position.cc",
     "ax_position.h",
     "ax_range.h",
     "ax_selection.cc",
@@ -187,12 +192,7 @@ component("accessibility") {
   public_deps = [
     ":ax_base",
     "//skia",
-    "//ui/accessibility/platform",
   ]
-
-  # Allows the files from //ui/accessibility/platform includes headers
-  # from this directory.
-  allow_circular_includes_from = [ "//ui/accessibility/platform" ]
 
   if (!is_ios) {
     sources += [
@@ -284,6 +284,7 @@ test("accessibility_unittests") {
     "mojom/ax_action_data_mojom_traits_unittest.cc",
     "mojom/ax_event_intent_mojom_traits_unittest.cc",
     "mojom/ax_event_mojom_traits_unittest.cc",
+    "mojom/ax_mode_mojom_traits_unittest.cc",
     "mojom/ax_node_data_mojom_traits_unittest.cc",
     "mojom/ax_relative_bounds_mojom_traits_unittest.cc",
     "mojom/ax_tree_data_mojom_traits_unittest.cc",
@@ -317,7 +318,24 @@ test("accessibility_unittests") {
   ]
 
   if (enable_extensions) {
-    sources += [ "platform/automation/automation_api_util_unittest.cc" ]
+    sources += [
+      "platform/automation/automation_api_util_unittest.cc",
+      "platform/automation/automation_tree_manager_owner_unittest.cc",
+    ]
+    public_deps = [ "//gin" ]
+    configs += [ "//v8:external_startup_data" ]
+
+    if (is_fuchsia) {
+      # TODO(https://crbug.com/1185811): Investigate removing the requirement for
+      # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
+      test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
+      additional_manifest_fragments = [
+        "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
+        "//build/config/fuchsia/test/network.shard.test-cml",
+        "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
+      ]
+    }
   }
 
   if (is_fuchsia) {
@@ -427,6 +445,39 @@ if (is_android) {
   # A minimal library used to expose accessibility features to webview.
   android_library("accessibility_features_java") {
     srcjar_deps = [ ":java_features_srcjar" ]
+  }
+
+  generate_jni("ax_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/ui/accessibility/AccessibilityState.java",
+    ]
+    deps = [ "//base:jni_java" ]
+  }
+
+  source_set("ax_base_android") {
+    sources = [
+      "android/accessibility_state.cc",
+      "android/accessibility_state.h",
+    ]
+    deps = [
+      ":ax_jni_headers",
+      "//base",
+    ]
+  }
+
+  android_library("ax_base_java") {
+    sources = [
+      "android/java/src/org/chromium/ui/accessibility/AccessibilityState.java",
+    ]
+    deps = [
+      ":ax_base_android",
+      ":ax_jni_headers",
+      "//base:base_java",
+      "//base:jni_java",
+      "//build/android:build_java",
+      "//third_party/androidx:androidx_annotation_annotation_jvm_java",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 }
 

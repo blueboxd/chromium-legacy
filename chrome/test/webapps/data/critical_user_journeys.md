@@ -23,8 +23,7 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut_by_user_windowed(Standalone) |  launch(Standalone) | check_app_title(Standalone, StandaloneOriginal) |
 | WMLC | install_or_shortcut_by_user_windowed(Standalone) | manifest_update_title(Standalone, StandaloneUpdated, AcceptUpdate) | await_manifest_update | launch(Standalone) | check_app_title(Standalone, StandaloneUpdated) |
 | WMLC | install_or_shortcut_by_user_windowed(Standalone) | manifest_update_title(Standalone, StandaloneUpdated, CancelDialogAndUninstall) | check_app_not_in_list | check_platform_shortcut_not_exists |
-| WMLC | install_or_shortcut_by_user_windowed | manifest_update_icon(Standalone, AcceptUpdate) | await_manifest_update | check_app_in_list_icon_correct |
-| WMLC | install_or_shortcut_by_user_windowed | manifest_update_icon(Standalone, AcceptUpdate) | await_manifest_update | check_platform_shortcut_and_icon |
+| WMLC | install_by_user_windowed(Standalone) | manifest_update_icon(Standalone, AcceptUpdate) | await_manifest_update | check_app_icon(Standalone, Red) |
 | WMLC | install_policy_app(Standalone, NoShortcut, WindowOptions::All, WebApp) | manifest_update_title(Standalone, StandaloneUpdated, SkipUpdate) | check_update_dialog_not_shown  | await_manifest_update | launch(Standalone) | check_app_title(Standalone, StandaloneUpdated) |
 
 ## Run on OS Login
@@ -114,13 +113,23 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 # Launch behavior tests
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| WMLC | install_or_shortcut_windowed | launch | check_window_created |
+| WMLC | install_or_shortcut_windowed | launch_not_from_platform_shortcut | check_window_created |
+| WLC | install_or_shortcut_windowed | launch_from_platform_shortcut | check_window_created |
+| M | install_or_shortcut_by_user_windowed | launch_from_platform_shortcut | check_window_not_created |
+| M | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_platform_shortcut | check_window_created |
 | WMLC | install_or_shortcut_windowed | launch | check_window_display_standalone |
 | WMLC | install_or_shortcut_tabbed | set_open_in_window | launch | check_window_created |
-| WMLC | install_or_shortcut_windowed | set_open_in_tab | launch_from_shortcut_or_list | check_tab_created |
+| WLC | install_or_shortcut_windowed | set_open_in_tab | launch_from_shortcut_or_list | check_tab_created |
+| M | install_or_shortcut_by_user_windowed | set_open_in_tab | launch_from_platform_shortcut | check_tab_not_created |
+| M | install_or_shortcut_by_user_windowed | close_pwa | set_open_in_tab | launch_from_platform_shortcut | check_tab_created |
+| M | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | set_open_in_tab | launch_from_platform_shortcut | check_tab_created |
+| M | install_or_shortcut_windowed | set_open_in_tab | launch_from_chrome_apps | check_tab_created |
 | WMLC | install_or_shortcut_tabbed(NotPromotable) | launch_from_shortcut_or_list(NotPromotable) | check_tab_created |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | launch(MinimalUi) | check_window_display_minimal |
-| WMLC | install_or_shortcut_windowed(NotPromotable) | launch(NotPromotable) | check_window_created |
+| WMLC | install_or_shortcut_windowed(NotPromotable) | launch_not_from_platform_shortcut(NotPromotable) | check_window_created |
+| WLC | install_or_shortcut_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_created |
+| M | install_or_shortcut_by_user_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_not_created |
+| M | install_policy_app(NotPromotable, ShortcutOptions::All, Windowed, WebApp) | launch_from_platform_shortcut(NotPromotable) | check_window_created |
 
 # Misc UX Flows
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
@@ -130,7 +139,9 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut | delete_profile | check_app_not_in_list |
 | WMLC | install_or_shortcut_with_shortcut | delete_profile | check_platform_shortcut_not_exists |
 | WMLC | install_or_shortcut_tabbed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created |
-| WMLC | install_or_shortcut_windowed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
+| WLC | install_or_shortcut_windowed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
+| M | install_or_shortcut_by_user_windowed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_not_created |
+| M |  install_policy_app(Standalone, WithShortcut, Windowed, WebApp) | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
 | WMLC | install_tabbed_no_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created |
 | WMLC | install_windowed_no_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
 | WMLC | install_or_shortcut_by_user_windowed | open_in_chrome | check_tab_created |
@@ -188,7 +199,9 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | navigate_browser(Standalone) | check_launch_icon_shown |
 | WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | check_app_in_list_tabbed |
 | WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | navigate_browser(Standalone) | check_install_icon_shown |
-| WMLC | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | launch | check_window_created |
+| WMLC | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | launch_not_from_platform_shortcut | check_window_created |
+| WLC | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | launch_from_platform_shortcut | check_window_created |
+| M | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | launch_from_platform_shortcut | check_window_not_created |
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_app_in_list_windowed |
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_platform_shortcut_and_icon |
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_window_created |
@@ -215,7 +228,9 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | WMLC | install_or_shortcut_by_user_windowed | manifest_update_colors | await_manifest_update | launch | check_window_color_correct |
 | WMLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch | check_tab_not_created |
-| WMLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch | check_window_created |
+| WMLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch_not_from_platform_shortcut | check_window_created |
+| WLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch_from_platform_shortcut | check_window_created |
+| M | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch_from_platform_shortcut | check_window_created |
 | WMLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, Browser) | await_manifest_update | launch | check_window_display_minimal |
 | WMLC | install_or_shortcut_by_user_windowed | manifest_update_display(Standalone, MinimalUi) | await_manifest_update | launch | check_window_display_minimal |
 | WMLC | install_or_shortcut_by_user_windowed(StandaloneNestedA) | manifest_update_scope_to(StandaloneNestedA, Standalone) | await_manifest_update(StandaloneNestedA) | launch_from_platform_shortcut(StandaloneNestedA) | navigate_browser(Standalone) | check_install_icon_not_shown |
@@ -264,13 +279,20 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 ## Windows Control Overlay
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| WMLC | install_or_shortcut_windowed(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
-| WMLC | install_or_shortcut_windowed(Standalone) | check_window_controls_overlay_toggle(Standalone, NotShown) |
-| WMLC | install_or_shortcut_windowed(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, On) |
-| WMLC | install_or_shortcut_windowed(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
-| WMLC | install_or_shortcut_windowed(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, Off) |
-| WMLC | install_or_shortcut_windowed(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
-| WMLC | install_or_shortcut_windowed(Wco) | enable_window_controls_overlay(Wco) | launch(Wco) | check_window_controls_overlay(Wco, On) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_or_shortcut_by_user_windowed(Standalone) | check_window_controls_overlay_toggle(Standalone, NotShown) |
+| WMLC | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch(Standalone) | check_window_controls_overlay_toggle(Standalone, NotShown) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, On) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, On) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | enable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, Off) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay(Wco, Off) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | enable_window_controls_overlay(Wco) | disable_window_controls_overlay(Wco) | check_window_controls_overlay_toggle(Wco, Shown) |
+| WMLC | install_or_shortcut_by_user_windowed(Wco) | enable_window_controls_overlay(Wco) | launch(Wco) | check_window_controls_overlay(Wco, On) |
+| WMLC | install_policy_app(Wco, ShortcutOptions::All, Windowed, WebApp) | launch(Wco) | enable_window_controls_overlay(Wco) | launch(Wco) | check_window_controls_overlay(Wco, On) |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | manifest_update_display(MinimalUi, Wco) | await_manifest_update(MinimalUi) | launch(MinimalUi) | check_window_controls_overlay_toggle(MinimalUi, Shown) |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | manifest_update_display(MinimalUi, Wco) | await_manifest_update(MinimalUi) | launch(MinimalUi) | check_window_controls_overlay_toggle(MinimalUi, Shown) |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | manifest_update_display(MinimalUi, Wco) | await_manifest_update(MinimalUi) | launch(MinimalUi) | enable_window_controls_overlay(MinimalUi) | check_window_controls_overlay(MinimalUi, On) |
@@ -285,20 +307,20 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | WMLC | install_or_shortcut(FileHandler) | check_site_handles_file(FileHandler, Foo) | check_site_handles_file(FileHandler, Bar) |
 | # Single open & multiple open behavior |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | check_file_handling_dialog(Shown) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(MinimalUi, One) | check_files_loaded_in_site(MinimalUi, OneFooFile) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(MultipleFooFiles) | check_file_handling_dialog(Shown)
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(MultipleFooFiles) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(MinimalUi, One) | check_files_loaded_in_site(MinimalUi, MultipleFooFiles) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneBarFile) | check_file_handling_dialog(Shown) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneBarFile) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(MinimalUi, One) | check_files_loaded_in_site(MinimalUi, OneBarFile) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(MultipleBarFiles) | check_file_handling_dialog(Shown) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(MultipleBarFiles) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(MinimalUi, Two) | check_files_loaded_in_site(MinimalUi, MultipleBarFiles) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
 | # Dialog options |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Allow, Remember) | launch_file(OneFooFile) | check_file_handling_dialog(NotShown) | check_pwa_window_created(MinimalUi, One) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Allow, AskAgain) | launch_file(OneFooFile) | check_file_handling_dialog(Shown) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Deny, AskAgain) | check_window_not_created | check_site_handles_file(MinimalUi, Foo) | check_site_handles_file(MinimalUi, Bar) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Deny, AskAgain) | launch_file(OneFooFile) | check_file_handling_dialog(Shown) |
-| WMLC | install_or_shortcut(MinimalUi) | launch_file(OneFooFile) | file_handling_dialog(Deny, Remember) | check_window_not_created | check_site_not_handles_file(MinimalUi, Foo) | check_site_not_handles_file(MinimalUi, Bar) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_pwa_window_created(FileHandler, One) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, AskAgain) | check_window_not_created | check_site_handles_file(FileHandler, Foo) | check_site_handles_file(FileHandler, Bar) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, AskAgain) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, Remember) | check_window_not_created | check_site_not_handles_file(FileHandler, Foo) | check_site_not_handles_file(FileHandler, Bar) |
 | # Policy approval |
-| WMLC | install_or_shortcut(MinimalUi) | add_file_handling_policy_approval(MinimalUi) | launch_file(OneFooFile) | check_file_handling_dialog(NotShown) | check_pwa_window_created(MinimalUi, One) |
-| WMLC | install_or_shortcut(MinimalUi) | add_file_handling_policy_approval(MinimalUi) | remove_file_handling_policy_approval(MinimalUi) | launch_file(OneFooFile) | check_file_handling_dialog(Shown) |
+| WMLC | install_or_shortcut(FileHandler) | add_file_handling_policy_approval(FileHandler) | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_pwa_window_created(FileHandler, One) |
+| WMLC | install_or_shortcut(FileHandler) | add_file_handling_policy_approval(FileHandler) | remove_file_handling_policy_approval(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |

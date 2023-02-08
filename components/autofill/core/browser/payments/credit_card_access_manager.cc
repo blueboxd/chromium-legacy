@@ -15,6 +15,7 @@
 #include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -80,7 +81,6 @@ void CreditCardAccessManager::UpdateCreditCardFormEventLogger() {
   }
   form_event_logger_->set_server_record_type_count(server_record_type_count);
   form_event_logger_->set_local_record_type_count(local_record_type_count);
-  form_event_logger_->set_is_context_secure(client_->IsContextSecure());
 }
 
 bool CreditCardAccessManager::UnmaskedCardCacheIsEmpty() {
@@ -224,7 +224,7 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
 
   // Use the weak_ptr here so that the delayed task won't be executed if the
   // |credit_card_access_manager| is reset.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CreditCardAccessManager::SignalCanFetchUnmaskDetails,
                      weak_ptr_factory_.GetWeakPtr()),

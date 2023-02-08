@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Lejoju faqeve të të hapin sensorët e lëvizjes (rekomandohet)</translation>
 <translation id="5050380848339752099">Ky sajt është gati për të ndarë informacione me një aplikacion jashtë modalitetit "të fshehtë".</translation>
 <translation id="5063480226653192405">Përdorimi</translation>
-<translation id="5082281938627763039">Kjo fshin kukit dhe të dhënat e tjera të sajtit për <ph name="FPS_MEMBER" /> dhe për sajtet në grupin e sajteve të <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Sajti për celular</translation>
 <translation id="509133520954049755">Kërko pamjen për desktop</translation>
 <translation id="5100237604440890931">I palosur - kliko për ta zgjeruar</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Zvarrit nga lart dhe prek butonin e kthimit për të dalë nga ekrani i plotë.</translation>
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5301954838959518834">Në rregull, kuptova.</translation>
-<translation id="5313967007315987356">Shto një sajt</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5335288049665977812">Lejoji sajtet të ekzekutojnë JavaScript (rekomandohet)</translation>
 <translation id="534295439873310000">Pajisjet me NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Po ndan ekranin tënd</translation>
 <translation id="5922967540311291836">Blloko kukit e palëve të treta</translation>
 <translation id="5939518447894949180">Rivendos</translation>
+<translation id="5968921426641056619">Fut adresën e uebit</translation>
 <translation id="5975083100439434680">Zvogëlo</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrollo qasjen e këtij sajti te pajisja jote</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> të zgjedhura</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> dhe <ph name="PERMISSION_2" /> janë lejuar</translation>
 <translation id="7302486331832100261">Ti i bllokon zakonisht njoftimet. Për t'i lejuar, trokit te "Detajet".</translation>
+<translation id="7366415735885268578">Shto një sajt</translation>
 <translation id="7383715096023715447">Cilësimet për <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Pyet në fillim</translation>
 <translation id="7423538860840206698">Bllokuar për leximin e kujtesës së fragmenteve</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Ky sajt shfaq reklama ndërhyrëse ose mashtruese</translation>
 <translation id="8394832520002899662">Trokit për t'u kthyer në sajt</translation>
 <translation id="8409345997656833551">Merr njoftime kur një artikull mund të shfaqet në pamje të thjeshtuar</translation>
+<translation id="8423565414844018592">Shkallëzimi i tekstit është caktuar në <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Cilësimet</translation>
 <translation id="8441146129660941386">Kërko prapa</translation>
 <translation id="8444433999583714703">Për të lejuar që <ph name="APP_NAME" /> të ketë qasje te vendndodhja jote, aktivizo gjithashtu vendndodhjen në <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Veçoria NFC është joaktive për këtë pajisje. Aktivizoje te <ph name="BEGIN_LINK" />Cilësimet e Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Blloko sajtet që të mos shikojnë dhe ndryshojnë informacionin në pajisjet NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blloko kukit për një sajt specifik.</translation>
 <translation id="8959122750345127698">Lundrimi është i paarritshëm: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Harro</translation>

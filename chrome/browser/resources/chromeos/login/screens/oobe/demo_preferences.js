@@ -8,7 +8,7 @@ import '../../components/oobe_icons.m.js';
 import '../../components/oobe_i18n_dropdown.js';
 import '../../components/buttons/oobe_back_button.js';
 import '../../components/buttons/oobe_text_button.js';
-import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
 
@@ -19,9 +19,9 @@ import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/pol
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
-import {OobeTypes} from '../../components/oobe_types.m.js';
-import {Oobe} from '../../cr_ui.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeTypes} from '../../components/oobe_types.js';
+import {Oobe} from '../../cr_ui.js';
 
 
 /**

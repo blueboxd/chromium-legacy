@@ -26,6 +26,7 @@
 #include "components/omnibox/browser/autocomplete_provider_debouncer.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/autocomplete_scoring_signals_annotator.h"
 #include "components/omnibox/browser/bookmark_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/open_tab_provider.h"
@@ -186,13 +187,6 @@ class AutocompleteController : public AutocompleteProviderListener,
   // Constructs and sets the final destination URL on the given match.
   void SetMatchDestinationURL(AutocompleteMatch* match) const;
 
-  // Populates tail_suggest_common_prefix on the matches as well as prepends
-  // ellipses.
-  void SetTailSuggestContentPrefixes();
-
-  // Populates tail_suggest_common_prefix on the matches.
-  void SetTailSuggestCommonPrefixes();
-
   HistoryURLProvider* history_url_provider() const {
     return history_url_provider_;
   }
@@ -288,9 +282,12 @@ class AutocompleteController : public AutocompleteProviderListener,
   void UpdateResult(bool regenerate_result,
                     bool force_notify_default_match_changed);
 
-  // Updates |result| to populate each match's |associated_keyword| if that
-  // match can show a keyword hint.  |result| should be sorted by
-  // relevance before this is called.
+  // Updates ML scoring signals of suggestions in the autocomplete result.
+  void UpdateScoringSignals();
+
+  // Updates `result` to populate each match's `associated_keyword` if that
+  // match can show a keyword hint. `result` should be sorted by relevance
+  // before this is called.
   void UpdateAssociatedKeywords(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the
@@ -298,9 +295,12 @@ class AutocompleteController : public AutocompleteProviderListener,
   // Pack matches show their URLs as descriptions instead of the provider name.
   void UpdateKeywordDescriptions(AutocompleteResult* result);
 
-  // For each AutocompleteMatch in |result|, updates the assisted query stats
+  // For each AutocompleteMatch in `result`, updates the assisted query stats
   // iff the provider's TemplateURL supports it.
   void UpdateAssistedQueryStats(AutocompleteResult* result);
+
+  // Update the tail suggestions' `tail_suggest_common_prefix`.
+  void UpdateTailSuggestPrefix(AutocompleteResult* result);
 
   // Calls AutocompleteController::Observer::OnResultChanged() and if done sends
   // AUTOCOMPLETE_CONTROLLER_RESULT_READY.
@@ -367,6 +367,12 @@ class AutocompleteController : public AutocompleteProviderListener,
   raw_ptr<VoiceSuggestProvider> voice_suggest_provider_;
 
   raw_ptr<OpenTabProvider> open_tab_provider_;
+
+  // A vector of scoring signals annotators for URL suggestions.
+  // Unlike the other existing annotators (e.g., pedals and keywords), these
+  // signal annotations should be done before the sort and cull pass.
+  std::vector<std::unique_ptr<AutocompleteScoringSignalsAnnotator>>
+      url_scoring_signals_annotators_;
 
   // Input passed to Start.
   AutocompleteInput input_;

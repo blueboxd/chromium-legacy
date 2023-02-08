@@ -65,10 +65,10 @@ class BASE_EXPORT ThreadController {
     kApplicationTask = 5,
     kIdleWork = 6,
     kNested = 7,
+    kLastPhase = kNested,
     // Reported as a kWorkItem but doesn't clear state relevant to the ongoing
     // work item as it isn't finished (will resume after nesting).
-    kWorkItemSuspendedOnNested = 8,
-    kMaxValue = kNested
+    kWorkItemSuspendedOnNested,
   };
 
   explicit ThreadController(const TickClock* time_source);
@@ -341,7 +341,7 @@ class BASE_EXPORT ThreadController {
       static const char* PhaseToEventName(Phase phase);
 
       // Cumulative time deltas for each phase, reported and reset when >=100ms.
-      std::array<TimeDelta, Phase::kMaxValue + 1> deltas_ = {};
+      std::array<TimeDelta, Phase::kLastPhase + 1> deltas_ = {};
       // Set at the start of the first work item out-of-idle. Consumed from the
       // first application task found in that work cycle
       // (in OnApplicationTaskSelected).
@@ -357,7 +357,7 @@ class BASE_EXPORT ThreadController {
       bool current_work_item_is_native_ = true;
 
       // non-null when recording is enabled.
-      HistogramBase* histogram_ = nullptr;
+      raw_ptr<HistogramBase> histogram_ = nullptr;
 #if BUILDFLAG(ENABLE_BASE_TRACING)
       absl::optional<perfetto::Track> perfetto_track_;
 
@@ -397,7 +397,7 @@ class BASE_EXPORT ThreadController {
 
       const raw_ref<TimeKeeper> time_keeper_;
       // Must be set shortly before ~RunLevel.
-      LazyNow* exit_lazy_now_ = nullptr;
+      raw_ptr<LazyNow> exit_lazy_now_ = nullptr;
 
       SampleMetadata thread_controller_sample_metadata_;
       size_t thread_controller_active_id_ = 0;

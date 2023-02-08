@@ -55,9 +55,9 @@ class SavedTabGroupConversionTest : public testing::Test {
 
   void CompareTabs(SavedTabGroupTab tab1, SavedTabGroupTab tab2) {
     EXPECT_EQ(tab1.url(), tab2.url());
-    EXPECT_EQ(tab1.guid(), tab2.guid());
+    EXPECT_EQ(tab1.saved_tab_guid(), tab2.saved_tab_guid());
     EXPECT_EQ(tab1.title(), tab2.title());
-    EXPECT_EQ(tab1.group_guid(), tab2.group_guid());
+    EXPECT_EQ(tab1.saved_group_guid(), tab2.saved_group_guid());
     EXPECT_EQ(tab1.creation_time_windows_epoch_micros(),
               tab2.creation_time_windows_epoch_micros());
     EXPECT_EQ(tab1.update_time_windows_epoch_micros(),
@@ -75,7 +75,7 @@ TEST_F(SavedTabGroupConversionTest, GroupToSpecificRetainsData) {
   absl::optional<base::Time> creation_time_windows_epoch_micros = time_;
   absl::optional<base::Time> update_time_windows_epoch_micros = time_;
   SavedTabGroup group(title, color, {}, saved_guid, absl::nullopt,
-                      creation_time_windows_epoch_micros,
+                      absl::nullopt, creation_time_windows_epoch_micros,
                       update_time_windows_epoch_micros);
 
   // Use the group to create a STGSpecific.
@@ -95,7 +95,8 @@ TEST_F(SavedTabGroupConversionTest, TabToSpecificRetainsData) {
   // Create a tab.
   SavedTabGroupTab tab(GURL("chrome://hidden_link"), u"Hidden Title",
                        base::GUID::GenerateRandomV4(), nullptr,
-                       base::GUID::GenerateRandomV4(), time_, time_);
+                       base::GUID::GenerateRandomV4(), absl::nullopt, time_,
+                       time_);
 
   // Create a STGSpecific using `tab`.
   std::unique_ptr<sync_pb::SavedTabGroupSpecifics> specific = tab.ToSpecifics();
@@ -175,7 +176,7 @@ TEST_F(SavedTabGroupConversionTest, MergedGroupHoldsCorrectData) {
   absl::optional<base::Time> creation_time_windows_epoch_micros = time_;
   absl::optional<base::Time> update_time_windows_epoch_micros = time_;
   SavedTabGroup group1(title, color, {}, saved_guid, absl::nullopt,
-                       creation_time_windows_epoch_micros,
+                       absl::nullopt, creation_time_windows_epoch_micros,
                        update_time_windows_epoch_micros);
 
   // Create a new group with the same data and update it. Calling set functions
@@ -186,8 +187,8 @@ TEST_F(SavedTabGroupConversionTest, MergedGroupHoldsCorrectData) {
 
   // Expect that group2 is a valid group to merge with and that group1 hold the
   // same data after the merge.
-  EXPECT_TRUE(group1.ShouldMergeGroup(group2.ToSpecifics().get()));
-  group1.MergeGroup(group2.ToSpecifics());
+  EXPECT_TRUE(group1.ShouldMergeGroup(*group2.ToSpecifics()));
+  group1.MergeGroup(*group2.ToSpecifics());
   CompareGroups(group1, group2);
 
   // Expect that group2 is not a valid group to merge. No merging should be
@@ -195,7 +196,7 @@ TEST_F(SavedTabGroupConversionTest, MergedGroupHoldsCorrectData) {
   group1.SetColor(tab_groups::TabGroupColorId::kOrange);
   group1.SetTitle(u"Another title");
   group2.SetUpdateTimeWindowsEpochMicros(old_time);
-  EXPECT_FALSE(group1.ShouldMergeGroup(group2.ToSpecifics().get()));
+  EXPECT_FALSE(group1.ShouldMergeGroup(*group2.ToSpecifics()));
 }
 
 // Verifies that merging 2 tab objects (1 Sync, 1 SavedTabGroupTab)
@@ -213,13 +214,13 @@ TEST_F(SavedTabGroupConversionTest, MergedTabHoldsCorrectData) {
 
   // Expect that tab2 is a valid group to merge with and that the tab1 holds the
   // same data after the merge.
-  EXPECT_TRUE(tab1.ShouldMergeTab(tab2.ToSpecifics().get()));
-  tab1.MergeTab(tab2.ToSpecifics());
+  EXPECT_TRUE(tab1.ShouldMergeTab(*tab2.ToSpecifics()));
+  tab1.MergeTab(*tab2.ToSpecifics());
   CompareTabs(tab1, tab2);
 
   // Expect that tab2 is not a valid group to merge. No merging should be done.
   tab1.SetTitle(u"A title");
   tab1.SetURL(GURL("Another url"));
   tab2.SetUpdateTimeWindowsEpochMicros(old_time);
-  EXPECT_FALSE(tab1.ShouldMergeTab(tab2.ToSpecifics().get()));
+  EXPECT_FALSE(tab1.ShouldMergeTab(*tab2.ToSpecifics()));
 }

@@ -26,7 +26,6 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
  * Tests for WebContentsAccessibilityImpl integration with accessibility services.
  */
 @RunWith(ContentJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @SuppressLint("VisibleForTests")
 @Batch(Batch.PER_CLASS)
 public class WebContentsAccessibilityEventsTest {
@@ -112,7 +111,7 @@ public class WebContentsAccessibilityEventsTest {
             expectedResults = "";
         } else {
             expectedResults =
-                    mActivityTestRule.readExpectationFile(BASE_FILE_PATH + expectationFile);
+                    mActivityTestRule.readExpectationFile(BASE_FILE_PATH + expectationFile).trim();
         }
 
         String actualResults = getTrackerResults();

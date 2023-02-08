@@ -170,7 +170,9 @@ GuestOsSharePath::GuestOsSharePath(Profile* profile)
       file_watcher_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       seneschal_callback_(base::BindRepeating(LogErrorResult)) {
-  ash::ConciergeClient::Get()->AddVmObserver(this);
+  if (auto* client = ash::ConciergeClient::Get()) {
+    client->AddVmObserver(this);
+  }
 
   if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
@@ -190,7 +192,9 @@ GuestOsSharePath::~GuestOsSharePath() = default;
 
 void GuestOsSharePath::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ash::ConciergeClient::Get()->RemoveVmObserver(this);
+  if (auto* client = ash::ConciergeClient::Get()) {
+    client->RemoveVmObserver(this);
+  }
 
   for (auto& shared_path : shared_paths_) {
     if (shared_path.second.watcher) {
@@ -461,10 +465,9 @@ void GuestOsSharePath::UnsharePath(const std::string& vm_name,
   }
 }
 
-bool GuestOsSharePath::GetAndSetFirstForSession() {
-  bool result = first_for_session_;
-  first_for_session_ = false;
-  return result;
+bool GuestOsSharePath::GetAndSetFirstForSession(const std::string& vm_name) {
+  auto result = first_for_session_.insert(vm_name);
+  return result.second;
 }
 
 std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
@@ -762,6 +765,23 @@ bool GuestOsSharePath::RemoveSharedPathInfo(SharedPathInfo& info,
     return true;
   }
   return false;
+}
+
+void GuestOsSharePath::RegisterGuest(const GuestId& guest) {
+  guests_.insert(guest);
+  for (auto& observer : observers_) {
+    observer.OnGuestRegistered(guest);
+  }
+}
+void GuestOsSharePath::UnregisterGuest(const GuestId& guest) {
+  guests_.erase(guest);
+  for (auto& observer : observers_) {
+    observer.OnGuestUnregistered(guest);
+  }
+}
+
+const base::flat_set<GuestId>& GuestOsSharePath::ListGuests() {
+  return guests_;
 }
 
 }  // namespace guest_os

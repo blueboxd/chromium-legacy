@@ -9,11 +9,10 @@ import 'chrome://settings/lazy_load.js';
 
 import {isMac, isWindows, isChromeOS, isLacros} from 'chrome://resources/js/platform.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PasswordsSectionElement} from 'chrome://settings/lazy_load.js';
-import {buildRouter, HatsBrowserProxyImpl, PasswordCheckReferrer, PasswordManagerImpl, Router, routes, SettingsPluralStringProxyImpl,StatusAction, TrustedVaultBannerState, TrustSafetyInteraction} from 'chrome://settings/settings.js';
-import {SettingsRoutes} from 'chrome://settings/settings_routes.js';
+import {buildRouter, HatsBrowserProxyImpl, PasswordCheckReferrer, PasswordManagerImpl, Router, routes, SettingsPluralStringProxyImpl, SettingsRoutes, StatusAction, TrustedVaultBannerState, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 import {SettingsToggleButtonElement} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
@@ -265,7 +264,6 @@ suite('PasswordsSection', function() {
     PasswordManagerImpl.setInstance(passwordManager);
     elementFactory = new PasswordSectionElementFactory(document);
     loadTimeData.overrideValues({
-      enableAutomaticPasswordChangeInSettings: false,
       enablePasswordViewPage: false,
       biometricAuthenticationForFilling: false,
     });
@@ -1599,14 +1597,6 @@ suite('PasswordsSection', function() {
     const interaction =
         await testHatsBrowserProxy.whenCalled('trustSafetyInteractionOccurred');
     assertEquals(TrustSafetyInteraction.OPENED_PASSWORD_MANAGER, interaction);
-  });
-
-  test('passwordScriptsRefreshedOnOpen', async function() {
-    loadTimeData.overrideValues(
-        {enableAutomaticPasswordChangeInSettings: true});
-    await createPasswordsSection(elementFactory, passwordManager, [], []);
-    Router.getInstance().navigateTo(routes.PASSWORDS);
-    await passwordManager.whenCalled('refreshScriptsIfNecessary');
   });
 
   test(

@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
@@ -119,9 +120,7 @@ class ExtensionBuilder {
     return *this;
   }
   template <typename T>
-  ExtensionBuilder& SetManifestPath(
-      std::initializer_list<base::StringPiece> path,
-      T&& value) {
+  ExtensionBuilder& SetManifestPath(base::StringPiece path, T&& value) {
     SetManifestPathImpl(path, base::Value(std::forward<T>(value)));
     return *this;
   }
@@ -134,9 +133,8 @@ class ExtensionBuilder {
     return *this;
   }
   template <typename T>
-  ExtensionBuilder& SetManifestPath(
-      std::initializer_list<base::StringPiece> path,
-      std::unique_ptr<T> value) {
+  ExtensionBuilder& SetManifestPath(base::StringPiece path,
+                                    std::unique_ptr<T> value) {
     SetManifestPathImpl(path, std::move(*value));
     return *this;
   }
@@ -156,6 +154,9 @@ class ExtensionBuilder {
   // Assigns the extension's manifest to |manifest|.
   ExtensionBuilder& SetManifest(
       std::unique_ptr<base::DictionaryValue> manifest);
+
+  // Assigns the extension's manifest to |manifest|.
+  ExtensionBuilder& SetManifest(base::Value::Dict manifest);
 
   //////////////////////////////////////////////////////////////////////////////
   // Common utility methods (usable with both aided and custom manifest
@@ -185,8 +186,7 @@ class ExtensionBuilder {
   struct ManifestData;
 
   void SetManifestKeyImpl(base::StringPiece key, base::Value value);
-  void SetManifestPathImpl(std::initializer_list<base::StringPiece> path,
-                           base::Value value);
+  void SetManifestPathImpl(base::StringPiece path, base::Value value);
 
   // Information for constructing the manifest; either metadata about the
   // manifest which will be used to construct it, or the dictionary itself. Only

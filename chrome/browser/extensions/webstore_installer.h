@@ -114,7 +114,7 @@ class WebstoreInstaller : public ExtensionRegistryObserver,
     static std::unique_ptr<Approval> CreateWithNoInstallPrompt(
         Profile* profile,
         const std::string& extension_id,
-        std::unique_ptr<base::DictionaryValue> parsed_manifest,
+        base::Value::Dict parsed_manifest,
         bool strict_manifest_check);
 
     ~Approval() override;
@@ -257,9 +257,6 @@ class WebstoreInstaller : public ExtensionRegistryObserver,
   // this managed its installation. This also removes the associated
   // PendingInstall.
   void ReportSuccess();
-
-  // Records stats regarding an interrupted webstore download item.
-  void RecordInterrupt(const download::DownloadItem* download) const;
 
   // Called when crx_installer_->InstallCrx() finishes.
   void OnInstallerDone(const absl::optional<CrxInstallError>& error);

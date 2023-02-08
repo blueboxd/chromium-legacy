@@ -5,10 +5,13 @@
 // This is a "No Compile Test" suite.
 // http://dev.chromium.org/developers/testing/no-compile-tests
 
+#define FORCE_UNRETAINED_COMPLETENESS_CHECKS_FOR_TESTS 1
+
 #include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/disallow_unretained.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -81,6 +84,21 @@ struct NonEmptyFunctor {
   int x;
   void operator()() const {}
 };
+
+class Incomplete;
+void PassIncompleteByPtr(Incomplete*) {}
+
+class Dangerous {
+ public:
+  void Method() {}
+
+  DISALLOW_UNRETAINED();
+};
+
+void PassDangerousByPtr(Dangerous*) {}
+void PassDangerousByConstRef(const Dangerous&) {}
+void PassDangerousByMutableRef(Dangerous&) {}
+
 
 #if defined(NCTEST_METHOD_ON_CONST_OBJECT)  // [r"static assertion failed.+?BindArgument<0>::ForwardedAs<.+?>::ToParamWithType<.+?>::kCanBeForwardedToBoundFunctor.+?Type mismatch between bound argument and bound functor's parameter\."]
 
@@ -503,6 +521,46 @@ void F(float);
 
 void WontCompile() {
   BindRepeating(&F, 1, 2, 3);
+}
+
+#elif defined(NCTEST_UNRETAINED_WITH_INCOMPLETE_TYPE)  // [r"fatal error: .+ T must be fully defined\."]
+
+void WontCompile(Incomplete* incomplete) {
+  BindOnce(&PassIncompleteByPtr, base::Unretained(incomplete));
+}
+
+#elif defined(NCTEST_RAW_POINTER_WITH_INCOMPLETE_TYPE)  // [r"fatal error: .+ T must be fully defined\."]
+
+void WontCompile(Incomplete* incomplete) {
+  BindOnce(&PassIncompleteByPtr, incomplete);
+}
+
+#elif defined(NCTEST_UNRETAINED_WITH_DISALLOWED_TYPE)  // [r"fatal error: static assertion failed due to requirement 'TypeSupportsUnretainedV"]
+
+void WontCompile() {
+  Dangerous dangerous;
+  BindOnce(&Dangerous::Method, base::Unretained(&dangerous));
+}
+
+#elif defined(NCTEST_RAW_POINTER_WITH_DISALLOWED_TYPE)  // [r"fatal error: static assertion failed due to requirement 'TypeSupportsUnretainedV"]
+
+void WontCompile() {
+  Dangerous dangerous;
+  BindOnce(&PassDangerousByPtr, &dangerous);
+}
+
+#elif defined(NCTEST_RAW_CONST_REFERENCE_WITH_DISALLOWED_TYPE)  // [r"fatal error: static assertion failed due to requirement 'TypeSupportsUnretainedV"]
+
+void WontCompile() {
+  Dangerous dangerous;
+  BindOnce(&PassDangerousByConstRef, std::cref(dangerous));
+}
+
+#elif defined(NCTEST_RAW_MUTABLE_REFERENCE_WITH_DISALLOWED_TYPE)  // [r"fatal error: static assertion failed due to requirement 'TypeSupportsUnretainedV"]
+
+void WontCompile() {
+  Dangerous dangerous;
+  BindOnce(&PassDangerousByMutableRef, std::ref(dangerous));
 }
 
 #endif

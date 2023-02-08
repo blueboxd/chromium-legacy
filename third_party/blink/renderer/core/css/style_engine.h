@@ -96,6 +96,7 @@ class StyleResolver;
 class StyleResolverStats;
 class StyleRuleFontFace;
 class StyleRuleFontPaletteValues;
+class StyleRuleFontFeatureValues;
 class StyleRuleKeyframes;
 class StyleRuleUsageTracker;
 class StyleSheet;
@@ -513,11 +514,22 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void MarkCounterStylesNeedUpdate();
   void UpdateCounterStyles();
 
+  // Set a flag to invalidate elements using position-fallback on next lifecycle
+  // update when @position-fallback rules are added or removed.
+  void MarkPositionFallbackStylesDirty();
+
+  // Mark elements affected by @position-fallback rules for style and layout
+  // update.
+  void InvalidatePositionFallbackStyles();
+
   StyleRuleKeyframes* KeyframeStylesForAnimation(
       const AtomicString& animation_name);
 
   StyleRuleFontPaletteValues* FontPaletteValuesForNameAndFamily(
       AtomicString palette_name,
+      AtomicString font_family);
+
+  StyleRuleFontFeatureValues* FontFeatureValuesForFamily(
       AtomicString font_family);
 
   CounterStyleMap* GetUserCounterStyleMap() { return user_counter_style_map_; }
@@ -732,12 +744,15 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                   bool is_user_style);
   void AddFontPaletteValuesRulesFromSheets(
       const ActiveStyleSheetVector& sheets);
+  void AddFontFeatureValuesRulesFromSheets(
+      const ActiveStyleSheetVector& sheets);
 
   // Returns true if any @font-face rules are added.
   bool AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
   void AddFontPaletteValuesRules(const RuleSet& rule_set);
+  void AddFontFeatureValuesRules(const RuleSet& rule_set);
   void AddPropertyRules(AtRuleCascadeMap&, const RuleSet&, bool is_user_style);
   bool UserKeyframeStyleShouldOverride(
       const StyleRuleKeyframes* new_rule,
@@ -843,6 +858,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool viewport_style_dirty_{false};
   bool fonts_need_update_{false};
   bool counter_styles_need_update_{false};
+  bool position_fallback_styles_dirty_{false};
 
   // Set to true if we allow marking style dirty from style recalc. Ideally, we
   // should get rid of this, but we keep track of where we allow it with
@@ -908,6 +924,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       HeapHashMap<std::pair<AtomicString, String>,
                   Member<StyleRuleFontPaletteValues>>;
   FontPaletteValuesRuleMap font_palette_values_rule_map_;
+
+  // Multiple entries are created pointing to the same
+  // StyleRuleFontFeatureValues for each mentioned family name in the
+  // comma-separated list of font families in the @font-feature-values at-rule
+  // prelude.
+  // TODO(https://crbug.com/716567): Needs ability to store multiple entries per
+  // family https://drafts.csswg.org/css-fonts-4/#font-feature-values-syntax: If
+  // multiple @font-feature-values rules are defined for a given family, the
+  // resulting values definitions are the union of the definitions contained
+  // within these rules.
+  using FontFeatureValuesRuleMap =
+      HeapHashMap<String, Member<StyleRuleFontFeatureValues>>;
+  FontFeatureValuesRuleMap font_feature_values_rule_map_;
 
   Member<CounterStyleMap> user_counter_style_map_;
 

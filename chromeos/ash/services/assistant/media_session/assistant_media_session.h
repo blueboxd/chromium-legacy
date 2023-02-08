@@ -45,6 +45,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantMediaSession
   void PreviousTrack() override {}
   void NextTrack() override {}
   void SkipAd() override {}
+  void PreviousSlide() override {}
+  void NextSlide() override {}
   void Seek(base::TimeDelta seek_time) override {}
   void Stop(SuspendType suspend_type) override {}
   void GetMediaImageBitmap(const media_session::MediaImage& image,
@@ -61,6 +63,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantMediaSession
   void HangUp() override {}
   void Raise() override {}
   void SetMute(bool mute) override {}
+  void RequestMediaRemoting() override {}
 
   // Requests/abandons audio focus to the AudioFocusManager.
   void RequestAudioFocus(media_session::mojom::AudioFocusType audio_focus_type);

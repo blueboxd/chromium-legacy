@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
-#include "chrome/updater/mac/mac_util.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util/mac_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
@@ -54,7 +54,7 @@ bool UsageStatsAllowedInDir(const base::FilePath& base_dir) {
 // Chrome channels all follow this pattern.
 bool UpdateUsageStatsTask::UsageStatsAllowed(
     const std::vector<std::string>& app_ids) const {
-  if (scope_ == UpdaterScope::kUser) {
+  if (!IsSystemInstall(scope_)) {
     absl::optional<base::FilePath> application_support_dir =
         GetApplicationSupportDirectory(UpdaterScope::kUser);
     return application_support_dir &&

@@ -82,7 +82,7 @@
                 "TextEmphasisMark", "text-emphasis-position",
                 "TextEmphasisCustomMark", "text-orientation",
                 "text-combine-upright", "tab-size", "text-size-adjust",
-                "list-style-image", "line-height-step",
+                "list-style-image",
                 "-webkit-text-stroke-width", "line-height",
                 "-webkit-border-horizontal-spacing",
                 "-webkit-border-vertical-spacing", "TextAutosizingMultiplier",
@@ -101,7 +101,8 @@
                 "BaselineShiftType", "baseline-shift", "dominant-baseline",
                 "CssDominantBaseline", "text-anchor",
                 "stroke-width", "stroke-miterlimit", "stroke-linecap", "stroke-linejoin",
-                "marker-end", "marker-mid", "marker-start", "scrollbar-width", "object-view-box"],
+                "marker-end", "marker-mid", "marker-start", "scrollbar-width", "object-view-box",
+                "position-fallback"],
         methods_to_diff: [
           {
             method: "BorderLeftWidth()",
@@ -331,25 +332,6 @@
 	    predicate: "a.AnchorScrollDataEquivalent(b)",
 	    field_dependencies: ["anchor-scroll"],
 	  },
-        ]
-    },
-    {
-        name: "DiffNeedsVisualRectUpdate",
-        methods_to_diff: [
-          {
-            method: "Visibility()",
-            field_dependencies: ["visibility"]
-          },
-          {
-            method: "Resize()",
-            field_dependencies: ["resize"]
-          },
-        ],
-        predicates_to_test: [
-          {
-            predicate: "a.ClipPathDataEquivalent(b)",
-            field_dependencies: ["clip-path"]
-          }
         ]
     },
     {

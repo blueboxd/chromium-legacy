@@ -13,6 +13,8 @@
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_scope.h"
+#include "chrome/updater/util/win_util.h"
 
 // Definitions for native COM updater classes.
 
@@ -27,10 +29,9 @@ namespace updater {
 // object. The purpose of this class is to remote the state of the
 // |UpdateService|. Instances of this class are typically passed as arguments
 // to RPC method calls which model COM events.
-class UpdateStateImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdateState> {
+class UpdateStateImpl : public DynamicIIDsImpl<IUpdateState,
+                                               __uuidof(IUpdateStateUser),
+                                               __uuidof(IUpdateStateSystem)> {
  public:
   explicit UpdateStateImpl(const UpdateService::UpdateState& update_state)
       : update_state_(update_state) {}
@@ -59,9 +60,9 @@ class UpdateStateImpl
 // This class implements the ICompleteStatus interface and exposes it as a COM
 // object.
 class CompleteStatusImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          ICompleteStatus> {
+    : public DynamicIIDsImpl<ICompleteStatus,
+                             __uuidof(ICompleteStatusUser),
+                             __uuidof(ICompleteStatusSystem)> {
  public:
   CompleteStatusImpl(int code, const std::wstring& message)
       : code_(code), message_(message) {}
@@ -80,10 +81,9 @@ class CompleteStatusImpl
 };
 
 // This class implements the IUpdater interface and exposes it as a COM object.
-class UpdaterImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdater> {
+class UpdaterImpl : public DynamicIIDsImpl<IUpdater,
+                                           __uuidof(IUpdaterUser),
+                                           __uuidof(IUpdaterSystem)> {
  public:
   UpdaterImpl() = default;
   UpdaterImpl(const UpdaterImpl&) = delete;
@@ -136,9 +136,9 @@ class UpdaterImpl
 // This class implements the IUpdaterInternal interface and exposes it as a COM
 // object.
 class UpdaterInternalImpl
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IUpdaterInternal> {
+    : public DynamicIIDsImpl<IUpdaterInternal,
+                             __uuidof(IUpdaterInternalUser),
+                             __uuidof(IUpdaterInternalSystem)> {
  public:
   UpdaterInternalImpl() = default;
   UpdaterInternalImpl(const UpdaterInternalImpl&) = delete;
@@ -150,8 +150,7 @@ class UpdaterInternalImpl
 
   // Overrides for IUpdaterInternal.
   IFACEMETHODIMP Run(IUpdaterInternalCallback* callback) override;
-  IFACEMETHODIMP InitializeUpdateService(
-      IUpdaterInternalCallback* callback) override;
+  IFACEMETHODIMP Hello(IUpdaterInternalCallback* callback) override;
 
  private:
   ~UpdaterInternalImpl() override = default;

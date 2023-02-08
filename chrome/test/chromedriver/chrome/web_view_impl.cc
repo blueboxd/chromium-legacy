@@ -188,33 +188,6 @@ class RemoteObjectReleaseGuard {
   std::string object_id_;
 };
 
-bool IsFencedFrameNode(const base::Value& node) {
-  if (!node.is_dict())
-    return false;
-  const std::string* node_name = node.GetDict().FindString("nodeName");
-  return node_name && *node_name == "FENCEDFRAME";
-}
-
-const base::Value* GetFencedFrameUserAgentShadowRoot(const base::Value& node) {
-  DCHECK(IsFencedFrameNode(node));
-  const base::Value* shadow_roots = node.GetDict().Find("shadowRoots");
-  if (!shadow_roots)
-    return nullptr;
-
-  // Find user-agent shadow root inside fenced frame.
-  for (const base::Value& shadow_root : shadow_roots->GetList()) {
-    if (shadow_root.is_dict()) {
-      const std::string* shadow_root_type =
-          shadow_root.GetDict().FindString("shadowRootType");
-      if (shadow_root_type && *shadow_root_type == "user-agent") {
-        return &shadow_root;
-      }
-    }
-  }
-
-  return nullptr;
-}
-
 Status DescribeNode(DevToolsClient* client,
                     const std::string& object_id,
                     int depth,
@@ -266,46 +239,6 @@ Status GetFrameIdForObjectId(DevToolsClient* client,
     *frame_id = *maybe_frame_id;
     *found_node = true;
     return Status(kOk);
-  }
-
-  if (IsFencedFrameNode(node)) {
-    status = DescribeNode(client, object_id, 3, true, &node);
-    if (status.IsError()) {
-      return status;
-    }
-    const base::Value* ua_shadow_root = GetFencedFrameUserAgentShadowRoot(node);
-    if (!ua_shadow_root)
-      return Status(kUnknownError, "Shadow not found in fenced frame");
-
-    if (ua_shadow_root->FindIntKey("childNodeCount").value_or(0) == 0)
-      return Status(kUnknownError,
-                    "Attribute childNodeCount not found in fenced frame");
-
-    // Find iframe inside fenced frame's shadow dom.
-    const base::Value* iframe_node = nullptr;
-    const base::Value* shadow_root_children =
-        ua_shadow_root->FindListKey("children");
-    if (!shadow_root_children)
-      return Status(kUnknownError,
-                    "Children attribute not found in fenced frame");
-
-    for (const base::Value& child : shadow_root_children->GetList()) {
-      if (*child.FindStringKey("nodeName") == "IFRAME") {
-        iframe_node = &child;
-        break;
-      }
-    }
-    if (!iframe_node)
-      return Status(kUnknownError, "IFrame child not found under fenced frame");
-
-    // Associate fenced frame element with nested iframe's frame id.
-    const std::string* child_frame_id =
-        iframe_node->GetDict().FindString("frameId");
-    if (child_frame_id) {
-      *frame_id = *child_frame_id;
-      *found_node = true;
-      return Status{kOk};
-    }
   }
 
   return Status(kOk);
@@ -415,31 +348,13 @@ bool WebViewImpl::WasCrashed() {
   return client_->WasCrashed();
 }
 
-Status WebViewImpl::ConnectIfNecessary() {
-  // The root client must never be IsNull as it has an instance of socket_.
-  // The child client can be IsNull but, by definition, the view has a parent.
-  DCHECK(!client_->IsNull() || parent_ != nullptr);
-  if (client_->IsNull() && parent_ == nullptr) {
-    return Status{kUnknownError, "Root WebView cannot be IsNull"};
-  }
-
-  if (parent_ != nullptr && client_->IsNull()) {
-    DevToolsClientImpl* root_client = static_cast<DevToolsClientImpl*>(
-        parent_->client_.get()->GetRootClient());
-    DevToolsClientImpl* client =
-        static_cast<DevToolsClientImpl*>(client_.get());
-    Status status = client->AttachTo(root_client);
-    if (status.IsError()) {
-      return status;
-    }
-  }
-  DCHECK(!client_->IsNull());
-  return client_->ConnectIfNecessary();
-}
-
 Status WebViewImpl::AttachTo(DevToolsClient* parent) {
   return static_cast<DevToolsClientImpl*>(client_.get())
       ->AttachTo(static_cast<DevToolsClientImpl*>(parent));
+}
+
+Status WebViewImpl::AttachChildView(WebViewImpl* child) {
+  return child->AttachTo(client_->GetRootClient());
 }
 
 Status WebViewImpl::HandleEventsUntil(const ConditionalFunc& conditional_func,
@@ -1402,19 +1317,19 @@ Status WebViewImpl::CallAsyncFunctionInternal(
       return status;
     }
 
-    base::DictionaryValue* result_info = nullptr;
-    if (!query_value->GetAsDictionary(&result_info))
+    base::Value::Dict* result_info = query_value->GetIfDict();
+    if (!result_info)
       return Status(kUnknownError, "async result info is not a dictionary");
-    absl::optional<int> status_code = result_info->FindIntKey("status");
+    absl::optional<int> status_code = result_info->FindInt("status");
     if (!status_code)
       return Status(kUnknownError, "async result info has no int 'status'");
     if (*status_code != kOk) {
-      std::string message;
-      result_info->GetString("value", &message);
-      return Status(static_cast<StatusCode>(*status_code), message);
+      const std::string* message = result_info->FindString("value");
+      return Status(static_cast<StatusCode>(*status_code),
+                    message ? *message : "");
     }
 
-    if (base::Value* value = result_info->FindKey("value")) {
+    if (base::Value* value = result_info->Find("value")) {
       *result = base::Value::ToUniquePtrValue(value->Clone());
       return Status(kOk);
     }
@@ -1634,20 +1549,20 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
 
 Status ParseCallFunctionResult(const base::Value& temp_result,
                                std::unique_ptr<base::Value>* result) {
-  const base::DictionaryValue* dict;
-  if (!temp_result.GetAsDictionary(&dict))
+  const base::Value::Dict* dict = temp_result.GetIfDict();
+  if (!dict)
     return Status(kUnknownError, "call function result must be a dictionary");
-  absl::optional<int> status_code = dict->FindIntKey("status");
+  absl::optional<int> status_code = dict->FindInt("status");
   if (!status_code) {
     return Status(kUnknownError,
                   "call function result missing int 'status'");
   }
   if (*status_code != kOk) {
-    std::string message;
-    dict->GetString("value", &message);
-    return Status(static_cast<StatusCode>(*status_code), message);
+    const std::string* message = dict->FindString("value");
+    return Status(static_cast<StatusCode>(*status_code),
+                  message ? *message : "");
   }
-  const base::Value* unscoped_value = dict->FindKey("value");
+  const base::Value* unscoped_value = dict->Find("value");
   if (unscoped_value == nullptr) {
     // Missing 'value' indicates the JavaScript code didn't return a value.
     return Status(kOk);

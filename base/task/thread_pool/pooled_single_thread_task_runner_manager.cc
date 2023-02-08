@@ -57,14 +57,23 @@ namespace {
 // thread pool.
 bool g_manager_is_alive = false;
 
+bool g_use_utility_thread_group = false;
+
 size_t GetEnvironmentIndexForTraits(const TaskTraits& traits) {
   const bool is_background =
       traits.priority() == TaskPriority::BEST_EFFORT &&
       traits.thread_policy() == ThreadPolicy::PREFER_BACKGROUND &&
       CanUseBackgroundThreadTypeForWorkerThread();
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-  return is_background ? BACKGROUND : FOREGROUND;
+  const bool is_utility =
+      !is_background && traits.priority() <= TaskPriority::USER_VISIBLE &&
+      traits.thread_policy() == ThreadPolicy::PREFER_BACKGROUND &&
+      g_use_utility_thread_group;
+  if (traits.may_block() || traits.with_base_sync_primitives()) {
+    return is_background ? BACKGROUND_BLOCKING
+           : is_utility  ? UTILITY_BLOCKING
+                         : FOREGROUND_BLOCKING;
+  }
+  return is_background ? BACKGROUND : is_utility ? UTILITY : FOREGROUND;
 }
 
 // Allows for checking the PlatformThread::CurrentRef() against a set
@@ -148,7 +157,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
 
     // |task| will be pushed to |sequence|, and |sequence| will be queued
     // to |priority_queue_| iff |sequence_should_be_queued| is true.
-    const bool sequence_should_be_queued = transaction.ShouldBeQueued();
+    const bool sequence_should_be_queued = transaction.WillPushImmediateTask();
     RegisteredTaskSource task_source;
     if (sequence_should_be_queued) {
       task_source = task_tracker_->RegisterTaskSource(sequence);
@@ -359,7 +368,8 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
       if (task_tracker()->WillPostTask(
               &pump_message_task, TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
         auto transaction = message_pump_sequence_->BeginTransaction();
-        const bool sequence_should_be_queued = transaction.ShouldBeQueued();
+        const bool sequence_should_be_queued =
+            transaction.WillPushImmediateTask();
         DCHECK(sequence_should_be_queued)
             << "GetWorkFromWindowsMessageQueue() does not expect "
                "queueing of pump tasks.";
@@ -417,7 +427,7 @@ class PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner
       return false;
 
     Task task(from_here, std::move(closure), TimeTicks::Now(), delay,
-              base::GetTaskLeeway());
+              GetDefaultTaskLeeway());
     return PostTask(std::move(task));
   }
 
@@ -430,7 +440,7 @@ class PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner
       return false;
 
     Task task(from_here, std::move(closure), TimeTicks::Now(), delayed_run_time,
-              base::GetTaskLeeway(), delay_policy);
+              GetDefaultTaskLeeway(), delay_policy);
     return PostTask(std::move(task));
   }
 
@@ -529,6 +539,7 @@ PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunnerManager(
 PooledSingleThreadTaskRunnerManager::~PooledSingleThreadTaskRunnerManager() {
   DCHECK(g_manager_is_alive);
   g_manager_is_alive = false;
+  g_use_utility_thread_group = false;
 }
 
 void PooledSingleThreadTaskRunnerManager::Start(
@@ -540,6 +551,9 @@ void PooledSingleThreadTaskRunnerManager::Start(
   DCHECK(io_thread_task_runner);
   io_thread_task_runner_ = std::move(io_thread_task_runner);
 #endif  // (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
+
+  g_use_utility_thread_group = CanUseUtilityThreadTypeForWorkerThread() &&
+                               FeatureList::IsEnabled(kUseUtilityThreadGroup);
 
   decltype(workers_) workers_to_start;
   {
@@ -634,10 +648,7 @@ PooledSingleThreadTaskRunnerManager::CreateTaskRunnerImpl(
         worker_name += "Shared";
       worker_name += environment_params.name_suffix;
       worker = CreateAndRegisterWorkerThread<DelegateType>(
-          worker_name, thread_mode,
-          CanUseBackgroundThreadTypeForWorkerThread()
-              ? environment_params.thread_type_hint
-              : ThreadType::kDefault);
+          worker_name, thread_mode, environment_params.thread_type_hint);
       new_worker = true;
     }
     started = started_;
@@ -717,7 +728,7 @@ PooledSingleThreadTaskRunnerManager::CreateAndRegisterWorkerThread(
       CreateWorkerThreadDelegate<DelegateType>(name, id, thread_mode);
   WorkerThreadDelegate* delegate_raw = delegate.get();
   scoped_refptr<WorkerThread> worker = MakeRefCounted<WorkerThread>(
-      thread_type_hint, std::move(delegate), task_tracker_);
+      thread_type_hint, std::move(delegate), task_tracker_, workers_.size());
   delegate_raw->set_worker(worker.get());
   workers_.emplace_back(std::move(worker));
   return workers_.back().get();

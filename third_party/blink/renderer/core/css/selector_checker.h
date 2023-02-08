@@ -171,6 +171,7 @@ class CORE_EXPORT SelectorChecker {
     ContainerNode* relative_anchor_element = nullptr;
 
     PseudoId pseudo_id = kPseudoIdNone;
+    AtomicString pseudo_argument = g_null_atom;
 
     bool is_sub_selector = false;
     bool in_rightmost_compound = true;
@@ -279,7 +280,8 @@ class CORE_EXPORT SelectorChecker {
   // Does the work of checking whether the simple selector and element pointed
   // to by the context are a match. Delegates most of the work to the Check*
   // methods below.
-  bool CheckOne(const SelectorCheckingContext&, MatchResult&) const;
+  ALWAYS_INLINE bool CheckOne(const SelectorCheckingContext&,
+                              MatchResult&) const;
 
   enum MatchStatus {
     kSelectorMatches,

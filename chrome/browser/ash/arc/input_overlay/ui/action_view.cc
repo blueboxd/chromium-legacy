@@ -14,8 +14,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button_factory.h"
 
-namespace arc {
-namespace input_overlay {
+namespace arc::input_overlay {
 namespace {
 constexpr int kMenuEntryOffset = 4;
 
@@ -50,6 +49,8 @@ ActionView::ActionView(Action* action,
     : views::View(),
       action_(action),
       display_overlay_controller_(display_overlay_controller),
+      allow_reposition_(
+          display_overlay_controller->touch_injector()->allow_reposition()),
       beta_(display_overlay_controller->touch_injector()->beta()) {}
 ActionView::~ActionView() = default;
 
@@ -177,24 +178,24 @@ bool ActionView::ShouldShowErrorMsg(ui::DomCode code,
 }
 
 bool ActionView::OnMousePressed(const ui::MouseEvent& event) {
-  if (!beta_)
+  if (!allow_reposition_)
     return false;
   OnDragStart(event);
   return true;
 }
 
 bool ActionView::OnMouseDragged(const ui::MouseEvent& event) {
-  return beta_ ? OnDragUpdate(event) : false;
+  return allow_reposition_ ? OnDragUpdate(event) : false;
 }
 
 void ActionView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!beta_)
+  if (!allow_reposition_)
     return;
   OnDragEnd();
 }
 
 void ActionView::OnGestureEvent(ui::GestureEvent* event) {
-  if (!beta_)
+  if (!allow_reposition_)
     return;
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -280,12 +281,12 @@ void ActionView::UpdateTrashButtonPosition() {
 }
 
 void ActionView::OnDragStart(const ui::LocatedEvent& event) {
-  start_drag_pos_ = event.location();
+  start_drag_event_pos_ = event.location();
 }
 
 bool ActionView::OnDragUpdate(const ui::LocatedEvent& event) {
   auto new_location = event.location();
-  auto target_location = origin() + (new_location - start_drag_pos_);
+  auto target_location = origin() + (new_location - start_drag_event_pos_);
   target_location.set_x(base::clamp(target_location.x(), /*lo=*/0,
                                     /*hi=*/parent()->width() - width()));
   target_location.set_y(base::clamp(target_location.y(), /*lo=*/0,
@@ -301,12 +302,11 @@ void ActionView::OnDragEnd() {
 }
 
 void ActionView::ChangePositionBinding(const gfx::Point& new_touch_center) {
-  DCHECK(beta_);
-  if (!beta_)
+  DCHECK(allow_reposition_);
+  if (!allow_reposition_)
     return;
 
   action_->PrepareToBindPosition(new_touch_center);
 }
 
-}  // namespace input_overlay
-}  // namespace arc
+}  // namespace arc::input_overlay

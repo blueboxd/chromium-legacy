@@ -23,7 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -171,6 +171,13 @@ std::u16string GetDisplayFederation(
       form.federation_origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 }
 
+std::u16string GetDisplayPassword(const password_manager::PasswordForm& form) {
+  return form.federation_origin.opaque()
+             ? form.password_value
+             : l10n_util::GetStringFUTF16(IDS_PASSWORDS_VIA_FEDERATION,
+                                          GetDisplayFederation(form));
+}
+
 bool IsSyncingAutosignSetting(Profile* profile) {
   const syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile);
@@ -214,7 +221,6 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
       case ManagePasswordsReferrer::kTouchToFill:
       case ManagePasswordsReferrer::kPasswordBreachDialog:
       case ManagePasswordsReferrer::kSafetyCheck:
-      case ManagePasswordsReferrer::kAutomatedPasswordChangeSuccessLink:
       case ManagePasswordsReferrer::kBiometricAuthenticationBeforeFillingDialog:
         NOTREACHED();
     }

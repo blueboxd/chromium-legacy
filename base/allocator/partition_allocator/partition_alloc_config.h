@@ -147,15 +147,25 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_HAS_FREELIST_SHADOW_ENTRY
 #endif
 
+#if defined(ARCH_CPU_ARM64) && defined(__clang__) && \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID))
+static_assert(sizeof(void*) == 8);
+#define PA_HAS_MEMORY_TAGGING
+#endif
+
+#if defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
+#define PA_USE_OOB_POISON
+#endif
+
 // Build MTECheckedPtr code.
 //
 // Only applicable to code with 64-bit pointers. Currently conflicts with true
 // hardware MTE.
 #if BUILDFLAG(ENABLE_MTE_CHECKED_PTR_SUPPORT) && \
     defined(PA_HAS_64_BITS_POINTERS) && !defined(PA_HAS_MEMORY_TAGGING)
+static_assert(sizeof(void*) == 8);
 #define PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS
-#endif  // BUILDFLAG(ENABLE_MTE_CHECKED_PTR_SUPPORT) &&
-        // defined(PA_HAS_64_BITS_POINTERS) && !defined(PA_HAS_MEMORY_TAGGING)
+#endif
 
 // Specifies whether allocation extras need to be added.
 #if BUILDFLAG(PA_DCHECK_IS_ON) || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
@@ -198,12 +208,6 @@ static_assert(sizeof(void*) != 8, "");
     BUILDFLAG(ENABLE_PARTITION_ALLOC_AS_MALLOC_SUPPORT) && \
     defined(PA_THREAD_LOCAL_TLS) && !BUILDFLAG(IS_ANDROID)
 #define PA_HAS_ALLOCATION_GUARD
-#endif
-
-#if defined(ARCH_CPU_ARM64) && defined(__clang__) && \
-    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID))
-static_assert(sizeof(void*) == 8);
-#define PA_HAS_MEMORY_TAGGING
 #endif
 
 // Lazy commit should only be enabled on Windows, because commit charge is
@@ -260,7 +264,7 @@ constexpr bool kUseLazyCommit = false;
 // larger slot spans.
 #if BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
 #define PA_PREFER_SMALLER_SLOT_SPANS
-#endif  // BUILDFLAG(IS_LINUX) || (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
+#endif
 
 // Enable shadow metadata.
 //
@@ -284,5 +288,26 @@ constexpr bool kUseLazyCommit = false;
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && BUILDFLAG(IS_MAC)
 #define PA_ENABLE_MAC11_MALLOC_SIZE_HACK
 #endif
+
+// Enables compressed (4-byte) pointers that can point within the core pools
+// (Regular + BRP).
+#if defined(PA_HAS_64_BITS_POINTERS) && BUILDFLAG(ENABLE_POINTER_COMPRESSION)
+
+#define PA_POINTER_COMPRESSION
+
+#if !defined(PA_GLUE_CORE_POOLS)
+#error "Pointer compression works only with contiguous pools"
+#endif
+#if defined(PA_DYNAMICALLY_SELECT_POOL_SIZE)
+#error "Dynamically selected pool size is currently not supported"
+#endif
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS) || \
+    defined(PA_HAS_MEMORY_TAGGING)
+// TODO(1376980): Address MTE once it's enabled.
+#error "Compressed pointers don't support tag in the upper bits"
+#endif
+
+#endif  // defined(PA_HAS_64_BITS_POINTERS) &&
+        // BUILDFLAG(ENABLE_POINTER_COMPRESSION)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_

@@ -11,7 +11,6 @@
 #endif
 
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -193,5 +192,28 @@ int GetCurrentCountryID() {
 }
 
 #endif  // OS_*
+
+std::string CountryIDToCountryString(int country_id) {
+  // We only use the lowest 16 bits to build two ASCII characters. If there is
+  // more than that, the ID is invalid. The check for positive integers also
+  // handles the |kCountryIDUnknown| case.
+  if ((country_id & 0xFFFF) != country_id || country_id < 0)
+    return kCountryCodeUnknown;
+
+  // Decode the country code string from the provided integer. The first two
+  // bytes of the country ID represent two ASCII chars.
+  std::string country_code = {static_cast<char>(country_id >> 8),
+                              static_cast<char>(country_id)};
+  country_code = base::ToUpperASCII(country_code);
+
+  // Validate the code that was produced by feeding it back into the system.
+  return (CountryStringToCountryID(country_code) == country_id)
+             ? country_code
+             : kCountryCodeUnknown;
+}
+
+std::string GetCurrentCountryCode() {
+  return CountryIDToCountryString(GetCurrentCountryID());
+}
 
 }  // namespace country_codes

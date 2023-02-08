@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/syslog_logging.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/profiles/profile.h"
@@ -53,8 +52,8 @@ void UserCommandArcJob::RunImpl(CallbackWithResult succeeded_callback,
 
   if (!arc_policy_bridge) {
     // ARC is not enabled for this profile, fail the remote command.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(failed_callback), nullptr));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(failed_callback), absl::nullopt));
     return;
   }
 
@@ -64,16 +63,16 @@ void UserCommandArcJob::RunImpl(CallbackWithResult succeeded_callback,
          arc::mojom::CommandResultType result) {
         if (result == arc::mojom::CommandResultType::FAILURE ||
             result == arc::mojom::CommandResultType::IGNORED) {
-          std::move(failed_callback).Run(nullptr);
+          std::move(failed_callback).Run(absl::nullopt);
           return;
         }
-        std::move(succeeded_callback).Run(nullptr);
+        std::move(succeeded_callback).Run(absl::nullopt);
       },
       std::move(succeeded_callback), std::move(failed_callback));
 
   // Documentation for RemoteCommandJob::RunImpl requires that the
   // implementation executes the command asynchronously.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&arc::ArcPolicyBridge::OnCommandReceived,
                      arc_policy_bridge->GetWeakPtr(), command_payload_,

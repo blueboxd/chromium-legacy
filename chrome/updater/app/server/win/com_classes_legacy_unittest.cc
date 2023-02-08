@@ -25,14 +25,15 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util_win.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/unittest_util_win.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
-#include "chrome/updater/win/win_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -183,7 +184,7 @@ TEST_F(LegacyAppCommandWebImplTest, FailedToLaunchStatus) {
 }
 
 TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
-  if (GetTestScope() == UpdaterScope::kSystem)
+  if (IsSystemInstall(GetTestScope()))
     return;
 
   Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> app_command_web;

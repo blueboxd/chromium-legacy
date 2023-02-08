@@ -17,6 +17,7 @@
 #include "media/base/test_data_util.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_transformation.h"
+#include "media/filters/dav1d_video_decoder.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
@@ -27,12 +28,6 @@
 #include "media/gpu/test/video_test_helpers.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-#include "media/filters/dav1d_video_decoder.h"
-#elif BUILDFLAG(ENABLE_LIBGAV1_DECODER)
-#include "media/filters/gav1_video_decoder.h"
-#endif
 
 namespace media {
 namespace test {
@@ -48,6 +43,7 @@ constexpr const char* usage_msg =
            [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]
            [--output_limit=<number>] [--output_folder=<folder>]
            [--linear_output] ([--use-legacy]|[--use_vd_vda])
+           [--use-gl=<backend>] [--ozone-platform=<platform>]
            [--disable_vaapi_lock]
            [--gtest_help] [--help]
            [<video path>] [<video metadata path>]
@@ -69,7 +65,7 @@ The following arguments are supported:
   --vmodule             enable verbose mode for the specified module,
                         e.g. --vmodule=*media/gpu*=2.
 
- --validator_type       validate decoded frames, possible values are
+  --validator_type      validate decoded frames, possible values are
                         md5 (default, compare against md5hash of expected
                         frames), ssim (compute SSIM against expected
                         frames, currently allowed for AV1 streams only)
@@ -90,6 +86,12 @@ The following arguments are supported:
   --output_limit        limit the number of frames saved to disk.
   --output_folder       set the folder used to store frames, defaults to
                         "<testname>".
+  --use-gl              specify which GPU backend to use, possible values
+                        include desktop (GLX), egl (GLES w/ ANGLE), and
+                        swiftshader (software rendering)
+  --ozone-platform      specify which Ozone platform to use, possible values
+                        depend on build configuration but normally include
+                        x11, drm, wayland, and headless
   --disable_vaapi_lock  disable the global VA-API lock if applicable,
                         i.e., only on devices that use the VA-API with a libva
                         backend that's known to be thread-safe and only in
@@ -203,11 +205,8 @@ class VideoDecoderTest : public ::testing::Test {
       LOG(ERROR) << "Frame validation by SSIM is allowed for AV1 streams only";
       return false;
     }
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+
     Dav1dVideoDecoder decoder(
-#elif BUILDFLAG(ENABLE_LIBGAV1_DECODER)
-    Gav1VideoDecoder decoder(
-#endif
         /*media_log=*/nullptr,
         OffloadableVideoDecoder::OffloadState::kOffloaded);
     VideoDecoderConfig decoder_config(
@@ -557,6 +556,8 @@ int main(int argc, char** argv) {
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
+        it->first == "ozone-platform" ||               // Handled by Chrome
+        it->first == "use-gl" ||                       // Handled by Chrome
         it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
       continue;
     }

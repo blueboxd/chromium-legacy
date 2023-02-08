@@ -1,0 +1,82 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_ATTRIBUTION_REPORTING_TRIGGER_REGISTRATION_H_
+#define COMPONENTS_ATTRIBUTION_REPORTING_TRIGGER_REGISTRATION_H_
+
+#include <stdint.h>
+
+#include "base/component_export.h"
+#include "base/strings/string_piece_forward.h"
+#include "base/types/expected.h"
+#include "base/values.h"
+#include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/attribution_reporting/aggregatable_trigger_data.h"
+#include "components/attribution_reporting/aggregatable_values.h"
+#include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace mojo {
+struct DefaultConstructTraits;
+}  // namespace mojo
+
+namespace attribution_reporting {
+
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) TriggerRegistration {
+  static base::expected<TriggerRegistration, mojom::TriggerRegistrationError>
+  Parse(base::Value::Dict, SuitableOrigin reporting_origin);
+
+  static base::expected<TriggerRegistration, mojom::TriggerRegistrationError>
+  Parse(base::StringPiece json, SuitableOrigin reporting_origin);
+
+  explicit TriggerRegistration(SuitableOrigin reporting_origin);
+
+  TriggerRegistration(SuitableOrigin reporting_origin,
+                      Filters filters,
+                      Filters not_filters,
+                      absl::optional<uint64_t> debug_key,
+                      absl::optional<uint64_t> aggregatable_dedup_key,
+                      EventTriggerDataList event_triggers,
+                      AggregatableTriggerDataList aggregatable_trigger_data,
+                      AggregatableValues aggregatable_values,
+                      bool debug_reporting,
+                      aggregation_service::mojom::AggregationCoordinator
+                          aggregation_coordinator);
+
+  ~TriggerRegistration();
+
+  TriggerRegistration(const TriggerRegistration&);
+  TriggerRegistration& operator=(const TriggerRegistration&);
+
+  TriggerRegistration(TriggerRegistration&&);
+  TriggerRegistration& operator=(TriggerRegistration&&);
+
+  base::Value::Dict ToJson() const;
+
+  SuitableOrigin reporting_origin;
+  Filters filters;
+  Filters not_filters;
+  absl::optional<uint64_t> debug_key;
+  absl::optional<uint64_t> aggregatable_dedup_key;
+  EventTriggerDataList event_triggers;
+  AggregatableTriggerDataList aggregatable_trigger_data;
+  AggregatableValues aggregatable_values;
+  bool debug_reporting = false;
+  aggregation_service::mojom::AggregationCoordinator aggregation_coordinator =
+      aggregation_service::mojom::AggregationCoordinator::kDefault;
+
+ private:
+  friend mojo::DefaultConstructTraits;
+
+  // Creates an invalid instance for use with Mojo deserialization, which
+  // requires types to be default-constructible.
+  TriggerRegistration();
+};
+
+}  // namespace attribution_reporting
+
+#endif  // COMPONENTS_ATTRIBUTION_REPORTING_TRIGGER_REGISTRATION_H_

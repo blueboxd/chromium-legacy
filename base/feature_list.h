@@ -378,10 +378,21 @@ class BASE_EXPORT FeatureList {
   // OWNERS.
   std::unique_ptr<Accessor> ConstructAccessor();
 
-  // Returns whether the given |feature| is enabled. Must only be called after
-  // the singleton instance has been registered via SetInstance(). Additionally,
-  // a feature with a given name must only have a single corresponding Feature
-  // struct, which is checked in builds with DCHECKs enabled.
+  // Returns whether the given `feature` is enabled.
+  //
+  // If no `FeatureList` instance is registered, this will:
+  // - DCHECK(), if FailOnFeatureAccessWithoutFeatureList() was called.
+  //     TODO(crbug.com/1358639): Change the DCHECK to a CHECK when we're
+  //     confident that all early accesses have been fixed. We don't want to
+  //     get many crash reports from the field in the meantime.
+  // - Return the default state, otherwise. Registering a `FeatureList` later
+  //   will fail.
+  //
+  // TODO(crbug.com/1358639): Make early FeatureList access fail on iOS, Android
+  // and ChromeOS. This currently only works on Windows, Mac and Linux.
+  //
+  // A feature with a given name must only have a single corresponding Feature
+  // instance, which is checked in builds with DCHECKs enabled.
   static bool IsEnabled(const Feature& feature);
 
   // Some characters are not allowed to appear in feature names or the
@@ -458,11 +469,16 @@ class BASE_EXPORT FeatureList {
   // to support base::test::ScopedFeatureList helper class.
   static void RestoreInstanceForTesting(std::unique_ptr<FeatureList> instance);
 
-  // On some platforms, the base::FeatureList singleton might be duplicated to
-  // more than one module. If this function is called, then using base::Feature
-  // API will result in DCHECK if accessed from the same module as the callee.
-  // Has no effect if DCHECKs are not enabled.
-  static void ForbidUseForCurrentModule();
+  // After calling this, an attempt to access feature state when no FeatureList
+  // is registered will DCHECK.
+  //
+  // TODO(crbug.com/1358639): Change the DCHECK to a CHECK when we're confident
+  // that all early accesses have been fixed. We don't want to get many crash
+  // reports from the field in the meantime.
+  //
+  // Note: This isn't the default behavior because accesses are tolerated in
+  // processes that never register a FeatureList.
+  static void FailOnFeatureAccessWithoutFeatureList();
 
   void SetCachingContextForTesting(uint16_t caching_context);
 
@@ -482,7 +498,7 @@ class BASE_EXPORT FeatureList {
     // An optional associated field trial, which will be activated when the
     // state of the feature is queried for the first time. Weak pointer to the
     // FieldTrial object that is owned by the FieldTrialList singleton.
-    base::FieldTrial* field_trial;
+    raw_ptr<base::FieldTrial> field_trial;
 
     // Specifies whether the feature's state is overridden by |field_trial|.
     // If it's not, and |field_trial| is not null, it means it is simply an

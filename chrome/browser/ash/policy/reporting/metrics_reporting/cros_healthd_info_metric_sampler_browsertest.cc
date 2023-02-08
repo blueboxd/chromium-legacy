@@ -273,7 +273,7 @@ class InputInfoSamplerBrowserTest : public policy::DevicePolicyCrosBrowserTest {
         kReportDeviceGraphicsStatus, true);
   }
 
-  // Is the given record about CPU info metric?
+  // Is the given record about touchscreen info metric?
   static bool IsRecordTouchScreenInfo(const Record& record) {
     auto record_data = IsRecordInfo(record);
     return record_data.has_value() &&
@@ -285,33 +285,45 @@ class InputInfoSamplerBrowserTest : public policy::DevicePolicyCrosBrowserTest {
   ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
-IN_PROC_BROWSER_TEST_F(InputInfoSamplerBrowserTest, TouchScreenSingleInternal) {
+IN_PROC_BROWSER_TEST_F(InputInfoSamplerBrowserTest,
+                       TouchScreenMultipleInternal) {
   static constexpr char kSampleLibrary[] = "SampleLibrary";
   static constexpr char kSampleDevice[] = "SampleDevice";
+  static constexpr char kSampleDevice2[] = "SampleDevice2";
   static constexpr int kTouchPoints = 10;
+  static constexpr int kTouchPoints2 = 5;
 
-  auto input_device = cros_healthd::TouchscreenDevice::New(
+  // Create the test result.
+  auto input_device_first = cros_healthd::TouchscreenDevice::New(
       cros_healthd::InputDevice::New(
           kSampleDevice, cros_healthd::InputDevice_ConnectionType::kInternal,
           /*physical_location*/ "", /*is_enabled*/ true),
       kTouchPoints, /*has_stylus*/ true,
       /*has_stylus_garage_switch*/ false);
+  auto input_device_second = cros_healthd::TouchscreenDevice::New(
+      cros_healthd::InputDevice::New(
+          kSampleDevice2, cros_healthd::InputDevice_ConnectionType::kInternal,
+          /*physical_location*/ "", /*is_enabled*/ true),
+      kTouchPoints2, /*has_stylus*/ false,
+      /*has_stylus_garage_switch*/ false);
   std::vector<cros_healthd::TouchscreenDevicePtr> touchscreen_devices;
-  touchscreen_devices.push_back(std::move(input_device));
-
+  touchscreen_devices.push_back(std::move(input_device_first));
+  touchscreen_devices.push_back(std::move(input_device_second));
   auto input_result = ::reporting::test::CreateInputResult(
       kSampleLibrary, std::move(touchscreen_devices));
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(input_result);
   MissiveClientTestObserver observer(
       base::BindRepeating(&IsRecordTouchScreenInfo));
+
+  // Assertions
   auto [priority, record] = observer.GetNextEnqueuedRecord();
   auto info_data = AssertInfo(priority, record).info_data();
   ASSERT_TRUE(info_data.has_touch_screen_info());
   ASSERT_TRUE(info_data.touch_screen_info().has_library_name());
   EXPECT_THAT(info_data.touch_screen_info().library_name(),
               StrEq(kSampleLibrary));
-  ASSERT_EQ(info_data.touch_screen_info().touch_screen_devices().size(), 1);
+  ASSERT_EQ(info_data.touch_screen_info().touch_screen_devices().size(), 2);
   EXPECT_THAT(
       info_data.touch_screen_info().touch_screen_devices(0).display_name(),
       StrEq(kSampleDevice));
@@ -320,6 +332,110 @@ IN_PROC_BROWSER_TEST_F(InputInfoSamplerBrowserTest, TouchScreenSingleInternal) {
       Eq(kTouchPoints));
   EXPECT_TRUE(
       info_data.touch_screen_info().touch_screen_devices(0).has_stylus());
+  EXPECT_THAT(
+      info_data.touch_screen_info().touch_screen_devices(1).display_name(),
+      StrEq(kSampleDevice2));
+  EXPECT_THAT(
+      info_data.touch_screen_info().touch_screen_devices(1).touch_points(),
+      Eq(kTouchPoints2));
+  EXPECT_FALSE(
+      info_data.touch_screen_info().touch_screen_devices(1).has_stylus());
 }
 
+// ---- Display ----
+
+class DisplayInfoSamplerBrowserTest
+    : public policy::DevicePolicyCrosBrowserTest {
+ public:
+  DisplayInfoSamplerBrowserTest(const DisplayInfoSamplerBrowserTest&) = delete;
+  DisplayInfoSamplerBrowserTest& operator=(
+      const DisplayInfoSamplerBrowserTest&) = delete;
+
+ protected:
+  DisplayInfoSamplerBrowserTest() = default;
+  ~DisplayInfoSamplerBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    policy::DevicePolicyCrosBrowserTest::SetUpOnMainThread();
+    scoped_testing_cros_settings_.device_settings()->SetBoolean(
+        kReportDeviceGraphicsStatus, true);
+  }
+
+  // Is the given record about display info metric?
+  static bool IsRecordDisplayInfo(const Record& record) {
+    auto record_data = IsRecordInfo(record);
+    return record_data.has_value() &&
+           record_data.value().info_data().has_display_info();
+  }
+
+ private:
+  CrosHealthdInfoMetricsHelper cros_healthd_info_metrics_helper_;
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
+};
+
+IN_PROC_BROWSER_TEST_F(DisplayInfoSamplerBrowserTest, MultipleDisplays) {
+  static constexpr bool kPrivacyScreenSupported = false;
+  static constexpr int kDisplayWidth = 1080;
+  static constexpr int kDisplayHeight = 27282;
+  static constexpr char kDisplayManufacture[] = "Samsung";
+  static constexpr int kDisplayManufactureYear = 2020;
+  static constexpr int kDisplayModelId = 54321;
+  static constexpr char kExternalDisplayName[] = "External display";
+  static constexpr char kInternalDisplayName[] = "Internal display";
+
+  // Create display results
+  std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays;
+  external_displays.push_back(::reporting::test::CreateExternalDisplay(
+      kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
+      /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
+      kDisplayModelId, kDisplayManufactureYear, kExternalDisplayName));
+  external_displays.push_back(::reporting::test::CreateExternalDisplay(
+      kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
+      /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
+      kDisplayModelId, kDisplayManufactureYear, kExternalDisplayName));
+  auto display_result = ::reporting::test::CreateDisplayResult(
+      ::reporting::test::CreateEmbeddedDisplay(
+          kPrivacyScreenSupported, kDisplayWidth, kDisplayHeight,
+          /*resolution_horizontal*/ 1000,
+          /*resolution_vertical*/ 500, /*refresh_rate*/ 100,
+          kDisplayManufacture, kDisplayModelId, kDisplayManufactureYear,
+          kInternalDisplayName),
+      std::move(external_displays));
+  ash::cros_healthd::FakeCrosHealthd::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(display_result);
+  MissiveClientTestObserver observer(base::BindRepeating(&IsRecordDisplayInfo));
+
+  // assertions
+  auto [priority, record] = observer.GetNextEnqueuedRecord();
+  auto info_data = AssertInfo(priority, record).info_data();
+  ASSERT_TRUE(info_data.has_display_info());
+  ASSERT_EQ(info_data.display_info().display_device_size(), 3);
+
+  ASSERT_TRUE(info_data.has_privacy_screen_info());
+  ASSERT_FALSE(info_data.privacy_screen_info().supported());
+
+  auto internal_display = info_data.display_info().display_device(0);
+  EXPECT_EQ(internal_display.display_name(), kInternalDisplayName);
+  EXPECT_EQ(internal_display.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(internal_display.display_width(), kDisplayWidth);
+  EXPECT_EQ(internal_display.display_height(), kDisplayHeight);
+  EXPECT_EQ(internal_display.model_id(), kDisplayModelId);
+  EXPECT_EQ(internal_display.manufacture_year(), kDisplayManufactureYear);
+
+  auto external_display_1 = info_data.display_info().display_device(1);
+  EXPECT_EQ(external_display_1.display_name(), kExternalDisplayName);
+  EXPECT_EQ(external_display_1.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(external_display_1.display_width(), kDisplayWidth);
+  EXPECT_EQ(external_display_1.display_height(), kDisplayHeight);
+  EXPECT_EQ(external_display_1.model_id(), kDisplayModelId);
+  EXPECT_EQ(external_display_1.manufacture_year(), kDisplayManufactureYear);
+
+  auto external_display_2 = info_data.display_info().display_device(2);
+  EXPECT_EQ(external_display_2.display_name(), kExternalDisplayName);
+  EXPECT_EQ(external_display_2.manufacturer(), kDisplayManufacture);
+  EXPECT_EQ(external_display_2.display_width(), kDisplayWidth);
+  EXPECT_EQ(external_display_2.display_height(), kDisplayHeight);
+  EXPECT_EQ(external_display_2.model_id(), kDisplayModelId);
+  EXPECT_EQ(external_display_2.manufacture_year(), kDisplayManufactureYear);
+}
 }  // namespace ash::reporting

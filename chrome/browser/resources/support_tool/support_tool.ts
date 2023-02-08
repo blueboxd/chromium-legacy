@@ -88,15 +88,15 @@ export class SupportToolElement extends SupportToolElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'data-collection-completed',
         this.onDataCollectionCompleted_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'data-collection-cancelled',
         this.onDataCollectionCancelled_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'support-data-export-started', this.onDataExportStarted_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'data-export-completed', this.onDataExportCompleted_.bind(this));
   }
 
@@ -105,7 +105,7 @@ export class SupportToolElement extends SupportToolElementBase {
   }
 
   private onDataCollectionCompleted_(piiItems: PiiDataItem[]) {
-    this.$.piiSelection.updateDetectedPIIItems(piiItems);
+    this.$.piiSelection.updateDetectedPiiItems(piiItems);
     this.selectedPage_ = SupportToolPageIndex.PII_SELECTION;
   }
 

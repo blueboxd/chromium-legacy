@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_orientation.h"
+#include "third_party/blink/renderer/platform/fonts/resolved_font_features.h"
 #include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -82,6 +83,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    bool synthetic_bold,
                    bool synthetic_italic,
                    TextRenderingMode text_rendering,
+                   ResolvedFontFeatures resolved_font_features,
                    FontOrientation = FontOrientation::kHorizontal);
   ~FontPlatformData();
 
@@ -105,6 +107,9 @@ class PLATFORM_EXPORT FontPlatformData {
   unsigned GetHash() const;
 
   FontOrientation Orientation() const { return orientation_; }
+  const ResolvedFontFeatures& ResolvedFeatures() const {
+    return resolved_font_features_;
+  }
   bool IsVerticalAnyUpright() const {
     return blink::IsVerticalAnyUpright(orientation_);
   }
@@ -174,44 +179,14 @@ class PLATFORM_EXPORT FontPlatformData {
   bool avoid_embedded_bitmaps_ = false;
   TextRenderingMode text_rendering_ = TextRenderingMode::kAutoTextRendering;
   FontOrientation orientation_ = FontOrientation::kHorizontal;
+  ResolvedFontFeatures resolved_font_features_;
 
  private:
 #if !BUILDFLAG(IS_MAC)
   WebFontRenderStyle style_;
 #endif
 
-#if defined(USE_PARALLEL_TEXT_SHAPING)
-  // The class maps from thread id to `HarfBuzzFace`.
-  // Note: We can not use `base::SequenceLocalStorageSlot` or
-  // `base::ThreadLocalStorage` here, because number of instances are limited,
-  // e.g. 255.
-  class ThreadSpecificHarfBuzzFace final {
-   public:
-    ThreadSpecificHarfBuzzFace();
-    ~ThreadSpecificHarfBuzzFace();
-
-    ThreadSpecificHarfBuzzFace(const ThreadSpecificHarfBuzzFace&) = delete;
-    ThreadSpecificHarfBuzzFace(ThreadSpecificHarfBuzzFace&&) = delete;
-
-    ThreadSpecificHarfBuzzFace operator=(const ThreadSpecificHarfBuzzFace&) =
-        delete;
-    ThreadSpecificHarfBuzzFace operator=(ThreadSpecificHarfBuzzFace&&) = delete;
-
-    HarfBuzzFace& GetOrCreate(FontPlatformData* platform_data)
-        LOCKS_EXCLUDED(lock_);
-
-   private:
-    // TODO(yosin): Once all platforms support parallel text shaping, we should
-    // use `std::unique_ptr<T>` for `HarfBuzzFace`.
-    using Map = HashMap<base::PlatformThreadId, std::unique_ptr<HarfBuzzFace>>;
-    base::Lock lock_;
-    Map map_ GUARDED_BY(lock_);
-  };
-
-  mutable ThreadSpecificHarfBuzzFace harfbuzz_face_;
-#else
   mutable std::unique_ptr<HarfBuzzFace> harfbuzz_face_;
-#endif
   bool is_hash_table_deleted_value_ = false;
 };
 

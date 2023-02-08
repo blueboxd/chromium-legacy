@@ -14,12 +14,17 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list.h"
 #include "base/strings/strcat.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -57,13 +62,13 @@ base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
   return base::BindOnce(
       [](base::OnceClosure closure,
          scoped_refptr<base::TaskRunner> task_runner) {
-        if (base::ThreadTaskRunnerHandle::Get() == task_runner) {
+        if (base::SingleThreadTaskRunner::GetCurrentDefault() == task_runner) {
           std::move(closure).Run();
           return;
         }
         task_runner->PostTask(FROM_HERE, std::move(closure));
       },
-      std::move(closure), base::ThreadTaskRunnerHandle::Get());
+      std::move(closure), base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 // Returns whether `storage_key` matches `origin_type_mask` given the special
@@ -208,6 +213,27 @@ void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::move(filter_builder), observer);
+}
+
+void BrowsingDataRemoverImpl::RemoveStorageBucketsAndReply(
+    const blink::StorageKey& storage_key,
+    const std::set<std::string>& storage_buckets,
+    base::OnceClosure callback) {
+  DCHECK(callback);
+  GetStoragePartition()->ClearDataForBuckets(
+      storage_key, storage_buckets,
+      base::BindPostTask(
+          base::SequencedTaskRunnerHandle::Get(),
+          base::BindOnce(&BrowsingDataRemoverImpl::DidRemoveStorageBuckets,
+                         GetWeakPtr(), std::move(callback))));
+}
+
+void BrowsingDataRemoverImpl::DidRemoveStorageBuckets(
+    base::OnceClosure callback) {
+  DCHECK(callback);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  std::move(callback).Run();
 }
 
 void BrowsingDataRemoverImpl::RemoveInternal(

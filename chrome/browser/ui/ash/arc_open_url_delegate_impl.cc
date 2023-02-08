@@ -20,6 +20,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_url_util.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_arc_tracker.h"
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -59,7 +59,6 @@
 #include "net/base/url_util.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -90,7 +89,7 @@ constexpr auto kOSSettingsMap = base::MakeFixedFlatMap<ChromePage,
      chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2},
     {ChromePage::MAIN, ""},
     {ChromePage::MANAGEACCESSIBILITY,
-     chromeos::settings::mojom::kManageAccessibilitySubpagePath},
+     chromeos::settings::mojom::kAccessibilitySectionPath},
     {ChromePage::MANAGEACCESSIBILITYTTS,
      chromeos::settings::mojom::kTextToSpeechSubpagePath},
     {ChromePage::MULTIDEVICE,
@@ -172,7 +171,7 @@ GURL ConvertToMonikerFileUrl(Profile* profile, GURL content_url) {
   // Share API. We could be cleverer about scheduling the clean up, but "destroy
   // after a fixed amount of time" is simple and works well enough in
   // practice.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           [](fusebox::Moniker moniker) {
@@ -428,10 +427,6 @@ void ArcOpenUrlDelegateImpl::OpenChromePageFromArc(ChromePage page) {
   if (auto* it = kOSSettingsMap.find(page); it != kOSSettingsMap.end()) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     std::string sub_page = it->second;
-    if (features::IsAccessibilityOSSettingsVisibilityEnabled() &&
-        it->first == ChromePage::MANAGEACCESSIBILITY) {
-      sub_page = chromeos::settings::mojom::kAccessibilitySectionPath;
-    }
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
                                                                  sub_page);
     return;

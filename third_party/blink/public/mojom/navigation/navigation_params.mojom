@@ -18,17 +18,20 @@ import "services/network/public/mojom/web_client_hints_types.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
-import "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom";
 import "third_party/blink/public/mojom/frame/view_transition_state.mojom";
+import "third_party/blink/public/mojom/fenced_frame/fenced_frame_config.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/loader/mixed_content.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/messaging/task_attribution_id.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom";
 import "third_party/blink/public/mojom/navigation/was_activated_option.mojom";
 import "third_party/blink/public/mojom/page/page.mojom";
 import "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom";
+import "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom";
 import "third_party/blink/public/mojom/storage_key/storage_key.mojom";
 import "third_party/blink/public/mojom/tokens/tokens.mojom";
 import "url/mojom/origin.mojom";
@@ -135,6 +138,10 @@ struct BeginNavigationParams {
   // Token to identify a WebBundle. Set on navigation to a resource in a
   // WebBundle.
   network.mojom.WebBundleTokenParams? web_bundle_token;
+
+  // The navigation initiator's user activation and ad status.
+  blink.mojom.NavigationInitiatorActivationAndAdStatus
+      initiator_activation_and_ad_status;
 };
 
 // Provided by the browser or the renderer -------------------------------------
@@ -456,22 +463,6 @@ struct CommitNavigationParams {
 
   array<url.mojom.Url> early_hints_preloaded_resources;
 
-  // If this is a navigation to the result of an InterestGroup auction, this
-  // is a list of URNs that map to auction component URLs. Null, otherwise.
-  // When non-null, always contains exactly kMaxAdAuctionAdComponents=20 URNs
-  // to avoid use as a data sidechannel between auction worklets and the
-  // fenced frames their results are loaded in.
-  //
-  // Mojo doesn't allow using symbolic constants as array lengths, so hard-code
-  // the length here directly.
-  array<url.mojom.Url, 20>? ad_auction_components;
-
-  // If this is an "opaque-ads" mode fenced frame, there might be an associated
-  // reporting metadata. This is a map from destination type to reporting
-  // metadata which in turn is a map from the event type to the reporting url.
-  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  FencedFrameReporting? fenced_frame_reporting_metadata;
-
   // The time the commit was sent from the browser.
   mojo_base.mojom.TimeTicks commit_sent;
 
@@ -524,6 +515,21 @@ struct CommitNavigationParams {
   // transitions when navigating between same-origin Documents.
   // See https://drafts.csswg.org/css-view-transitions-1/ for details.
   blink.mojom.ViewTransitionState? view_transition_state;
+
+  // If any, the task ID of the initiator of the navigation. This is restricted
+  // to same-document main-frame navigation initiated by the top-level document.
+  // Used by SoftNavigationHeuristics to trace back the chain of events.
+  TaskAttributionId? soft_navigation_heuristic_task_id;
+
+  // Maps the blink runtime-enabled features modified in the browser process to
+  // their new enabled/disabled status:
+  // <enum_representing_runtime_enabled_feature, enabled/disabled>
+  map<blink.mojom.RuntimeFeatureState, bool> modified_runtime_features;
+
+  // A collection of properties that determines the behavior of a fenced frame.
+  // Only non-null for embedder-initiated navigations of a fenced frame root,
+  // and urn navigations in iframes while they're supported.
+  FencedFrameProperties? fenced_frame_properties;
 
   // `not_restored_reasons` contains the reasons why this navigation is not
   // served from back/forward cache if applicable. This is only sent for

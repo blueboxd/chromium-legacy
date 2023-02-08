@@ -99,13 +99,11 @@ void AshAcceleratorConfiguration::Initialize() {
         accelerators,
         base::make_span(kEnableWithPositionalAcceleratorsData,
                         kEnableWithPositionalAcceleratorsDataLength));
-    if (ash::features::IsImprovedDesksKeyboardShortcutsEnabled()) {
-      AppendAcceleratorData(
-          accelerators,
-          base::make_span(
-              kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData,
-              kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength));
-    }
+    AppendAcceleratorData(
+        accelerators,
+        base::make_span(
+            kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData,
+            kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength));
   } else if (::features::IsNewShortcutMappingEnabled()) {
     AppendAcceleratorData(
         accelerators,
@@ -116,6 +114,12 @@ void AshAcceleratorConfiguration::Initialize() {
         accelerators,
         base::make_span(kDisableWithNewMappingAcceleratorData,
                         kDisableWithNewMappingAcceleratorDataLength));
+  }
+  if (ash::features::IsSameAppWindowCycleEnabled()) {
+    AppendAcceleratorData(
+        accelerators,
+        base::make_span(kEnableWithSameAppWindowCycleAcceleratorData,
+                        kEnableWithSameAppWindowCycleAcceleratorDataLength));
   }
 
   // Debug accelerators.

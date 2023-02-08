@@ -864,8 +864,6 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
   if (ShouldUseVideoProcessorScaling())
     return false;
 
-  auto not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
-
   bool nv12_supported =
       (swap_chain_format == DXGI_FORMAT_NV12) &&
       (DXGI_FORMAT_NV12 == GetDirectCompositionSDROverlayFormat());
@@ -922,28 +920,10 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
       }
       ReleaseSwapChainResources();
       failed_to_present_decode_swapchain_ = true;
-      not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
       DLOG(ERROR)
           << "Present to decode swap chain failed - falling back to blit";
-    } else if (!is_decoder_texture) {
-      not_used_reason = DecodeSwapChainNotUsedReason::kNonDecoderTexture;
-    } else if (is_shared_texture) {
-      not_used_reason = DecodeSwapChainNotUsedReason::kSharedTexture;
-    } else if (is_unitary_texture_array) {
-      not_used_reason = DecodeSwapChainNotUsedReason::kUnitaryTextureArray;
-    } else if (!compatible_transform) {
-      not_used_reason = DecodeSwapChainNotUsedReason::kIncompatibleTransform;
     }
-  } else if (!texture) {
-    not_used_reason = DecodeSwapChainNotUsedReason::kSoftwareFrame;
-  } else if (!nv12_supported) {
-    not_used_reason = DecodeSwapChainNotUsedReason::kNv12NotSupported;
-  } else if (failed_to_present_decode_swapchain_) {
-    not_used_reason = DecodeSwapChainNotUsedReason::kFailedToPresent;
   }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "GPU.DirectComposition.DecodeSwapChainNotUsedReason", not_used_reason);
   return false;
 }
 
@@ -996,8 +976,6 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
         media_factory->CreateDecodeSwapChainForCompositionSurfaceHandle(
             d3d11_device_.Get(), swap_chain_handle_.Get(), &desc,
             decode_resource_.Get(), nullptr, &decode_swap_chain_);
-    base::UmaHistogramSparse(
-        "GPU.DirectComposition.DecodeSwapChainCreationResult", hr);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateDecodeSwapChainForCompositionSurfaceHandle failed "
                      "with error 0x"
@@ -1083,17 +1061,17 @@ bool SwapChainPresenter::PresentToSwapChain(
   ReleaseDCOMPSurfaceResourcesIfNeeded();
 
   GLImageDXGI* image_dxgi =
-      GLImageDXGI::FromGLImage(params.images[kNV12ImageIndex].get());
+      GLImage::ToGLImageDXGI(params.images[kNV12ImageIndex].get());
   GLImageD3D* image_d3d =
-      GLImageD3D::FromGLImage(params.images[kNV12ImageIndex].get());
+      GLImage::ToGLImageD3D(params.images[kNV12ImageIndex].get());
 
   GLImageMemory* y_image_memory =
-      GLImageMemory::FromGLImage(params.images[kYPlaneImageIndex].get());
+      GLImage::ToGLImageMemory(params.images[kYPlaneImageIndex].get());
   GLImageMemory* uv_image_memory =
-      GLImageMemory::FromGLImage(params.images[kUVPlaneImageIndex].get());
+      GLImage::ToGLImageMemory(params.images[kUVPlaneImageIndex].get());
 
   GLImageD3D* swap_chain_image =
-      GLImageD3D::FromGLImage(params.images[kSwapChainImageIndex].get());
+      GLImage::ToGLImageD3D(params.images[kSwapChainImageIndex].get());
   if (swap_chain_image && !swap_chain_image->swap_chain())
     swap_chain_image = nullptr;
 
@@ -1190,7 +1168,7 @@ bool SwapChainPresenter::PresentToSwapChain(
       GetSwapChainFormat(params.protected_video_type, use_hdr_swap_chain);
   bool swap_chain_format_changed = swap_chain_format != swap_chain_format_;
   bool toggle_protected_video =
-      protected_video_type_ != params.protected_video_type;
+      swap_chain_protected_video_type_ != params.protected_video_type;
 
   if (swap_chain_ && !swap_chain_resized && !swap_chain_format_changed &&
       !toggle_protected_video && last_presented_images_ == params.images) {
@@ -1333,9 +1311,6 @@ void SwapChainPresenter::RecordPresentationStatistics() {
   UMA_HISTOGRAM_ENUMERATION("GPU.DirectComposition.VideoPresentationMode",
                             presentation_mode);
 
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.DecodeSwapChainUsed",
-                        !!decode_swap_chain_);
-
   TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("gpu.service"),
                        "SwapChain::Present", TRACE_EVENT_SCOPE_THREAD,
                        "PixelFormat", DxgiFormatToString(swap_chain_format_),
@@ -1393,6 +1368,8 @@ bool SwapChainPresenter::PresentDCOMPSurface(
                                     visual_clip_rect);
   dcomp_surface_proxy->SetRect(visual_transform->MapRect(
       gfx::Rect(params.quad_rect.origin(), on_screen_size)));
+
+  dcomp_surface_proxy->SetProtectedVideoType(params.protected_video_type);
 
   // If |dcomp_surface_proxy| size is {1, 1}, the texture was initialized
   // without knowledge of output size; reset |content_| so it's not added to the
@@ -1649,7 +1626,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
 
   DCHECK(!swap_chain_size.IsEmpty());
   swap_chain_size_ = swap_chain_size;
-  protected_video_type_ = protected_video_type;
+  swap_chain_protected_video_type_ = protected_video_type;
   gpu_vendor_id_ = 0;
 
   ReleaseSwapChainResources();
@@ -1693,9 +1670,6 @@ bool SwapChainPresenter::ReallocateSwapChain(
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
-  const std::string kSwapChainCreationResultByFormatUmaPrefix =
-      "GPU.DirectComposition.SwapChainCreationResult2.";
-
   const std::string kSwapChainCreationResultByVideoTypeUmaPrefix =
       "GPU.DirectComposition.SwapChainCreationResult3.";
   const std::string protected_video_type_string =
@@ -1709,9 +1683,6 @@ bool SwapChainPresenter::ReallocateSwapChain(
         &swap_chain_);
     failed_to_create_yuv_swapchain_ = FAILED(hr);
 
-    base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
-                                 DxgiFormatToString(swap_chain_format),
-                             hr);
     base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
                                  protected_video_type_string,
                              hr);
@@ -1745,9 +1716,6 @@ bool SwapChainPresenter::ReallocateSwapChain(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         &swap_chain_);
 
-    base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
-                                 DxgiFormatToString(swap_chain_format),
-                             hr);
     base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
                                  protected_video_type_string,
                              hr);

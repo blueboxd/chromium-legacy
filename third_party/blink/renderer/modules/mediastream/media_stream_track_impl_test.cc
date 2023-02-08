@@ -97,19 +97,6 @@ TEST_F(MediaStreamTrackImplTest, StopTrackTriggersObservers) {
   EXPECT_EQ(testObserver->ObservationCount(), 2);
 }
 
-TEST_F(MediaStreamTrackImplTest, LabelSanitizer) {
-  V8TestingScope v8_scope;
-
-  MediaStreamSource* source = MakeGarbageCollected<MediaStreamSource>(
-      "id", MediaStreamSource::StreamType::kTypeAudio, "Chromiums AirPods",
-      false /* remote */);
-  MediaStreamComponent* component =
-      MakeGarbageCollected<MediaStreamComponentImpl>(source);
-  MediaStreamTrack* track = MakeGarbageCollected<MediaStreamTrackImpl>(
-      v8_scope.GetExecutionContext(), component);
-  EXPECT_EQ(track->label(), "AirPods");
-}
-
 TEST_F(MediaStreamTrackImplTest, StopTrackSynchronouslyDisablesMedia) {
   V8TestingScope v8_scope;
 
@@ -135,7 +122,7 @@ TEST_F(MediaStreamTrackImplTest, MutedStateUpdates) {
 
   MediaStreamSource* source = MakeGarbageCollected<MediaStreamSource>(
       "id", MediaStreamSource::StreamType::kTypeVideo, "name",
-      false /* remote */);
+      /*remote=*/false, /*platform_source=*/nullptr);
   MediaStreamComponent* component =
       MakeGarbageCollected<MediaStreamComponentImpl>(source);
   MediaStreamTrack* track = MakeGarbageCollected<MediaStreamTrackImpl>(

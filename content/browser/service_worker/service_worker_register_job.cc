@@ -14,7 +14,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_throttle_handle.h"
@@ -33,10 +32,12 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/worker_host/worker_script_fetcher.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "third_party/blink/public/common/service_worker/service_worker_scope_match.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -125,7 +126,7 @@ void ServiceWorkerRegisterJob::AddCallback(RegistrationCallback callback) {
     callbacks_.emplace_back(std::move(callback));
     return;
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), promise_resolved_status_,
                      promise_resolved_status_message_,
@@ -162,7 +163,7 @@ void ServiceWorkerRegisterJob::StartImpl() {
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->registry()->GetUninstallingRegistration(scope_, key_);
   if (registration.get())
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(next_step),
                        blink::ServiceWorkerStatusCode::kOk, registration));
@@ -485,7 +486,8 @@ void ServiceWorkerRegisterJob::StartScriptFetchForNewWorker(
               creator_policy_container_policies_.is_web_secure_context,
               creator_policy_container_policies_.ip_address_space,
               DerivePrivateNetworkRequestPolicy(
-                  creator_policy_container_policies_)));
+                  creator_policy_container_policies_,
+                  PrivateNetworkRequestContext::kWorker)));
 
   new_script_fetcher_ = std::make_unique<ServiceWorkerNewScriptFetcher>(
       *context_, version, std::move(loader_factory),
@@ -515,6 +517,26 @@ void ServiceWorkerRegisterJob::OnScriptFetchCompleted(
     return;
   }
   DCHECK(version->client_security_state());
+
+  GURL final_response_url = WorkerScriptFetcher::DetermineFinalResponseUrl(
+      version->script_url(), main_script_load_params.get());
+
+  network::mojom::IPAddressSpace response_address_space =
+      network::CalculateResourceAddressSpace(
+          final_response_url,
+          main_script_load_params->response_head->remote_endpoint);
+
+  auto* requesting_render_frame_host =
+      RenderFrameHostImpl::FromID(requesting_frame_id_);
+  // requesting_render_frame_host can be null in many payment tests
+  if (requesting_render_frame_host &&
+      network::IsLessPublicAddressSpace(
+          response_address_space,
+          creator_policy_container_policies_.ip_address_space)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        requesting_render_frame_host,
+        blink::mojom::WebFeature::kPrivateNetworkAccessFetchedWorkerScript);
+  }
 
   version->set_main_script_load_params(std::move(main_script_load_params));
   StartWorkerForUpdate(std::move(version));
@@ -571,7 +593,8 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
               creator_policy_container_policies_.is_web_secure_context,
               creator_policy_container_policies_.ip_address_space,
               DerivePrivateNetworkRequestPolicy(
-                  creator_policy_container_policies_)));
+                  creator_policy_container_policies_,
+                  PrivateNetworkRequestContext::kWorker)));
   if (!loader_factory) {
     // We can't continue with update checking appropriately without
     // |loader_factory|. Null |loader_factory| means that the storage partition

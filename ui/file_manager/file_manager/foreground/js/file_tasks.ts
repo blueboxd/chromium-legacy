@@ -8,18 +8,18 @@
  * @suppress {checkTypes}
  */
 import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {getDirectory, getFileTasks} from '../../common/js/api.js';
+import {executeTask, getDirectory, getFileTasks} from '../../common/js/api.js';
 import {AsyncQueue} from '../../common/js/async_util.js';
 import {FileType} from '../../common/js/file_type.js';
 import {metrics} from '../../common/js/metrics.js';
 import {ProgressCenterItem, ProgressItemState, ProgressItemType} from '../../common/js/progress_center_common.js';
-import {LEGACY_FILES_EXTENSION_ID, SWA_APP_ID, SWA_FILES_APP_URL} from '../../common/js/url_constants.js';
+import {LEGACY_FILES_EXTENSION_ID, SWA_APP_ID, SWA_FILES_APP_URL, toFilesAppURL} from '../../common/js/url_constants.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {ProgressCenter} from '../../externs/background/progress_center.js';
+import {FileData} from '../../externs/ts/state.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
@@ -46,7 +46,6 @@ const OfficeFileHandlersHistogramValues = {
   QUICK_OFFICE: 2,
 };
 
-type TaskResultType = chrome.fileManagerPrivate.TaskResult;
 /**
  * Represents a collection of available tasks to execute for a specific list
  * of entries.
@@ -109,10 +108,12 @@ export class FileTasks {
               task.descriptor, INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR));
     }
 
-    resultingTasks.tasks =
-        FileTasks.annotateTasks_(resultingTasks.tasks, entries);
+    const tasks = annotateTasks(resultingTasks.tasks, entries);
+    resultingTasks.tasks = tasks;
 
-    const defaultTask = FileTasks.getDefaultTask(resultingTasks, taskHistory);
+    const defaultTask = getDefaultTask(
+        tasks, resultingTasks.policyDefaultHandlerStatus, taskHistory);
+
 
     return new FileTasks(
         volumeManager, metadataModel, directoryModel, ui,
@@ -128,9 +129,9 @@ export class FileTasks {
     return this.defaultTask_;
   }
 
-  /** Gets task items.  */
-  getTaskItems(): chrome.fileManagerPrivate.FileTask[] {
-    return this.resultingTasks_.tasks;
+  getAnnotatedTasks(): AnnotatedTask[] {
+    // resultingTasks_.tasks is annotated at create().
+    return this.resultingTasks_.tasks as AnnotatedTask[];
   }
 
   /** Gets the policy default handler status.  */
@@ -178,7 +179,7 @@ export class FileTasks {
   }
 
   /** Records trial of opening file grouped by extensions.  */
-  private static recordViewingFileTypeUMA_(
+  private static recordViewingFileTypeUma_(
       volumeManager: VolumeManager, entries: Entry[]) {
     for (const entry of entries) {
       FileTasks.recordEnumWithOnlineAndOffline_(
@@ -191,7 +192,7 @@ export class FileTasks {
    * Records trial of opening file grouped by root types.
    * @param rootType The type of the root where entries are being opened.
    */
-  private static recordViewingRootTypeUMA_(
+  private static recordViewingRootTypeUma_(
       volumeManager: VolumeManager,
       rootType: VolumeManagerCommon.RootType|null) {
     if (rootType !== null) {
@@ -208,7 +209,7 @@ export class FileTasks {
    *     from.
    * @param time Time to be recorded in milliseconds.
    */
-  private static recordZipMountTimeUMA_(
+  private static recordZipMountTimeUma_(
       rootType: VolumeManagerCommon.RootType|null, time: number) {
     let root;
     switch (rootType) {
@@ -230,7 +231,7 @@ export class FileTasks {
    * @param entries The entries to be opened.
    * @param rootType The type of the root where entries are being opened.
    */
-  private static recordOfficeFileHandlerUMA_(
+  private static recordOfficeFileHandlerUma_(
       volumeManager: VolumeManager, entries: Entry[],
       rootType: VolumeManagerCommon.RootType|null,
       task: chrome.fileManagerPrivate.FileTask|null) {
@@ -300,85 +301,6 @@ export class FileTasks {
   }
 
   /**
-   * Annotates tasks returned from the API.
-   * @param tasks Input tasks from the API.
-   * @param entries List of entries for the tasks.
-   * @private
-   */
-  private static annotateTasks_(
-      tasks: chrome.fileManagerPrivate.FileTask[],
-      entries: Entry[]): chrome.fileManagerPrivate.FileTask[] {
-    const result = [];
-    for (const task of (tasks as AnnotatedTask[])) {
-      const {appId, taskType, actionId} = task.descriptor;
-      const parsedActionId = parseActionId(actionId);
-
-      // Skip internal Files app's handlers.
-      if (isFilesAppId(appId) &&
-          (parsedActionId === 'select' || parsedActionId === 'open')) {
-        continue;
-      }
-
-      // Tweak images, titles of internal tasks.
-      if (isFilesAppId(appId) && (taskType === 'app' || taskType === 'web')) {
-        if (parsedActionId === 'mount-archive') {
-          task.iconType = 'archive';
-          task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-        } else if (parsedActionId === 'open-hosted-generic') {
-          if (entries.length > 1) {
-            task.iconType = 'generic';
-          } else {  // Use specific icon.
-            task.iconType = FileType.getIcon(entries[0]!);
-          }
-          task.title = loadTimeData.getString('TASK_OPEN');
-        } else if (parsedActionId === 'open-hosted-gdoc') {
-          task.iconType = 'gdoc';
-          task.title = loadTimeData.getString('TASK_OPEN_GDOC');
-        } else if (parsedActionId === 'open-hosted-gsheet') {
-          task.iconType = 'gsheet';
-          task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
-        } else if (parsedActionId === 'open-hosted-gslides') {
-          task.iconType = 'gslides';
-          task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
-        } else if (parsedActionId === 'open-web-drive-office-word') {
-          task.iconType = 'gdoc';
-          task.title = loadTimeData.getString('TASK_OPEN_GDOC');
-        } else if (parsedActionId === 'open-web-drive-office-excel') {
-          task.iconType = 'gsheet';
-          task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
-        } else if (parsedActionId === 'upload-office-to-drive') {
-          task.iconType = 'generic';
-          task.title = 'Upload to Drive';
-        } else if (parsedActionId === 'open-web-drive-office-powerpoint') {
-          task.iconType = 'gslides';
-          task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
-        } else if (parsedActionId === 'open-in-office') {
-          task.title = loadTimeData.getString('TASK_OPEN_OFFICE');
-        } else if (parsedActionId === 'install-linux-package') {
-          task.iconType = 'crostini';
-          task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
-        } else if (parsedActionId === 'import-crostini-image') {
-          task.iconType = 'tini';
-          task.title = loadTimeData.getString('TASK_IMPORT_CROSTINI_IMAGE');
-        } else if (parsedActionId === 'view-pdf') {
-          task.iconType = 'pdf';
-          task.title = loadTimeData.getString('TASK_VIEW');
-        } else if (parsedActionId === 'view-in-browser') {
-          task.iconType = 'generic';
-          task.title = loadTimeData.getString('TASK_VIEW');
-        }
-      }
-      if (!task.iconType && taskType === 'web-intent') {
-        task.iconType = 'generic';
-      }
-
-      result.push(task);
-    }
-
-    return result;
-  }
-
-  /**
    * Show dialog when user opens or drags a file with PluginVM and the file
    * is not in PvmSharedDir or shared with PluginVM. The dialog tells the
    * user to move or copy the file to PvmSharedDir and offers an action to do
@@ -416,43 +338,31 @@ export class FileTasks {
     });
   }
 
-  /**
-   * Executes default task.
-   * @param {function()=} callback Called when the default task is executed, or
-   *     the error is occurred.
-   */
-  executeDefault(callback?: (isDefault: boolean, entries: Entry[]) => void) {
-    FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
-    FileTasks.recordViewingRootTypeUMA_(
+  /** Executes default task.  */
+  async executeDefault(): Promise<void> {
+    FileTasks.recordViewingFileTypeUma_(this.volumeManager_, this.entries_);
+    FileTasks.recordViewingRootTypeUma_(
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
-    FileTasks.recordOfficeFileHandlerUMA_(
+    FileTasks.recordOfficeFileHandlerUma_(
         this.volumeManager_, this.entries_,
         this.directoryModel_.getCurrentRootType(), this.defaultTask_);
-    this.executeDefaultInternal_(callback);
+    return this.executeDefaultInternal_();
   }
 
-  /**
-   * Executes default task.
-   * @param callback Called when the default task is executed, or the error is
-   *     occurred.
-   */
-  private executeDefaultInternal_(
-      callback?: (isDefault: boolean, entries: Entry[]) => void) {
-    callback = callback || ((_0: boolean, _1: Entry[]) => {});
-
+  private async executeDefaultInternal_(): Promise<void> {
     if (this.defaultTask_) {
       this.executeInternal_(this.defaultTask_);
-      callback(true, this.entries_);
       return;
     }
 
     // If there's policy involved and |defaultTask_| is null, means that policy
     // assignment was incorrect. We should not execute anything in this case.
     if (this.getPolicyDefaultHandlerStatus()) {
-      assert(
+      console.assert(
           this.getPolicyDefaultHandlerStatus() ===
-          chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
-              .INCORRECT_ASSIGNMENT);
+              chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
+                  .INCORRECT_ASSIGNMENT,
+          'policyDefaultHandlerStatus expected to be INCORRECT, thus not executing the task');
       return;
     }
 
@@ -480,7 +390,31 @@ export class FileTasks {
     const filename = this.entries_[0]!.name;
     const extension = util.splitExtension(filename)[1] || null;
 
-    const showAlert = () => {
+    await this.checkAvailability_();
+
+    try {
+      const descriptor = {
+        appId: LEGACY_FILES_EXTENSION_ID,
+        taskType: 'file',
+        actionId: 'view-in-browser',
+      };
+      const result = await executeTask(descriptor, this.entries_);
+      switch (result) {
+        case 'opened':
+          break;
+        case 'message_sent':
+          util.isTeleported(window).then(teleported => {
+            if (teleported) {
+              this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+            }
+          });
+          break;
+        case 'empty':
+          break;
+        case 'failed':
+          throw new Error();
+      }
+    } catch {
       let textMessageId;
       let titleMessageId;
       switch (extension) {
@@ -501,78 +435,44 @@ export class FileTasks {
 
       const text = strf(textMessageId, str('NO_TASK_FOR_FILE_URL'));
       const title = titleMessageId ? str(titleMessageId) : filename;
-      this.ui_.alertDialog.showHtml(title, text, null, null, null);
-      callback!(false, this.entries_);
-    };
-
-    const onViewFilesFailure = () => {
-      showAlert();
-    };
-
-    const onViewFiles = (result: TaskResultType) => {
-      if (chrome.runtime.lastError) {
-        // Suppress the Unchecked runtime.lastError console message
-        console.debug(chrome.runtime.lastError.message);
-        onViewFilesFailure();
-        return;
-      }
-      switch (result) {
-        case 'opened':
-          callback!(true, this.entries_);
-          break;
-        case 'message_sent':
-          util.isTeleported(window).then(teleported => {
-            if (teleported) {
-              this.ui_.showOpenInOtherDesktopAlert(this.entries_);
-            }
-          });
-          callback!(true, this.entries_);
-          break;
-        case 'empty':
-          callback!(true, this.entries_);
-          break;
-        case 'failed':
-          onViewFilesFailure();
-          break;
-      }
-    };
-
-    this.checkAvailability_(() => {
-      const descriptor = {
-        appId: LEGACY_FILES_EXTENSION_ID,
-        taskType: 'file',
-        actionId: 'view-in-browser',
-      };
-      chrome.fileManagerPrivate.executeTask(
-          descriptor, this.entries_, onViewFiles);
-    });
+      this.ui_.alertDialog.showHtml(title, text);
+    }
   }
 
   /** Executes a single task.  */
   execute(task: chrome.fileManagerPrivate.FileTask) {
-    FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
-    FileTasks.recordViewingRootTypeUMA_(
+    FileTasks.recordViewingFileTypeUma_(this.volumeManager_, this.entries_);
+    FileTasks.recordViewingRootTypeUma_(
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
-    FileTasks.recordOfficeFileHandlerUMA_(
+    FileTasks.recordOfficeFileHandlerUma_(
         this.volumeManager_, this.entries_,
         this.directoryModel_.getCurrentRootType(), task);
     this.executeInternal_(task);
   }
 
   /** The core implementation to execute a single task. */
-  private executeInternal_(task: chrome.fileManagerPrivate.FileTask) {
-    const onFileManagerPrivateExecuteTask = (result: TaskResultType) => {
-      if (chrome.runtime.lastError) {
-        console.warn(
-            'Unable to execute task: ' + chrome.runtime.lastError.message);
-        return;
-      }
+  private async executeInternal_(task: chrome.fileManagerPrivate.FileTask):
+      Promise<void> {
+    const entries = this.entries_;
+    await this.checkAvailability_();
+    this.taskHistory_.recordTaskExecuted(task.descriptor);
+    const msg = (entries.length === 1) ?
+        strf('OPEN_A11Y', entries[0]!.name) :
+        strf('OPEN_A11Y_PLURAL', entries.length);
+    this.ui_.speakA11yMessage(msg);
+    if (FileTasks.isInternalTask_(task.descriptor)) {
+      this.executeInternalTask_(task.descriptor);
+      return;
+    }
+
+    try {
+      const result = await executeTask(task.descriptor, entries);
       const TaskResult = chrome.fileManagerPrivate.TaskResult;
       switch (result) {
         case TaskResult.MESSAGE_SENT:
           util.isTeleported(window).then((teleported) => {
             if (teleported) {
-              this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+              this.ui_.showOpenInOtherDesktopAlert(entries);
             }
           });
           break;
@@ -584,38 +484,24 @@ export class FileTasks {
               'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
               task.title);
           FileTasks.showPluginVmNotSharedDialog(
-              this.entries_, this.volumeManager_, this.metadataModel_, this.ui_,
+              entries, this.volumeManager_, this.metadataModel_, this.ui_,
               moveMessage, copyMessage, this.fileTransferController_,
               this.directoryModel_);
           break;
       }
-    };
-
-    this.checkAvailability_(() => {
-      this.taskHistory_.recordTaskExecuted(task.descriptor);
-      let msg;
-      if (this.entries_.length === 1) {
-        msg = strf('OPEN_A11Y', this.entries_[0]!.name);
-      } else {
-        msg = strf('OPEN_A11Y_PLURAL', this.entries_.length);
-      }
-      this.ui_.speakA11yMessage(msg);
-      if (FileTasks.isInternalTask_(task.descriptor)) {
-        this.executeInternalTask_(task.descriptor);
-      } else {
-        chrome.fileManagerPrivate.executeTask(
-            task.descriptor, this.entries_, onFileManagerPrivateExecuteTask);
-      }
-    });
+    } catch (error) {
+      console.warn(`Failed to execute task ${task.descriptor}: ${error}`);
+    }
   }
 
   /**
    * Ensures that the all files are available right now.
    * Must not call before initialization.
-   * @param callback Called when checking is completed and all files are
-   *     available. Otherwise not called.
+   * Resolved when checking is completed and all files are available
+   * Rejected/throws if the user cancels the confirmation dialog for downloading
+   * in cellular/metered network dialog.
    */
-  private checkAvailability_(callback: () => void) {
+  private async checkAvailability_(): Promise<void> {
     const areAll =
         (entries: Entry[], props: MetadataItem[], name: keyof MetadataItem) => {
           let okEntriesNum = 0;
@@ -638,7 +524,6 @@ export class FileTasks {
     // availableWhenMetered are not exposed for other types of volumes at this
     // moment.
     if (!containsDriveEntries) {
-      callback();
       return;
     }
 
@@ -647,58 +532,48 @@ export class FileTasks {
         chrome.fileManagerPrivate.DriveConnectionStateType.OFFLINE;
 
     if (isDriveOffline) {
-      this.metadataModel_.get(this.entries_, ['availableOffline', 'hosted'])
-          .then((props: MetadataItem[]) => {
-            if (areAll(this.entries_, props, 'availableOffline')) {
-              callback();
-              return;
-            }
+      const props = await this.metadataModel_.get(
+          this.entries_, ['availableOffline', 'hosted']);
+      if (areAll(this.entries_, props, 'availableOffline')) {
+        return;
+      }
+      const msg = props[0]!.hosted ?
+          str(this.entries_.length === 1 ? 'HOSTED_OFFLINE_MESSAGE' :
+                                           'HOSTED_OFFLINE_MESSAGE_PLURAL') :
+          strf(
+              this.entries_.length === 1 ? 'OFFLINE_MESSAGE' :
+                                           'OFFLINE_MESSAGE_PLURAL',
+              str('OFFLINE_COLUMN_LABEL'));
 
-            this.ui_.alertDialog.showHtml(
-                loadTimeData.getString('OFFLINE_HEADER'),
-                props[0]!.hosted ?
-                    loadTimeData.getStringF(
-                        this.entries_.length === 1 ?
-                            'HOSTED_OFFLINE_MESSAGE' :
-                            'HOSTED_OFFLINE_MESSAGE_PLURAL') :
-                    loadTimeData.getStringF(
-                        this.entries_.length === 1 ? 'OFFLINE_MESSAGE' :
-                                                     'OFFLINE_MESSAGE_PLURAL',
-                        loadTimeData.getString('OFFLINE_COLUMN_LABEL')),
-                null, null, null);
-          });
+      this.ui_.alertDialog.showHtml(str('OFFLINE_HEADER'), msg);
       return;
     }
 
     const isOnMetered = this.volumeManager_.getDriveConnectionState().type ===
         chrome.fileManagerPrivate.DriveConnectionStateType.METERED;
 
-    if (isOnMetered) {
-      this.metadataModel_.get(this.entries_, ['availableWhenMetered', 'size'])
-          .then((props: MetadataItem[]) => {
-            if (areAll(this.entries_, props, 'availableWhenMetered')) {
-              callback();
-              return;
-            }
+    if (!isOnMetered) {
+      return;
+    }
+    const props = await this.metadataModel_.get(
+        this.entries_, ['availableWhenMetered', 'size']);
 
-            let sizeToDownload = 0;
-            for (let i = 0; i !== this.entries_.length; i++) {
-              if (!props[i]!.availableWhenMetered) {
-                sizeToDownload += (props[i]!.size || 0);
-              }
-            }
-            this.ui_.confirmDialog.show(
-                loadTimeData.getStringF(
-                    this.entries_.length === 1 ?
-                        'CONFIRM_MOBILE_DATA_USE' :
-                        'CONFIRM_MOBILE_DATA_USE_PLURAL',
-                    util.bytesToString(sizeToDownload)),
-                callback);
-          });
+    if (areAll(this.entries_, props, 'availableWhenMetered')) {
       return;
     }
 
-    callback();
+    let sizeToDownload = 0;
+    for (let i = 0; i !== this.entries_.length; i++) {
+      if (!props[i]!.availableWhenMetered) {
+        sizeToDownload += (props[i]!.size || 0);
+      }
+    }
+    const msg = strf(
+        this.entries_.length === 1 ? 'CONFIRM_MOBILE_DATA_USE' :
+                                     'CONFIRM_MOBILE_DATA_USE_PLURAL',
+        util.bytesToString(sizeToDownload));
+    return new Promise(
+        (resolve, reject) => this.ui_.confirmDialog.show(msg, resolve, reject));
   }
 
   /**
@@ -833,7 +708,7 @@ export class FileTasks {
       const startTime = Date.now();
       const volumeInfo = await this.mountArchive_(url);
       // On mountArchive_ success, record mount time UMA.
-      FileTasks.recordZipMountTimeUMA_(
+      FileTasks.recordZipMountTimeUma_(
           this.directoryModel_.getCurrentRootType(), Date.now() - startTime);
 
       if (tracker.hasChanged) {
@@ -879,12 +754,6 @@ export class FileTasks {
     const tracker = this.directoryModel_.createDirectoryChangeTracker();
     tracker.start();
     try {
-      this.entries_.forEach(entry => entry.getMetadata(metadata => {
-        const extension = entry.name.split('.').pop()?.toLowerCase();
-        metrics.recordSmallCount(
-            `ArchiveSize.${extension}`,
-            Math.ceil(metadata.size / 104857600));  // Each unit = 100MiB
-      }));
       // TODO(mtomasz): Move conversion from entry to url to custom bindings.
       // crbug.com/345527.
       const urls = util.entriesToURLs(this.entries_);
@@ -928,57 +797,6 @@ export class FileTasks {
         });
   }
 
-  /**
-   * Gets the default task from tasks. In case there is no such task (i.e. all
-   * tasks are generic file handlers), then return null.
-   *
-   * @param resultingTasks The list of tasks from where to choose the default
-   *     task.
-   * @return the default task, or null if no default task found.
-   */
-  static getDefaultTask(
-      resultingTasks: chrome.fileManagerPrivate.ResultingTasks,
-      taskHistory: TaskHistory): chrome.fileManagerPrivate.FileTask|null {
-    const {tasks, policyDefaultHandlerStatus} = resultingTasks;
-
-    // If policy assignment is incorrect, then no default should be set.
-    if (policyDefaultHandlerStatus &&
-        policyDefaultHandlerStatus ===
-            chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
-                .INCORRECT_ASSIGNMENT) {
-      return null;
-    }
-
-    // 1. Default app set for MIME or file extension by user, or built-in app.
-    for (const task of tasks) {
-      if (task.isDefault) {
-        return task;
-      }
-    }
-
-    // If policy assignment is marked as correct, then by this moment we
-    // should've already found the default.
-    assert(
-        !(policyDefaultHandlerStatus &&
-          policyDefaultHandlerStatus ===
-              chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
-                  .DEFAULT_HANDLER_ASSIGNED_BY_POLICY));
-
-    const nonGenericTasks = tasks.filter(t => !t.isGenericFileHandler);
-    if (nonGenericTasks.length === 0) {
-      return null;
-    }
-
-    // 2. Most recently executed or sole non-generic task.
-    const latest = nonGenericTasks[0]!;
-    if (nonGenericTasks.length == 1 ||
-        taskHistory.getLastExecutedTime(latest.descriptor)) {
-      return latest;
-    }
-
-    return null;
-  }
-
   private static async getPvmSharedDir_(volumeManager: VolumeManager):
       Promise<DirectoryEntry> {
     const volumeInfo = volumeManager.getCurrentProfileVolumeInfo(
@@ -992,7 +810,7 @@ export class FileTasks {
 }
 
 /** The task descriptor of 'Install Linux package'. */
-const INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR = {
+export const INSTALL_LINUX_PACKAGE_TASK_DESCRIPTOR = {
   appId: LEGACY_FILES_EXTENSION_ID,
   taskType: 'app',
   actionId: 'install-linux-package',
@@ -1081,4 +899,134 @@ function isMyFilesEntry(entry: Entry, volumeManager: VolumeManager): boolean {
   const location = volumeManager.getLocationInfo(entry);
   return !!location &&
       location.rootType === VolumeManagerCommon.RootType.DOWNLOADS;
+}
+
+/**
+ * Annotates tasks returned from the API.
+ * @param tasks Input tasks from the API.
+ * @param entries List of entries for the tasks.
+ */
+export function annotateTasks(
+    tasks: chrome.fileManagerPrivate.FileTask[],
+    entries: Entry[]|FileData[]): AnnotatedTask[] {
+  const result: AnnotatedTask[] = [];
+  for (const task of tasks) {
+    const {appId, taskType, actionId} = task.descriptor;
+    const parsedActionId = parseActionId(actionId);
+
+    // Skip internal Files app's handlers.
+    if (isFilesAppId(appId) &&
+        (parsedActionId === 'select' || parsedActionId === 'open')) {
+      continue;
+    }
+
+    // Tweak images, titles of internal tasks.
+    const annotateTask: AnnotatedTask = {...task, iconType: ''};
+    if (isFilesAppId(appId) && (taskType === 'app' || taskType === 'web')) {
+      if (parsedActionId === 'mount-archive') {
+        annotateTask.iconType = 'archive';
+        annotateTask.title = str('MOUNT_ARCHIVE');
+      } else if (parsedActionId === 'open-hosted-generic') {
+        if (entries.length > 1) {
+          annotateTask.iconType = 'generic';
+        } else {  // Use specific icon.
+          annotateTask.iconType = FileType.getIcon(entries[0]!);
+        }
+        annotateTask.title = str('TASK_OPEN');
+      } else if (parsedActionId === 'open-hosted-gdoc') {
+        annotateTask.iconType = 'gdoc';
+        annotateTask.title = str('TASK_OPEN_GDOC');
+      } else if (parsedActionId === 'open-hosted-gsheet') {
+        annotateTask.iconType = 'gsheet';
+        annotateTask.title = str('TASK_OPEN_GSHEET');
+      } else if (parsedActionId === 'open-hosted-gslides') {
+        annotateTask.iconType = 'gslides';
+        annotateTask.title = str('TASK_OPEN_GSLIDES');
+      } else if (parsedActionId === 'open-web-drive-office-word') {
+        annotateTask.iconType = 'gdoc';
+        annotateTask.title = str('TASK_OPEN_GDOC');
+      } else if (parsedActionId === 'open-web-drive-office-excel') {
+        annotateTask.iconType = 'gsheet';
+        annotateTask.title = str('TASK_OPEN_GSHEET');
+      } else if (parsedActionId === 'upload-office-to-drive') {
+        annotateTask.iconType = 'generic';
+        annotateTask.title = 'Upload to Drive';
+      } else if (parsedActionId === 'open-web-drive-office-powerpoint') {
+        annotateTask.iconType = 'gslides';
+        annotateTask.title = str('TASK_OPEN_GSLIDES');
+      } else if (parsedActionId === 'open-in-office') {
+        annotateTask.iconUrl =
+            toFilesAppURL('foreground/images/files/ui/ms365.svg').toString();
+        annotateTask.title = str('TASK_OPEN_MICROSOFT_365');
+      } else if (parsedActionId === 'install-linux-package') {
+        annotateTask.iconType = 'crostini';
+        annotateTask.title = str('TASK_INSTALL_LINUX_PACKAGE');
+      } else if (parsedActionId === 'import-crostini-image') {
+        annotateTask.iconType = 'tini';
+        annotateTask.title = str('TASK_IMPORT_CROSTINI_IMAGE');
+      } else if (parsedActionId === 'view-pdf') {
+        annotateTask.iconType = 'pdf';
+        annotateTask.title = str('TASK_VIEW');
+      } else if (parsedActionId === 'view-in-browser') {
+        annotateTask.iconType = 'generic';
+        annotateTask.title = str('TASK_VIEW');
+      }
+    }
+    if (!annotateTask.iconType && taskType === 'web-intent') {
+      annotateTask.iconType = 'generic';
+    }
+
+    result.push(annotateTask);
+  }
+
+  return result;
+}
+
+/**
+ * Gets the default task from tasks. In case there is no such task (i.e. all
+ * tasks are generic file handlers), then return null.
+ */
+export function getDefaultTask(
+    tasks: AnnotatedTask[],
+    policyDefaultHandlerStatus:
+        chrome.fileManagerPrivate.PolicyDefaultHandlerStatus|undefined,
+    taskHistory: TaskHistory): AnnotatedTask|null {
+  const INCORRECT_ASSIGNMENT =
+      chrome.fileManagerPrivate.PolicyDefaultHandlerStatus.INCORRECT_ASSIGNMENT;
+  const DEFAULT_HANDLER_ASSIGNED_BY_POLICY =
+      chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
+          .DEFAULT_HANDLER_ASSIGNED_BY_POLICY;
+
+  // If policy assignment is incorrect, then no default should be set.
+  if (policyDefaultHandlerStatus &&
+      policyDefaultHandlerStatus === INCORRECT_ASSIGNMENT) {
+    return null;
+  }
+
+  // 1. Default app set for MIME or file extension by user, or built-in app.
+  for (const task of tasks) {
+    if (task.isDefault) {
+      return task;
+    }
+  }
+
+  // If policy assignment is marked as correct, then by this moment we
+  // should've already found the default.
+  console.assert(
+      !(policyDefaultHandlerStatus &&
+        policyDefaultHandlerStatus === DEFAULT_HANDLER_ASSIGNED_BY_POLICY));
+
+  const nonGenericTasks = tasks.filter(t => !t.isGenericFileHandler);
+  if (nonGenericTasks.length === 0) {
+    return null;
+  }
+
+  // 2. Most recently executed or sole non-generic task.
+  const latest = nonGenericTasks[0]!;
+  if (nonGenericTasks.length == 1 ||
+      taskHistory.getLastExecutedTime(latest.descriptor)) {
+    return latest;
+  }
+
+  return null;
 }

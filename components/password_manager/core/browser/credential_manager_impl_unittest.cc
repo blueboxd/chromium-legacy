@@ -16,17 +16,18 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/credential_manager_pending_request_task.h"
 #include "components/password_manager/core/browser/credential_manager_utils.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
@@ -92,7 +93,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                const std::vector<const PasswordForm*>*,
                bool was_autofilled_on_pageload),
               (override));
-  MOCK_METHOD(bool, IsAutofillAssistantUIVisible, (), (const override));
 
   explicit MockPasswordManagerClient(PasswordStoreInterface* profile_store,
                                      PasswordStoreInterface* account_store)
@@ -108,8 +108,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                                             true);
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                             false);
-    ON_CALL(*this, IsAutofillAssistantUIVisible)
-        .WillByDefault(testing::Return(false));
   }
   MockPasswordManagerClient(const MockPasswordManagerClient&) = delete;
   MockPasswordManagerClient& operator=(const MockPasswordManagerClient&) =
@@ -156,7 +154,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
       CredentialsCallback callback) override {
     EXPECT_FALSE(local_forms.empty());
     const PasswordForm* form = local_forms[0].get();
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   base::Owned(new PasswordForm(*form))));
     std::vector<PasswordForm*> raw_forms(local_forms.size());
@@ -255,6 +253,9 @@ class CredentialManagerImplTest : public testing::Test,
     client_ = std::make_unique<testing::NiceMock<MockPasswordManagerClient>>(
         store_.get(), account_store_.get());
     cm_service_impl_ = std::make_unique<CredentialManagerImpl>(client_.get());
+    cm_service_impl_->set_leak_factory(
+        std::make_unique<NiceMock<MockLeakDetectionCheckFactory>>());
+
     ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsFillingEnabled(_)).WillByDefault(testing::Return(true));
@@ -1475,21 +1476,6 @@ TEST_P(CredentialManagerImplTest, IncognitoZeroClickRequestCredential) {
   EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
 
   ExpectCredentialType(CredentialMediationRequirement::kSilent, true,
-                       federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
-}
-
-TEST_P(CredentialManagerImplTest, AutofillAssistantZeroClickRequestCredential) {
-  store_->AddLogin(form_);
-
-  std::vector<GURL> federations;
-  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr)
-      .Times(testing::Exactly(0));
-  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr()).Times(testing::Exactly(0));
-  EXPECT_CALL(*client_, IsIncognito()).WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*client_, IsAutofillAssistantUIVisible())
-      .WillRepeatedly(testing::Return(true));
-
-  ExpectCredentialType(CredentialMediationRequirement::kOptional, true,
                        federations, CredentialType::CREDENTIAL_TYPE_EMPTY);
 }
 

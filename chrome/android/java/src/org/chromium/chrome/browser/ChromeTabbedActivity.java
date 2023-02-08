@@ -118,8 +118,6 @@ import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.navigation_predictor.NavigationPredictorBridge;
-import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
-import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionRationaleDialogController;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
@@ -200,6 +198,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.util.FirstDrawDetector;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -375,12 +374,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             new OneshotSupplierImpl<>();
     private ObservableSupplierImpl<Tab> mStartSurfaceParentTabSupplier =
             new ObservableSupplierImpl<>();
+    // Calls isStartSurfaceRefactorEnabled() instead of using this variable directly.
+    private Boolean mIsStartSurfaceRefactorEnabled;
 
     private CallbackController mCallbackController = new CallbackController();
     private TabbedModeTabDelegateFactory mTabDelegateFactory;
 
     private final AppLaunchDrawBlocker mAppLaunchDrawBlocker;
-    private NotificationPermissionController mNotificationPermissionController;
 
     private ReturnToChromeBackPressHandler mReturnToChromeBackPressHandler;
     private ReadingListBackPressHandler mReadingListBackPressHandler;
@@ -433,7 +433,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 // LifecycleRegistry normally enforces it is called on the main thread, but this
                 // class will be preloaded in a background thread. The only method that gets called
                 // in the activity constructor is addObserver(), so just override that.
-                mLifecycleRegistry = new LifecycleRegistry(null) {
+                mLifecycleRegistry = new LifecycleRegistry(this) {
                     @Override
                     public void addObserver(LifecycleObserver observer) {}
                 };
@@ -629,7 +629,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled(
                             ChromeTabbedActivity.this);
                     boolean overviewVisible =
-                            mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER);
+                            mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)
+                            || mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE);
                     boolean hasNextTab = !(getTabModelSelector().getTotalTabCount() == 0
                             || (!getTabModelSelector().isIncognitoSelected()
                                     && getTabModelSelector().getModel(false).getCount() == 0));
@@ -670,8 +671,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     private void openTabletTabSwitcherIfNoTabs() {
-        if (!isTablet() || mLayoutManager == null
-                || !mTabModelOrchestrator.areTabModelsInitialized()) {
+        if (!isTablet() || mLayoutManager == null || !areTabModelsInitialized()) {
             return;
         }
 
@@ -745,9 +745,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             CompositorViewHolder compositorViewHolder, ViewGroup tabSwitcherContainer) {
         // If the refactor is enabled, we create grid tab switcher directly instead of via start
         // surface.
-        // TODO(crbug.com/1315676): Extends the refactor to allow Start Surface enabled case.
-        if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this)) {
+        if (isStartSurfaceRefactorEnabled()) {
             createGridTabSwitcher(compositorViewHolder, tabSwitcherContainer);
+            if (ReturnToChromeUtil.isStartSurfaceEnabled(this)) {
+                createStartSurface(compositorViewHolder, tabSwitcherContainer);
+            }
         } else if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)) {
             createStartSurface(compositorViewHolder, tabSwitcherContainer);
         }
@@ -890,8 +892,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         // create start surface.
         createTabSwitcherOrStartSurface(compositorViewHolder, containerView);
-        if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this)
-                && mTabSwitcherSupplier.hasValue()) {
+        if (isStartSurfaceRefactorEnabled() && mTabSwitcherSupplier.hasValue()) {
             mTabSwitcherSupplier.get().getController().enableRecordingFirstMeaningfulPaint(
                     getOnCreateTimestampMs());
         } else if (mStartSurfaceSupplier.hasValue()) {
@@ -1044,14 +1045,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             ChromeAccessibilityUtil.get().addObserver(mLayoutManager);
             if (isTablet()) ChromeAccessibilityUtil.get().addObserver(mCompositorViewHolder);
-
-            mNotificationPermissionController =
-                    new NotificationPermissionController(getWindowAndroid(),
-                            new NotificationPermissionRationaleDialogController(
-                                    this, getModalDialogManager()));
-            NotificationPermissionController.attach(
-                    getWindowAndroid(), mNotificationPermissionController);
-            mNotificationPermissionController.requestPermissionIfNeeded(false /* contextual */);
             if (BackPressManager.isEnabled()) initializeBackPressHandlers();
         }
     }
@@ -1232,8 +1225,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
 
-            if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this)
-                    && mTabSwitcherSupplier.hasValue()) {
+            if (isStartSurfaceRefactorEnabled() && mTabSwitcherSupplier.hasValue()) {
                 mTabSwitcherSupplier.get().getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
             } else if (mStartSurfaceSupplier.hasValue()) {
@@ -1807,12 +1799,16 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mContentContainer = (ViewGroup) findViewById(android.R.id.content);
         mControlContainer = (ToolbarControlContainer) findViewById(R.id.control_container);
 
+        // Instead of overriding AsyncInitializationActivity#onFirstDrawComplete like the other
+        // activities, we're adding our own draw detector here because this activity's draw can be
+        // blocked by AppLaunchDrawBlocker, and #onFirstDrawComplete doesn't account for that.
+        FirstDrawDetector.waitForFirstDrawStrict(
+                mContentContainer, () -> FontPreloader.getInstance().onFirstDrawTabbedActivity());
+
         Supplier<Boolean> dialogVisibilitySupplier = null;
         if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(this)) {
             dialogVisibilitySupplier = () -> {
-                boolean isTabSwitcherOnlyRefactorEnabled =
-                        ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this);
-                if (isTabSwitcherOnlyRefactorEnabled) {
+                if (isStartSurfaceRefactorEnabled()) {
                     assert mTabSwitcherSupplier.get() != null;
                 }
                 // Return true if dialog from either tab switcher or tab strip is visible.
@@ -1822,7 +1818,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 boolean isDialogVisible = tabGroupUi != null && tabGroupUi.isTabGridDialogVisible();
 
                 Supplier<Boolean> tabSwitcherDialogVisibilitySupplier =
-                        isTabSwitcherOnlyRefactorEnabled
+                        isStartSurfaceRefactorEnabled()
                         ? mTabSwitcherSupplier.get().getTabGridDialogVisibilitySupplier()
                         : (mStartSurfaceSupplier == null || !mStartSurfaceSupplier.hasValue())
                         ? null
@@ -2057,19 +2053,35 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     ChromeTabbedActivity.this, MessageDispatcherProvider.from(getWindowAndroid()));
 
             if (mStartSurfaceSupplier.get() != null) {
-                // The tab switcher is not the layout shown on startup, so wait until it is shown
+                // The start surface is not the layout shown on startup, so wait until it is shown
                 // before notifying the start surface that is was.
-                // TODO(1292661): We should allow the tab switcher to be the layout that the browser
-                //                starts on to avoid logic like this.
-                if (getLayoutManager().getActiveLayoutType() == LayoutType.TAB_SWITCHER
-                        || getLayoutManager().getNextLayoutType() != LayoutType.TAB_SWITCHER) {
+                // TODO(1292661): We should allow the start surface to be the layout that the
+                //                browser starts on to avoid logic like this.
+                // TODO(1347089): Clean up the check of LayoutType.TAB_SWITCHER once the refactoring
+                //                is done. This is because only Start surface is allowed to shown on
+                //                startup, not the Grid Tab switcher.
+                boolean isStartSurfaceLayoutShown = false;
+                if (isStartSurfaceRefactorEnabled()) {
+                    isStartSurfaceLayoutShown =
+                            getLayoutManager().getActiveLayoutType() == LayoutType.START_SURFACE
+                            || getLayoutManager().getNextLayoutType() != LayoutType.START_SURFACE;
+                } else {
+                    isStartSurfaceLayoutShown =
+                            getLayoutManager().getActiveLayoutType() == LayoutType.TAB_SWITCHER
+                            || getLayoutManager().getNextLayoutType() != LayoutType.TAB_SWITCHER;
+                }
+                if (isStartSurfaceLayoutShown) {
                     mStartSurfaceSupplier.get().onOverviewShownAtLaunch(
                             mOverviewShownOnStart, getOnCreateTimestampMs());
-                } else if (getLayoutManager().getNextLayoutType() == LayoutType.TAB_SWITCHER) {
+                } else if (getLayoutManager().getNextLayoutType() == LayoutType.TAB_SWITCHER
+                        || getLayoutManager().getNextLayoutType() == LayoutType.START_SURFACE) {
                     getLayoutManager().addObserver(new LayoutStateProvider.LayoutStateObserver() {
                         @Override
                         public void onStartedShowing(int layoutType, boolean showToolbar) {
-                            if (layoutType != LayoutType.TAB_SWITCHER) return;
+                            if (layoutType != LayoutType.TAB_SWITCHER
+                                    && layoutType != LayoutType.START_SURFACE) {
+                                return;
+                            }
 
                             mStartSurfaceSupplier.get().onOverviewShownAtLaunch(
                                     mOverviewShownOnStart, getOnCreateTimestampMs());
@@ -2536,6 +2548,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 loadUrlParams, externalAppId, forceNewTab, intent);
     }
 
+    // TODO(crbug.com/1315676): Once the refactor is finished, remove all StartSurfaceState codes.
     private void showOverview(@StartSurfaceState int state) {
         showOverview(state, NewTabPageLaunchOrigin.UNKNOWN);
     }
@@ -2558,12 +2571,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             //                showing the overview list before going to the start surface.
             mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, false);
         } else if (mStartSurfaceSupplier.get() != null) {
-            assert !ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(this);
-            if (ReturnToChromeUtil.shouldHideStartSurfaceWithAccessibilityOn(this)
-                    || !HomepageManager.isHomepageEnabled()) {
-                state = StartSurfaceState.SHOWING_TABSWITCHER;
+            if (!isStartSurfaceRefactorEnabled()) {
+                if (ReturnToChromeUtil.shouldHideStartSurfaceWithAccessibilityOn(this)
+                        || !HomepageManager.isHomepageEnabled()) {
+                    state = StartSurfaceState.SHOWING_TABSWITCHER;
+                }
+                mStartSurfaceSupplier.get().setStartSurfaceState(state, launchOrigin);
+            } else {
+                mStartSurfaceSupplier.get().setLaunchOrigin(launchOrigin);
             }
-            mStartSurfaceSupplier.get().setStartSurfaceState(state, launchOrigin);
         }
 
         if (mLayoutManager == null) return;
@@ -2572,16 +2588,28 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             if (didFinishNativeInitialization()) {
                 getCompositorViewHolderSupplier().get().hideKeyboard(() -> {});
             }
-            return;
+            if (!isStartSurfaceRefactorEnabled()) return;
         }
 
         Tab currentTab = getActivityTab();
+        @LayoutType
+        int layoutTypeToShow = LayoutType.TAB_SWITCHER;
+        if (isStartSurfaceRefactorEnabled() && ReturnToChromeUtil.isStartSurfaceEnabled(this)
+                && state != StartSurfaceState.SHOWING_TABSWITCHER
+                && !getTabModelSelector().isIncognitoSelected()) {
+            layoutTypeToShow = LayoutType.START_SURFACE;
+            if (state == StartSurfaceState.SHOWING_PREVIOUS) {
+                ReturnToChromeUtil.recordBackNavigationToStart("FromTab");
+            }
+        }
+
         // If we don't have a current tab, show the overview mode.
         if (currentTab == null) {
-            mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, false);
+            mLayoutManager.showLayout(layoutTypeToShow, false);
         } else {
+            final int layoutTypeToShowFinal = layoutTypeToShow;
             getCompositorViewHolderSupplier().get().hideKeyboard(
-                    () -> mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, true));
+                    () -> mLayoutManager.showLayout(layoutTypeToShowFinal, true));
             updateAccessibilityState(false);
             TasksUma.recordTabLaunchType(getCurrentTabModel());
         }
@@ -2655,11 +2683,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (mMinimizeAppAndCloseTabBackPressHandler != null) {
             mMinimizeAppAndCloseTabBackPressHandler.destroy();
             mMinimizeAppAndCloseTabBackPressHandler = null;
-        }
-
-        if (mNotificationPermissionController != null) {
-            NotificationPermissionController.detach(mNotificationPermissionController);
-            mNotificationPermissionController = null;
         }
 
         if (mCallbackController != null) {
@@ -3013,10 +3036,21 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         getLayoutManager().addObserver(new LayoutStateProvider.LayoutStateObserver() {
             @Override
             public void onFinishedShowing(int layoutType) {
-                assert layoutType == LayoutType.TAB_SWITCHER;
+                assert layoutType == LayoutType.TAB_SWITCHER
+                        || layoutType == LayoutType.START_SURFACE;
                 mTabModelSelector.getModel(currentTab.isIncognito()).closeTab(currentTab);
                 getLayoutManager().removeObserver(this);
             }
         });
+    }
+
+    /**
+     * Returns whether the Start surface refactoring is enabled.
+     */
+    private boolean isStartSurfaceRefactorEnabled() {
+        if (mIsStartSurfaceRefactorEnabled == null) {
+            mIsStartSurfaceRefactorEnabled = ReturnToChromeUtil.isStartSurfaceRefactorEnabled(this);
+        }
+        return mIsStartSurfaceRefactorEnabled;
     }
 }

@@ -9,12 +9,14 @@ import {AnchorAlignment, CrActionMenuElement} from 'chrome://resources/cr_elemen
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {isMac, isWindows} from 'chrome://resources/js/platform.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
+import {getTrustedHtml} from 'chrome://webui-test/trusted_html.js';
+import {getTrustedHTML as getTrustedStaticHtml} from 'chrome://resources/js/static_types.js';
 // clang-format on
 
 /**
@@ -31,7 +33,7 @@ suite('CrActionMenu', function() {
 
   setup(function() {
     FocusOutlineManager.forDocument(document).visible = false;
-    document.body.innerHTML = `
+    document.body.innerHTML = getTrustedStaticHtml`
       <button id="dots">...</button>
       <cr-action-menu>
         <button class="dropdown-item">Un</button>
@@ -510,14 +512,14 @@ suite('CrActionMenu', function() {
     setup(function() {
       document.body.scrollTop = 0;
       document.body.scrollLeft = 0;
-      document.body.innerHTML = `
+      document.body.innerHTML = getTrustedHtml(`
         <style>
           test-element {
             height: ${bodyHeight}px;
             width: ${bodyWidth}px;
           }
         </style>
-        <test-element></test-element>`;
+        <test-element></test-element>`);
 
       const testElement = document.querySelector('test-element')!;
       menu = testElement.shadowRoot!.querySelector('cr-action-menu')!;

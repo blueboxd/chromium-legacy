@@ -17,7 +17,6 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/form_data_predictions.h"
-#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -178,11 +177,9 @@ class ContentAutofillDriver : public AutofillDriver,
   // FillFormForAssistant() is located in ContentAutofillDriver so that
   // |raw_form| and |raw_field| get their meta data set analogous to
   // AskForValuesToFill().
-  void FillFormForAssistant(
-      const AutofillableData& fill_data,
-      const FormData& raw_form,
-      const FormFieldData& raw_field,
-      const autofill_assistant::AutofillAssistantIntent intent);
+  void FillFormForAssistant(const AutofillableData& fill_data,
+                            const FormData& raw_form,
+                            const FormFieldData& raw_field);
 
   // Called to inform the browser that in the field with `form_global_id` and
   // `field_global_id`, the context menu was triggered. This is different from
@@ -256,7 +253,6 @@ class ContentAutofillDriver : public AutofillDriver,
   // These events are private to to avoid accidental in the browser.
   // They can be accessed explicitly through browser_events().
   std::vector<FieldGlobalId> FillOrPreviewForm(
-      int query_id,
       mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
@@ -312,7 +308,6 @@ class ContentAutofillDriver : public AutofillDriver,
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
-      int32_t query_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) override;
   void HidePopup() override;

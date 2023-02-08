@@ -9,6 +9,7 @@
  */
 import {AutomationUtil} from '../../common/automation_util.js';
 import {CursorRange} from '../../common/cursors/range.js';
+import {LocalStorage} from '../../common/local_storage.js';
 import {Earcon} from '../common/abstract_earcons.js';
 
 import {ChromeVox} from './chromevox.js';
@@ -34,6 +35,10 @@ export class SmartStickyMode {
     ChromeVoxState.addObserver(this);
   }
 
+  static init() {
+    SmartStickyMode.instance = new SmartStickyMode();
+  }
+
   /**
    * @param {?CursorRange} newRange
    * @param {boolean=} opt_fromEditing
@@ -42,7 +47,7 @@ export class SmartStickyMode {
   onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (!newRange || this.ignoreRangeChanges_ ||
         ChromeVoxState.instance.isReadingContinuously || opt_fromEditing ||
-        localStorage['smartStickyMode'] !== 'true') {
+        !LocalStorage.get('smartStickyMode')) {
       return;
     }
 
@@ -74,15 +79,15 @@ export class SmartStickyMode {
     }
 
     if (shouldTurnOffStickyMode) {
-      if (!ChromeVox.isStickyPrefOn) {
+      if (!ChromeVoxPrefs.isStickyPrefOn) {
         // Sticky mode was already off; do not track the current sticky state
         // since we may have set it ourselves.
         return;
       }
 
       if (this.didTurnOffStickyMode_) {
-        // This should not be possible with |ChromeVox.isStickyPrefOn| set to
-        // true.
+        // This should not be possible with |ChromeVoxPrefs.isStickyPrefOn| set
+        // to true.
         throw 'Unexpected sticky state value encountered.';
       }
 
@@ -194,3 +199,6 @@ export class SmartStickyMode {
     return null;
   }
 }
+
+/** @public {SmartStickyMode} */
+SmartStickyMode.instance;

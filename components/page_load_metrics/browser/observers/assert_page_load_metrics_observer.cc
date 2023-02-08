@@ -341,6 +341,7 @@ void AssertPageLoadMetricsObserver::OnUserInput(
 }
 
 void AssertPageLoadMetricsObserver::OnPageInputTimingUpdate(
+    uint64_t num_interactions,
     uint64_t num_input_events) {
   DCHECK(committed_);
   // If prerendered, input events are triggered after activation.
@@ -364,6 +365,12 @@ void AssertPageLoadMetricsObserver::OnRenderFrameDeleted(
 
 void AssertPageLoadMetricsObserver::OnSubFrameDeleted(int frame_tree_node_id) {
   DCHECK(started_);
+}
+
+void AssertPageLoadMetricsObserver::OnPageRenderDataUpdate(
+    const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
+    bool is_main_frame) {
+  DCHECK(committed_);
 }
 
 void AssertPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(

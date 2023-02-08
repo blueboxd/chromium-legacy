@@ -6438,11 +6438,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   EXPECT_EQ(*normalized_start, *normalized_start);
 
-  // TODO: the start position is wrong.
-  EXPECT_FALSE(normalized_start->AtStartOfAnchor());
-  EXPECT_EQ(3, normalized_start->anchor_id());
-
+  EXPECT_TRUE(normalized_start->AtStartOfAnchor());
   EXPECT_TRUE(normalized_end->AtStartOfAnchor());
+  EXPECT_EQ(7, normalized_start->anchor_id());
   EXPECT_EQ(7, normalized_end->anchor_id());
 }
 

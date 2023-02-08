@@ -18,15 +18,18 @@ Storage
   http://127.0.0.1:8000/
   http://devtools.oopif.test:8000
  IndexedDB
-  Database-iframe - http://devtools.oopif.test:8000
+  Database-iframe - http://devtools.oopif.test:8000/
    Database-iframe
-  Database-main-frame - http://127.0.0.1:8000
+  Database-main-frame - http://127.0.0.1:8000/
  Web SQL
  Cookies
   http://127.0.0.1:8000
   http://devtools.oopif.test:8000
  Trust Tokens
  Interest Groups
+ Shared Storage
+  http://127.0.0.1:8000
+  http://devtools.oopif.test:8000
 Cache
  Cache Storage
  Back/forward cache
@@ -60,13 +63,15 @@ Storage
  Session Storage
   http://127.0.0.1:8000/
  IndexedDB
-  Database-main-frame - http://127.0.0.1:8000
+  Database-main-frame - http://127.0.0.1:8000/
  Web SQL
  Cookies
   http://127.0.0.1:8000
   http://devtools.oopif.test:8000
  Trust Tokens
  Interest Groups
+ Shared Storage
+  http://127.0.0.1:8000
 Cache
  Cache Storage
  Back/forward cache
@@ -100,8 +105,8 @@ Storage
   http://127.0.0.1:8000/
   http://devtools.oopif.test:8000
  IndexedDB
-  Database-main-frame - http://127.0.0.1:8000
-  Database-iframe - http://devtools.oopif.test:8000
+  Database-main-frame - http://127.0.0.1:8000/
+  Database-iframe - http://devtools.oopif.test:8000/
    Database-iframe
  Web SQL
  Cookies
@@ -109,6 +114,9 @@ Storage
   http://devtools.oopif.test:8000
  Trust Tokens
  Interest Groups
+ Shared Storage
+  http://127.0.0.1:8000
+  http://devtools.oopif.test:8000
 Cache
  Cache Storage
  Back/forward cache

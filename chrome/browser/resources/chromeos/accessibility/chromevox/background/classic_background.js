@@ -5,8 +5,8 @@
 /**
  * @fileoverview Script that runs on the background page.
  */
-import {ExtensionBridge} from '../common/extension_bridge.js';
-import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
+import {ContentScriptBridge} from '../common/content_script_bridge.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 
 import {ChromeVox} from './chromevox.js';
 import {InjectedScriptLoader} from './injected_script_loader.js';
@@ -71,7 +71,7 @@ export class ChromeVoxBackground {
    * messages to the proper destination.
    */
   addBridgeListener() {
-    ExtensionBridge.addMessageListener((msg, port) => {
+    ContentScriptBridge.addMessageListener((msg, port) => {
       if (msg['target'] !== 'TTS') {
         return;
       }
@@ -86,6 +86,7 @@ export class ChromeVoxBackground {
 
   /** Initializes classic background object. */
   static init() {
+    ContentScriptBridge.init();
     const background = new ChromeVoxBackground();
   }
 }

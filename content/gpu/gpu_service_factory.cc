@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "base/no_destructor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
@@ -32,7 +33,7 @@ GpuServiceFactory::GpuServiceFactory(
   gpu_workarounds_ = gpu_workarounds;
   gpu_feature_info_ = gpu_feature_info;
   gpu_info_ = gpu_info;
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   media_gpu_channel_manager_ = std::move(media_gpu_channel_manager);
   gpu_memory_buffer_factory_ = gpu_memory_buffer_factory;
   android_overlay_factory_cb_ = std::move(android_overlay_factory_cb);

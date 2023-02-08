@@ -21,6 +21,7 @@
 #include "base/fuchsia/process_context.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/base/cursor/platform_cursor.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -28,6 +29,21 @@
 #include "ui/platform_window/fuchsia/scenic_window_delegate.h"
 
 namespace ui {
+
+namespace {
+
+// Converts and scales Scenic's rect-based representation of insets to
+// gfx::Insets. Returns zero-width insets if |view_inset| information was not
+// provided in the |GetLayout()| call.
+gfx::Insets ConvertInsets(float device_pixel_ratio,
+                          const fuchsia::math::Inset& view_inset) {
+  return gfx::ScaleToRoundedInsets(
+      gfx::Insets::TLBR(view_inset.top, view_inset.left, view_inset.bottom,
+                        view_inset.right),
+      device_pixel_ratio);
+}
+
+}  // namespace
 
 FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
                                PlatformWindowDelegate* platform_window_delegate,
@@ -105,8 +121,7 @@ void FlatlandWindow::AttachSurfaceContent(
   // 0x0 is not a valid Viewport size for Flatland. Sending these commands will
   // cause an error that results in channel closure. We will receive a non-zero
   // size at OnGetLayout(), so we wait until then to run these commands.
-  if (bounds_.IsEmpty()) {
-    DCHECK(!logical_size_);
+  if (!logical_size_) {
     pending_attach_surface_content_closure_ =
         base::BindOnce(&FlatlandWindow::AttachSurfaceContent,
                        base::Unretained(this), std::move(token));
@@ -123,8 +138,8 @@ void FlatlandWindow::AttachSurfaceContent(
   flatland_.flatland()->AddChild(root_transform_id_, surface_transform_id_);
 
   fuchsia::ui::composition::ViewportProperties properties;
-  properties.set_logical_size({static_cast<uint32_t>(bounds_.width()),
-                               static_cast<uint32_t>(bounds_.height())});
+  properties.set_logical_size({static_cast<uint32_t>(logical_size_->width()),
+                               static_cast<uint32_t>(logical_size_->height())});
 
   surface_content_id_ = flatland_.NextContentId();
   fuchsia::ui::composition::ChildViewWatcherPtr content_link;
@@ -159,6 +174,8 @@ void FlatlandWindow::SetBoundsInPixels(const gfx::Rect& bounds) {
 }
 
 gfx::Rect FlatlandWindow::GetBoundsInDIP() const {
+  // TODO(crbug.com/1382849): Remove the hardcoded values and return
+  // |logical_size_|.
   return platform_window_delegate_->ConvertRectToDIP(bounds_);
 }
 
@@ -218,9 +235,10 @@ bool FlatlandWindow::HasCapture() const {
   return has_capture_;
 }
 
-void FlatlandWindow::ToggleFullscreen() {
+void FlatlandWindow::SetFullscreen(bool fullscreen, int64_t target_display_id) {
   NOTIMPLEMENTED_LOG_ONCE();
-  is_fullscreen_ = !is_fullscreen_;
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
+  is_fullscreen_ = fullscreen;
 }
 
 void FlatlandWindow::Maximize() {
@@ -298,9 +316,15 @@ void FlatlandWindow::OnGetLayout(fuchsia::ui::composition::LayoutInfo info) {
       gfx::Size(info.logical_size().width, info.logical_size().height);
   device_pixel_ratio_ =
       std::max(info.device_pixel_ratio().x, info.device_pixel_ratio().y);
+  DCHECK_EQ(info.device_pixel_ratio().x, info.device_pixel_ratio().y);
 
-  if (scenic_window_delegate_)
+  if (info.has_inset()) {
+    view_inset_ = ConvertInsets(device_pixel_ratio_, info.inset());
+  }
+
+  if (scenic_window_delegate_) {
     scenic_window_delegate_->OnScenicPixelScale(this, device_pixel_ratio_);
+  }
 
   UpdateSize();
 
@@ -345,19 +369,17 @@ void FlatlandWindow::OnViewRefFocusedWatchResult(
 
 void FlatlandWindow::UpdateSize() {
   DCHECK(logical_size_);
+  if (pending_attach_surface_content_closure_) {
+    std::move(pending_attach_surface_content_closure_).Run();
+  }
 
   const auto old_bounds = bounds_;
   bounds_ = gfx::Rect(
       gfx::ScaleToCeiledSize(logical_size_.value(), device_pixel_ratio_));
 
-  if (pending_attach_surface_content_closure_) {
-    DCHECK(old_bounds.IsEmpty());
-    std::move(pending_attach_surface_content_closure_).Run();
-  }
-
   PlatformWindowDelegate::BoundsChange bounds(old_bounds.origin() !=
                                               bounds_.origin());
-  // TODO(fxbug.dev/93998): Calculate insets and update.
+  bounds.system_ui_overlap = view_inset_;
   platform_window_delegate_->OnBoundsChanged(bounds);
 }
 

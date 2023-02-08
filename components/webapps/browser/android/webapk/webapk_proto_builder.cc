@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/version_info/version_info.h"
@@ -183,20 +182,23 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     } else {
       best_primary_icon_image->add_purposes(webapk::Image::ANY);
     }
+  }
 
-    if (!splash_icon_data.empty()) {
-      webapk::Image* splash_icon_image = web_app_manifest->add_icons();
-      splash_icon_image->set_image_data(splash_icon_data);
-      splash_icon_image->add_usages(webapk::Image::SPLASH_ICON);
-      if (shortcut_info.is_splash_image_maskable) {
-        splash_icon_image->add_purposes(webapk::Image::MASKABLE);
-      } else {
-        splash_icon_image->add_purposes(webapk::Image::ANY);
-      }
+  if (shortcut_info.splash_image_url.is_empty() && !splash_icon_data.empty()) {
+    webapk::Image* splash_icon_image = web_app_manifest->add_icons();
+    splash_icon_image->set_image_data(splash_icon_data);
+    splash_icon_image->add_usages(webapk::Image::SPLASH_ICON);
+    if (shortcut_info.is_splash_image_maskable) {
+      splash_icon_image->add_purposes(webapk::Image::MASKABLE);
+    } else {
+      splash_icon_image->add_purposes(webapk::Image::ANY);
     }
   }
 
   for (const std::string& icon_url : shortcut_info.icon_urls) {
+    if (icon_url.empty())
+      continue;
+
     webapk::Image* image = web_app_manifest->add_icons();
     auto it = icon_url_to_murmur2_hash.find(icon_url);
     image->set_src(icon_url);
@@ -288,8 +290,8 @@ void BuildProto(
     bool is_manifest_stale,
     bool is_app_identity_update_supported,
     base::OnceCallback<void(std::unique_ptr<std::string>)> callback) {
-  base::PostTaskAndReplyWithResult(
-      GetBackgroundTaskRunner().get(), FROM_HERE,
+  GetBackgroundTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&webapps::BuildProtoInBackground, shortcut_info, app_key,
                      primary_icon_data, is_primary_icon_maskable,
                      splash_icon_data, package_name, version,

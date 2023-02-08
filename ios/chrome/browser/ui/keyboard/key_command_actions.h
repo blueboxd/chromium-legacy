@@ -38,20 +38,22 @@
 - (void)keyCommand_stop;
 - (void)keyCommand_showHelp;
 - (void)keyCommand_showDownloads;
-- (void)keyCommand_showFirstTab;
-- (void)keyCommand_showTab2;
-- (void)keyCommand_showTab3;
-- (void)keyCommand_showTab4;
-- (void)keyCommand_showTab5;
-- (void)keyCommand_showTab6;
-- (void)keyCommand_showTab7;
-- (void)keyCommand_showTab8;
-- (void)keyCommand_showLastTab;
+- (void)keyCommand_select1;
+- (void)keyCommand_select2;
+- (void)keyCommand_select3;
+- (void)keyCommand_select4;
+- (void)keyCommand_select5;
+- (void)keyCommand_select6;
+- (void)keyCommand_select7;
+- (void)keyCommand_select8;
+- (void)keyCommand_select9;
 - (void)keyCommand_reportAnIssue;
 - (void)keyCommand_addToReadingList;
 - (void)keyCommand_showReadingList;
 - (void)keyCommand_goToTabGrid;
 - (void)keyCommand_clearBrowsingData;
+- (void)keyCommand_closeAll;
+- (void)keyCommand_undo;
 
 @end
 

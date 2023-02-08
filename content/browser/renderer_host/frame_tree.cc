@@ -51,8 +51,12 @@ using perfetto::protos::pbzero::ChromeTrackEvent;
 // proxy_hosts_ because of openers).
 std::set<SiteInstanceGroup*> CollectSiteInstanceGroups(FrameTree* tree) {
   std::set<SiteInstanceGroup*> groups;
-  for (FrameTreeNode* node : tree->Nodes())
+  for (FrameTreeNode* node : tree->Nodes()) {
+    // TODO(crbug.com/1324149): Remove diagnostic asserts below.
+    CHECK(node->current_frame_host());
+    CHECK(node->current_frame_host()->GetSiteInstance());
     groups.insert(node->current_frame_host()->GetSiteInstance()->group());
+  }
   return groups;
 }
 
@@ -63,7 +67,7 @@ FrameTreeNode* GetInnerTreeMainFrameNode(FrameTreeNode* node) {
       node->current_frame_host()->inner_tree_main_frame_tree_node_id());
 
   if (inner_main_frame_tree_node) {
-    DCHECK_NE(node->frame_tree(), inner_main_frame_tree_node->frame_tree());
+    DCHECK_NE(&node->frame_tree(), &inner_main_frame_tree_node->frame_tree());
   }
 
   return inner_main_frame_tree_node;
@@ -190,8 +194,7 @@ FrameTree::FrameTree(
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate,
     PageDelegate* page_delegate,
-    Type type,
-    const base::UnguessableToken& devtools_frame_token)
+    Type type)
     : delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_view_delegate_(render_view_delegate),
@@ -205,18 +208,12 @@ FrameTree::FrameTree(
       type_(type),
       focused_frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId),
       load_progress_(0.0),
-      fenced_frames_impl_(
-          blink::features::IsFencedFramesEnabled()
-              ? absl::optional<blink::features::FencedFramesImplementationType>(
-                    blink::features::kFencedFramesImplementationTypeParam.Get())
-              : absl::nullopt),
-      root_(this,
+      root_(*this,
             nullptr,
             // The top-level frame must always be in a
             // document scope.
             blink::mojom::TreeScopeType::kDocument,
             false,
-            devtools_frame_token,
             blink::mojom::FrameOwnerProperties(),
             blink::FrameOwnerElementType::kNone,
             blink::FramePolicy()) {}
@@ -241,7 +238,7 @@ FrameTreeNode* FrameTree::FindByRoutingID(int process_id, int routing_id) {
       RenderFrameHostImpl::FromID(process_id, routing_id);
   if (render_frame_host) {
     FrameTreeNode* result = render_frame_host->frame_tree_node();
-    if (this == result->frame_tree())
+    if (this == &result->frame_tree())
       return result;
   }
 
@@ -249,7 +246,7 @@ FrameTreeNode* FrameTree::FindByRoutingID(int process_id, int routing_id) {
       RenderFrameProxyHost::FromID(process_id, routing_id);
   if (render_frame_proxy_host) {
     FrameTreeNode* result = render_frame_proxy_host->frame_tree_node();
-    if (this == result->frame_tree())
+    if (this == &result->frame_tree())
       return result;
   }
 
@@ -290,11 +287,11 @@ std::vector<FrameTreeNode*> FrameTree::CollectNodesForIsLoading() {
   std::vector<FrameTreeNode*> nodes;
 
   DCHECK(node_iter != node_range.end());
-  FrameTree* root_loading_tree = root_.frame_tree()->LoadingTree();
+  FrameTree* root_loading_tree = root_.frame_tree().LoadingTree();
   while (node_iter != node_range.end()) {
     // Skip over frame trees and children which belong to inner web contents
     // i.e., when nodes doesn't point to the same loading frame tree.
-    if ((*node_iter)->frame_tree()->LoadingTree() != root_loading_tree) {
+    if ((*node_iter)->frame_tree().LoadingTree() != root_loading_tree) {
       node_iter.AdvanceSkippingChildren();
     } else {
       nodes.push_back(*node_iter);
@@ -381,9 +378,9 @@ FrameTreeNode* FrameTree::AddFrame(
   // parent node.
   CHECK_EQ(parent->GetProcess()->GetID(), process_id);
 
-  std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent, scope, is_created_by_script, devtools_frame_token,
-      frame_owner_properties, owner_type, frame_policy));
+  std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(
+      new FrameTreeNode(*this, parent, scope, is_created_by_script,
+                        frame_owner_properties, owner_type, frame_policy));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and permissions policy should apply to the
@@ -401,7 +398,8 @@ FrameTreeNode* FrameTree::AddFrame(
   // Add the new node to the FrameTree, creating the RenderFrameHost.
   FrameTreeNode* added_node = parent->AddChild(
       std::move(new_node), new_routing_id, std::move(frame_remote), frame_token,
-      document_token, frame_policy, frame_name, frame_unique_name);
+      document_token, devtools_frame_token, frame_policy, frame_name,
+      frame_unique_name);
 
   added_node->SetFencedFramePropertiesIfNeeded();
 
@@ -790,13 +788,14 @@ void FrameTree::Init(SiteInstance* main_frame_site_instance,
                      bool renderer_initiated_creation,
                      const std::string& main_frame_name,
                      RenderFrameHostImpl* opener_for_origin,
-                     const blink::FramePolicy& frame_policy) {
+                     const blink::FramePolicy& frame_policy,
+                     const base::UnguessableToken& devtools_frame_token) {
   // blink::FrameTree::SetName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
   std::string unique_name;
   root_.render_manager()->InitRoot(main_frame_site_instance,
                                    renderer_initiated_creation, frame_policy,
-                                   main_frame_name);
+                                   main_frame_name, devtools_frame_token);
   root_.SetFencedFramePropertiesIfNeeded();
 
   // The initial empty document should inherit the origin of its opener (the
@@ -813,8 +812,7 @@ void FrameTree::Init(SiteInstance* main_frame_site_instance,
       renderer_initiated_creation ? opener_for_origin->GetLastCommittedOrigin()
                                   : url::Origin());
 
-  if (blink::features::IsInitialNavigationEntryEnabled())
-    controller().CreateInitialEntry();
+  controller().CreateInitialEntry();
 }
 
 void FrameTree::DidAccessInitialMainDocument() {
@@ -894,7 +892,8 @@ void FrameTree::Shutdown() {
   // destroyed.
 
   root_manager->current_frame_host()->RenderFrameDeleted();
-  root_manager->current_frame_host()->ResetNavigationRequests();
+  root_manager->current_frame_host()->ResetOwnedNavigationRequests(
+      NavigationDiscardReason::kWillRemoveFrame);
 
   // Do not update state as the FrameTree::Delegate (possibly a WebContents) is
   // being destroyed.
@@ -928,7 +927,7 @@ void FrameTree::FocusOuterFrameTrees() {
       // Don't set focus on an inactive FrameTreeNode.
       return;
     }
-    outer_node->frame_tree()->SetFocusedFrame(outer_node, nullptr);
+    outer_node->frame_tree().SetFocusedFrame(outer_node, nullptr);
 
     // For a browser initiated focus change, let embedding renderer know of the
     // change. Otherwise, if the currently focused element is just across a
@@ -940,7 +939,7 @@ void FrameTree::FocusOuterFrameTrees() {
                                             ->GetProxyToOuterDelegate()) {
       proxy_to_outer_delegate->SetFocusedFrame();
     }
-    frame_tree_to_focus = outer_node->frame_tree();
+    frame_tree_to_focus = &outer_node->frame_tree();
   }
 }
 

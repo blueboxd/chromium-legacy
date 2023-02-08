@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/timing/performance_timing_for_reporting.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -101,6 +102,12 @@ PaintTiming& PaintTiming::From(Document& document) {
   return *timing;
 }
 
+// static
+const PaintTiming* PaintTiming::From(const Document& document) {
+  PaintTiming* timing = Supplement<Document>::From<PaintTiming>(document);
+  return timing;
+}
+
 void PaintTiming::MarkFirstPaint() {
   // Test that |first_paint_| is non-zero here, as well as in setFirstPaint, so
   // we avoid invoking monotonicallyIncreasingTime() on every call to
@@ -113,9 +120,9 @@ void PaintTiming::MarkFirstPaint() {
 
 void PaintTiming::MarkFirstContentfulPaint() {
   // Test that |first_contentful_paint_| is non-zero here, as well as in
-  // setFirstContentfulPaint, so we avoid invoking
-  // monotonicallyIncreasingTime() on every call to
-  // markFirstContentfulPaint().
+  // SetFirstContentfulPaint, so we avoid invoking
+  // MonotonicallyIncreasingTime() on every call to
+  // MarkFirstContentfulPaint().
   if (!first_contentful_paint_.is_null())
     return;
   if (IgnorePaintTimingScope::IgnoreDepth() > 0)
@@ -268,7 +275,7 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
 void PaintTiming::RegisterNotifyPresentationTime(PaintEvent event) {
   RegisterNotifyPresentationTime(
       CrossThreadBindOnce(&PaintTiming::ReportPresentationTime,
-                          WrapCrossThreadWeakPersistent(this), event));
+                          MakeUnwrappingCrossThreadWeakHandle(this), event));
 }
 
 void PaintTiming::
@@ -277,7 +284,7 @@ void PaintTiming::
   RegisterNotifyPresentationTime(CrossThreadBindOnce(
       &PaintTiming::
           ReportFirstPaintAfterBackForwardCacheRestorePresentationTime,
-      WrapCrossThreadWeakPersistent(this), index));
+      MakeUnwrappingCrossThreadWeakHandle(this), index));
 }
 
 void PaintTiming::RegisterNotifyPresentationTime(ReportTimeCallback callback) {
@@ -457,7 +464,7 @@ void PaintTiming::OnRestoredFromBackForwardCache() {
                                                                      index));
 }
 
-bool PaintTiming::IsLCPMouseoverDispatchedRecently() {
+bool PaintTiming::IsLCPMouseoverDispatchedRecently() const {
   static constexpr base::TimeDelta kRecencyDelta = base::Milliseconds(500);
   return (
       !lcp_mouse_over_dispatch_time_.is_null() &&

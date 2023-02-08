@@ -71,7 +71,6 @@ export function compareTabDiscardsInfos(
         'loadingState',
         'discardCount',
         'utilityRank',
-        'reactivationScore',
         'lastActiveSeconds',
         'siteEngagementScore',
       ].includes(sortKey)) {
@@ -151,7 +150,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
       case LifecycleUnitVisibility.VISIBLE:
         return 'visible';
     }
-    assertNotReached('Unknown visibility: ' + visibility);
   }
 
   /**
@@ -170,7 +168,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
       case LifecycleUnitLoadingState.LOADED:
         return 'loaded';
     }
-    assertNotReached('Unknown loadingState: ' + loadingState);
   }
 
   /**
@@ -185,7 +182,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
       case LifecycleUnitDiscardReason.URGENT:
         return 'urgent';
     }
-    assertNotReached('Unknown discard reason: ' + reason);
   }
 
   /**
@@ -213,7 +209,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
         case LifecycleUnitVisibility.VISIBLE:
           return hasFocus ? 'active' : 'passive';
       }
-      assertNotReached('Unknown visibility: ' + visibility);
     }
 
     switch (state) {
@@ -232,7 +227,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
                           .toLocaleString()) :
                                                               '');
     }
-    assertNotReached('Unknown lifecycle state: ' + state);
   }
 
   /** Dispatches a request to update tabInfos_. */
@@ -253,16 +247,6 @@ class DiscardsTabElement extends DiscardsTabElementBase {
     }
     this.updateTableImpl_();
     this.updateTimer_ = setInterval(this.updateTableImpl_.bind(this), 1000);
-  }
-
-  /**
-   * Formats an items reactivation for display.
-   * @param item The item in question.
-   * @return The formatted reactivation score.
-   */
-  private getReactivationScore_(item: TabDiscardsInfo): string {
-    return item.hasReactivationScore ? item.reactivationScore.toFixed(4) :
-                                       'N/A';
   }
 
   /**

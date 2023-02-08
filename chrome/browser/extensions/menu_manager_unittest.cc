@@ -13,11 +13,10 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/menu_manager_test_observer.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -58,7 +57,7 @@ class MenuManagerTest : public testing::Test {
       : profile_(new TestingProfile()),
         manager_(profile_.get(),
                  ExtensionSystem::Get(profile_.get())->state_store()),
-        prefs_(base::ThreadTaskRunnerHandle::Get()),
+        prefs_(base::SingleThreadTaskRunner::GetCurrentDefault()),
         next_id_(1) {}
 
   MenuManagerTest(const MenuManagerTest&) = delete;
@@ -850,23 +849,23 @@ class MenuManagerStorageTest : public MenuManagerTest,
  protected:
   scoped_refptr<const Extension> AddEventPageExtension(
       const std::string& name) {
-    base::DictionaryValue dictionary;
-    TestExtensionPrefs::AddDefaultManifestKeys(name, &dictionary);
-    base::Value value(base::Value::Type::LIST);
+    base::Value::Dict dictionary;
+    TestExtensionPrefs::AddDefaultManifestKeys(name, dictionary);
+    base::Value::List value;
     value.Append("background.js");
-    dictionary.SetPath(manifest_keys::kBackgroundScripts, std::move(value));
-    dictionary.SetPath(manifest_keys::kBackgroundPersistent,
-                       base::Value(false));
+    dictionary.SetByDottedPath(manifest_keys::kBackgroundScripts,
+                               std::move(value));
+    dictionary.SetByDottedPath(manifest_keys::kBackgroundPersistent, false);
     return prefs_.AddExtensionWithManifest(dictionary,
                                            mojom::ManifestLocation::kInternal);
   }
 
   scoped_refptr<const Extension> AddServiceWorkerExtension(
       const std::string& name) {
-    base::DictionaryValue dictionary;
-    TestExtensionPrefs::AddDefaultManifestKeys(name, &dictionary);
-    dictionary.SetStringPath(manifest_keys::kBackgroundServiceWorkerScript,
-                             "background.js");
+    base::Value::Dict dictionary;
+    TestExtensionPrefs::AddDefaultManifestKeys(name, dictionary);
+    dictionary.SetByDottedPath(manifest_keys::kBackgroundServiceWorkerScript,
+                               "background.js");
     return prefs_.AddExtensionWithManifest(dictionary,
                                            mojom::ManifestLocation::kInternal);
   }

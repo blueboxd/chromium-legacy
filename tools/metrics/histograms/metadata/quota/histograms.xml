@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.AgeOfOriginInDays" units="days"
-    expires_after="2023-03-09">
+    expires_after="2023-05-14">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -53,13 +53,29 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.AvailableDiskSpace2" units="MB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
     Amount of free disk space for the storage directory. Logged when collecting
     usage information.
   </summary>
+</histogram>
+
+<histogram name="Quota.DatabaseMigration{VersionUpgrades}"
+    enum="BooleanSuccess" expires_after="2023-06-24">
+  <owner>ayui@chromium.org</owner>
+  <owner>chrome-owp-storage@google.com</owner>
+  <summary>
+    Records whether the database migration was successful. Recorded after
+    attempting to migrate the database.
+  </summary>
+  <token key="VersionUpgrades">
+    <variant name="FromV5ToV7"/>
+    <variant name="FromV6ToV7"/>
+    <variant name="FromV7ToV8"/>
+    <variant name="FromV8ToV9"/>
+  </token>
 </histogram>
 
 <histogram name="Quota.DiskspaceShortage" units="MB" expires_after="2023-04-30">
@@ -141,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.NumberOfEvictedBucketsPerRound" units="units"
-    expires_after="2023-04-04">
+    expires_after="2023-06-04">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>Number of evicted buckets per round.</summary>
@@ -188,7 +204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Quota.QuotaDatabaseError" enum="SqliteLoggedResultCode"
-    expires_after="2023-03-14">
+    expires_after="2023-05-14">
   <owner>ayui@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>Errors reported by SQLite while using the quota database.</summary>

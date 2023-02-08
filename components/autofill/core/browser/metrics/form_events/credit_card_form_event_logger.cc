@@ -19,7 +19,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
-#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
@@ -41,8 +41,11 @@ CreditCardFormEventLogger::~CreditCardFormEventLogger() = default;
 
 void CreditCardFormEventLogger::OnDidFetchSuggestion(
     const std::vector<Suggestion>& suggestions,
-    bool with_offer) {
+    bool with_offer,
+    const autofill_metrics::CardMetadataLoggingContext&
+        metadata_logging_context) {
   has_eligible_offer_ = with_offer;
+  metadata_logging_context_ = metadata_logging_context;
   suggestions_.clear();
   for (const auto& suggestion : suggestions)
     suggestions_.emplace_back(suggestion);
@@ -60,6 +63,8 @@ void CreditCardFormEventLogger::OnDidShowSuggestions(
   // Also perform the logging actions from the base class:
   FormEventLoggerBase::OnDidShowSuggestions(form, field, form_parsed_timestamp,
                                             sync_state, off_the_record);
+
+  suggestion_shown_timestamp_ = AutofillTickClock::NowTicks();
 }
 
 void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
@@ -97,6 +102,14 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
         Log(FORM_EVENT_VIRTUAL_CARD_SUGGESTION_SELECTED_ONCE, form);
       }
       break;
+  }
+
+  // Log the latency between suggestion being shown and suggestion being
+  // selected.
+  if (metadata_logging_context_.card_metadata_available) {
+    autofill_metrics::LogCardSuggestionAcceptanceLatencyMetric(
+        AutofillTickClock::NowTicks() - suggestion_shown_timestamp_,
+        metadata_logging_context_);
   }
 }
 
@@ -179,14 +192,6 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
 
   ++form_interaction_counts_.autofill_fills;
   UpdateFlowId();
-
-  if (autofill_assistant_intent() ==
-      autofill_assistant::AutofillAssistantIntent::CHROME_FAST_CHECKOUT) {
-    LOG_AF(client_->GetLogManager())
-        << LoggingScope::kFastCheckout << LogMessage::kFastCheckout
-        << "credit card form with signature " << form.FormSignatureAsStr()
-        << " was autofilled during a Fast Checkout run.";
-  }
 }
 
 void CreditCardFormEventLogger::LogCardUnmaskAuthenticationPromptShown(
@@ -288,13 +293,6 @@ void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
 void CreditCardFormEventLogger::OnLog(const std::string& name,
                                       FormEvent event,
                                       const FormStructure& form) const {
-  // Log in a different histogram for credit card forms on nonsecure pages so
-  // that form interactions on nonsecure pages can be analyzed on their own.
-  if (!is_context_secure_) {
-    base::UmaHistogramEnumeration(name + ".OnNonsecurePage", event,
-                                  NUM_FORM_EVENTS);
-  }
-
   // Log a different histogram for credit card forms with credit card offers
   // available so that selection rate with offers and rewards can be compared on
   // their own.

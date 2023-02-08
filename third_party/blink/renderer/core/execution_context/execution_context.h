@@ -94,6 +94,7 @@ class FrameOrWorkerScheduler;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
+class RuntimeFeatureStateOverrideContext;
 class PolicyContainer;
 class PublicURLManager;
 class ResourceFetcher;
@@ -171,6 +172,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   virtual bool IsLayoutWorkletGlobalScope() const { return false; }
   virtual bool IsPaintWorkletGlobalScope() const { return false; }
   virtual bool IsThreadedWorkletGlobalScope() const { return false; }
+  virtual bool IsShadowRealmGlobalScope() const { return false; }
   virtual bool IsJSExecutionForbidden() const { return false; }
 
   // TODO(crbug.com/1335924) Change this method to be pure-virtual and each
@@ -344,6 +346,11 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   OriginTrialContext* GetOriginTrialContext() const {
     return origin_trial_context_;
+  }
+
+  RuntimeFeatureStateOverrideContext* GetRuntimeFeatureStateOverrideContext()
+      const override {
+    return runtime_feature_state_override_context_;
   }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
@@ -539,6 +546,10 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   Member<OriginTrialContext> origin_trial_context_;
 
   Member<ContentSecurityPolicy> content_security_policy_;
+
+  Member<RuntimeFeatureStateOverrideContext>
+      runtime_feature_state_override_context_;
+
   bool require_safe_types_ = false;
 };
 

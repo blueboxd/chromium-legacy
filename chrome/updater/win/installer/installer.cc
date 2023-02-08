@@ -37,12 +37,12 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/installer/configuration.h"
 #include "chrome/updater/win/installer/installer_constants.h"
 #include "chrome/updater/win/installer/pe_resource.h"
 #include "chrome/updater/win/tag_extractor.h"
-#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -193,9 +193,12 @@ ProcessExitResult BuildCommandLineArguments(const wchar_t* cmd_line,
 
   // Append the command line arguments in `cmd_line` first.
   int num_args = 0;
-  wchar_t** const arg_list = ::CommandLineToArgvW(cmd_line, &num_args);
+  ScopedLocalAlloc scoped_arg_list(::CommandLineToArgvW(cmd_line, &num_args));
+  wchar_t** const arg_list =
+      reinterpret_cast<wchar_t** const>(scoped_arg_list.get());
   for (int i = 1; i != num_args; ++i) {
-    if (!args.append(L" ") || !args.append(arg_list[i])) {
+    if (!args.append(L" ") ||
+        !args.append(QuoteForCommandLineToArgvW(arg_list[i]).c_str())) {
       return ProcessExitResult(COMMAND_STRING_OVERFLOW);
     }
   }
@@ -338,7 +341,7 @@ ProcessExitResult InstallerMain(HMODULE module) {
 
   const UpdaterScope scope = GetUpdaterScopeForCommandLine(command_line);
 
-  if (!::IsUserAnAdmin() && scope == UpdaterScope::kSystem) {
+  if (!::IsUserAnAdmin() && IsSystemInstall(scope)) {
     ProcessExitResult run_elevated_result = HandleRunElevated(command_line);
     if (run_elevated_result.exit_code !=
             RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS ||
@@ -353,7 +356,7 @@ ProcessExitResult InstallerMain(HMODULE module) {
             base::SysUTF8ToWide(kCmdLinePrefersUser).c_str())) {
       return ProcessExitResult(COMMAND_STRING_OVERFLOW);
     }
-  } else if (::IsUserAnAdmin() && scope == UpdaterScope::kUser && IsUACOn()) {
+  } else if (::IsUserAnAdmin() && !IsSystemInstall(scope) && IsUACOn()) {
     return HandleRunDeElevated(command_line);
   }
 

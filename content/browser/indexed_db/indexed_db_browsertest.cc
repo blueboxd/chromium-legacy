@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/thread_test_helper.h"
@@ -57,6 +58,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/switches.h"
@@ -88,6 +90,13 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
 
     GetControlTest()->BindMockFailureSingletonForTesting(
         failure_injector_.BindNewPipeAndPassReceiver());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable experimental web platform features to enable write access.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
   void TearDownOnMainThread() override { failure_injector_.reset(); }
@@ -1053,7 +1062,7 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTestWithCorruption,
       ->proxy()
       ->UpdateOrCreateBucket(
           storage::BucketInitParams::ForDefaultBucket(storage_key),
-          base::SequencedTaskRunnerHandle::Get(),
+          base::SequencedTaskRunner::GetCurrentDefault(),
           base::BindLambdaForTesting(
               [&](storage::QuotaErrorOr<storage::BucketInfo> result) {
                 ASSERT_TRUE(result.ok());
@@ -1062,7 +1071,7 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTestWithCorruption,
               }));
   loop.Run();
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
-      &CorruptDBRequestHandler, base::SequencedTaskRunnerHandle::Get(),
+      &CorruptDBRequestHandler, base::SequencedTaskRunner::GetCurrentDefault(),
       bucket_locator, s_corrupt_db_test_prefix, this));
   embedded_test_server()->StartAcceptingConnections();
 
@@ -1340,6 +1349,21 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestBlobKeyCorruption, LifecycleTest) {
   }
 
   SimpleTest(embedded_test_server()->GetURL(test_file));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityStrict) {
+  FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_strict.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityRelaxed) {
+  FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_relaxed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityOverride) {
+  FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_override.html"));
 }
 
 }  // namespace content

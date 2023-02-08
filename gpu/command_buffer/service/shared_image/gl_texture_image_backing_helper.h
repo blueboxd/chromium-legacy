@@ -13,10 +13,32 @@
 
 namespace gpu {
 
-// Object used to restore state around GL upload and copy.
+// Sets GL state for readback.
+class ScopedPackState {
+ public:
+  explicit ScopedPackState(int pack_row_length = 0, int pack_alignment = 4);
+
+  ScopedPackState(const ScopedPackState&) = delete;
+  ScopedPackState& operator=(const ScopedPackState&) = delete;
+
+  ~ScopedPackState();
+
+ private:
+  const raw_ptr<gl::GLApi> api_;
+
+  GLint pack_buffer_ = 0;
+  absl::optional<gl::ScopedPixelStore> pack_alignment_;
+  absl::optional<gl::ScopedPixelStore> pack_row_length_;
+  absl::optional<gl::ScopedPixelStore> pack_skip_pixels_;
+  absl::optional<gl::ScopedPixelStore> pack_skip_rows_;
+};
+
+// Sets GL state for upload and copy.
 class ScopedUnpackState {
  public:
-  explicit ScopedUnpackState(bool uploading_data, int unpack_row_length = 0);
+  explicit ScopedUnpackState(bool uploading_data,
+                             int unpack_row_length = 0,
+                             int unpack_alignment = 4);
 
   ScopedUnpackState(const ScopedUnpackState&) = delete;
   ScopedUnpackState& operator=(const ScopedUnpackState&) = delete;
@@ -50,17 +72,6 @@ class ScopedUnpackState {
 // Common helper functions for GLTextureImageBacking and GLImageBacking.
 class GPU_GLES2_EXPORT GLTextureImageBackingHelper {
  public:
-  // These parameters are used to explicitly initialize a GL texture.
-  struct InitializeGLTextureParams {
-    GLenum target = 0;
-    GLenum internal_format = 0;
-    GLenum format = 0;
-    GLenum type = 0;
-    bool is_cleared = false;
-    bool framebuffer_attachment_angle = false;
-    bool has_immutable_storage = false;
-  };
-
   // At destriction time, restore `target`'s binding as of construction time. If
   // `new_binding` is non-zero, then bind `target` to it at construction time.
   // TODO(crbug.com/1367187): Fold into gl::ScopedRestoreTexture.
@@ -96,6 +107,7 @@ class GPU_GLES2_EXPORT GLTextureImageBackingHelper {
       MemoryTypeTracker* tracker,
       WGPUDevice device,
       WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats,
       SharedImageBacking* backing,
       bool use_passthrough);
 };

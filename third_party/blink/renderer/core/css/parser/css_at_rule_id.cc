@@ -18,8 +18,41 @@ CSSAtRuleID CssAtRuleID(StringView name) {
   if (EqualIgnoringASCIICase(name, "font-face"))
     return CSSAtRuleID::kCSSAtRuleFontFace;
   if (EqualIgnoringASCIICase(name, "font-palette-values")) {
-    if (RuntimeEnabledFeatures::FontPaletteEnabled())
-      return CSSAtRuleID::kCSSAtRuleFontPaletteValues;
+    return CSSAtRuleID::kCSSAtRuleFontPaletteValues;
+  }
+  if (EqualIgnoringASCIICase(name, "font-feature-values")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleFontFeatureValues;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "stylistic")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleStylistic;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "styleset")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleStyleset;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "character-variant")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleCharacterVariant;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "swash")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleSwash;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "ornaments")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleOrnaments;
+    return CSSAtRuleID::kCSSAtRuleInvalid;
+  }
+  if (EqualIgnoringASCIICase(name, "annotation")) {
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled())
+      return CSSAtRuleID::kCSSAtRuleAnnotation;
     return CSSAtRuleID::kCSSAtRuleInvalid;
   }
   if (EqualIgnoringASCIICase(name, "import"))
@@ -42,11 +75,8 @@ CSSAtRuleID CssAtRuleID(StringView name) {
   }
   if (EqualIgnoringASCIICase(name, "property"))
     return CSSAtRuleID::kCSSAtRuleProperty;
-  if (EqualIgnoringASCIICase(name, "container")) {
-    if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-      return CSSAtRuleID::kCSSAtRuleContainer;
-    return CSSAtRuleID::kCSSAtRuleInvalid;
-  }
+  if (EqualIgnoringASCIICase(name, "container"))
+    return CSSAtRuleID::kCSSAtRuleContainer;
   if (EqualIgnoringASCIICase(name, "counter-style"))
     return CSSAtRuleID::kCSSAtRuleCounterStyle;
   if (EqualIgnoringASCIICase(name, "scroll-timeline")) {
@@ -75,12 +105,18 @@ namespace {
 
 absl::optional<WebFeature> AtRuleFeature(CSSAtRuleID rule_id) {
   switch (rule_id) {
+    case CSSAtRuleID::kCSSAtRuleAnnotation:
+      return WebFeature::kCSSAtRuleAnnotation;
     case CSSAtRuleID::kCSSAtRuleCharset:
       return WebFeature::kCSSAtRuleCharset;
+    case CSSAtRuleID::kCSSAtRuleCharacterVariant:
+      return WebFeature::kCSSAtRuleCharacterVariant;
     case CSSAtRuleID::kCSSAtRuleFontFace:
       return WebFeature::kCSSAtRuleFontFace;
     case CSSAtRuleID::kCSSAtRuleFontPaletteValues:
       return WebFeature::kCSSAtRuleFontPaletteValues;
+    case CSSAtRuleID::kCSSAtRuleFontFeatureValues:
+      return WebFeature::kCSSAtRuleFontFeatureValues;
     case CSSAtRuleID::kCSSAtRuleImport:
       return WebFeature::kCSSAtRuleImport;
     case CSSAtRuleID::kCSSAtRuleKeyframes:
@@ -99,8 +135,16 @@ absl::optional<WebFeature> AtRuleFeature(CSSAtRuleID rule_id) {
       return WebFeature::kCSSAtRuleContainer;
     case CSSAtRuleID::kCSSAtRuleCounterStyle:
       return WebFeature::kCSSAtRuleCounterStyle;
+    case CSSAtRuleID::kCSSAtRuleOrnaments:
+      return WebFeature::kCSSAtRuleOrnaments;
     case CSSAtRuleID::kCSSAtRuleScope:
       return WebFeature::kCSSAtRuleScope;
+    case CSSAtRuleID::kCSSAtRuleStyleset:
+      return WebFeature::kCSSAtRuleStylistic;
+    case CSSAtRuleID::kCSSAtRuleStylistic:
+      return WebFeature::kCSSAtRuleStylistic;
+    case CSSAtRuleID::kCSSAtRuleSwash:
+      return WebFeature::kCSSAtRuleSwash;
     case CSSAtRuleID::kCSSAtRuleScrollTimeline:
       return WebFeature::kCSSAtRuleScrollTimeline;
     case CSSAtRuleID::kCSSAtRuleSupports:

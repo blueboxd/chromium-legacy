@@ -103,9 +103,8 @@ DOMStringList* Location::ancestorOrigins() const {
   auto* origins = MakeGarbageCollected<DOMStringList>();
   if (!IsAttached())
     return origins;
-  for (Frame* frame =
-           dom_window_->GetFrame()->Tree().Parent(FrameTreeBoundary::kFenced);
-       frame; frame = frame->Tree().Parent(FrameTreeBoundary::kFenced)) {
+  for (Frame* frame = dom_window_->GetFrame()->Tree().Parent(); frame;
+       frame = frame->Tree().Parent()) {
     origins->Append(
         frame->GetSecurityContext()->GetSecurityOrigin()->ToString());
   }
@@ -281,7 +280,11 @@ void Location::SetLocation(const String& url,
     activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
 
-  FrameLoadRequest request(incumbent_window, ResourceRequest(completed_url));
+  ResourceRequestHead resource_request(completed_url);
+  resource_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(incumbent_window->GetFrame()));
+
+  FrameLoadRequest request(incumbent_window, resource_request);
   request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)

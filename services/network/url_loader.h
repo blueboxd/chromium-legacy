@@ -15,7 +15,7 @@
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -96,25 +96,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       public mojom::AuthChallengeResponder,
       public mojom::ClientCertificateResponder {
  public:
-  // Enumeration for UMA histograms logged by LogConcerningRequestHeaders().
-  // Entries should not be renumbered and numeric values should never be reused.
-  // Please keep in sync with "NetworkServiceConcerningRequestHeaders" in
-  // src/tools/metrics/histograms/enums.xml.
-  enum class ConcerningHeaderId {
-    kConnection = 0,
-    kCookie = 1,
-    kCookie2 = 2,
-    kContentTransferEncoding = 3,
-    kDate = 4,
-    kExpect = 5,
-    kKeepAlive = 6,
-    kReferer = 7,
-    kTe = 8,
-    kTransferEncoding = 9,
-    kVia = 10,
-    kMaxValue = kVia,
-  };
-
   using DeleteCallback = base::OnceCallback<void(URLLoader* loader)>;
 
   // Holds a sync and async implementation of URLLoaderClient. The sync
@@ -287,10 +268,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   static URLLoader* ForRequest(const net::URLRequest& request);
 
   static const void* const kUserDataKey;
-
-  static void LogConcerningRequestHeaders(
-      const net::HttpRequestHeaders& request_headers,
-      bool added_during_redirect);
 
   static bool HasFetchStreamingUploadBody(const ResourceRequest*);
 
@@ -551,16 +528,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // The response body stream is open, but transferring data is paused.
   bool paused_reading_body_ = false;
 
-  // Whether to update |body_read_before_paused_| after the pending read is
-  // completed (or when the response body stream is closed).
-  bool update_body_read_before_paused_ = false;
-  // The number of bytes obtained by the reads initiated before the last
-  // PauseReadingBodyFromNet() call. -1 means the request hasn't been paused.
-  // The body may be read from cache or network. So even if this value is not
-  // -1, we still need to check whether it is from network before reporting it
-  // as BodyReadFromNetBeforePaused.
-  int64_t body_read_before_paused_ = -1;
-
   // This is used to compute the delta since last time received
   // encoded body size was reported to the client.
   int64_t reported_total_encoded_bytes_ = 0;
@@ -653,6 +620,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const bool third_party_cookies_enabled_;
 
   mojo::Remote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer_;
+
+  // Stores cookies passed from the browser process to later add them to the
+  // request. This prevents the network stack from overriding them.
+  bool allow_cookies_from_browser_ = false;
+  std::string cookies_from_browser_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 };

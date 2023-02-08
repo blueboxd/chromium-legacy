@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/syslog_logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chromeos/ash/components/network/cellular_esim_uninstall_handler.h"
@@ -57,8 +57,8 @@ DeviceCommandResetEuiccJob::CreateTimedResetMemorySuccessCallback(
     CallbackWithResult success_callback) {
   return base::BindOnce(
       [](CallbackWithResult success_callback, base::Time reset_euicc_start_time,
-         std::unique_ptr<ResultPayload> result_pay_load) -> void {
-        std::move(success_callback).Run(std::move(result_pay_load));
+         absl::optional<std::string> result_payload) {
+        std::move(success_callback).Run(std::move(result_payload));
         UMA_HISTOGRAM_MEDIUM_TIMES(
             "Network.Cellular.ESim.Policy.ResetEuicc.Duration",
             base::Time::Now() - reset_euicc_start_time);
@@ -107,30 +107,27 @@ void DeviceCommandResetEuiccJob::OnResetMemoryResponse(
 void DeviceCommandResetEuiccJob::RunResultCallback(
     CallbackWithResult callback) {
   // Post |callback| to ensure async execution as required for RunImpl.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), /*result_payload=*/nullptr));
+      base::BindOnce(std::move(callback), /*result_payload=*/absl::nullopt));
 }
 
 void DeviceCommandResetEuiccJob::ShowResetEuiccNotification() {
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kResetEuiccNotificationId,
-          l10n_util::GetStringUTF16(
-              IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_TITLE),
-          l10n_util::GetStringUTF16(
-              IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_MESSAGE),
-          /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierESimPolicy,
-              ash::NotificationCatalogName::kDeviceCommandReset),
-          message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::DoNothingAs<void()>()),
-          /*small_image=*/gfx::VectorIcon(),
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  SystemNotificationHelper::GetInstance()->Display(*notification);
+  message_center::Notification notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, kResetEuiccNotificationId,
+      l10n_util::GetStringUTF16(IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_MESSAGE),
+      /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT, kNotifierESimPolicy,
+          ash::NotificationCatalogName::kDeviceCommandReset),
+      message_center::RichNotificationData(),
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::DoNothingAs<void()>()),
+      /*small_image=*/gfx::VectorIcon(),
+      message_center::SystemNotificationWarningLevel::NORMAL);
+  SystemNotificationHelper::GetInstance()->Display(notification);
 }
 
 }  // namespace policy

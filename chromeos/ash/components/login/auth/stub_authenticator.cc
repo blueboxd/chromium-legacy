@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/notreached.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/cryptohome_key_constants.h"
 
@@ -26,7 +26,7 @@ StubAuthenticator::StubAuthenticator(AuthStatusConsumer* consumer,
                                      const UserContext& expected_user_context)
     : Authenticator(consumer),
       expected_user_context_(expected_user_context),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+      task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {}
 
 void StubAuthenticator::CompleteLogin(
     std::unique_ptr<UserContext> user_context) {
@@ -197,6 +197,11 @@ void StubAuthenticator::ResyncEncryptedData(
       FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
 }
 
+void StubAuthenticator::LoginAuthenticated(
+    std::unique_ptr<UserContext> user_context) {
+  consumer_->OnAuthSuccess(*user_context);
+}
+
 void StubAuthenticator::SetExpectedCredentials(
     const UserContext& user_context) {
   expected_user_context_ = user_context;
@@ -214,6 +219,7 @@ UserContext StubAuthenticator::ExpectedUserContextWithTransformedKey() const {
     cryptohome::AuthFactorsSet factors;
     factors.Put(cryptohome::AuthFactorType::kPassword);
     factors.Put(cryptohome::AuthFactorType::kPin);
+    factors.Put(cryptohome::AuthFactorType::kRecovery);
     cryptohome::AuthFactorRef ref(
         cryptohome::AuthFactorType::kPassword,
         cryptohome::KeyLabel{kCryptohomeGaiaKeyLabel});
@@ -233,8 +239,9 @@ void StubAuthenticator::OnPasswordChangeDetected() {
 void StubAuthenticator::OnOldEncryptionDetected() {
   // The user is expected to finish login using transformed key.
   UserContext user_context = ExpectedUserContextWithTransformedKey();
-  consumer_->OnOldEncryptionDetected(user_context,
-                                     has_incomplete_encryption_migration_);
+  consumer_->OnOldEncryptionDetected(
+      std::make_unique<UserContext>(user_context),
+      has_incomplete_encryption_migration_);
 }
 
 }  // namespace ash

@@ -7,17 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/app/server/linux/update_service_stub.h"
+#include "chrome/updater/app/server/posix/update_service_internal_stub.h"
 #include "chrome/updater/linux/ipc_constants.h"
+#include "chrome/updater/posix/setup.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/platform/named_platform_channel.h"
-#include "mojo/public/cpp/system/invitation.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace updater {
 
@@ -26,29 +26,33 @@ AppServerLinux::~AppServerLinux() = default;
 
 void AppServerLinux::ActiveDuty(scoped_refptr<UpdateService> update_service) {
   active_duty_stub_ = std::make_unique<UpdateServiceStub>(
-      std::move(update_service), updater_scope());
+      std::move(update_service), updater_scope(),
+      base::BindRepeating(&AppServerLinux::TaskStarted, this),
+      base::BindRepeating(&AppServerLinux::TaskCompleted, this));
 }
 
-// TODO(crbug.com/1276117) - implement.
 void AppServerLinux::ActiveDutyInternal(
     scoped_refptr<UpdateServiceInternal> update_service_internal) {
-  NOTIMPLEMENTED();
+  active_duty_internal_stub_ = std::make_unique<UpdateServiceInternalStub>(
+      std::move(update_service_internal), updater_scope(),
+      base::BindRepeating(&AppServerLinux::TaskStarted, this),
+      base::BindRepeating(&AppServerLinux::TaskCompleted, this));
 }
 
 bool AppServerLinux::SwapInNewVersion() {
-  NOTIMPLEMENTED();
-  return false;
+  // TODO(crbug.com/1276117): Install systemd units.
+  return true;
 }
 
 bool AppServerLinux::MigrateLegacyUpdaters(
     base::RepeatingCallback<void(const RegistrationRequest&)>
         register_callback) {
-  NOTIMPLEMENTED();
-  return false;
+  // There is not a legacy update client for Linux.
+  return true;
 }
 
 void AppServerLinux::UninstallSelf() {
-  NOTIMPLEMENTED();
+  UninstallCandidate(updater_scope());
 }
 
 scoped_refptr<App> MakeAppServer() {

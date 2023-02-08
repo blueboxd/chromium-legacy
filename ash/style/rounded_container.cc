@@ -6,7 +6,6 @@
 
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
-#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/background.h"
@@ -27,6 +26,8 @@ RoundedContainer::RoundedContainer(Behavior corner_behavior)
     : corner_behavior_(corner_behavior) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+  SetBackground(
+      views::CreateThemedSolidBackground(cros_tokens::kCrosSysSystemOnBase));
 
   SetBorderInsets(kBorderInsets);
 
@@ -37,16 +38,14 @@ RoundedContainer::RoundedContainer(Behavior corner_behavior)
 
 RoundedContainer::~RoundedContainer() = default;
 
-void RoundedContainer::SetBorderInsets(const gfx::Insets& insets) {
-  SetBorder(views::CreateEmptyBorder(insets));
+void RoundedContainer::SetBehavior(Behavior behavior) {
+  corner_behavior_ = behavior;
+  layer()->SetRoundedCornerRadius(GetRoundedCorners());
+  SchedulePaint();
 }
 
-void RoundedContainer::OnThemeChanged() {
-  views::View::OnThemeChanged();
-
-  SkColor background_color =
-      GetColorProvider()->GetColor(cros_tokens::kCrosSysSystemOnBase);
-  SetBackground(views::CreateSolidBackground(background_color));
+void RoundedContainer::SetBorderInsets(const gfx::Insets& insets) {
+  SetBorder(views::CreateEmptyBorder(insets));
 }
 
 gfx::RoundedCornersF RoundedContainer::GetRoundedCorners() {

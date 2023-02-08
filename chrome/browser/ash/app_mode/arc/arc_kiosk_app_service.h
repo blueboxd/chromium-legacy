@@ -7,14 +7,14 @@
 
 #include "base/containers/flat_set.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ash/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -126,11 +126,5 @@ class ArcKioskAppService : public KeyedService,
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the //chrome/browser/chromeos
-// source code migration is finished.
-namespace chromeos {
-using ::ash::ArcKioskAppService;
-}
 
 #endif  // CHROME_BROWSER_ASH_APP_MODE_ARC_ARC_KIOSK_APP_SERVICE_H_

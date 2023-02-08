@@ -30,18 +30,17 @@ namespace blink {
 
 namespace {
 
-ScrollOrientation ToPhysicalScrollOrientation(
-    ScrollTimeline::ScrollDirection direction,
-    const LayoutBox& source_box) {
+ScrollOrientation ToPhysicalScrollOrientation(ScrollAxis axis,
+                                              const LayoutBox& source_box) {
   bool is_horizontal = source_box.IsHorizontalWritingMode();
-  switch (direction) {
-    case ScrollTimeline::ScrollDirection::kBlock:
+  switch (axis) {
+    case ScrollAxis::kBlock:
       return is_horizontal ? kVerticalScroll : kHorizontalScroll;
-    case ScrollTimeline::ScrollDirection::kInline:
+    case ScrollAxis::kInline:
       return is_horizontal ? kHorizontalScroll : kVerticalScroll;
-    case ScrollTimeline::ScrollDirection::kHorizontal:
+    case ScrollAxis::kHorizontal:
       return kHorizontalScroll;
-    case ScrollTimeline::ScrollDirection::kVertical:
+    case ScrollAxis::kVertical:
       return kVerticalScroll;
   }
 }
@@ -62,13 +61,8 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
                                         ? absl::make_optional(options->source())
                                         : absl::nullopt;
 
-  // TODO(crbug.com/1060384): Update to axis in alignment with the spec rewrite.
-  ScrollDirection orientation;
-  if (!StringToScrollDirection(options->orientation(), orientation)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Invalid orientation");
-    return nullptr;
-  }
+  ScrollAxis axis =
+      options->hasAxis() ? options->axis().AsEnum() : ScrollAxis::kBlock;
 
   // The scrollingElement depends on style/layout-tree in quirks mode. Update
   // such that subsequent calls to ScrollingElementNoLayout returns up-to-date
@@ -77,50 +71,28 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     document.UpdateStyleAndLayoutTree();
 
   return Create(&document, source.value_or(document.ScrollingElementNoLayout()),
-                orientation);
+                axis);
 }
 
 ScrollTimeline* ScrollTimeline::Create(Document* document,
                                        Element* source,
-                                       ScrollDirection orientation) {
+                                       ScrollAxis axis) {
   ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      document, ReferenceType::kSource, source, orientation);
+      document, ReferenceType::kSource, source, axis);
   scroll_timeline->UpdateSnapshot();
 
   return scroll_timeline;
 }
 
-bool ScrollTimeline::StringToScrollDirection(
-    String scroll_direction,
-    ScrollTimeline::ScrollDirection& result) {
-  if (scroll_direction == "block") {
-    result = ScrollDirection::kBlock;
-    return true;
-  }
-  if (scroll_direction == "inline") {
-    result = ScrollDirection::kInline;
-    return true;
-  }
-  if (scroll_direction == "horizontal") {
-    result = ScrollDirection::kHorizontal;
-    return true;
-  }
-  if (scroll_direction == "vertical") {
-    result = ScrollDirection::kVertical;
-    return true;
-  }
-  return false;
-}
-
 ScrollTimeline::ScrollTimeline(Document* document,
                                ReferenceType reference_type,
                                Element* reference,
-                               ScrollDirection orientation)
+                               ScrollAxis axis)
     : AnimationTimeline(document),
       ScrollSnapshotClient(document->GetFrame()),
       reference_type_(reference_type),
       reference_element_(reference),
-      orientation_(orientation) {
+      axis_(axis) {
   UpdateResolvedSource();
 }
 
@@ -203,8 +175,7 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() {
          scrollable_area->MinimumScrollOffset().x() == 0);
 
   ScrollOffset scroll_offset = scrollable_area->GetScrollOffset();
-  auto physical_orientation =
-      ToPhysicalScrollOrientation(orientation_, *layout_box);
+  auto physical_orientation = ToPhysicalScrollOrientation(axis_, *layout_box);
   double current_offset = (physical_orientation == kHorizontalScroll)
                               ? scroll_offset.x()
                               : scroll_offset.y();
@@ -218,12 +189,15 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() {
       CalculateOffsets(scrollable_area, physical_orientation);
   DCHECK(scroll_offsets);
 
-  // TODO(crbug.com/1338167): Update once
-  // github.com/w3c/csswg-drafts/issues/7401 is resolved.
-  double progress = (scroll_offsets->start == scroll_offsets->end)
-                        ? 1
-                        : (current_offset - scroll_offsets->start) /
-                              (scroll_offsets->end - scroll_offsets->start);
+  // Make the timeline inactive when the scroll offset range is zero.
+  // github.com/w3c/csswg-drafts/issues/7401
+  if (std::abs(scroll_offsets->end - scroll_offsets->start) < 1) {
+    return {TimelinePhase::kInactive, /*current_time*/ absl::nullopt,
+            scroll_offsets};
+  }
+
+  double progress = (current_offset - scroll_offsets->start) /
+                    (scroll_offsets->end - scroll_offsets->start);
 
   base::TimeDelta duration = base::Seconds(GetDuration()->InSecondsF());
   absl::optional<base::TimeDelta> calculated_current_time =
@@ -294,7 +268,14 @@ void ScrollTimeline::ScheduleNextService() {
 }
 
 void ScrollTimeline::UpdateSnapshot() {
-  timeline_state_snapshotted_ = ComputeTimelineState();
+  auto state = ComputeTimelineState();
+  // TODO(crbug.com/1395378): Check for change in target/container size as well
+  // as scroll_offsets.
+  if (timeline_state_snapshotted_ == state)
+    return;
+
+  timeline_state_snapshotted_ = state;
+  InvalidateEffectTargetStyle();
 }
 
 Element* ScrollTimeline::source() const {
@@ -330,22 +311,6 @@ Element* ScrollTimeline::SourceInternal() const {
   return nullptr;
 }
 
-String ScrollTimeline::orientation() {
-  switch (orientation_) {
-    case ScrollDirection::kBlock:
-      return "block";
-    case ScrollDirection::kInline:
-      return "inline";
-    case ScrollDirection::kHorizontal:
-      return "horizontal";
-    case ScrollDirection::kVertical:
-      return "vertical";
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-
 void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
                                             double& current_offset,
                                             double& max_offset) const {
@@ -369,8 +334,7 @@ void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
   ScrollOffset scroll_dimensions = scrollable_area->MaximumScrollOffset() -
                                    scrollable_area->MinimumScrollOffset();
 
-  auto physical_orientation =
-      ToPhysicalScrollOrientation(orientation_, *layout_box);
+  auto physical_orientation = ToPhysicalScrollOrientation(axis_, *layout_box);
 
   if (physical_orientation == kHorizontalScroll) {
     current_offset = scroll_offset.x();
@@ -381,7 +345,7 @@ void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
   }
   // When using a rtl direction, current_offset grows correctly from 0 to
   // max_offset, but is negative. Since our offsets are all just deltas along
-  // the orientation direction, we can just take the absolute current_offset and
+  // the axis direction, we can just take the absolute current_offset and
   // use that everywhere.
   current_offset = std::abs(current_offset);
 }

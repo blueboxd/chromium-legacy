@@ -16,7 +16,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/no_destructor.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/keyboard_delegate.h"
@@ -182,15 +182,22 @@ Keyboard::Keyboard(std::unique_ptr<KeyboardDelegate> delegate, Seat* seat)
       expiration_delay_for_pending_key_acks_(
           base::Milliseconds(kExpirationDelayForPendingKeyAcksMs)) {
   seat_->AddObserver(this, kKeyboardSeatObserverPriority);
-  ash::KeyboardController::Get()->AddObserver(this);
+  auto* keyboard_controller = ash::KeyboardController::Get();
+  keyboard_controller->AddObserver(this);
   ash::ImeControllerImpl* ime_controller = ash::Shell::Get()->ime_controller();
   ime_controller->AddObserver(this);
 
   delegate_->OnKeyboardLayoutUpdated(seat_->xkb_tracker()->GetKeymap().get());
   OnSurfaceFocused(seat_->GetFocusedSurface(), nullptr,
                    !!seat_->GetFocusedSurface());
-  OnKeyRepeatSettingsChanged(
-      ash::KeyboardController::Get()->GetKeyRepeatSettings());
+
+  // Send the initial key repeat settings, iff it is already initialized.
+  // If not, that means Profile is not yet initialized, thus skipping,
+  // because when it is initialized, OnKeyRepeatSettingsChanged is called
+  // by KeyboardController.
+  auto key_repeat_settings = keyboard_controller->GetKeyRepeatSettings();
+  if (key_repeat_settings.has_value())
+    OnKeyRepeatSettingsChanged(key_repeat_settings.value());
 }
 
 Keyboard::~Keyboard() {
@@ -499,7 +506,7 @@ void Keyboard::ProcessExpiredPendingKeyAcks() {
 void Keyboard::ScheduleProcessExpiredPendingKeyAcks(base::TimeDelta delay) {
   DCHECK(!process_expired_pending_key_acks_pending_);
   process_expired_pending_key_acks_pending_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&Keyboard::ProcessExpiredPendingKeyAcks,
                      weak_ptr_factory_.GetWeakPtr()),

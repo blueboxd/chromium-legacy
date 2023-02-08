@@ -7,12 +7,12 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image/gl_common_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/scoped_egl_image.h"
 
 namespace gl {
 class GLFenceEGL;
@@ -24,10 +24,6 @@ class GpuDriverBugWorkarounds;
 class GLTextureImageRepresentation;
 class SkiaImageRepresentation;
 struct Mailbox;
-
-namespace gles2 {
-class NativeImageBuffer;
-}  // namespace gles2
 
 // Implementation of SharedImageBacking that is used to create EGLImage targets
 // from the same EGLImage object. Hence all the representations created from
@@ -100,8 +96,7 @@ class EGLImageBacking : public ClearTrackingSharedImageBacking {
   scoped_refptr<TextureHolder> source_texture_holder_;
   raw_ptr<gl::GLApi> created_on_context_;
 
-  // This class encapsulates the EGLImage object for android.
-  scoped_refptr<gles2::NativeImageBuffer> egl_image_buffer_ GUARDED_BY(lock_);
+  ui::ScopedEGLImage egl_image_ GUARDED_BY(lock_);
 
   // All reads and writes must wait for exiting writes to complete.
   // TODO(vikassoni): Use SharedGLFenceEGL here instead of GLFenceEGL here in

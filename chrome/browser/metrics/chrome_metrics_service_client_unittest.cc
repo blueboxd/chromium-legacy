@@ -39,8 +39,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #endif
 
 class TestChromeMetricsServiceClient : public ChromeMetricsServiceClient {
@@ -88,13 +88,13 @@ class ChromeMetricsServiceClientTest : public testing::Test {
     // ChromeOs Metrics Provider require g_login_state and power manager client
     // initialized before they can be instantiated.
     chromeos::PowerManagerClient::InitializeFake();
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   }
 
   void TearDown() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     // ChromeMetricsServiceClient::Initialize() initializes
@@ -178,7 +178,7 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   size_t expected_providers = 2;
 
   // This is the number of metrics providers that are outside any #if macros.
-  expected_providers += 23;
+  expected_providers += 22;
 
   int sample_rate;
   if (ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(
@@ -251,6 +251,11 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   // DesktopSessionMetricsProvider
   expected_providers += 1;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // BluetoothMetricsProvider
+  expected_providers += 1;
+#endif
 
   std::unique_ptr<TestChromeMetricsServiceClient>
       chrome_metrics_service_client =

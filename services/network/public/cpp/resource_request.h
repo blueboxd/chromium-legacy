@@ -10,7 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/debug/crash_logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/isolation_info.h"
@@ -62,6 +62,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
     net::IsolationInfo isolation_info;
     bool disable_secure_dns = false;
     bool has_user_activation = false;
+    bool allow_cookies_from_browser = false;
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer;
     mojo::PendingRemote<mojom::URLLoaderNetworkServiceObserver>
         url_loader_network_observer;

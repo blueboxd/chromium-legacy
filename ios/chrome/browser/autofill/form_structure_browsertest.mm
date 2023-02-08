@@ -207,15 +207,15 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        // TODO(crbug.com/1150895) Remove once launched.
        features::kAutofillParsingPatternProvider,
        features::kAutofillPageLanguageDetection,
-       // TODO(crbug.com/1190334): Remove once launched.
-       autofill::features::kAutofillParseMerchantPromoCodeFields,
        // TODO(crbug.com/1335549): Remove once launched.
        features::kAutofillParseIBANFields,
        // TODO(crbug.com/1311937): Remove once launched.
        features::kAutofillEnableSupportForPhoneNumberTrunkTypes,
        features::kAutofillInferCountryCallingCode,
        // TODO(crbug.com/1352826): Remove once launched.
-       features::kAutofillMin3FieldTypesForLocalHeuristics},
+       features::kAutofillMin3FieldTypesForLocalHeuristics,
+       // TODO(crbug.com/1355264): Remove once launched.
+       features::kAutofillLabelAffixRemoval},
       // Disabled
       // TODO(crbug.com/1311937): Remove once launched.
       // This feature is part of the AutofillRefinedPhoneNumberTypes rollout. As

@@ -41,7 +41,6 @@
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
-#include "components/app_restore/tab_group_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
@@ -162,7 +161,7 @@ void ShowUnavailableAppToast(
   ash::ToastData toast_data = {/*id=*/kAppNotAvailableTemplateToastName,
                                ash::ToastCatalogName::kAppNotAvailable,
                                /*text=*/toast_string};
-  ash::ToastManager::Get()->Show(toast_data);
+  ash::ToastManager::Get()->Show(std::move(toast_data));
 }
 
 // Creates a callback for when a favicon image is retrieved which creates a
@@ -313,7 +312,7 @@ void ChromeDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
     const std::string* lacros_window_id =
         window->GetProperty(app_restore::kLacrosWindowId);
     DCHECK(lacros_window_id);
-    const_cast<ChromeDesksTemplatesDelegate*>(this)->GetLacrosChromeUrls(
+    const_cast<ChromeDesksTemplatesDelegate*>(this)->GetLacrosChromeInfo(
         std::move(callback), *lacros_window_id, std::move(app_launch_info));
     return;
   }
@@ -438,7 +437,7 @@ std::string ChromeDesksTemplatesDelegate::GetAppShortName(
   return name;
 }
 
-void ChromeDesksTemplatesDelegate::OnLacrosChromeUrlsReturned(
+void ChromeDesksTemplatesDelegate::OnLacrosChromeInfoReturned(
     GetAppLaunchDataCallback callback,
     std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info,
     crosapi::mojom::DeskTemplateStatePtr state) {
@@ -447,7 +446,7 @@ void ChromeDesksTemplatesDelegate::OnLacrosChromeUrlsReturned(
   std::move(callback).Run(std::move(app_launch_info));
 }
 
-void ChromeDesksTemplatesDelegate::GetLacrosChromeUrls(
+void ChromeDesksTemplatesDelegate::GetLacrosChromeInfo(
     GetAppLaunchDataCallback callback,
     const std::string& window_unique_id,
     std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info) {
@@ -459,9 +458,9 @@ void ChromeDesksTemplatesDelegate::GetLacrosChromeUrls(
     return;
   }
 
-  browser_manager->GetTabStripModelUrls(
+  browser_manager->GetBrowserInformation(
       window_unique_id,
-      base::BindOnce(&ChromeDesksTemplatesDelegate::OnLacrosChromeUrlsReturned,
+      base::BindOnce(&ChromeDesksTemplatesDelegate::OnLacrosChromeInfoReturned,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      std::move(app_launch_info)));
 }

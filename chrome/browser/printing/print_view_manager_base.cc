@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -541,6 +540,9 @@ void PrintViewManagerBase::GetDefaultPrintSettings(
   }
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
   if (printing::features::kEnableOopPrintDriversJobPrint.Get() &&
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+      !snapshotting_for_content_analysis_ &&
+#endif
       !service_manager_client_id_.has_value()) {
     // Renderer process has requested settings outside of the expected setup.
     GetDefaultPrintSettingsReply(std::move(callback),
@@ -703,7 +705,7 @@ void PrintViewManagerBase::RemoveObserver(Observer& observer) {
 }
 
 void PrintViewManagerBase::ShowInvalidPrinterSettingsError() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ShowWarningMessageBox,
                                 l10n_util::GetStringUTF16(
                                     IDS_PRINT_INVALID_PRINTER_SETTINGS)));

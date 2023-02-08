@@ -9,7 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/third_party/quiche/src/quiche/common/platform/api/quiche_mem_slice.h"
@@ -27,7 +27,6 @@ net::WebTransportParameters CreateParameters(
     const std::vector<mojom::WebTransportCertificateFingerprintPtr>&
         fingerprints) {
   net::WebTransportParameters params;
-  params.enable_quic_transport = false;
   params.enable_web_transport_http3 = true;
 
   for (const auto& fingerprint : fingerprints) {
@@ -71,11 +70,11 @@ class WebTransport::Stream final {
 
     // Visitor implementation:
     void OnCanRead() override {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&Stream::Receive, stream_));
     }
     void OnCanWrite() override {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&Stream::Send, stream_));
     }
     void OnResetStreamReceived(quic::WebTransportStreamError error) override {
@@ -177,7 +176,7 @@ class WebTransport::Stream final {
 
   ~Stream() {
     auto* stream = incoming_ ? incoming_.get() : outgoing_.get();
-    if (!stream || transport_->closing_ || transport_->torn_down_) {
+    if (!stream) {
       return;
     }
     stream->MaybeResetDueToStreamObjectGone();
@@ -350,7 +349,7 @@ class WebTransport::Stream final {
       return;
     }
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&Stream::Dispose, weak_factory_.GetWeakPtr()));
   }
@@ -399,10 +398,7 @@ WebTransport::WebTransport(
   transport_->Connect();
 }
 
-WebTransport::~WebTransport() {
-  // Ensure that we ignore all callbacks while mid-destruction.
-  torn_down_ = true;
-}
+WebTransport::~WebTransport() = default;
 
 void WebTransport::SendDatagram(base::span<const uint8_t> data,
                                 base::OnceCallback<void(bool)> callback) {
@@ -731,7 +727,7 @@ void WebTransport::TearDown() {
   handshake_client_.reset();
   client_.reset();
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebTransport::Dispose, weak_factory_.GetWeakPtr()));
 }

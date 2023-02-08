@@ -94,7 +94,7 @@ That said, the `chrome-untrusted://` scheme is an implementation detail of the W
 const char kUntrustedExampleHost[] = "untrusted-example";
 const char kUntrustedExampleURL[] = "chrome-untrusted://untrusted-example";
 
-class UntrustedExampleUIConfig : public ui::WebUIConfig {
+class UntrustedExampleUIConfig : public content::WebUIConfig {
  public:
   UntrustedExampleUIConfig()
     // Set scheme and host.
@@ -132,7 +132,7 @@ class UntrustedExampleUI : public ui::UntrustedWebUIController {
 
 2. Register the WebUIConfig
 
-Add the `WebUIConfig` to the list of WebUIConfigs in [`ChromeUntrustedWebUIControllerFactory`](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/webui/chrome_untrusted_web_ui_controller_factory.cc).
+Add the `WebUIConfig` to the appropriate list of WebUIConfigs in [`chrome_untrusted_web_ui_configs`](https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/ui/webui/chrome_untrusted_web_ui_configs.cc).
 
 ```cpp
 register_config(std::make_unique<chromeos::UntrustedExampleUIConfig>());

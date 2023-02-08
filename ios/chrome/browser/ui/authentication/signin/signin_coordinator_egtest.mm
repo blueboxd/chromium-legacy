@@ -242,7 +242,8 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Add a bookmark after sync is initialized.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForSyncEngineInitialized:YES
+                                   syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [BookmarkEarlGrey setupStandardBookmarks];
 
@@ -278,7 +279,8 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGreyUI signinWithFakeIdentity:fakeSupervisedIdentity];
 
   // Add a bookmark after sync is initialized.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForSyncEngineInitialized:YES
+                                   syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [BookmarkEarlGrey setupStandardBookmarks];
 
@@ -293,8 +295,7 @@ void ExpectSyncConsentHistogram(
 
 // Tests that signing out a supervised user account with the clear local data
 // option is honored.
-// (crbug.com/1368899#c15) Consistently failing on ios-simulator-noncq
-- (void)DISABLED_testSignOutWithClearDataForSupervisedUser {
+- (void)testSignOutWithClearDataForSupervisedUser {
   // Sign in with a fake supervised identity.
   FakeSystemIdentity* fakeSupervisedIdentity =
       [FakeSystemIdentity fakeIdentity1];
@@ -302,7 +303,8 @@ void ExpectSyncConsentHistogram(
   [SigninEarlGreyUI signinWithFakeIdentity:fakeSupervisedIdentity];
 
   // Add a bookmark after sync is initialized.
-  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForSyncEngineInitialized:YES
+                                   syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey waitForBookmarksToFinishLoading];
   [BookmarkEarlGrey setupStandardBookmarks];
 

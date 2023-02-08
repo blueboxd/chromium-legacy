@@ -49,33 +49,27 @@ mojo_root_folder =
     "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/side_panel"
 
 copy("copy_mojo_bookmarks") {
-  deps = [
-    "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings_webui_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/side_panel/bookmarks:mojo_bindings_js__generator" ]
   sources = [ "$mojo_root_folder/bookmarks/bookmarks.mojom-webui.js" ]
   outputs =
       [ "$target_gen_dir/$preprocess_folder/bookmarks/{{source_file_part}}" ]
 }
 
 copy("copy_mojo_reading_list") {
-  deps = [
-    "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings_webui_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/side_panel/reading_list:mojo_bindings_js__generator" ]
   sources = [ "$mojo_root_folder/reading_list/reading_list.mojom-webui.js" ]
   outputs =
       [ "$target_gen_dir/$preprocess_folder/reading_list/{{source_file_part}}" ]
 }
 
 copy("copy_mojo_shopping_list") {
-  deps = [ "//components/commerce/core/mojom:mojo_bindings_webui_js" ]
+  deps = [ "//components/commerce/core/mojom:mojo_bindings_js__generator" ]
   sources = [ "$root_gen_dir/mojom-webui/components/commerce/core/mojom/shopping_list.mojom-webui.js" ]
   outputs = [ "$target_gen_dir/$preprocess_folder/bookmarks/commerce/{{source_file_part}}" ]
 }
 
 copy("copy_mojo_user_notes") {
-  deps = [
-    "//chrome/browser/ui/webui/side_panel/user_notes:mojo_bindings_webui_js",
-  ]
+  deps = [ "//chrome/browser/ui/webui/side_panel/user_notes:mojo_bindings_js__generator" ]
   sources = [ "$mojo_root_folder/user_notes/user_notes.mojom-webui.js" ]
   outputs =
       [ "$target_gen_dir/$preprocess_folder/user_notes/{{source_file_part}}" ]
@@ -93,10 +87,12 @@ ts_library("build_ts") {
     "//tools/typescript/definitions/bookmarks.d.ts",
     "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/metrics_private.d.ts",
+    "//tools/typescript/definitions/tabs.d.ts",
   ]
   deps = [
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/help_bubble:build_ts",
     "//ui/webui/resources/cr_components/history_clusters:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
@@ -113,6 +109,8 @@ ts_library("build_ts") {
 generate_grd("build_grd") {
   input_files = [
     "history_clusters/history_clusters.html",
+    "images/bookmarks_empty_dark.svg",
+    "images/bookmarks_empty.svg",
     "images/read_later_empty_dark.svg",
     "images/read_later_empty.svg",
     "reading_list/reading_list.html",

@@ -71,37 +71,6 @@ void PublisherBase::Publish(
   }
 }
 
-void PublisherBase::ModifyCapabilityAccess(
-    const mojo::RemoteSet<apps::mojom::Subscriber>& subscribers,
-    const std::string& app_id,
-    absl::optional<bool> accessing_camera,
-    absl::optional<bool> accessing_microphone) {
-  if (!accessing_camera.has_value() && !accessing_microphone.has_value()) {
-    return;
-  }
-
-  for (auto& subscriber : subscribers) {
-    std::vector<apps::mojom::CapabilityAccessPtr> capability_accesses;
-    auto capability_access = apps::mojom::CapabilityAccess::New();
-    capability_access->app_id = app_id;
-
-    if (accessing_camera.has_value()) {
-      capability_access->camera = accessing_camera.value()
-                                      ? apps::mojom::OptionalBool::kTrue
-                                      : apps::mojom::OptionalBool::kFalse;
-    }
-
-    if (accessing_microphone.has_value()) {
-      capability_access->microphone = accessing_microphone.value()
-                                          ? apps::mojom::OptionalBool::kTrue
-                                          : apps::mojom::OptionalBool::kFalse;
-    }
-
-    capability_accesses.push_back(std::move(capability_access));
-    subscriber->OnCapabilityAccesses(std::move(capability_accesses));
-  }
-}
-
 void PublisherBase::PauseApp(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
@@ -111,20 +80,6 @@ void PublisherBase::UnpauseApp(const std::string& app_id) {
 }
 
 void PublisherBase::StopApp(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void PublisherBase::GetMenuModel(const std::string& app_id,
-                                 apps::mojom::MenuType menu_type,
-                                 int64_t display_id,
-                                 GetMenuModelCallback callback) {
-  NOTIMPLEMENTED();
-}
-
-void PublisherBase::ExecuteContextMenuCommand(const std::string& app_id,
-                                              int command_id,
-                                              const std::string& shortcut_id,
-                                              int64_t display_id) {
   NOTIMPLEMENTED();
 }
 

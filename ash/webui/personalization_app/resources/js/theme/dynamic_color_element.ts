@@ -13,15 +13,22 @@ import 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
+import {hexColorToSkColor} from 'chrome://resources/js/color_utils.js';
+import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
+import {ColorScheme} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
+import {convertToRgbHexStr} from '../utils.js';
 
 import {getTemplate} from './dynamic_color_element.html.js';
+import {initializeDynamicColorData, setColorSchemePref, setStaticColorPref} from './theme_controller.js';
+import {getThemeProvider} from './theme_interface_provider.js';
+import {ThemeObserver} from './theme_observer.js';
 
 export interface DynamicColorScheme {
-  id: string;
+  id: ColorScheme;
   primaryColor: string;
   secondaryColor: string;
   tertiaryColor: string;
@@ -29,11 +36,15 @@ export interface DynamicColorScheme {
 
 export interface DynamicColorElement {
   $: {
-    keys: IronA11yKeysElement,
+    staticColorKeys: IronA11yKeysElement,
+    colorSchemeKeys: IronA11yKeysElement,
     colorSchemeSelector: IronSelectorElement,
     staticColorSelector: IronSelectorElement,
   };
 }
+
+const DEFAULT_STATIC_COLOR = hexColorToSkColor('#4285f4');
+const DEFAULT_COLOR_SCHEME = ColorScheme.kTonalSpot;
 
 export class DynamicColorElement extends WithPersonalizationStore {
   static get is() {
@@ -53,18 +64,22 @@ export class DynamicColorElement extends WithPersonalizationStore {
         notify: true,
         reflectToAttribute: true,
       },
+      // The static color stored in the backend.
+      staticColorSelected_: Object,
+      // The color scheme stored in the backend.
+      colorSchemeSelected_: Object,
       staticColors_: {
         type: Object,
         readOnly: true,
         value: [
           // TODO(b/254479499): Replace colors when the spec is ready.
-          'var(--google-blue-500)',
-          'var(--google-grey-400)',
-          '#EDD0E4',
-          '#EADECD',
+          '#4285f4',
+          '#bdc1c6',
+          '#edd0e4',
+          '#eadecd',
         ],
       },
-      schemes_: {
+      colorSchemes_: {
         type: Object,
         readOnly: true,
         value(): DynamicColorScheme[] {
@@ -72,25 +87,25 @@ export class DynamicColorElement extends WithPersonalizationStore {
             // TODO(254479725): Replace with colors fetched from the
             // backend.
             {
-              id: 'tonal',
+              id: ColorScheme.kTonalSpot,
               primaryColor: 'var(--google-blue-500)',
               secondaryColor: 'var(--google-red-500)',
               tertiaryColor: 'var(--google-green-500)',
             },
             {
-              id: 'neutral',
+              id: ColorScheme.kNeutral,
               primaryColor: 'var(--google-red-500)',
               secondaryColor: 'var(--google-blue-500)',
               tertiaryColor: 'var(--google-green-500)',
             },
             {
-              id: 'vibrant',
+              id: ColorScheme.kVibrant,
               primaryColor: 'var(--google-green-500)',
               secondaryColor: 'var(--google-red-500)',
               tertiaryColor: 'var(--google-blue-500)',
             },
             {
-              id: 'expressive',
+              id: ColorScheme.kExpressive,
               primaryColor: 'var(--google-orange-500)',
               secondaryColor: 'var(--google-red-500)',
               tertiaryColor: 'var(--google-green-500)',
@@ -99,12 +114,12 @@ export class DynamicColorElement extends WithPersonalizationStore {
         },
       },
       // The color scheme button currently highlighted by keyboard navigation.
-      colorSchemeSelectedButton_: {
+      colorSchemeHighlightedButton_: {
         type: Object,
         notify: true,
       },
       // The static color button currently highlighted by keyboard navigation.
-      staticColorSelectedButton_: {
+      staticColorHighlightedButton_: {
         type: Object,
         notify: true,
       },
@@ -112,27 +127,77 @@ export class DynamicColorElement extends WithPersonalizationStore {
   }
 
   automaticSeedColorEnabled: boolean;
+  private staticColorSelected_: SkColor|null;
+  private colorSchemeSelected_: ColorScheme|null;
   private staticColors_: string[];
-  private schemes_: DynamicColorScheme[];
-  private colorSchemeSelectedButton_: CrButtonElement;
-  private staticColorSelectedButton_: CrButtonElement;
+  private colorSchemes_: DynamicColorScheme[];
+  private colorSchemeHighlightedButton_: CrButtonElement;
+  private staticColorHighlightedButton_: CrButtonElement;
 
   override ready() {
     super.ready();
-    this.$.keys.target = this.automaticSeedColorEnabled ?
-        this.$.colorSchemeSelector :
-        this.$.staticColorSelector;
+    this.$.staticColorKeys.target = this.$.staticColorSelector;
+    this.$.colorSchemeKeys.target = this.$.colorSchemeSelector;
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+    ThemeObserver.initThemeObserverIfNeeded();
+    this.watch<DynamicColorElement['staticColorSelected_']>(
+        'staticColorSelected_', state => state.theme.staticColorSelected);
+    this.updateFromStore();
+    initializeDynamicColorData(getThemeProvider(), this.getStore());
+  }
+
+  private onClickColorSchemeButton_(event: Event) {
+    const eventTarget = event.currentTarget as HTMLElement;
+    const colorScheme = Number(eventTarget.dataset['colorSchemeId']);
+    this.colorSchemeSelected_ = colorScheme;
+    setColorSchemePref(colorScheme, getThemeProvider(), this.getStore());
+  }
+
+  private onClickStaticColorButton_(event: Event) {
+    const eventTarget = event.currentTarget as HTMLElement;
+    const staticColorHexStr = String(eventTarget.dataset['staticColor']);
+    const staticColor = hexColorToSkColor(staticColorHexStr);
+    setStaticColorPref(staticColor, getThemeProvider(), this.getStore());
+  }
+
+  private onClickToggle_() {
+    if (this.automaticSeedColorEnabled) {
+      const staticColor = this.staticColorSelected_ || DEFAULT_STATIC_COLOR;
+      setStaticColorPref(staticColor, getThemeProvider(), this.getStore());
+    } else {
+      const colorScheme = this.colorSchemeSelected_ || DEFAULT_COLOR_SCHEME;
+      setColorSchemePref(colorScheme, getThemeProvider(), this.getStore());
+    }
+  }
+
+  private getStaticColorAriaChecked_(
+      staticColor: string, staticColorSelected: SkColor|null): string {
+    if (!staticColorSelected) {
+      return 'false';
+    }
+    return (staticColor === convertToRgbHexStr(staticColorSelected.value))
+        .toString();
+  }
+
+  private onStaticColorKeysPress_(
+      e: CustomEvent<{key: string, keyboardEvent: KeyboardEvent}>) {
+    this.onKeysPress_(
+        e, this.$.staticColorSelector, this.staticColorHighlightedButton_);
+  }
+
+  private onColorSchemeKeysPress_(
+      e: CustomEvent<{key: string, keyboardEvent: KeyboardEvent}>) {
+    this.onKeysPress_(
+        e, this.$.colorSchemeSelector, this.colorSchemeHighlightedButton_);
   }
 
   /** Handle keyboard navigation. */
   private onKeysPress_(
-      e: CustomEvent<{key: string, keyboardEvent: KeyboardEvent}>) {
-    const selector = this.automaticSeedColorEnabled ?
-        this.$.colorSchemeSelector :
-        this.$.staticColorSelector;
-    const prevButton = this.automaticSeedColorEnabled ?
-        this.colorSchemeSelectedButton_ :
-        this.staticColorSelectedButton_;
+      e: CustomEvent<{key: string, keyboardEvent: KeyboardEvent}>,
+      selector: IronSelectorElement, prevButton: CrButtonElement) {
     switch (e.detail.key) {
       case 'left':
         selector.selectPrevious();
@@ -147,20 +212,22 @@ export class DynamicColorElement extends WithPersonalizationStore {
     if (prevButton) {
       prevButton.removeAttribute('tabindex');
     }
+
     // Add focus state for new button.
-    if (this.automaticSeedColorEnabled && this.colorSchemeSelectedButton_) {
-      this.colorSchemeSelectedButton_.setAttribute('tabindex', '0');
-      this.colorSchemeSelectedButton_.focus();
-    }
-    if (!this.automaticSeedColorEnabled && this.staticColorSelectedButton_) {
-      this.staticColorSelectedButton_.setAttribute('tabindex', '0');
-      this.staticColorSelectedButton_.focus();
-    }
+    const highlightedButton = this.automaticSeedColorEnabled ?
+        this.colorSchemeHighlightedButton_ :
+        this.staticColorHighlightedButton_;
+    highlightedButton.setAttribute('tabindex', '0');
+    highlightedButton.focus();
+
     e.detail.keyboardEvent.preventDefault();
   }
 
   private getTabIndex_(id: string): string {
-    return id === 'tonal' || id === 'var(--google-blue-500)' ? '0' : '-1';
+    return id === String(DEFAULT_COLOR_SCHEME) ||
+            hexColorToSkColor(id) === DEFAULT_STATIC_COLOR ?
+        '0' :
+        '-1';
   }
 }
 

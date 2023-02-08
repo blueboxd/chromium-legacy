@@ -23,6 +23,7 @@ class Compositor;
 
 namespace ash {
 
+class Desk;
 namespace desks_util {
 
 // Note: the max number of desks depends on a runtime flag and the function
@@ -61,6 +62,12 @@ ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window);
 // with a desk container.
 ASH_EXPORT aura::Window* GetDeskContainerForContext(aura::Window* context);
 
+// If `context` belong to a desk, return the desk pointer, otherwise return
+// nullptr. Note that floated window is not in the desk container but still
+// considered as "belonging" to the desk, as it's only visible on a particular
+// desk.
+const Desk* GetDeskForContext(aura::Window* context);
+
 // Returns true if the DesksBar widget should be created in overview mode.
 ASH_EXPORT bool ShouldDesksBarBeCreated();
 
@@ -72,6 +79,17 @@ ASH_EXPORT bool IsDraggingAnyDesk();
 
 // Returns whether a |window| is visible on all workspaces.
 ASH_EXPORT bool IsWindowVisibleOnAllWorkspaces(const aura::Window* window);
+
+// Returns true for windows that are interesting from an all-desk z-order
+// tracking perspective.
+ASH_EXPORT bool IsZOrderTracked(aura::Window* window);
+
+// Get the position of `window` in `windows` (as filtered by `IsZOrderTracked`)
+// in reverse order. If `window` is not in the list (or isn't z-order tracked),
+// then nullopt is returned.
+ASH_EXPORT absl::optional<size_t> GetWindowZOrder(
+    const std::vector<aura::Window*>& windows,
+    aura::Window* window);
 
 // Move an item at |old_index| to |new_index|.
 template <typename T>

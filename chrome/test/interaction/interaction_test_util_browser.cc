@@ -11,11 +11,16 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/interaction/tracked_element_webcontents.h"
 #include "chrome/test/interaction/webcontents_interaction_test_util.h"
 #include "ui/base/interaction/element_tracker.h"
+#include "ui/base/test/ui_controls.h"
+#include "ui/events/event.h"
+#include "ui/events/types/event_type.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/interaction/interaction_test_util_views.h"
@@ -77,6 +82,26 @@ class InteractionTestUtilSimulatorBrowser
   InteractionTestUtilSimulatorBrowser() = default;
   ~InteractionTestUtilSimulatorBrowser() override = default;
 
+#if BUILDFLAG(IS_MAC)
+  // Browser accelerators must be sent via key events to the window on Mac or
+  // they don't work properly. Dialog accelerators still appear to work the same
+  // as on other platforms.
+  bool SendAccelerator(ui::TrackedElement* element,
+                       const ui::Accelerator& accelerator) override {
+    Browser* const browser =
+        InteractionTestUtilBrowser::GetBrowserFromContext(element->context());
+    if (!browser)
+      return false;
+
+    CHECK(ui_controls::SendKeyPress(
+        browser->window()->GetNativeWindow(), accelerator.key_code(),
+        accelerator.IsCtrlDown(), accelerator.IsShiftDown(),
+        accelerator.IsAltDown(), accelerator.IsCmdDown()));
+
+    return true;
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
   bool SelectTab(ui::TrackedElement* tab_collection,
                  size_t index,
                  InputType input_type) override {
@@ -105,20 +130,36 @@ class InteractionTestUtilSimulatorBrowser
     Tab* const tab = tab_strip->tab_at(index);
     views::test::InteractionTestUtilSimulatorViews::DoDefaultAction(tab,
                                                                     input_type);
-    CHECK_EQ(static_cast<int>(index), tab_strip->GetActiveIndex());
+    CHECK_EQ(static_cast<int>(index), tab_strip->GetActiveIndex().value());
     return true;
+  }
+
+  bool Confirm(ui::TrackedElement* element) override {
+    // This handler *explicitly* only handles OmniboxView; it will reject any
+    // other element or View type.
+    if (!element->IsA<views::TrackedElementViews>())
+      return false;
+    auto* const view = element->AsA<views::TrackedElementViews>()->view();
+    if (auto* const omnibox = views::AsViewClass<OmniboxViewViews>(view)) {
+      ui::KeyEvent press(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+      omnibox->OnKeyEvent(&press);
+      ui::KeyEvent release(ui::ET_KEY_RELEASED, ui::VKEY_RETURN, ui::EF_NONE);
+      omnibox->OnKeyEvent(&release);
+      return true;
+    }
+    return false;
   }
 };
 
 }  // namespace
 
 InteractionTestUtilBrowser::InteractionTestUtilBrowser() {
+  AddSimulator(std::make_unique<InteractionTestUtilSimulatorBrowser>());
   AddSimulator(
       std::make_unique<views::test::InteractionTestUtilSimulatorViews>());
 #if BUILDFLAG(IS_MAC)
   AddSimulator(std::make_unique<ui::test::InteractionTestUtilSimulatorMac>());
 #endif
-  AddSimulator(std::make_unique<InteractionTestUtilSimulatorBrowser>());
 }
 
 InteractionTestUtilBrowser::~InteractionTestUtilBrowser() = default;

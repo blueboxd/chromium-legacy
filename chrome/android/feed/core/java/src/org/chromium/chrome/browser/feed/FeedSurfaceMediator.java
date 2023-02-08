@@ -295,7 +295,8 @@ public class FeedSurfaceMediator
         }
         int spanCount = shouldUseSingleSpan(isSmallLayoutWidth) ? SPAN_COUNT_SMALL_WIDTH
                                                                 : SPAN_COUNT_LARGE_WIDTH;
-        listLayoutHelper.setSpanCount(spanCount);
+        boolean res = listLayoutHelper.setColumnCount(spanCount);
+        assert res : "Failed to set column count on Feed";
     }
 
     private boolean shouldUseSingleSpan(boolean isSmallLayoutWidth) {
@@ -503,20 +504,7 @@ public class FeedSurfaceMediator
 
             @Override
             public void onScrolled(RecyclerView v, int dx, int dy) {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
-                    int headerPosition = mCoordinator.getFeedHeaderPosition();
-                    int toolbarHeight = mCoordinator.getToolbarHeight();
-                    // When the distance from the header to the top is bigger than the toolbar
-                    // height, it hasn't yet reached the position where it should be fixed/sticky,
-                    // so the sticky header is kept hidden. Show it otherwise.
-                    boolean isHeaderOutOfView = headerPosition < toolbarHeight;
-                    boolean isStickyHeaderVisible =
-                            isHeaderOutOfView && mIsStickyHeaderEnabledInLayout;
-                    mSectionHeaderModel.set(
-                            SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY,
-                            isStickyHeaderVisible);
-                    mCoordinator.setToolbarHairlineVisibility(!isStickyHeaderVisible);
-                }
+                updateStickyHeaderVisibility();
 
                 if (mSnapScrollHelper != null) {
                     mSnapScrollHelper.handleScroll();
@@ -533,6 +521,20 @@ public class FeedSurfaceMediator
         mMemoryPressureCallback =
                 pressure -> mCoordinator.getRecyclerView().getRecycledViewPool().clear();
         MemoryPressureListener.addCallback(mMemoryPressureCallback);
+    }
+
+    private void updateStickyHeaderVisibility() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_STICK_TO_TOP)) {
+            // When the distance from the header to the top is bigger than the toolbar
+            // height, it hasn't yet reached the position where it should be fixed/sticky,
+            // so the sticky header is kept hidden. Show it otherwise.
+            boolean isHeaderOutOfView =
+                    mCoordinator.getFeedHeaderPosition() < mCoordinator.getToolbarHeight();
+            boolean isStickyHeaderVisible = isHeaderOutOfView && mIsStickyHeaderEnabledInLayout;
+            mSectionHeaderModel.set(SectionHeaderListProperties.STICKY_HEADER_VISIBLILITY_KEY,
+                    isStickyHeaderVisible);
+            mCoordinator.setToolbarHairlineVisibility(!isStickyHeaderVisible);
+        }
     }
 
     void addScrollListener(ScrollListener listener) {
@@ -654,6 +656,13 @@ public class FeedSurfaceMediator
 
     void onContentsChanged() {
         if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+
+        // Update the sticky header visibility only when the coordinator is active as well as
+        // the feed should show.
+        if (mCoordinator.isActive()
+                && mSectionHeaderModel.get(SectionHeaderListProperties.IS_SECTION_ENABLED_KEY)) {
+            updateStickyHeaderVisibility();
+        }
 
         mActionDelegate.onContentsChanged();
 

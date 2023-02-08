@@ -13,7 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -339,7 +339,7 @@ void Buffer::Texture::ScheduleWaitForRelease(base::TimeDelta delay) {
     return;
 
   wait_for_release_pending_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&Buffer::Texture::WaitForRelease,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -660,7 +660,6 @@ void Buffer::MaybeRunPerCommitRelease(
   if (release_fence.is_null()) {
     std::move(buffer_release_callback).Run();
   } else {
-#if BUILDFLAG(IS_POSIX)
     // Watching the release fence's fd results in a context switch to the I/O
     // thread. That may steal thread time from other applications, which can
     // do something useful during that time. Moreover, most of the time the
@@ -681,9 +680,6 @@ void Buffer::MaybeRunPerCommitRelease(
         commit_id,
         BufferRelease(std::move(release_fence), std::move(controller),
                       std::move(buffer_release_callback)));
-#else
-    NOTREACHED();
-#endif
   }
 }
 

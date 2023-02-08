@@ -32,7 +32,6 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "cc/trees/viewport_property_ids.h"
-#include "components/viz/common/display/de_jelly.h"
 #include "components/viz/common/view_transition_element_resource_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -711,13 +710,6 @@ gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
   clip_in_layer_space.Offset(-layer->offset_to_transform_parent());
 
   gfx::Rect visible_rect = ToEnclosingClipRect(clip_in_layer_space);
-  if (layer->layer_tree_impl()->settings().allow_de_jelly_effect) {
-    float padding_amount = viz::MaxDeJellyHeight();
-    if (layer->IsAffectedByPageScale()) {
-      padding_amount /= layer->layer_tree_impl()->current_page_scale_factor();
-    }
-    visible_rect.Inset(gfx::Insets::VH(-padding_amount, 0.0f));
-  }
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;
 }
@@ -1161,44 +1153,15 @@ void RecordRenderSurfaceReasonsForTracing(
 void UpdateElasticOverscroll(
     PropertyTrees* property_trees,
     TransformNode* overscroll_elasticity_transform_node,
-    ElementId overscroll_elasticity_effect_element_id,
     const gfx::Vector2dF& elastic_overscroll,
     const ScrollNode* inner_viewport) {
-#if BUILDFLAG(IS_ANDROID)
-  // On android, elastic overscroll is implemented by stretching the content
-  // from the overscrolled edge.
-  if (!overscroll_elasticity_effect_element_id &&
-      !overscroll_elasticity_transform_node) {
+  if (!overscroll_elasticity_transform_node) {
     DCHECK(elastic_overscroll.IsZero());
     return;
   }
-  if (overscroll_elasticity_effect_element_id) {
-    if (elastic_overscroll.IsZero() || !inner_viewport) {
-      property_trees->effect_tree_mutable().OnFilterAnimated(
-          overscroll_elasticity_effect_element_id, FilterOperations());
-      return;
-    }
-    // The inner viewport container size takes into account the size change as a
-    // result of the top controls, see ScrollTree::container_bounds.
-    gfx::Size scroller_size =
-        property_trees->scroll_tree().container_bounds(inner_viewport->id);
-    if (scroller_size.IsEmpty()) {
-      // Avoid divide by 0. Animation should not be visible for an empty
-      // viewport anyway.
-      return;
-    }
-
-    property_trees->effect_tree_mutable().OnFilterAnimated(
-        overscroll_elasticity_effect_element_id,
-        FilterOperations(
-            std::vector<FilterOperation>({FilterOperation::CreateStretchFilter(
-                -elastic_overscroll.x() / scroller_size.width(),
-                -elastic_overscroll.y() / scroller_size.height())})));
-    return;
-  }
-
-  // If there is no overscroll elasticity effect node, we apply a stretch
-  // transform.
+#if BUILDFLAG(IS_ANDROID)
+  // On android, elastic overscroll is implemented by stretching the content
+  // from the overscrolled edge by applying a stretch transform
   overscroll_elasticity_transform_node->local.MakeIdentity();
   overscroll_elasticity_transform_node->origin.SetPoint(0.f, 0.f, 0.f);
   if (base::FeatureList::IsEnabled(
@@ -1233,11 +1196,8 @@ void UpdateElasticOverscroll(
   }
   overscroll_elasticity_transform_node->needs_local_transform_update = true;
   property_trees->transform_tree_mutable().set_needs_update(true);
+
 #else  // BUILDFLAG(IS_ANDROID)
-  if (!overscroll_elasticity_transform_node) {
-    DCHECK(elastic_overscroll.IsZero());
-    return;
-  }
 
   // On other platforms, we modify the translation offset to match the
   // overscroll amount.
@@ -1260,7 +1220,6 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   for (LayerImpl* layer : *layer_list) {
     const TransformNode* transform_node =
         property_trees->transform_tree().Node(layer->transform_tree_index());
-
     layer->draw_properties().screen_space_transform =
         ScreenSpaceTransformInternal(layer, property_trees->transform_tree());
     layer->draw_properties().target_space_transform = DrawTransform(
@@ -1280,6 +1239,7 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
   for (LayerImpl* layer : *layer_list) {
     layer->draw_properties().opacity =
         LayerDrawOpacity(layer, property_trees->effect_tree());
+
     RenderSurfaceImpl* render_target = layer->render_target();
     int lca_clip_id = LowestCommonAncestor(layer->clip_tree_index(),
                                            render_target->ClipTreeIndex(),
@@ -1317,6 +1277,13 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
     layer->draw_properties().visible_drawable_content_rect =
         LayerDrawableContentRect(layer, visible_bounds_in_target_space,
                                  layer->draw_properties().clip_rect);
+  }
+
+  // Make sure that the layers push their properties. This isn't necessary for
+  // picture layers that always push their properties, but is important for
+  // other layers to invalidate the active tree.
+  for (LayerImpl* layer : *layer_list) {
+    layer->SetNeedsPushProperties();
   }
 }
 
@@ -1570,11 +1537,10 @@ void CalculateDrawProperties(
   UpdatePageScaleFactor(property_trees,
                         layer_tree_impl->PageScaleTransformNode(),
                         layer_tree_impl->current_page_scale_factor());
-  UpdateElasticOverscroll(
-      property_trees, layer_tree_impl->OverscrollElasticityTransformNode(),
-      layer_tree_impl->OverscrollElasticityEffectElementId(),
-      layer_tree_impl->current_elastic_overscroll(),
-      layer_tree_impl->InnerViewportScrollNode());
+  UpdateElasticOverscroll(property_trees,
+                          layer_tree_impl->OverscrollElasticityTransformNode(),
+                          layer_tree_impl->current_elastic_overscroll(),
+                          layer_tree_impl->InnerViewportScrollNode());
   // Similarly, the device viewport and device transform are shared
   // by both trees.
   property_trees->clip_tree_mutable().SetViewportClip(

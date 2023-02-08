@@ -17,10 +17,10 @@
 #include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/mock_zcr_touch_stylus.h"
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
 #include "ui/ozone/platform/wayland/test/test_touch.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
+#include "ui/ozone/platform/wayland/test/test_zcr_touch_stylus.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 
@@ -46,15 +46,10 @@ ACTION_P(CloneEvent, ptr) {
 
 }  // namespace
 
-class WaylandTouchTest : public WaylandTest {
+class WaylandTouchTest : public WaylandTestSimple {
  public:
-  WaylandTouchTest() : WaylandTest(TestServerMode::kAsync) {}
-  WaylandTouchTest(const WaylandTouchTest&) = delete;
-  WaylandTouchTest& operator=(const WaylandTouchTest&) = delete;
-  ~WaylandTouchTest() override = default;
-
   void SetUp() override {
-    WaylandTest::SetUp();
+    WaylandTestSimple::SetUp();
 
     PostToServerAndWait([](wl::TestWaylandServerThread* server) {
       wl_seat_send_capabilities(
@@ -98,7 +93,7 @@ class WaylandTouchTest : public WaylandTest {
   }
 };
 
-TEST_P(WaylandTouchTest, TouchPressAndMotion) {
+TEST_F(WaylandTouchTest, TouchPressAndMotion) {
   std::unique_ptr<Event> event;
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event));
 
@@ -138,7 +133,7 @@ TEST_P(WaylandTouchTest, TouchPressAndMotion) {
 }
 
 // Tests that touch events with stylus pen work.
-TEST_P(WaylandTouchTest, TouchPressAndMotionWithStylus) {
+TEST_F(WaylandTouchTest, TouchPressAndMotionWithStylus) {
   std::unique_ptr<Event> event;
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event));
 
@@ -185,7 +180,7 @@ TEST_P(WaylandTouchTest, TouchPressAndMotionWithStylus) {
 // Tests that touch events with stylus pen work. This variant of the test sends
 // the tool information after the touch down event, and ensures that
 // wl_touch::frame event handles it correctly.
-TEST_P(WaylandTouchTest, TouchPressAndMotionWithStylus2) {
+TEST_F(WaylandTouchTest, TouchPressAndMotionWithStylus2) {
   std::unique_ptr<Event> event;
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly(CloneEvent(&event));
 
@@ -236,7 +231,7 @@ TEST_P(WaylandTouchTest, TouchPressAndMotionWithStylus2) {
 }
 
 // Tests that touch focus is correctly set and released.
-TEST_P(WaylandTouchTest, CheckTouchFocus) {
+TEST_F(WaylandTouchTest, CheckTouchFocus) {
   constexpr uint32_t touch_id1 = 1;
   constexpr uint32_t touch_id2 = 2;
   constexpr uint32_t touch_id3 = 3;
@@ -358,50 +353,15 @@ TEST_P(WaylandTouchTest, CheckTouchFocus) {
     wl_touch_send_cancel(touch);
   });
 
-  Sync();
-
   EXPECT_FALSE(window_->has_touch_focus());
 }
 
 // Verifies keyboard modifier flags are set in touch events while modifier keys
 // are pressed. Regression test for https://crbug.com/1298604.
-TEST_P(WaylandTouchTest, KeyboardFlagsSet) {
+TEST_F(WaylandTouchTest, KeyboardFlagsSet) {
   std::unique_ptr<Event> event;
 
-#if BUILDFLAG(USE_XKBCOMMON)
-  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
-    // Set up XKB bits and set the keymap to the client.
-    std::unique_ptr<xkb_context, ui::XkbContextDeleter> xkb_context(
-        xkb_context_new(XKB_CONTEXT_NO_FLAGS));
-    std::unique_ptr<xkb_keymap, ui::XkbKeymapDeleter> xkb_keymap(
-        xkb_keymap_new_from_names(xkb_context.get(), nullptr /*names*/,
-                                  XKB_KEYMAP_COMPILE_NO_FLAGS));
-    std::unique_ptr<xkb_state, ui::XkbStateDeleter> xkb_state(
-        xkb_state_new(xkb_keymap.get()));
-
-    std::unique_ptr<char, base::FreeDeleter> keymap_string(
-        xkb_keymap_get_as_string(xkb_keymap.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
-    ASSERT_TRUE(keymap_string.get());
-    size_t keymap_size = strlen(keymap_string.get()) + 1;
-
-    base::UnsafeSharedMemoryRegion shared_keymap_region =
-        base::UnsafeSharedMemoryRegion::Create(keymap_size);
-    base::WritableSharedMemoryMapping shared_keymap =
-        shared_keymap_region.Map();
-    base::subtle::PlatformSharedMemoryRegion platform_shared_keymap =
-        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-            std::move(shared_keymap_region));
-    ASSERT_TRUE(shared_keymap.IsValid());
-
-    memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
-
-    auto* const keyboard = server->seat()->keyboard()->resource();
-
-    wl_keyboard_send_keymap(keyboard, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-                            platform_shared_keymap.GetPlatformHandle().fd,
-                            keymap_size);
-  });
-#endif
+  MaybeSetUpXkb();
 
   // Press 'control' key.
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -500,9 +460,5 @@ TEST_P(WaylandTouchTest, KeyboardFlagsSet) {
   CheckEventType(ui::ET_TOUCH_RELEASED, event.get());
   EXPECT_FALSE(event->flags() & ui::EF_CONTROL_DOWN);
 }
-
-INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
-                         WaylandTouchTest,
-                         Values(wl::ServerConfig{}));
 
 }  // namespace ui

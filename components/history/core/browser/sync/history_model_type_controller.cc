@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check_is_test.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/account_managed_status_finder.h"
@@ -94,7 +95,8 @@ HistoryModelTypeController::HistoryModelTypeController(
           model_type,
           GetDelegateFromHistoryService(model_type, history_service)),
       helper_(model_type, sync_service, pref_service),
-      identity_manager_(identity_manager) {
+      identity_manager_(identity_manager),
+      history_service_(history_service) {
   DCHECK(model_type == syncer::TYPED_URLS || model_type == syncer::HISTORY);
   DCHECK(model_type == syncer::TYPED_URLS ||
          base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType));
@@ -156,6 +158,14 @@ void HistoryModelTypeController::OnStateChanged(syncer::SyncService* sync) {
             identity_manager_, helper_.sync_service()->GetAccountInfo(),
             base::BindOnce(&HistoryModelTypeController::AccountTypeDetermined,
                            base::Unretained(this)));
+  }
+
+  // `history_service_` is null in many unit tests.
+  if (history_service_) {
+    history_service_->SetSyncTransportState(
+        helper_.sync_service()->GetTransportState());
+  } else {
+    CHECK_IS_TEST();
   }
 
   // Most of these calls will be no-ops but SyncService handles that just fine.

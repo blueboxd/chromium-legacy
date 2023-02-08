@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"
@@ -64,6 +65,7 @@
 #include "url/gurl.h"
 
 namespace ash {
+
 namespace {
 
 using ::content::BrowserThread;
@@ -212,7 +214,6 @@ void DeriveCommandLine(const GURL& start_url,
     switches::kArcAvailability,
     switches::kArcAvailable,
     switches::kArcScale,
-    switches::kAshUseCrOSMojoServiceManager,
     chromeos::switches::kDbusStub,
     switches::kDisableArcDataWipe,
     switches::kDisableArcOptInVerification,
@@ -225,6 +226,7 @@ void DeriveCommandLine(const GURL& start_url,
     switches::kLacrosChromeAdditionalArgs,
     switches::kLacrosChromeAdditionalEnv,
     switches::kLacrosChromePath,
+    crosapi::browser_util::kLacrosStabilitySwitch,
     switches::kLoginProfile,
     switches::kNaturalScrollDefault,
     switches::kRlzPingDelay,
@@ -376,7 +378,7 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
       cryptohome::Identification(user_manager::GuestAccountId()).id());
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     otr_switches.Set(switches::kLoginProfile,
-                     ash::BrowserContextHelper::kLegacyBrowserContextDirName);
+                     BrowserContextHelper::kLegacyBrowserContextDirName);
   }
 
   // Override the home page.

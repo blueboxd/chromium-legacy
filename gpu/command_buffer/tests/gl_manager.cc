@@ -44,7 +44,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/buffer_format_utils.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image_ref_counted_memory.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_utils.h"
@@ -352,7 +351,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(
       command_buffer_.get(), command_buffer_->service(), &outputter_,
-      context_group));
+      context_group, options.image_factory));
   if (options.force_shader_name_hashing) {
     decoder_->SetForceShaderNameHashingForTest(true);
   }

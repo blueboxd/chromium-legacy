@@ -11,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
@@ -32,6 +33,7 @@
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/desk.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
 #include "chromeos/crosapi/mojom/device_oauth2_token_service.mojom.h"
@@ -87,6 +89,7 @@
 #include "chromeos/crosapi/mojom/timezone.mojom.h"
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "chromeos/crosapi/mojom/virtual_keyboard.mojom.h"
 #include "chromeos/crosapi/mojom/volume_manager.mojom.h"
 #include "chromeos/crosapi/mojom/vpn_extension_observer.mojom.h"
@@ -193,7 +196,7 @@ LacrosService::LacrosService()
         *BrowserParamsProxy::Get()->IdleInfo());
 
     // After construction finishes, start caching.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&LacrosService::StartSystemIdleCache,
                                   weak_factory_.GetWeakPtr()));
   } else {
@@ -207,7 +210,7 @@ LacrosService::LacrosService()
         *BrowserParamsProxy::Get()->NativeThemeInfo());
 
     // After construction finishes, start caching.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&LacrosService::StartNativeThemeCache,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -278,6 +281,8 @@ LacrosService::LacrosService()
       crosapi::mojom::CrosDisplayConfigController,
       &Crosapi::BindCrosDisplayConfigController,
       Crosapi::MethodMinVersions::kBindCrosDisplayConfigControllerMinVersion>();
+  ConstructRemote<crosapi::mojom::Desk, &Crosapi::BindDesk,
+                  Crosapi::MethodMinVersions::kBindDeskMinVersion>();
   ConstructRemote<crosapi::mojom::DeskTemplate, &Crosapi::BindDeskTemplate,
                   Crosapi::MethodMinVersions::kBindDeskTemplateMinVersion>();
   ConstructRemote<
@@ -477,6 +482,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::UrlHandler,
                   &crosapi::mojom::Crosapi::BindUrlHandler,
                   Crosapi::MethodMinVersions::kBindUrlHandlerMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::VideoConferenceManager,
+      &crosapi::mojom::Crosapi::BindVideoConferenceManager,
+      Crosapi::MethodMinVersions::kBindVideoConferenceManagerMinVersion>();
   ConstructRemote<crosapi::mojom::AppPublisher, &Crosapi::BindWebAppPublisher,
                   Crosapi::MethodMinVersions::kBindWebAppPublisherMinVersion>();
   ConstructRemote<crosapi::mojom::Wallpaper,
@@ -741,6 +750,16 @@ bool LacrosService::IsVideoCaptureDeviceFactoryAvailable() const {
   return version && version.value() >=
                         Crosapi::MethodMinVersions::
                             kBindVideoCaptureDeviceFactoryMinVersion;
+}
+
+void LacrosService::BindVideoConferenceManager(
+    mojo::PendingReceiver<crosapi::mojom::VideoConferenceManager>
+        pending_receiver) {
+  DCHECK(IsAvailable<crosapi::mojom::VideoConferenceManager>());
+  BindPendingReceiverOrRemote<
+      mojo::PendingReceiver<crosapi::mojom::VideoConferenceManager>,
+      &crosapi::mojom::Crosapi::BindVideoConferenceManager>(
+      std::move(pending_receiver));
 }
 
 void LacrosService::BindStableVideoDecoderFactory(

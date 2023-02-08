@@ -251,13 +251,19 @@ const struct {
     // Allow access to iCloud files.
     {base::DIR_HOME, FILE_PATH_LITERAL("Library/Mobile Documents"),
      kDontBlockChildren},
+    // Allow access to other cloud files, such as Google Drive.
+    {base::DIR_HOME, FILE_PATH_LITERAL("Library/CloudStorage"),
+     kDontBlockChildren},
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-    // On Linux also block access to devices via /dev, as well as security
-    // sensitive data in /sys and /proc.
+    // On Linux also block access to devices via /dev.
     {kNoBasePathKey, FILE_PATH_LITERAL("/dev"), kBlockAllChildren},
-    {kNoBasePathKey, FILE_PATH_LITERAL("/sys"), kBlockAllChildren},
+    // And security sensitive data in /proc and /sys.
     {kNoBasePathKey, FILE_PATH_LITERAL("/proc"), kBlockAllChildren},
+    {kNoBasePathKey, FILE_PATH_LITERAL("/sys"), kBlockAllChildren},
+    // And system files in /boot and /etc.
+    {kNoBasePathKey, FILE_PATH_LITERAL("/boot"), kBlockAllChildren},
+    {kNoBasePathKey, FILE_PATH_LITERAL("/etc"), kBlockAllChildren},
     // And block all of ~/.config, matching the similar restrictions on mac
     // and windows.
     {base::DIR_HOME, FILE_PATH_LITERAL(".config"), kBlockAllChildren},
@@ -966,6 +972,7 @@ ChromeFileSystemAccessPermissionContext::GetReadPermissionGrant(
               PersistedPermissionOptions::kUpdatePersistedPermission);
           break;
         case UserAction::kLoadFromStorage:
+        case UserAction::kNone:
           break;
       }
       break;
@@ -1050,6 +1057,7 @@ ChromeFileSystemAccessPermissionContext::GetWritePermissionGrant(
         case UserAction::kOpen:
         case UserAction::kDragAndDrop:
         case UserAction::kLoadFromStorage:
+        case UserAction::kNone:
           break;
       }
       break;
@@ -1281,6 +1289,12 @@ void ChromeFileSystemAccessPermissionContext::DidCheckPathAgainstBlocklist(
     base::OnceCallback<void(SensitiveEntryResult)> callback,
     bool should_block) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (user_action == UserAction::kNone) {
+    std::move(callback).Run(should_block ? SensitiveEntryResult::kAbort
+                                         : SensitiveEntryResult::kAllowed);
+    return;
+  }
 
   if (should_block) {
     auto result_callback = base::BindPostTask(
@@ -1729,11 +1743,42 @@ bool ChromeFileSystemAccessPermissionContext::OriginHasExtendedPermissions(
   if (!web_app_provider)
     return false;
 
-  auto app_id =
-      web_app_provider->registrar().FindAppWithUrlInScope(origin.GetURL());
+  auto app_id = web_app_provider->registrar_unsafe().FindAppWithUrlInScope(
+      origin.GetURL());
   return app_id.has_value() &&
-         web_app_provider->registrar().IsActivelyInstalled(app_id.value());
+         web_app_provider->registrar_unsafe().IsActivelyInstalled(
+             app_id.value());
 #endif  // BUILDFLAG(IS_ANDROID)
+}
+
+scoped_refptr<content::FileSystemAccessPermissionGrant>
+ChromeFileSystemAccessPermissionContext::
+    GetPersistedReadPermissionGrantForTesting(const url::Origin& origin,
+                                              const base::FilePath& path,
+                                              HandleType handle_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto grant =
+      GetReadPermissionGrant(origin, path, handle_type, UserAction::kOpen);
+
+  static_cast<PermissionGrantImpl*>(grant.get())
+      ->SetStatus(PermissionStatus::GRANTED,
+                  PersistedPermissionOptions::kUpdatePersistedPermission);
+  return grant;
+}
+
+scoped_refptr<content::FileSystemAccessPermissionGrant>
+ChromeFileSystemAccessPermissionContext::
+    GetPersistedWritePermissionGrantForTesting(const url::Origin& origin,
+                                               const base::FilePath& path,
+                                               HandleType handle_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto grant =
+      GetWritePermissionGrant(origin, path, handle_type, UserAction::kSave);
+
+  static_cast<PermissionGrantImpl*>(grant.get())
+      ->SetStatus(PermissionStatus::GRANTED,
+                  PersistedPermissionOptions::kUpdatePersistedPermission);
+  return grant;
 }
 
 void ChromeFileSystemAccessPermissionContext::

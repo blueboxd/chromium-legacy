@@ -312,8 +312,7 @@ NSTextInputContext* g_fake_current_input_context = nullptr;
 
 @end
 
-namespace views {
-namespace test {
+namespace views::test {
 
 // Provides the |parent| argument to construct a NativeWidgetNSWindowBridge.
 class MockNativeWidgetMac : public NativeWidgetMac {
@@ -1957,8 +1956,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_WriteToPasteboard) {
   const std::string test_string = "foo bar baz";
   InstallTextField(test_string);
 
-  NSArray* types =
-      @[ NSStringPboardType, base::mac::CFToNSCast(kUTTypeUTF8PlainText) ];
+  NSArray* types = @[ NSPasteboardTypeString ];
 
   // Try to write with no selection. This will succeed, but the string will be
   // empty.
@@ -1967,8 +1965,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_WriteToPasteboard) {
     BOOL wrote_to_pboard = [ns_view_ writeSelectionToPasteboard:pboard
                                                           types:types];
     EXPECT_TRUE(wrote_to_pboard);
-    NSArray* objects = [pboard readObjectsForClasses:@ [[NSString class]]
-        options:0];
+    NSArray* objects = [pboard readObjectsForClasses:@[ [NSString class] ]
+                                             options:nullptr];
     EXPECT_EQ(1u, [objects count]);
     EXPECT_NSEQ(@"", [objects lastObject]);
   }
@@ -1980,8 +1978,8 @@ TEST_F(BridgedNativeWidgetTest, TextInput_WriteToPasteboard) {
     BOOL wrote_to_pboard = [ns_view_ writeSelectionToPasteboard:pboard
                                                           types:types];
     EXPECT_TRUE(wrote_to_pboard);
-    NSArray* objects = [pboard readObjectsForClasses:@ [[NSString class]]
-        options:0];
+    NSArray* objects = [pboard readObjectsForClasses:@[ [NSString class] ]
+                                             options:nullptr];
     EXPECT_EQ(1u, [objects count]);
     EXPECT_NSEQ(@"bar baz", [objects lastObject]);
   }
@@ -2006,5 +2004,4 @@ TEST_F(BridgedNativeWidgetTest, WriteToFindPasteboard) {
   EXPECT_NSEQ(@"bar baz", [[FindPasteboard sharedInstance] findText]);
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test

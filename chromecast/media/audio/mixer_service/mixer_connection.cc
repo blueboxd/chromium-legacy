@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/audio/mixer_service/constants.h"
@@ -81,7 +80,8 @@ void MixerConnection::ConnectCallback(int result) {
     LOG_IF(INFO, !log_timeout_) << "Now connected to mixer service";
     log_connection_failure_ = true;
     log_timeout_ = true;
-    auto socket = std::make_unique<MixerSocket>(std::move(connecting_socket_));
+    auto socket =
+        std::make_unique<MixerSocketImpl>(std::move(connecting_socket_));
     OnConnected(std::move(socket));
     return;
   }
@@ -94,7 +94,7 @@ void MixerConnection::ConnectCallback(int result) {
   }
   connecting_socket_.reset();
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&MixerConnection::Connect, weak_factory_.GetWeakPtr()),
       delay);
@@ -111,7 +111,7 @@ void MixerConnection::ConnectTimeout() {
   }
   connecting_socket_.reset();
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&MixerConnection::Connect, weak_factory_.GetWeakPtr()));
 }

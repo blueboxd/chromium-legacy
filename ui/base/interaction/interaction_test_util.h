@@ -6,8 +6,14 @@
 #define UI_BASE_INTERACTION_INTERACTION_TEST_UTIL_H_
 
 #include <memory>
+#include <vector>
 
+#include "build/build_config.h"
 #include "ui/base/interaction/element_tracker.h"
+
+#if !BUILDFLAG(IS_IOS)
+#include "ui/base/accelerators/accelerator.h"
+#endif
 
 namespace ui::test {
 
@@ -15,15 +21,19 @@ namespace ui::test {
 // actions to framework-specific handlers. Use so you can write your
 // interaction tests without having to worry about framework specifics.
 //
+// Simulators are checked in the order they are added, so if more than one
+// simulator can handle a particular action, add the one that has the more
+// specific/desired behavior first.
+//
 // Example usage:
 //
 // class MyTest {
 //   void SetUp() override {
 //     test_util_.AddSimulator(
-//         std::make_unique<InteractionTestUtilSimuatorViews>());
+//         std::make_unique<InteractionTestUtilSimulatorViews>());
 // #if BUILDFLAG(IS_MAC)
 //     test_util_.AddSimulator(
-//         std::make_unique<InteractionTestUtilSimuatorMac>());
+//         std::make_unique<InteractionTestUtilSimulatorMac>());
 // #endif
 //     ...
 //   }
@@ -61,6 +71,17 @@ class InteractionTestUtil {
     kTouch
   };
 
+  // How should text be sent to a text input?
+  enum class TextEntryMode {
+    // Replaces all of the existing text with the new text.
+    kReplaceAll,
+    // Inserts the new text at the current cursor position, replacing any
+    // existing selection.
+    kInsertOrReplace,
+    // Appends the new text to the end of the existing text.
+    kAppend
+  };
+
   // Provides framework-agnostic ways to send common input to the UI, such as
   // clicking buttons, typing text, etc.
   //
@@ -74,6 +95,7 @@ class InteractionTestUtil {
     void operator=(const Simulator&) = delete;
 
     using InputType = InteractionTestUtil::InputType;
+    using TextEntryMode = InteractionTestUtil::TextEntryMode;
 
     // Tries to press `element` as if it is a button. Returns false if `element`
     // is an unsupported type or if `input_type` is not supported.
@@ -103,6 +125,23 @@ class InteractionTestUtil {
     [[nodiscard]] virtual bool SelectDropdownItem(TrackedElement* dropdown,
                                                   size_t index,
                                                   InputType input_type);
+
+    // Sets or modifies the text of a text box, editable combobox, etc.
+    [[nodiscard]] virtual bool EnterText(TrackedElement* element,
+                                         const std::u16string& text,
+                                         TextEntryMode mode);
+
+    // Activates the surface containing `element`.
+    [[nodiscard]] virtual bool ActivateSurface(TrackedElement* element);
+
+#if !BUILDFLAG(IS_IOS)
+    // Sends the given accelerator to the surface containing the element.
+    [[nodiscard]] virtual bool SendAccelerator(TrackedElement* element,
+                                               const Accelerator& accelerator);
+#endif
+
+    // Sends a "confirm" input to `element`, e.g. a RETURN keypress.
+    [[nodiscard]] virtual bool Confirm(TrackedElement* element);
   };
 
   InteractionTestUtil();
@@ -155,6 +194,27 @@ class InteractionTestUtil {
   // Prefer PressButton() for buttons and SelectMenuItem() for menu items.
   void DoDefaultAction(TrackedElement* element,
                        InputType input_type = InputType::kDontCare);
+
+  // Sets or modifies the text of a text box, editable combobox, etc. `text` is
+  // the text to enter, and `mode` specifies how it should be entered. Default
+  // is replace existing text.
+  void EnterText(TrackedElement* element,
+                 std::u16string text,
+                 TextEntryMode mode = TextEntryMode::kReplaceAll);
+
+  // Activates the surface containing `element`.
+  void ActivateSurface(TrackedElement* element);
+
+#if !BUILDFLAG(IS_IOS)
+  // Sends `accelerator` to the surface containing `element`. May not work if
+  // the surface is not active. Prefer to use only in single-process test
+  // fixtures like interactive_ui_tests, especially for app/browser
+  // accelerators.
+  void SendAccelerator(TrackedElement* element, Accelerator accelerator);
+#endif
+
+  // Sends a "confirm" input to `element`, e.g. a RETURN keypress.
+  void Confirm(TrackedElement* element);
 
  private:
   // The list of known simulators.

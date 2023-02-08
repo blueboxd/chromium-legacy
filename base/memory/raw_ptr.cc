@@ -5,12 +5,12 @@
 #include "base/memory/raw_ptr.h"
 #include <cstdint>
 
-#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 
 // USE_BACKUP_REF_PTR implies USE_PARTITION_ALLOC, needed for code under
 // allocator/partition_allocator/ to be built.
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/check.h"
@@ -77,17 +77,17 @@ bool BackupRefPtrImpl<AllowDangling>::IsPointeeAlive(uintptr_t address) {
 }
 
 template <bool AllowDangling>
-bool BackupRefPtrImpl<AllowDangling>::IsValidSignedDelta(
-    uintptr_t address,
-    ptrdiff_t delta_in_bytes) {
+partition_alloc::PtrPosWithinAlloc
+BackupRefPtrImpl<AllowDangling>::IsValidSignedDelta(uintptr_t address,
+                                                    ptrdiff_t delta_in_bytes) {
   return partition_alloc::internal::PartitionAllocIsValidPtrDelta(
       address, delta_in_bytes);
 }
 
 template <bool AllowDangling>
-bool BackupRefPtrImpl<AllowDangling>::IsValidUnsignedDelta(
-    uintptr_t address,
-    size_t delta_in_bytes) {
+partition_alloc::PtrPosWithinAlloc
+BackupRefPtrImpl<AllowDangling>::IsValidUnsignedDelta(uintptr_t address,
+                                                      size_t delta_in_bytes) {
   return partition_alloc::internal::PartitionAllocIsValidPtrDelta(
       address, delta_in_bytes);
 }

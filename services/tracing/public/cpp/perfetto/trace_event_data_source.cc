@@ -18,12 +18,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
+#include "base/process/current_process.h"
 #include "base/sequence_checker.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/common/scoped_defer_task_posting.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
@@ -109,7 +110,7 @@ TraceEventMetadataSource* TraceEventMetadataSource::GetInstance() {
 
 TraceEventMetadataSource::TraceEventMetadataSource()
     : DataSourceBase(mojom::kMetaDataSourceName),
-      origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+      origin_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {
   g_trace_event_metadata_source_for_testing = this;
   PerfettoTracedProcess::Get()->AddDataSource(this);
   AddGeneratorFunction(base::BindRepeating(
@@ -327,38 +328,6 @@ void TraceEventMetadataSource::GenerateJsonMetadataFromGenerator(
   }
   write_to_bundle(event_bundle);
 #endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-}
-
-base::Value TraceEventMetadataSource::GenerateLegacyMetadataDict() {
-  DCHECK(!privacy_filtering_enabled_);
-
-  base::Value merged_metadata(base::Value::Type::DICTIONARY);
-  std::vector<JsonMetadataGeneratorFunction> json_generators;
-  {
-    base::AutoLock lock(lock_);
-    json_generators = json_generator_functions_;
-  }
-  for (auto& generator : json_generators) {
-    absl::optional<base::Value> metadata_dict = generator.Run();
-    if (!metadata_dict) {
-      continue;
-    }
-    merged_metadata.MergeDictionary(&(*metadata_dict));
-  }
-
-  base::trace_event::MetadataFilterPredicate metadata_filter =
-      base::trace_event::TraceLog::GetInstance()->GetMetadataFilterPredicate();
-
-  // This out-of-band generation of the global metadata is only used by the
-  // crash service uploader path, which always requires privacy filtering.
-  CHECK(metadata_filter);
-  for (auto it : merged_metadata.DictItems()) {
-    if (!metadata_filter.Run(it.first)) {
-      it.second = base::Value("__stripped__");
-    }
-  }
-
-  return merged_metadata;
 }
 
 void TraceEventMetadataSource::GenerateMetadata(
@@ -775,11 +744,8 @@ void TraceEventDataSource::SetupStartupTracing(
       trace_config, privacy_filtering_enabled);
 
 #if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-  uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
-  if (!trace_config.event_filters().empty()) {
-    modes |= base::trace_event::TraceLog::FILTERING_MODE;
-  }
-  base::trace_event::TraceLog::GetInstance()->SetEnabled(trace_config, modes);
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      trace_config, base::trace_event::TraceLog::RECORDING_MODE);
 #endif
 }
 
@@ -1275,7 +1241,7 @@ void TraceEventDataSource::EmitTrackDescriptor() {
     return;
   }
 
-  std::string process_name = TraceLog::GetInstance()->process_name();
+  std::string process_name = base::CurrentProcess::GetInstance().GetName({});
 
   TracePacketHandle trace_packet = writer->NewTracePacket();
 
@@ -1307,7 +1273,7 @@ void TraceEventDataSource::EmitTrackDescriptor() {
 
   ChromeProcessDescriptor* chrome_process =
       track_descriptor->set_chrome_process();
-  auto process_type = GetProcessType(process_name);
+  auto process_type = base::CurrentProcess::GetInstance().GetType({});
   if (process_type != ChromeProcessDescriptor::PROCESS_UNSPECIFIED) {
     chrome_process->set_process_type(process_type);
   }

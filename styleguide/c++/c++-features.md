@@ -36,9 +36,9 @@ The current status of existing standards and Abseil features is:
 *   **C++23:** _Not yet standardized_
 *   **Abseil:** _Default allowed; see banned/TBD
     features below_
-    *   absl::Cleanup: Initially supported February 4, 2021
     *   absl::AnyInvocable: Initially supported June 20, 2022
     *   Log library: Initially supported Aug 31, 2022
+    *   CRC32C library: Initially supported Dec 5, 2022
 
 [TOC]
 
@@ -1911,24 +1911,6 @@ absl::AnyInvocable
 Overlaps with `base::RepeatingCallback`, `base::OnceCallback`.
 ***
 
-### Cleanup <sup>[tbd]</sup>
-
-```c++
-FILE* sink_file = fopen(sink_path, "w");
-auto sink_closer = absl::MakeCleanup([sink_file] { fclose(sink_file); });
-```
-
-**Description:** Implements the scope guard idiom, invoking the contained
-callback's `operator()() &&` on scope exit.
-
-**Documentation:**
-[cleanup.h](https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/absl/cleanup/cleanup.h)
-
-**Notes:**
-*** promo
-Similar to `defer` in Golang.
-***
-
 ### Containers <sup>[tbd]</sup>
 
 ```c++
@@ -1954,6 +1936,19 @@ in the general case.
 **Notes:**
 *** promo
 Supplements `base/containers/`.
+***
+
+### CRC32C library <sup>[tbd]</sup>
+
+**Description:** API for computing CRC32C values as checksums for arbitrary
+sequences of bytes provided as a string buffer.
+
+**Documentation:**
+[crc32.h](https://source.chromium.org/chromium/chromium/src/+/main:third_party/abseil-cpp/crc/crc32c.h)
+
+**Notes:**
+*** promo
+Overlaps with //third_party/crc32c.
 ***
 
 ### Log macros and related classes <sup>[tbd]</sup>

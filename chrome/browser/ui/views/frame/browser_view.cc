@@ -16,6 +16,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -27,7 +28,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -667,7 +668,7 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
     // notifications are in progress, and |MaybeInitializeWebUITabStrip| can
     // destroy things synchronously.
     if (mode.has_mode(ui::AXMode::kScreenReader)) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&BrowserView::MaybeInitializeWebUITabStrip,
                                     browser_view_->GetAsWeakPtr()));
     }
@@ -859,6 +860,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     SetCanMinimize(true);
   }
 
+  SetProperty(views::kElementIdentifierKey, kBrowserViewElementId);
+
   // Create user education resources.
   UserEducationService* const user_education_service =
       UserEducationServiceFactory::GetForProfile(GetProfile());
@@ -995,7 +998,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   // startup.
   if (JumpList::Enabled()) {
     content::BrowserThread::PostBestEffortTask(
-        FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
+        FROM_HERE, base::SingleThreadTaskRunner::GetCurrentDefault(),
         base::BindOnce(&BrowserView::CreateJumpList,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -1314,8 +1317,7 @@ void BrowserView::Show() {
 }
 
 void BrowserView::ShowInactive() {
-  if (!frame_->IsVisible())
-    frame_->ShowInactive();
+  frame_->ShowInactive();
 }
 
 void BrowserView::Hide() {
@@ -1949,7 +1951,7 @@ void BrowserView::FullscreenStateChanging() {
 void BrowserView::FullscreenStateChanged() {
 #if BUILDFLAG(IS_MAC)
   if (!IsFullscreen() && restore_pre_fullscreen_bounds_callback_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(restore_pre_fullscreen_bounds_callback_));
   }
 
@@ -2289,8 +2291,9 @@ void BrowserView::UpdateIsIsolatedWebApp() {
 }
 
 void BrowserView::ToggleWindowControlsOverlayEnabled() {
-  browser()->app_controller()->ToggleWindowControlsOverlayEnabled();
-  UpdateWindowControlsOverlayEnabled();
+  browser()->app_controller()->ToggleWindowControlsOverlayEnabled(
+      base::BindOnce(&BrowserView::UpdateWindowControlsOverlayEnabled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool BrowserView::IsBorderlessModeEnabled() const {
@@ -3074,7 +3077,7 @@ bool BrowserView::CanActivate() const {
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
   // from each other on Windows. http://crbug.com/141650.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
                                 weak_ptr_factory_.GetWeakPtr()));
   return false;
@@ -3698,7 +3701,7 @@ void BrowserView::RevealTabStripIfNeeded() {
       [](std::unique_ptr<ImmersiveRevealedLock>) {}, std::move(revealer));
   constexpr auto kDefaultDelay = base::Seconds(1);
   constexpr auto kZeroDelay = base::Seconds(0);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, std::move(delete_revealer),
       g_disable_revealer_delay_for_testing ? kZeroDelay : kDefaultDelay);
 }
@@ -3801,6 +3804,13 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
   // Widget (OverlayWidget). This means that BrowserView does not need to
   // consult BrowserViewLayout::NonClientHitTest() to calculate the hit test.
   if (IsImmersiveModeEnabled()) {
+    // Handle hits on the overlay widget when it is hovering overtop of the
+    // content view.
+    gfx::Point screen_point(point);
+    View::ConvertPointToScreen(this, &screen_point);
+    if (overlay_widget()->GetWindowBoundsInScreen().Contains(screen_point)) {
+      return HTNOWHERE;
+    }
     return views::ClientView::NonClientHitTest(point);
   }
 #endif  // BUILDFLAG(IS_MAC)

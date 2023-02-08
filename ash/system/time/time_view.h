@@ -47,6 +47,8 @@ class VerticalDateView : public views::View {
   void UpdateText();
 
  private:
+  friend class TimeViewTest;
+
   views::ImageView* icon_ = nullptr;
   views::Label* text_label_ = nullptr;
 };
@@ -75,7 +77,8 @@ class ASH_EXPORT TimeView : public ActionableView, public ClockObserver {
   void UpdateClockLayout(ClockLayout clock_layout);
 
   // Updates the time text color.
-  void SetTextColor(SkColor color, bool auto_color_readability_enabled = false);
+  void SetTextColor(ui::ColorId color_id,
+                    bool auto_color_readability_enabled = false);
 
   // Updates the time text fontlist.
   void SetTextFont(const gfx::FontList& font_list);

@@ -22,6 +22,7 @@
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/hdr_metadata.h"
 
 class SkBitmap;
 class SkColorSpace;
@@ -39,17 +40,7 @@ class PaintWorkletInput;
 class TextureBacking;
 using PaintRecord = PaintOpBuffer;
 
-enum class ImageType {
-  kPNG,
-  kJPEG,
-  kWEBP,
-  kGIF,
-  kICO,
-  kBMP,
-  kAVIF,
-  kJXL,
-  kInvalid
-};
+enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kAVIF, kInvalid };
 
 enum class YUVSubsampling { k410, k411, k420, k422, k440, k444, kUnknown };
 
@@ -70,6 +61,9 @@ struct CC_PAINT_EXPORT ImageHeaderMetadata {
 
   // The subsampling format used for the chroma planes, e.g., YUV 4:2:0.
   YUVSubsampling yuv_subsampling = YUVSubsampling::kUnknown;
+
+  // The HDR metadata included with the image, if present.
+  absl::optional<gfx::HDRMetadata> hdr_metadata;
 
   // The visible size of the image (i.e., the area that contains meaningful
   // pixels).

@@ -5,7 +5,7 @@
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
 // clang-format off
-import {AccountStorageOptInStateChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerProxy, PasswordsFileExportProgressListener, PasswordManagerAuthTimeoutListener, SavedPasswordListChangedListener} from 'chrome://settings/settings.js';
+import {AccountStorageOptInStateChangedListener, CredentialsChangedListener, HatsBrowserProxyImpl, PasswordCheckInteraction, PasswordCheckReferrer, PasswordCheckStatusChangedListener, PasswordExceptionListChangedListener, PasswordManagerProxy, PasswordsFileExportProgressListener, PasswordManagerAuthTimeoutListener, SavedPasswordListChangedListener, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
@@ -114,13 +114,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'recordChangePasswordFlowStarted',
       'recordPasswordCheckInteraction',
       'recordPasswordCheckReferrer',
-      'refreshScriptsIfNecessary',
       'removeException',
       'removeSavedPassword',
       'requestExportProgressStatus',
       'requestPlaintextPassword',
       'requestCredentialsDetails',
-      'startAutomatedPasswordChange',
       'startBulkPasswordCheck',
       'stopBulkPasswordCheck',
       'switchBiometricAuthBeforeFillingState',
@@ -278,17 +276,14 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
         actual.listening.accountStorageOptInState);
   }
 
-  refreshScriptsIfNecessary() {
-    this.methodCalled('refreshScriptsIfNecessary');
-    return Promise.resolve();
-  }
-
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
     if (this.data.checkStatus.state ===
         chrome.passwordsPrivate.PasswordCheckState.NO_PASSWORDS) {
       return Promise.reject(new Error('error'));
     }
+    HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
+        TrustSafetyInteraction.RAN_PASSWORD_CHECK);
     return Promise.resolve();
   }
 
@@ -304,13 +299,6 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   getPasswordCheckStatus() {
     this.methodCalled('getPasswordCheckStatus');
     return Promise.resolve(this.data.checkStatus);
-  }
-
-  startAutomatedPasswordChange(credential:
-                                   chrome.passwordsPrivate.PasswordUiEntry) {
-    this.methodCalled('startAutomatedPasswordChange', credential);
-    // Return `false` for empty origins for testing purposes.
-    return Promise.resolve(!!credential.changePasswordUrl);
   }
 
   addInsecureCredentialsListener(listener: CredentialsChangedListener) {
@@ -401,11 +389,9 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.methodCalled('unmuteInsecureCredential', insecureCredential);
   }
 
-  recordChangePasswordFlowStarted(
-      insecureCredential: chrome.passwordsPrivate.PasswordUiEntry,
-      isManualFlow: boolean) {
-    this.methodCalled(
-        'recordChangePasswordFlowStarted', insecureCredential, isManualFlow);
+  recordChangePasswordFlowStarted(insecureCredential:
+                                      chrome.passwordsPrivate.PasswordUiEntry) {
+    this.methodCalled('recordChangePasswordFlowStarted', insecureCredential);
   }
 
   extendAuthValidity() {

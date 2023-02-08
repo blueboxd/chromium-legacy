@@ -247,11 +247,10 @@ class BubbleDialogModelHost::ContentsView : public BoxLayoutView {
         parent_->model_->dark_mode_icon(parent_->GetPassKey());
     if (!dark_mode_icon.IsEmpty() &&
         color_utils::IsDark(parent_->GetBackgroundColor())) {
-      parent_->SetIcon(dark_mode_icon.GetImage().AsImageSkia());
+      parent_->SetIcon(dark_mode_icon);
       return;
     }
-    parent_->SetIcon(
-        parent_->model_->icon(GetPassKey()).GetImage().AsImageSkia());
+    parent_->SetIcon(parent_->model_->icon(GetPassKey()));
   }
 
  private:
@@ -433,8 +432,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   }
 
   if (!model_->icon(GetPassKey()).IsEmpty()) {
-    // TODO(pbos): Consider adding ImageModel support to SetIcon().
-    SetIcon(model_->icon(GetPassKey()).GetImage().AsImageSkia());
+    SetIcon(model_->icon(GetPassKey()));
     SetShowIcon(true);
   }
 
@@ -910,8 +908,8 @@ BubbleDialogModelHost::FindDialogModelHostField(View* view) {
 
 View* BubbleDialogModelHost::GetTargetView(
     const DialogModelHostField& field_view_info) {
-  return field_view_info.focusable_view ? field_view_info.focusable_view
-                                        : field_view_info.field_view;
+  return field_view_info.focusable_view ? field_view_info.focusable_view.get()
+                                        : field_view_info.field_view.get();
 }
 
 bool BubbleDialogModelHost::DialogModelLabelRequiresStyledLabel(

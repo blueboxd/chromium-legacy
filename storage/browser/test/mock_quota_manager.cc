@@ -17,7 +17,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/test_waitable_event.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "storage/browser/quota/quota_client_type.h"
 
@@ -129,6 +128,7 @@ void MockQuotaManager::GetOrCreateBucketDeprecated(
 void MockQuotaManager::GetBucketById(
     const BucketId& bucket_id,
     base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback) {
+  DCHECK(bucket_id);
   QuotaErrorOr<BucketInfo> bucket = FindBucketById(bucket_id);
   std::move(callback).Run(std::move(bucket));
 }
@@ -176,19 +176,15 @@ void MockQuotaManager::GetUsageAndQuota(const StorageKey& storage_key,
                                 quota);
       }));
   for (const auto& entry : usage_map_) {
-    GetBucketById(
-        entry.first,
-        base::BindLambdaForTesting([this, &storage_key, type, &barrier_closure,
-                                    &usage](QuotaErrorOr<BucketInfo> result) {
-          if (result.ok()) {
-            storage::BucketLocator bucket_locator = result->ToBucketLocator();
-            if (bucket_locator.storage_key == storage_key &&
-                bucket_locator.type == type) {
-              usage += usage_map_[bucket_locator.id].usage;
-            }
-          }
-          barrier_closure.Run();
-        }));
+    QuotaErrorOr<BucketInfo> result = FindBucket(entry.first);
+    if (result.ok()) {
+      storage::BucketLocator bucket_locator = result->ToBucketLocator();
+      if (bucket_locator.storage_key == storage_key &&
+          bucket_locator.type == type) {
+        usage += usage_map_[bucket_locator].usage;
+      }
+    }
+    barrier_closure.Run();
   }
 }
 
@@ -251,7 +247,7 @@ void MockQuotaManager::GetBucketsModifiedBetween(StorageType type,
           info.bucket.name == kDefaultBucketName));
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaManager::DidGetModifiedInTimeRange,
                                 weak_factory_.GetWeakPtr(), std::move(callback),
                                 std::move(buckets_to_return), type));
@@ -271,7 +267,7 @@ void MockQuotaManager::DeleteBucketData(const BucketLocator& bucket,
     }
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&MockQuotaManager::DidDeleteBucketData,
                                 weak_factory_.GetWeakPtr(), std::move(callback),
                                 blink::mojom::QuotaStatusCode::kOk));
@@ -347,6 +343,18 @@ QuotaErrorOr<BucketInfo> MockQuotaManager::FindBucket(
   return QuotaError::kNotFound;
 }
 
+QuotaErrorOr<BucketInfo> MockQuotaManager::FindBucket(
+    const BucketLocator& locator) {
+  auto it =
+      base::ranges::find_if(buckets_, [locator](const BucketData& bucket_data) {
+        return bucket_data.bucket.ToBucketLocator().IsEquivalentTo(locator);
+      });
+  if (it != buckets_.end()) {
+    return it->bucket;
+  }
+  return QuotaError::kNotFound;
+}
+
 QuotaErrorOr<BucketInfo> MockQuotaManager::FindAndUpdateBucket(
     const BucketInitParams& params,
     blink::mojom::StorageType type) {
@@ -366,8 +374,8 @@ QuotaErrorOr<BucketInfo> MockQuotaManager::FindAndUpdateBucket(
   return QuotaError::kNotFound;
 }
 
-void MockQuotaManager::UpdateUsage(const BucketId& bucket_id, int64_t delta) {
-  usage_map_[bucket_id].usage += delta;
+void MockQuotaManager::UpdateUsage(const BucketLocator& bucket, int64_t delta) {
+  usage_map_[bucket].usage += delta;
 }
 
 void MockQuotaManager::DidGetBucket(

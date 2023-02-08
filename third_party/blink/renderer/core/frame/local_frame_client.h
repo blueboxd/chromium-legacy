@@ -112,6 +112,10 @@ enum class SyncCondition;
 struct Impression;
 struct MobileFriendliness;
 
+namespace scheduler {
+class TaskAttributionId;
+}  // namespace scheduler
+
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
   ~LocalFrameClient() override = default;
@@ -183,7 +187,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 
-  virtual bool NavigateBackForward(int offset) const = 0;
+  virtual bool NavigateBackForward(
+      int offset,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id) const = 0;
 
   virtual void DidDispatchPingLoader(const KURL&) = 0;
 
@@ -203,6 +210,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when a particular loading code path has been used. This
   // propogates renderer loading behavior to the browser process for histograms.
   virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}
+
+  // Will be called when a sub resource load happens.
+  virtual void DidObserveSubresourceLoad(
+      uint32_t number_of_subresources_loaded,
+      uint32_t number_of_subresource_loads_handled_by_service_worker) {}
 
   // Will be called when a new UseCounterFeature has been observed in a frame.
   // This propagates feature usage to the browser process for histograms.

@@ -30,7 +30,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -61,6 +60,7 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -386,6 +386,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     app->AddSource(WebAppManagement::kOem);
     management_types.push_back(WebAppManagement::kOem);
   }
+  if (random.next_bool()) {
+    app->AddSource(WebAppManagement::kOneDriveIntegration);
+    management_types.push_back(WebAppManagement::kOneDriveIntegration);
+  }
 
   // Must always be at least one source.
   if (!app->HasAnySources()) {
@@ -645,7 +649,7 @@ void TestAcceptDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback), true /*accept*/,
                                 std::move(web_app_info)));
 }
@@ -654,7 +658,7 @@ void TestDeclineDialogCallback(
     content::WebContents* initiator_web_contents,
     std::unique_ptr<WebAppInstallInfo> web_app_info,
     WebAppInstallationAcceptanceCallback acceptance_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(acceptance_callback),
                                 false /*accept*/, std::move(web_app_info)));
 }
@@ -736,6 +740,17 @@ void AddInstallUrlAndPlaceholderData(PrefService* pref_service,
   prefs.Insert(url, app_id, source);
   prefs.SetIsPlaceholder(url, is_placeholder);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+ScopedSkipMainProfileCheck::ScopedSkipMainProfileCheck() {
+  EXPECT_FALSE(IsMainProfileCheckSkippedForTesting());
+  SetSkipMainProfileCheckForTesting(/*skip_check=*/true);
+}
+
+ScopedSkipMainProfileCheck::~ScopedSkipMainProfileCheck() {
+  SetSkipMainProfileCheckForTesting(/*skip_check=*/false);
+}
+#endif
 
 }  // namespace test
 }  // namespace web_app

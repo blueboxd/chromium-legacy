@@ -22,15 +22,16 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_commands.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_context_menu_provider.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_header.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller+private.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/horizontal_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/plus_sign_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
@@ -177,7 +178,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     _showsSelectionUpdates = YES;
     _notSelectedTabCellOpacity = 1.0;
     _mode = TabGridModeNormal;
+
+    // Register for VoiceOver notifications.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(voiceOverStatusDidChange)
+               name:UIAccessibilityVoiceOverStatusDidChangeNotification
+             object:nil];
   }
+
   return self;
 }
 
@@ -233,7 +242,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   collectionView.allowsMultipleSelection = YES;
   collectionView.dragDelegate = self;
   collectionView.dropDelegate = self;
-  collectionView.dragInteractionEnabled = YES;
+  self.collectionView.dragInteractionEnabled =
+      [self shouldEnableDrapAndDropInteraction];
 
   self.pointerInteractionCells =
       [NSHashTable<UICollectionViewCell*> weakObjectsHashTable];
@@ -308,7 +318,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   }
 
+  TabGridMode previousMode = _mode;
   _mode = mode;
+
   // TODO(crbug.com/1300369): Enable dragging items from search results.
   self.collectionView.dragInteractionEnabled = (_mode != TabGridModeSearch);
   self.emptyStateView.tabGridMode = _mode;
@@ -331,21 +343,36 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
           return;
         }
 
-        NSRange allSectionsRange = NSMakeRange(
-            /*location=*/0, strongSelf.collectionView.numberOfSections);
-        NSIndexSet* allSectionsIndexSet =
-            [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
-        [strongSelf.collectionView reloadSections:allSectionsIndexSet];
-        // Scroll to the selected item here, so the animation of reloading and
-        // scrolling happens at once.
+        if (mode == TabGridModeSelection && previousMode == TabGridModeNormal) {
+          // If the grid is switching from normal to selected state don't
+          // reload the whole table view to avoid having a flash, particularly
+          // visible when using context menu.
+          for (UITableViewCell* cell in strongSelf.collectionView
+                   .visibleCells) {
+            GridCell* gridCell = base::mac::ObjCCast<GridCell>(cell);
+            gridCell.state = mode == TabGridModeSelection
+                                 ? GridCellStateEditingUnselected
+                                 : GridCellStateNotEditing;
+          }
+        } else {
+          NSRange allSectionsRange = NSMakeRange(
+              /*location=*/0, strongSelf.collectionView.numberOfSections);
+          NSIndexSet* allSectionsIndexSet =
+              [NSIndexSet indexSetWithIndexesInRange:allSectionsRange];
+          [strongSelf.collectionView reloadSections:allSectionsIndexSet];
+        }
         NSUInteger selectedIndex = strongSelf.selectedIndex;
-        if (mode == TabGridModeNormal && selectedIndex != NSNotFound) {
+        if (previousMode != TabGridModeSelection && mode == TabGridModeNormal &&
+            selectedIndex != NSNotFound) {
+          // Scroll to the selected item here, so the animation of reloading and
+          // scrolling happens at once.
           [strongSelf.collectionView
               scrollToItemAtIndexPath:CreateIndexPath(selectedIndex)
                      atScrollPosition:UICollectionViewScrollPositionTop
                              animated:NO];
         }
       }
+
                completion:nil];
 
   if (mode == TabGridModeNormal) {
@@ -627,10 +654,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 // This method is used instead of -didSelectItemAtIndexPath, because any
 // selection events will be signalled through the model layer and handled in
-// the GridConsumer -selectItemWithID: method.
+// the TabCollectionConsumer -selectItemWithID: method.
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self tappedItemAtIndexPath:indexPath];
+  if (@available(iOS 16, *)) {
+    // This is handled by
+    // `collectionView:performPrimaryActionForItemAtIndexPath:` on iOS 16. The
+    // method comment should be updated once iOS 15 is dropped.
+    return YES;
+  } else {
+    [self tappedItemAtIndexPath:indexPath];
+  }
   // Tapping on a non-selected cell should not select it immediately. The
   // delegate will trigger a transition to show the item.
   return NO;
@@ -638,9 +672,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldDeselectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self tappedItemAtIndexPath:indexPath];
+  if (@available(iOS 16, *)) {
+    // This is handled by
+    // `collectionView:performPrimaryActionForItemAtIndexPath:` on iOS 16.
+  } else {
+    [self tappedItemAtIndexPath:indexPath];
+  }
   // Tapping on the current selected cell should not deselect it.
   return NO;
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    performPrimaryActionForItemAtIndexPath:(NSIndexPath*)indexPath {
+  [self tappedItemAtIndexPath:indexPath];
 }
 
 - (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
@@ -664,13 +708,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:indexPath]);
 
-  MenuScenario scenario;
+  MenuScenarioHistogram scenario;
   if (_mode == TabGridModeSearch) {
-    scenario = MenuScenario::kTabGridSearchResult;
+    scenario = MenuScenarioHistogram::kTabGridSearchResult;
   } else if (self.currentLayout == self.horizontalLayout) {
-    scenario = MenuScenario::kThumbStrip;
+    scenario = MenuScenarioHistogram::kThumbStrip;
   } else {
-    scenario = MenuScenario::kTabGridEntry;
+    scenario = MenuScenarioHistogram::kTabGridEntry;
   }
 
   return [self.menuProvider contextMenuConfigurationForGridCell:cell
@@ -905,6 +949,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [self.delegate gridViewControllerScrollViewDidScroll:self];
   if (!self.thumbStripEnabled)
     return;
   [self updateFractionVisibleOfLastItem];
@@ -996,7 +1041,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 }
 
-#pragma mark - GridConsumer
+#pragma mark - TabCollectionConsumer
 
 - (void)populateItems:(NSArray<TabSwitcherItem*>*)items
        selectedItemID:(NSString*)selectedItemID {
@@ -1322,6 +1367,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - Private
+
+- (void)voiceOverStatusDidChange {
+  self.collectionView.dragInteractionEnabled =
+      [self shouldEnableDrapAndDropInteraction];
+}
+
+- (BOOL)shouldEnableDrapAndDropInteraction {
+  // Don't enable drag and drop when voice over is enabled.
+  return !UIAccessibilityIsVoiceOverRunning();
+}
 
 // Checks whether `indexPath` corresponds to the index path of the plus sign
 // cell. The plus sign cell is the last cell in the collection view after all

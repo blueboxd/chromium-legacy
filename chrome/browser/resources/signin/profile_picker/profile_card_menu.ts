@@ -17,7 +17,8 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 // clang-format off
 // <if expr="chromeos_lacros">
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // </if>
 
@@ -114,7 +115,9 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
         type: String,
         // <if expr="chromeos_lacros">
         value() {
-          return loadTimeData.getString('removeWarningProfileLacros');
+          return sanitizeInnerHtml(
+              loadTimeData.getString('removeWarningProfileLacros'),
+              {attrs: ['is']});
         },
         // </if>
         // <if expr="not chromeos_lacros">
@@ -150,11 +153,11 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'profiles-list-changed', () => this.handleProfilesUpdated_());
-    this.addWebUIListener(
+    this.addWebUiListener(
         'profile-removed', this.handleProfileRemoved_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'profile-statistics-received',
         this.handleProfileStatsReceived_.bind(this));
   }

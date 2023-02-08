@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -168,7 +167,7 @@ namespace content {
 class PepperMediaStreamVideoTrackHost::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
-  FrameDeliverer(scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+  FrameDeliverer(scoped_refptr<base::SequencedTaskRunner> video_task_runner,
                  const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
 
   FrameDeliverer(const FrameDeliverer&) = delete;
@@ -182,14 +181,14 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
 
   void DeliverFrameOnIO(scoped_refptr<media::VideoFrame> frame);
 
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> video_task_runner_;
   blink::VideoCaptureDeliverFrameCB new_frame_callback_;
 };
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::FrameDeliverer(
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> video_task_runner,
     const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_task_runner_(io_task_runner),
+    : video_task_runner_(video_task_runner),
       new_frame_callback_(new_frame_callback) {}
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
@@ -197,14 +196,14 @@ PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverVideoFrame(
     scoped_refptr<media::VideoFrame> frame) {
-  io_task_runner_->PostTask(
+  video_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&FrameDeliverer::DeliverFrameOnIO, this,
                                 std::move(frame)));
 }
 
 void PepperMediaStreamVideoTrackHost::FrameDeliverer::DeliverFrameOnIO(
     scoped_refptr<media::VideoFrame> frame) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   // The time when this frame is generated is unknown so give a null value to
   // |estimated_capture_time|.
   new_frame_callback_.Run(std::move(frame), {}, base::TimeTicks());
@@ -422,7 +421,8 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
     : public blink::MediaStreamVideoSource {
  public:
   explicit VideoSource(base::WeakPtr<PepperMediaStreamVideoTrackHost> host)
-      : blink::MediaStreamVideoSource(base::ThreadTaskRunnerHandle::Get()),
+      : blink::MediaStreamVideoSource(
+            base::SingleThreadTaskRunner::GetCurrentDefault()),
         host_(std::move(host)) {}
 
   VideoSource(const VideoSource&) = delete;
@@ -436,7 +436,7 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
       blink::VideoCaptureCropVersionCB crop_version_callback) final {
     if (host_) {
       host_->frame_deliverer_ =
-          new FrameDeliverer(io_task_runner(), std::move(frame_callback));
+          new FrameDeliverer(video_task_runner(), std::move(frame_callback));
     }
   }
 

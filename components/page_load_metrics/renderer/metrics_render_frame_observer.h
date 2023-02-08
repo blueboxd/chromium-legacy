@@ -56,6 +56,9 @@ class MetricsRenderFrameObserver
       blink::UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
+  void DidObserveSubresourceLoad(
+      uint32_t number_of_subresources_loaded,
+      uint32_t number_of_subresource_loads_handled_by_service_worker) override;
   void DidObserveNewFeatureUsage(
       const blink::UseCounterFeature& feature) override;
   void DidObserveSoftNavigation(uint32_t count) override;
@@ -111,7 +114,6 @@ class MetricsRenderFrameObserver
 
   // blink::WebLocalFrameObserver implementation
   void OnFrameDetached() override;
-  void DidChangeMobileFriendliness(const blink::MobileFriendliness&) override;
 
   bool SetUpSmoothnessReporting(
       base::ReadOnlySharedMemoryRegion& shared_memory) override;

@@ -56,7 +56,7 @@ using Type = DBOperation::Type;
 using DBType = SharedStorageTestDBType;
 
 const int kBudgetIntervalHours = 24;
-const int kOriginStalenessThresholdDays = 1;
+const int kStalenessThresholdDays = 1;
 const int kBitBudget = 8;
 const int kMaxEntriesPerOrigin = 5;
 const int kMaxStringLength = 100;
@@ -106,7 +106,7 @@ class AsyncSharedStorageDatabaseImplTest : public testing::Test {
   // Return the relative file path in the "storage/" subdirectory of test data
   // for the SQL file from which to initialize an async shared storage database
   // instance.
-  virtual const char* GetRelativeFilePath() { return nullptr; }
+  virtual std::string GetRelativeFilePath() { return nullptr; }
 
   std::unique_ptr<AsyncSharedStorageDatabase> Create() {
     if (GetType() != DBType::kInMemory)
@@ -183,7 +183,7 @@ class AsyncSharedStorageDatabaseImplTest : public testing::Test {
               base::BindOnce(std::move(callback), std::move(task).Run(db)));
         },
         std::move(task), future.GetCallback(),
-        base::SequencedTaskRunnerHandle::Get());
+        base::SequencedTaskRunner::GetCurrentDefault());
 
     GetImpl()->GetSequenceBoundDatabaseForTesting()->PostTaskWithThisObject(
         std::move(wrapped_task));
@@ -247,11 +247,29 @@ class AsyncSharedStorageDatabaseImplTest : public testing::Test {
 
     auto callback = receiver_->MakeBoolCallback(
         DBOperation(
-            Type::DB_OVERRIDE_TIME, context_origin,
+            Type::DB_OVERRIDE_TIME_ORIGIN, context_origin,
             {TestDatabaseOperationReceiver::SerializeTime(new_creation_time)}),
         out_success);
     GetImpl()->OverrideCreationTimeForTesting(
         std::move(context_origin), new_creation_time, std::move(callback));
+  }
+
+  void OverrideLastUsedTime(url::Origin context_origin,
+                            std::u16string key,
+                            base::Time new_last_used_time,
+                            bool* out_success) {
+    DCHECK(out_success);
+    DCHECK(async_database_);
+    DCHECK(receiver_);
+
+    auto callback = receiver_->MakeBoolCallback(
+        DBOperation(Type::DB_OVERRIDE_TIME_ENTRY, context_origin,
+                    {key, TestDatabaseOperationReceiver::SerializeTime(
+                              new_last_used_time)}),
+        out_success);
+    GetImpl()->OverrideLastUsedTimeForTesting(std::move(context_origin), key,
+                                              new_last_used_time,
+                                              std::move(callback));
   }
 
   void OverrideClockSync(base::Clock* clock) {
@@ -576,21 +594,21 @@ class AsyncSharedStorageDatabaseImplTest : public testing::Test {
         std::move(callback), perform_storage_cleanup);
   }
 
-  void PurgeStaleOrigins(OperationResult* out_result) {
+  void PurgeStale(OperationResult* out_result) {
     DCHECK(out_result);
     DCHECK(async_database_);
     DCHECK(receiver_);
 
     auto callback = receiver_->MakeOperationResultCallback(
         DBOperation(Type::DB_PURGE_STALE), out_result);
-    async_database_->PurgeStaleOrigins(std::move(callback));
+    async_database_->PurgeStale(std::move(callback));
   }
 
-  OperationResult PurgeStaleOriginsSync() {
+  OperationResult PurgeStaleSync() {
     DCHECK(async_database_);
 
     base::test::TestFuture<OperationResult> future;
-    async_database_->PurgeStaleOrigins(future.GetCallback());
+    async_database_->PurgeStale(future.GetCallback());
     return future.Get();
   }
 
@@ -663,16 +681,19 @@ class AsyncSharedStorageDatabaseImplTest : public testing::Test {
   base::SimpleTestClock clock_;
 };
 
-class AsyncSharedStorageDatabaseImplFromFileV1Test
+class AsyncSharedStorageDatabaseImplFromFileTest
     : public AsyncSharedStorageDatabaseImplTest {
  public:
   DBType GetType() override { return DBType::kFileBackedFromExisting; }
 
-  const char* GetRelativeFilePath() override { return "shared_storage.v1.sql"; }
+  std::string GetRelativeFilePath() override {
+    return GetTestFileNameForCurrentVersion();
+  }
 };
 
-// Test loading version 1 database.
-TEST_F(AsyncSharedStorageDatabaseImplFromFileV1Test, Version1_LoadFromFile) {
+// Test loading current version database.
+TEST_F(AsyncSharedStorageDatabaseImplFromFileTest,
+       CurrentVersion_LoadFromFile) {
   ASSERT_TRUE(async_database_);
 
   // Override the clock and set to the last time in the file that is used to
@@ -709,9 +730,9 @@ TEST_F(AsyncSharedStorageDatabaseImplFromFileV1Test, Version1_LoadFromFile) {
 }
 
 class AsyncSharedStorageDatabaseImplFromFileV1NoBudgetTableTest
-    : public AsyncSharedStorageDatabaseImplFromFileV1Test {
+    : public AsyncSharedStorageDatabaseImplFromFileTest {
  public:
-  const char* GetRelativeFilePath() override {
+  std::string GetRelativeFilePath() override {
     return "shared_storage.v1.no_budget_table.sql";
   }
 };
@@ -749,14 +770,14 @@ TEST_F(AsyncSharedStorageDatabaseImplFromFileV1NoBudgetTableTest,
 }
 
 struct InitFailureTestCase {
-  const char* relative_file_path;
+  std::string relative_file_path;
   InitStatus expected_status;
 };
 
 std::vector<InitFailureTestCase> GetInitFailureTestCases() {
   return std::vector<InitFailureTestCase>(
-      {{"shared_storage.v1.init_too_new.sql", InitStatus::kTooNew},
-       {"shared_storage.v0.init_too_old.sql", InitStatus::kTooOld}});
+      {{"shared_storage.init_too_new.sql", InitStatus::kTooNew},
+       {GetTestFileNameForLatestDeprecatedVersion(), InitStatus::kTooOld}});
 }
 
 // Used by `testing::PrintToStringParamName()`.
@@ -775,7 +796,7 @@ class AsyncSharedStorageDatabaseImplFromFileWithFailureTest
  public:
   DBType GetType() override { return DBType::kFileBackedFromExisting; }
 
-  const char* GetRelativeFilePath() override {
+  std::string GetRelativeFilePath() override {
     return GetParam().relative_file_path;
   }
 };
@@ -785,8 +806,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(GetInitFailureTestCases()),
                          testing::PrintToStringParamName());
 
-TEST_P(AsyncSharedStorageDatabaseImplFromFileWithFailureTest,
-       Version1_Destroy) {
+TEST_P(AsyncSharedStorageDatabaseImplFromFileWithFailureTest, Destroy) {
   ASSERT_TRUE(async_database_);
 
   // Call an operation so that the database will attempt to be lazy-initialized.
@@ -831,8 +851,8 @@ class AsyncSharedStorageDatabaseImplParamTest
          {"SharedStorageBitBudget", base::NumberToString(kBitBudget)},
          {"SharedStorageBudgetInterval",
           TimeDeltaToString(base::Hours(kBudgetIntervalHours))},
-         {"SharedStorageOriginStalenessThreshold",
-          TimeDeltaToString(base::Days(kOriginStalenessThresholdDays))}});
+         {"SharedStorageStalenessThreshold",
+          TimeDeltaToString(base::Days(kStalenessThresholdDays))}});
   }
 };
 
@@ -962,16 +982,16 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, SyncMakeBudgetWithdrawal) {
 
   // Now only the single debit made within the current lookback window is
   // counted, although the entries are still in the table because we haven't
-  // called `PurgeStaleOriginsSync()`.
+  // called `PurgeStaleSync()`.
   EXPECT_DOUBLE_EQ(kBitBudget - 1.0, GetRemainingBudgetSync(kOrigin1).bits);
   EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin2).bits);
   EXPECT_EQ(3, GetNumBudgetEntriesSync(kOrigin1));
   EXPECT_EQ(1, GetNumBudgetEntriesSync(kOrigin2));
   EXPECT_EQ(4, GetTotalNumBudgetEntriesSync());
 
-  // After `PurgeStaleOriginsSync()` runs, there will only be the most
+  // After `PurgeStaleSync()` runs, there will only be the most
   // recent debit left in the budget table
-  EXPECT_EQ(OperationResult::kSuccess, PurgeStaleOriginsSync());
+  EXPECT_EQ(OperationResult::kSuccess, PurgeStaleSync());
   EXPECT_DOUBLE_EQ(kBitBudget - 1.0, GetRemainingBudgetSync(kOrigin1).bits);
   EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin2).bits);
   EXPECT_EQ(1, GetNumBudgetEntriesSync(kOrigin1));
@@ -988,8 +1008,8 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, SyncMakeBudgetWithdrawal) {
   EXPECT_EQ(1, GetNumBudgetEntriesSync(kOrigin1));
   EXPECT_EQ(1, GetTotalNumBudgetEntriesSync());
 
-  // After `PurgeStaleOriginsSync()` runs, the budget table will be empty.
-  EXPECT_EQ(OperationResult::kSuccess, PurgeStaleOriginsSync());
+  // After `PurgeStaleSync()` runs, the budget table will be empty.
+  EXPECT_EQ(OperationResult::kSuccess, PurgeStaleSync());
   EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin1).bits);
   EXPECT_DOUBLE_EQ(kBitBudget, GetRemainingBudgetSync(kOrigin2).bits);
   EXPECT_EQ(0, GetTotalNumBudgetEntriesSync());
@@ -1279,7 +1299,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, AsyncMakeBudgetWithdrawal) {
 
   // Now only the single debit made within the current lookback window is
   // counted, although the entries are still in the table because we haven't
-  // called `PurgeStaleOrigins()`.
+  // called `PurgeStale()`.
   BudgetResult budget_result13 = MakeBudgetResultForSqlError();
   GetRemainingBudget(kOrigin1, &budget_result13);
   BudgetResult budget_result14 = MakeBudgetResultForSqlError();
@@ -1291,10 +1311,10 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, AsyncMakeBudgetWithdrawal) {
   int total_entries6 = -1;
   GetTotalNumBudgetEntries(&total_entries6);
 
-  // After `PurgeStaleOrigins()` runs, there will only be the most
+  // After `PurgeStale()` runs, there will only be the most
   // recent debit left in the budget table.
   OperationResult operation_result5 = OperationResult::kSqlError;
-  PurgeStaleOrigins(&operation_result5);
+  PurgeStale(&operation_result5);
   BudgetResult budget_result15 = MakeBudgetResultForSqlError();
   GetRemainingBudget(kOrigin1, &budget_result15);
   BudgetResult budget_result16 = MakeBudgetResultForSqlError();
@@ -1320,9 +1340,9 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, AsyncMakeBudgetWithdrawal) {
   int total_entries8 = -1;
   GetTotalNumBudgetEntries(&total_entries8);
 
-  // After `PurgeStaleOrigins()` runs, the budget table will be empty.
+  // After `PurgeStale()` runs, the budget table will be empty.
   OperationResult operation_result6 = OperationResult::kSqlError;
-  PurgeStaleOrigins(&operation_result6);
+  PurgeStale(&operation_result6);
   BudgetResult budget_result19 = MakeBudgetResultForSqlError();
   GetRemainingBudget(kOrigin1, &budget_result19);
   BudgetResult budget_result20 = MakeBudgetResultForSqlError();
@@ -1380,14 +1400,14 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, AsyncMakeBudgetWithdrawal) {
 
   // Now only the single debit made within the current lookback window is
   // counted, although the entries are still in the table because we haven't
-  // called `PurgeStaleOrigins()`.
+  // called `PurgeStale()`.
   EXPECT_DOUBLE_EQ(kBitBudget - 1.0, budget_result13.bits);
   EXPECT_DOUBLE_EQ(kBitBudget, budget_result14.bits);
   EXPECT_EQ(3, num_entries7);
   EXPECT_EQ(1, num_entries8);
   EXPECT_EQ(4, total_entries6);
 
-  // After `PurgeStaleOrigins()` runs, there will only be the most
+  // After `PurgeStale()` runs, there will only be the most
   // recent debit left in the budget table.
   EXPECT_EQ(OperationResult::kSuccess, operation_result5);
   EXPECT_DOUBLE_EQ(kBitBudget - 1.0, budget_result15.bits);
@@ -1403,7 +1423,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, AsyncMakeBudgetWithdrawal) {
   EXPECT_EQ(1, num_entries11);
   EXPECT_EQ(1, total_entries8);
 
-  // After `PurgeStaleOrigins()` runs, the budget table will be empty.
+  // After `PurgeStale()` runs, the budget table will be empty.
   EXPECT_EQ(OperationResult::kSuccess, operation_result6);
   EXPECT_DOUBLE_EQ(kBitBudget, budget_result19.bits);
   EXPECT_DOUBLE_EQ(kBitBudget, budget_result20.bits);
@@ -1670,7 +1690,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest,
   EXPECT_EQ(OperationResult::kNotFound, result3.result);
 }
 
-TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
+TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStale) {
   url::Origin kOrigin1 = url::Origin::Create(GURL("http://www.example1.test"));
   url::Origin kOrigin2 = url::Origin::Create(GURL("http://www.example2.test"));
   url::Origin kOrigin3 = url::Origin::Create(GURL("http://www.example3.test"));
@@ -1750,12 +1770,12 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
       DBOperation(Type::DB_FETCH_ORIGINS,
                   {TestDatabaseOperationReceiver::SerializeBool(true)}));
 
-  base::Time override_time1 =
-      base::Time::Now() - base::Days(kOriginStalenessThresholdDays + 1);
+  base::Time override_time =
+      base::Time::Now() - base::Days(kStalenessThresholdDays + 1);
   operation_list.push(DBOperation(
-      Type::DB_OVERRIDE_TIME, kOrigin1,
-      {TestDatabaseOperationReceiver::SerializeTime(override_time1)}));
-  operation_list.push(DBOperation(Type::DB_GET_CREATION_TIME, kOrigin1));
+      Type::DB_OVERRIDE_TIME_ENTRY, kOrigin1,
+      {u"key1", TestDatabaseOperationReceiver::SerializeTime(override_time)}));
+
   operation_list.push(DBOperation(Type::DB_PURGE_STALE));
 
   operation_list.push(DBOperation(Type::DB_LENGTH, kOrigin1));
@@ -1769,12 +1789,22 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
       DBOperation(Type::DB_FETCH_ORIGINS,
                   {TestDatabaseOperationReceiver::SerializeBool(false)}));
 
-  base::Time override_time2 =
-      base::Time::Now() - base::Days(kOriginStalenessThresholdDays + 1);
   operation_list.push(DBOperation(
-      Type::DB_OVERRIDE_TIME, kOrigin3,
-      {TestDatabaseOperationReceiver::SerializeTime(override_time2)}));
+      Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin3,
+      {TestDatabaseOperationReceiver::SerializeTime(override_time)}));
   operation_list.push(DBOperation(Type::DB_GET_CREATION_TIME, kOrigin3));
+  operation_list.push(DBOperation(
+      Type::DB_OVERRIDE_TIME_ENTRY, kOrigin3,
+      {u"key1", TestDatabaseOperationReceiver::SerializeTime(override_time)}));
+  operation_list.push(DBOperation(
+      Type::DB_OVERRIDE_TIME_ENTRY, kOrigin3,
+      {u"key2", TestDatabaseOperationReceiver::SerializeTime(override_time)}));
+  operation_list.push(DBOperation(
+      Type::DB_OVERRIDE_TIME_ENTRY, kOrigin3,
+      {u"key3", TestDatabaseOperationReceiver::SerializeTime(override_time)}));
+  operation_list.push(DBOperation(
+      Type::DB_OVERRIDE_TIME_ENTRY, kOrigin1,
+      {u"key2", TestDatabaseOperationReceiver::SerializeTime(override_time)}));
   operation_list.push(DBOperation(Type::DB_PURGE_STALE));
 
   operation_list.push(DBOperation(Type::DB_LENGTH, kOrigin1));
@@ -1806,7 +1836,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   std::vector<mojom::StorageUsageInfoPtr> infos1;
   FetchOrigins(&infos1);
 
-  // Check that calling `PurgeStaleOrigins()` on the uninitialized database
+  // Check that calling `PurgeStale()` on the uninitialized database
   // doesn't give an error.
   bool open1 = false;
   IsOpen(&open1);
@@ -1814,7 +1844,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   DBStatus(&status1);
 
   OperationResult result1 = OperationResult::kSqlError;
-  PurgeStaleOrigins(&result1);
+  PurgeStale(&result1);
 
   OperationResult result2 = OperationResult::kSqlError;
   Set(kOrigin1, u"key1", u"value1", &result2);
@@ -1858,13 +1888,10 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   FetchOrigins(&infos2);
 
   bool success1 = false;
-  OverrideCreationTime(kOrigin1, override_time1, &success1);
-
-  TimeResult time_result1;
-  GetCreationTime(kOrigin1, &time_result1);
+  OverrideLastUsedTime(kOrigin1, u"key1", override_time, &success1);
 
   OperationResult result12 = OperationResult::kSqlError;
-  PurgeStaleOrigins(&result12);
+  PurgeStale(&result12);
 
   int length5 = -1;
   Length(kOrigin1, &length5);
@@ -1881,13 +1908,22 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   FetchOrigins(&infos4, /*exclude_empty_origins=*/false);
 
   bool success2 = false;
-  OverrideCreationTime(kOrigin3, override_time2, &success2);
+  OverrideCreationTime(kOrigin3, override_time, &success2);
 
-  TimeResult time_result2;
-  GetCreationTime(kOrigin3, &time_result2);
+  TimeResult time_result;
+  GetCreationTime(kOrigin3, &time_result);
+
+  bool success3 = false;
+  OverrideLastUsedTime(kOrigin3, u"key1", override_time, &success3);
+  bool success4 = false;
+  OverrideLastUsedTime(kOrigin3, u"key2", override_time, &success4);
+  bool success5 = false;
+  OverrideLastUsedTime(kOrigin3, u"key3", override_time, &success5);
+  bool success6 = false;
+  OverrideLastUsedTime(kOrigin1, u"key2", override_time, &success6);
 
   OperationResult result13 = OperationResult::kSqlError;
-  PurgeStaleOrigins(&result13);
+  PurgeStale(&result13);
 
   int length9 = -1;
   Length(kOrigin1, &length9);
@@ -1918,7 +1954,7 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   EXPECT_EQ(!GetParam().in_memory_only, open1);
   EXPECT_EQ(InitStatus::kUnattempted, status1);
 
-  // No error from calling `PurgeStaleOrigins()` on an uninitialized
+  // No error from calling `PurgeStale()` on an uninitialized
   // database.
   EXPECT_EQ(OperationResult::kSuccess, result1);
 
@@ -1950,11 +1986,10 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4));
 
   EXPECT_TRUE(success1);
-  EXPECT_EQ(override_time1, time_result1.time);
   EXPECT_EQ(OperationResult::kSuccess, result12);
 
-  // `kOrigin1` is cleared. The other origins are not.
-  EXPECT_EQ(0, length5);
+  // `kOrigin1` has 1 key cleared. The other origins are not modified.
+  EXPECT_EQ(1, length5);
   EXPECT_EQ(1, length6);
   EXPECT_EQ(3, length7);
   EXPECT_EQ(4, length8);
@@ -1962,18 +1997,24 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
   origins.clear();
   for (const auto& info : infos3)
     origins.push_back(info->storage_key.origin());
-  EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4));
+  EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4));
 
   origins.clear();
   for (const auto& info : infos4)
     origins.push_back(info->storage_key.origin());
-  EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin3, kOrigin4));
+  EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin3, kOrigin4));
 
   EXPECT_TRUE(success2);
-  EXPECT_EQ(override_time2, time_result2.time);
+  EXPECT_EQ(override_time, time_result.time);
+
+  EXPECT_TRUE(success3);
+  EXPECT_TRUE(success4);
+  EXPECT_TRUE(success5);
+  EXPECT_TRUE(success6);
+
   EXPECT_EQ(OperationResult::kSuccess, result13);
 
-  // `kOrigin3` is cleared. The other remaining ones are not.
+  // `kOrigin1` and `kOrigin3` are cleared. The remaining ones are not modified.
   EXPECT_EQ(0, length9);
   EXPECT_EQ(1, length10);
   EXPECT_EQ(0, length11);
@@ -1984,10 +2025,12 @@ TEST_P(AsyncSharedStorageDatabaseImplParamTest, PurgeStaleOrigins) {
     origins.push_back(info->storage_key.origin());
   EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
 
+  // `kOrigin1` is still in `per_origin_mapping` even though it has no entries,
+  // as we didn't override its creation time to be old enough to have expired.
   origins.clear();
   for (const auto& info : infos6)
     origins.push_back(info->storage_key.origin());
-  EXPECT_THAT(origins, ElementsAre(kOrigin2, kOrigin4));
+  EXPECT_THAT(origins, ElementsAre(kOrigin1, kOrigin2, kOrigin4));
 
   // Database is still intact after trimming memory.
   EXPECT_EQ(OperationResult::kSuccess, result14);
@@ -2135,7 +2178,7 @@ TEST_P(AsyncSharedStorageDatabaseImplPurgeMatchingOriginsParamTest,
   base::Time threshold2 = base::Time::Now() + base::Seconds(100);
   base::Time override_time1 = threshold2 + base::Milliseconds(5);
   operation_list.push(DBOperation(
-      Type::DB_OVERRIDE_TIME, kOrigin1,
+      Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin1,
       {TestDatabaseOperationReceiver::SerializeTime(override_time1)}));
 
   size_t matcher_id2 =
@@ -2163,12 +2206,12 @@ TEST_P(AsyncSharedStorageDatabaseImplPurgeMatchingOriginsParamTest,
 
   base::Time threshold3 = base::Time::Now() + base::Seconds(200);
   operation_list.push(
-      DBOperation(Type::DB_OVERRIDE_TIME, kOrigin3,
+      DBOperation(Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin3,
                   {TestDatabaseOperationReceiver::SerializeTime(threshold3)}));
 
   base::Time threshold4 = threshold3 + base::Seconds(100);
   operation_list.push(
-      DBOperation(Type::DB_OVERRIDE_TIME, kOrigin5,
+      DBOperation(Type::DB_OVERRIDE_TIME_ORIGIN, kOrigin5,
                   {TestDatabaseOperationReceiver::SerializeTime(threshold4)}));
 
   size_t matcher_id3 = matcher_utility.RegisterMatcherFunction(

@@ -6,12 +6,14 @@
 
 #include <fcntl.h>
 
+#include "ash/display/privacy_screen_controller.h"
+#include "ash/shell.h"
 #include "base/check_op.h"
 #include "base/files/file_enumerator.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/components/mojo_service_manager/connection.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,6 +37,8 @@ class DataCollectorDelegateImpl : public DataCollector::Delegate {
 
   // DataCollector::Delegate override.
   std::string GetTouchpadLibraryName() override;
+  bool IsPrivacyScreenSupported() override;
+  bool IsPrivacyScreenManaged() override;
 };
 
 DataCollectorDelegateImpl::DataCollectorDelegateImpl() = default;
@@ -75,6 +79,14 @@ std::string DataCollectorDelegateImpl::GetTouchpadLibraryName() {
 #else
   return "Default EventConverterEvdev";
 #endif
+}
+
+bool DataCollectorDelegateImpl::IsPrivacyScreenSupported() {
+  return Shell::Get()->privacy_screen_controller()->IsSupported();
+}
+
+bool DataCollectorDelegateImpl::IsPrivacyScreenManaged() {
+  return Shell::Get()->privacy_screen_controller()->IsManaged();
 }
 
 DataCollectorDelegateImpl* GetDataCollectorDelegate() {
@@ -148,13 +160,28 @@ void DataCollector::GetTouchscreenDevices(
     GetTouchscreenDevicesCallback callback) {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&GetTouchscreenDevicesOnUIThread,
-                                base::SequencedTaskRunnerHandle::Get(),
+                                base::SequencedTaskRunner::GetCurrentDefault(),
                                 std::move(callback)));
 }
 
 void DataCollector::GetTouchpadLibraryName(
     GetTouchpadLibraryNameCallback callback) {
   std::move(callback).Run(delegate_->GetTouchpadLibraryName());
+}
+
+void DataCollector::SetPrivacyScreenState(
+    bool state,
+    SetPrivacyScreenStateCallback callback) {
+  if (!delegate_->IsPrivacyScreenSupported() ||
+      delegate_->IsPrivacyScreenManaged()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  Shell::Get()->privacy_screen_controller()->SetEnabled(
+      state,
+      PrivacyScreenController::ToggleUISurface::kToggleUISurfaceToastButton);
+  std::move(callback).Run(true);
 }
 
 void DataCollector::Request(

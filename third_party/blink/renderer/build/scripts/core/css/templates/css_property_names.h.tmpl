@@ -59,6 +59,7 @@ const int kNumCSSPropertyIDs = static_cast<int>(kLastUnresolvedCSSProperty) + 1;
 
 const size_t kMaxCSSPropertyNameLength = {{max_name_length}};
 constexpr size_t kCSSPropertyIDBitLength = {{property_id_bit_length}};
+constexpr size_t kMaxShorthandExpansion = {{max_shorthand_expansion}};
 
 static_assert((static_cast<size_t>(1) << kCSSPropertyIDBitLength) >
                   static_cast<size_t>(kLastUnresolvedCSSProperty),
@@ -69,7 +70,7 @@ static_assert(CSSPropertyID::kColor == kFirstHighPriorityCSSProperty,
 static_assert(CSSPropertyID::kZoom == kLastHighPriorityCSSProperty,
               "CSSPropertyID::kZoom is the last high-priority property");
 static_assert((static_cast<int>(kLastHighPriorityCSSProperty) -
-               static_cast<int>(kFirstHighPriorityCSSProperty)) == 29,
+               static_cast<int>(kFirstHighPriorityCSSProperty)) == 31,
               "There should a low number of high-priority properties");
 
 inline int GetCSSPropertyIDIndex(CSSPropertyID id) {

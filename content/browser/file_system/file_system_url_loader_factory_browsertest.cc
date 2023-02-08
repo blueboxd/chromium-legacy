@@ -42,6 +42,7 @@
 #include "storage/browser/file_system/file_system_operation_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
+#include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/mock_quota_manager.h"
@@ -121,7 +122,7 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
         std::move(quit_closure).Run();
         return;
       case MOJO_RESULT_SHOULD_WAIT:
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(&ReadDataPipeInternal, handle, result,
                                       std::move(quit_closure)));
         return;
@@ -246,7 +247,8 @@ class FileSystemURLLoaderFactoryTest
         additional_providers;
     additional_providers.push_back(
         std::make_unique<storage::TestFileSystemBackend>(
-            base::ThreadTaskRunnerHandle::Get().get(), mnt_point));
+            base::SingleThreadTaskRunner::GetCurrentDefault().get(),
+            mnt_point));
 
     std::vector<storage::URLRequestAutoMountHandler> handlers = {
         base::BindRepeating(&TestAutoMountForURLRequest)};

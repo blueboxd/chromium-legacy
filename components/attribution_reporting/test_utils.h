@@ -5,17 +5,25 @@
 #ifndef COMPONENTS_ATTRIBUTION_REPORTING_TEST_UTILS_H_
 #define COMPONENTS_ATTRIBUTION_REPORTING_TEST_UTILS_H_
 
+#include <stddef.h>
+
 #include <ostream>
+#include <vector>
+
+#include "components/attribution_reporting/bounded_list.h"
 
 namespace attribution_reporting {
 
 class AggregatableTriggerData;
 class AggregatableValues;
 class AggregationKeys;
-struct EventTriggerData;
 class FilterData;
 class Filters;
-class SourceRegistration;
+class SuitableOrigin;
+
+struct EventTriggerData;
+struct SourceRegistration;
+struct TriggerRegistration;
 
 bool operator==(const AggregationKeys&, const AggregationKeys&);
 
@@ -44,6 +52,34 @@ std::ostream& operator<<(std::ostream&, const AggregatableTriggerData&);
 bool operator==(const EventTriggerData&, const EventTriggerData&);
 
 std::ostream& operator<<(std::ostream&, const EventTriggerData&);
+
+bool operator==(const TriggerRegistration&, const TriggerRegistration&);
+
+std::ostream& operator<<(std::ostream&, const TriggerRegistration&);
+
+bool operator==(const SuitableOrigin&, const SuitableOrigin&);
+
+std::ostream& operator<<(std::ostream&, const SuitableOrigin&);
+
+template <typename T, size_t kMaxSize>
+bool operator==(const BoundedList<T, kMaxSize>& a,
+                const BoundedList<T, kMaxSize>& b) {
+  return a.vec() == b.vec();
+}
+
+template <typename T, size_t kMaxSize>
+std::ostream& operator<<(std::ostream& out,
+                         const BoundedList<T, kMaxSize>& list) {
+  out << "[";
+
+  const char* separator = "";
+  for (const auto& item : list.vec()) {
+    out << separator << item;
+    separator = ", ";
+  }
+
+  return out << "]";
+}
 
 }  // namespace attribution_reporting
 

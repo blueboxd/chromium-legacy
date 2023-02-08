@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -228,8 +228,6 @@ void OfflinePageModelTaskified::SavePage(
   // If the page is being saved in the background, we should try to remove the
   // popup overlay that obstructs viewing the normal content.
   create_archive_params.remove_popup_overlay = save_page_params.is_background;
-  create_archive_params.use_page_problem_detectors =
-      save_page_params.use_page_problem_detectors;
 
   // Save directly to public location if on-the-fly enabled.
   //
@@ -624,7 +622,7 @@ void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
     return;
 
   bool first_run = last_maintenance_tasks_schedule_time_.is_null();
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&OfflinePageModelTaskified::RunMaintenanceTasks,
                      weak_ptr_factory_.GetWeakPtr(), now, first_run),

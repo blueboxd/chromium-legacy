@@ -16,11 +16,11 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/cellular_connection_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/client_cert_resolver.h"
@@ -37,7 +37,6 @@
 #include "chromeos/ash/components/network/network_util.h"
 #include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/shill_property_util.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -841,7 +840,7 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
   // Post a delayed task to check to see if certificates have loaded. If they
   // haven't, and queued_connect_ has not been cleared (e.g. by a successful
   // connect request), cancel the request and notify the user.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&NetworkConnectionHandlerImpl::CheckCertificatesLoaded,
                      AsWeakPtr()),

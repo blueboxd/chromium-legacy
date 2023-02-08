@@ -157,7 +157,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
   const CSSValue* value = CSSParserFastPaths::MaybeParseValue(
       resolved_property, string, parser_mode);
   if (value) {
-    return declaration->SetProperty(CSSPropertyValue(
+    return declaration->SetLonghandProperty(CSSPropertyValue(
         CSSPropertyName(resolved_property), *value, important));
   }
 
@@ -179,7 +179,7 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     value =
         CSSPropertyParser::ParseSingleValue(resolved_property, tokens, context);
     if (value != nullptr) {
-      return declaration->SetProperty(CSSPropertyValue(
+      return declaration->SetLonghandProperty(CSSPropertyValue(
           CSSPropertyName(resolved_property), *value, important));
     }
   }
@@ -257,9 +257,10 @@ ImmutableCSSPropertyValueSet* CSSParser::ParseInlineStyleDeclaration(
                                                     secure_context_mode);
 }
 
-std::unique_ptr<Vector<double>> CSSParser::ParseKeyframeKeyList(
+std::unique_ptr<Vector<KeyframeOffset>> CSSParser::ParseKeyframeKeyList(
+    const CSSParserContext* context,
     const String& key_list) {
-  return CSSParserImpl::ParseKeyframeKeyList(key_list);
+  return CSSParserImpl::ParseKeyframeKeyList(context, key_list);
 }
 
 StyleRuleKeyframe* CSSParser::ParseKeyframeRule(const CSSParserContext* context,

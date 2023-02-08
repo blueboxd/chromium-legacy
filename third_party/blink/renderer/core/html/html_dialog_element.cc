@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -51,13 +52,13 @@ void HTMLDialogElement::SetFocusForDialogLegacy(HTMLDialogElement* dialog) {
   if (!dialog->isConnected())
     return;
 
-  // Showing a <dialog> should hide all open popovers, immediately.
+  // Showing a <dialog> should hide all open popovers.
   auto& document = dialog->GetDocument();
   if (RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
           document.GetExecutionContext())) {
     HTMLElement::HideAllPopoversUntil(
         nullptr, document, HidePopoverFocusBehavior::kNone,
-        HidePopoverForcingLevel::kHideImmediately);
+        HidePopoverForcingLevel::kHideAfterAnimations);
   }
 
   dialog->previously_focused_element_ = document.FocusedElement();
@@ -187,9 +188,19 @@ void HTMLDialogElement::ScheduleCloseEvent() {
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
-void HTMLDialogElement::show() {
+void HTMLDialogElement::show(ExceptionState& exception_state) {
   if (FastHasAttribute(html_names::kOpenAttr))
     return;
+
+  if (RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+          GetDocument().GetExecutionContext()) &&
+      HasPopoverAttribute() && popoverOpen()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The dialog is already open as a Popover, and therefore cannot be "
+        "opened as a non-modal dialog.");
+  }
+
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   // The layout must be updated here because setFocusForDialog calls
@@ -228,16 +239,24 @@ class DialogCloseWatcherEventListener : public NativeEventListener {
 
 void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   if (FastHasAttribute(html_names::kOpenAttr)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The element already has an 'open' "
-                                      "attribute, and therefore cannot be "
-                                      "opened modally.");
-    return;
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The element already has an 'open' "
+        "attribute, and therefore cannot be "
+        "opened modally.");
   }
   if (!isConnected()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The element is not in a Document.");
-    return;
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The element is not in a Document.");
+  }
+  if (RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+          GetDocument().GetExecutionContext()) &&
+      HasPopoverAttribute() && popoverOpen()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The dialog is already open as a Popover, and therefore cannot be "
+        "opened as a modal dialog.");
   }
 
   Document& document = GetDocument();
@@ -260,17 +279,15 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   InertSubtreesChanged(document, old_modal_dialog);
   document.UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
-  if (RuntimeEnabledFeatures::CloseWatcherEnabled()) {
-    if (LocalDOMWindow* window = GetDocument().domWindow()) {
-      close_watcher_ = CloseWatcher::Create(window);
-      if (close_watcher_) {
-        auto* event_listener =
-            MakeGarbageCollected<DialogCloseWatcherEventListener>(this);
-        close_watcher_->addEventListener(event_type_names::kClose,
-                                         event_listener);
-        close_watcher_->addEventListener(event_type_names::kCancel,
-                                         event_listener);
-      }
+  if (LocalDOMWindow* window = GetDocument().domWindow()) {
+    close_watcher_ = CloseWatcher::Create(window, this);
+    if (close_watcher_) {
+      auto* event_listener =
+          MakeGarbageCollected<DialogCloseWatcherEventListener>(this);
+      close_watcher_->addEventListener(event_type_names::kClose,
+                                       event_listener);
+      close_watcher_->addEventListener(event_type_names::kCancel,
+                                       event_listener);
     }
   }
 
@@ -305,6 +322,8 @@ void HTMLDialogElement::DefaultEventHandler(Event& event) {
 }
 
 void HTMLDialogElement::CloseWatcherFiredCancel(Event* close_watcher_event) {
+  if (!RuntimeEnabledFeatures::CloseWatcherEnabled())
+    return;
   // https://wicg.github.io/close-watcher/#patch-dialog cancelAction
 
   Event* dialog_event = Event::CreateCancelable(event_type_names::kCancel);
@@ -315,6 +334,8 @@ void HTMLDialogElement::CloseWatcherFiredCancel(Event* close_watcher_event) {
 }
 
 void HTMLDialogElement::CloseWatcherFiredClose() {
+  if (!RuntimeEnabledFeatures::CloseWatcherEnabled())
+    return;
   // https://wicg.github.io/close-watcher/#patch-dialog closeAction
 
   close();
@@ -324,12 +345,12 @@ void HTMLDialogElement::CloseWatcherFiredClose() {
 void HTMLDialogElement::SetFocusForDialog() {
   previously_focused_element_ = GetDocument().FocusedElement();
 
-  // Showing a <dialog> should hide all open popovers, immediately.
+  // Showing a <dialog> should hide all open popovers.
   if (RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
           GetDocument().GetExecutionContext())) {
-    HTMLElement::HideAllPopoversUntil(nullptr, GetDocument(),
-                                    HidePopoverFocusBehavior::kNone,
-                                    HidePopoverForcingLevel::kHideImmediately);
+    HTMLElement::HideAllPopoversUntil(
+        nullptr, GetDocument(), HidePopoverFocusBehavior::kNone,
+        HidePopoverForcingLevel::kHideAfterAnimations);
   }
 
   Element* control = GetFocusDelegate();

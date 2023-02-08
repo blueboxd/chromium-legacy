@@ -20,6 +20,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/origin_trials/common/features.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -27,10 +28,12 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/login_delegate.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -49,6 +52,7 @@
 #include "content/web_test/browser/web_test_browser_main_parts.h"
 #include "content/web_test/browser/web_test_control_host.h"
 #include "content/web_test/browser/web_test_cookie_manager.h"
+#include "content/web_test/browser/web_test_origin_trial_throttle.h"
 #include "content/web_test/browser/web_test_permission_manager.h"
 #include "content/web_test/browser/web_test_storage_access_manager.h"
 #include "content/web_test/browser/web_test_tts_platform.h"
@@ -113,12 +117,11 @@ class BoundsMatchVideoSizeOverlayWindow : public VideoOverlayWindow {
   BoundsMatchVideoSizeOverlayWindow& operator=(
       const BoundsMatchVideoSizeOverlayWindow&) = delete;
 
-  bool IsActive() override { return false; }
+  bool IsActive() const override { return false; }
   void Close() override {}
   void ShowInactive() override {}
   void Hide() override {}
-  bool IsVisible() override { return false; }
-  bool IsAlwaysOnTop() override { return false; }
+  bool IsVisible() const override { return false; }
   gfx::Rect GetBounds() override { return gfx::Rect(size_); }
   void UpdateNaturalSize(const gfx::Size& natural_size) override {
     size_ = natural_size;
@@ -133,8 +136,9 @@ class BoundsMatchVideoSizeOverlayWindow : public VideoOverlayWindow {
   void SetToggleMicrophoneButtonVisibility(bool is_visible) override {}
   void SetToggleCameraButtonVisibility(bool is_visible) override {}
   void SetHangUpButtonVisibility(bool is_visible) override {}
+  void SetNextSlideButtonVisibility(bool is_visible) override {}
+  void SetPreviousSlideButtonVisibility(bool is_visible) override {}
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
-  cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
   gfx::Size size_;
@@ -375,6 +379,21 @@ void WebTestContentBrowserClient::OverrideWebkitPrefs(
     blink::web_pref::WebPreferences* prefs) {
   if (WebTestControlHost::Get())
     WebTestControlHost::Get()->OverrideWebkitPrefs(prefs);
+}
+
+std::vector<std::unique_ptr<content::NavigationThrottle>>
+WebTestContentBrowserClient::CreateThrottlesForNavigation(
+    content::NavigationHandle* navigation_handle) {
+  std::vector<std::unique_ptr<content::NavigationThrottle>> throttles =
+      ShellContentBrowserClient::CreateThrottlesForNavigation(
+          navigation_handle);
+  if (origin_trials::features::IsPersistentOriginTrialsEnabled()) {
+    throttles.push_back(std::make_unique<WebTestOriginTrialThrottle>(
+        navigation_handle, navigation_handle->GetWebContents()
+                               ->GetBrowserContext()
+                               ->GetOriginTrialsControllerDelegate()));
+  }
+  return throttles;
 }
 
 void WebTestContentBrowserClient::AppendExtraCommandLineSwitches(

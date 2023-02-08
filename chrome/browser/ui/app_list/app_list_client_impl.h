@@ -15,8 +15,6 @@
 
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
-#include "ash/public/cpp/shelf_types.h"
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -136,7 +134,7 @@ class AppListClientImpl
   // client is accessed or active user is changed.
   void UpdateProfile();
 
-  void ShowAppList();
+  void ShowAppList(ash::AppListShowSource source);
 
   bool app_list_target_visibility() const {
     return app_list_target_visibility_;

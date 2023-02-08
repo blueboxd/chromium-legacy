@@ -15,19 +15,18 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/session/arc_vm_data_migration_status.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
 
-namespace base {
-struct SystemMemoryInfoKB;
-}  // namespace base
-
 namespace user_manager {
 class User;
 }  // namespace user_manager
+
+class PrefService;
 
 namespace arc {
 
@@ -58,9 +57,6 @@ enum class ArcVmUreadaheadMode {
   // ARCVM ureadahead is turned off for disabled mode.
   DISABLED,
 };
-
-using SystemMemoryInfoCallback =
-    base::RepeatingCallback<bool(base::SystemMemoryInfoKB*)>;
 
 // Upstart Job Description
 struct JobDesc {
@@ -128,7 +124,7 @@ bool IsUreadaheadDisabled();
 
 // Returns mode of operation for ureadahead during the ARCVM boot flow.
 // Valid modes are readahead, generate, or disabled.
-ArcVmUreadaheadMode GetArcVmUreadaheadMode(SystemMemoryInfoCallback callback);
+ArcVmUreadaheadMode GetArcVmUreadaheadMode();
 
 // Returns true if ARC should always start within the primary user session
 // (opted in user or not), and other supported mode such as guest and Kiosk
@@ -225,6 +221,16 @@ int GetSystemPropertyInt(const std::string& property);
 // are successfully processed, |callback| is called with true.
 void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
                           chromeos::VoidDBusMethodCallback callback);
+
+// Gets the ArcVmDataMigrationStatus profile preference.
+ArcVmDataMigrationStatus GetArcVmDataMigrationStatus(PrefService* prefs);
+
+// Sets the ArcVmDataMigrationStatus profile preference.
+void SetArcVmDataMigrationStatus(PrefService* prefs,
+                                 ArcVmDataMigrationStatus status);
+
+// Returns whether ARCVM should use virtio-blk for /data.
+bool ShouldUseVirtioBlkData(PrefService* prefs);
 
 }  // namespace arc
 

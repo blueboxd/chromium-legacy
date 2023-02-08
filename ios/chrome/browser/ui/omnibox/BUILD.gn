@@ -175,6 +175,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/ui/default_promo:utils",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/gestures",
+    "//ios/chrome/browser/ui/lens:lens_entrypoint",
     "//ios/chrome/browser/ui/location_bar:constants",
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
     "//ios/chrome/browser/ui/main:layout_guide_util",
@@ -230,8 +231,10 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base",
     "//components/google/core/common",
+    "//components/history/core/browser",
     "//components/variations:variations",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/history",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
     "//ios/chrome/test/app:test_support",
     "//ios/testing/earl_grey:eg_app_support+eg2",
@@ -329,5 +332,8 @@ source_set("features") {
     "omnibox_ui_features.h",
   ]
   public_deps = [ "//base" ]
-  deps = [ "//ios/chrome/browser/ui:feature_flags" ]
+  deps = [
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ui/base",
+  ]
 }

@@ -77,7 +77,7 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   class CONTENT_EXPORT InterestGroupObserverInterface
       : public base::CheckedObserver {
    public:
-    enum AccessType { kJoin, kLeave, kUpdate, kBid, kWin };
+    enum AccessType { kJoin, kLeave, kUpdate, kLoaded, kBid, kWin };
     virtual void OnInterestGroupAccessed(const base::Time& access_time,
                                          AccessType type,
                                          const std::string& owner_origin,
@@ -87,6 +87,13 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   // InterestGroupManager overrides:
   void GetAllInterestGroupJoiningOrigins(
       base::OnceCallback<void(std::vector<url::Origin>)> callback) override;
+
+  void GetAllInterestGroupDataKeys(
+      base::OnceCallback<void(std::vector<InterestGroupDataKey>)> callback)
+      override;
+
+  void RemoveInterestGroupsByDataKey(InterestGroupDataKey data_key,
+                                     base::OnceClosure callback) override;
 
   /******** Proxy function calls to InterestGroupsStorage **********/
 
@@ -172,9 +179,10 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   void RecordInterestGroupWin(const blink::InterestGroupKey& group_key,
                               const std::string& ad_json);
 
-  // Reports the AD URL to the k-anonymity service. Should be called when FLEDGE
-  // selects and ad.
-  void RegisterAdAsWon(const GURL& render_url);
+  // Reports the ad to the k-anonymity service. Should be called when FLEDGE
+  // selects an ad.
+  void RegisterAdAsWon(const blink::InterestGroup& group,
+                       const blink::InterestGroup::Ad& ad);
 
   // Gets a single interest group.
   void GetInterestGroup(
@@ -375,6 +383,10 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
       InterestGroupObserverInterface::AccessType type,
       const std::string& owner_origin,
       const std::string& name);
+
+  void OnGetInterestGroupsComplete(
+      base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback,
+      std::vector<StorageInterestGroup> groups);
 
   // Enqueues each of `report_urls` to the `report_requests_` queue.
   void EnqueueReportsInternal(

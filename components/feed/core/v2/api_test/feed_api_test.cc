@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/keyvalue_store.pb.h"
@@ -534,6 +535,7 @@ void TestFeedNetwork::SendDiscoverApiRequest(
   bool is_feed_query_request =
       request_type == NetworkRequestType::kFeedQuery ||
       request_type == WebFeedListContentsDiscoverApi::kRequestType ||
+      request_type == SingleWebFeedListContentsDiscoverApi::kRequestType ||
       request_type == QueryInteractiveFeedDiscoverApi::kRequestType ||
       request_type == QueryBackgroundFeedDiscoverApi::kRequestType ||
       request_type == QueryNextPageDiscoverApi::kRequestType;
@@ -580,6 +582,11 @@ void TestFeedNetwork::SendDiscoverApiRequest(
       case WebFeedListContentsDiscoverApi::kRequestType: {
         feedwire::Response response;
         InjectApiResponse<WebFeedListContentsDiscoverApi>(response);
+        break;
+      }
+      case SingleWebFeedListContentsDiscoverApi::kRequestType: {
+        feedwire::Response response;
+        InjectApiResponse<SingleWebFeedListContentsDiscoverApi>(response);
         break;
       }
       case QueryInteractiveFeedDiscoverApi::kRequestType: {
@@ -702,8 +709,8 @@ void TestFeedNetwork::Reply(base::OnceClosure reply_closure) {
     if (on_reply_added_)
       on_reply_added_.Run();
   } else {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(reply_closure));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(reply_closure));
   }
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "base/json/json_reader.h"
 #include "base/test/bind.h"
@@ -12,8 +13,7 @@
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace arc {
-namespace input_overlay {
+namespace arc::input_overlay {
 
 class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
  public:
@@ -40,8 +40,9 @@ class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
         "org.chromium.arc.testapp.inputoverlay");
     injector_ = std::make_unique<TouchInjector>(
         arc_test_window_->GetWindow(),
+        *arc_test_window_->GetWindow()->GetProperty(ash::kArcPackageNameKey),
         base::BindLambdaForTesting(
-            [&](std::unique_ptr<AppDataProto>, const std::string&) {}));
+            [&](std::unique_ptr<AppDataProto>, std::string) {}));
     controller_ =
         std::make_unique<DisplayOverlayController>(injector_.get(), false);
   }
@@ -72,5 +73,4 @@ TEST_F(DisplayOverlayControllerTest, TestWindowBoundsChange) {
   EXPECT_EQ(updated_bounds, new_bounds);
 }
 
-}  // namespace input_overlay
-}  // namespace arc
+}  // namespace arc::input_overlay

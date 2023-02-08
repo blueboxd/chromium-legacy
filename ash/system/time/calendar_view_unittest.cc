@@ -42,6 +42,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/test/ax_event_counter.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -188,6 +189,8 @@ class CalendarViewTest : public AshTestBase {
         ->children()[0];
   }
   views::View* event_list_view() { return calendar_view_->event_list_view_; }
+
+  views::View* up_next_view() { return calendar_view_->up_next_view_; }
 
   void ScrollUpOneMonth() {
     calendar_view_->ScrollOneMonthAndAutoScroll(/*scroll_up=*/true);
@@ -799,6 +802,26 @@ TEST_F(CalendarViewTest, FocusReturnsToTodaysDate) {
 
   // After EventListView is closed, todays DateCellView should be focused.
   EXPECT_EQ(todays_date_cell_view, focus_manager->GetFocusedView());
+}
+
+TEST_F(CalendarViewTest, OpenListAndCloseListFireAccessibilityEvents) {
+  views::test::AXEventCounter counter(views::AXEventManager::Get());
+  CreateCalendarView();
+  auto* focus_manager = calendar_view()->GetFocusManager();
+  const auto* todays_date_cell_view = focus_manager->GetFocusedView();
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged, scroll_view()));
+
+  // Clicking on the date cell will open the event list. There should be one
+  // text-changed accessibility event fired on the scroll view.
+  ClickDateCell(static_cast<const views::LabelButton*>(todays_date_cell_view));
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged, scroll_view()));
+
+  counter.ResetAllCounts();
+
+  // Pressing enter will close the event list. There should be one text-changed
+  // accessibility event fired on the scroll view.
+  PressEnter();
+  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged, scroll_view()));
 }
 
 // Tests `RequestFocusForEventListCloseButton()`.
@@ -2140,6 +2163,146 @@ TEST_F(CalendarViewWithMessageCenterTest,
 
   // Today's date cell should be focused now.
   EXPECT_EQ(current_date_cell_view, calendar_focus_manager()->GetFocusedView());
+}
+
+class CalendarViewWithJellyEnabledTest : public CalendarViewTest {
+ public:
+  CalendarViewWithJellyEnabledTest() = default;
+  CalendarViewWithJellyEnabledTest(const CalendarViewWithJellyEnabledTest&) =
+      delete;
+  CalendarViewWithJellyEnabledTest& operator=(
+      const CalendarViewWithJellyEnabledTest&) = delete;
+  ~CalendarViewWithJellyEnabledTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitWithFeatures(
+        {features::kCalendarView, features::kCalendarJelly}, {});
+    CalendarViewTest::SetUp();
+  }
+
+  // Assumes current time is "18 Nov 2021 10:00 GMT".
+  std::unique_ptr<google_apis::calendar::EventList>
+  CreateMockEventListWithEventStartTimeMoreThanTwoHoursAway() {
+    auto event_list = std::make_unique<google_apis::calendar::EventList>();
+    event_list->set_time_zone("Greenwich Mean Time");
+    event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_0", "summary_0", "18 Nov 2021 12:30 GMT", "18 Nov 2021 13:30 GMT"));
+
+    return event_list;
+  }
+
+  // Assumes current time is "18 Nov 2021 10:00 GMT".
+  std::unique_ptr<google_apis::calendar::EventList>
+  CreateMockEventListWithEventStartTimeTenMinsAway() {
+    auto event_list = std::make_unique<google_apis::calendar::EventList>();
+    event_list->set_time_zone("Greenwich Mean Time");
+    event_list->InjectItemForTesting(calendar_test_utils::CreateEvent(
+        "id_0", "summary_0", "18 Nov 2021 10:10 GMT", "18 Nov 2021 13:30 GMT"));
+
+    return event_list;
+  }
+
+  void MockEventsFetched(
+      base::Time date,
+      std::unique_ptr<google_apis::calendar::EventList> event_list) {
+    Shell::Get()->system_tray_model()->calendar_model()->OnEventsFetched(
+        calendar_utils::GetStartOfMonthUTC(date),
+        google_apis::ApiErrorCode::HTTP_SUCCESS, event_list.get());
+  }
+
+ private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+};
+
+TEST_F(CalendarViewWithJellyEnabledTest,
+       GivenNoEvents_WhenCalendarViewOpens_ThenUpNextViewShouldNotBeShown) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("7 Jun 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+      ash::prefs::kCalendarIntegrationEnabled, false);
+  CreateCalendarView();
+
+  // When we've just created the calendar view and not fetched any events, then
+  // up next shouldn't have been created.
+  bool is_showing_up_next_view = up_next_view();
+  EXPECT_FALSE(is_showing_up_next_view);
+}
+
+TEST_F(
+    CalendarViewWithJellyEnabledTest,
+    GivenEventsStartingMoreThanTwoHoursAway_WhenCalendarViewOpens_ThenUpNextViewShouldNotBeShown) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("18 Nov 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  CreateCalendarView();
+  MockEventsFetched(
+      calendar_utils::GetStartOfMonthUTC(date),
+      CreateMockEventListWithEventStartTimeMoreThanTwoHoursAway());
+
+  // When fetched events are more than two hours away, then up next shouldn't
+  // have been created.
+  bool is_showing_up_next_view = up_next_view();
+  EXPECT_FALSE(is_showing_up_next_view);
+}
+
+TEST_F(
+    CalendarViewWithJellyEnabledTest,
+    GivenEventsStartingTenMinsAway_WhenCalendarViewOpens_ThenUpNextViewShouldBeShown) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("18 Nov 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  CreateCalendarView();
+  MockEventsFetched(calendar_utils::GetStartOfMonthUTC(date),
+                    CreateMockEventListWithEventStartTimeTenMinsAway());
+
+  // When fetched events are in the next 10 mins, then up next should have been
+  // created.
+  bool is_showing_up_next_view = up_next_view();
+  EXPECT_TRUE(is_showing_up_next_view);
+}
+
+TEST_F(
+    CalendarViewWithJellyEnabledTest,
+    GivenUpNextIsShown_WhenNewEventsMoreThanTwoHoursAwayAreFetched_ThenUpNextViewShouldNotBeShown) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("18 Nov 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  CreateCalendarView();
+  MockEventsFetched(calendar_utils::GetStartOfMonthUTC(date),
+                    CreateMockEventListWithEventStartTimeTenMinsAway());
+
+  // When fetched events are in the next 10 mins, then up next should have been
+  // created.
+  EXPECT_TRUE(up_next_view());
+
+  MockEventsFetched(
+      calendar_utils::GetStartOfMonthUTC(date),
+      CreateMockEventListWithEventStartTimeMoreThanTwoHoursAway());
+
+  // When fetched events are now more than two hours away, then up next
+  // should have been destroyed.
+  EXPECT_FALSE(up_next_view());
 }
 
 }  // namespace ash

@@ -358,7 +358,7 @@ void PermissionsUpdater::RevokeRuntimePermissions(
       extension.permissions_data()->active_permissions();
 
   // Unlike adding permissions, we should know that any permissions we remove
-  // are a superset of the permissions the extension has active (because we only
+  // are a subset of the permissions the extension has active (because we only
   // allow removal origins and the extension can't have a broader origin than
   // what it has granted). Because of this, we can just look for any patterns
   // contained in both sets.
@@ -367,8 +367,7 @@ void PermissionsUpdater::RevokeRuntimePermissions(
           active, permissions,
           URLPatternSet::IntersectionBehavior::kPatternsContainedByBoth);
 
-  CHECK(extension.permissions_data()->active_permissions().Contains(
-      *active_permissions_to_remove))
+  CHECK(active.Contains(*active_permissions_to_remove))
       << "Cannot remove permissions that are not active.";
   CHECK(GetRevokablePermissions(&extension)->Contains(permissions))
       << "Cannot remove non-revokable permissions.";
@@ -517,9 +516,8 @@ PermissionsUpdater::GetRevokablePermissions(const Extension* extension) const {
   // Additionally, some required permissions may be revokable if they can be
   // withheld by the ScriptingPermissionsModifier.
   std::unique_ptr<const PermissionSet> revokable_scripting_permissions =
-      ScriptingPermissionsModifier(browser_context_,
-                                   base::WrapRefCounted(extension))
-          .GetRevokablePermissions();
+      PermissionsManager::Get(browser_context_)
+          ->GetRevokablePermissions(*extension);
 
   if (revokable_scripting_permissions) {
     revokable_permissions = PermissionSet::CreateUnion(
@@ -550,8 +548,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
     desired_permissions = &extension->permissions_data()->active_permissions();
   } else {
     desired_permissions_wrapper =
-        PermissionsManager::Get(browser_context_)
-            ->GetBoundedExtensionDesiredPermissions(*extension);
+        permissions_manager->GetBoundedExtensionDesiredPermissions(*extension);
     desired_permissions = desired_permissions_wrapper.get();
   }
 

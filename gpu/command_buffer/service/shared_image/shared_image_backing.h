@@ -102,7 +102,6 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   SkAlphaType alpha_type() const { return alpha_type_; }
   uint32_t usage() const { return usage_; }
   const Mailbox& mailbox() const { return mailbox_; }
-  size_t estimated_size() const { return estimated_size_; }
   bool is_thread_safe() const { return !!lock_; }
   bool is_ref_counted() const { return is_ref_counted_; }
 
@@ -148,6 +147,13 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Marks the provided rect as cleared.
   virtual void SetClearedRect(const gfx::Rect& cleared_rect) = 0;
 
+  // Indicate that the image is purgable. When an image is purgeable, its
+  // contents may be discarded at any time. Before the image can be used again,
+  // it must be set to be not-purgeable. This is intended to be lighter-weight
+  // than allocating and freeing the image. See investigation in
+  // https://crbug.com/1347282.
+  virtual void SetPurgeable(bool purgeable) {}
+
   virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence);
 
   // Uploads pixels from memory into GPU texture. Backings must implement this
@@ -179,9 +185,15 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       base::trace_event::ProcessMemoryDump* pmd,
       uint64_t client_tracing_id);
 
-  // Reports the estimated size of the backing for the purpose of memory
-  // tracking.
-  virtual size_t EstimatedSizeForMemTracking() const;
+  // Gets the estimated size of the backing. This is the value recorded for peak
+  // GPU memory tracking.
+  size_t GetEstimatedSize() const LOCKS_EXCLUDED(lock_);
+
+  // Reports the estimated size of the backing for the purpose of memory-infra
+  // dumps. By default this is the same value reported by GetEstimatedSize().
+  // Backings that must query for an accurate size can override this to provide
+  // a more accurate estimated size for memory dumps.
+  virtual size_t GetEstimatedSizeForMemoryDump() const;
 
   // Returns the NativePixmap backing the SharedImageBacking. Returns null if
   // the SharedImage is not backed by a NativePixmap.
@@ -216,7 +228,8 @@ class GPU_GLES2_EXPORT SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
-      WGPUBackendType backend_type);
+      WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats);
   virtual std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
@@ -234,6 +247,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   virtual std::unique_ptr<LegacyOverlayImageRepresentation>
   ProduceLegacyOverlay(SharedImageManager* manager, MemoryTypeTracker* tracker);
 #endif
+
+  // Updates the estimated size if memory usage changes after creation.
+  void UpdateEstimatedSize(size_t estimated_size_bytes)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Used by subclasses during destruction.
   bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -293,7 +310,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const GrSurfaceOrigin surface_origin_;
   const SkAlphaType alpha_type_;
   const uint32_t usage_;
-  const size_t estimated_size_;
+  size_t estimated_size_ GUARDED_BY(lock_);
 
   bool is_ref_counted_ = true;
 

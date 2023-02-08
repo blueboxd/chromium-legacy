@@ -25,9 +25,9 @@
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
-#         google google-0xffff
-#         intel intel-gen-9 intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92
-#               intel-0x3e9b intel-0x5912 intel-0x9bc5
+#         google google-0xffff google-0xc0de
+#         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
+#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -151,14 +151,13 @@ crbug.com/923134 [ android ] ContextLost_WebGL2Blocked [ Skip ]
 # Non-"Skip" expectations go here to suppress regular flakes/failures.
 
 # Flaking on Mac / Linux
-crbug.com/1284424 [ mac ] ContextLost_WebGPUStressRequestDeviceAndRemoveLoop [ RetryOnFailure ]
+crbug.com/1399895 [ mac amd release asan ] GpuCrash_InfoForHardwareGpu [ RetryOnFailure ]
 
 # Flakily not getting WebGL blocked on context loss
 
 # Failing on android N5
 
 # Flaking on Linux FYI Release
-crbug.com/1340081 [ linux release amd-0x7340 ] ContextLost_WorkerWebGLRAFAfterGPUCrash [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

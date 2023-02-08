@@ -592,15 +592,16 @@ content::Referrer CreateReferrer(const GURL& url,
       content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
 }
 
-content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
+content::WebContents* GetWebContentsToUse(
+    content::RenderFrameHost* render_frame_host) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If we're viewing in a MimeHandlerViewGuest, use its embedder WebContents.
   auto* guest_view =
-      extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
+      extensions::MimeHandlerViewGuest::FromRenderFrameHost(render_frame_host);
   if (guest_view)
     return guest_view->embedder_web_contents();
 #endif
-  return web_contents;
+  return content::WebContents::FromRenderFrameHost(render_frame_host);
 }
 
 bool g_custom_id_ranges_initialized = false;
@@ -723,7 +724,7 @@ RenderViewContextMenu::RenderViewContextMenu(
       protocol_handler_registry_(
           ProtocolHandlerRegistryFactory::GetForBrowserContext(GetProfile())),
       accessibility_labels_submenu_model_(this),
-      embedder_web_contents_(GetWebContentsToUse(source_web_contents_)),
+      embedder_web_contents_(GetWebContentsToUse(&render_frame_host)),
       autofill_context_menu_manager_(
           autofill::PersonalDataManagerFactory::GetForProfile(
               GetProfile()->GetOriginalProfile()),
@@ -1071,7 +1072,7 @@ void RenderViewContextMenu::InitMenu() {
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (features::IsPdfOcrEnabled() &&
       accessibility_state_utils::IsScreenReaderEnabled() &&
-      screen_ai::ScreenAIInstallState::GetInstance()->is_component_ready() &&
+      screen_ai::ScreenAIInstallState::GetInstance()->IsComponentReady() &&
       IsFrameInPdfViewer(GetRenderFrameHost())) {
     AppendPdfOcrItem();
   }
@@ -1184,12 +1185,8 @@ int RenderViewContextMenu::GetRegionSearchIdc() const {
 std::u16string RenderViewContextMenu::GetImageSearchProviderName(
     const TemplateURL* provider) const {
   if (search::DefaultSearchProviderIsGoogle(GetProfile())) {
-    // Check if string should use `Google Lens` as visual search provider or
-    // `Google`.
-    if (!base::FeatureList::IsEnabled(lens::features::kLensStandalone) ||
-        lens::features::UseGoogleAsVisualSearchProvider()) {
-      return provider->short_name();
-    }
+    // The image search branding label should always be 'Google'.
+    return provider->short_name();
   }
   // image_search_branding_label() returns the provider short name if no
   // image_search_branding_label is set.
@@ -1639,11 +1636,11 @@ void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Don't show "Open link in new app window", if the link points to the
-  // current app, and the app is single windowed.
+  // current app, and the app would reuse an existing window.
   if (system_app_ &&
       system_app_->GetType() ==
           ash::GetSystemWebAppTypeForAppId(profile, *link_app_id) &&
-      system_app_->ShouldReuseExistingWindow()) {
+      system_app_->GetWindowForLaunch(profile, params_.link_url) != nullptr) {
     return;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1743,7 +1740,8 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  AppendPictureInPictureItem();
+  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
+                                       IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
   AppendMediaRouterItem();
 }
 
@@ -1756,7 +1754,7 @@ void RenderViewContextMenu::AppendMediaItems() {
 
 void RenderViewContextMenu::AppendPluginItems() {
   if (params_.page_url == params_.src_url ||
-      (guest_view::GuestViewBase::IsGuest(source_web_contents_) &&
+      (guest_view::GuestViewBase::IsGuest(GetRenderFrameHost()) &&
        (!embedder_web_contents_ || !embedder_web_contents_->IsSavable()))) {
     // Both full page and embedded plugins are hosted as guest now,
     // the difference is a full page plugin is not considered as savable.
@@ -2153,12 +2151,6 @@ void RenderViewContextMenu::AppendPasswordItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
-void RenderViewContextMenu::AppendPictureInPictureItem() {
-  if (base::FeatureList::IsEnabled(media::kPictureInPicture))
-    menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
-                                         IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
-}
-
 void RenderViewContextMenu::AppendSharingItems() {
   size_t items_initial = menu_model_.GetItemCount();
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -2211,15 +2203,8 @@ void RenderViewContextMenu::AppendClickToCallItem() {
 void RenderViewContextMenu::AppendRegionSearchItem() {
   int resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH;
 
-  if (lens::features::UseRegionSearchMenuItemAltText1()) {
-    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
-  } else if (lens::features::UseRegionSearchMenuItemAltText2()) {
-    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT2;
-  } else if (lens::features::UseRegionSearchMenuItemAltText3()) {
-    resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT3;
-  } else if (lens::features::IsLensFullscreenSearchEnabled()) {
-    // Default text for fullscreen search when enabled. This is the same string
-    // as the third alternative text option.
+  if (lens::features::IsLensFullscreenSearchEnabled()) {
+    // Default text for fullscreen search when enabled.
     resource_id = IDS_CONTENT_CONTEXT_LENS_REGION_SEARCH_ALT1;
   }
 
@@ -3083,8 +3068,8 @@ bool RenderViewContextMenu::IsReloadEnabled() const {
 }
 
 bool RenderViewContextMenu::IsViewSourceEnabled() const {
-  if (!!extensions::MimeHandlerViewGuest::FromWebContents(
-          source_web_contents_)) {
+  if (!!extensions::MimeHandlerViewGuest::FromRenderFrameHost(
+          GetRenderFrameHost())) {
     return false;
   }
   // Disallow ViewSource if DevTools are disabled.
@@ -3117,8 +3102,8 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
   // If no |chrome_translate_client| attached with this WebContents or we're
   // viewing in a MimeHandlerViewGuest translate will be disabled.
   if (!chrome_translate_client ||
-      !!extensions::MimeHandlerViewGuest::FromWebContents(
-          source_web_contents_)) {
+      !!extensions::MimeHandlerViewGuest::FromRenderFrameHost(
+          GetRenderFrameHost())) {
     return false;
   }
   std::string source_lang =
@@ -3273,6 +3258,8 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
 
 bool RenderViewContextMenu::IsRegionSearchEnabled() const {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // TODO(nguyenbryan): Refactor to use lens_region_search_helper.cc after PDF
+  // support is cleaned up.
   if (!GetBrowser())
     return false;
 
@@ -3640,24 +3627,23 @@ void RenderViewContextMenu::ExecRegionSearch(
     return;
   }
 
+  WebContents* web_contents = source_web_contents_;
+  if (base::FeatureList::IsEnabled(
+          lens::features::kEnableRegionSearchOnPdfViewer)) {
+    // We don't use `source_web_contents_` here because it doesn't work with
+    // the PDF reader.
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  }
   if (!lens_region_search_controller_) {
-    WebContents* web_contents = source_web_contents_;
-    if (base::FeatureList::IsEnabled(
-            lens::features::kEnableRegionSearchOnPdfViewer)) {
-      // We don't use `source_web_contents_` here because it doesn't work with
-      // the PDF reader.
-      web_contents = browser->tab_strip_model()->GetActiveWebContents();
-    }
     lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(web_contents,
-                                                           browser);
+        std::make_unique<lens::LensRegionSearchController>(browser);
   }
   // If Lens fullscreen search is enabled, we want to send every region search
   // as a fullscreen capture.
   bool use_fullscreen_capture =
       GetMenuSourceType(event_flags) == ui::MENU_SOURCE_KEYBOARD ||
       lens::features::IsLensFullscreenSearchEnabled();
-  lens_region_search_controller_->Start(use_fullscreen_capture,
+  lens_region_search_controller_->Start(web_contents, use_fullscreen_capture,
                                         is_google_default_search_provider);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
@@ -3853,9 +3839,6 @@ void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
 }
 
 void RenderViewContextMenu::ExecPictureInPicture() {
-  if (!base::FeatureList::IsEnabled(media::kPictureInPicture))
-    return;
-
   bool picture_in_picture_active =
       IsCommandIdChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE);
 

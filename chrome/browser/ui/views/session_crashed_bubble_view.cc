@@ -14,7 +14,6 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/task_runner_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -213,11 +212,12 @@ void SessionCrashedBubble::ShowIfNotOffTheRecordProfile(
           browser);
 
   if (DoesSupportConsentCheck()) {
-    base::PostTaskAndReplyWithResult(
-        GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
-        base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
-        base::BindOnce(&SessionCrashedBubbleView::Show,
-                       std::move(browser_observer), skip_tab_checking));
+    GoogleUpdateSettings::CollectStatsConsentTaskRunner()
+        ->PostTaskAndReplyWithResult(
+            FROM_HERE,
+            base::BindOnce(&GoogleUpdateSettings::GetCollectStatsConsent),
+            base::BindOnce(&SessionCrashedBubbleView::Show,
+                           std::move(browser_observer), skip_tab_checking));
   } else {
     SessionCrashedBubbleView::Show(std::move(browser_observer),
                                    skip_tab_checking, false);
@@ -301,7 +301,8 @@ views::BubbleDialogDelegate* SessionCrashedBubbleView::ShowBubble(
   dialog_builder.AddOkButton(
       base::BindOnce(&SessionCrashedBubbleDelegate::RestorePreviousSession,
                      base::Unretained(bubble_delegate), browser),
-      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
+      ui::DialogModelButton::Params().SetLabel(
+          l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON)));
 
   auto bubble = std::make_unique<views::BubbleDialogModelHost>(
       dialog_builder.Build(), anchor_view, views::BubbleBorder::TOP_RIGHT);

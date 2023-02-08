@@ -22,9 +22,9 @@ import '//resources/cr_elements/icons.html.js';
 import '//resources/cr_elements/cr_shared_style.css.js';
 import './buttons/oobe_back_button.js';
 import './buttons/oobe_text_button.js';
-import './common_styles/common_styles.m.js';
+import './common_styles/oobe_common_styles.m.js';
 import './common_styles/oobe_dialog_host_styles.m.js';
-import './dialogs/oobe_content_dialog.m.js';
+import './dialogs/oobe_content_dialog.js';
 
 import {sendWithPromise} from '//resources/js/cr.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -32,8 +32,8 @@ import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/pol
 import {Authenticator, AuthFlow} from '../../../gaia_auth_host/authenticator.js';
 
 import {OobeDialogHostBehavior} from './behaviors/oobe_dialog_host_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from './behaviors/oobe_i18n_behavior.m.js';
-import {OobeTypes} from './oobe_types.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from './behaviors/oobe_i18n_behavior.js';
+import {OobeTypes} from './oobe_types.js';
 
 /**
  * @constructor
@@ -166,7 +166,7 @@ class GaiaDialog extends GaiaDialogBase {
        */
       primaryActionButtonEnabled_: {
         type: Boolean,
-        value: true,
+        value: false,
       },
 
       /**
@@ -184,7 +184,7 @@ class GaiaDialog extends GaiaDialogBase {
        */
       secondaryActionButtonEnabled_: {
         type: Boolean,
-        value: true,
+        value: false,
       },
 
       /**
@@ -216,13 +216,6 @@ class GaiaDialog extends GaiaDialogBase {
 
   constructor() {
     super();
-    /**
-     * Emulate click on the primary action button when it is visible and
-     * enabled.
-     * @type {boolean}
-     * @private
-     */
-    this.clickPrimaryActionButtonForTesting_ = false;
     /**
      * Emulate click on the primary action button when it is visible and
      * enabled.

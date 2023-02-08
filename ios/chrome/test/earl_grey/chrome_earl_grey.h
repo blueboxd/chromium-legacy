@@ -469,8 +469,13 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // that data types are configured and ready to use. See
 // SyncService::IsEngineInitialized() for details. If not succeeded a GREYAssert
 // is induced.
-- (void)waitForSyncInitialized:(BOOL)isInitialized
-                   syncTimeout:(base::TimeDelta)timeout;
+- (void)waitForSyncEngineInitialized:(BOOL)isInitialized
+                         syncTimeout:(base::TimeDelta)timeout;
+
+// Waits for the sync feature to be enabled/disabled. See SyncService::
+// IsSyncFeatureEnabled() for details. If not succeeded a GREYAssert is induced.
+- (void)waitForSyncFeatureEnabled:(BOOL)isEnabled
+                      syncTimeout:(base::TimeDelta)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -610,6 +615,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // A GREYAssert is induced if cookies can not be returned.
 - (NSDictionary*)cookies;
 
+// Clears browsing cookies. Raises an EarlGrey exception if cookies is not
+// cleared within a timeout.
+- (void)clearBrowsingCookies;
+
 #pragma mark - Accessibility Utilities (EG2)
 
 // Verifies that all interactive elements on screen (or at least one of their
@@ -673,6 +682,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns whether the Web Channels feature is enabled.
 - (BOOL)isWebChannelsEnabled;
+
+// Returns whether SF Symbols are used.
+- (BOOL)isSFSymbolEnabled;
 
 #pragma mark - ContentSettings
 

@@ -79,7 +79,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kPassThrough = 7,
     kSwapChain = 8,
     kSkiaDawnSharedImage [[deprecated]] = 9,
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     kMaxValue = kSkiaDawnSharedImage,
+#pragma GCC diagnostic pop
   };
 
   // The following parameters attempt to reach a compromise between not flushing
@@ -269,12 +272,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   void FlushIfRecordingLimitExceeded();
 
-  size_t TotalOpCount() const {
-    return recorder_ ? recorder_->TotalOpCount() : 0;
-  }
-  size_t TotalOpBytesUsed() const {
-    return recorder_ ? recorder_->OpBytesUsed() : 0;
-  }
+  size_t TotalOpCount() const { return recorder_.TotalOpCount(); }
+  size_t TotalOpBytesUsed() const { return recorder_.OpBytesUsed(); }
   size_t TotalPinnedImageBytes() const { return total_pinned_image_bytes_; }
 
   void DidPinImage(size_t bytes) override;
@@ -370,7 +369,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const bool is_origin_top_left_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;
-  std::unique_ptr<MemoryManagedPaintRecorder> recorder_;
+  MemoryManagedPaintRecorder recorder_{this};
 
   size_t total_pinned_image_bytes_ = 0;
 
@@ -413,8 +412,8 @@ ALWAYS_INLINE void CanvasResourceProvider::FlushIfRecordingLimitExceeded() {
   // vector mode.
   if (IsPrinting() && clear_frame_)
     return;
-  if (recorder_ && ((TotalOpBytesUsed() > kMaxRecordedOpBytes) ||
-                    total_pinned_image_bytes_ > max_pinned_image_bytes_)) {
+  if (TotalOpBytesUsed() > kMaxRecordedOpBytes ||
+      total_pinned_image_bytes_ > max_pinned_image_bytes_) {
     FlushCanvas();
   }
 }

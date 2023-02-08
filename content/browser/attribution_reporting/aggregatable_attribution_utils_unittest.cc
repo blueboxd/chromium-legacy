@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -87,7 +87,9 @@ TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
   std::vector<AggregatableHistogramContribution> contributions =
       CreateAggregatableHistogram(
           *source_filter_data, AttributionSourceType::kEvent, *source,
-          aggregatable_trigger_data, aggregatable_values);
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              std::move(aggregatable_trigger_data)),
+          aggregatable_values);
 
   // "key3" is not present as no value is found.
   EXPECT_THAT(
@@ -102,28 +104,6 @@ TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
       "Conversions.AggregatableReport.DroppedKeysPercentage", 33, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.NumContributionsPerReport", 2, 1);
-}
-
-TEST(AggregatableAttributionUtilsTest, HexEncodeAggregationKey) {
-  const struct {
-    absl::uint128 input;
-    std::string output;
-  } kTestCases[] = {
-      {0, "0x0"},
-      {absl::MakeUint128(/*high=*/0,
-                         /*low=*/std::numeric_limits<uint64_t>::max()),
-       "0xffffffffffffffff"},
-      {absl::MakeUint128(/*high=*/1,
-                         /*low=*/std::numeric_limits<uint64_t>::max()),
-       "0x1ffffffffffffffff"},
-      {std::numeric_limits<absl::uint128>::max(),
-       "0xffffffffffffffffffffffffffffffff"},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    EXPECT_EQ(HexEncodeAggregationKey(test_case.input), test_case.output)
-        << test_case.input;
-  }
 }
 
 TEST(AggregatableAttributionUtilsTest,
@@ -186,6 +166,26 @@ TEST(AggregatableAttributionUtilsTest, RoundsSourceRegistrationTime) {
     ASSERT_TRUE(actual_serialized_time);
     EXPECT_EQ(*actual_serialized_time, test_case.expected_serialized_time)
         << test_case.description;
+  }
+}
+
+TEST(AggregatableAttributionUtilsTest, AggregationCoordinatorSet) {
+  for (auto aggregation_coordinator :
+       {::aggregation_service::mojom::AggregationCoordinator::kAwsCloud}) {
+    AttributionReport report =
+        ReportBuilder(
+            AttributionInfoBuilder(SourceBuilder().BuildStored()).Build())
+            .SetAggregatableHistogramContributions(
+                {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
+            .SetAggregationCoordinator(aggregation_coordinator)
+            .BuildAggregatableAttribution();
+
+    absl::optional<AggregatableReportRequest> request =
+        CreateAggregatableReportRequest(report);
+    ASSERT_TRUE(request.has_value()) << aggregation_coordinator;
+    EXPECT_EQ(request->payload_contents().aggregation_coordinator,
+              aggregation_coordinator)
+        << aggregation_coordinator;
   }
 }
 

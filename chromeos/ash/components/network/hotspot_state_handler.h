@@ -14,10 +14,10 @@
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -39,8 +39,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotStateHandler
     // Invoked when hotspot state, active client count or hotspot config is
     // changed.
     virtual void OnHotspotStatusChanged() = 0;
-    // Invoked when hotspot state is failed.
-    virtual void OnHotspotStateFailed(const std::string& error) = 0;
     // Invoked when hotspot capabilities is changed.
     virtual void OnHotspotCapabilitiesChanged() = 0;
   };
@@ -121,15 +119,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotStateHandler
   // status in Shill.
   void UpdateHotspotStatus(const base::Value& status);
 
-  // Fall back the hotspot state to idle or active when enable/disable hotspot
-  // operation is failed.
-  void FallbackStateOnFailure();
-
   // Notify observers that hotspot state or active client count was changed.
   void NotifyHotspotStatusChanged();
-
-  // Notify observers that hotspot state was failure.
-  void NotifyHotspotStateFailed(const std::string& error);
 
   // Notify observer that hotspot capabilities was changed.
   void NotifyHotspotCapabilitiesChanged();

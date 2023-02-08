@@ -14,8 +14,6 @@
 #import "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #import "components/session_proto_db/session_proto_db.h"
 #import "ios/web/public/browser_state.h"
-#import "ios/web/public/thread/web_task_traits.h"
-#import "ios/web/public/thread/web_thread.h"
 
 namespace {
 const char kCommerceSubscriptionDBFolder[] = "commerce_subscription_db";
@@ -73,8 +71,7 @@ std::unique_ptr<KeyedService> SessionProtoDBFactory<T>::BuildServiceInstanceFor(
     return std::make_unique<SessionProtoDB<T>>(
         state->GetProtoDatabaseProvider(),
         state->GetStatePath().AppendASCII(kCommerceSubscriptionDBFolder),
-        leveldb_proto::ProtoDbType::COMMERCE_SUBSCRIPTION_DATABASE,
-        web::GetUIThreadTaskRunner({}));
+        leveldb_proto::ProtoDbType::COMMERCE_SUBSCRIPTION_DATABASE);
   } else {
     // Must add in leveldb_proto::ProtoDbType and database directory folder
     // new protos.

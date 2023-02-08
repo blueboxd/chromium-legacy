@@ -415,6 +415,10 @@ PageSpecificContentSettings::PageSpecificContentSettings(content::Page& page,
                                     /*ignore_empty_localstorage=*/false,
                                     delegate_->GetAdditionalFileSystemTypes(),
                                     delegate_->GetIsDeletionDisabledCallback()),
+      allowed_browsing_data_model_(
+          BrowsingDataModel::BuildEmpty(GetWebContents()->GetBrowserContext())),
+      blocked_browsing_data_model_(
+          BrowsingDataModel::BuildEmpty(GetWebContents()->GetBrowserContext())),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   observation_.Observe(map_.get());
   if (page.GetMainDocument().GetLifecycleState() ==
@@ -479,6 +483,17 @@ void PageSpecificContentSettings::StorageAccessed(StorageType storage_type,
   PageSpecificContentSettings* settings = GetForFrame(rfh);
   if (settings)
     settings->OnStorageAccessed(storage_type, url, blocked_by_policy);
+}
+
+// static
+void PageSpecificContentSettings::BrowsingDataAccessed(
+    content::RenderFrameHost* rfh,
+    BrowsingDataModel::DataKey data_key,
+    BrowsingDataModel::StorageType storage_type,
+    bool blocked) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PageSpecificContentSettings* settings = GetForFrame(rfh);
+  settings->OnBrowsingDataAccessed(data_key, storage_type, blocked);
 }
 
 // static
@@ -823,6 +838,46 @@ void PageSpecificContentSettings::OnTopicAccessed(
   accessed_topics_.insert(topic);
   MaybeUpdateParent(&PageSpecificContentSettings::OnTopicAccessed, api_origin,
                     blocked_by_policy, topic);
+}
+
+void PageSpecificContentSettings::OnTrustTokenAccessed(
+    const url::Origin api_origin,
+    bool blocked) {
+  // TODO(crbug.com/1378703): Call this method.
+  // The size isn't relevant here and won't be displayed in the UI.
+  const int kTrustTokenSize = 0;
+  auto& model =
+      blocked ? blocked_browsing_data_model_ : allowed_browsing_data_model_;
+  model->AddBrowsingData(api_origin,
+                         BrowsingDataModel::StorageType::kTrustTokens,
+                         kTrustTokenSize);
+  if (blocked) {
+    OnContentBlocked(ContentSettingsType::COOKIES);
+  } else {
+    OnContentAllowed(ContentSettingsType::COOKIES);
+  }
+  MaybeUpdateParent(&PageSpecificContentSettings::OnTrustTokenAccessed,
+                    api_origin, blocked);
+  MaybeNotifySiteDataObservers();
+}
+
+void PageSpecificContentSettings::OnBrowsingDataAccessed(
+    BrowsingDataModel::DataKey data_key,
+    BrowsingDataModel::StorageType storage_type,
+    bool blocked) {
+  auto& model =
+      blocked ? blocked_browsing_data_model_ : allowed_browsing_data_model_;
+
+  // The size isn't relevant here and won't be displayed in the UI.
+  model->AddBrowsingData(data_key, storage_type, /*storage_size=*/0);
+  if (blocked) {
+    OnContentBlocked(ContentSettingsType::COOKIES);
+  } else {
+    OnContentAllowed(ContentSettingsType::COOKIES);
+  }
+  MaybeUpdateParent(&PageSpecificContentSettings::OnBrowsingDataAccessed,
+                    data_key, storage_type, blocked);
+  MaybeNotifySiteDataObservers();
 }
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)

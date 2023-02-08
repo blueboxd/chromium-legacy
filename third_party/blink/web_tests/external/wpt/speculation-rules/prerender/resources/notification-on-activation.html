@@ -26,7 +26,6 @@ if (!isPrerendering) {
   document.addEventListener('prerenderingchange', () => {
     // Accessing the Notification API is allowed after the prerendering state
     // changed.
-    const permission = Notification.permission;
     const notification = new Notification('New Notification');
 
     notification.onerror = function(_) {

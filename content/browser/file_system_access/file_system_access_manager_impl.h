@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequence_bound.h"
 #include "base/types/pass_key.h"
@@ -115,14 +116,15 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void BindInternalsReceiver(
       mojo::PendingReceiver<storage::mojom::FileSystemAccessContext> receiver);
 
-  // blink::mojom::FileSystemAccessManager:
-  void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   // Get the FileSystem with a custom bucket override. Must provide a binding
   // context for this request.
   void GetSandboxedFileSystem(
       const BindingContext& binding_context,
       const absl::optional<storage::BucketLocator>& bucket,
       GetSandboxedFileSystemCallback callback);
+
+  // blink::mojom::FileSystemAccessManager:
+  void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
                      blink::mojom::CommonFilePickerOptionsPtr common_options,
                      ChooseEntriesCallback callback) override;
@@ -313,7 +315,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   base::GUID GetUniqueId(const FileSystemAccessFileHandleImpl& file);
   base::GUID GetUniqueId(const FileSystemAccessDirectoryHandleImpl& directory);
 
-  // Creates a FileSystemURL which corresponds to a FilePath and Origin.
+  // Creates a FileSystemURL which corresponds `path`, which must
+  // correspond to a "real" file path and not a virtual path in a sandboxed file
+  // system.
   storage::FileSystemURL CreateFileSystemURLFromPath(
       PathType path_type,
       const base::FilePath& path);
@@ -340,7 +344,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
     // Wrap the passed in callback in one that posts a task back to the
     // current sequence.
     auto wrapped_callback = base::BindPostTask(
-        base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+        base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
 
     // And then post a task to the sequence bound operation runner to run the
     // provided method with the provided arguments (and the wrapped callback).
@@ -375,7 +379,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
               FROM_HERE,
               base::BindOnce(callback, std::forward<CallbackArgs>(args)...));
         },
-        base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+        base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
 
     // And then post a task to the sequence bound operation runner to run the
     // provided method with the provided arguments (and the wrapped callback).
@@ -602,6 +606,20 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   absl::optional<FileSystemChooser::ResultEntry>
       auto_file_picker_result_for_test_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // TODO(https://crbug.com/1396116): Remove this hack by fixing the fact that
+  // FileSystemURL uses a StorageKey with an opaque origin to represent "no
+  // origin".
+  //
+  // A StorageKey containing an arbitrary, unique, randomly-generated opaque
+  // origin. ChromeOS file system backends run security checks on the assumption
+  // that all FileSystemURLs of non-sandboxed file systems must have an opaque
+  // origin. Using a default-constructed StorageKey will create a random nonce,
+  // making origin comparison checks between two FileSystemURLs with
+  // default-constructed StorageKeys fail. Always using this StorageKey ensures
+  // that FileSystemURL::operator== will always return true for two
+  // FileSystemURLs which point to the same file.
+  blink::StorageKey opaque_origin_for_non_sandboxed_filesystemurls_;
 
   base::WeakPtrFactory<FileSystemAccessManagerImpl> weak_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};

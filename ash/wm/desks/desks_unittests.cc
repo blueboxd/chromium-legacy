@@ -173,15 +173,6 @@ bool DoesActiveDeskContainWindow(aura::Window* window) {
                         window);
 }
 
-OverviewGrid* GetOverviewGridForRoot(aura::Window* root) {
-  DCHECK(root->IsRootWindow());
-
-  auto* overview_controller = Shell::Get()->overview_controller();
-  DCHECK(overview_controller->InOverviewSession());
-
-  return overview_controller->overview_session()->GetGridWithRootWindow(root);
-}
-
 void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
                            ui::test::EventGenerator* event_generator) {
   DCHECK(desk_mini_view);
@@ -1520,7 +1511,7 @@ TEST_P(DesksTest, AppListStaysOpenInClamshell) {
 
   // Open the app list.
   auto* app_list_controller = Shell::Get()->app_list_controller();
-  app_list_controller->ShowAppList();
+  app_list_controller->ShowAppList(AppListShowSource::kSearchKey);
   ASSERT_TRUE(app_list_controller->IsVisible());
 
   // Switch back to desk 1. Test that the app list is still open.
@@ -3681,6 +3672,33 @@ TEST_P(DesksTest, PerDeskZOrder) {
 
     aura::Window* root = window_to_id.begin()->first->GetRootWindow();
 
+    // Verifies that the desk preview is consistent with the expected per-desk
+    // Z-order. Since the layers are mirrored instead of the same instances, we
+    // verify by layer bounds here.
+    auto verify_desk_preview_mirrored_layer_tree =
+        [&](Desk* desk, const std::vector<int>& expected_windows) {
+          ToggleOverview();
+
+          // Retrieves the mirrored layers `mirrored_layers` of application
+          // windows for `desk`. The root of `layer_tree_owner` is a layer that
+          // has only one child, and the only child acts as the parent of all
+          // the mirrored layers of application windows.
+          const ui::LayerTreeOwner* layer_tree_owner =
+              DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(root,
+                                                                       desk);
+          const std::vector<ui::Layer*> mirrored_layers =
+              layer_tree_owner->root()->children().front()->children();
+
+          // Tests that `mirrored_layers` and `expected_windows` are sync'ed.
+          ASSERT_EQ(expected_windows.size(), mirrored_layers.size());
+          for (size_t i = 0; i < expected_windows.size(); i++) {
+            ASSERT_EQ(id_to_window[expected_windows[i]]->layer()->bounds(),
+                      mirrored_layers[i]->bounds());
+          }
+
+          ToggleOverview();
+        };
+
     // Verifies that windows on the given desk are found in the expected
     // order. Any windows that have not been created by the test will be
     // ignored.
@@ -3703,6 +3721,8 @@ TEST_P(DesksTest, PerDeskZOrder) {
     // Now we are ready to actually execute the test.
     ActivateDesk(desk_2);
     verify_windows(desk_2, test.expected_desk_2_windows);
+    verify_desk_preview_mirrored_layer_tree(desk_2,
+                                            test.expected_desk_2_windows);
 
     // Move specified windows to desk 1.
     for (int id : test.move_windows) {
@@ -3723,6 +3743,8 @@ TEST_P(DesksTest, PerDeskZOrder) {
 
     ActivateDesk(desk_1);
     verify_windows(desk_1, test.expected_desk_1_windows);
+    verify_desk_preview_mirrored_layer_tree(desk_1,
+                                            test.expected_desk_1_windows);
   }
 }
 
@@ -4211,6 +4233,7 @@ class DesksAcceleratorsTest : public DesksTest,
 
   // ui::EventRewriterChromeOS::Delegate:
   bool RewriteModifierKeys() override { return true; }
+  void SuppressModifierKeyRewrites(bool should_supress) override {}
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
                                     int* result) const override {
     return false;
@@ -6120,8 +6143,8 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
       ->highlight_controller()
       ->MoveHighlightToView(mini_view_0->desk_preview());
 
-  // Swap the positions of the |desk_0| and the |desk_2| by pressing Ctrl + <-.
-  event_generator->PressKey(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+  // Swap the positions of the |desk_0| and the |desk_2| by pressing Ctrl + ->.
+  event_generator->PressKey(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
 
   // Now, the desks order should be [1, 2, 0]:
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
@@ -7073,7 +7096,7 @@ TEST_P(PersistentDesksBarTest, BarStaysOpenWhenLauncherOpens) {
   EXPECT_TRUE(IsWidgetVisible());
 
   // The bar should still exist when the app list is opened.
-  app_list_controller->ShowAppList();
+  app_list_controller->ShowAppList(AppListShowSource::kSearchKey);
   EXPECT_TRUE(GetBarWidget());
   EXPECT_TRUE(IsWidgetVisible());
 

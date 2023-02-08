@@ -27,7 +27,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -93,6 +92,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/self_deleting_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -156,6 +156,9 @@ class ResultRecordingClient : public network::mojom::URLLoaderClient {
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    network::RecordOnTransferSizeUpdatedUMA(
+        network::OnTransferSizeUpdatedFrom::kResultRecordingClient);
+
     real_client_->OnTransferSizeUpdated(transfer_size_diff);
   }
 
@@ -213,15 +216,6 @@ base::Time GetFileLastModifiedTime(const base::FilePath& filename) {
   return base::Time();
 }
 
-base::Time GetFileCreationTime(const base::FilePath& filename) {
-  if (base::PathExists(filename)) {
-    base::File::Info info;
-    if (base::GetFileInfo(filename, &info))
-      return info.creation_time;
-  }
-  return base::Time();
-}
-
 std::pair<base::FilePath, base::Time> ReadResourceFilePathAndLastModifiedTime(
     const extensions::ExtensionResource& resource,
     const base::FilePath& directory) {
@@ -229,17 +223,6 @@ std::pair<base::FilePath, base::Time> ReadResourceFilePathAndLastModifiedTime(
   // tolerates blocking operations.
   base::FilePath file_path = resource.GetFilePath();
   base::Time last_modified_time = GetFileLastModifiedTime(file_path);
-  base::Time dir_creation_time = GetFileCreationTime(directory);
-  int64_t delta_seconds = (last_modified_time - dir_creation_time).InSeconds();
-  if (delta_seconds >= 0) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",
-                                delta_seconds, 1, base::Days(30).InSeconds(),
-                                50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedNegativeDelta",
-                                -delta_seconds, 1, base::Days(30).InSeconds(),
-                                50);
-  }
   return std::make_pair(file_path, last_modified_time);
 }
 
@@ -486,21 +469,6 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
   FileLoaderObserver(const FileLoaderObserver&) = delete;
   FileLoaderObserver& operator=(const FileLoaderObserver&) = delete;
 
-  ~FileLoaderObserver() override {
-    base::AutoLock auto_lock(lock_);
-    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.TotalKbRead",
-                            bytes_read_ / 1024);
-    UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.SeekPosition", seek_position_);
-    if (request_timer_.get())
-      UMA_HISTOGRAM_TIMES("ExtensionUrlRequest.Latency",
-                          request_timer_->Elapsed());
-  }
-
-  void OnStart() override {
-    base::AutoLock auto_lock(lock_);
-    request_timer_ = std::make_unique<base::ElapsedTimer>();
-  }
-
   void OnSeekComplete(int64_t result) override {
     DCHECK_EQ(seek_position_, 0);
     base::AutoLock auto_lock(lock_);
@@ -537,7 +505,6 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
  private:
   int64_t bytes_read_ = 0;
   int64_t seek_position_ = 0;
-  std::unique_ptr<base::ElapsedTimer> request_timer_;
   scoped_refptr<ContentVerifyJob> verify_job_;
   // To synchronize access to all members.
   base::Lock lock_;
@@ -622,6 +589,15 @@ class ExtensionURLLoader : public network::mojom::URLLoader {
   }
 
   void Start() {
+    // Owner of BrowserContext should ensure that all WebContents are closed
+    // before starting BrowserContext destruction, but this doesn't stop
+    // incoming URLLoaderFactory IPCs which may still be in-flight until (as
+    // part of BrowserContext destruction sequence) OnBrowserContextDestroyed
+    // below is called (which will prevent future IPCs by calling
+    // DisconnectReceiversAndDestroy).  Note that DisconnectReceiversAndDestroy
+    // will only stop future ExtensionURLLoaderFactory IPCs, but it won't stop
+    // future ExtensionURLLoader IPCs - this is okay, because the loader doesn't
+    // directly interact with the BrowserContext.
     if (browser_context_->ShutdownStarted()) {
       CompleteRequestAndDeleteThis(net::ERR_FAILED);
       return;
@@ -930,6 +906,11 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
 
     // Return an unbound |pending_remote| if the |browser_context| has already
     // started shutting down.
+    //
+    // TODO(https://crbug.com/1376879): This should be a DCHECK or a CHECK
+    // (no new ExtensionURLLoaderFactory should be created after BrowserContext
+    // shutdown has started *if* all WebContents got closed before starting the
+    // shutdown).
     if (browser_context->ShutdownStarted())
       return pending_remote;
 

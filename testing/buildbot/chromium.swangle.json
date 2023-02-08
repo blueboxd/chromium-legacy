@@ -5,7 +5,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -816,7 +816,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -844,7 +844,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -858,7 +858,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",

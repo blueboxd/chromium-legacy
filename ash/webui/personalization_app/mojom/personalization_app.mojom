@@ -324,6 +324,14 @@ interface WallpaperProvider {
     CancelPreviewWallpaper();
 };
 
+enum ColorScheme {
+  kStatic = 0,
+  kTonalSpot = 1,
+  kNeutral = 2,
+  kExpressive = 3,
+  kVibrant = 4,
+};
+
 // Receives information whenever there are theme related changes such as color
 // mode.
 interface ThemeObserver {
@@ -333,6 +341,9 @@ interface ThemeObserver {
 
   // Notifies the JS side the current state of color mode auto scheduler.
   OnColorModeAutoScheduleChanged(bool enabled);
+
+  // Notifies the JS side about the current state of the static color.
+  OnStaticColorChanged(skia.mojom.SkColor? color);
 };
 
 // Provides APIs to expose theme settings such dark/light color mode.
@@ -345,6 +356,17 @@ interface ThemeProvider {
 
   // Disables or enables dark color mode auto scheduler.
   SetColorModeAutoScheduleEnabled(bool enabled);
+
+  // Sets the color scheme for dynamic color.
+  // @see //ash/style/color_palette_controller.h
+  SetColorScheme(ColorScheme colorScheme);
+
+  // Sets the seed color for dynamic color.
+  // @see //ash/style/color_palette_controller.h
+  SetStaticColor(skia.mojom.SkColor static_color);
+
+  // Retrieves the static seed color for dynamic color.
+  GetStaticColor() => (skia.mojom.SkColor? static_color);
 
   // Returns whether color mode auto scheduler is enabled.
   IsColorModeAutoScheduleEnabled() => (bool enabled);
@@ -486,6 +508,15 @@ enum TemperatureUnit {
   kCelsius = 1,
 };
 
+// Enumeration of UI visibility states.
+// This should be kept in sync with |ash:AmbientUiVisibility|.
+enum AmbientUiVisibility {
+  kShown = 0,
+  kPreview = 1,
+  kHidden = 2,
+  kClosed = 3,
+};
+
 // Album metadaba to display. Contains necessary data for both topic sources.
 struct AmbientModeAlbum {
   // Unique identifier for this album. It assumes unique id across different
@@ -529,6 +560,9 @@ interface AmbientObserver {
   // Notifies the JS side about the previews of the selected Google Photos
   // albums.
   OnGooglePhotosAlbumsPreviewsFetched(array<url.mojom.Url> previews);
+
+  // Notifies the JS side when ambient visibility is changed.
+  OnAmbientUiVisibilityChanged(AmbientUiVisibility visibility);
 };
 
 // Provides APIs to expose Ambient mode settings.

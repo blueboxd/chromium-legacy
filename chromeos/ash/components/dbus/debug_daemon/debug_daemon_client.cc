@@ -27,11 +27,12 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_config.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/debug_daemon/fake_debug_daemon_client.h"
+#include "chromeos/ash/components/dbus/debug_daemon/metrics.h"
 #include "chromeos/dbus/common/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -82,6 +83,8 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
   void OnIOComplete(absl::optional<std::string> result) {
     if (!result.has_value()) {
       VLOG(1) << "Failed to read data.";
+      RecordGetFeedbackLogsV2DbusResult(
+          GetFeedbackLogsV2DbusResult::kErrorReadingData);
       RunCallbackAndDestroy(absl::nullopt);
       return;
     }
@@ -91,6 +94,8 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
         base::DictionaryValue::From(json_reader.Deserialize(nullptr, nullptr));
     if (!logs.get()) {
       VLOG(1) << "Failed to deserialize the JSON logs.";
+      RecordGetFeedbackLogsV2DbusResult(
+          GetFeedbackLogsV2DbusResult::kErrorDeserializingJSonLogs);
       RunCallbackAndDestroy(absl::nullopt);
       return;
     }
@@ -280,7 +285,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.CloseContainer(&sub_writer);
 
     DVLOG(1) << "Requesting feedback logs";
-    debugdaemon_proxy_->CallMethod(
+    debugdaemon_proxy_->CallMethodWithErrorResponse(
         &method_call, kBigLogsDBusTimeoutMS,
         base::BindOnce(&DebugDaemonClientImpl::OnFeedbackLogsResponse,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -347,7 +352,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         base::BindOnce(&DebugDaemonClientImpl::OnStartMethod,
                        weak_ptr_factory_.GetWeakPtr()));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), GetTracingAgentName(),
                                   true /* success */));
   }
@@ -826,7 +831,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void OnFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,
-                              dbus::Response* response) {
+                              dbus::Response* response,
+                              dbus::ErrorResponse* err_response) {
+    RecordGetFeedbackLogsV2DbusError(err_response);
     if (!response && pipe_reader.get()) {
       // We need to terminate the data stream if an error occurred while the
       // pipe reader is still waiting on read.

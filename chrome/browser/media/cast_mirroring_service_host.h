@@ -77,6 +77,8 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
              mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
              mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel)
       override;
+  void GetTabSourceId(
+      GetTabSourceIdCallback get_tab_source_id_callback) override;
 
  private:
   friend class CastMirroringServiceHostBrowserTest;
@@ -120,6 +122,12 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   // tabstrip.
   void ShowCaptureIndicator();
 
+  // Registers the media stream to show source tab switching UI and a capture
+  // indicator icon on the tabstrip.
+  void ShowTabSharingUI(const blink::mojom::StreamDevices& devices);
+
+  void SwitchMirroringSourceTab(const content::DesktopMediaID& media_id);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // OffscreenTab::Owner implementation.
   void DestroyTab(OffscreenTab* tab) override;
@@ -159,6 +167,12 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<OffscreenTab> offscreen_tab_;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  const bool tab_switching_ui_enabled_;
+
+  // Used for calls supplied to `media_stream_ui_`, mainly to handle callbacks
+  // for TabSharingUIViews. Invalidated every time a new UI is created.
+  base::WeakPtrFactory<CastMirroringServiceHost> weak_factory_for_ui_{this};
 };
 
 }  // namespace mirroring

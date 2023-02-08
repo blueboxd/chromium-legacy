@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/ad_auction/navigator_auction.h"
 
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/check.h"
@@ -193,6 +195,42 @@ WTF::HashMap<WTF::String, double> ConvertSparseVectorIdlToMojo(
     priority_signals_out.insert(key_value_pair.first, key_value_pair.second);
   }
   return priority_signals_out;
+}
+
+bool CopySellerCapabilitiesFromIdlToMojo(ExceptionState& exception_state,
+                                         const AuctionAdInterestGroup& input,
+                                         mojom::blink::InterestGroup& output) {
+  output.all_sellers_capabilities = mojom::blink::SellerCapabilities::New();
+  if (!input.hasSellerCapabilities())
+    return true;
+
+  for (const auto& [origin_string, capabilities_vector] :
+       input.sellerCapabilities()) {
+    auto seller_capabilities = mojom::blink::SellerCapabilities::New();
+    for (const String& capability_str : capabilities_vector) {
+      if (capability_str == "interestGroupCounts") {
+        seller_capabilities->allows_interest_group_counts = true;
+      } else if (capability_str == "latencyStats") {
+        seller_capabilities->allows_latency_stats = true;
+      } else {
+        exception_state.ThrowTypeError(ErrorInvalidInterestGroup(
+            input, "sellerCapabilities", capability_str,
+            "is not a supported seller capability."));
+        return false;
+      }
+    }
+    if (origin_string == "*") {
+      output.all_sellers_capabilities = std::move(seller_capabilities);
+    } else {
+      if (!output.seller_capabilities)
+        output.seller_capabilities.emplace();
+      output.seller_capabilities->insert(
+          SecurityOrigin::CreateFromString(origin_string),
+          std::move(seller_capabilities));
+    }
+  }
+
+  return true;
 }
 
 bool CopyExecutionModeFromIdlToMojo(const ExecutionContext& execution_context,
@@ -745,22 +783,24 @@ bool CopyDirectFromSellerSignalsFromIdlToMojo(
       mojom::blink::DirectFromSellerSignals::New();
   mojo_direct_from_seller_signals->prefix = direct_from_seller_signals_prefix;
 
-  for (scoped_refptr<const SecurityOrigin> buyer :
-       *output.auction_ad_config_non_shared_params->interest_group_buyers) {
-    // Replace "/" with "%2F" to match the behavior of
-    // base::EscapeQueryParamValue(). Also, the subresource won't be found if
-    // the URL doesn't match.
-    const KURL subresource_url(
-        direct_from_seller_signals_prefix.GetString() + "?perBuyerSignals=" +
-        EncodeWithURLEscapeSequences(buyer->ToString()).Replace("/", "%2F"));
-    mojom::blink::DirectFromSellerSignalsSubresourcePtr maybe_mojo_bundle =
-        TryToBuildDirectFromSellerSignalsSubresource(
-            subresource_url, *output.seller, exception_state, input,
-            resource_fetcher);
-    if (!maybe_mojo_bundle)
-      continue;  // The bundle wasn't found, try the next one.
-    mojo_direct_from_seller_signals->per_buyer_signals.insert(
-        buyer, std::move(maybe_mojo_bundle));
+  if (output.auction_ad_config_non_shared_params->interest_group_buyers) {
+    for (scoped_refptr<const SecurityOrigin> buyer :
+         *output.auction_ad_config_non_shared_params->interest_group_buyers) {
+      // Replace "/" with "%2F" to match the behavior of
+      // base::EscapeQueryParamValue(). Also, the subresource won't be found if
+      // the URL doesn't match.
+      const KURL subresource_url(
+          direct_from_seller_signals_prefix.GetString() + "?perBuyerSignals=" +
+          EncodeWithURLEscapeSequences(buyer->ToString()).Replace("/", "%2F"));
+      mojom::blink::DirectFromSellerSignalsSubresourcePtr maybe_mojo_bundle =
+          TryToBuildDirectFromSellerSignalsSubresource(
+              subresource_url, *output.seller, exception_state, input,
+              resource_fetcher);
+      if (!maybe_mojo_bundle)
+        continue;  // The bundle wasn't found, try the next one.
+      mojo_direct_from_seller_signals->per_buyer_signals.insert(
+          buyer, std::move(maybe_mojo_bundle));
+    }
   }
 
   {
@@ -1194,6 +1234,10 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
         ConvertSparseVectorIdlToMojo(group->prioritySignalsOverrides());
   }
 
+  if (!CopySellerCapabilitiesFromIdlToMojo(exception_state, *group,
+                                           *mojo_group)) {
+    return ScriptPromise();
+  }
   if (!CopyExecutionModeFromIdlToMojo(*context, exception_state, *group,
                                       *mojo_group)) {
     return ScriptPromise();

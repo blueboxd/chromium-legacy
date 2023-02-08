@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
-#include "chrome/browser/ui/webui/settings/autofill_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -61,6 +60,7 @@
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/site_settings_handler.h"
+#include "chrome/browser/ui/webui/settings/site_settings_permissions_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -77,6 +77,7 @@
 #include "components/performance_manager/public/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/features.h"
@@ -87,10 +88,6 @@
 #include "crypto/crypto_buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/interaction/element_identifier.h"
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#include "chrome/grit/chrome_unscaled_resources.h"
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
@@ -113,8 +110,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
@@ -134,6 +129,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/login/auth/password_visibility_utils.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/user_manager/user.h"
@@ -149,6 +145,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/webui/certificate_provisioning_ui_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(USE_NSS_CERTS)
@@ -185,7 +182,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
   html_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src blob: chrome://resources 'self';");
 
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 
@@ -206,6 +204,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<ClearBrowsingDataHandler>(web_ui, profile));
   AddSettingsPageUIHandler(std::make_unique<SafetyCheckHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SiteSettingsPermissionsHandler>());
   AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
   AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
@@ -296,28 +295,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
-  // Indicates whether any automated password change entry point is enabled.
-  // This is currently used as a prerequisite for showing a settings toggle
-  // for Autofill Assistant.
-  html_source->AddBoolean(
-      "isAutomatedPasswordChangeEnabled",
-      password_manager::features::IsAutomatedPasswordChangeEnabled());
-
-  html_source->AddBoolean(
-      "enableAutomaticPasswordChangeInSettings",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChangeInSettings));
-
   html_source->AddBoolean(
       "changePriceEmailNotificationsEnabled",
       base::FeatureList::IsEnabled(commerce::kShoppingList));
   commerce::ShoppingServiceFactory::GetForBrowserContext(profile)
       ->FetchPriceEmailPref();
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  html_source->AddResourcePath("images/google_assistant.svg",
-                               IDR_ASSISTANT_LOGO_MONOCHROME);
-#endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
@@ -344,6 +326,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // AccountHasUserFacingPassword().
   html_source->AddBoolean("userCannotManuallyEnterPassword", false);
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS)
+  html_source->AddBoolean(
+      "useSystemAuthenticationForPasswordManager",
+      chromeos::features::IsPasswordManagerSystemAuthenticationEnabled());
+#endif
 
   bool show_privacy_guide =
       !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild();
@@ -400,15 +388,22 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "safetyCheckNotificationPermissionReviewPrimaryLabel",
       IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_PRIMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckUnusedSitePermissionsHeaderLabel",
+      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_HEADER_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckNotificationPermissionReviewSecondaryLabel",
+      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckUnusedSitePermissionsPrimaryLabel",
+      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_PRIMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckUnusedSitePermissionsSecondaryLabel",
+      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SECONDARY_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
-  // Add the handler for personalization options, e.g. Autofill Assistant
-  // consent.
-  web_ui->AddMessageHandler(std::make_unique<AutofillAssistantHandler>(
-      std::vector<int>{IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF,
-                       IDS_SETTINGS_AUTOFILL_ASSISTANT_PREF_DESC}));
 
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kSettingsResources, kSettingsResourcesSize),
@@ -429,9 +424,13 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   bool is_privacy_sandbox_restricted =
       PrivacySandboxServiceFactory::GetForProfile(profile)
           ->IsPrivacySandboxRestricted();
+  bool is_privacy_sandbox_settings_4 =
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4);
   html_source->AddBoolean("isPrivacySandboxRestricted",
                           is_privacy_sandbox_restricted);
-  if (!is_privacy_sandbox_restricted) {
+  html_source->AddBoolean("isPrivacySandboxSettings4",
+                          is_privacy_sandbox_settings_4);
+  if (!is_privacy_sandbox_restricted && !is_privacy_sandbox_settings_4) {
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
   }
@@ -476,7 +475,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
     DCHECK(account_manager_facade);
 
     web_ui()->AddMessageHandler(
-        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+        std::make_unique<ash::settings::AccountManagerUIHandler>(
             account_manager, account_manager_facade,
             IdentityManagerFactory::GetForProfile(profile),
             ash::AccountAppsAvailabilityFactory::GetForProfile(profile)));

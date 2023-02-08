@@ -13,14 +13,15 @@
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -41,11 +42,17 @@
 namespace web_app {
 
 WebAppControllerBrowserTest::WebAppControllerBrowserTest()
-    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    // TODO(crbug.com/1378355): Fix the manifest update process by ensuring
+    // during test installs, an app is installed from the manifest so that the
+    // identity update dialog is not triggered after navigation. This will
+    // ensure removal of update_dialog_scope_.
+    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+      update_dialog_scope_(SetIdentityUpdateDialogActionForTesting(
+          AppIdentityUpdate::kSkipped)) {
   os_hooks_suppress_.emplace();
   scoped_feature_list_.InitWithFeatures({}, {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary,
+    features::kWebAppsCrosapi, ash::features::kLacrosPrimary,
 #endif
         predictors::kSpeculativePreconnectFeature
   });
@@ -157,13 +164,13 @@ WebAppControllerBrowserTest::NavigateInNewWindowAndAwaitInstallabilityCheck(
 
 absl::optional<AppId> WebAppControllerBrowserTest::FindAppWithUrlInScope(
     const GURL& url) {
-  return provider().registrar().FindAppWithUrlInScope(url);
+  return provider().registrar_unsafe().FindAppWithUrlInScope(url);
 }
 
 content::WebContents* WebAppControllerBrowserTest::OpenApplication(
     const AppId& app_id) {
   ui_test_utils::UrlLoadObserver url_observer(
-      provider().registrar().GetAppStartUrl(app_id),
+      provider().registrar_unsafe().GetAppStartUrl(app_id),
       content::NotificationService::AllSources());
 
   apps::AppLaunchParams params(
@@ -189,17 +196,10 @@ const char* WebAppControllerBrowserTest::GetInstallableAppName() {
 void WebAppControllerBrowserTest::SetUp() {
   https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   webapps::TestAppBannerManagerDesktop::SetUp();
-  // TODO(crbug.com/1378355): Fix the manifest update process
-  //  by ensuring during test installs, an app is installed from
-  //  the manifest so that the identity update dialog is not
-  //  triggered after navigation.
-  chrome::SetAutoAcceptAppIdentityUpdateForTesting(false);
-
   InProcessBrowserTest::SetUp();
 }
 
 void WebAppControllerBrowserTest::TearDown() {
-  chrome::SetAutoAcceptAppIdentityUpdateForTesting(absl::nullopt);
   InProcessBrowserTest::TearDown();
 }
 

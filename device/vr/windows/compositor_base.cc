@@ -66,7 +66,8 @@ XRCompositorCommon::OutstandingFrame::~OutstandingFrame() = default;
 
 XRCompositorCommon::XRCompositorCommon()
     : base::Thread("WindowsXRCompositor"),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_thread_task_runner_(
+          base::SingleThreadTaskRunner::GetCurrentDefault()),
       webxr_js_time_(kSlidingAverageSize),
       webxr_gpu_time_(kSlidingAverageSize) {
   DCHECK(main_thread_task_runner_);
@@ -208,7 +209,6 @@ void XRCompositorCommon::UpdateLayerBounds(int16_t frame_id,
 }
 
 void XRCompositorCommon::RequestSession(
-    base::OnceCallback<void()> on_presentation_ended,
     base::RepeatingCallback<void(mojom::XRVisibilityState)>
         on_visibility_state_changed,
     mojom::XRRuntimeSessionOptionsPtr options,
@@ -225,14 +225,13 @@ void XRCompositorCommon::RequestSession(
   // XRCompositorCommon::StartRuntimeFinish. We setup BindOnce such that all of
   // the parameters give to us here in XRCompositorCommon::RequestSession are
   // passed through to StartRuntimeFinish so that it can finish the job.
-  StartRuntime(base::BindOnce(
-      &XRCompositorCommon::StartRuntimeFinish, base::Unretained(this),
-      std::move(on_presentation_ended), std::move(on_visibility_state_changed),
-      std::move(options), std::move(callback)));
+  StartRuntime(base::BindOnce(&XRCompositorCommon::StartRuntimeFinish,
+                              base::Unretained(this),
+                              std::move(on_visibility_state_changed),
+                              std::move(options), std::move(callback)));
 }
 
 void XRCompositorCommon::StartRuntimeFinish(
-    base::OnceCallback<void()> on_presentation_ended,
     base::RepeatingCallback<void(mojom::XRVisibilityState)>
         on_visibility_state_changed,
     mojom::XRRuntimeSessionOptionsPtr options,
@@ -245,12 +244,6 @@ void XRCompositorCommon::StartRuntimeFinish(
         FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
-
-  // If on_presentation_ended_ is not already null, we won't call to notify the
-  // runtime that that session has completed.  This is ok because the XRRuntime
-  // knows it has requested a new session, and isn't expecting that callback to
-  // be called.
-  on_presentation_ended_ = std::move(on_presentation_ended);
 
   on_visibility_state_changed_ = std::move(on_visibility_state_changed);
 
@@ -311,6 +304,9 @@ void XRCompositorCommon::StartRuntimeFinish(
 void XRCompositorCommon::ExitPresent(ExitXrPresentReason reason) {
   TRACE_EVENT_INSTANT1("xr", "ExitPresent", TRACE_EVENT_SCOPE_THREAD, "reason",
                        base::to_underlying(reason));
+  if (!is_presenting_)
+    return;
+
   is_presenting_ = false;
   webxr_has_pose_ = false;
   presentation_receiver_.reset();
@@ -335,11 +331,6 @@ void XRCompositorCommon::ExitPresent(ExitXrPresentReason reason) {
   task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&XRCompositorCommon::StopRuntime, base::Unretained(this)));
-
-  if (on_presentation_ended_) {
-    main_thread_task_runner_->PostTask(FROM_HERE,
-                                       std::move(on_presentation_ended_));
-  }
 }
 
 void XRCompositorCommon::SetVisibilityState(
@@ -409,7 +400,8 @@ void XRCompositorCommon::GetFrameData(
     // There should only be one outstanding GetFrameData call at a time.  We
     // shouldn't get new ones until this resolves or presentation ends/restarts.
     if (delayed_get_frame_data_callback_) {
-      mojo::ReportBadMessage("Multiple outstanding GetFrameData calls");
+      frame_data_receiver_.ReportBadMessage(
+          "Multiple outstanding GetFrameData calls");
       return;
     }
     delayed_get_frame_data_callback_ = base::BindOnce(

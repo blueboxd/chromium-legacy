@@ -9,48 +9,63 @@
 
 namespace blink {
 
+namespace {
+
+Element* ResolveReferenceElement(
+    Document& document,
+    const absl::optional<Element*>& reference_element) {
+  return reference_element.value_or(document.ScrollingElementNoLayout());
+}
+
+}  // namespace
+
 CSSScrollTimeline::Options::Options(
     Document& document,
     ScrollTimeline::ReferenceType reference_type,
     absl::optional<Element*> reference_element,
-    const AtomicString& name,
+    const ScopedCSSName& name,
     TimelineAxis axis)
     : reference_type_(reference_type),
       reference_element_(reference_element),
-      direction_(ComputeScrollDirection(axis)),
+      axis_(ComputeAxis(axis)),
       name_(name) {}
 
-ScrollTimeline::ScrollDirection
-CSSScrollTimeline::Options::ComputeScrollDirection(TimelineAxis axis) {
-  using ScrollDirection = ScrollTimeline::ScrollDirection;
-
+ScrollTimeline::ScrollAxis CSSScrollTimeline::Options::ComputeAxis(
+    TimelineAxis axis) {
   switch (axis) {
     case TimelineAxis::kBlock:
-      return ScrollDirection::kBlock;
+      return ScrollAxis::kBlock;
     case TimelineAxis::kInline:
-      return ScrollDirection::kInline;
+      return ScrollAxis::kInline;
     case TimelineAxis::kVertical:
-      return ScrollDirection::kVertical;
+      return ScrollAxis::kVertical;
     case TimelineAxis::kHorizontal:
-      return ScrollDirection::kHorizontal;
+      return ScrollAxis::kHorizontal;
   }
 
   NOTREACHED();
-  return ScrollDirection::kBlock;
+  return ScrollAxis::kBlock;
 }
 
 CSSScrollTimeline::CSSScrollTimeline(Document* document, Options&& options)
-    : ScrollTimeline(document,
-                     options.reference_type_,
-                     options.reference_element_.value_or(
-                         document->ScrollingElementNoLayout()),
-                     options.direction_),
-      name_(options.name_) {}
+    : ScrollTimeline(
+          document,
+          options.reference_type_,
+          ResolveReferenceElement(*document, options.reference_element_),
+          options.axis_),
+      name_(&options.name_) {}
 
-bool CSSScrollTimeline::Matches(const Options& options) const {
+void CSSScrollTimeline::Trace(Visitor* visitor) const {
+  ScrollTimeline::Trace(visitor);
+  visitor->Trace(name_);
+}
+
+bool CSSScrollTimeline::Matches(Document& document,
+                                const Options& options) const {
   return (GetReferenceType() == options.reference_type_) &&
-         (ReferenceElement() == options.reference_element_) &&
-         (GetOrientation() == options.direction_) && (name_ == options.name_);
+         (ReferenceElement() ==
+          ResolveReferenceElement(document, options.reference_element_)) &&
+         (GetAxis() == options.axis_) && (*name_ == options.name_);
 }
 
 }  // namespace blink

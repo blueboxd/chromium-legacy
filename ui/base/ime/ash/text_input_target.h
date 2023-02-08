@@ -64,10 +64,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputTarget {
   virtual bool AddGrammarFragments(
       const std::vector<GrammarFragment>& fragements) = 0;
 
-  // Called when the engine changes the selection range.
-  // Returns true if the operation was successful.
-  virtual bool SetSelectionRange(uint32_t start, uint32_t end) = 0;
-
   // Called when the engine updates composition text.
   virtual void UpdateCompositionText(const CompositionText& text,
                                      uint32_t cursor_pos,
@@ -90,10 +86,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) TextInputTarget {
   // Gets the input method pointer.
   virtual InputMethod* GetInputMethod() = 0;
 
-  // Commits any composition text.
+  // Commits the current composition and keeps the selection unchanged.
   // Set |reset_engine| to false if this was triggered from the extension.
-  virtual void ConfirmCompositionText(bool reset_engine,
-                                      bool keep_selection) = 0;
+  virtual void ConfirmComposition(bool reset_engine) = 0;
 
   // Returns true if there is any composition text.
   virtual bool HasCompositionText() = 0;

@@ -63,8 +63,6 @@
 #include "third_party/zlib/google/zip.h"
 #include "url/origin.h"
 
-using base::DictionaryValue;
-using base::ListValue;
 using storage::DatabaseUtil;
 
 namespace content {
@@ -201,10 +199,10 @@ void IndexedDBContextImpl::BindIndexedDBForBucket(
 void IndexedDBContextImpl::BindIndexedDBImpl(
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
     storage::QuotaErrorOr<storage::BucketInfo> bucket_info) {
-  absl::optional<storage::BucketLocator> bucket_locator;
+  absl::optional<storage::BucketInfo> bucket;
   if (bucket_info.ok())
-    bucket_locator = bucket_info->ToBucketLocator();
-  dispatcher_host_.AddReceiver(bucket_locator, std::move(receiver));
+    bucket = bucket_info.value();
+  dispatcher_host_.AddReceiver(bucket, std::move(receiver));
 }
 
 void IndexedDBContextImpl::GetUsage(GetUsageCallback usage_callback) {
@@ -921,10 +919,9 @@ void IndexedDBContextImpl::FactoryOpened(
 }
 
 void IndexedDBContextImpl::ConnectionOpened(
-    const storage::BucketLocator& bucket_locator,
-    IndexedDBConnection* connection) {
+    const storage::BucketLocator& bucket_locator) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator.id,
+  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator,
                                               base::Time::Now());
   if (bucket_set_.insert(bucket_locator).second) {
     // A newly created db, notify the quota system.
@@ -935,10 +932,9 @@ void IndexedDBContextImpl::ConnectionOpened(
 }
 
 void IndexedDBContextImpl::ConnectionClosed(
-    const storage::BucketLocator& bucket_locator,
-    IndexedDBConnection* connection) {
+    const storage::BucketLocator& bucket_locator) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator.id,
+  quota_manager_proxy()->NotifyBucketAccessed(bucket_locator,
                                               base::Time::Now());
   if (indexeddb_factory_.get() &&
       indexeddb_factory_->GetConnectionCount(bucket_locator.id) == 0)
@@ -1093,8 +1089,8 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
   if (difference) {
     bucket_size_map_[bucket_locator] = current_disk_usage;
     quota_manager_proxy()->NotifyBucketModified(
-        storage::QuotaClientType::kIndexedDatabase, bucket_locator.id,
-        difference, base::Time::Now(), base::SequencedTaskRunnerHandle::Get(),
+        storage::QuotaClientType::kIndexedDatabase, bucket_locator, difference,
+        base::Time::Now(), base::SequencedTaskRunner::GetCurrentDefault(),
         base::DoNothing());
     NotifyIndexedDBListChanged(bucket_locator);
   }

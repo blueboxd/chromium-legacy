@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "chromeos/ash/services/device_sync/cryptauth_device_sync_result.h"
+#include "chromeos/ash/services/device_sync/group_private_key_and_better_together_metadata_status.h"
 
 namespace cryptauthv2 {
 class ClientMetadata;
@@ -28,11 +29,11 @@ namespace device_sync {
 //
 // 1b) First SyncMetadataResponse: The response from CryptAuth possibly includes
 //     the correct group key pair, where the private key is encrypted with this
-//     device's CryptAuthKeyBunde::kDeviceSyncBetterTogether public key. If the
-//     group public key is not set, the server is indicating that a new group
-//     key pair must be created by this device. In this case or if the group
-//     public key in the response differs from the one sent in the request,
-//     another SyncMetadataRequest is made. Otherwise, the second
+//     device's CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether public key.
+//     If the group public key is not set, the server is indicating that a new
+//     group key pair must be created by this device. In this case or if the
+//     group public key in the response differs from the one sent in the
+//     request, another SyncMetadataRequest is made. Otherwise, the second
 //     SyncMetadataRequest is skipped and the encrypted remote device metadata
 //     is decrypted using the group private key if available. Note: The remote
 //     devices are only those registered in the DeviceSync:BetterTogether group,
@@ -87,6 +88,14 @@ class CryptAuthDeviceSyncer {
             const cryptauthv2::ClientAppMetadata& client_app_metadata,
             DeviceSyncAttemptFinishedCallback callback);
 
+  GroupPrivateKeyStatus group_private_key_status() {
+    return group_private_key_status_;
+  }
+
+  BetterTogetherMetadataStatus better_together_metadata_status() {
+    return better_together_metadata_status_;
+  }
+
  protected:
   CryptAuthDeviceSyncer();
 
@@ -95,6 +104,11 @@ class CryptAuthDeviceSyncer {
       const cryptauthv2::ClientAppMetadata& client_app_metadata) = 0;
 
   void OnAttemptFinished(const CryptAuthDeviceSyncResult& device_sync_result);
+
+  GroupPrivateKeyStatus group_private_key_status_ =
+      GroupPrivateKeyStatus::kWaitingForGroupPrivateKey;
+  BetterTogetherMetadataStatus better_together_metadata_status_ =
+      BetterTogetherMetadataStatus::kWaitingToProcessDeviceMetadata;
 
  private:
   DeviceSyncAttemptFinishedCallback callback_;

@@ -74,6 +74,14 @@
 
 namespace media {
 
+namespace {
+
+// Size of the timestamp cache. We don't want the cache to grow without bounds.
+// The maximum size is chosen to be the same as in the VaapiVideoDecoder.
+constexpr size_t kTimestampCacheSize = 128;
+
+}  // namespace
+
 // static
 std::unique_ptr<VideoDecoderMixin> OOPVideoDecoder::Create(
     mojo::PendingRemote<stable::mojom::StableVideoDecoder>
@@ -98,6 +106,7 @@ OOPVideoDecoder::OOPVideoDecoder(
     : VideoDecoderMixin(std::move(media_log),
                         std::move(decoder_task_runner),
                         std::move(client)),
+      fake_timestamp_to_real_timestamp_cache_(kTimestampCacheSize),
       remote_decoder_(std::move(pending_remote_decoder)),
       weak_this_factory_(this) {
   VLOGF(2);
@@ -181,22 +190,37 @@ void OOPVideoDecoder::Initialize(const VideoDecoderConfig& config,
       pending_remote_stable_cdm_context;
   if (config.is_encrypted()) {
 #if BUILDFLAG(IS_CHROMEOS)
-    if (!cdm_context || !cdm_context->GetChromeOsCdmContext()) {
-      std::move(init_cb).Run(DecoderStatus::Codes::kUnsupportedEncryptionMode);
-      return;
-    }
-    mojo::PendingReceiver<stable::mojom::StableCdmContext> cdm_receiver;
-    pending_remote_stable_cdm_context =
-        cdm_receiver.InitWithNewPipeAndPassRemote();
-    mojo::MakeSelfOwnedReceiver(
-        std::make_unique<chromeos::StableCdmContextImpl>(cdm_context),
-        std::move(cdm_receiver));
+    // There's logic in MojoVideoDecoderService::Initialize() to ensure that the
+    // CDM doesn't change across Initialize() calls. We rely on this assumption
+    // to ensure that creating a single StableCdmContextImpl that survives
+    // re-initializations is correct: the remote decoder requires a bound
+    // |pending_remote_stable_cdm_context| only for the first Initialize() call
+    // that sets up encryption.
+    DCHECK(!stable_cdm_context_ ||
+           cdm_context == stable_cdm_context_->cdm_context());
+    if (!stable_cdm_context_) {
+      if (!cdm_context || !cdm_context->GetChromeOsCdmContext()) {
+        std::move(init_cb).Run(
+            DecoderStatus::Codes::kUnsupportedEncryptionMode);
+        return;
+      }
+      stable_cdm_context_ =
+          std::make_unique<chromeos::StableCdmContextImpl>(cdm_context);
+      stable_cdm_context_receiver_ =
+          std::make_unique<mojo::Receiver<stable::mojom::StableCdmContext>>(
+              stable_cdm_context_.get(), pending_remote_stable_cdm_context
+                                             .InitWithNewPipeAndPassReceiver());
+
+      // base::Unretained() is safe because |this| owns the mojo::Receiver.
+      stable_cdm_context_receiver_->set_disconnect_handler(
+          base::BindOnce(&OOPVideoDecoder::Stop, base::Unretained(this)));
 #if BUILDFLAG(USE_VAAPI)
-    // We need to signal that for AMD we will do transcryption on the GPU side.
-    // Then on the other end we just make transcryption a no-op.
-    needs_transcryption_ = (VaapiWrapper::GetImplementationType() ==
-                            VAImplementation::kMesaGallium);
+      // We need to signal that for AMD we will do transcryption on the GPU
+      // side. Then on the other end we just make transcryption a no-op.
+      needs_transcryption_ = (VaapiWrapper::GetImplementationType() ==
+                              VAImplementation::kMesaGallium);
 #endif  // BUILDFLAG(USE_VAAPI)
+    }
 #else
     std::move(init_cb).Run(DecoderStatus::Codes::kUnsupportedEncryptionMode);
     return;
@@ -256,13 +280,31 @@ void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
         base::BindOnce(std::move(decode_cb), DecoderStatus::Codes::kFailed));
     return;
   }
-  const uint64_t decode_id = decode_counter_++;
 
+  CHECK(buffer);
+  if (!buffer->end_of_stream()) {
+    const base::TimeDelta next_fake_timestamp =
+        current_fake_timestamp_ + base::Microseconds(1u);
+    if (next_fake_timestamp == current_fake_timestamp_) {
+      // We've reached the maximum base::TimeDelta.
+      decoder_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(decode_cb), DecoderStatus::Codes::kFailed));
+      return;
+    }
+    current_fake_timestamp_ = next_fake_timestamp;
+    DCHECK(
+        fake_timestamp_to_real_timestamp_cache_.Peek(current_fake_timestamp_) ==
+        fake_timestamp_to_real_timestamp_cache_.end());
+    fake_timestamp_to_real_timestamp_cache_.Put(current_fake_timestamp_,
+                                                buffer->timestamp());
+    buffer->set_timestamp(current_fake_timestamp_);
+  }
+
+  const uint64_t decode_id = decode_counter_++;
   pending_decodes_.insert({decode_id, std::move(decode_cb)});
 
   const bool is_flushing = buffer->end_of_stream();
-
-  CHECK(buffer);
 
   mojom::DecoderBufferPtr mojo_buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
@@ -293,12 +335,20 @@ void OOPVideoDecoder::OnDecodeDone(uint64_t decode_id,
     return;
   }
 
-  // Check that the |decode_cb| corresponding to the flush is not called until
-  // the decode callback has been called for each pending decode.
-  if (is_flushing && pending_decodes_.size() != 1) {
-    VLOGF(2) << "Received a flush callback while having pending decodes";
-    Stop();
-    return;
+  if (is_flushing) {
+    // Check that the |decode_cb| corresponding to the flush is not called until
+    // the decode callback has been called for each pending decode.
+    if (pending_decodes_.size() != 1) {
+      VLOGF(2) << "Received a flush callback while having pending decodes";
+      Stop();
+      return;
+    }
+
+    // After a flush is completed, we shouldn't receive decoded frames
+    // corresponding to Decode() calls that came in prior to the flush. The
+    // clearing of the cache together with the validation in
+    // OnVideoFrameDecoded() should guarantee this.
+    fake_timestamp_to_real_timestamp_cache_.Clear();
   }
 
   auto it = pending_decodes_.begin();
@@ -359,6 +409,12 @@ void OOPVideoDecoder::Stop() {
   remote_decoder_.reset();
   mojo_decoder_buffer_writer_.reset();
   stable_video_frame_handle_releaser_remote_.reset();
+  fake_timestamp_to_real_timestamp_cache_.Clear();
+
+#if BUILDFLAG(IS_CHROMEOS)
+  stable_cdm_context_receiver_.reset();
+  stable_cdm_context_.reset();
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   if (init_cb_)
     std::move(init_cb_).Run(DecoderStatus::Codes::kFailed);
@@ -439,6 +495,16 @@ void OOPVideoDecoder::OnVideoFrameDecoded(
     Stop();
     return;
   }
+
+  base::TimeDelta timestamp = frame->timestamp();
+  auto it = fake_timestamp_to_real_timestamp_cache_.Get(timestamp);
+  if (it == fake_timestamp_to_real_timestamp_cache_.end()) {
+    // The remote decoder is misbehaving.
+    VLOGF(2) << "Received an unexpected decoded frame";
+    Stop();
+    return;
+  }
+  frame->set_timestamp(it->second);
 
   // The destruction observer will be called after the client releases the
   // video frame. BindToCurrentLoop() is used to make sure that the WeakPtr

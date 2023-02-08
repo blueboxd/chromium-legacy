@@ -27,10 +27,12 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/protocol/note_entity.pb.h"
 #include "components/sync/protocol/os_preference_specifics.pb.h"
 #include "components/sync/protocol/os_priority_preference_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/persisted_entity_data.pb.h"
+#include "components/sync/protocol/power_bookmark_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/printer_specifics.pb.h"
 #include "components/sync/protocol/printers_authorization_server_specifics.pb.h"
@@ -62,7 +64,7 @@
 // field value.
 //
 // VisitProtoFields() used to implement two distinctive features:
-// 1. Serialization into base::DictionaryValue
+// 1. Serialization into base::Value::Dict
 // 2. Proto memory usage estimation
 //
 // To achieve that it's very important for VisitProtoFields() to be free
@@ -371,6 +373,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
   VISIT_REP(devices_fcm_registration_tokens);
   VISIT(single_client_with_standalone_invalidations);
   VISIT_REP(fcm_registration_tokens_for_interested_clients);
+  VISIT(single_client_with_old_invalidations);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientStatus& proto) {
@@ -477,6 +480,8 @@ VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(full_hardware_class);
   VISIT(chrome_version_info);
   VISIT(google_play_services_version_info);
+  VISIT_ENUM(os_type);
+  VISIT_ENUM(device_form_factor);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::FeatureSpecificFields& proto) {
@@ -534,7 +539,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(44 == GetNumModelTypes(),
+  static_assert(45 == GetNumModelTypes(),
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -560,6 +565,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(os_preference);
   VISIT(os_priority_preference);
   VISIT(password);
+  VISIT(power_bookmark);
   VISIT(preference);
   VISIT(printer);
   VISIT(printers_authorization_server);
@@ -793,6 +799,7 @@ VISIT_PROTO_FIELDS(const sync_pb::HistorySpecifics& proto) {
   VISIT_REP(redirect_entries);
   VISIT(redirect_chain_start_incomplete);
   VISIT(redirect_chain_end_incomplete);
+  VISIT(redirect_chain_middle_trimmed);
   VISIT(page_transition);
   VISIT(originator_referring_visit_id);
   VISIT(originator_opener_visit_id);
@@ -880,6 +887,26 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_Notes_Note& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
   VISIT(url);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PowerBookmarkSpecifics& proto) {
+  VISIT(guid);
+  VISIT(url);
+  VISIT_ENUM(power_type);
+  VISIT(creation_time_usec);
+  VISIT(update_time_usec);
+  VISIT(power_entity);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PowerEntity& proto) {
+  VISIT(note_entity);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::NoteEntity& proto) {
+  VISIT(plain_text);
+  VISIT(rich_text);
+  VISIT_ENUM(target_type);
+  VISIT(current_note_version);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PersistedEntityData& proto) {
@@ -1027,6 +1054,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SessionHeader& proto) {
   VISIT_REP(window);
   VISIT(client_name);
   VISIT_ENUM(device_type);
+  VISIT_ENUM(device_form_factor);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SessionSpecifics& proto) {

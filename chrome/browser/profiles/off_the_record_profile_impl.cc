@@ -52,12 +52,10 @@
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
-#include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
-#include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
-#include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
-#include "chrome/browser/webid/federated_identity_sharing_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_permission_context.h"
+#include "chrome/browser/webid/federated_identity_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -221,7 +219,12 @@ void OffTheRecordProfileImpl::Init() {
   // AccessibilityLabelsService has a default prefs behavior in incognito.
   AccessibilityLabelsService::InitOffTheRecordPrefs(this);
 
-  HeavyAdServiceFactory::GetForBrowserContext(this)->InitializeOffTheRecord();
+  // The ad service might not be available for some irregular profiles, like the
+  // System Profile.
+  if (heavy_ad_intervention::HeavyAdService* heavy_ad_service =
+          HeavyAdServiceFactory::GetForBrowserContext(this)) {
+    heavy_ad_service->InitializeOffTheRecord();
+  }
 
   key_->SetProtoDatabaseProvider(
       GetDefaultStoragePartition()->GetProtoDatabaseProvider());
@@ -691,15 +694,9 @@ void OffTheRecordProfileImpl::RecordPrimaryMainFrameNavigation() {
   main_frame_navigations_++;
 }
 
-content::FederatedIdentityActiveSessionPermissionContextDelegate*
-OffTheRecordProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
-  return FederatedIdentityActiveSessionPermissionContextFactory::GetForProfile(
-      this);
-}
-
-content::FederatedIdentitySharingPermissionContextDelegate*
-OffTheRecordProfileImpl::GetFederatedIdentitySharingPermissionContext() {
-  return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
+content::FederatedIdentityPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentityPermissionContext() {
+  return FederatedIdentityPermissionContextFactory::GetForProfile(this);
 }
 
 content::FederatedIdentityApiPermissionContextDelegate*

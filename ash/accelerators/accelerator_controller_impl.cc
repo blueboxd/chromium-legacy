@@ -567,6 +567,9 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case CYCLE_BACKWARD_MRU:
     case CYCLE_FORWARD_MRU:
       return accelerators::CanCycleMru();
+    case CYCLE_SAME_APP_WINDOWS_BACKWARD:
+    case CYCLE_SAME_APP_WINDOWS_FORWARD:
+      return accelerators::CanCycleSameAppWindows();
     case DESKS_ACTIVATE_DESK_LEFT:
     case DESKS_ACTIVATE_DESK_RIGHT:
     case DESKS_MOVE_ACTIVE_ITEM_LEFT:
@@ -697,6 +700,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DEBUG_TUCK_FLOATED_WINDOW_LEFT:
     case DEBUG_TUCK_FLOATED_WINDOW_RIGHT:
       return debug::CanTuckFloatedWindow();
+    case DEBUG_TOGGLE_VIDEO_CONFERENCE_CAMERA_TRAY_ICON:
+      return true;
 
     // The following are always enabled.
     case BRIGHTNESS_DOWN:
@@ -793,11 +798,19 @@ void AcceleratorControllerImpl::PerformAction(
     }
     case CYCLE_BACKWARD_MRU:
       RecordCycleBackwardMru(accelerator);
-      accelerators::CycleBackwardMru();
+      accelerators::CycleBackwardMru(/*same_app_only=*/false);
       break;
     case CYCLE_FORWARD_MRU:
       RecordCycleForwardMru(accelerator);
-      accelerators::CycleForwardMru();
+      accelerators::CycleForwardMru(/*same_app_only=*/false);
+      break;
+    case CYCLE_SAME_APP_WINDOWS_BACKWARD:
+      // TODO(b/250699271): Add metrics
+      accelerators::CycleBackwardMru(/*same_app_only=*/true);
+      break;
+    case CYCLE_SAME_APP_WINDOWS_FORWARD:
+      // TODO(b/250699271): Add metrics
+      accelerators::CycleForwardMru(/*same_app_only=*/true);
       break;
     case DESKS_ACTIVATE_DESK_LEFT:
       // UMA metrics are recorded in the function.
@@ -846,6 +859,7 @@ void AcceleratorControllerImpl::PerformAction(
     case DEBUG_TOGGLE_DARK_MODE:
     case DEBUG_TOGGLE_DYNAMIC_COLOR:
     case DEBUG_TOGGLE_GLANCEABLES:
+    case DEBUG_TOGGLE_VIDEO_CONFERENCE_CAMERA_TRAY_ICON:
     case DEBUG_SYSTEM_UI_STYLE_VIEWER:
       debug::PerformDebugActionIfEnabled(action);
       break;

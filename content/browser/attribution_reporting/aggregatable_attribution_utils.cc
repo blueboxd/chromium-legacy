@@ -5,7 +5,6 @@
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 
 #include <iterator>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -15,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -53,7 +53,7 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
     const attribution_reporting::FilterData& source_filter_data,
     AttributionSourceType source_type,
     const attribution_reporting::AggregationKeys& keys,
-    const std::vector<attribution_reporting::AggregatableTriggerData>&
+    const attribution_reporting::AggregatableTriggerDataList&
         aggregatable_trigger_data,
     const attribution_reporting::AggregatableValues& aggregatable_values) {
   int num_trigger_data_filtered = 0;
@@ -63,7 +63,7 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
   // For each piece of trigger data specified, check if its filters/not_filters
   // match for the given source, and if applicable modify the bucket based on
   // the given key piece.
-  for (const auto& data : aggregatable_trigger_data) {
+  for (const auto& data : aggregatable_trigger_data.vec()) {
     if (!AttributionFiltersMatch(source_filter_data, source_type,
                                  data.filters(), data.not_filters())) {
       ++num_trigger_data_filtered;
@@ -91,10 +91,11 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
     contributions.emplace_back(key, value->second);
   }
 
-  if (!aggregatable_trigger_data.empty()) {
+  if (!aggregatable_trigger_data.vec().empty()) {
     base::UmaHistogramPercentage(
         "Conversions.AggregatableReport.FilteredTriggerDataPercentage",
-        100 * num_trigger_data_filtered / aggregatable_trigger_data.size());
+        100 * num_trigger_data_filtered /
+            aggregatable_trigger_data.vec().size());
   }
 
   DCHECK(!buckets.empty());
@@ -114,14 +115,6 @@ std::vector<AggregatableHistogramContribution> CreateAggregatableHistogram(
       contributions.size());
 
   return contributions;
-}
-
-std::string HexEncodeAggregationKey(absl::uint128 value) {
-  std::ostringstream out;
-  out << "0x";
-  out.setf(out.hex, out.basefield);
-  out << value;
-  return out.str();
 }
 
 absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
@@ -159,7 +152,8 @@ absl::optional<AggregatableReportRequest> CreateAggregatableReportRequest(
   return AggregatableReportRequest::Create(
       AggregationServicePayloadContents(
           AggregationServicePayloadContents::Operation::kHistogram,
-          std::move(contributions), mojom::AggregationServiceMode::kDefault),
+          std::move(contributions), mojom::AggregationServiceMode::kDefault,
+          data->aggregation_coordinator),
       AggregatableReportSharedInfo(
           data->initial_report_time, report.external_report_id(),
           attribution_info.source.common_info().reporting_origin(), debug_mode,

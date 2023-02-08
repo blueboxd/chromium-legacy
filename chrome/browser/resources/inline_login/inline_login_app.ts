@@ -20,13 +20,13 @@ import './strings.m.js';
 import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {isRTL} from 'chrome://resources/js/util.js';
+import {isRTL} from 'chrome://resources/js/util_ts.js';
 import {PaperSpinnerLiteElement} from 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
 // <if expr="chromeos_ash">
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getAccountAdditionOptionsFromJSON} from 'chrome://chrome-signin/arc_account_picker/arc_util.js';
 // </if>
 
@@ -235,15 +235,15 @@ export class InlineLoginAppElement extends InlineLoginAppElementBase {
   override connectedCallback() {
     super.connectedCallback();
 
-    this.addWebUIListener(
+    this.addWebUiListener(
         'load-auth-extension',
         (data: AuthParams) => this.loadAuthExtension_(data));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'send-lst-fetch-results',
-        (arg: string) => this.sendLSTFetchResults_(arg));
-    this.addWebUIListener('close-dialog', () => this.closeDialog_());
+        (arg: string) => this.sendLstFetchResults_(arg));
+    this.addWebUiListener('close-dialog', () => this.closeDialog_());
     // <if expr="chromeos_ash">
-    this.addWebUIListener(
+    this.addWebUiListener(
         'show-signin-error-page',
         (data: SigninErrorPageData) => this.signinErrorShowView_(data));
     // </if>
@@ -345,7 +345,7 @@ export class InlineLoginAppElement extends InlineLoginAppElementBase {
    * @param arg The string representation of the json data returned by
    *    the sign in dialog after it has finished the sign in process.
    */
-  private sendLSTFetchResults_(arg: string) {
+  private sendLstFetchResults_(arg: string) {
     this.browserProxy_.lstFetchResults(arg);
   }
 

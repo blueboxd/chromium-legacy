@@ -10,16 +10,14 @@
 #include "content/common/content_export.h"
 
 namespace attribution_reporting {
-class SourceRegistration;
+class SuitableOrigin;
+
+struct SourceRegistration;
 }  // namespace attribution_reporting
 
 namespace base {
 class Time;
 }  // namespace base
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -41,13 +39,15 @@ class CONTENT_EXPORT StorableSource {
     kMaxValue = kSuccessNoised,
   };
 
+  // TODO(apaseltiner): Make this constructor test-only.
   StorableSource(CommonSourceInfo common_info,
                  bool is_within_fenced_frame,
                  bool debug_reporting);
 
-  StorableSource(attribution_reporting::SourceRegistration,
+  StorableSource(attribution_reporting::SuitableOrigin reporting_origin,
+                 attribution_reporting::SourceRegistration,
                  base::Time source_time,
-                 url::Origin source_origin,
+                 attribution_reporting::SuitableOrigin source_origin,
                  AttributionSourceType,
                  bool is_within_fenced_frame);
 

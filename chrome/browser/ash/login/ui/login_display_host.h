@@ -14,14 +14,11 @@
 #include "base/observer_list_types.h"
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(https://crbug.com/1164001): use forward declaration.
-#include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chrome/browser/ash/login/ui/signin_ui.h"
-#include "chrome/browser/ash/login/wizard_context.h"
 #include "components/user_manager/user_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,11 +33,13 @@ class Rect;
 }  // namespace gfx
 
 namespace ash {
+
+class ExistingUserController;
 class KioskAppId;
 class KioskLaunchController;
-class MetricsRecorder;
 class OobeUI;
 class WebUILoginView;
+class WizardContext;
 class WizardController;
 enum class OobeDialogState;
 
@@ -76,9 +75,6 @@ class LoginDisplayHost {
 
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
-
-  // Returns an owned pointer to the MetricsRecorder instance.
-  MetricsRecorder* metrics_recorder() { return metrics_recorder_.get(); }
 
   // Returns an unowned pointer to the LoginDisplay instance.
   virtual LoginDisplay* GetLoginDisplay() = 0;
@@ -279,18 +275,10 @@ class LoginDisplayHost {
   // Global LoginDisplayHost instance.
   static LoginDisplayHost* default_host_;
 
-  // Owned pointer to MetricsRecorder instance.
-  std::unique_ptr<MetricsRecorder> metrics_recorder_;
-
   // Callback to be executed when WebUI is started.
   base::RepeatingClosure on_wizard_controller_created_for_tests_;
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when moved to ash.
-namespace chromeos {
-using ::ash::LoginDisplayHost;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_HOST_H_

@@ -16,7 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -109,12 +109,14 @@ class P2PSocketManager
       int address_family,
       bool enable_mdns,
       mojom::P2PSocketManager::GetHostAddressCallback callback) override;
-  void CreateSocket(P2PSocketType type,
-                    const net::IPEndPoint& local_address,
-                    const P2PPortRange& port_range,
-                    const P2PHostAndIPEndPoint& remote_address,
-                    mojo::PendingRemote<mojom::P2PSocketClient> client,
-                    mojo::PendingReceiver<mojom::P2PSocket> receiver) override;
+  void CreateSocket(
+      P2PSocketType type,
+      const net::IPEndPoint& local_address,
+      const P2PPortRange& port_range,
+      const P2PHostAndIPEndPoint& remote_address,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojo::PendingRemote<mojom::P2PSocketClient> client,
+      mojo::PendingReceiver<mojom::P2PSocket> receiver) override;
 
   // mojom::P2PTrustedSocketManager overrides:
   void StartRtpDump(bool incoming, bool outgoing) override;

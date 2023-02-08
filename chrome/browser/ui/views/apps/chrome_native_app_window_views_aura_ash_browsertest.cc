@@ -13,7 +13,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/apps/platform_apps/app_window_interactive_uitest_base.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
+#include "chromeos/ash/components/login/login_state/scoped_test_public_session_login_state.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
 #include "content/public/test/browser_test.h"
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 // that the app is in a normal window or fullscreen mode.
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        PublicSessionNoImmersiveModeWhenFullscreen) {
-  chromeos::ScopedTestPublicSessionLoginState login_state;
+  ash::ScopedTestPublicSessionLoginState login_state;
 
   InitWindow();
   ASSERT_TRUE(window());
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 // fullscreen mode under different conditions. (Window API)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        BubbleInsidePublicSessionWindow) {
-  chromeos::ScopedTestPublicSessionLoginState state;
+  ash::ScopedTestPublicSessionLoginState state;
   std::unique_ptr<ExtensionTestMessageListener> launched_listener =
       LaunchPlatformAppWithFocusedWindow();
   WaitFullscreenChange(launched_listener.get());
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
 // fullscreen mode under different conditions. (DOM)
 IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                        BubbleInsidePublicSessionDom) {
-  chromeos::ScopedTestPublicSessionLoginState state;
+  ash::ScopedTestPublicSessionLoginState state;
   std::unique_ptr<ExtensionTestMessageListener> launched_listener =
       LaunchPlatformAppWithFocusedWindow();
   WaitFullscreenChangeUntilKeyFocus(launched_listener.get());

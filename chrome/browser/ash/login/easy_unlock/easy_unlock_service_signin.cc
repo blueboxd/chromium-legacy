@@ -18,7 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_challenge_wrapper.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "chromeos/ash/components/multidevice/remote_device.h"
 #include "chromeos/ash/components/multidevice/remote_device_cache.h"
@@ -37,7 +38,7 @@
 #include "chromeos/ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/ash/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/ash/components/tpm/tpm_token_loader.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 
 namespace ash {
 
@@ -85,7 +86,7 @@ void RetryDataLoadOnError(
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&LoadDataForUser, account_id, next_backoff_ms,
                      std::move(callback)),
@@ -357,7 +358,7 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
 
   EasyUnlockService::OnScreenDidLock(screen_type);
 
-  if (!base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+  if (!base::FeatureList::IsEnabled(features::kSmartLockUIRevamp)) {
     // Update initial UI is when the account picker on login screen is ready.
     ShowInitialUserPodState();
   }
@@ -412,7 +413,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
     return;
 
   // Update initial UI is when the account picker on login screen is ready.
-  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+  if (base::FeatureList::IsEnabled(features::kSmartLockUIRevamp)) {
     ShowInitialSmartLockState();
   } else {
     ShowInitialUserPodState();
@@ -628,7 +629,7 @@ EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
 }
 
 void EasyUnlockServiceSignin::ShowInitialUserPodState() {
-  DCHECK(!base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp));
+  DCHECK(!base::FeatureList::IsEnabled(features::kSmartLockUIRevamp));
 
   if (!IsAllowed() || !IsEnabled())
     return;

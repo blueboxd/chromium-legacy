@@ -35,9 +35,6 @@
                 ],
                 "config": "chromium"
               },
-              "legacy_test_results_config": {
-                "config": "staging_server"
-              },
               "skylab_upload_location": {
                 "gs_bucket": "gs://lacros-amd64-generic-rel-skylab-try"
               }
@@ -58,6 +55,11 @@
     "enable_ats": true,
     "rpc_extra_params": "?prod",
     "server_host": "goma.chromium.org"
+  },
+  "$build/reclient": {
+    "instance": "rbe-chromium-untrusted",
+    "jobs": 150,
+    "metrics_project": "chromium-reclient-metrics"
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

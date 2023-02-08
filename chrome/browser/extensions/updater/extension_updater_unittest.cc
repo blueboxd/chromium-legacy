@@ -29,10 +29,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
@@ -292,14 +292,13 @@ class MockService : public TestExtensionService {
                             const std::string* update_url,
                             ManifestLocation location) {
     for (int i = 1; i <= count; i++) {
-      base::DictionaryValue manifest;
-      manifest.SetStringPath(manifest_keys::kVersion,
-                             base::StringPrintf("%d.0.0.0", i));
-      manifest.SetStringPath(manifest_keys::kName,
-                             base::StringPrintf("Extension %d.%d", id, i));
-      manifest.SetIntPath(manifest_keys::kManifestVersion, 2);
+      base::Value::Dict manifest;
+      manifest.Set(manifest_keys::kVersion, base::StringPrintf("%d.0.0.0", i));
+      manifest.Set(manifest_keys::kName,
+                   base::StringPrintf("Extension %d.%d", id, i));
+      manifest.Set(manifest_keys::kManifestVersion, 2);
       if (update_url)
-        manifest.SetStringPath(manifest_keys::kUpdateURL, *update_url);
+        manifest.Set(manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =
           prefs_->AddExtensionWithManifest(manifest, location);
       ASSERT_TRUE(e.get() != nullptr);
@@ -582,7 +581,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void SetUp() override {
     prefs_ = std::make_unique<TestExtensionPrefs>(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
 
   void TearDown() override {
@@ -2155,7 +2154,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // Set up 2 mock extensions, one with a google.com update url and one
     // without.
     prefs_ = std::make_unique<TestExtensionPrefs>(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     ExtensionDownloaderTestHelper helper;
     ServiceForManifestTests service(prefs_.get(), helper.url_loader_factory());
     ExtensionList tmp;

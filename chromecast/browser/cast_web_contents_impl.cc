@@ -12,7 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chromecast/base/cast_features.h"
@@ -154,7 +154,7 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       stop_notified_(false),
       notifying_(false),
       last_error_(net::OK),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       weak_factory_(this) {
   DCHECK(web_contents_);
   DCHECK(web_contents_->GetController().IsInitialNavigation());
@@ -173,10 +173,12 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
   // CastWebContents created in |InnerWebContentsCreated()| callback will use
   // the private ctor with |parent| specified which allows sharing the same
   // manager, so that the whole Cast session applies the same rules.
-  if (!parent_cast_web_contents_) {
-    url_rewrite_rules_manager_.emplace();
+  if (params_->enable_url_rewrite_rules) {
+    if (!parent_cast_web_contents_) {
+      url_rewrite_rules_manager_.emplace();
+    }
+    url_rewrite_rules_manager()->AddWebContents(web_contents_);
   }
-  url_rewrite_rules_manager()->AddWebContents(web_contents_);
 
   if (params_->enabled_for_dev) {
     LOG(INFO) << "Enabling dev console for CastWebContentsImpl";
@@ -255,6 +257,7 @@ void CastWebContentsImpl::SetInterfacesForRenderer(
 
 void CastWebContentsImpl::SetUrlRewriteRules(
     url_rewrite::mojom::UrlRequestRewriteRulesPtr rules) {
+  DCHECK(params_->enable_url_rewrite_rules);
   if (!url_rewrite_rules_manager()->OnRulesUpdated(std::move(rules))) {
     LOG(ERROR) << "URL rewrite rules update failed.";
   }

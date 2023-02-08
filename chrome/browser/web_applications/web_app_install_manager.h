@@ -22,7 +22,6 @@
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 
 class Profile;
@@ -48,12 +47,12 @@ class WebAppTranslationManager;
 class WebAppIconManager;
 
 // TODO(loyso): Unify the API and merge similar InstallWebAppZZZZ functions.
-class WebAppInstallManager final : public SyncInstallDelegate {
+class WebAppInstallManager {
  public:
   explicit WebAppInstallManager(Profile* profile);
   WebAppInstallManager(const WebAppInstallManager&) = delete;
   WebAppInstallManager& operator=(const WebAppInstallManager&) = delete;
-  ~WebAppInstallManager() override;
+  virtual ~WebAppInstallManager();
 
   void Start();
   void Shutdown();
@@ -70,14 +69,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   // same web contents.
   bool IsInstallingForWebContents(
       const content::WebContents* web_contents) const;
-
-  // SyncInstallDelegate:
-  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
-                               RepeatingInstallCallback callback) override;
-  void UninstallFromSync(const std::vector<AppId>& web_apps,
-                         RepeatingUninstallCallback callback) override;
-  void RetryIncompleteUninstalls(
-      const base::flat_set<AppId>& apps_to_uninstall) override;
 
   virtual void AddObserver(WebAppInstallManagerObserver* observer);
   virtual void RemoveObserver(WebAppInstallManagerObserver* observer);
@@ -97,10 +88,7 @@ class WebAppInstallManager final : public SyncInstallDelegate {
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;
-  void SetDataRetrieverFactoryForTesting(
-      DataRetrieverFactory data_retriever_factory);
 
-  void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
   std::set<AppId> GetEnqueuedInstallAppIdsForTesting();
 
@@ -108,30 +96,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   // tasks are migrated to the command system.
   void TakeCommandErrorLog(base::PassKey<WebAppCommandManager>,
                            base::Value log);
-
-  void SetUninstallCallbackForTesting(
-      RepeatingUninstallCallback uninstall_callback_for_testing);
-
-  // Used for testing from the WebAppSyncBridge as a SyncInstallDelegate.
-  // TODO(crbug.com/1298130): Remove these testing callbacks once
-  // SyncInstallDelegate has been deprecated and all sync functions directly
-  // invoke commands.
-  using InstallWebAppsAfterSyncDelegate =
-      base::RepeatingCallback<void(std::vector<WebApp*> web_apps,
-                                   RepeatingInstallCallback callback)>;
-  void SetInstallWebAppsAfterSyncDelegateForTesting(
-      InstallWebAppsAfterSyncDelegate delegate);
-
-  using UninstallFromSyncDelegate =
-      base::RepeatingCallback<void(const std::vector<AppId>& web_apps,
-                                   RepeatingUninstallCallback callback)>;
-  void SetUninstallFromSyncDelegateForTesting(
-      UninstallFromSyncDelegate delegate);
-
-  using RetryIncompleteUninstallsDelegate = base::RepeatingCallback<void(
-      const base::flat_set<AppId>& apps_to_uninstall)>;
-  void SetRetryIncompleteUninstallsDelegateForTesting(
-      RetryIncompleteUninstallsDelegate delegate);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
@@ -207,13 +171,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
-
-  RepeatingUninstallCallback uninstall_callback_for_testing_;
-
-  InstallWebAppsAfterSyncDelegate install_web_apps_after_sync_delegate_;
-  UninstallFromSyncDelegate
-      uninstall_from_sync_before_registry_update_delegate_;
-  RetryIncompleteUninstallsDelegate retry_incomplete_uninstalls_delegate_;
 
   bool started_ = false;
 

@@ -29,7 +29,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
@@ -121,6 +121,18 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
       SkAlphaType alpha_type,
       uint32_t usage,
       base::span<const uint8_t> pixel_data) override {
+    ADD_FAILURE();
+    return gpu::Mailbox();
+  }
+
+  gpu::Mailbox CreateSharedImage(
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      gfx::GpuMemoryBufferHandle buffer_handle) override {
     ADD_FAILURE();
     return gpu::Mailbox();
   }
@@ -300,16 +312,10 @@ class TestRasterContextProvider
   base::OnceClosure on_destroyed_;
 };
 
-class TestFuchsiaMediaResourceProvider
-    : public media::mojom::FuchsiaMediaResourceProvider {
+class TestFuchsiaMediaCodecProvider
+    : public media::mojom::FuchsiaMediaCodecProvider {
  public:
-  // media::mojom::FuchsiaMediaResourceProvider implementation.
-  void CreateCdm(
-      const std::string& key_system,
-      fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
-          request) final {
-    ADD_FAILURE();
-  }
+  // media::mojom::FuchsiaMediaCodecProvider implementation.
   void CreateVideoDecoder(
       media::VideoCodec codec,
       media::mojom::VideoDecoderSecureMemoryMode secure_mode,
@@ -346,7 +352,12 @@ class TestFuchsiaMediaResourceProvider
                                    std::move(stream_processor_request));
   }
 
-  mojo::Receiver<media::mojom::FuchsiaMediaResourceProvider> receiver_{this};
+  void GetSupportedVideoDecoderConfigs(
+      GetSupportedVideoDecoderConfigsCallback callback) override {
+    ADD_FAILURE();
+  }
+
+  mojo::Receiver<media::mojom::FuchsiaMediaCodecProvider> receiver_{this};
 };
 
 class FakeClientNativePixmap : public gfx::ClientNativePixmap {
@@ -407,8 +418,8 @@ class FuchsiaVideoDecoderTest : public testing::Test {
             base::MakeRefCounted<TestRasterContextProvider>()) {
     auto decoder = std::make_unique<FuchsiaVideoDecoder>(
         raster_context_provider_.get(),
-        mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>(
-            test_media_resource_provider_.receiver_.BindNewPipeAndPassRemote()),
+        mojo::SharedRemote<media::mojom::FuchsiaMediaCodecProvider>(
+            test_media_codec_provider_.receiver_.BindNewPipeAndPassRemote()),
         /*allow_overlays=*/false);
     decoder->SetClientNativePixmapFactoryForTests(
         std::make_unique<FakeClientNativePixmapFactory>());
@@ -500,7 +511,7 @@ class FuchsiaVideoDecoderTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
-  TestFuchsiaMediaResourceProvider test_media_resource_provider_;
+  TestFuchsiaMediaCodecProvider test_media_codec_provider_;
 
   scoped_refptr<TestRasterContextProvider> raster_context_provider_;
 

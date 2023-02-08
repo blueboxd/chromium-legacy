@@ -28,9 +28,9 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/mac/mac_util.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/mac_util.h"
+#include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -173,7 +173,7 @@ int RunExecutable(const base::FilePath& existence_checker_path,
         {"PATH", env_path},
         {"PREVIOUS_VERSION", pv.GetString()},
         {"SERVER_ARGS", arguments},
-        {"UPDATE_IS_MACHINE", scope == UpdaterScope::kSystem ? "1" : "0"},
+        {"UPDATE_IS_MACHINE", IsSystemInstall(scope) ? "1" : "0"},
         {"UNPACK_DIR", unpacked_path.value()},
     };
     if (installer_data_file) {

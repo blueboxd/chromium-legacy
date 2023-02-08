@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">ട്രബിള്‍ഷൂട്ടിംഗ് ഘട്ടങ്ങൾ പരീക്ഷിക്കുക</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">സ്ക്രീൻ സേവർ കാണാൻ ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്‌ത് പേജ് റീലോഡ് ചെയ്യുക.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">കൂടുതൽ ക്രമീകരണങ്ങൾ</translation>
 <translation id="2085089206770112532">ഡിസ്‌പ്ലേ തെളിച്ചം കുറയ്‌ക്കുക</translation>
 <translation id="2105810540595158374">ഉപകരണം ഒരു ഗെയിം കൺട്രോളറാണ്.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">പ്രിന്റ് ജോലി റദ്ദാക്കുക</translation>
 <translation id="2163937499206714165">ഡാർക്ക് മോഡ് ഓണാക്കുക</translation>
 <translation id="2180197493692062006">എന്തോ കുഴപ്പമുണ്ടായി. ആപ്പ് വീണ്ടും തുറക്കാൻ ശ്രമിക്കുക.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">ട്രാഫിക് കൗണ്ടറുകൾ റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="2212733584906323460">നെയിം റെസല്യൂഷൻ</translation>
 <translation id="2217935453350629363">നിലവിലെ വേഗത</translation>
@@ -163,6 +165,7 @@
 <translation id="2380886658946992094">നിയമപരം</translation>
 <translation id="2391082728065870591">ഫീഡ്‌ബാക്ക് റിപ്പോർട്ട് അയയ്‌ക്കുക</translation>
 <translation id="2407209115954268704">സിം ലോക്ക് നില</translation>
+<translation id="241419523391571119">പരീക്ഷിച്ച് നോക്കാൻ ലിഡ് വീണ്ടും തുറക്കുക</translation>
 <translation id="2414886740292270097">ഇരുണ്ടത്</translation>
 <translation id="2418150275289244458">ക്രമീകരണത്തിൽ തുറക്കുക</translation>
 <translation id="2421798028054665193"><ph name="TOTAL_PAGES" />-ൽ <ph name="CURRENT_PAGE" />-ാമത്തെ ചിത്രം</translation>
@@ -173,6 +176,7 @@
 <translation id="2491955442992294626">നിങ്ങൾ മറ്റൊരു വിൻഡോ ഉപയോഗിക്കുമ്പോൾ കീകൾ പരിശോധിക്കില്ല</translation>
 <translation id="2493126929778606526">സ്വയമേവ തിരഞ്ഞെടുത്ത നിങ്ങളുടെ ഏറ്റവും മികച്ച ഫോട്ടോകൾ</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">ഫ്ലോട്ട് ചെയ്യുക</translation>
 <translation id="2505327257735685095">നിലവിലെ വാൾപേപ്പർ ചിത്രം റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="2513396635448525189">ലോഗിൻ ചിത്രം</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
@@ -201,7 +205,9 @@
 <translation id="2872961005593481000">അടയ്ക്കുക</translation>
 <translation id="2874939134665556319">മുമ്പത്തെ ട്രാക്ക്</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> സെക്കൻഡിൽ <ph name="RATE" /> ഡിസ്ചാർജ് ചെയ്തു.</translation>
+<translation id="2902312830803030883">കൂടുതൽ‍ പ്രവര്‍ത്തനങ്ങള്‍</translation>
 <translation id="2926057806159140518">നിങ്ങളുടെ ഉപയോക്തൃനാമവും പാസ്‌വേഡും നൽകുക അല്ലെങ്കിൽ നിങ്ങളുടെ QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
+<translation id="2940811910881150316">ഉപകരണം പരീക്ഷിച്ച് നോക്കാനാകുന്നില്ല. പരീക്ഷിച്ച് നോക്കാൻ ലിഡ് വീണ്ടും തുറക്കുക.</translation>
 <translation id="3008341117444806826">റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="3009958530611748826">സംരക്ഷിക്കാൻ ഒരു ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3017079585324758401">പശ്ചാത്തലം</translation>
@@ -243,6 +249,7 @@
 <translation id="3413935475507503304">അപ്‌ഡേറ്റുമായി മുന്നോട്ട് പോകാൻ, 'അടുത്തത്' ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="3434107140712555581">ബാറ്ററി: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">സുരക്ഷ</translation>
+<translation id="3435896845095436175">തയ്യാറാക്കുക</translation>
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" />-ൽ <ph name="PRINTED_PAGES" /> പേജ് പ്രിന്റ് ചെയ്‌തു.</translation>
 <translation id="345898999683440380"><ph name="PAGE_NUM" />-ാമത്തെ പേജ് സ്‌കാൻ ചെയ്യുന്നു. <ph name="PERCENTAGE_VALUE" />% പൂർത്തിയായി.</translation>
 <translation id="3459509316159669723">പ്രിന്റിംഗ്</translation>
@@ -267,7 +274,6 @@
 <translation id="360565022852130722">ദുർബലമായ WEP 802.1x പ്രോട്ടോക്കോൾ ഉപയോഗിച്ചാണ് വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമാക്കിയിരിക്കുന്നത്</translation>
 <translation id="3606583719724308068">HTTPS വെബ്‌സൈറ്റുകളിലേക്ക് കണക്റ്റ് ചെയ്യാൻ ഉയർന്ന പ്രതികരണ സമയം</translation>
 <translation id="361575905210396100">നിങ്ങളുടെ ഫീഡ്ബാക്കിന് നന്ദി</translation>
-<translation id="3621202678540785336">ഇൻപുട്ട്</translation>
 <translation id="3632579075709132555">സ്വകാര്യതാ സ്‌ക്രീൻ ടോഗിൾ</translation>
 <translation id="3651050199673793219">താപനിലാ യൂണിറ്റ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> പരിശോധന</translation>
@@ -282,6 +288,7 @@
 <translation id="3820172043799983114">പിൻ നമ്പർ തെറ്റാണ്.</translation>
 <translation id="3824259034819781947">ഫയലുകൾ അറ്റാച്ച് ചെയ്യുക</translation>
 <translation id="3838338534323494292">പുതിയ പാസ്‌വേഡ്</translation>
+<translation id="3845880861638660475">ഡയലോഗ് അടയ്‌ക്കാൻ <ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> അമർത്തുക.</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3858860766373142691">പേര്</translation>
 <translation id="3862598938296403232">വിവരണം ആവശ്യമാണ്</translation>
@@ -289,6 +296,7 @@
 <translation id="3866249974567520381">വിവരണം</translation>
 <translation id="387301095347517405">നിങ്ങളുടെ ബാറ്ററി പൂർണ്ണമായി ചാർജ് ചെയ്തതിന്റെ എണ്ണം</translation>
 <translation id="3885327323343477505">സ്ക്രീൻ സേവർ മാറ്റുക</translation>
+<translation id="391412459402535266">ഉപകരണം പരീക്ഷിച്ച് നോക്കാനാകുന്നില്ല. പരീക്ഷിച്ച് നോക്കാൻ ലാപ്‌ടോപ്പ് മോഡിലേക്ക് മാറുക.</translation>
 <translation id="3923184630988645767">ഡാറ്റ ഉപയോഗം</translation>
 <translation id="3932043219784172185">ഉപകരണമൊന്നും കണക്റ്റ് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="3941014780699102620">ഹോസ്‌റ്റ് പരിഹരിക്കാനായില്ല</translation>
@@ -301,6 +309,7 @@
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> ദിവസം മുമ്പുള്ള പ്രിന്റ് ജോലികൾ നീക്കം ചെയ്യും</translation>
 <translation id="3993704782688964914">നിങ്ങളുടെ <ph name="DEVICE_NAME" /> ഇപ്പോൾ അപ് ടു ഡേറ്റ് ആണ്</translation>
 <translation id="4003384961948020559">പ്രിന്റ് ചെയ്യാനായില്ല - ഔട്ട്പുട്ട് നിറഞ്ഞിരിക്കുന്നു</translation>
+<translation id="4021031199988160623">പരീക്ഷിച്ച് നോക്കാൻ ലാപ്‌ടോപ്പ് മോഡിലേക്ക് മാറുക</translation>
 <translation id="4034824040120875894">പ്രിന്റർ</translation>
 <translation id="4044093238444069296">ഗേറ്റ്‌വേയുമായി ബന്ധപ്പെടാനാകുന്നില്ല</translation>
 <translation id="4046123991198612571">അടുത്ത ട്രാക്ക്</translation>
@@ -333,11 +342,13 @@
 <translation id="4289849978083912975">സ്ലൈഡ് ഷോ</translation>
 <translation id="4297501883039923494">പ്രിന്റ് ജോലി നിർത്തി - അജ്ഞാതമായ പിശക്</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> ചിത്രങ്ങൾ</translation>
+<translation id="4311195029067684288">പൂർണ്ണം</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> കീ അമർത്തി</translation>
 <translation id="435692326371619097">നെറ്റ്‌വർക്ക് APN ക്രമീകരണം മാനേജ് ചെയ്യുക. സെല്ലുലാർ നെറ്റ്‌വർക്കും ഇന്റർനെറ്റും തമ്മിൽ APN-കൾ കണക്ഷൻ സ്ഥാപിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">റൺ ചെയ്‌തിട്ടില്ല</translation>
 <translation id="4378551569595875038">കണക്റ്റിംഗ്...</translation>
 <translation id="4382484599443659549">PDF</translation>
+<translation id="4394049700291259645">അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> റീസ്റ്റാർട്ട് ചെയ്യുന്നു</translation>
 <translation id="4415951057168511744">നിലവിലെ അവതാർ</translation>
 <translation id="4425149324548788773">എന്റെ ഡ്രൈവ്</translation>
@@ -352,6 +363,7 @@
 <translation id="4503223151711056411">ഇടത്തേയ്‌ക്കുള്ള അമ്പടയാളം</translation>
 <translation id="4511264077854731334">പോർട്ടൽ</translation>
 <translation id="4521826082652183069">സബ്ജക്റ്റ് ഓൾട്ടർനേറ്റീവ് നെയിം പൊരുത്തം</translation>
+<translation id="4522570452068850558">വിശദാംശങ്ങൾ‌</translation>
 <translation id="4536864596629708641">IP കോൺഫിഗറേഷൻ</translation>
 <translation id="4546131424594385779">ലൂപ്പിംഗ് വീഡിയോ സൃഷ്ടിക്കുക</translation>
 <translation id="4548483925627140043">സിഗ്‌നൽ കണ്ടെത്തിയില്ല</translation>
@@ -382,6 +394,7 @@
 <translation id="4793756956024303490">കംപ്രഷൻ അൽഗോരിതം</translation>
 <translation id="4794140124556169553">CPU ടെസ്‌റ്റ് റൺ ചെയ്യുന്നത് സിസ്‌റ്റത്തിന്റെ പ്രകടനത്തെ ബാധിച്ചേക്കാം</translation>
 <translation id="4800589996161293643">Chromebook കമ്മ്യൂണിറ്റി</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> എന്ന പ്രിന്റ് ജോലി റദ്ദാക്കി</translation>
 <translation id="4809927044794281115">ലൈറ്റ് തീം</translation>
 <translation id="4813136279048157860">എന്റെ ചിത്രങ്ങൾ</translation>
@@ -393,6 +406,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> തിരഞ്ഞെടുത്തു, <ph name="TOPIC_SOURCE" /> ആൽബങ്ങൾ തിരഞ്ഞെടുക്കാൻ 'Enter' അമർത്തുക</translation>
 <translation id="484790837831576105">(Android) DNS റെസല്യൂഷൻ</translation>
 <translation id="4848429997038228357">റൺ ചെയ്യുന്നു</translation>
+<translation id="4854586501323951986">ബിൽറ്റ് ഇൻ ടച്ച്‌സ്‌ക്രീൻ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ശ്രമം ശേഷിക്കുന്നു}other{<ph name="ERROR_MESSAGE" /> {0} ശ്രമങ്ങൾ ശേഷിക്കുന്നു}}</translation>
 <translation id="4873827928179867585">പരിശോധിച്ചുറപ്പിക്കൽ അൽഗോരിതം</translation>
 <translation id="4880328057631981605">ആ‌ക്‌സസ് പോയിന്‍റിന്‍റെ പേര്</translation>
@@ -401,13 +415,16 @@
 <translation id="4891842000192098784">സമ്മർദ്ദം</translation>
 <translation id="4897058166682006107">ഉപകരണത്തിന്റെ ഇടത് ബഡിൽ <ph name="BATTERY_PERCENTAGE" />% ബാറ്ററിയുണ്ട്.</translation>
 <translation id="4905998861748258752">സ്ക്രീൻ സേവർ ഓപ്ഷനുകൾ തിരഞ്ഞെടുക്കാൻ ഫീച്ചർ ഓണാക്കുക</translation>
+<translation id="4910858703033903787">APN തരങ്ങൾ</translation>
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4917889632206600977">പ്രിന്റ് ജോലി നിർത്തി - പേപ്പറില്ല</translation>
 <translation id="491791267030419270">ഫീഡ്ബാക്ക് എഴുതുന്നതിനുള്ള നുറുങ്ങുകൾ</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> സെക്കന്റിൽ <ph name="RATE" /> ചാർജ് ചെയ്‌തു.</translation>
 <translation id="4930320165497208503">കണക്ഷൻ സജ്ജീകരിക്കാനോ അപ്ഡേറ്റ് ചെയ്യാനോ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിലേക്ക്<ph name="END_LINK" /> പോകുക.</translation>
 <translation id="4932733599132424254">തീയതി</translation>
+<translation id="4937657825850660613">പകുതി</translation>
 <translation id="4950314376641394653"><ph name="VERSION" /> എന്ന പതിപ്പിലേക്ക് ഫേംവെയര്‍ <ph name="DEVICE_NAME" /> അപ്ഡേറ്റ് ചെയ്തു</translation>
+<translation id="4971925105143343452">ഭാഗികം</translation>
 <translation id="498186245079027698">സ്കാനർ പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക. സ്കാൻ ചെയ്ത ഫയലുകൾ സംരക്ഷിക്കാൻ മതിയായ ലോക്കൽ സ്പെയ്‍സ് ഉണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="4985509611418653372">റൺ ചെയ്യുക</translation>
 <translation id="4987769320337599931">ഫയർവാൾ</translation>
@@ -455,6 +472,7 @@
 <translation id="5358174242040570474">എന്തോ കുഴപ്പമുണ്ടായി. വാൾപേപ്പർ വീണ്ടും തിരഞ്ഞെടുത്ത് നോക്കുക അല്ലെങ്കിൽ ആപ്പ് വീണ്ടും തുറക്കുക.</translation>
 <translation id="5372659122375744710">വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമല്ല</translation>
 <translation id="5376354385557966694">സ്വയമേവയുള്ള ലൈറ്റ് മോഡ്</translation>
+<translation id="5378184552853359930">IP തരം</translation>
 <translation id="5389159777326897627">വാൾപേപ്പറും സ്റ്റൈലും</translation>
 <translation id="5389224261615877010">റെയിൻബോ</translation>
 <translation id="5400907029458559844">ഉപകരണം കണക്റ്റ് ചെയ്യുന്നു.</translation>
@@ -469,6 +487,7 @@
 <translation id="5499114900554609492">സ്‌കാൻ പൂർത്തിയാക്കാനായില്ല</translation>
 <translation id="5499762266711462226">കീബോർഡിന്റെ നിറം വാൾപേപ്പറിനെ അടിസ്ഥാനമാക്കിയുള്ളതാണ്</translation>
 <translation id="5502931783115429516">Android റൺ ചെയ്യുന്നില്ല</translation>
+<translation id="551689408806449779">ഉപകരണം വിച്ഛേദിച്ചിരിക്കുന്നു. ടെസ്റ്റ് ചെയ്യുന്നതിന് വീണ്ടും കണക്‌റ്റ് ചെയ്യാൻ ശ്രമിക്കുക</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">സൂര്യാസ്തമയ സമയത്ത് സ്വയമേവ ഡാർക്ക് തീമിലേക്ക് മാറുക</translation>
@@ -483,6 +502,7 @@
 <translation id="5669267381087807207">സജീവമാക്കുന്നു</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">കുടുംബം</translation>
+<translation id="5695599963893094957">നിങ്ങളുടെ കീബോർഡിലെ ഏതെങ്കിലും കീ ടൈപ്പ് ചെയ്യുക. ഒരേ സമയം നിങ്ങൾക്ക് 4 കീകൾ വരെ അമർത്താം.</translation>
 <translation id="5701381305118179107">മധ്യഭാഗം</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />-ൽ <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
@@ -498,10 +518,12 @@
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5860491529813859533">ഓൺ ചെയ്യുക</translation>
 <translation id="5866840822086176774">വളരെ ദൃഢമാണ്</translation>
+<translation id="5876385649737594562">ഓപ്‌ഷനുകൾ തിരഞ്ഞെടുക്കുന്നതിന് ഓണാക്കുക</translation>
 <translation id="588258955323874662">പൂര്‍‌ണ്ണസ്‌ക്രീന്‍</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901630391730855834">മഞ്ഞ</translation>
 <translation id="5903200662178656908">കീബോർഡിന്റെയും മൗസിന്റെയും കോമ്പോ ആണ് ഉപകരണം.</translation>
+<translation id="5904994456462260490">പുതിയൊരു APN ചേർക്കുക</translation>
 <translation id="5907649332524363701">കീയുടെ നിറം</translation>
 <translation id="5916084858004523819">നിരോധിച്ചിരിക്കുന്നു</translation>
 <translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
@@ -562,6 +584,7 @@
 <translation id="6394634179843537518">ഫയൽ ചേർക്കുക</translation>
 <translation id="6410257289063177456">ചിത്ര ഫയലുകള്‍</translation>
 <translation id="641081527798843608">പൊരുത്തപ്പെടുന്ന വിഷയം</translation>
+<translation id="6412715219990689313">ബിൽറ്റ് ഇൻ കീബോർഡ്</translation>
 <translation id="6423239382391657905">VPNതുറക്കുക</translation>
 <translation id="6439505561246192797">ദുർബലം (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">അക്കൗണ്ട് ക്രമീകരണത്തിലേക്ക് പോകുക</translation>
@@ -606,7 +629,6 @@
 <translation id="6766275201586212568">പരാജയപ്പെട്ട DNS റെസല്യൂഷനുകൾ</translation>
 <translation id="6768237774506518020">ഉയർന്ന DNS റെസല്യൂഷൻ ഫെയ്‌ലിയർ നിരക്ക്</translation>
 <translation id="6791471867139427246">കീബോർഡ് ലൈറ്റിന്റെ നിറം</translation>
-<translation id="6793680441750437230">നിങ്ങളുടെ കീബോർഡിലെ ഏതെങ്കിലും കീ ടൈപ്പ് ചെയ്യുക. ഒരേ സമയം നിങ്ങൾക്ക് 4 കീകൾ വരെ അമർത്താം. ഡയലോഗ് അടയ്ക്കാൻ Alt, Esc കീകൾ ഒരുമിച്ച് അമർത്തുക.</translation>
 <translation id="680983167891198932">കീ</translation>
 <translation id="6816797338148849397">നിങ്ങളുടെ തിരഞ്ഞെടുപ്പുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ ലഭ്യമാണ്. ആക്‌സസ് ചെയ്യാൻ മുകളിലേയ്ക്കുള്ള അമ്പടയാളം കീ ഉപയോഗിക്കുക.</translation>
 <translation id="6853312040151791195">ഡിസ്‌ചാർജ് ചെയ്യൽ റേറ്റ്</translation>
@@ -660,11 +682,13 @@
 <translation id="7359657277149375382">ഫയല്‍ തരം</translation>
 <translation id="73631062356239394">പ്രശ്നനിർണ്ണയ ഡാറ്റ പങ്കിടുക</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">ബിൽറ്റ് ഇൻ ടച്ച്‌പാഡ്</translation>
 <translation id="7397270852490618635">ലൈറ്റ് തീം ഓഫാക്കുക</translation>
 <translation id="741244894080940828">പരിവർത്തനം</translation>
 <translation id="7415801143053185905">വളരെ ഉയർന്ന HTTP പ്രതികരണ സമയം</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{സ്‌കാൻ ചെയ്യൽ പൂർത്തിയായി. 1 പേജ് സ്‌കാൻ ചെയ്‌തു}other{സ്‌കാൻ ചെയ്യൽ പൂർത്തിയായി. {NUMBER_OF_PAGES} പേജുകൾ സ്‌കാൻ ചെയ്‌തു}}</translation>
+<translation id="7458970041932198923">അവതാറുകൾ കാണാനും സജ്ജീകരിക്കാനും ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്‌ത് പേജ് റീലോഡ് ചെയ്യുക.</translation>
 <translation id="7469648432129124067">പോര്‍ട്ടല്‍ തിരിച്ചറിഞ്ഞു</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
 <translation id="7487067081878637334">സാങ്കേതികവിദ്യ</translation>
@@ -708,7 +732,7 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">പ്രൊവൈഡര്‍ തരം:</translation>
 <translation id="7882501334836096755">എല്ലാവർക്കുമായുള്ള കീ</translation>
-<translation id="7890841768028788197">ആന്തരിക ടച്ച്സ്ക്രീൻ</translation>
+<translation id="7915220255123750251">നെറ്റ്‌വർക്ക് APN ക്രമീകരണം മാനേജ് ചെയ്യുക. സെല്ലുലാർ നെറ്റ്‌വർക്കിനും ഇന്റർനെറ്റിനും ഇടയിൽ APN-കൾ കണക്ഷൻ സ്ഥാപിക്കുന്നു.</translation>
 <translation id="7936303884198020182">നെയിം സെർവറുകളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="7942349550061667556">ചുവപ്പ്</translation>
 <translation id="7943235353293548836">സജീവമായി നിലനിർത്താനുള്ള സ്ഥിര ഇടവേള</translation>
@@ -733,6 +757,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">അറ്റാച്ച് ചെയ്യുക</translation>
 <translation id="8206859287963243715">സെല്ലുലാര്‍‌</translation>
 <translation id="8208861521865154048">പെർക്കുകൾ</translation>
 <translation id="8226628635270268143">നിങ്ങളുടെ പ്രിയപ്പെട്ട ഫോട്ടോകളും ആൽബങ്ങളും തിരഞ്ഞെടുക്കുക</translation>
@@ -753,9 +778,9 @@
 <translation id="8372477600026034341">അധിക ഹോസ്‌റ്റുകൾ</translation>
 <translation id="8395584934117017006">ഈ <ph name="DEVICE_TYPE" /> എന്റർപ്രൈസ് മാനേജ് ചെയ്യുന്നു</translation>
 <translation id="8398927464629426868">ഉപകരണം നിലവിൽ ചാർജ് ചെയ്യുന്നതോ ഡിസ്‌ചാർജ് ചെയ്യുന്നതോ ആയ റേറ്റ്</translation>
+<translation id="8410244574650205435">സ്വയമേവ കണ്ടെത്തി</translation>
 <translation id="8420955526972171689">ഹാര്‍ഡ്‍വെയര്‍ പ്രശ്‌നങ്ങൾ കണ്ടെത്താൻ ടെസ്റ്റുകളും ട്രബിള്‍ഷൂട്ടിംഗും റൺ ചെയ്യുക</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">ആന്തരിക കീബോർഡ്</translation>
 <translation id="8431300646573772016">ChromeOS-ൽ പുതിയത്</translation>
 <translation id="843568408673868420">ഇന്റർനെറ്റ് കണക്റ്റിവിറ്റി</translation>
 <translation id="844521431886043384">DNS സജ്ജീകരിച്ചിട്ടില്ല</translation>
@@ -812,17 +837,18 @@
 <translation id="8930521118335213258">പിയർ</translation>
 <translation id="8930622219860340959">വയര്‍‌ലെസ്സ്</translation>
 <translation id="8936793075252196307">ക്ലയന്റിന്റെ IP വിലാസം</translation>
-<translation id="8945750210906526975">ആന്തരിക ടച്ച്പാഡ്</translation>
 <translation id="894617464444543719">ഉപകരണം ഒരു ഫോണാണ്.</translation>
 <translation id="8968751544471797276">ചാർജ് ചെയ്യൽ റേറ്റ്</translation>
 <translation id="8970109610781093811">വീണ്ടും പ്രവർത്തിപ്പിക്കുക</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{സ്‌കാൻ ചെയ്യുക}=1{{NUMBER_OF_PAGES} പേജ് സ്‌കാൻ ചെയ്യുക}other{{NUMBER_OF_PAGES} പേജ് സ്‌കാൻ ചെയ്യുക}}</translation>
 <translation id="8997710128084572139">ഉപകരണത്തിൽ <ph name="BATTERY_PERCENTAGE" />% ബാറ്ററിയുണ്ട്.</translation>
+<translation id="8998289560386111590">നിങ്ങളുടെ ഉപകരണത്തിൽ ലഭ്യമല്ല</translation>
 <translation id="9003704114456258138">ആവൃത്തി</translation>
 <translation id="9025198690966128418">വ്യക്തിപര ഉപകരണമായി ഉപയോഗിക്കുക</translation>
 <translation id="9028832514430399253">സ്ക്രീൻ സേവർ ഓപ്ഷനുകൾ തിരഞ്ഞെടുക്കാൻ ടോഗിൾ ഓണാക്കുക</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS റെസല്യൂഷൻ പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുക്കുന്നു</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -830,6 +856,7 @@
 <translation id="9087578468327036362">ഈ ചോദ്യം റിപ്പോർട്ട് ചെയ്യുക</translation>
 <translation id="9088306295921699330">നിലവിലെ ഉപയോഗം</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">വിപുലമായ ക്രമീകരണം</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> എന്നതിനുള്ള ടിക്കറ്റ് റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" />-ാമത്തെ പേജ് സ്‌കാൻ ചെയ്യുന്നു</translation>
 <translation id="9111102763498581341">അണ്‍ലോക്ക് ചെയ്യുക</translation>

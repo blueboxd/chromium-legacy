@@ -56,7 +56,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/exo/display.h"
 #include "components/exo/security_delegate.h"
 #include "components/exo/wayland/content_type.h"
@@ -93,6 +92,7 @@
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_stylus_tools.h"
 #include "components/exo/wayland/zcr_touchpad_haptics.h"
+#include "components/exo/wayland/zcr_ui_controls.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
 #include "components/exo/wayland/zwp_idle_inhibit_manager.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
@@ -376,6 +376,7 @@ void Server::Initialize() {
                    display_, bind_zwp_idle_inhibit_manager);
 
   weston_test_holder_ = std::make_unique<WestonTest>(this);
+  ui_controls_holder_ = std::make_unique<UiControls>(this);
 
   zcr_keyboard_extension_data_ =
       std::make_unique<WaylandKeyboardExtension>(serial_tracker_.get());

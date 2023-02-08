@@ -8,7 +8,6 @@ import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -62,13 +61,10 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.suggestions.mostvisited.MostVisitedSitesMetadataUtils;
 import org.chromium.chrome.browser.suggestions.tile.Tile;
@@ -86,10 +82,8 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
-import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
-import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -216,12 +210,11 @@ public class InstantStartTest {
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
 
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(cta.getLayoutManager()).isInstanceOf(LayoutManagerChromePhone.class);
-        assertThat(cta.getLayoutManager().getOverviewLayout())
-                .isInstanceOf(TabSwitcherAndStartSurfaceLayout.class);
+        TabUiTestHelper.verifyTabSwitcherLayoutType(cta);
     }
 
     @Test
@@ -232,6 +225,9 @@ public class InstantStartTest {
             ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
             ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
+    // TODO(https://crbug.com/1347089): Removes this test once the start surface refactoring is
+    // done, since the secondary tasks surface will go away.
+    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS + "/enable_launch_polish/true"})
     public void startSurfaceSinglePanePreNativeAndWithNativeTest() {
@@ -243,7 +239,7 @@ public class InstantStartTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
 
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(cta.getLayoutManager()).isInstanceOf(LayoutManagerChromePhone.class);
@@ -405,7 +401,7 @@ public class InstantStartTest {
 
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
         // Initializes native.
         StartSurfaceTestUtils.startAndWaitNativeInitialization(mActivityTestRule);
@@ -418,45 +414,6 @@ public class InstantStartTest {
         });
         View surface = cta.findViewById(R.id.primary_tasks_surface_view);
         mRenderTestRule.render(surface, "singlePane_landscapeV2");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
-    // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
-            ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.EXPLORE_SITES})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
-            // Disable feed placeholder animation because we can't render it in exactly the same
-            // way for each run.
-            FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH,
-            INSTANT_START_TEST_BASE_PARAMS})
-    public void testMVTilesWithExploreSitesView() throws InterruptedException, IOException {
-        // clang-format on
-        FakeMostVisitedSites mostVisitedSites = StartSurfaceTestUtils.setMVTiles(mSuggestionsDeps);
-        saveSiteSuggestionTilesToFile(mostVisitedSites.getCurrentSites());
-        StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
-
-        View surface = cta.findViewById(R.id.primary_tasks_surface_view);
-
-        ViewUtils.onViewWaiting(
-                allOf(withId(R.id.tile_view_title), withText("0 EXPLORE_SITES"), isDisplayed()));
-        ChromeRenderTestRule.sanitize(surface);
-
-        // Render MV tiles pre-native to make sure MV tiles background icons are inflated.
-        mRenderTestRule.render(surface, "singlePane_MV_withExploreSitesViewV2");
-
-        // Initializes native.
-        StartSurfaceTestUtils.startAndWaitNativeInitialization(mActivityTestRule);
-
-        StartSurfaceTestUtils.waitForTabModel(cta);
-
-        // When showing MV tiles pre-native, explore top sites view is already rendered with a
-        // non-null icon. This test is for ensuring explore top sites view (locating at the first
-        // tile) is built and clickable after native initialization.
-        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 0);
     }
 
     @Test
@@ -497,29 +454,6 @@ public class InstantStartTest {
         Assert.assertFalse(HomepageManager.isHomepageEnabled());
 
         testShowLastTabAtStartUp();
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
-    // clang-format off
-    @EnableFeatures({ChromeFeatureList.FEED_ABLATION,
-        ChromeFeatureList.START_SURFACE_DISABLED_FEED_IMPROVEMENT,
-        ChromeFeatureList.TAB_SWITCHER_ON_RETURN,
-        ChromeFeatureList.START_SURFACE_ANDROID})
-    public void renderImprovingStartSurfaceWhenFeedDisabled() throws IOException {
-        // clang-format on
-        StartSurfaceTestUtils.setMVTiles(mSuggestionsDeps);
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, false);
-        mActivityTestRule.startMainActivityFromLauncher();
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        Assert.assertTrue(ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(cta));
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
-
-        View surface = cta.findViewById(R.id.primary_tasks_surface_view);
-        ChromeRenderTestRule.sanitize(surface);
-        mRenderTestRule.render(surface, "start_surface_no_feed_improvement");
     }
 
     private void testShowLastTabAtStartUp() throws IOException {

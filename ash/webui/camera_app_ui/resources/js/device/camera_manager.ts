@@ -35,7 +35,6 @@ import {windowController} from '../window_controller.js';
 
 import {EventListener, OperationScheduler} from './camera_operation.js';
 import {VideoCaptureCandidate} from './capture_candidate.js';
-import {DeviceInfoUpdater} from './device_info_updater.js';
 import {Preview} from './preview.js';
 import {
   CameraConfig,
@@ -100,8 +99,6 @@ export class CameraManager implements EventListener {
 
   private watchdog: ResumeStateWatchdog|null = null;
 
-  private readonly infoUpdater = new DeviceInfoUpdater();
-
   private readonly cameraUIs: CameraUI[] = [];
 
   private readonly preview: Preview;
@@ -116,7 +113,6 @@ export class CameraManager implements EventListener {
     });
 
     this.scheduler = new OperationScheduler(
-        this.infoUpdater,
         this,
         this.preview,
         defaultFacing,
@@ -314,7 +310,7 @@ export class CameraManager implements EventListener {
   switchCamera(): Promise<void>|null {
     const promise = this.tryReconfigure(() => {
       state.set(PerfEvent.CAMERA_SWITCHING, true);
-      const devices = this.infoUpdater.getDevicesInfo();
+      const devices = this.getCameraInfo().devicesInfo;
       let index =
           devices.findIndex((entry) => entry.deviceId === this.getDeviceId());
       if (index === -1) {
@@ -479,9 +475,12 @@ export class CameraManager implements EventListener {
 
   async startCapture(): Promise<[Promise<void>]> {
     this.setCameraAvailable(false);
-    const captureDone = await this.scheduler.startCapture();
-    this.setCameraAvailable(true);
-    return assertExists(captureDone);
+    try {
+      const captureDone = await this.scheduler.startCapture();
+      return assertExists(captureDone);
+    } finally {
+      this.setCameraAvailable(true);
+    }
   }
 
   stopCapture(): void {

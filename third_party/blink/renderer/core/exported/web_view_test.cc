@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
@@ -2484,24 +2485,27 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item2->Url(), WebFrameLoadType::kBackForward, item2.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 
@@ -2520,18 +2524,20 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item1->Url(), WebFrameLoadType::kBackForward, item1.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
 
   main_frame_local->Loader().GetDocumentLoader()->CommitSameDocumentNavigation(
       item3->Url(), WebFrameLoadType::kBackForward, item3.Get(),
       ClientRedirectPolicy::kNotClientRedirect,
-      false /* has_transient_user_activation */, nullptr /* initiator_origin */,
-      false /* is_synchronously_committed */,
+      /*has_transient_user_activation=*/false, /*initiator_origin=*/nullptr,
+      /*is_synchronously_committed=*/false,
       mojom::blink::TriggeringEventInfo::kNotFromEvent,
-      true /* is_browser_initiated */);
+      /*is_browser_initiated=*/true,
+      /*soft_navigation_heuristics_task_id=*/absl::nullopt);
   // The scroll offset is only applied via invoking the anchor via the main
   // lifecycle, or a forced layout.
   // TODO(chrishtr): At the moment, WebLocalFrameImpl::GetScrollOffset() does
@@ -4092,6 +4098,7 @@ class CreateChildCounterFrameClient
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params,
+      ukm::SourceId document_ukm_source_id,
       base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>
           complete_initialization) override;
 
@@ -4109,13 +4116,14 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
     WebPolicyContainerBindParams policy_container_bind_params,
+    ukm::SourceId document_ukm_source_id,
     base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>
         complete_initialization) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
       scope, name, fallback_name, frame_policy, frame_owner_properties,
       frame_owner_element_type, std::move(policy_container_bind_params),
-      complete_initialization);
+      document_ukm_source_id, complete_initialization);
 }
 
 TEST_F(WebViewTest, ChangeDisplayMode) {

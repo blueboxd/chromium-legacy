@@ -137,7 +137,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     SetActivityLogTaskRunnerForTesting(
-        base::ThreadTaskRunnerHandle::Get().get());
+        base::SingleThreadTaskRunner::GetCurrentDefault().get());
 
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     if (enable_activity_logging_switch()) {
@@ -333,7 +333,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
       no_state_prefetch_manager->StartPrefetchingFromOmnibox(
           url,
           web_contents()->GetController().GetDefaultSessionStorageNamespace(),
-          kSize));
+          kSize, nullptr));
 
   const std::vector<content::WebContents*> contentses =
       no_state_prefetch_manager->GetAllNoStatePrefetchingContentsForTesting();

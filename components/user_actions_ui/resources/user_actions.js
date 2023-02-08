@@ -12,8 +12,8 @@
  * callbacks from the C++ code saying that a new user action was seen.
  */
 
-import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {$} from 'chrome://resources/js/util.js';
+import {addWebUiListener} from 'chrome://resources/js/cr.js';
+import {$} from 'chrome://resources/js/util_ts.js';
 
 /**
  * Appends a row to the output table listing the user action observed
@@ -33,7 +33,7 @@ function observeUserAction(userAction) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  addWebUIListener('user-action', observeUserAction);
+  addWebUiListener('user-action', observeUserAction);
   // <if expr="not is_ios">
   chrome.send('pageLoaded');
   // </if>

@@ -84,6 +84,8 @@ struct CORE_EXPORT Timing {
     kOverrideAll = (1 << 8) - 1
   };
 
+  // TODO: Rename to TimelineRangeName
+  // https://github.com/w3c/csswg-drafts/issues/7589
   enum class TimelineNamedPhase { kNone, kCover, kContain, kEnter, kExit };
 
   // Delay can be directly expressed as time delays or calculated based on a
@@ -132,6 +134,7 @@ struct CORE_EXPORT Timing {
   static String FillModeString(FillMode);
   static FillMode StringToFillMode(const String&);
   static String PlaybackDirectionString(PlaybackDirection);
+  static String TimelineRangeNameToString(Timing::TimelineNamedPhase);
 
   Timing() = default;
 
@@ -213,7 +216,8 @@ struct CORE_EXPORT Timing {
   struct NormalizedTiming {
     DISALLOW_NEW();
     // Value used in normalization math. Stored so that we can convert back if
-    // needed.
+    // needed. At present, only scroll-linked animations have a timeline
+    // duration. If this changes, we need to update the is_current calculation.
     absl::optional<AnimationTimeDelta> timeline_duration;
     // Though timing delays may be expressed as either times or (phase,offset)
     // pairs, post normalization, delays is expressed in time.
@@ -226,9 +230,12 @@ struct CORE_EXPORT Timing {
     AnimationTimeDelta end_time;
   };
 
+  // TODO(crbug.com/1394434): Cleanup method signature by passing in
+  // AnimationEffectOwner.
   CalculatedTiming CalculateTimings(
       absl::optional<AnimationTimeDelta> local_time,
       bool at_progress_timeline_boundary,
+      bool is_idle,
       const NormalizedTiming& normalized_timing,
       AnimationDirection animation_direction,
       bool is_keyframe_effect,

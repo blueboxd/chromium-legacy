@@ -170,7 +170,8 @@ enum class NotificationCatalogName {
   kPrivacyHubHWCameraSwitchOffSWCameraSwitchOn = 155,
   kEcheAppNetworkSetting = 156,
   kPrivacyHubMicAndCamera = 157,
-  kMaxValue = kPrivacyHubMicAndCamera
+  kArcVmDataMigration = 158,
+  kMaxValue = kArcVmDataMigration
 };
 
 // A living catalog that registers system nudges.
@@ -231,7 +232,8 @@ enum class ToastCatalogName {
   kDeprecateAssistantStylus = 36,
   kEcheTrayCopyPasteNotImplemented = 37,
   kEcheTrayTabletModeNotSupported = 38,
-  kMaxValue = kEcheTrayTabletModeNotSupported,
+  kNotificationCenterTrayNoNotifications = 39,
+  kMaxValue = kNotificationCenterTrayNoNotifications,
 };
 
 }  // namespace ash

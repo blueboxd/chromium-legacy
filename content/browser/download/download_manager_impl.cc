@@ -22,9 +22,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/public/common/download_create_info.h"
@@ -297,7 +296,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       browser_context_(browser_context),
       delegate_(nullptr),
       in_progress_manager_(
-          browser_context_->RetriveInProgressDownloadManager()),
+          browser_context_->RetrieveInProgressDownloadManager()),
       next_download_id_(download::DownloadItem::kInvalidId),
       is_history_download_id_retrieved_(false),
       should_persist_new_download_(false),
@@ -801,8 +800,8 @@ void DownloadManagerImpl::CheckForFileRemoval(
   if (!pending_disk_access_query_.insert(download_item->GetId()).second)
     return;
 
-  base::PostTaskAndReplyWithResult(
-      disk_access_task_runner_.get(), FROM_HERE,
+  disk_access_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&base::PathExists, download_item->GetTargetFilePath()),
       base::BindOnce(&DownloadManagerImpl::OnFileExistenceChecked,
                      weak_factory_.GetWeakPtr(), download_item->GetId()));
@@ -1146,7 +1145,7 @@ void DownloadManagerImpl::PostInitialization(
       in_progress_cache_initialized_ = true;
       // Post a task to load downloads from history db.
       if (load_history_downloads_cb_) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, std::move(load_history_downloads_cb_));
       }
       break;

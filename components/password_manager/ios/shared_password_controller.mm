@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -40,6 +41,7 @@
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #include "components/password_manager/ios/password_manager_ios_util.h"
+#import "components/password_manager/ios/shared_password_controller+private.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -100,9 +102,6 @@ BOOL canProcessCrossOriginIframes() {
 
 // Helper contains common password suggestion logic.
 @property(nonatomic, readonly) PasswordSuggestionHelper* suggestionHelper;
-
-// Tracks if current password is generated.
-@property(nonatomic, assign) BOOL isPasswordGenerated;
 
 // Tracks field when current password was generated.
 @property(nonatomic) FieldRendererId passwordGeneratedIdentifier;
@@ -558,6 +557,10 @@ BOOL canProcessCrossOriginIframes() {
 
 - (SuggestionProviderType)type {
   return SuggestionProviderTypePassword;
+}
+
+- (autofill::PopupType)suggestionType {
+  return autofill::PopupType::kPasswords;
 }
 
 #pragma mark - PasswordManagerDriverDelegate

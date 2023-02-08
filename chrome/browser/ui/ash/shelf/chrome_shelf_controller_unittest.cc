@@ -40,11 +40,10 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -62,6 +61,12 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/policy_util.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_icon.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_default_app_list.h"
+#include "chrome/browser/ash/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -85,12 +90,6 @@
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/multi_user/multi_profile_support.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -432,36 +431,33 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
 
     model_ = std::make_unique<ash::ShelfModel>();
 
-    base::DictionaryValue manifest;
-    manifest.SetStringPath(extensions::manifest_keys::kName,
-                           "launcher controller test extension");
-    manifest.SetStringPath(extensions::manifest_keys::kVersion, "1");
-    manifest.SetIntPath(extensions::manifest_keys::kManifestVersion, 2);
-    manifest.SetStringPath(extensions::manifest_keys::kDescription,
-                           "for testing pinned apps");
+    base::Value::Dict manifest;
+    manifest.SetByDottedPath(extensions::manifest_keys::kName,
+                             "launcher controller test extension");
+    manifest.SetByDottedPath(extensions::manifest_keys::kVersion, "1");
+    manifest.SetByDottedPath(extensions::manifest_keys::kManifestVersion, 2);
+    manifest.SetByDottedPath(extensions::manifest_keys::kDescription,
+                             "for testing pinned apps");
     // AppService checks the app's type. So set the
     // manifest_keys::kLaunchWebURL, so that the extension can get the type
     // from manifest value, and then AppService can get the extension's type.
-    manifest.SetStringPath(extensions::manifest_keys::kLaunchWebURL,
-                           kLaunchURL);
+    manifest.SetByDottedPath(extensions::manifest_keys::kLaunchWebURL,
+                             kLaunchURL);
 
-    base::DictionaryValue manifest_platform_app;
-    manifest_platform_app.SetStringPath(
+    base::Value::Dict manifest_platform_app;
+    manifest_platform_app.SetByDottedPath(
         extensions::manifest_keys::kName,
         "launcher controller test platform app");
-    manifest_platform_app.SetStringPath(extensions::manifest_keys::kVersion,
-                                        "1");
-    manifest_platform_app.SetStringPath(extensions::manifest_keys::kDescription,
-                                        "for testing pinned platform apps");
-    manifest_platform_app.SetStringPath(extensions::manifest_keys::kApp,
-                                        "true");
-    manifest_platform_app.Set(extensions::manifest_keys::kPlatformAppBackground,
-                              std::make_unique<base::DictionaryValue>());
+    manifest_platform_app.SetByDottedPath(extensions::manifest_keys::kVersion,
+                                          "1");
+    manifest_platform_app.SetByDottedPath(
+        extensions::manifest_keys::kDescription,
+        "for testing pinned platform apps");
     base::Value::List scripts;
     scripts.Append("main.js");
-    manifest_platform_app.Set(
+    manifest_platform_app.SetByDottedPath(
         extensions::manifest_keys::kPlatformAppBackgroundScripts,
-        std::make_unique<base::Value>(std::move(scripts)));
+        std::move(scripts));
 
     SyncServiceFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildTestSyncService));
@@ -725,11 +721,19 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
         base::WrapUnique<ShelfControllerHelper>(helper));
   }
 
-  void AppendPrefValue(base::Value::List& pref_value,
-                       const std::string& extension_id) {
+  void AppendPrefValue(base::Value::List& pref_values,
+                       const std::string& policy_id) {
     base::Value::Dict entry;
-    entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, extension_id);
-    pref_value.Append(std::move(entry));
+    entry.Set(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, policy_id);
+    pref_values.Append(std::move(entry));
+  }
+
+  void RemovePrefValue(base::Value::List& pref_values,
+                       const std::string& policy_id) {
+    pref_values.EraseIf([&policy_id](const auto& entry) {
+      return *entry.GetDict().FindString(
+                 ChromeShelfPrefs::kPinnedAppsPrefAppIDKey) == policy_id;
+    });
   }
 
   void InsertRemoveAllPinsChange(syncer::SyncChangeList* list) {
@@ -957,6 +961,11 @@ class ChromeShelfControllerTestBase : public BrowserWithTestWindowTest,
       }
     }
     return result;
+  }
+
+  bool IsAppPolicyPinned(const std::string& app_id) {
+    return GetPinnableForAppID(app_id, profile()) ==
+           AppListControllerDelegate::PIN_FIXED;
   }
 
   // Returns the list containing app IDs of items shown in shelf. The order of
@@ -1292,7 +1301,7 @@ class ChromeShelfControllerTest : public ChromeShelfControllerTestBase {
 class ChromeShelfControllerLacrosTest : public ChromeShelfControllerTestBase {
  public:
   ChromeShelfControllerLacrosTest() {
-    feature_list_.InitAndEnableFeature(chromeos::features::kLacrosSupport);
+    feature_list_.InitAndEnableFeature(ash::features::kLacrosSupport);
     crosapi::browser_util::SetProfileMigrationCompletedForTest(true);
   }
   ChromeShelfControllerLacrosTest(const ChromeShelfControllerLacrosTest&) =
@@ -1460,8 +1469,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest
     // Legacy multi profile feature. `kMediaRouter` is disabled because it has
     // unmet dependencies and is unrelated to this unit test.
     scoped_feature_list_.InitWithFeatures(
-        /*enabled=*/{}, /*disabled=*/{chromeos::features::kLacrosSupport,
-                                      media_router::kMediaRouter});
+        /*enabled_features=*/{}, /*disabled_features=*/{
+            ash::features::kLacrosSupport, media_router::kMediaRouter});
   }
   MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest(
       const MultiProfileMultiBrowserShelfLayoutChromeShelfControllerTest&) =
@@ -3430,7 +3439,26 @@ TEST_F(ChromeShelfControllerTest, Policy) {
   InstallSystemWebApp(std::make_unique<CameraSystemAppDelegate>(profile()));
 
   extension_service_->AddExtension(extension2_.get());
-  AddWebApp(web_app::kGmailAppId);
+
+  AddWebApp(web_app::kYoutubeAppId);
+
+  // Here and below we pretend that Gmail is both a preinstalled and a
+  // force-installed app and instruct that "gmail" policy_id has to be treated
+  // accordingly. This means that both "gmail" and
+  // "https://mail.google.com/mail/?usp=installed_webapp" are valid policy_ids
+  // for web_app::kGmailAppId.
+  constexpr base::StringPiece kGmailPolicyId = "gmail";
+
+  base::flat_map<base::StringPiece, base::StringPiece>
+      preinstalled_web_apps_mapping;
+  preinstalled_web_apps_mapping.emplace(kGmailPolicyId, web_app::kGmailAppId);
+  apps_util::SetPreinstalledWebAppsMappingForTesting(
+      preinstalled_web_apps_mapping);
+
+  // Force-install Gmail.
+  auto gmail_start_url = GetWebAppUrl(web_app::kGmailAppId);
+  auto gmail_install_url = gmail_start_url;
+  InstallExternalWebApp(gmail_start_url, gmail_install_url);
 
   // Pin policy should be initilized before controller start.
   base::Value::List policy_value;
@@ -3439,27 +3467,50 @@ TEST_F(ChromeShelfControllerTest, Policy) {
   AppendPrefValue(policy_value,
                   std::string{*apps_util::GetPolicyIdForSystemWebAppType(
                       ash::SystemWebAppType::CAMERA)});
+  // Pin Gmail by its install_url (see above).
+  AppendPrefValue(policy_value, gmail_install_url.spec());
+
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
 
   InitShelfController();
 
-  // Only |extension2_| should get pinned. |extension1_| is specified but not
-  // installed, and Gmail is part of the default set, but that
-  // shouldn't take effect when the policy override is in place.
-  EXPECT_EQ("Chrome, App2, Camera", GetPinnedAppStatus());
+  // |extension2_|, Camera and Gmail should get pinned. |extension1_| is
+  // specified but not installed, and Youtube is part of the default set, but
+  // that shouldn't take effect when the policy override is in place.
+  EXPECT_EQ("Chrome, App2, Camera, Gmail", GetPinnedAppStatus());
+  EXPECT_TRUE(IsAppPolicyPinned(extension2_->id()));
+  EXPECT_TRUE(IsAppPolicyPinned(web_app::kCameraAppId));
+  EXPECT_TRUE(IsAppPolicyPinned(web_app::kGmailAppId));
 
   // Installing |extension1_| should add it to the shelf. Note, App1 goes
   // before App2 that is aligned with the pin order in policy.
   AddExtension(extension1_.get());
-  EXPECT_EQ("Chrome, App1, App2, Camera", GetPinnedAppStatus());
+  EXPECT_EQ("Chrome, App1, App2, Camera, Gmail", GetPinnedAppStatus());
+  EXPECT_TRUE(IsAppPolicyPinned(extension1_->id()));
 
   // Removing |extension1_| from the policy should not be reflected in the
   // shelf and pin will exist.
-  policy_value.erase(policy_value.begin());
+  RemovePrefValue(policy_value, extension1_->id());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
-  EXPECT_EQ("Chrome, App1, App2, Camera", GetPinnedAppStatus());
+  EXPECT_EQ("Chrome, App1, App2, Camera, Gmail", GetPinnedAppStatus());
+  EXPECT_FALSE(IsAppPolicyPinned(extension1_->id()));
+
+  // Remove Gmail from the policy. It should stay pinned, but is no longer
+  // fixed.
+  RemovePrefValue(policy_value, gmail_install_url.spec());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
+  EXPECT_EQ("Chrome, App1, App2, Camera, Gmail", GetPinnedAppStatus());
+  EXPECT_FALSE(IsAppPolicyPinned(web_app::kGmailAppId));
+
+  // Check that Gmail can also be pinned by direct mapping.
+  AppendPrefValue(policy_value, std::string(kGmailPolicyId));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, base::Value(policy_value.Clone()));
+  EXPECT_EQ("Chrome, App1, App2, Camera, Gmail", GetPinnedAppStatus());
+  EXPECT_TRUE(IsAppPolicyPinned(web_app::kGmailAppId));
 }
 
 TEST_F(ChromeShelfControllerTest, UnpinWithUninstall) {

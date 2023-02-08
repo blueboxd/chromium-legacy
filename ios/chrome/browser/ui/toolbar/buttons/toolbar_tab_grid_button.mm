@@ -36,7 +36,8 @@ const CGFloat kLabelSize = 14;
   // the button's title may be empty or contain an easter egg, but the
   // accessibility value will always be equal to `tabCount`.
   NSString* tabStripButtonValue = [NSString stringWithFormat:@"%d", tabCount];
-  self.tabCountLabel.text = TextForTabCount(tabCount);
+  self.tabCountLabel.attributedText =
+      TextForTabCount(tabCount, kTabGridButtonFontSize);
   [self setAccessibilityValue:tabStripButtonValue];
 }
 
@@ -52,6 +53,12 @@ const CGFloat kLabelSize = 14;
 
 - (UILabel*)tabCountLabel {
   if (!_tabCountLabel) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(accessibilityBoldTextStatusDidChange)
+               name:UIAccessibilityBoldTextStatusDidChangeNotification
+             object:nil];
+
     _tabCountLabel = [[UILabel alloc] init];
     [self addSubview:_tabCountLabel];
 
@@ -62,8 +69,6 @@ const CGFloat kLabelSize = 14;
     ]];
     AddSameCenterConstraints(self, _tabCountLabel);
 
-    _tabCountLabel.font = [UIFont systemFontOfSize:kTabGridButtonFontSize
-                                            weight:UIFontWeightBold];
     _tabCountLabel.adjustsFontSizeToFitWidth = YES;
     _tabCountLabel.minimumScaleFactor = 0.1;
     _tabCountLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
@@ -71,6 +76,15 @@ const CGFloat kLabelSize = 14;
     _tabCountLabel.textColor = self.toolbarConfiguration.buttonsTintColor;
   }
   return _tabCountLabel;
+}
+
+#pragma mark - Private
+
+// Callback for the notification that the user changed the bold status.
+- (void)accessibilityBoldTextStatusDidChange {
+  // Reset the attributed string to pick up the new font.
+  self.tabCountLabel.attributedText =
+      TextForTabCount(self.tabCount, kTabGridButtonFontSize);
 }
 
 @end

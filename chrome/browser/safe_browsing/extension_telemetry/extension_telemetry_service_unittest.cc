@@ -146,7 +146,7 @@ void ExtensionTelemetryServiceTest::RegisterExtensionWithExtensionService(
   extension_service_->AddExtension(extension.get());
 
   extension_prefs_->UpdateExtensionPref(
-      extension_id, "install_time",
+      extension_id, "last_update_time",
       std::make_unique<base::Value>(
           base::NumberToString(install_time.ToJavaTime())));
 }
@@ -199,7 +199,7 @@ TEST_F(ExtensionTelemetryServiceTest, ProcessesSignal) {
   EXPECT_EQ(info->name(), kExtensionName[0]);
   EXPECT_EQ(info->version(), kExtensionVersion);
   EXPECT_EQ(info->install_timestamp_msec(),
-            extension_prefs_->GetInstallTime(kExtensionId[0]).ToJavaTime());
+            extension_prefs_->GetLastUpdateTime(kExtensionId[0]).ToJavaTime());
 }
 
 TEST_F(ExtensionTelemetryServiceTest, DiscardsInvalidSignal) {
@@ -277,7 +277,7 @@ TEST_F(ExtensionTelemetryServiceTest, GeneratesTelemetryReportWithNoSignals) {
               kExtensionVersion);
     EXPECT_EQ(
         telemetry_report_pb->reports(i).extension().install_timestamp_msec(),
-        extension_prefs_->GetInstallTime(kExtensionId[i]).ToJavaTime());
+        extension_prefs_->GetLastUpdateTime(kExtensionId[i]).ToJavaTime());
     // Verify that there is no signal data associated with the extension.
     EXPECT_EQ(telemetry_report_pb->reports(i).signals().size(), 0);
   }
@@ -303,7 +303,7 @@ TEST_F(ExtensionTelemetryServiceTest, GeneratesTelemetryReportWithSignal) {
               kExtensionVersion);
     EXPECT_EQ(
         telemetry_report_pb->reports(i).extension().install_timestamp_msec(),
-        extension_prefs_->GetInstallTime(kExtensionId[i]).ToJavaTime());
+        extension_prefs_->GetLastUpdateTime(kExtensionId[i]).ToJavaTime());
   }
 
   // Verify that first extension's report has signal data.
@@ -525,7 +525,10 @@ TEST_F(ExtensionTelemetryServiceTest, PersistsReportsOnInterval) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
   telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
+       {kExtensionTelemetryPersistence, {}}},
+      {});
   telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,
@@ -556,7 +559,10 @@ TEST_F(ExtensionTelemetryServiceTest, MalformedPersistedFile) {
   // Setting up the persister, signals, upload/write intervals, and the
   // uploader itself.
   telemetry_service_->SetEnabled(false);
-  scoped_feature_list.InitAndEnableFeature(kExtensionTelemetryPersistence);
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{kExtensionTelemetry, {{"NumberOfWritesInInterval", "4"}}},
+       {kExtensionTelemetryPersistence, {}}},
+      {});
   telemetry_service_->SetEnabled(true);
   base::TimeDelta interval = telemetry_service_->current_reporting_interval();
   profile_.GetPrefs()->SetTime(prefs::kExtensionTelemetryLastUploadTime,

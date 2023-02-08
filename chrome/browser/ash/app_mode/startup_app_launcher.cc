@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/syslog_logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
@@ -63,8 +63,8 @@ class LacrosLauncher : public crosapi::BrowserManagerObserver {
   void Start(base::OnceClosure callback) {
     if (browser_manager()->IsRunning()) {
       // Nothing to do if lacros is already running
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(callback));
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, std::move(callback));
       return;
     }
 
@@ -94,8 +94,12 @@ class LacrosLauncher : public crosapi::BrowserManagerObserver {
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
+                                       bool should_skip_install,
                                        StartupAppLauncher::Delegate* delegate)
-    : KioskAppLauncher(delegate), profile_(profile), app_id_(app_id) {
+    : KioskAppLauncher(delegate),
+      profile_(profile),
+      app_id_(app_id),
+      should_skip_install_(should_skip_install) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
 }
@@ -107,7 +111,7 @@ void StartupAppLauncher::Initialize() {
          state_ != LaunchState::kWaitingForWindow &&
          state_ != LaunchState::kLaunchSucceeded);
 
-  if (delegate_->ShouldSkipAppInstallation()) {
+  if (should_skip_install_) {
     OnInstallSuccess();
     return;
   }
@@ -138,7 +142,7 @@ void StartupAppLauncher::ContinueWithNetworkReady() {
     return;
   }
 
-  if (delegate_->ShouldSkipAppInstallation()) {
+  if (should_skip_install_) {
     OnInstallSuccess();
     return;
   }

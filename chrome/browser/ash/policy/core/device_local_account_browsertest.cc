@@ -426,7 +426,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     ASSERT_TRUE(host->GetOobeWebContents());
 
     // Wait for the login UI to be ready.
-    chromeos::OobeUI* oobe_ui = host->GetOobeUI();
+    ash::OobeUI* oobe_ui = host->GetOobeUI();
     ASSERT_TRUE(oobe_ui);
     base::RunLoop run_loop;
     const bool oobe_ui_ready = oobe_ui->IsJSReady(run_loop.QuitClosure());
@@ -1673,30 +1673,30 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ManagedSessionTimezoneChange) {
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::DISABLED);
-  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  ash::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::USERS_DECIDE);
-  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  ash::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_EQ(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::IP_ONLY);
-  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  ash::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS);
-  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  ash::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(
       em::SystemTimezoneProto::SEND_ALL_LOCATION_INFO);
-  chromeos::system::SetSystemTimezone(user, timezone_id2);
+  ash::system::SetSystemTimezone(user, timezone_id2);
   EXPECT_NE(timezone_settings->GetCurrentTimezoneID(), timezone_id2_utf16);
 }
 

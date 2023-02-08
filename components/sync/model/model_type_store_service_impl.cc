@@ -12,10 +12,9 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/model/blocking_model_type_store_impl.h"
 #include "components/sync/model/model_type_store_backend.h"
 #include "components/sync/model/model_type_store_impl.h"
@@ -51,8 +50,8 @@ CreateBlockingModelTypeStoreOnBackendSequence(
   }
   return std::unique_ptr<BlockingModelTypeStoreImpl,
                          base::OnTaskRunnerDeleter /*[]*/>(
-      blocking_store,
-      base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+      blocking_store, base::OnTaskRunnerDeleter(
+                          base::SequencedTaskRunner::GetCurrentDefault()));
 }
 
 void ConstructModelTypeStoreOnFrontendSequence(
@@ -88,8 +87,8 @@ void CreateModelTypeStoreOnFrontendSequence(
   auto reply = base::BindOnce(&ConstructModelTypeStoreOnFrontendSequence, type,
                               backend_task_runner, std::move(callback));
 
-  base::PostTaskAndReplyWithResult(backend_task_runner.get(), FROM_HERE,
-                                   std::move(task), std::move(reply));
+  backend_task_runner->PostTaskAndReplyWithResult(FROM_HERE, std::move(task),
+                                                  std::move(reply));
 }
 
 }  // namespace

@@ -15,6 +15,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/constants/ambient_animation_theme.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
@@ -29,11 +30,11 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/buildflag.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
@@ -82,7 +83,7 @@ class AmbientUiVisibilityBarrier : public AmbientUiModelObserver {
     if (visibility == target_visibility_ && run_loop_quit_closure_) {
       // Post task so that any existing tasks get run before WaitWithTimeout()
       // completes.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, std::move(run_loop_quit_closure_));
     }
   }
@@ -287,6 +288,25 @@ TEST_P(AmbientControllerTestForAnyTheme,
   EXPECT_FALSE(ambient_controller()->IsShown());
   // The view should be destroyed along the widget.
   FastForwardTiny();
+  EXPECT_TRUE(GetContainerViews().empty());
+}
+
+TEST_F(AmbientControllerTest,
+       CloseAmbientScreenUponPowerButtonClickInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+  FastForwardTiny();
+
+  EXPECT_FALSE(GetContainerViews().empty());
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  SimulatePowerButtonClick();
+
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kClosed);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+  // The view should be destroyed along the widget.
   EXPECT_TRUE(GetContainerViews().empty());
 }
 
@@ -1378,6 +1398,42 @@ TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTime) {
 
   histogram_tester.ExpectTotalCount(
       base::StrCat({"Ash.AmbientMode.StartupTime.", ToString(GetParam())}), 2);
+}
+
+TEST_F(AmbientControllerTest,
+       ANIMATION_TEST_WITH_RESOURCES(MetricsStartupTimeSuspendAfterTimeMax)) {
+  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  base::HistogramTester histogram_tester;
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+  task_environment()->FastForwardBy(ambient::kMetricsStartupTimeMax);
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  SimulateSystemSuspendAndWait(power_manager::SuspendImminent::Reason::
+                                   SuspendImminent_Reason_LID_CLOSED);
+
+  ASSERT_FALSE(ambient_controller()->IsShown());
+  histogram_tester.ExpectTotalCount("Ash.AmbientMode.StartupTime.SlideShow", 1);
+  UnlockScreen();
+}
+
+TEST_F(AmbientControllerTest,
+       ANIMATION_TEST_WITH_RESOURCES(MetricsStartupTimeScreenOffAfterTimeMax)) {
+  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  base::HistogramTester histogram_tester;
+  LockScreen();
+  FastForwardToLockScreenTimeout();
+
+  task_environment()->FastForwardBy(ambient::kMetricsStartupTimeMax);
+  FastForwardTiny();
+  ASSERT_TRUE(ambient_controller()->IsShown());
+
+  SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/true);
+
+  ASSERT_FALSE(ambient_controller()->IsShown());
+  histogram_tester.ExpectTotalCount("Ash.AmbientMode.StartupTime.SlideShow", 1);
+  UnlockScreen();
 }
 
 TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTimeFailedToStart) {

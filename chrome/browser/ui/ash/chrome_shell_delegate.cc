@@ -12,6 +12,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/system_sounds_delegate.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
+#include "chrome/browser/ui/ash/system_sounds_delegate_impl.h"
 #include "chrome/browser/ui/ash/window_pin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -142,6 +144,11 @@ ChromeShellDelegate::CreateNearbyShareDelegate(
 std::unique_ptr<ash::DesksTemplatesDelegate>
 ChromeShellDelegate::CreateDesksTemplatesDelegate() const {
   return std::make_unique<ChromeDesksTemplatesDelegate>();
+}
+
+std::unique_ptr<ash::SystemSoundsDelegate>
+ChromeShellDelegate::CreateSystemSoundsDelegate() const {
+  return std::make_unique<SystemSoundsDelegateImpl>();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

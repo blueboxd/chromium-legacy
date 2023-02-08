@@ -138,7 +138,7 @@ export interface AboutPageBrowserProxy {
   /**
    * Opens the feedback dialog.
    */
-  openFeedbackDialog(): void;
+  openFeedbackDialog(descriptionTemplate?: string): void;
   // </if>
 
   /** Opens the diagnostics page. */
@@ -194,7 +194,7 @@ export interface AboutPageBrowserProxy {
    * Request TPM firmware update status from the browser. It results in one or
    * more 'tpm-firmware-update-status-changed' WebUI events.
    */
-  refreshTPMFirmwareUpdateStatus(): void;
+  refreshTpmFirmwareUpdateStatus(): void;
 
   /**
    * Checks if the device is connected to the internet.
@@ -236,8 +236,14 @@ export class AboutPageBrowserProxyImpl implements AboutPageBrowserProxy {
   }
 
   // <if expr="_google_chrome">
-  openFeedbackDialog() {
-    chrome.send('openFeedbackDialog');
+  openFeedbackDialog(descriptionTemplate?: string) {
+    if (descriptionTemplate) {
+      // pass the search query as the value for the feedback dialog
+      // description_template
+      chrome.send('openFeedbackDialog', [descriptionTemplate]);
+    } else {
+      chrome.send('openFeedbackDialog');
+    }
   }
   // </if>
 
@@ -293,7 +299,7 @@ export class AboutPageBrowserProxyImpl implements AboutPageBrowserProxy {
     return sendWithPromise('checkInternetConnection');
   }
 
-  refreshTPMFirmwareUpdateStatus(): void {
+  refreshTpmFirmwareUpdateStatus(): void {
     chrome.send('refreshTPMFirmwareUpdateStatus');
   }
 

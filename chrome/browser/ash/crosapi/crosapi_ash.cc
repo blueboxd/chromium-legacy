@@ -36,6 +36,7 @@
 #include "chrome/browser/ash/crosapi/clipboard_history_ash.h"
 #include "chrome/browser/ash/crosapi/content_protection_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_dependency_registry.h"
+#include "chrome/browser/ash/crosapi/desk_ash.h"
 #include "chrome/browser/ash/crosapi/desk_template_ash.h"
 #include "chrome/browser/ash/crosapi/device_attributes_ash.h"
 #include "chrome/browser/ash/crosapi/device_local_account_extension_service_ash.h"
@@ -74,6 +75,7 @@
 #include "chrome/browser/ash/crosapi/networking_private_ash.h"
 #include "chrome/browser/ash/crosapi/parent_access_ash.h"
 #include "chrome/browser/ash/crosapi/policy_service_ash.h"
+#include "chrome/browser/ash/crosapi/power_ash.h"
 #include "chrome/browser/ash/crosapi/prefs_ash.h"
 #include "chrome/browser/ash/crosapi/remoting_ash.h"
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
@@ -100,6 +102,7 @@
 #include "chrome/browser/ash/sync/sync_mojo_service_factory_ash.h"
 #include "chrome/browser/ash/telemetry_extension/diagnostics_service_ash.h"
 #include "chrome/browser/ash/telemetry_extension/probe_service_ash.h"
+#include "chrome/browser/ash/video_conference/video_conference_manager_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
@@ -176,11 +179,14 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           g_browser_process->component_updater())),
       cert_database_ash_(std::make_unique<CertDatabaseAsh>()),
       cert_provisioning_ash_(std::make_unique<CertProvisioningAsh>()),
+      chrome_app_kiosk_service_ash_(
+          std::make_unique<ChromeAppKioskServiceAsh>()),
       chrome_app_window_tracker_ash_(
           std::make_unique<ChromeAppWindowTrackerAsh>()),
       clipboard_ash_(std::make_unique<ClipboardAsh>()),
       clipboard_history_ash_(std::make_unique<ClipboardHistoryAsh>()),
       content_protection_ash_(std::make_unique<ContentProtectionAsh>()),
+      desk_ash_(std::make_unique<DeskAsh>()),
       desk_template_ash_(std::make_unique<DeskTemplateAsh>()),
       device_attributes_ash_(std::make_unique<DeviceAttributesAsh>()),
       device_local_account_extension_service_ash_(
@@ -214,8 +220,6 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       in_session_auth_ash_(std::make_unique<InSessionAuthAsh>()),
       keystore_service_ash_(std::make_unique<KeystoreServiceAsh>()),
       kiosk_session_service_ash_(std::make_unique<KioskSessionServiceAsh>()),
-      chrome_app_kiosk_service_ash_(
-          std::make_unique<ChromeAppKioskServiceAsh>()),
       local_printer_ash_(std::make_unique<LocalPrinterAsh>()),
       login_ash_(std::make_unique<LoginAsh>()),
       login_screen_storage_ash_(std::make_unique<LoginScreenStorageAsh>()),
@@ -231,6 +235,7 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
           g_browser_process->local_state())),
       parent_access_ash_(std::make_unique<ParentAccessAsh>()),
       policy_service_ash_(std::make_unique<PolicyServiceAsh>()),
+      power_ash_(std::make_unique<PowerAsh>()),
       prefs_ash_(
           std::make_unique<PrefsAsh>(g_browser_process->profile_manager(),
                                      g_browser_process->local_state())),
@@ -253,6 +258,8 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       url_handler_ash_(std::make_unique<UrlHandlerAsh>()),
       video_capture_device_factory_ash_(
           std::make_unique<VideoCaptureDeviceFactoryAsh>()),
+      video_conference_manager_ash_(
+          std::make_unique<ash::VideoConferenceManagerAsh>()),
       virtual_keyboard_ash_(std::make_unique<VirtualKeyboardAsh>()),
       volume_manager_ash_(std::make_unique<VolumeManagerAsh>()),
       vpn_extension_observer_ash_(std::make_unique<VpnExtensionObserverAsh>()),
@@ -392,6 +399,10 @@ void CrosapiAsh::BindContentProtection(
 void CrosapiAsh::BindCrosDisplayConfigController(
     mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver) {
   ash::BindCrosDisplayConfigController(std::move(receiver));
+}
+
+void CrosapiAsh::BindDesk(mojo::PendingReceiver<mojom::Desk> receiver) {
+  desk_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindDeskTemplate(
@@ -646,7 +657,7 @@ void CrosapiAsh::BindPolicyService(
 }
 
 void CrosapiAsh::BindPower(mojo::PendingReceiver<mojom::Power> receiver) {
-  NOTIMPLEMENTED();
+  power_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindPrefs(mojo::PendingReceiver<mojom::Prefs> receiver) {
@@ -787,6 +798,11 @@ void CrosapiAsh::BindUrlHandler(
 void CrosapiAsh::BindVideoCaptureDeviceFactory(
     mojo::PendingReceiver<mojom::VideoCaptureDeviceFactory> receiver) {
   video_capture_device_factory_ash_->BindReceiver(std::move(receiver));
+}
+
+void CrosapiAsh::BindVideoConferenceManager(
+    mojo::PendingReceiver<mojom::VideoConferenceManager> receiver) {
+  video_conference_manager_ash_->BindReceiver(std::move(receiver));
 }
 
 void CrosapiAsh::BindVirtualKeyboard(

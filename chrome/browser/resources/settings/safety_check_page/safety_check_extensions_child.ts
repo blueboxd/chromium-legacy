@@ -78,7 +78,7 @@ export class SettingsSafetyCheckExtensionsChildElement extends
     super.connectedCallback();
 
     // Register for safety check status updates.
-    this.addWebUIListener(
+    this.addWebUiListener(
         SafetyCheckCallbackConstants.EXTENSIONS_CHANGED,
         this.onSafetyCheckExtensionsChanged_.bind(this));
   }
@@ -150,7 +150,7 @@ export class SettingsSafetyCheckExtensionsChildElement extends
   }
 
   private openExtensionsPage_() {
-    OpenWindowProxyImpl.getInstance().openURL('chrome://extensions');
+    OpenWindowProxyImpl.getInstance().openUrl('chrome://extensions');
   }
 }
 

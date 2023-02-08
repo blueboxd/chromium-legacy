@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_mediator.h"
 
 #import "base/feature_list.h"
+#import "base/ios/ios_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -17,7 +18,10 @@
 #import "components/omnibox/browser/autocomplete_result.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/variations/variations_associated_data.h"
+#import "components/variations/variations_ids_provider.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
@@ -31,6 +35,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_section_extractor.h"
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_suggestion_wrapper.h"
+#import "ios/chrome/browser/ui/omnibox/popup/popup_debug_info_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
@@ -42,20 +47,20 @@
 
 namespace {
 const CGFloat kOmniboxIconSize = 16;
-// Maximum number of suggest tile types we want to record. Anything beyond this
-// will be reported in the overflow bucket.
+/// Maximum number of suggest tile types we want to record. Anything beyond this
+/// will be reported in the overflow bucket.
 const NSUInteger kMaxSuggestTileTypePosition = 15;
 }  // namespace
 
 @interface OmniboxPopupMediator () <PedalSectionExtractorDelegate>
 
-// Extracts pedals from AutocompleSuggestions.
+/// Extracts pedals from AutocompleSuggestions.
 @property(nonatomic, strong) PedalSectionExtractor* pedalSectionExtractor;
-// List of suggestions without the pedal group. Used to debouce pedals.
+/// List of suggestions without the pedal group. Used to debouce pedals.
 @property(nonatomic, strong)
     NSArray<id<AutocompleteSuggestionGroup>>* nonPedalSuggestions;
-// Index of the group containing AutocompleteSuggestion, first group to be
-// highlighted on down arrow key.
+/// Index of the group containing AutocompleteSuggestion, first group to be
+/// highlighted on down arrow key.
 @property(nonatomic, assign) NSInteger preselectedGroupIndex;
 
 // Autocomplete controller backing this mediator.
@@ -110,6 +115,16 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
     [self requestResultsWithVisibleSuggestionCount:self.autocompleteResult
                                                        .size()];
   }
+
+  if (self.debugInfoConsumer) {
+    DCHECK(experimental_flags::IsOmniboxDebuggingEnabled());
+
+    [self.debugInfoConsumer
+        setVariationIDString:
+            base::SysUTF8ToNSString(
+                variations::VariationsIdsProvider::GetInstance()
+                    ->GetTriggerVariationsString())];
+  }
 }
 
 - (void)updateWithResults:(const AutocompleteResult&)result {
@@ -155,6 +170,11 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 }
 
 #pragma mark - AutocompleteResultConsumerDelegate
+
+- (void)autocompleteResultConsumerDidChangeTraitCollection:
+    (id<AutocompleteResultConsumer>)sender {
+  [self.presenter updatePopupAfterTraitCollectionChange];
+}
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
                didSelectSuggestion:(id<AutocompleteSuggestion>)suggestion
@@ -262,7 +282,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
   }
 }
 
-// Logs selected tile index and type.
+/// Logs selected tile index and type.
 - (void)logSelectedAutocompleteTile:(const AutocompleteMatch&)match {
   DCHECK(match.type == AutocompleteMatchType::TILE_NAVSUGGEST);
   for (size_t i = 0; i < match.suggest_tiles.size(); ++i) {
@@ -321,9 +341,9 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
 #pragma mark - PedalSectionExtractorDelegate
 
-// Removes the pedal group from suggestions. Pedal are removed from suggestions
-// with a debouce timer in `PedalSectionExtractor`. When the timer ends the
-// pedal group is removed.
+/// Removes the pedal group from suggestions. Pedal are removed from suggestions
+/// with a debouce timer in `PedalSectionExtractor`. When the timer ends the
+/// pedal group is removed.
 - (void)invalidatePedals {
   if (self.nonPedalSuggestions) {
     [self.consumer updateMatches:self.nonPedalSuggestions
@@ -333,7 +353,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
 #pragma mark - Private methods
 
-// Wraps `match` with AutocompleteMatchFormatter.
+/// Wraps `match` with AutocompleteMatchFormatter.
 - (AutocompleteMatchFormatter*)wrapMatch:(const AutocompleteMatch&)match
                               fromResult:(const AutocompleteResult&)result {
   AutocompleteMatchFormatter* formatter =
@@ -450,8 +470,8 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
   return groups;
 }
 
-// Unpacks AutocompleteMatch into wrapped AutocompleteSuggestion and
-// AutocompleteSuggestionGroup. Sets `preselectedGroupIndex`.
+/// Unpacks AutocompleteMatch into wrapped AutocompleteSuggestion and
+/// AutocompleteSuggestionGroup. Sets `preselectedGroupIndex`.
 - (NSArray<id<AutocompleteSuggestionGroup>>*)wrappedMatches {
   NSMutableArray<id<AutocompleteSuggestionGroup>>* groups =
       [[NSMutableArray alloc] init];
@@ -495,7 +515,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
 #pragma mark - CarouselItemMenuProvider
 
-// Context Menu for carousel `item` in `view`.
+/// Context Menu for carousel `item` in `view`.
 - (UIContextMenuConfiguration*)
     contextMenuConfigurationForCarouselItem:(CarouselItem*)carouselItem
                                    fromView:(UIView*)view {
@@ -511,8 +531,45 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
         BrowserActionFactory* actionFactory =
             strongSelf.mostVisitedActionFactory;
 
+        // Record that this context menu was shown to the user.
+        RecordMenuShown(MenuScenarioHistogram::kOmniboxMostVisitedEntry);
+
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
+
+        [menuElements
+            addObject:[actionFactory actionToOpenInNewTabWithURL:copyURL
+                                                      completion:nil]];
+
+        UIAction* incognitoAction =
+            [actionFactory actionToOpenInNewIncognitoTabWithURL:copyURL
+                                                     completion:nil];
+
+        if (self.allowIncognitoActions) {
+          // Disable the "Open in Incognito" option if the incognito mode is
+          // disabled.
+          incognitoAction.attributes = UIMenuElementAttributesDisabled;
+        }
+
+        [menuElements addObject:incognitoAction];
+
+        if (base::ios::IsMultipleScenesSupported()) {
+          UIAction* newWindowAction = [actionFactory
+              actionToOpenInNewWindowWithURL:copyURL
+                              activityOrigin:
+                                  WindowActivityContentSuggestionsOrigin];
+          [menuElements addObject:newWindowAction];
+        }
+
+        [menuElements addObject:[actionFactory actionToCopyURL:copyURL]];
+
+        [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                        [weakSelf.sharingDelegate
+                            popupMediator:weakSelf
+                                 shareURL:copyURL
+                                    title:carouselItem.title
+                               originView:view];
+                      }]];
 
         [menuElements addObject:[actionFactory actionToRemoveWithBlock:^{
                         [weakSelf removeMostVisitedForURL:copyURL
@@ -529,7 +586,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 
 #pragma mark CarouselItemMenuProvider Private
 
-// Blocks `URL` so it won't appear in most visited URLs.
+/// Blocks `URL` so it won't appear in most visited URLs.
 - (void)blockMostVisitedURL:(GURL)URL {
   scoped_refptr<history::TopSites> top_sites = [self.protocolProvider topSites];
   if (top_sites) {
@@ -537,15 +594,15 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
   }
 }
 
-// Blocks `URL` in most visited sites and hides `CarouselItem` if it still
-// exist.
+/// Blocks `URL` in most visited sites and hides `CarouselItem` if it still
+/// exist.
 - (void)removeMostVisitedForURL:(GURL)URL
                withCarouselItem:(CarouselItem*)carouselItem {
   if (!carouselItem) {
     return;
   }
   base::RecordAction(
-      base::UserMetricsAction("MostVisited_UrlBlacklisted_Omnibox"));
+      base::UserMetricsAction("MostVisited_UrlBlocklisted_Omnibox"));
   [self blockMostVisitedURL:URL];
   [self.carouselItemConsumer deleteCarouselItem:carouselItem];
 }

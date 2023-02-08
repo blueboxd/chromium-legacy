@@ -17,10 +17,10 @@
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_folder_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
 #include "ash/app_list/views/folder_background_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
@@ -244,7 +244,7 @@ void AppListBubbleView::InitContentsView(
   layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
 
   search_box_view_ = contents->AddChildView(std::make_unique<SearchBoxView>(
-      /*delegate=*/this, view_delegate_, /*app_list_view=*/nullptr));
+      /*delegate=*/this, view_delegate_, /*is_app_list_bubble=*/true));
   search_box_view_->InitializeForBubbleLauncher();
 
   // Skip the assistant button on arrow up/down in app list.
@@ -474,6 +474,7 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
         apps_page_->SetVisible(true);
         search_page_->SetVisible(false);
       }
+      a11y_announcer_->AnnounceAppListShown();
       MaybeFocusAndActivateSearchBox();
       break;
     case AppListBubblePage::kSearch:

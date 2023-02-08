@@ -21,7 +21,6 @@ struct LocaleInfo;
 class SystemTray;
 enum class LoginStatus;
 enum class NotificationStyle;
-enum class UpdateType;
 }  // namespace ash
 
 class Profile;
@@ -51,9 +50,6 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   // Resets update state to hide notification.
   void ResetUpdateState();
 
-  // Shows a notification that a Lacros browser update is available.
-  void SetLacrosUpdateAvailable();
-
   // Wrappers around ash::mojom::SystemTray interface:
   void SetPrimaryTrayEnabled(bool enabled);
   void SetPrimaryTrayVisible(bool visible);
@@ -74,6 +70,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowStorageSettings() override;
   void ShowPowerSettings() override;
   void ShowPrivacyAndSecuritySettings() override;
+  void ShowPrivacyHubSettings() override;
   void ShowSmartPrivacySettings() override;
   void ShowChromeSlow() override;
   void ShowIMESettings() override;
@@ -121,7 +118,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
                                  bool show_configure);
 
   // Requests that ash show the update available icon.
-  void HandleUpdateAvailable(ash::UpdateType update_type);
+  void HandleUpdateAvailable();
 
   // ash::system::SystemClockObserver:
   void OnSystemClockChanged(ash::system::SystemClock* clock) override;

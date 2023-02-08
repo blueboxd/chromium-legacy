@@ -42,7 +42,6 @@ crbug.com/1183788 [ Linux ] external/wpt/pointerevents/pointerevent_fractional_c
 crbug.com/1219915 [ Linux ] editing/selection/context-menu-text-selection.html [ Failure ]
 crbug.com/1219915 [ Linux ] editing/selection/readonly-disabled-hittest.html [ Failure ]
 crbug.com/1219915 [ Linux ] editing/selection/readonly-disabled-text-selection.html [ Failure ]
-crbug.com/1219915 [ Linux ] external/wpt/dom/events/document-level-touchmove-event-listener-passive-by-default.tentative.html [ Failure ]
 crbug.com/1219915 [ Linux ] fast/events/touch/gesture/gesture-tap-reset-selection-range.html [ Failure ]
 crbug.com/1219915 [ Linux ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined-in-iframe.html [ Failure ]
 crbug.com/1219915 [ Linux ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure ]
@@ -58,6 +57,12 @@ crbug.com/1271392 [ Linux ] external/wpt/service-workers/service-worker/navigati
 
 # Sheriff 2022-08-04
 crbug.com/1350279 [ Linux ] external/wpt/accessibility/crashtests/svg-mouse-listener.html [ Failure Pass ]
+
+# This has been marked as Skip in the TestExpectations file.
+crbug.com/1385278 [ Linux ] external/wpt/resource-timing/iframe-failed-commit.html [ Skip ]
+
+# Tests frequently cause ci builder step failure
+crbug.com/1393081 [ Linux ] virtual/view-transition/external/wpt/css/css-view-transitions/input-blocked-when-rendering-suppressed.html [ Failure ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #

@@ -60,10 +60,6 @@ enum DriveConnectionStateType {OFFLINE, METERED, ONLINE};
 // List of reasons of DriveConnectionStateType.
 enum DriveOfflineReason {NOT_READY, NO_NETWORK, NO_SERVICE};
 
-// Additional data about mount, for example, that the filesystem is not
-// supported.
-enum MountCondition { unknown, unsupported, in_progress };
-
 // Additional information of the context the volume was mounted.
 enum MountContext { user, auto };
 
@@ -72,33 +68,33 @@ enum MountCompletedEventType { mount, unmount };
 
 // Event type that tells listeners if mount was successful or an error
 // occurred. It also specifies the error.
-enum MountCompletedStatus {
+enum MountError {
   success,
-  error_unknown,
-  error_internal,
-  error_invalid_argument,
-  error_invalid_path,
-  error_path_already_mounted,
-  error_path_not_mounted,
-  error_directory_creation_failed,
-  error_invalid_mount_options,
-  error_insufficient_permissions,
-  error_mount_program_not_found,
-  error_mount_program_failed,
-  error_invalid_device_path,
-  error_unknown_filesystem,
-  error_unsupported_filesystem,
-  error_need_password,
-  error_in_progress,
-  error_cancelled,
-  error_busy
+  in_progress,
+  unknown_error,
+  internal_error,
+  invalid_argument,
+  invalid_path,
+  path_already_mounted,
+  path_not_mounted,
+  directory_creation_failed,
+  invalid_mount_options,
+  insufficient_permissions,
+  mount_program_not_found,
+  mount_program_failed,
+  invalid_device_path,
+  unknown_filesystem,
+  unsupported_filesystem,
+  need_password,
+  cancelled,
+  busy
 };
 
 // Filesystem to format to.
 enum FormatFileSystemType { vfat, exfat, ntfs };
 
 // File transfer progress state.
-enum TransferState { in_progress, completed, failed };
+enum TransferState { in_progress, queued, completed, failed };
 
 // The response when starting installing a Linux package.
 enum InstallLinuxPackageResponse {
@@ -254,7 +250,8 @@ enum EntryPropertyName {
   isMachineRoot,
   isExternalMedia,
   isArbitrarySyncFolder,
-  syncStatus
+  syncStatus,
+  progress
 };
 
 // Source of the volume data.
@@ -357,6 +354,8 @@ enum DlpLevel {
 enum SyncStatus {
   // No sync status available for file.
   not_found,
+  // File is queued up for syncing.
+  queued,
   // File is currently being synced.
   in_progress,
   // There was an error syncing the file.
@@ -513,6 +512,11 @@ dictionary EntryProperties {
 
   // Sync status for files tracked by different cloud filesystem providers.
   SyncStatus? syncStatus;
+
+  // Progress representing some ongoing operation with the file.
+  // E.g., pasting, syncing. Note: currently, this is exclusively being used
+  // for Drive syncing.
+  double? progress;
 };
 
 // Information about total and remaining size on the mount point.
@@ -617,7 +621,7 @@ dictionary VolumeMetadata {
 
   // Additional data about mount, for example, that the filesystem is not
   // supported.
-  MountCondition? mountCondition;
+  MountError? mountCondition;
 
   // Context in which the volume has been mounted.
   MountContext? mountContext;
@@ -650,7 +654,7 @@ dictionary MountCompletedEvent {
 
   // Event type that tells listeners if mount was successful or an error
   // occurred. It also specifies the error.
-  MountCompletedStatus status;
+  MountError status;
 
   // Metadata of the mounted volume.
   VolumeMetadata volumeMetadata;
@@ -659,9 +663,9 @@ dictionary MountCompletedEvent {
   boolean shouldNotify;
 };
 
-// Payload data for file transfer status updates.
+// Payload data for aggregate file transfer status updates.
 dictionary FileTransferStatus {
-  // URL of file that is being transfered.
+  // URL of file that is being transferred.
   DOMString fileUrl;
 
   // File transfer progress state.
@@ -682,6 +686,21 @@ dictionary FileTransferStatus {
   // If true, hide when a job is completed when there are zero jobs in
   // progress. Otherwise, hide when one job is in progress.
   boolean hideWhenZeroJobs;
+};
+
+// Information about the transfer status of an individual file.
+dictionary IndividualFileTransferStatus {
+  // File that is being transferred.
+  [instanceOf=Entry] object entry;
+
+  // File transfer progress state.
+  TransferState transferState;
+
+  // Number of bytes transferred so far.
+  double processed;
+
+  // Total size of the file in bytes.
+  double total;
 };
 
 // Error during the drive sync.
@@ -868,6 +887,9 @@ dictionary CrostiniEvent {
   // VM that this event relates to.
   DOMString vmName;
 
+  // Name of the container this event relates to.
+  DOMString containerName;
+
   // Paths that have been shared or unshared.
   [instanceOf=Entry] object[] entries;
 };
@@ -1016,6 +1038,10 @@ dictionary DlpMetadata {
 
   // True if there is any DLP policy on the file, false otherwise.
   boolean isDlpRestricted;
+
+  // True if the file cannot be accessed by a specific destination,
+  // which is passed when collecting the metadata.
+  boolean isRestrictedForDestination;
 };
 
 dictionary DlpRestrictionDetails {
@@ -1790,6 +1816,10 @@ interface Events {
   static void onFileTransfersUpdated(FileTransferStatus event);
 
   static void onPinTransfersUpdated(FileTransferStatus event);
+
+  static void onIndividualFileTransfersUpdated(IndividualFileTransferStatus[] event);
+
+  static void onIndividualPinTransfersUpdated(IndividualFileTransferStatus[] event);
 
   static void onDirectoryChanged(FileWatchEvent event);
 

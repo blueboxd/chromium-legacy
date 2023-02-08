@@ -43,7 +43,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -77,6 +76,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
@@ -1333,7 +1333,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
       ->Launch(file_manager->id(),
                apps::GetEventFlags(WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                    true /* prefer_container */),
-               apps::mojom::LaunchSource::kFromTest);
+               apps::LaunchSource::kFromTest);
 
   while (!base::Contains(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();
@@ -1364,9 +1364,9 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
   }
 
   void EnterKioskSession() {
-    chromeos::LoginState::Get()->SetLoggedInState(
-        chromeos::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
+    ash::LoginState::Get()->SetLoggedInState(
+        ash::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
+        ash::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
   }
 
  private:

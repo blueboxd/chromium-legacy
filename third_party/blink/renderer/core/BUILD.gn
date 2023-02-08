@@ -279,17 +279,13 @@ component("core") {
 
   configs -= core_config_remove
   configs += core_config_add
-  configs += [
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-    "//v8:external_startup_data",
-  ]
+  configs += [ "//v8:external_startup_data" ]
 
   public_deps = [
     ":core_generated",
     ":core_hot",
     "//cc",
     "//skia",
-    "//third_party/blink/public/mojom:mobile_metrics_blink",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
     "//third_party/blink/public/mojom:mojom_core_blink",
     "//third_party/blink/renderer/bindings/core/v8",
@@ -339,6 +335,7 @@ component("core") {
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//third_party/blink/public/strings",
+    "//tools/v8_context_snapshot:buildflags",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
     "//ui/gfx/geometry",
@@ -533,6 +530,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/animation_event.idl",
     "events/animation_playback_event.idl",
     "events/before_create_policy_event.idl",
+    "events/before_toggle_event.idl",
     "events/before_unload_event.idl",
     "events/clipboard_event.idl",
     "events/composition_event.idl",
@@ -781,11 +779,12 @@ css_properties("make_core_generated_cssom_types") {
   ]
 }
 
-css_properties("make_core_generated_known_exposed_properties") {
-  script =
-      "../build/scripts/core/css/properties/make_known_exposed_properties.py"
-  other_inputs = [ "../build/scripts/core/css/properties/templates/known_exposed_properties.cc.tmpl" ]
-  outputs = [ "$blink_core_output_dir/known_exposed_properties.cc" ]
+css_properties("make_core_generated_property_bitsets") {
+  script = "../build/scripts/core/css/properties/make_property_bitsets.py"
+  other_inputs = [
+    "../build/scripts/core/css/properties/templates/property_bitsets.cc.tmpl",
+  ]
+  outputs = [ "$blink_core_output_dir/property_bitsets.cc" ]
 }
 
 code_generator("make_core_generated_css_value_keywords") {
@@ -1173,7 +1172,6 @@ targets_generating_sources = [
   ":make_core_generated_html_tokenizer_names",
   ":make_core_generated_input_type_names",
   ":make_core_generated_keywords",
-  ":make_core_generated_known_exposed_properties",
   ":make_core_generated_mathml_element_type_helpers",
   ":make_core_generated_mathml_names",
   ":make_core_generated_media_feature_names",
@@ -1182,6 +1180,7 @@ targets_generating_sources = [
   ":make_core_generated_performance_entry_names",
   ":make_core_generated_permissions_policy_helper",
   ":make_core_generated_pointer_type_names",
+  ":make_core_generated_property_bitsets",
   ":make_core_generated_script_type_names",
   ":make_core_generated_securitypolicyviolation_disposition_names",
   ":make_core_generated_shadow_element_names",
@@ -1349,6 +1348,7 @@ source_set("unit_tests") {
                          "intersection_observer")
   sources += rebase_path(blink_core_tests_layout, "", "layout")
   sources += rebase_path(blink_core_tests_loader, "", "loader")
+  sources += rebase_path(blink_core_tests_mathml, "", "mathml")
   sources += rebase_path(blink_core_tests_messaging, "", "messaging")
   sources += rebase_path(blink_core_tests_mobile_metrics, "", "mobile_metrics")
   sources += rebase_path(blink_core_tests_navigation_api, "", "navigation_api")
@@ -1409,7 +1409,6 @@ source_set("unit_tests") {
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public:test_headers",
     "//third_party/blink/public/common/privacy_budget:test_support",
-    "//third_party/blink/public/mojom:mobile_metrics",
     "//third_party/blink/renderer/controller:blink_bindings_test_sources",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/core:testing",
@@ -1680,29 +1679,4 @@ fuzzer_test("permissions_policy_fuzzer") {
   ]
   dict = "//third_party/blink/renderer/core/permissions_policy/permissions_policy.dict"
   seed_corpus = "//third_party/blink/renderer/core/permissions_policy/permissions_policy_corpus"
-}
-
-fuzzer_test("attribution_source_registration_fuzzer") {
-  sources = [ "frame/attribution_source_registration_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus =
-      "//testing/libfuzzer/fuzzers/attribution_source_registration_corpus"
-}
-
-fuzzer_test("attribution_trigger_registration_fuzzer") {
-  sources = [ "frame/attribution_trigger_registration_fuzzer.cc" ]
-  deps = [
-    ":core",
-    "//testing/libfuzzer/proto:json_proto",
-    "//testing/libfuzzer/proto:json_proto_converter",
-    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-    "//third_party/libprotobuf-mutator",
-  ]
-  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_trigger_registration_corpus"
 }

@@ -33,13 +33,13 @@ ash::ArcTermsOfServiceScreenView* GetScreenView() {
   return host->GetOobeUI()->GetView<ash::ArcTermsOfServiceScreenHandler>();
 }
 
-chromeos::ConsolidatedConsentScreen* GetConsolidatedConsentScreen() {
+ash::ConsolidatedConsentScreen* GetConsolidatedConsentScreen() {
   // TODO: Inject testing instance.
-  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
+  auto* host = ash::LoginDisplayHost::default_host();
   DCHECK(host);
   DCHECK(host->GetWizardController());
   return host->GetWizardController()
-      ->GetScreen<chromeos::ConsolidatedConsentScreen>();
+      ->GetScreen<ash::ConsolidatedConsentScreen>();
 }
 
 }  // namespace
@@ -63,7 +63,7 @@ ArcTermsOfServiceOobeNegotiator::~ArcTermsOfServiceOobeNegotiator() {
 }
 
 void ArcTermsOfServiceOobeNegotiator::StartNegotiationImpl() {
-  if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+  if (ash::features::IsOobeConsolidatedConsentEnabled()) {
     consolidated_consent_observation_.Observe(GetConsolidatedConsentScreen());
   } else {
     DCHECK(!screen_view_);
@@ -74,7 +74,7 @@ void ArcTermsOfServiceOobeNegotiator::StartNegotiationImpl() {
 }
 
 void ArcTermsOfServiceOobeNegotiator::HandleTermsAccepted(bool accepted) {
-  if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+  if (ash::features::IsOobeConsolidatedConsentEnabled()) {
     consolidated_consent_observation_.Reset();
   } else {
     DCHECK(screen_view_);
@@ -95,12 +95,12 @@ void ArcTermsOfServiceOobeNegotiator::OnViewDestroyed(
 }
 
 void ArcTermsOfServiceOobeNegotiator::OnConsolidatedConsentAccept() {
-  DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
+  DCHECK(ash::features::IsOobeConsolidatedConsentEnabled());
   HandleTermsAccepted(true);
 }
 
 void ArcTermsOfServiceOobeNegotiator::OnConsolidatedConsentScreenDestroyed() {
-  DCHECK(chromeos::features::IsOobeConsolidatedConsentEnabled());
+  DCHECK(ash::features::IsOobeConsolidatedConsentEnabled());
   HandleTermsAccepted(false);
 }
 

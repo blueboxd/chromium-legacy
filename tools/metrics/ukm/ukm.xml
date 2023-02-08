@@ -171,6 +171,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="AccuracyTipDialog">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -204,6 +207,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="AccuracyTipStatus">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -899,11 +905,17 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.AllowUserZoom" enum="Boolean">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Whether the page allows the user to zoom in/out, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.BadTapTargetsRatio">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of tap targets whose center position is within another tap
       target (expanded by a margin), in the AMP subframe. The detail of the
@@ -912,6 +924,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.SmallTextRatio">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of small font text area in total text area, in the AMP
       subframe.
@@ -919,23 +934,35 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="SubFrame.MobileFriendliness.TextContentOutsideViewportPercentage">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Percentage of pixels of text and images horizontally outside the viewport,
       relative to the frame width, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportDeviceWidth" enum="Boolean">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Whether the width of the viewport is specified as device-width or not, in
       the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportHardcodedWidth">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Specified hardcoded viewport width in CSS pixels, in the AMP subframe.
     </summary>
   </metric>
   <metric name="SubFrame.MobileFriendliness.ViewportInitialScaleX10">
+    <obsolete>
+      Deprecated 12/2022.
+    </obsolete>
     <summary>
       Specified initial viewport scaling, in the AMP subframe, multiplied by 10.
       1 means 0.1, 100 means 10. [1-100].
@@ -2357,6 +2384,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.Sectioning">
+  <owner>fleimgruber@google.com</owner>
+  <owner>schwering@google.com</owner>
+  <summary>
+    Recorded after sectioning is performed when the server classification
+    arrived, and only when `AutofillUseParameterizedSectioning` is enabled.
+  </summary>
+  <metric name="FormSignature">
+    <summary>
+      A 10-bit hash of the form's signature.
+    </summary>
+  </metric>
+  <metric name="SectioningSignature">
+    <summary>
+      A 10-bit hash of the form's computed sections.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.SelectedMaskedServerCard">
   <obsolete>
     Deprecated 2/2019
@@ -2502,494 +2548,6 @@ be describing additional metrics about the same event.
       Field's |ServerFieldType| returned by server. See
       |AutofillField.server_type()|.
     </summary>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.CollectContact">
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    A set of metrics about the collection of the user's contact data.
-  </summary>
-  <metric name="CompleteContactProfilesCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's contact profiles which are considered complete
-      for the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="ContactModified" enum="AutofillAssistantUserDataSelectionState">
-    <summary>
-      What kind of operation the user did to the contact data (e.g. kept the
-      default value, edited it, etc.)
-    </summary>
-  </metric>
-  <metric name="IncompleteContactProfilesCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's contact profiles which are considered incomplete
-      for the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="InitialContactFieldsStatus">
-    <summary>
-      A bit array of whether a given field is present. Only logged for the
-      preselected contact profile.
-    </summary>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.CollectPayment">
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    A set of metrics about the collection of the user's payment details.
-  </summary>
-  <metric name="CompleteCreditCardsCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's credit cards which are considered complete for
-      the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="CreditCardModified"
-      enum="AutofillAssistantUserDataSelectionState">
-    <summary>
-      What kind of operation the user did to the payment data (e.g. kept the
-      default value, edited it, etc.)
-    </summary>
-  </metric>
-  <metric name="IncompleteCreditCardsCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's credit cards which are considered incomplete for
-      the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="InitialBillingAddressFieldsStatus">
-    <summary>
-      A bit array of whether a given field is present. Only logged for the
-      billing address of the preselected credit card.
-    </summary>
-  </metric>
-  <metric name="InitialCreditCardFieldsStatus">
-    <summary>
-      A bit array of whether a given field is present. Only logged for the
-      preselected credit card
-    </summary>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.CollectShippingAddress">
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    A set of metrics about the collection of the user's shipping address.
-  </summary>
-  <metric name="CompleteShippingProfilesCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's shipping address profiles which are considered
-      complete for the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="IncompleteShippingProfilesCount"
-      enum="AutofillAssistantUserDataEntryCount">
-    <summary>
-      The number of the user's shipping address profiles which are considered
-      incomplete for the purposes of the current Autofill Assistant flow.
-    </summary>
-  </metric>
-  <metric name="InitialShippingFieldsStatus">
-    <summary>
-      A bit array of whether a given field is present. Only logged for the
-      preselected shipping address.
-    </summary>
-  </metric>
-  <metric name="ShippingModified"
-      enum="AutofillAssistantUserDataSelectionState">
-    <summary>
-      What kind of operation the user did to the shipping data (e.g. kept the
-      default value, edited it, etc.)
-    </summary>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.CollectUserDataResult">
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    The result of the CollectUserData action.
-  </summary>
-  <metric name="Result" enum="AutofillAssistantCollectUserDataResult">
-    <summary>
-      The result of the CollectUserData action.
-    </summary>
-  </metric>
-  <metric name="TimeTakenMs">
-    <summary>
-      The time it took the user to complete the action, from when it was
-      prompted to them to when the action finished, either succesfully or not.
-    </summary>
-  </metric>
-  <metric name="UserDataSource" enum="AutofillAssistantUserDataSource">
-    <summary>
-      The source of the user data for the CollectUserData action.
-    </summary>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.FlowFinished">
-  <owner>arbesser@google.com</owner>
-  <owner>fga@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    A set of metrics that are recorded at the end of a flow. Once an autofill
-    assistant flow has started, this event will be recorded exactly once at the
-    end of it. Metrics in this event describe aggregated statistics of the flow.
-  </summary>
-  <metric name="FlowFinishedState" enum="AutofillAssistantFlowFinishedState">
-    <summary>
-      An enum capturing whether the flow ended successfully or not.
-    </summary>
-  </metric>
-  <metric name="NumActions">
-    <summary>
-      The total number of actions received, across all roundtrips of this flow.
-    </summary>
-  </metric>
-  <metric name="NumJsFlowActions">
-    <summary>
-      The total number of JS flow actions received, summed over all GetActions
-      responses.
-    </summary>
-  </metric>
-  <metric name="NumRoundtrips">
-    <summary>
-      The total number of roundtrips during this flow.
-    </summary>
-  </metric>
-  <metric name="TotalDecodedGetActionsSizeInBytes">
-    <summary>
-      The total size of all received GetActions responses, summed over all
-      downloaded responses after decoding, in bytes. This number is
-      exponentially bucketed and uses the UKM GetExponentialBucketMinForBytes
-      method with a default value of 1.3 for spacing.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TotalDecodedJsFlowSizeInBytes">
-    <summary>
-      The total size of all JS flow actions received, summed over all GetActions
-      responses, in bytes. This number is exponentially bucketed and uses the
-      UKM GetExponentialBucketMinForBytes method with a default value of 1.3 for
-      spacing.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TotalEncodedGetActionsSizeInBytes">
-    <summary>
-      The total number of bytes that were received from the GetActions RPC,
-      summed over all downloaded responses before decoding, in bytes. This
-      number is exponentially bucketed and uses the UKM
-      GetExponentialBucketMinForBytes method with a default value of 1.3 for
-      spacing.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.InChromeTriggering">
-  <owner>arbesser@google.com</owner>
-  <owner>mcarlen@google.com</owner>
-  <owner>marianfe@google.com</owner>
-  <summary>
-    Recorded when a navigation finishes successfully (is committed and not an
-    error page), if autofill_assistant and its proactive help setting are
-    enabled and MSBB is turned on.
-  </summary>
-  <metric name="InChromeTriggerAction"
-      enum="AutofillAssistantInChromeTriggerAction">
-    <summary>
-      An enum that captures the trigger action the client chose for a specific
-      URL.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.LiteScriptFinished">
-  <owner>arbesser@google.com</owner>
-  <owner>mcarlen@google.com</owner>
-  <owner>marianfe@google.com</owner>
-  <summary>
-    Recorded when a lite script has finished, either because the user made a
-    choice, or because some error occurred.
-  </summary>
-  <metric name="LiteScriptFinished" enum="AutofillAssistantLiteScriptFinished">
-    <summary>
-      An enum that describes the different ways a lite script can finish. Users
-      may click continue, cancel, or indirectly abort the experience in various
-      ways. See components/autofill_assistant/browser/metrics.h.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.TriggerUIType"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TriggerUIType" enum="AutofillAssistantTriggerUIType">
-    <summary>
-      A enum that captures the type of trigger and its intent.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.LiteScriptOnboarding">
-  <owner>arbesser@google.com</owner>
-  <owner>mcarlen@google.com</owner>
-  <owner>marianfe@google.com</owner>
-  <summary>
-    Recorded after a user has finished a lite script flow and accepted the final
-    prompt in it.
-  </summary>
-  <metric name="LiteScriptOnboarding"
-      enum="AutofillAssistantLiteScriptOnboarding">
-    <summary>
-      An enum that describes whether users who have successfully finished a lite
-      script also accepted the onboarding or not. See
-      components/autofill_assistant/browser/metrics.h.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.TriggerUIType"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TriggerUIType" enum="AutofillAssistantTriggerUIType">
-    <summary>
-      A enum that captures the type of trigger and its intent.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.LiteScriptShownToUser">
-  <owner>arbesser@google.com</owner>
-  <owner>mcarlen@google.com</owner>
-  <owner>marianfe@google.com</owner>
-  <summary>
-    Recorded when a lite script starts and when the UI is shown to the user.
-  </summary>
-  <metric name="LiteScriptShownToUser"
-      enum="AutofillAssistantLiteScriptShownToUser">
-    <summary>
-      An enum that captures the number of times a lite script was displayed,
-      versus the number of times that the lite script was run in total. See
-      components/autofill_assistant/browser/metrics.h.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.TriggerUIType"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TriggerUIType" enum="AutofillAssistantTriggerUIType">
-    <summary>
-      A enum that captures the type of trigger and its intent.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.LiteScriptStarted">
-  <owner>arbesser@google.com</owner>
-  <owner>mcarlen@google.com</owner>
-  <owner>marianfe@google.com</owner>
-  <summary>
-    Recorded at the time when the decision is made to start (or not to start) a
-    lite script.
-  </summary>
-  <metric name="LiteScriptStarted" enum="AutofillAssistantLiteScriptStarted">
-    <summary>
-      An enum that captures the different ways a lite script may be started or
-      suppressed. See components/autofill_assistant/browser/metrics.h.
-    </summary>
-    <aggregation>
-      <history>
-        <index fields="metrics.TriggerUIType"/>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="TriggerUIType" enum="AutofillAssistantTriggerUIType">
-    <summary>
-      A enum that captures the type of trigger and its intent.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.RegularScriptOnboarding">
-  <owner>arbesser@google.com</owner>
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    Various metrics related to the onboarding during regular scripts. This is
-    recorded at the start of a regular script.
-  </summary>
-  <metric name="Onboarding" enum="AutofillAssistantOnBoarding">
-    <summary>
-      The various ways in which the onboarding may complete or fail.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.StartRequest">
-  <owner>arbesser@google.com</owner>
-  <owner>hluca@google.com</owner>
-  <owner>autofill_assistant@google.com</owner>
-  <summary>
-    Metrics collected at the very beginning of an autofill-assistant flow.
-  </summary>
-  <metric name="Caller" enum="AutofillAssistantCaller">
-    <summary>
-      The caller that requested the start of a flow.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="Experiments">
-    <summary>
-      Bitmask of the running experiments.
-    </summary>
-  </metric>
-  <metric name="Intent" enum="AutofillAssistantIntent">
-    <summary>
-      The autofill-assistant intent of a flow.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="Source" enum="AutofillAssistantSource">
-    <summary>
-      The source that requested the start of a flow.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-  <metric name="Started" enum="AutofillAssistantStarted">
-    <summary>
-      The various ways that a start request may succeed or fail.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
-  </metric>
-</event>
-
-<event name="AutofillAssistant.Timing">
-  <owner>arbesser@google.com</owner>
-  <owner>hluca@google.com</owner>
-  <owner>sandromaggi@google.com</owner>
-  <metric name="TriggerConditionEvaluationMs">
-    <summary>
-      The time it took to evaluate the trigger conditions, in milliseconds. Only
-      successful evaluations are recorded.
-    </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
 </event>
 
@@ -13090,6 +12648,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="BadTapTargetsRatio">
+    <obsolete>
+      Deprecated 12/2022 in favor of MobileFriendliness.TappedBadTargets.
+    </obsolete>
     <summary>
       Percentage of tap targets whose center position is within another tap
       target (expanded by a margin). The detail of the algorithm is
@@ -14049,6 +13610,28 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PageContentAnnotations2" singular="True">
+  <owner>chrome-intelligence-core@google.com</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Metrics on the content annotations of the page, one record per page load
+    commit and has an annotation calculated on it. The metrics are recorded in a
+    RAPPOR-style with low-entropy so only aggregate analysis can be performed.
+  </summary>
+  <metric name="VisibilityScore">
+    <summary>
+      Records a low entropy respresentation of the visibility score output by a
+      content annotations model. The low entropy value is calculated using a
+      RAPPOR-style calculation to enable analysis only on aggregated results.
+      The raw score is between 0 and 1, scaled to between 0 and 100. The score
+      is then placed into one of 16 linearly spaced buckets by dividing the
+      score by the bucket size and taking the floor. The resulting bucket value
+      has noise added with a probability of .5 where the noise is randomly
+      applied to each individual bit.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageDomainInfo">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>
@@ -14317,6 +13900,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToFirstMeaningfulPaint">
+    <obsolete>
+      Removed on 11/2022
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the first meaningful paint (http://bit.ly/ttfmp-doc), for main
@@ -15264,6 +14850,12 @@ be describing additional metrics about the same event.
       A boolean indicating if any mainpage request in the redirect chain or
       committed request had cookies set on it. Only set when a query result was
       received from the cookie manager before event recording.
+    </summary>
+  </metric>
+  <metric name="MainFrameResource.RequestHasNoStore" enum="Boolean">
+    <summary>
+      A boolean indicating if any mainpage resource has a 'Cache-control:
+      no-store' response header. Recorded only for main frame request.
     </summary>
   </metric>
   <metric name="MainFrameResource.RequestStartToReceiveHeadersEnd">
@@ -18233,6 +17825,13 @@ be describing additional metrics about the same event.
       described in the explainer.
     </summary>
   </metric>
+  <metric name="MainFrameResource.RequestHasNoStore" enum="Boolean">
+    <summary>
+      A boolean indicating if any prerender activation page load mainpage
+      resource has a 'Cache-control: no-store' response header. Recorded only
+      for main frame request.
+    </summary>
+  </metric>
   <metric name="Timing.ActivationToFirstContentfulPaint">
     <summary>
       The duration in milliseconds from time of activation navigation start to
@@ -19516,9 +19115,109 @@ be describing additional metrics about the same event.
       The input tensor at index 3 represented in IEEE 754 double precision.
     </summary>
   </metric>
+  <metric name="Input30">
+    <summary>
+      The input tensor at index 30 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input31">
+    <summary>
+      The input tensor at index 31 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input32">
+    <summary>
+      The input tensor at index 32 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input33">
+    <summary>
+      The input tensor at index 33 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input34">
+    <summary>
+      The input tensor at index 34 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input35">
+    <summary>
+      The input tensor at index 35 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input36">
+    <summary>
+      The input tensor at index 36 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input37">
+    <summary>
+      The input tensor at index 37 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input38">
+    <summary>
+      The input tensor at index 38 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input39">
+    <summary>
+      The input tensor at index 39 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
   <metric name="Input4">
     <summary>
       The input tensor at index 4 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input40">
+    <summary>
+      The input tensor at index 40 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input41">
+    <summary>
+      The input tensor at index 41 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input42">
+    <summary>
+      The input tensor at index 42 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input43">
+    <summary>
+      The input tensor at index 43 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input44">
+    <summary>
+      The input tensor at index 44 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input45">
+    <summary>
+      The input tensor at index 45 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input46">
+    <summary>
+      The input tensor at index 46 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input47">
+    <summary>
+      The input tensor at index 47 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input48">
+    <summary>
+      The input tensor at index 48 represented in IEEE 754 double precision.
+    </summary>
+  </metric>
+  <metric name="Input49">
+    <summary>
+      The input tensor at index 49 represented in IEEE 754 double precision.
     </summary>
   </metric>
   <metric name="Input5">
@@ -19576,6 +19275,40 @@ be describing additional metrics about the same event.
       The OptimizationTarget of the last selected segment before UKM is
       recorded. Some features might have several ML models with them. This
       metric records which model is currently selected for the feature.
+    </summary>
+  </metric>
+</event>
+
+<event name="ServiceWorker.OnLoad">
+  <owner>yyanagisawa@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Events taken at the end of the loading pages controlled by the service
+    workers.
+  </summary>
+  <metric name="MainAndSubResourceLoadLocation"
+      enum="ServiceWorkerResourceLoadStatus">
+    <summary>
+      Enum value to represent how main / sub resource are loaded.
+    </summary>
+  </metric>
+  <metric name="SubResourceFallbackRatio">
+    <summary>
+      An integer ratio (0 - 100) to represent the ratio of network fallbacks
+      from the total subresource load.
+    </summary>
+  </metric>
+  <metric name="TotalSubResourceFallback">
+    <summary>
+      The number of network fallbacks during sub resource load. This is rounded
+      down to the nearest exponential bucket (with a bucket ratio on 1.15).
+    </summary>
+  </metric>
+  <metric name="TotalSubResourceLoad">
+    <summary>
+      The number of all sub resource load of the page controlled by the service
+      worker. This is rounded down to the nearest exponential bucket (with a
+      bucket ratio on 1.15).
     </summary>
   </metric>
 </event>
@@ -20407,6 +20140,9 @@ be describing additional metrics about the same event.
 
 <event name="TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadStopped"
     singular="True">
+  <obsolete>
+    Removed 11/2022 because it wasn't actively used.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Collects data when a tab is switched to from another tab and then finishes
@@ -20458,6 +20194,9 @@ be describing additional metrics about the same event.
 
 <event name="TabManager.Experimental.SessionRestore.ForegroundTab.PageLoad"
     singular="True">
+  <obsolete>
+    Removed 11/2022 because it wasn't actively used.
+  </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
     Collects the tab counts for the foreground tab page load during session

@@ -202,23 +202,35 @@ void WaylandScreen::AddOrUpdateDisplay(const WaylandOutput::Metrics& metrics) {
   changed_display.UpdateWorkAreaFromInsets(metrics.insets);
 
   gfx::DisplayColorSpaces color_spaces;
+  color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
+                                      image_format_alpha_.value());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* wayland_output =
       connection_->wayland_output_manager()->GetOutput(metrics.output_id);
   auto* color_management_output =
       wayland_output ? wayland_output->color_management_output() : nullptr;
 
-  if (color_management_output && color_management_output->gfx_color_space()) {
-    auto* gfx_color = color_management_output->gfx_color_space();
-    color_spaces = display::CreateDisplayColorSpaces(
-        *gfx_color, image_format_hdr_ == gfx::BufferFormat::RGBA_1010102, {});
-  } else {
-    color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
-                                        image_format_alpha_.value());
+  if (color_management_output && color_management_output->gfx_color_space() &&
+      color_management_output->gfx_color_space()->IsHDR()) {
+    // Only use display color space to determine if HDR is supported.
+    // LaCrOS will use generic color spaces for blending and compositing.
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kHDR, true,
+        gfx::ColorSpace::CreateExtendedSRGB10Bit(), *image_format_hdr_);
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kHDR, false,
+        gfx::ColorSpace::CreateExtendedSRGB10Bit(), *image_format_hdr_);
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kWideColorGamut, true,
+        gfx::ColorSpace::CreateDisplayP3D65(), image_format_alpha_.value());
+    color_spaces.SetOutputColorSpaceAndBufferFormat(
+        gfx::ContentColorUsage::kWideColorGamut, false,
+        gfx::ColorSpace::CreateDisplayP3D65(), image_format_no_alpha_.value());
+    // SRGB10Bit was designed to provide 5x relative brightness.
+    color_spaces.SetHDRMaxLuminanceRelative(5);
+    // sRGB is defined to have a luminance level of 80 nits.
+    color_spaces.SetSDRMaxLuminanceNits(80);
   }
-#else
-  color_spaces.SetOutputBufferFormats(image_format_no_alpha_.value(),
-                                      image_format_alpha_.value());
 #endif
 
   changed_display.set_color_spaces(color_spaces);
@@ -266,16 +278,6 @@ uint32_t WaylandScreen::GetOutputIdForDisplayId(int64_t display_id) {
   return 0;
 }
 
-void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  tablet_state_ = tablet_state;
-#endif
-
-  auto* observer_list = display_list_.observers();
-  for (auto& observer : *observer_list)
-    observer.OnDisplayTabletStateChanged(tablet_state);
-}
-
 base::WeakPtr<WaylandScreen> WaylandScreen::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -293,7 +295,7 @@ display::Display WaylandScreen::GetPrimaryDisplay() const {
 
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
-  auto* window = connection_->wayland_window_manager()->GetWindow(widget);
+  auto* window = connection_->window_manager()->GetWindow(widget);
   // A window might be destroyed by this time on shutting down the browser.
   if (!window)
     return GetPrimaryDisplay();
@@ -338,8 +340,7 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // If a pointer is located in any of the existing wayland windows, return
   // the last known cursor position.
   auto* cursor_position = connection_->wayland_cursor_position();
-  if (connection_->wayland_window_manager()
-          ->GetCurrentPointerOrTouchFocusedWindow() &&
+  if (connection_->window_manager()->GetCurrentPointerOrTouchFocusedWindow() &&
       cursor_position)
     return cursor_position->GetCursorSurfacePoint();
 
@@ -347,8 +348,7 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // outside of largest window bounds.
   // TODO(oshima): Change this for the case that screen coordinates is
   // available.
-  auto* window =
-      connection_->wayland_window_manager()->GetWindowWithLargestBounds();
+  auto* window = connection_->window_manager()->GetWindowWithLargestBounds();
   DCHECK(window);
   const gfx::Rect bounds = window->GetBoundsInDIP();
   return gfx::Point(bounds.width() + 10, bounds.height() + 10);
@@ -358,8 +358,8 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
   // It is safe to check only for focused windows and test if they contain the
   // point or not.
-  auto* window = connection_->wayland_window_manager()
-                     ->GetCurrentPointerOrTouchFocusedWindow();
+  auto* window =
+      connection_->window_manager()->GetCurrentPointerOrTouchFocusedWindow();
   if (window && window->GetBoundsInDIP().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;
@@ -434,7 +434,7 @@ bool WaylandScreen::SetScreenSaverSuspended(bool suspend) {
     // We assume that the idle lock is initiated by the user, and therefore the
     // surface that we should use is the one owned by the window that is focused
     // currently.
-    const auto* window_manager = connection_->wayland_window_manager();
+    const auto* window_manager = connection_->window_manager();
     DCHECK(window_manager);
     const auto* current_window = window_manager->GetCurrentFocusedWindow();
     if (!current_window) {
@@ -504,6 +504,14 @@ base::Value::List WaylandScreen::GetGpuExtraInfo(
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+void WaylandScreen::OnTabletStateChanged(display::TabletState tablet_state) {
+  tablet_state_ = tablet_state;
+
+  auto* observer_list = display_list_.observers();
+  for (auto& observer : *observer_list)
+    observer.OnDisplayTabletStateChanged(tablet_state);
+}
+
 display::TabletState WaylandScreen::GetTabletState() const {
   return tablet_state_;
 }

@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -244,8 +244,7 @@ export class FilteredVolumeManager extends EventTarget {
       // Do nothing: show the fusebox and non-fusebox versions in the files
       // app UI. Used for manually testing fusebox.
     } else if (this.isFuseBoxOnly_) {
-      // SelectFileAsh requires native volumes. Note: DocumentsProvider and
-      // FSPs return false here, until they are implemented in the fusebox.
+      // SelectFileAsh requires fusebox volumes or native volumes.
       return this.isFuseBoxFileSystem_(volumeInfo.diskFileSystemType) ||
           isNative(volumeInfo.volumeType);
     } else if (this.isFuseBoxFileSystem_(volumeInfo.diskFileSystemType)) {

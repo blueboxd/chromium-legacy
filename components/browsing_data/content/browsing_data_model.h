@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/enum_set.h"
 #include "base/memory/raw_ref.h"
+#include "content/public/browser/interest_group_manager.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
@@ -31,7 +32,9 @@ class BrowsingDataModel {
   // incomplete implementations, and are marked as such.
   // TODO(crbug.com/1271155): Complete implementations for all browsing data.
   enum class StorageType {
-    kTrustTokens,                // Only issuance information considered.
+    kTrustTokens,  // Only issuance information considered.
+    kSharedStorage,
+    kInterestGroup,
     kPartitionedQuotaStorage,    // Not fetched from disk or deleted.
     kUnpartitionedQuotaStorage,  // Not fetched from disk or deleted.
 
@@ -44,8 +47,9 @@ class BrowsingDataModel {
   // The information which uniquely identifies this browsing data. The set of
   // data an entry represents can be pulled from the relevant storage backends
   // using this information.
-  typedef absl::variant<url::Origin,       // Single origin, e.g. Trust Tokens
-                        blink::StorageKey  // Partitioned JS storage
+  typedef absl::variant<url::Origin,        // Single origin, e.g. Trust Tokens
+                        blink::StorageKey,  // Partitioned JS storage
+                        content::InterestGroupManager::InterestGroupDataKey
                         // TODO(crbug.com/1271155): Additional backend keys.
                         >
       DataKey;
@@ -75,13 +79,13 @@ class BrowsingDataModel {
 
     // The primary host for this browsing data. This is the host which this
     // information will be most strongly associated with in UX surfaces.
-    const raw_ref<const std::string> primary_host;
+    const raw_ref<const std::string, DanglingUntriaged> primary_host;
 
     // The unique identifier for the data represented by this entry.
-    const raw_ref<const DataKey> data_key;
+    const raw_ref<const DataKey, DanglingUntriaged> data_key;
 
     // Information about the data represented by this entry.
-    const raw_ref<const DataDetails> data_details;
+    const raw_ref<const DataDetails, DanglingUntriaged> data_details;
 
    private:
     friend class BrowsingDataModel;

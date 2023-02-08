@@ -12,15 +12,21 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/repeating_test_future.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/test/signed_web_bundle_utils.h"
+#include "chrome/common/url_constants.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -29,11 +35,16 @@
 #include "content/public/common/content_features.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/url_constants.h"
 
 namespace web_app {
 
 namespace {
+
+using testing::ElementsAre;
 
 constexpr uint8_t kEd25519PublicKey[32] = {0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0,
                                            0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0,
@@ -48,7 +59,9 @@ class FakeIsolatedWebAppValidator : public IsolatedWebAppValidator {
  public:
   explicit FakeIsolatedWebAppValidator(
       absl::optional<std::string> integrity_block_error)
-      : integrity_block_error_(integrity_block_error) {}
+      : IsolatedWebAppValidator(std::make_unique<IsolatedWebAppTrustChecker>(
+            TestingPrefServiceSimple())),
+        integrity_block_error_(integrity_block_error) {}
 
   void ValidateIntegrityBlock(
       const web_package::SignedWebBundleId& web_bundle_id,
@@ -91,8 +104,8 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
 
-    parser_factory_ =
-        std::make_unique<web_package::MockWebBundleParserFactory>();
+    parser_factory_ = std::make_unique<web_package::MockWebBundleParserFactory>(
+        on_create_parser_future_.GetCallback());
 
     response_ = web_package::mojom::BundleResponse::New();
     response_->response_code = 200;
@@ -102,21 +115,19 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
     base::flat_map<GURL, web_package::mojom::BundleResponseLocationPtr>
         requests;
     requests.insert(
-        {kPrimaryUrl,
-         web_package::mojom::BundleResponseLocation::New(
-             response_->payload_offset, response_->payload_length)});
+        {kUrl, web_package::mojom::BundleResponseLocation::New(
+                   response_->payload_offset, response_->payload_length)});
 
     metadata_ = web_package::mojom::BundleMetadata::New();
-    metadata_->primary_url = kPrimaryUrl;
     metadata_->requests = std::move(requests);
 
     web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr
         signature_stack_entry =
             web_package::mojom::BundleIntegrityBlockSignatureStackEntry::New();
-    signature_stack_entry->public_key =
-        std::vector(std::begin(kEd25519PublicKey), std::end(kEd25519PublicKey));
-    signature_stack_entry->signature =
-        std::vector(std::begin(kEd25519Signature), std::end(kEd25519Signature));
+    signature_stack_entry->public_key = web_package::Ed25519PublicKey::Create(
+        base::make_span(kEd25519PublicKey));
+    signature_stack_entry->signature = web_package::Ed25519Signature::Create(
+        base::make_span(kEd25519Signature));
 
     std::vector<web_package::mojom::BundleIntegrityBlockSignatureStackEntryPtr>
         signature_stack;
@@ -127,7 +138,7 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
     integrity_block_->signature_stack = std::move(signature_stack);
 
     registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
-        std::make_unique<IsolatedWebAppValidator>(),
+        std::make_unique<FakeIsolatedWebAppValidator>(absl::nullopt),
         base::BindRepeating(
             []() -> std::unique_ptr<
                      web_package::SignedWebBundleSignatureVerifier> {
@@ -173,11 +184,13 @@ class IsolatedWebAppReaderRegistryTest : public ::testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   base::ScopedTempDir temp_dir_;
   base::FilePath web_bundle_path_;
+  base::test::RepeatingTestFuture<absl::optional<GURL>>
+      on_create_parser_future_;
 
   const web_package::SignedWebBundleId kWebBundleId =
       *web_package::SignedWebBundleId::Create(
           "aaaaaaacaibaaaaaaaaaaaaaaiaaeaaaaaaaaaaaaabaeaqaaaaaaaic");
-  const GURL kPrimaryUrl = GURL("isolated-app://" + kWebBundleId.id());
+  const GURL kUrl = GURL("isolated-app://" + kWebBundleId.id());
 
   constexpr static char kResponseBody[] = "test";
 
@@ -195,8 +208,10 @@ using ReadResult =
                    IsolatedWebAppReaderRegistry::ReadResponseError>;
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -210,6 +225,17 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
   ASSERT_TRUE(result.has_value()) << result.error().message;
   EXPECT_EQ(result->head()->response_code, 200);
 
+  GURL expected_parser_base_url(
+      base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
+                    kWebBundleId.id()}));
+  EXPECT_EQ(expected_parser_base_url, on_create_parser_future_.Take());
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
+      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+          kSuccess,
+      1);
+
   std::string response_body = ReadAndFulfillResponseBody(
       result->head()->payload_length,
       base::BindOnce(&IsolatedWebAppReaderRegistry::Response::ReadBody,
@@ -220,7 +246,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
 TEST_F(IsolatedWebAppReaderRegistryTest,
        TestSingleRequestWithQueryAndFragment) {
   network::ResourceRequest resource_request;
-  resource_request.url = GURL(kPrimaryUrl.spec() + "?bar=baz#foo");
+  resource_request.url = kUrl.Resolve("/?bar=baz#foo");
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -244,7 +270,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest,
 TEST_F(IsolatedWebAppReaderRegistryTest,
        TestReadingResponseAfterSignedWebBundleReaderIsDeleted) {
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -273,8 +299,10 @@ TEST_F(IsolatedWebAppReaderRegistryTest,
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestRequestToNonExistingResponse) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = GURL(kPrimaryUrl.spec() + "foo");
+  resource_request.url = GURL(kUrl.spec() + "foo");
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -289,14 +317,21 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestRequestToNonExistingResponse) {
       result.error().type,
       IsolatedWebAppReaderRegistry::ReadResponseError::Type::kResponseNotFound);
   EXPECT_EQ(result.error().message,
-            "The Web Bundle does not contain a response for the provided URL: "
+            "Failed to read response: The Web Bundle does not contain a "
+            "response for the provided URL: "
             "isolated-app://"
             "aaaaaaacaibaaaaaaaaaaaaaaiaaeaaaaaaaaaaaaabaeaqaaaaaaaic/foo");
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadResponseHeadStatus",
+      IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+          kResponseNotFoundError,
+      1);
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   size_t num_signature_verifications = 0;
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
@@ -336,11 +371,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
     EXPECT_EQ(result->head()->response_code, 200);
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
-  EXPECT_EQ(num_signature_verifications, 0ul);
-#else
   EXPECT_EQ(num_signature_verifications, 1ul);
-#endif
 
   // Verify that the cache cleanup timer has started.
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
@@ -361,11 +392,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
     EXPECT_EQ(result->head()->response_code, 200);
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
-  EXPECT_EQ(num_signature_verifications, 0ul);
-#else
   EXPECT_EQ(num_signature_verifications, 1ul);
-#endif
 
   // Verify that the cache cleanup timer is still running.
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
@@ -398,13 +425,9 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
     EXPECT_EQ(result->head()->response_code, 200);
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
-  EXPECT_EQ(num_signature_verifications, 0ul);
-#else
   // Signatures should not have been verified again, since we only verify them
   // once per session per file path.
   EXPECT_EQ(num_signature_verifications, 1ul);
-#endif
 
   // Verify that the cache cleanup timer has started again.
   EXPECT_EQ(task_environment_.GetPendingMainThreadTaskCount(), 1ul)
@@ -412,15 +435,26 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSignedWebBundleReaderLifetime) {
           "Pending Tasks have been logged.");
 }
 
-TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlock) {
+class IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest
+    : public IsolatedWebAppReaderRegistryTest,
+      public ::testing::WithParamInterface<std::pair<
+          web_package::mojom::BundleParseErrorType,
+          IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus>> {
+};
+
+TEST_P(IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest,
+       TestIntegrityBlockParserError) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
                           read_response_future.GetCallback());
 
   auto error = web_package::mojom::BundleIntegrityBlockParseError::New();
+  error->type = GetParam().first;
   error->message = "test error";
   parser_factory_->RunIntegrityBlockCallback(nullptr, std::move(error));
 
@@ -430,11 +464,34 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlock) {
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message,
             "Failed to parse integrity block: test error");
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus", GetParam().second,
+      1);
 }
 
-TEST_F(IsolatedWebAppReaderRegistryTest, TestUntrustedPublicKeys) {
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest,
+    ::testing::Values(
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kParserInternalError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kIntegrityBlockParserInternalError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kVersionError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kIntegrityBlockParserVersionError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kFormatError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kIntegrityBlockParserFormatError)));
+
+TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
       std::make_unique<FakeIsolatedWebAppValidator>("test error"),
@@ -455,7 +512,13 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestUntrustedPublicKeys) {
   EXPECT_EQ(result.error().type,
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message,
-            "Public keys of the Isolated Web App are untrusted: test error");
+            "Failed to validate integrity block: test error");
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
+      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+          kIntegrityBlockValidationError,
+      1);
 }
 
 class IsolatedWebAppReaderRegistrySignatureVerificationErrorTest
@@ -465,8 +528,10 @@ class IsolatedWebAppReaderRegistrySignatureVerificationErrorTest
 
 TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
        SignatureVerificationError) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   registry_ = std::make_unique<IsolatedWebAppReaderRegistry>(
       std::make_unique<FakeIsolatedWebAppValidator>(absl::nullopt),
@@ -482,17 +547,6 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
 
   FulfillIntegrityBlock();
 
-#if BUILDFLAG(IS_CHROMEOS)
-  // On ChromeOS, signatures are only verified at installation-time, thus the
-  // `FakeSignatureVerifier` set up above will never be called.
-  // TODO(crbug.com/1366309): Make sure signatures are actually verified during
-  // installation once installation is implemented.
-  FulfillMetadata();
-  FulfillResponse(resource_request);
-
-  ReadResult result = read_response_future.Take();
-  ASSERT_TRUE(result.has_value()) << result.error().message;
-#else
   ReadResult result = read_response_future.Take();
   ASSERT_FALSE(result.has_value());
   EXPECT_EQ(result.error().type,
@@ -500,7 +554,12 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
   EXPECT_EQ(result.error().message,
             base::StringPrintf("Failed to verify signatures: %s",
                                GetParam().message.c_str()));
-#endif  // BUILDFLAG(IS_CHROMEOS)
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
+      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+          kSignatureVerificationError,
+      1);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -512,9 +571,19 @@ INSTANTIATE_TEST_SUITE_P(
         web_package::SignedWebBundleSignatureVerifier::Error::
             ForInvalidSignature("invalid signature")));
 
-TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadata) {
+class IsolatedWebAppReaderRegistryMetadataParserErrorTest
+    : public IsolatedWebAppReaderRegistryTest,
+      public ::testing::WithParamInterface<std::pair<
+          web_package::mojom::BundleParseErrorType,
+          IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus>> {
+};
+
+TEST_P(IsolatedWebAppReaderRegistryMetadataParserErrorTest,
+       TestMetadataParserError) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -523,6 +592,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadata) {
   FulfillIntegrityBlock();
   auto error = web_package::mojom::BundleMetadataParseError::New();
   error->message = "test error";
+  error->type = GetParam().first;
   parser_factory_->RunMetadataCallback(integrity_block_->size, nullptr,
                                        std::move(error));
 
@@ -531,11 +601,34 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadata) {
   EXPECT_EQ(result.error().type,
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message, "Failed to parse metadata: test error");
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus", GetParam().second,
+      1);
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    IsolatedWebAppReaderRegistryMetadataParserErrorTest,
+    ::testing::Values(
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kParserInternalError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kMetadataParserInternalError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kVersionError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kMetadataParserVersionError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kFormatError,
+            IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+                kMetadataParserFormatError)));
+
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -543,7 +636,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
 
   FulfillIntegrityBlock();
   auto metadata = metadata_->Clone();
-  metadata->primary_url = GURL(kInvalidIsolatedWebAppUrl);
+  metadata->primary_url = kUrl;
   parser_factory_->RunMetadataCallback(integrity_block_->size,
                                        std::move(metadata));
 
@@ -552,15 +645,20 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
   EXPECT_EQ(result.error().type,
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message,
-            base::StringPrintf("Invalid metadata: Primary URL must be %s, but "
-                               "was %s",
-                               kPrimaryUrl.spec().c_str(),
-                               kInvalidIsolatedWebAppUrl));
+            base::StringPrintf("Failed to validate metadata: Primary URL must "
+                               "not be present, but was %s",
+                               kUrl.spec().c_str()));
+
+  histogram_tester.ExpectBucketCount(
+      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
+      IsolatedWebAppReaderRegistry::ReadIntegrityBlockAndMetadataStatus::
+          kMetadataValidationError,
+      1);
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataInvalidExchange) {
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -579,15 +677,24 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataInvalidExchange) {
   EXPECT_EQ(result.error().type,
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message,
-            "Invalid metadata: The URL of an exchange is invalid: The host of "
-            "isolated-app:// URLs must be a valid Signed Web Bundle ID (got "
-            "foo): The signed web bundle ID must be exactly 56 characters "
-            "long, but was 3 characters long.");
+            "Failed to validate metadata: The URL of an exchange is invalid: "
+            "The host of isolated-app:// URLs must be a valid Signed Web "
+            "Bundle ID (got foo): The signed web bundle ID must be exactly 56 "
+            "characters long, but was 3 characters long.");
 }
 
-TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidResponse) {
+class IsolatedWebAppReaderRegistryResponseHeadParserErrorTest
+    : public IsolatedWebAppReaderRegistryTest,
+      public ::testing::WithParamInterface<
+          std::pair<web_package::mojom::BundleParseErrorType,
+                    IsolatedWebAppReaderRegistry::ReadResponseHeadStatus>> {};
+
+TEST_P(IsolatedWebAppReaderRegistryResponseHeadParserErrorTest,
+       TestResponseHeadParserError) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   base::test::TestFuture<ReadResult> read_response_future;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
@@ -598,6 +705,7 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidResponse) {
 
   auto error = web_package::mojom::BundleResponseParseError::New();
   error->message = "test error";
+  error->type = GetParam().first;
   parser_factory_->RunResponseCallback(
       web_package::mojom::BundleResponseLocation::New(
           response_->payload_offset, response_->payload_length),
@@ -609,19 +717,48 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidResponse) {
             IsolatedWebAppReaderRegistry::ReadResponseError::Type::kOtherError);
   EXPECT_EQ(result.error().message,
             "Failed to parse response head: test error");
+
+  histogram_tester.ExpectBucketCount("WebApp.Isolated.ReadResponseHeadStatus",
+                                     GetParam().second, 1);
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    IsolatedWebAppReaderRegistryResponseHeadParserErrorTest,
+    ::testing::Values(
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kParserInternalError,
+            IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+                kResponseHeadParserInternalError),
+        std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
+                       IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+                           kResponseHeadParserFormatError)));
+
 TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {
+  using ReaderCacheState = IsolatedWebAppReaderRegistry::ReaderCacheState;
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest resource_request;
-  resource_request.url = kPrimaryUrl;
+  resource_request.url = kUrl;
 
   // Simulate two simultaneous requests for the same web bundle
   base::test::TestFuture<ReadResult> read_response_future_1;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
                           read_response_future_1.GetCallback());
+
+  histogram_tester.GetAllSamples("WebApp.Isolated.ResponseReaderCacheState"),
+      ElementsAre(base::Bucket(ReaderCacheState::kNotCached, 1),
+                  base::Bucket(ReaderCacheState::kCachedReady, 0),
+                  base::Bucket(ReaderCacheState::kCachedPending, 0));
+
   base::test::TestFuture<ReadResult> read_response_future_2;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
                           read_response_future_2.GetCallback());
+
+  histogram_tester.GetAllSamples("WebApp.Isolated.ResponseReaderCacheState"),
+      ElementsAre(base::Bucket(ReaderCacheState::kNotCached, 1),
+                  base::Bucket(ReaderCacheState::kCachedReady, 0),
+                  base::Bucket(ReaderCacheState::kCachedPending, 1));
 
   FulfillIntegrityBlock();
   FulfillMetadata();
@@ -654,6 +791,11 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {
   base::test::TestFuture<ReadResult> read_response_future_3;
   registry_->ReadResponse(web_bundle_path_, kWebBundleId, resource_request,
                           read_response_future_3.GetCallback());
+
+  histogram_tester.GetAllSamples("WebApp.Isolated.ResponseReaderCacheState"),
+      ElementsAre(base::Bucket(ReaderCacheState::kNotCached, 1),
+                  base::Bucket(ReaderCacheState::kCachedReady, 1),
+                  base::Bucket(ReaderCacheState::kCachedPending, 1));
 
   FulfillResponse(resource_request);
   {

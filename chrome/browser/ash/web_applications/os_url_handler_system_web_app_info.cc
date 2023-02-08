@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -18,16 +20,10 @@
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/styles/cros_styles.h"
 
 namespace {
 
 bool g_enable_delegate_for_testing = false;
-
-SkColor GetBgColor(bool use_dark_mode) {
-  return cros_styles::ResolveColor(cros_styles::ColorName::kBgColor,
-                                   use_dark_mode);
-}
 
 }  // namespace
 
@@ -59,8 +55,10 @@ OsUrlHandlerSystemWebAppDelegate::GetWebAppInfo() const {
       },
       *info);
 
-  info->theme_color = GetBgColor(/*use_dark_mode=*/false);
-  info->dark_mode_theme_color = GetBgColor(/*use_dark_mode=*/true);
+  info->theme_color =
+      web_app::GetDefaultBackgroundColor(/*use_dark_mode=*/false);
+  info->dark_mode_theme_color =
+      web_app::GetDefaultBackgroundColor(/*use_dark_mode=*/true);
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
@@ -84,8 +82,11 @@ bool OsUrlHandlerSystemWebAppDelegate::ShouldShowInSearch() const {
   return false;
 }
 
-bool OsUrlHandlerSystemWebAppDelegate::ShouldReuseExistingWindow() const {
-  return false;
+Browser* OsUrlHandlerSystemWebAppDelegate::GetWindowForLaunch(
+    Profile* profile,
+    const GURL& url) const {
+  return ash::FindSystemWebAppBrowser(profile, GetType(), Browser::TYPE_APP,
+                                      url);
 }
 
 bool OsUrlHandlerSystemWebAppDelegate::ShouldRestoreOverrideUrl() const {

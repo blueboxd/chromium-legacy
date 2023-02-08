@@ -24,7 +24,6 @@ BASE_DECLARE_FEATURE(kAccountIdMigration);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-BASE_DECLARE_FEATURE(kAllowSyncOffForChildAccounts);
 BASE_DECLARE_FEATURE(kGaiaIdCacheInAccountManagerFacade);
 #endif
 
@@ -40,6 +39,7 @@ BASE_DECLARE_FEATURE(kForceDisableExtendedSyncPromos);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kForceStartupSigninPromo);
+BASE_DECLARE_FEATURE(kIdentityStatusConsistency);
 #endif
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kEnableCbdSignOut);

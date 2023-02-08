@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/app_list/app_list_util.h"
 
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_types.h"
 #endif
 
 bool IsAppLauncherEnabled() {
@@ -20,17 +20,17 @@ bool IsAppLauncherEnabled() {
 #endif
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace app_list {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<ash::AppListItemMetadata> GenerateItemMetadataFromSyncItem(
     const app_list::AppListSyncableService::SyncItem& sync_item) {
+  DCHECK(sync_item.item_type != sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
+
   auto item_meta_data = std::make_unique<ash::AppListItemMetadata>();
   item_meta_data->id = sync_item.item_id;
   item_meta_data->position = sync_item.item_ordinal;
   item_meta_data->is_folder =
       (sync_item.item_type == sync_pb::AppListSpecifics::TYPE_FOLDER);
-  item_meta_data->is_page_break =
-      (sync_item.item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK);
   item_meta_data->name = sync_item.item_name;
   item_meta_data->folder_id = sync_item.parent_id;
   if (ash::features::IsLauncherItemColorSyncEnabled())
@@ -38,5 +38,6 @@ std::unique_ptr<ash::AppListItemMetadata> GenerateItemMetadataFromSyncItem(
 
   return item_meta_data;
 }
-}  // namespace app_list
 #endif
+
+}  // namespace app_list

@@ -25,6 +25,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -37,6 +38,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
@@ -318,12 +320,12 @@ void SidePanelCoordinator::OpenInNewTab() {
   if (!new_tab_url.is_valid())
     return;
 
+  SidePanelUtil::RecordNewTabButtonClicked(current_entry_->key().id());
   content::OpenURLParams params(new_tab_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                                 /*is_renderer_initiated=*/false);
   browser_view_->browser()->OpenURL(params);
-
   Close();
 }
 
@@ -530,6 +532,8 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
 
   header_combobox_ = header->AddChildView(CreateCombobox());
   header_combobox_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  header_combobox_->SetProperty(views::kElementIdentifierKey,
+                                kSidePanelComboboxElementId);
 
   header_open_in_new_tab_button_ = header->AddChildView(CreateControlButton(
       header.get(),
@@ -583,6 +587,8 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
 bool SidePanelCoordinator::OnComboboxChangeTriggered(size_t index) {
   SidePanelEntry::Key entry_key = combobox_model_->GetKeyAt(index);
   Show(entry_key, SidePanelUtil::SidePanelOpenTrigger::kComboboxSelected);
+  views::ElementTrackerViews::GetInstance()->NotifyCustomEvent(
+      kSidePanelComboboxChangedCustomEventId, header_combobox_);
   return true;
 }
 

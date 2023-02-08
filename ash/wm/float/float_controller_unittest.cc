@@ -36,6 +36,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/header_view.h"
@@ -83,10 +84,10 @@ bool IsVisiblyAnimating(aura::Window* window) {
 class WindowFloatTest : public AshTestBase {
  public:
   WindowFloatTest() = default;
-
+  explicit WindowFloatTest(base::test::TaskEnvironment::TimeSource time)
+      : AshTestBase(time) {}
   WindowFloatTest(const WindowFloatTest&) = delete;
   WindowFloatTest& operator=(const WindowFloatTest&) = delete;
-
   ~WindowFloatTest() override = default;
 
   // Creates a floated application window.
@@ -384,11 +385,7 @@ TEST_F(WindowFloatTest, FloatWindowWithDeskRemovalUndo) {
   // shown.
   views::LabelButton* dismiss_button =
       DesksTestApi::GetCloseAllUndoToastDismissButton();
-  const gfx::Point button_center =
-      dismiss_button->GetBoundsInScreen().CenterPoint();
-  auto* event_generator = GetEventGenerator();
-  event_generator->MoveMouseTo(button_center);
-  event_generator->ClickLeftButton();
+  AshTestBase::LeftClickOn(dismiss_button);
   // Canceling close-all will bring the floated window back to shown.
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
   // Check if `window` still belongs to `desk_2`.
@@ -642,6 +639,92 @@ TEST_F(WindowFloatTest, FloatWindowUpdatedOnOverview) {
       GetOverviewItemsForRoot(0);
   ASSERT_EQ(overview_items.size(), 1u);
   EXPECT_EQ(window.get(), overview_items[0]->GetWindow());
+}
+
+// A test class that uses a mock time test environment.
+class WindowFloatMetricsTest : public WindowFloatTest {
+ public:
+  WindowFloatMetricsTest()
+      : WindowFloatTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  WindowFloatMetricsTest(const WindowFloatMetricsTest&) = delete;
+  WindowFloatMetricsTest& operator=(const WindowFloatMetricsTest&) = delete;
+  ~WindowFloatMetricsTest() override = default;
+
+ protected:
+  base::HistogramTester histogram_tester_;
+};
+
+// Tests the float window counts.
+TEST_F(WindowFloatMetricsTest, FloatWindowCountPerSession) {
+  // Float a window, Tests that it counts properly.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Unfloat and float the window again, it should count 2.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(WindowState::Get(window.get())->IsFloated());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  // Float a new window on a new desk, it should count 3.
+  NewDesk();
+  std::unique_ptr<aura::Window> window_2 = CreateFloatedWindow();
+  // Check total counts.
+  EXPECT_EQ(Shell::Get()->float_controller()->floated_window_counter_, 3);
+}
+
+// Tests that the float window duration histogram is properly recorded.
+TEST_F(WindowFloatMetricsTest, FloatWindowDuration) {
+  constexpr char kHistogramName[] = "Ash.Float.FloatWindowDuration";
+
+  auto* desks_controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+
+  // Float the window for 3 minutes and then maximize it. Tests that it records
+  // properly.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  task_environment()->AdvanceClock(base::Minutes(3));
+  task_environment()->RunUntilIdle();
+  WindowState::Get(window.get())->Maximize();
+  histogram_tester_.ExpectBucketCount(kHistogramName, 3, 1);
+
+  // Float again for 3 hours. Test that it records into a different bucket.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  task_environment()->AdvanceClock(base::Hours(3));
+  task_environment()->RunUntilIdle();
+  WindowState::Get(window.get())->Maximize();
+  histogram_tester_.ExpectBucketCount(kHistogramName, 180, 1);
+
+  // Activate desk 2. At this point the floated window is still in floated
+  // state, but is hidden, so we treat it as if a float session has ended.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  task_environment()->AdvanceClock(base::Minutes(3));
+  task_environment()->RunUntilIdle();
+  ActivateDesk(desks_controller->desks()[1].get());
+  histogram_tester_.ExpectBucketCount(kHistogramName, 3, 2);
+
+  // Activate desk 1. The floated window will be visible again and we start
+  // recording the float session. Sending the window to desk 2 should record
+  // the float duration.
+  ActivateDesk(desks_controller->desks()[0].get());
+  task_environment()->AdvanceClock(base::Minutes(3));
+  task_environment()->RunUntilIdle();
+  desks_controller->SendToDeskAtIndex(window.get(), 1);
+  histogram_tester_.ExpectBucketCount(kHistogramName, 3, 3);
+
+  // Activate desk 2. The floated window will be visible again and we start
+  // recording the float session. Hiding and reshowing the window should not
+  // record, this is to simulate hiding and reshowing while staying on the
+  // active desk (i.e. showing the saved desks library).
+  ActivateDesk(desks_controller->desks()[1].get());
+  window->Hide();
+  task_environment()->AdvanceClock(base::Minutes(3));
+  task_environment()->RunUntilIdle();
+  window->Show();
+  histogram_tester_.ExpectBucketCount(kHistogramName, 3, 3);
+
+  // Closing a window should record the float duration.
+  window.reset();
+  histogram_tester_.ExpectBucketCount(kHistogramName, 3, 4);
 }
 
 class TabletWindowFloatTest : public WindowFloatTest {
@@ -1285,6 +1368,29 @@ TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {
       /*steps=*/3);
   EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
   CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
+}
+
+// Tests that flinging the window straight up or down does not tuck the window.
+TEST_F(TabletWindowFloatTest, FlingVertical) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  // The window is magnetized to the bottom right by default.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  // Fling the window straight down. Test that it stays in the bottom right.
+  const gfx::Point start =
+      GetHeaderView(window.get())->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureScrollSequence(
+      start, start + gfx::Vector2d(0, 10), base::Milliseconds(10), /*steps=*/1);
+  auto* float_controller = Shell::Get()->float_controller();
+  ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+  CheckMagnetized(window.get(), FloatController::MagnetismCorner::kBottomRight);
+
+  // Fling the window straight up. Test that it moves to the top right.
+  GetEventGenerator()->GestureScrollSequence(
+      start, start + gfx::Vector2d(0, -10), base::Milliseconds(10),
+      /*steps=*/1);
+  ASSERT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+  CheckMagnetized(window.get(), FloatController::MagnetismCorner::kTopRight);
 }
 
 using TabletWindowFloatSplitviewTest = TabletWindowFloatTest;

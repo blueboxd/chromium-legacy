@@ -18,7 +18,7 @@ import {CrContainerShadowMixin} from 'chrome://resources/cr_elements/cr_containe
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './error_page.html.js';
@@ -228,8 +228,15 @@ export class ExtensionsErrorPageElement extends ExtensionsErrorPageElementBase {
         break;
       case chrome.developerPrivate.ErrorType.RUNTIME:
         const runtimeError = error as RuntimeError;
-        // slice(1) because pathname starts with a /.
-        args.pathSuffix = new URL(runtimeError.source).pathname.slice(1);
+        try {
+          // slice(1) because pathname starts with a /.
+          args.pathSuffix = new URL(runtimeError.source).pathname.slice(1);
+        } catch (e) {
+          // Swallow the invalid URL error and return early. This prevents the
+          // uncaught error from causing a runtime error as seen in
+          // crbug.com/1257170.
+          return;
+        }
         args.lineNumber =
             runtimeError.stackTrace && runtimeError.stackTrace[0] ?
             runtimeError.stackTrace[0].lineNumber :

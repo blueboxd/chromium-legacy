@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/metrics/frame_sequence_metrics.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "ui/compositor/total_animation_throughput_reporter.h"
 
 namespace ui {
@@ -26,11 +26,9 @@ class Compositor;
 namespace ash {
 
 class ShelfModel;
-class ShelfView;
 
-class ASH_EXPORT LoginUnlockThroughputRecorder
-    : public SessionObserver,
-      public chromeos::LoginState::Observer {
+class ASH_EXPORT LoginUnlockThroughputRecorder : public SessionObserver,
+                                                 public LoginState::Observer {
  public:
   enum RestoreWindowType {
     kBrowser,
@@ -46,7 +44,7 @@ class ASH_EXPORT LoginUnlockThroughputRecorder
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
 
-  // chromeos::LoginState::Observer:
+  // LoginState::Observer:
   void LoggedInStateChanged() override;
 
   // Adds "restore_window_id" to the list of potentially restored windows.
@@ -71,9 +69,6 @@ class ASH_EXPORT LoginUnlockThroughputRecorder
 
   // This is called when the list of shelf icons is updated.
   void UpdateShelfIconList(const ShelfModel* model);
-
-  // Remembers ShelfView pointer to watch for shelf animation finish.
-  void SetShelfViewIfNotSet(ShelfView* shelf_view);
 
   void ResetScopedThroughputReporterBlockerForTesting();
 
@@ -110,8 +105,6 @@ class ASH_EXPORT LoginUnlockThroughputRecorder
   base::flat_set<int> restore_windows_presented_;
 
   base::TimeTicks primary_user_logged_in_;
-
-  base::raw_ptr<ShelfView> shelf_view_ = nullptr;
 
   bool shelf_initialized_ = false;
 

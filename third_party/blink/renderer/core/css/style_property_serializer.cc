@@ -36,7 +36,10 @@
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
+#include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -358,18 +361,18 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
 
 String StylePropertySerializer::CommonShorthandChecks(
     const StylePropertyShorthand& shorthand) const {
-  int longhand_count = shorthand.length();
-  if (!longhand_count || longhand_count > 17) {
+  unsigned longhand_count = shorthand.length();
+  if (!longhand_count || longhand_count > kMaxShorthandExpansion) {
     NOTREACHED();
     return g_empty_string;
   }
 
-  const CSSValue* longhands[17] = {};
+  const CSSValue* longhands[kMaxShorthandExpansion] = {};
 
   bool has_important = false;
   bool has_non_important = false;
 
-  for (int i = 0; i < longhand_count; i++) {
+  for (unsigned i = 0; i < longhand_count; i++) {
     int index = property_set_.FindPropertyIndex(*shorthand.properties()[i]);
     if (index == -1)
       return g_empty_string;
@@ -386,7 +389,7 @@ String StylePropertySerializer::CommonShorthandChecks(
   if (longhands[0]->IsCSSWideKeyword() ||
       longhands[0]->IsPendingSubstitutionValue()) {
     bool success = true;
-    for (int i = 1; i < longhand_count; i++) {
+    for (unsigned i = 1; i < longhand_count; i++) {
       if (!base::ValuesEquivalent(longhands[i], longhands[0])) {
         // This should just return emptyString but some shorthands currently
         // allow 'initial' for their longhands.
@@ -406,7 +409,7 @@ String StylePropertySerializer::CommonShorthandChecks(
   }
 
   bool allow_initial = AllowInitialInShorthand(shorthand.id());
-  for (int i = 0; i < longhand_count; i++) {
+  for (unsigned i = 0; i < longhand_count; i++) {
     const CSSValue& value = *longhands[i];
     if (!allow_initial && value.IsInitialValue())
       return g_empty_string;
@@ -433,6 +436,10 @@ String StylePropertySerializer::SerializeShorthand(
   switch (property_id) {
     case CSSPropertyID::kAnimation:
       return GetLayeredShorthandValue(animationShorthand());
+    case CSSPropertyID::kAlternativeAnimation:
+      return GetLayeredShorthandValue(alternativeAnimationShorthand());
+    case CSSPropertyID::kAlternativeAnimationDelay:
+      return AnimationDelayShorthandValue();
     case CSSPropertyID::kBorderSpacing:
       return Get2Values(borderSpacingShorthand());
     case CSSPropertyID::kBackgroundPosition:
@@ -692,6 +699,8 @@ bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
       case CSSPropertyID::kFontVariantLigatures:
       case CSSPropertyID::kFontVariantNumeric:
       case CSSPropertyID::kFontVariantEastAsian:
+      case CSSPropertyID::kFontVariantAlternates:
+      case CSSPropertyID::kFontVariantPosition:
       case CSSPropertyID::kFontWeight:
         result.Append(' ');
         break;
@@ -833,6 +842,73 @@ String StylePropertySerializer::ViewTimelineValue() const {
   return list->CssText();
 }
 
+namespace {
+
+std::pair<CSSValueID, double> GetTimelineRange(const CSSValue& value) {
+  const auto* list = DynamicTo<CSSValueList>(value);
+  if (!list)
+    return {CSSValueID::kInvalid, -1.0};
+  DCHECK_EQ(list->length(), 2u);
+  const auto& name = To<CSSIdentifierValue>(list->Item(0));
+  const auto& offset = To<CSSPrimitiveValue>(list->Item(1));
+  return {name.GetValueID(), offset.GetValue<double>()};
+}
+
+CSSValue* AnimationDelayShorthandValueItem(wtf_size_t index,
+                                           const CSSValueList& start_list,
+                                           const CSSValueList& end_list) {
+  DCHECK_LT(index, start_list.length());
+  DCHECK_LT(index, end_list.length());
+
+  const CSSValue& start = start_list.Item(index);
+  const CSSValue& end = end_list.Item(index);
+
+  // E.g. "enter 0% enter 100%" must be shortened to just "enter".
+  {
+    const auto& [start_name, start_offset] = GetTimelineRange(start);
+    const auto& [end_name, end_offset] = GetTimelineRange(end);
+    if (start_name == end_name && start_offset == 0.0 && end_offset == 100.0)
+      return CSSIdentifierValue::Create(start_name);
+  }
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+
+  list->Append(start);
+
+  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(end);
+      !primitive || !primitive->IsZero()) {
+    list->Append(end);
+  }
+
+  return list;
+}
+
+}  // namespace
+
+String StylePropertySerializer::AnimationDelayShorthandValue() const {
+  CHECK_EQ(alternativeAnimationDelayShorthand().length(), 2u);
+  CHECK_EQ(alternativeAnimationDelayShorthand().properties()[0],
+           &GetCSSPropertyAnimationDelayStart());
+  CHECK_EQ(alternativeAnimationDelayShorthand().properties()[1],
+           &GetCSSPropertyAnimationDelayEnd());
+
+  const CSSValueList& start_list = To<CSSValueList>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyAnimationDelayStart()));
+  const CSSValueList& end_list = To<CSSValueList>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyAnimationDelayEnd()));
+
+  if (start_list.length() != end_list.length())
+    return "";
+
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+
+  for (wtf_size_t i = 0; i < start_list.length(); ++i) {
+    list->Append(*AnimationDelayShorthandValueItem(i, start_list, end_list));
+  }
+
+  return list->CssText();
+}
+
 String StylePropertySerializer::FontValue() const {
   int font_size_property_index =
       property_set_.FindPropertyIndex(GetCSSPropertyFontSize());
@@ -947,10 +1023,18 @@ String StylePropertySerializer::FontVariantValue() const {
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantLigatures(),
                                      result);
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
+  if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled()) {
+    AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantAlternates(),
+                                       result);
+  }
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantNumeric(),
                                      result);
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantEastAsian(),
                                      result);
+  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
+    AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantPosition(),
+                                       result);
+  }
 
   if (result.empty()) {
     return "normal";
@@ -1270,6 +1354,11 @@ String StylePropertySerializer::GetLayeredShorthandValue(
             is_initial_value = true;
           }
         }
+      }
+
+      if (property->IDEquals(CSSPropertyID::kAnimationDelayEnd)) {
+        is_initial_value = CSSToStyleMap::MapAnimationDelayEnd(*value) ==
+                           CSSTimingData::InitialDelayEnd();
       }
 
       if (!is_initial_value) {

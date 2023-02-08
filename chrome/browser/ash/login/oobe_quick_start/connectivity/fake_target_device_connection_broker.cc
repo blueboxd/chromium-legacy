@@ -7,6 +7,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
+#include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
+#include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
 
 namespace ash::quick_start {
 
@@ -50,8 +52,10 @@ void FakeTargetDeviceConnectionBroker::StopAdvertising(
 void FakeTargetDeviceConnectionBroker::InitiateConnection(
     const std::string& source_device_id) {
   auto random_session_id = RandomSessionId();
-  auto fake_incomming_connection =
-      std::make_unique<FakeIncommingConnection>(random_session_id);
+  fake_nearby_connection_ = std::make_unique<FakeNearbyConnection>();
+  NearbyConnection* nearby_connection = fake_nearby_connection_.get();
+  auto fake_incomming_connection = std::make_unique<FakeIncommingConnection>(
+      nearby_connection, random_session_id);
   connection_lifecycle_listener_->OnIncomingConnectionInitiated(
       source_device_id, fake_incomming_connection->AsWeakPtr());
   fake_connection_ = std::move(fake_incomming_connection);
@@ -60,8 +64,10 @@ void FakeTargetDeviceConnectionBroker::InitiateConnection(
 void FakeTargetDeviceConnectionBroker::AuthenticateConnection(
     const std::string& source_device_id) {
   fake_connection_.reset();
+  fake_nearby_connection_ = std::make_unique<FakeNearbyConnection>();
+  NearbyConnection* nearby_connection = fake_nearby_connection_.get();
   auto fake_authenticated_connection =
-      std::make_unique<FakeAuthenticatedConnection>();
+      std::make_unique<FakeAuthenticatedConnection>(nearby_connection);
   connection_lifecycle_listener_->OnConnectionAuthenticated(
       source_device_id, fake_authenticated_connection->AsWeakPtr());
 

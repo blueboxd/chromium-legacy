@@ -60,7 +60,6 @@
 #include "base/supports_user_data.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/autofill_provider_android.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -838,12 +837,9 @@ void AwContents::OnReceivedIcon(const GURL& icon_url, const SkBitmap& bitmap) {
 
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
-
-  if (entry) {
-    entry->GetFavicon().valid = true;
-    entry->GetFavicon().url = icon_url;
-    entry->GetFavicon().image = gfx::Image::CreateFrom1xBitmap(bitmap);
-  }
+  entry->GetFavicon().valid = true;
+  entry->GetFavicon().url = icon_url;
+  entry->GetFavicon().image = gfx::Image::CreateFrom1xBitmap(bitmap);
 
   ScopedJavaLocalRef<jobject> java_bitmap =
       gfx::ConvertToJavaBitmap(bitmap, gfx::OomBehavior::kReturnNullOnOom);
@@ -897,7 +893,7 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
-  if (!entry || entry->IsInitialEntry() || !entry->GetSSL().certificate) {
+  if (entry->IsInitialEntry() || !entry->GetSSL().certificate) {
     return ScopedJavaLocalRef<jbyteArray>();
   }
 
@@ -1030,8 +1026,7 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Required optimization in WebViewClassic to not save any state if
   // there has been no navigations.
-  if (!web_contents_->GetController().GetLastCommittedEntry() ||
-      web_contents_->GetController()
+  if (web_contents_->GetController()
           .GetLastCommittedEntry()
           ->IsInitialEntry()) {
     return ScopedJavaLocalRef<jbyteArray>();
@@ -1113,8 +1108,8 @@ void AwContents::SetPendingWebContentsForPopup(
     // TODO(benm): Support holding multiple pop up window requests.
     LOG(WARNING) << "Blocking popup window creation as an outstanding "
                  << "popup window is still pending.";
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                    pending.release());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(
+        FROM_HERE, pending.release());
     return;
   }
   pending_contents_ = std::make_unique<AwContents>(std::move(pending));
@@ -1453,16 +1448,18 @@ void JNI_AwContents_SetShouldDownloadFavicons(JNIEnv* env) {
   g_should_download_favicons = true;
 }
 
-void AwContents::RenderViewHostChanged(content::RenderViewHost* old_host,
-                                       content::RenderViewHost* new_host) {
+void AwContents::RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                                        content::RenderFrameHost* new_host) {
   DCHECK(new_host);
+  if (!new_host->IsInPrimaryMainFrame())
+    return;
 
-  // At this point, the current RVH may or may not contain a compositor. So
-  // compositor_ may be nullptr, in which case
+  // At this point, the current RenderFrameHost may or may not contain a
+  // compositor. So compositor_ may be nullptr, in which case
   // BrowserViewRenderer::DidInitializeCompositor() callback is time when the
   // new compositor is constructed.
   browser_view_renderer_.SetActiveFrameSinkId(
-      new_host->GetWidget()->GetFrameSinkId());
+      new_host->GetRenderWidgetHost()->GetFrameSinkId());
 }
 
 void AwContents::PrimaryPageChanged(content::Page& page) {

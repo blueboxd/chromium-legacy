@@ -19,6 +19,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/flat_tree.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,13 +37,17 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/grit/components_resources.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
@@ -74,7 +79,7 @@ namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 // Denotes whether user web apps may be installed on profiles other than the
-// main profile. This may be modified by SkipMainProfileCheckForTesting().
+// main profile. This may be modified by SetSkipMainProfileCheckForTesting().
 bool g_skip_main_profile_check_for_testing = false;
 #endif
 
@@ -88,6 +93,111 @@ GURL EncodeIconAsUrl(const SkBitmap& bitmap) {
       &encoded);
   return GURL("data:image/png;base64," + encoded);
 }
+
+// This class is responsible for fetching the app icon for a web app and for
+// providing it to the DefaultOffline page that's currently showing. The class
+// monitors the lifetime of the web_contents for the page and deletes itself
+// under these conditions:
+//
+// 1) It is unable to determine which icon to download.
+// 2) The default offline page being monitored (it's web_contents) is destroyed.
+// 3) The page starts loading something else.
+// 4) (Success case) The icon is successfully fetched and delivered to the web
+//    page.
+//
+// Note that this class can not rely on downloading the bits off the network
+// because it has to work even when the app is launched for the first time while
+// network is disconnected.
+class AppIconFetcherTask : public content::WebContentsObserver {
+ public:
+  // Starts the asynchronous fetching of a specific web app icon from disk using
+  // the `web_app_provider` and supplies the icon to the web_page via jscript.
+  static void FetchAndPopulateIcon(content::WebContents* web_contents,
+                                   WebAppProvider* web_app_provider,
+                                   const AppId& app_id) {
+    new AppIconFetcherTask(web_contents, web_app_provider, app_id);
+  }
+
+  AppIconFetcherTask() = delete;
+
+ private:
+  AppIconFetcherTask(content::WebContents* web_contents,
+                     WebAppProvider* web_app_provider,
+                     const AppId& app_id)
+      : WebContentsObserver(web_contents) {
+    DCHECK(web_contents);
+    // For best results, this should be of equal (or slightly higher) value than
+    // the width and height of the presented icon on the default offline error
+    // page (see webapp_default_offline.[html|css] for icon details).
+    const int kDesiredSizeForIcon = 160;
+    web_app_provider->icon_manager().ReadIconAndResize(
+        app_id, IconPurpose::ANY, kDesiredSizeForIcon,
+        base::BindOnce(&AppIconFetcherTask::OnIconFetched,
+                       weak_factory_.GetWeakPtr(), kDesiredSizeForIcon));
+  }
+
+  // WebContentsObserver:
+  void WebContentsDestroyed() override { delete this; }
+
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    // Loading will have started already when the error page is being
+    // constructed, so if we receive this event, it means that a new navigation
+    // is taking place (so we can drop any remaining work).
+    if (navigation_handle->IsInPrimaryMainFrame())
+      delete this;
+  }
+
+  void DocumentOnLoadCompletedInPrimaryMainFrame() override {
+    document_ready_ = true;
+    MaybeSendImageAndSelfDestruct();
+  }
+
+  void OnIconFetched(int fetched_size,
+                     std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+    DCHECK(icon_bitmaps.size() == 1);
+    DCHECK(icon_bitmaps.begin()->first == fetched_size);
+    if (icon_bitmaps.size() == 0) {
+      delete this;
+      return;
+    }
+    icon_url_ = EncodeIconAsUrl(icon_bitmaps.begin()->second);
+    MaybeSendImageAndSelfDestruct();
+  }
+
+  // This function does nothing until both of these conditions have been met:
+  // 1) The app icon image has been fetched.
+  // 2) The offline page is ready to receive the image.
+  // Once they are met, this function will send the icon to the web page and
+  // delete itself. Callers should not assume it is safe to do more work after
+  // calling this function.
+  void MaybeSendImageAndSelfDestruct() {
+    if (!document_ready_ || icon_url_.is_empty()) {
+      return;
+    }
+    DCHECK(web_contents());
+    DCHECK(icon_url_.is_valid());
+
+    std::u16string app_icon_inline =
+        std::u16string(u"var icon = document.getElementById('icon');") +
+        u"icon.src ='" + base::UTF8ToUTF16(icon_url_.spec()) + u"';";
+
+    content::RenderFrameHost* host = web_contents()->GetPrimaryMainFrame();
+    host->ExecuteJavaScriptInIsolatedWorld(app_icon_inline, base::DoNothing(),
+                                           ISOLATED_WORLD_ID_EXTENSIONS);
+
+    delete this;
+  }
+
+  // This url will contain the fetched icon bits inlined as a data: url.
+  GURL icon_url_;
+
+  // Whether the Default Offline page is ready to receive the icon.
+  bool document_ready_ = false;
+
+  // A weak factory for this class, must be last in the member list.
+  base::WeakPtrFactory<AppIconFetcherTask> weak_factory_{this};
+};
 
 // Note: This can never return kBrowser. This is because the user has
 // specified that the web app should be displayed in a window, and thus
@@ -242,14 +352,14 @@ content::BrowserContext* GetBrowserContextForWebApps(
 
 content::BrowserContext* GetBrowserContextForWebAppMetrics(
     content::BrowserContext* context) {
-  // Use original profile to create only one KeyedService instance.
-  Profile* original_profile =
-      Profile::FromBrowserContext(context)->GetOriginalProfile();
-  const bool is_web_app_metrics_enabled =
-      site_engagement::SiteEngagementService::IsEnabled() &&
-      AreWebAppsEnabled(original_profile) &&
-      !original_profile->IsGuestSession();
-  return is_web_app_metrics_enabled ? original_profile : nullptr;
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (!profile)
+    return nullptr;
+  if (!site_engagement::SiteEngagementService::IsEnabled())
+    return nullptr;
+  if (profile->GetOriginalProfile()->IsGuestSession())
+    return nullptr;
+  return GetBrowserContextForWebApps(context);
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
@@ -262,11 +372,21 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
     return nullptr;
   }
 
-  WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
+  WebAppRegistrar& web_app_registrar = web_app_provider->registrar_unsafe();
   const absl::optional<AppId> app_id =
       web_app_registrar.FindAppWithUrlInScope(url);
   if (!app_id.has_value()) {
     return nullptr;
+  }
+
+  // Fetch the app icon asynchronously and provide it to the error page. The
+  // web_contents check exists because not all unit tests set up a proper error
+  // page.
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (web_contents) {
+    AppIconFetcherTask::FetchAndPopulateIcon(web_contents, web_app_provider,
+                                             app_id.value());
   }
 
   auto alternative_error_page_info =
@@ -277,12 +397,10 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr GetOfflinePageInfo(
            web_app_registrar.GetAppShortName(*app_id));
   dict.Set(default_offline::kMessage,
            l10n_util::GetStringUTF16(IDS_ERRORPAGES_HEADING_YOU_ARE_OFFLINE));
-  // TODO(crbug.com/1285723): The FavIcon is not the right icon to use here, as
-  // the design calls for showing an icon around ten times that size. This will
-  // probably need to be changed to fetch the right icon asynchronously.
-  SkBitmap bitmap = web_app_provider->icon_manager().GetFavicon(*app_id);
-  std::string icon_url = EncodeIconAsUrl(bitmap).spec();
-  dict.Set(default_offline::kIconUrl, icon_url);
+  // Android uses kIconUrl to provide the icon url synchronously, but Desktop
+  // sends down a blank image source and then updates it asynchronously once it
+  // is available.
+  dict.Set(default_offline::kIconUrl, "''");
   alternative_error_page_info->alternative_error_page_params = std::move(dict);
   alternative_error_page_info->resource_id = IDR_WEBAPP_DEFAULT_OFFLINE_HTML;
   return alternative_error_page_info;
@@ -388,7 +506,7 @@ GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
     return {};
 
   const apps::FileHandlers* file_handlers =
-      provider->registrar().GetAppFileHandlers(app_id);
+      provider->registrar_unsafe().GetAppFileHandlers(app_id);
 
   std::vector<std::u16string> extensions_for_display =
       TransformFileExtensionsForDisplay(
@@ -429,47 +547,14 @@ bool IsWebAppsCrosapiEnabled() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-void SkipMainProfileCheckForTesting() {
-  g_skip_main_profile_check_for_testing = true;
+void SetSkipMainProfileCheckForTesting(bool skip_check) {
+  g_skip_main_profile_check_for_testing = skip_check;
+}
+
+bool IsMainProfileCheckSkippedForTesting() {
+  return g_skip_main_profile_check_for_testing;
 }
 #endif
-
-void PersistProtocolHandlersUserChoice(
-    Profile* profile,
-    const AppId& app_id,
-    const GURL& protocol_url,
-    bool allowed,
-    base::OnceClosure update_finished_callback) {
-  WebAppProvider* const provider = WebAppProvider::GetForWebApps(profile);
-  DCHECK(provider);
-
-  OsIntegrationManager& os_integration_manager =
-      provider->os_integration_manager();
-  const std::vector<custom_handlers::ProtocolHandler>
-      original_protocol_handlers =
-          os_integration_manager.GetAppProtocolHandlers(app_id);
-
-  if (allowed) {
-    provider->sync_bridge().AddAllowedLaunchProtocol(app_id,
-                                                     protocol_url.scheme());
-  } else {
-    provider->sync_bridge().AddDisallowedLaunchProtocol(app_id,
-                                                        protocol_url.scheme());
-  }
-
-  // OS protocol registration does not need to be updated.
-  if (original_protocol_handlers ==
-      os_integration_manager.GetAppProtocolHandlers(app_id)) {
-    std::move(update_finished_callback).Run();
-    return;
-  }
-
-  // TODO(https://crbug.com/1251062): Can we avoid the delay of startup, if the
-  // action as allowed?
-  provider->os_integration_manager().UpdateProtocolHandlers(
-      app_id, /*force_shortcut_updates_if_needed=*/true,
-      std::move(update_finished_callback));
-}
 
 bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
                                              WebAppSources specified_sources) {
@@ -487,6 +572,7 @@ bool CanUserUninstallWebApp(WebAppSources sources) {
            WebAppManagement::kSubApp,
            WebAppManagement::kOem,
            WebAppManagement::kCommandLine,
+           WebAppManagement::kOneDriveIntegration,
        }) {
     specified_sources.set(type);
   }
@@ -511,7 +597,7 @@ bool HasAppSettingsPage(Profile* profile, const GURL& url) {
   WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
   if (!provider)
     return false;
-  return provider->registrar().IsLocallyInstalled(app_id);
+  return provider->registrar_unsafe().IsLocallyInstalled(app_id);
 }
 
 bool IsInScope(const GURL& url, const GURL& scope) {

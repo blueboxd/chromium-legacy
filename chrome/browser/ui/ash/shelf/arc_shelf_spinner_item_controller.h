@@ -14,10 +14,10 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/app_list/arc/intent.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_item_controller.h"
 
 // ArcShelfSpinnerItemController displays the icon of the ARC app that
@@ -28,6 +28,7 @@ class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
                                       public arc::ArcSessionManagerObserver {
  public:
   ArcShelfSpinnerItemController(const std::string& arc_app_id,
+                                apps::IntentPtr intent,
                                 int event_flags,
                                 arc::UserInteractionType user_interaction_type,
                                 arc::mojom::WindowInfoPtr window_info);
@@ -61,6 +62,8 @@ class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
   // Returns true if this item is created by full restore. Otherwise, returns
   // false.
   bool IsCreatedByFullRestore();
+
+  apps::IntentPtr intent_;
 
   // The flags of the event that caused the ARC app to be activated. These will
   // be propagated to the launch event once the app is actually launched.

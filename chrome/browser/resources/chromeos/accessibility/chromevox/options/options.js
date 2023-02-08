@@ -6,12 +6,12 @@
  * @fileoverview ChromeVox options page.
  */
 import {constants} from '../../common/constants.js';
-import {AbstractTts} from '../common/abstract_tts.js';
+import {LocalStorage} from '../../common/local_storage.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleTable} from '../common/braille/braille_table.js';
-import {ExtensionBridge} from '../common/extension_bridge.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {PunctuationEchoes, TtsSettings} from '../common/tts_types.js';
 
 import {BluetoothBrailleDisplayUI} from './bluetooth_braille_display_ui.js';
 
@@ -31,6 +31,7 @@ export class OptionsPage {
    * @this {OptionsPage}
    */
   static async init() {
+    await LocalStorage.init();
     OptionsPage.populateVoicesSelect();
     BrailleTable.getAll(function(tables) {
       /** @type {!Array<BrailleTable.Table>} */
@@ -58,12 +59,11 @@ export class OptionsPage {
     const currentlyDisplayingSideBySide =
         Msgs.getMsg('options_current_display_style_side_by_side');
     $('changeDisplayStyle').textContent =
-        localStorage['brailleSideBySide'] === 'true' ? changeToInterleave :
-                                                       changeToSideBySide;
+        LocalStorage.get('brailleSideBySide') ? changeToInterleave :
+                                                changeToSideBySide;
     $('currentDisplayStyle').textContent =
-        localStorage['brailleSideBySide'] === 'true' ?
-        currentlyDisplayingSideBySide :
-        currentlyDisplayingInterleave;
+        LocalStorage.get('brailleSideBySide') ? currentlyDisplayingSideBySide :
+                                                currentlyDisplayingInterleave;
 
     const showEventStreamFilters =
         Msgs.getMsg('options_show_event_stream_filters');
@@ -71,35 +71,34 @@ export class OptionsPage {
         Msgs.getMsg('options_hide_event_stream_filters');
     $('toggleEventStreamFilters').textContent = showEventStreamFilters;
     OptionsPage.disableEventStreamFilterCheckBoxes(
-        localStorage['enableEventStreamLogging'] === 'false');
+        LocalStorage.get('enableEventStreamLogging') === false);
 
-    if (localStorage['audioStrategy']) {
+    if (LocalStorage.get('audioStrategy')) {
       for (let i = 0, opt; opt = $('audioStrategy').options[i]; i++) {
-        if (opt.id === localStorage['audioStrategy']) {
+        if (opt.id === LocalStorage.get('audioStrategy')) {
           opt.setAttribute('selected', '');
         }
       }
     }
-    if (localStorage['capitalStrategy']) {
+    if (LocalStorage.get('capitalStrategy')) {
       for (let i = 0, opt; opt = $('capitalStrategy').options[i]; ++i) {
-        if (opt.id === localStorage['capitalStrategy']) {
+        if (opt.id === LocalStorage.get('capitalStrategy')) {
           opt.setAttribute('selected', '');
         }
       }
     }
 
-    if (localStorage['numberReadingStyle']) {
+    if (LocalStorage.get('numberReadingStyle')) {
       for (let i = 0, opt; opt = $('numberReadingStyle').options[i]; ++i) {
-        if (opt.id === localStorage['numberReadingStyle']) {
+        if (opt.id === LocalStorage.get('numberReadingStyle')) {
           opt.setAttribute('selected', '');
         }
       }
     }
 
-    if (localStorage[AbstractTts.PUNCTUATION_ECHO]) {
+    if (LocalStorage.get(TtsSettings.PUNCTUATION_ECHO)) {
       const currentPunctuationEcho =
-          AbstractTts
-              .PUNCTUATION_ECHOES[localStorage[AbstractTts.PUNCTUATION_ECHO]];
+          PunctuationEchoes[LocalStorage.get(TtsSettings.PUNCTUATION_ECHO)];
       for (let i = 0, opt; opt = $('punctuationEcho').options[i]; ++i) {
         if (opt.id === currentPunctuationEcho.name) {
           opt.setAttribute('selected', '');
@@ -159,12 +158,6 @@ export class OptionsPage {
       }
     });
 
-    ExtensionBridge.addMessageListener(function(message) {
-      if (message['prefs']) {
-        OptionsPage.update();
-      }
-    });
-
     const clearVirtualDisplay = function() {
       const groups = [];
       const sizeOfDisplay =
@@ -177,8 +170,8 @@ export class OptionsPage {
     };
 
     $('changeDisplayStyle').addEventListener('click', function(evt) {
-      const sideBySide = localStorage['brailleSideBySide'] !== 'true';
-      localStorage['brailleSideBySide'] = sideBySide;
+      LocalStorage.toggle('brailleSideBySide');
+      const sideBySide = LocalStorage.get('brailleSideBySide');
       $('changeDisplayStyle').textContent =
           sideBySide ? changeToInterleave : changeToSideBySide;
       $('currentDisplayStyle').textContent = sideBySide ?
@@ -209,12 +202,13 @@ export class OptionsPage {
         $('announceCapitals').selected = true;
         $('increasePitch').selected = false;
         $('increasePitch').disabled = true;
-        localStorage['capitalStrategyBackup'] = localStorage['capitalStrategy'];
+        LocalStorage.set(
+            'capitalStrategyBackup', LocalStorage.get('capitalStrategy'));
         BackgroundBridge.ChromeVoxPrefs.setPref(
             'capitalStrategy', 'announceCapitals');
       } else {
         $('increasePitch').disabled = false;
-        const capitalStrategyBackup = localStorage['capitalStrategyBackup'];
+        const capitalStrategyBackup = LocalStorage.get('capitalStrategyBackup');
         if (capitalStrategyBackup) {
           // Restore original capitalStrategy setting.
           $('announceCapitals').selected =
@@ -310,7 +304,8 @@ export class OptionsPage {
   static populateBrailleTablesSelect() {
     const tables = OptionsPage.brailleTables;
     const populateSelect = function(node, dots) {
-      const activeTable = localStorage[node.id] || localStorage['brailleTable'];
+      const activeTable =
+          LocalStorage.get(node.id) || LocalStorage.get('brailleTable');
       // Gather the display names and sort them according to locale.
       const items = [];
       for (let i = 0, table; table = tables[i]; i++) {
@@ -346,10 +341,10 @@ export class OptionsPage {
       return function(evt) {
         const selIndex = node.selectedIndex;
         const sel = node.options[selIndex];
-        localStorage['brailleTable'] = sel.id;
-        localStorage[node.id] = sel.id;
+        LocalStorage.set('brailleTable', sel.id);
+        LocalStorage.set(node.id, sel.id);
         BackgroundBridge.BrailleBackground.refreshBrailleTable(
-            localStorage['brailleTable']);
+            LocalStorage.get('brailleTable'));
       };
     };
 
@@ -359,15 +354,15 @@ export class OptionsPage {
     const tableTypeButton = $('brailleTableType');
     const updateTableType = function(setFocus) {
       const currentTableType =
-          localStorage['brailleTableType'] || 'brailleTable6';
+          LocalStorage.get('brailleTableType') || 'brailleTable6';
       if (currentTableType === 'brailleTable6') {
         select6.parentElement.style.display = 'block';
         select8.parentElement.style.display = 'none';
         if (setFocus) {
           select6.focus();
         }
-        localStorage['brailleTable'] = localStorage['brailleTable6'];
-        localStorage['brailleTableType'] = 'brailleTable6';
+        LocalStorage.set('brailleTable', LocalStorage.get('brailleTable6'));
+        LocalStorage.set('brailleTableType', 'brailleTable6');
         tableTypeButton.textContent =
             Msgs.getMsg('options_braille_table_type_6');
       } else {
@@ -376,20 +371,21 @@ export class OptionsPage {
         if (setFocus) {
           select8.focus();
         }
-        localStorage['brailleTable'] = localStorage['brailleTable8'];
-        localStorage['brailleTableType'] = 'brailleTable8';
+        LocalStorage.set('brailleTable', LocalStorage.get('brailleTable8'));
+        LocalStorage.set('brailleTableType', 'brailleTable8');
         tableTypeButton.textContent =
             Msgs.getMsg('options_braille_table_type_8');
       }
       BackgroundBridge.BrailleBackground.refreshBrailleTable(
-          localStorage['brailleTable']);
+          LocalStorage.get('brailleTable'));
     };
     updateTableType(false);
 
     tableTypeButton.addEventListener('click', function(evt) {
-      const oldTableType = localStorage['brailleTableType'];
-      localStorage['brailleTableType'] =
-          oldTableType === 'brailleTable6' ? 'brailleTable8' : 'brailleTable6';
+      const oldTableType = LocalStorage.get('brailleTableType');
+      LocalStorage.set(
+          'brailleTableType',
+          oldTableType === 'brailleTable6' ? 'brailleTable8' : 'brailleTable6');
       updateTableType(true);
     }, true);
   }
@@ -468,9 +464,9 @@ export class OptionsPage {
         OptionsPage.setEventStreamFilter(target.name, target.checked);
       } else if (target.id === 'punctuationEcho') {
         const selectedPunctuationEcho = target.options[target.selectedIndex].id;
-        const punctuationEcho = AbstractTts.PUNCTUATION_ECHOES.findIndex(
+        const punctuationEcho = PunctuationEchoes.findIndex(
             echo => echo.name === selectedPunctuationEcho);
-        BackgroundBridge.ChromeVoxState.updatePunctuationEcho(punctuationEcho);
+        BackgroundBridge.TtsBackground.updatePunctuationEcho(punctuationEcho);
       } else if (target.classList.contains('pref')) {
         if (target.tagName === 'INPUT' && target.type === 'checkbox') {
           BackgroundBridge.ChromeVoxPrefs.setPref(target.name, target.checked);
@@ -504,7 +500,7 @@ export class OptionsPage {
  * Adds event listeners to input boxes to update local storage values and
  * make sure that the input is a positive nonempty number between 1 and 99.
  * @param {string} id Id of the input box.
- * @param {string} pref Preference key in localStorage to access and modify.
+ * @param {string} pref Preference key in LocalStorage to access and modify.
  */
 const handleNumericalInputPref = function(id, pref) {
   $(id).addEventListener('input', function(evt) {

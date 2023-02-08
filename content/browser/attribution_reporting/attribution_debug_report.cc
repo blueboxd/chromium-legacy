@@ -11,12 +11,13 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "net/base/schemeful_site.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -97,6 +98,9 @@ absl::optional<DebugDataType> GetReportDataType(EventLevelResult result,
     case EventLevelResult::kExcessiveReports:
       return DataTypeIfCookieSet(DebugDataType::kTriggerEventExcessiveReports,
                                  is_debug_cookie_set);
+    case EventLevelResult::kReportWindowPassed:
+      return DataTypeIfCookieSet(DebugDataType::kTriggerEventReportWindowPassed,
+                                 is_debug_cookie_set);
   }
 }
 
@@ -136,6 +140,10 @@ absl::optional<DebugDataType> GetReportDataType(AggregatableResult result,
       return DataTypeIfCookieSet(
           DebugDataType::kTriggerAggregateInsufficientBudget,
           is_debug_cookie_set);
+    case AggregatableResult::kReportWindowPassed:
+      return DataTypeIfCookieSet(
+          DebugDataType::kTriggerAggregateReportWindowPassed,
+          is_debug_cookie_set);
   }
 }
 
@@ -169,6 +177,8 @@ std::string SerializeReportDataType(DebugDataType data_type) {
       return "trigger-event-excessive-reports";
     case DebugDataType::kTriggerEventStorageLimit:
       return "trigger-event-storage-limit";
+    case DebugDataType::kTriggerEventReportWindowPassed:
+      return "trigger-event-report-window-passed";
     case DebugDataType::kTriggerAggregateDeduplicated:
       return "trigger-aggregate-deduplicated";
     case DebugDataType::kTriggerAggregateNoContributions:
@@ -177,6 +187,8 @@ std::string SerializeReportDataType(DebugDataType data_type) {
       return "trigger-aggregate-insufficient-budget";
     case DebugDataType::kTriggerAggregateStorageLimit:
       return "trigger-aggregate-storage-limit";
+    case DebugDataType::kTriggerAggregateReportWindowPassed:
+      return "trigger-aggregate-report-window-passed";
     case DebugDataType::kTriggerUnknownError:
       return "trigger-unknown-error";
   }
@@ -236,10 +248,12 @@ base::Value::Dict GetReportDataBody(
     case DebugDataType::kTriggerEventLowPriority:
     case DebugDataType::kTriggerEventExcessiveReports:
     case DebugDataType::kTriggerEventStorageLimit:
+    case DebugDataType::kTriggerEventReportWindowPassed:
     case DebugDataType::kTriggerAggregateDeduplicated:
     case DebugDataType::kTriggerAggregateNoContributions:
     case DebugDataType::kTriggerAggregateInsufficientBudget:
     case DebugDataType::kTriggerAggregateStorageLimit:
+    case DebugDataType::kTriggerAggregateReportWindowPassed:
     case DebugDataType::kTriggerUnknownError:
       NOTREACHED();
       return base::Value::Dict();
@@ -254,10 +268,8 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
   base::Value::Dict data_body;
   SetAttributionDestination(data_body,
                             net::SchemefulSite(trigger.destination_origin()));
-  if (trigger.debug_key()) {
-    data_body.Set("trigger_debug_key",
-                  base::NumberToString(*trigger.debug_key()));
-  }
+  if (absl::optional<uint64_t> debug_key = trigger.registration().debug_key)
+    data_body.Set("trigger_debug_key", base::NumberToString(*debug_key));
 
   if (result.source())
     SetSourceData(data_body, result.source()->common_info());
@@ -268,8 +280,10 @@ base::Value::Dict GetReportDataBody(DebugDataType data_type,
     case DebugDataType::kTriggerEventDeduplicated:
     case DebugDataType::kTriggerEventNoMatchingConfigurations:
     case DebugDataType::kTriggerEventNoise:
+    case DebugDataType::kTriggerEventReportWindowPassed:
     case DebugDataType::kTriggerAggregateDeduplicated:
     case DebugDataType::kTriggerAggregateNoContributions:
+    case DebugDataType::kTriggerAggregateReportWindowPassed:
     case DebugDataType::kTriggerUnknownError:
       break;
     case DebugDataType::kTriggerAttributionsPerSourceDestinationLimit:
@@ -368,8 +382,10 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     const AttributionTrigger& trigger,
     bool is_debug_cookie_set,
     const CreateReportResult& result) {
-  if (!trigger.debug_reporting() || trigger.is_within_fenced_frame())
+  if (!trigger.registration().debug_reporting ||
+      trigger.is_within_fenced_frame()) {
     return absl::nullopt;
+  }
 
   std::vector<ReportData> report_data;
 
@@ -394,16 +410,15 @@ absl::optional<AttributionDebugReport> AttributionDebugReport::Create(
     return absl::nullopt;
 
   return AttributionDebugReport(std::move(report_data),
-                                trigger.reporting_origin());
+                                trigger.registration().reporting_origin);
 }
 
 AttributionDebugReport::AttributionDebugReport(
     std::vector<ReportData> report_data,
-    url::Origin reporting_origin)
+    attribution_reporting::SuitableOrigin reporting_origin)
     : report_data_(std::move(report_data)),
       reporting_origin_(std::move(reporting_origin)) {
   DCHECK(!report_data_.empty());
-  DCHECK(network::IsOriginPotentiallyTrustworthy(reporting_origin_));
 }
 
 AttributionDebugReport::~AttributionDebugReport() = default;
@@ -428,7 +443,7 @@ GURL AttributionDebugReport::ReportURL() const {
 
   GURL::Replacements replacements;
   replacements.SetPathStr(kPath);
-  return reporting_origin_.GetURL().ReplaceComponents(replacements);
+  return reporting_origin_->GetURL().ReplaceComponents(replacements);
 }
 
 }  // namespace content

@@ -57,18 +57,20 @@
       label="$i18n{importPasswords}"
       sub-label="$i18n{importPasswordsDescription}" hide-icon>
   </cr-link-row>
-  <cr-link-row id="exportPasswords" class="cr-row"
-      label="$i18n{exportPasswords}"
+  <cr-link-row id="exportPasswordsBanner" class="cr-row"
+      on-click="onExportClick_" label="$i18n{exportPasswords}"
       sub-label="$i18n{exportPasswordsDescription}" hide-icon>
   </cr-link-row>
-  <cr-link-row id="addShortcut" class="cr-row"
-      label="$i18n{addShortcut}"
-      sub-label="$i18n{addShortcutDescription}" hide-icon>
-    <cr-button class="header-aligned-button"
-        on-click="onAddShortcutClick_" aria-label="$i18n{addShortcut}">
-      $i18n{addShortcut}
-    </cr-button>
-  </cr-link-row>
+  <template is="dom-if" if="[[!isPasswordManagerShortcutInstalled_]]" restamp>
+    <cr-link-row id="addShortcutBanner" class="cr-row" 
+        label="$i18n{addShortcut}" 
+        sub-label="$i18n{addShortcutDescription}" hide-icon>
+      <cr-button class="header-aligned-button"
+          on-click="onAddShortcutClick_" aria-label="$i18n{addShortcut}">
+        $i18n{addShortcut}
+      </cr-button>
+    </cr-link-row>
+  </template>
 </div>
 <h3 id="blockedSitesTitle" class="page-title">$i18n{blockedSitesTitle}</h3>
 <div class="card" id="blockedSites">
@@ -80,12 +82,19 @@
   <div id="blockedSitesList" class="hr" hidden="[[!blockedSites_.length]]">
     <template is="dom-repeat" items="[[blockedSites_]]">
       <div class="flex-centered">
-        <site-favicon class="favicon" url="[[item.urls.link]]"></site-favicon>
+        <site-favicon class="favicon" domain="[[item.urls.link]]">
+        </site-favicon>
         <div class="blocked-site-content flex-centered" first$="[[!index]]">
           <div class="label site-url">[[item.urls.shown]]</div>
-          <cr-icon-button class="icon-clear"></cr-icon-button>
+          <cr-icon-button class="icon-clear" id="removeBlockedValueButton"
+              on-click="onRemoveBlockedSiteClick_"></cr-icon-button>
         </div>
       </div>
     </template>
   </div>
 </div>
+<template is="dom-if" if="[[showPasswordsExportDialog_]]" restamp>
+  <passwords-export-dialog
+    on-passwords-export-dialog-close="onPasswordsExportDialogClosed_">
+  </passwords-export-dialog>
+</template>

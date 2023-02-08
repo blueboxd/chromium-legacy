@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,13 +24,14 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
+#include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_external_install_options.h"
+#include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -44,6 +47,7 @@
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/url_constants.h"
 
@@ -64,6 +68,20 @@ bool IconInfosContainIconURL(const std::vector<apps::IconInfo>& icon_infos,
   }
   return false;
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+void LogIsolatedWebAppInstallResult(
+    std::vector<web_app::IsolatedWebAppPolicyManager::EphemeralAppInstallResult>
+        result) {
+  for (size_t i = 0; i < result.size(); ++i) {
+    if (result[i] != web_app::IsolatedWebAppPolicyManager::
+                         EphemeralAppInstallResult::kSuccess) {
+      DLOG(WARNING) << "Could not force-install IWA number " << i + 1
+                    << " failed. Error: " << static_cast<int>(result[i]);
+    }
+  }
+}
+#endif
 
 }  // namespace
 
@@ -194,9 +212,10 @@ void WebAppPolicyManager::OnDisableListPolicyChanged() {
 #if BUILDFLAG(IS_CHROMEOS)
   PopulateDisabledWebAppsIdsLists();
   std::vector<AppId> app_ids = app_registrar_->GetAppIds();
+  WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile_);
   for (const auto& id : app_ids) {
     const bool is_disabled = base::Contains(disabled_web_apps_, id);
-    sync_bridge_->SetAppIsDisabled(id, is_disabled);
+    provider->scheduler().SetAppIsDisabled(id, is_disabled, base::DoNothing());
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
@@ -297,10 +316,46 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
 void WebAppPolicyManager::RefreshPolicyInstalledIsolatedWebApps() {
   const base::Value::List& isolated_web_apps =
       pref_service_->GetList(prefs::kIsolatedWebAppInstallForceList);
-  if (!isolated_web_apps.empty()) {
-    LOG(ERROR)
-        << "IsolatedWebAppInstallForceList policy is not yet implemented";
+  if (isolated_web_apps.empty()) {
+    return;
   }
+
+  if (iwa_policy_manager_) {
+    // Isolated web apps have already been processed.
+    LOG(WARNING) << "Updating of the IWA is not yet supported.";
+    return;
+  }
+
+  std::vector<IsolatedWebAppExternalInstallOptions> all_iwa_install_options;
+  all_iwa_install_options.reserve(isolated_web_apps.size());
+  for (const auto& policy_entry : isolated_web_apps) {
+    const base::expected<IsolatedWebAppExternalInstallOptions, std::string>
+        options = IsolatedWebAppExternalInstallOptions::FromPolicyPrefValue(
+            policy_entry);
+    if (options.has_value()) {
+      all_iwa_install_options.push_back(options.value());
+    } else {
+      LOG(ERROR) << "Could not interprete IWA force-install policy: "
+                 << options.error();
+    }
+  }
+
+  auto url_loader_factory = profile_->GetURLLoaderFactory();
+
+  WebAppProvider* const web_app_provider =
+      web_app::WebAppProvider::GetForWebApps(profile_);
+  if (!web_app_provider) {
+    LOG(ERROR) << "Can't force-install isolated apps: No web app provider";
+    return;
+  }
+  std::unique_ptr<IsolatedWebAppPolicyManager::IwaInstallCommandWrapper>
+      installer = std::make_unique<
+          IsolatedWebAppPolicyManager::IwaInstallCommandWrapperImpl>(
+          web_app_provider);
+  iwa_policy_manager_ = std::make_unique<IsolatedWebAppPolicyManager>(
+      profile_->GetPath(), all_iwa_install_options, url_loader_factory,
+      std::move(installer), base::BindOnce(&LogIsolatedWebAppInstallResult));
+  iwa_policy_manager_->InstallEphemeralApps();
 }
 #endif
 
@@ -364,10 +419,8 @@ void WebAppPolicyManager::ApplyPolicySettings() {
                      weak_ptr_factory_.GetWeakPtr()));
   WebAppProvider* provider = WebAppProvider::GetForLocalAppsUnchecked(profile_);
   for (const AppId& app_id : app_ids_to_sync) {
-    provider->command_manager().ScheduleCommand(
-        RunOnOsLoginCommand::CreateForSyncLoginMode(
-            app_registrar_, os_integration_manager_, app_id,
-            base::BindOnce(callback_for_sync_commands, app_id)));
+    provider->scheduler().SyncRunOnOsLoginMode(
+        app_id, base::BindOnce(callback_for_sync_commands, app_id));
   }
 }
 

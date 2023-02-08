@@ -50,9 +50,6 @@ class GPU_GLES2_EXPORT SharedImageManager
       std::unique_ptr<SharedImageBacking> backing,
       MemoryTypeTracker* ref);
 
-  // Marks the backing associated with a mailbox as context lost.
-  void OnContextLost(const Mailbox& mailbox);
-
   // Accessors which return a SharedImageRepresentation. Representations also
   // take a ref on the mailbox, releasing it when the representation is
   // destroyed.
@@ -76,7 +73,8 @@ class GPU_GLES2_EXPORT SharedImageManager
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       WGPUDevice device,
-      WGPUBackendType backend_type);
+      WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats);
   std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref);
@@ -101,11 +99,15 @@ class GPU_GLES2_EXPORT SharedImageManager
   void OnRepresentationDestroyed(const Mailbox& mailbox,
                                  SharedImageRepresentation* representation);
 
+  void SetPurgeable(const Mailbox& mailbox, bool purgeable);
+
   bool is_thread_safe() const { return !!lock_; }
 
   bool display_context_on_another_thread() const {
     return display_context_on_another_thread_;
   }
+
+  static bool SupportsScanoutImages();
 
   // Returns the NativePixmap backing |mailbox|. Returns null if the SharedImage
   // doesn't exist or is not backed by a NativePixmap. The caller is not

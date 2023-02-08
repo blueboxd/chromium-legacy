@@ -16,13 +16,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/password_protection/password_protection_request.h"
 #include "components/safe_browsing/core/browser/sync/sync_utils.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/utils.h"
 #include "google_apis/google_api_keys.h"
@@ -99,6 +100,9 @@ PasswordProtectionServiceBase::~PasswordProtectionServiceBase() {
 
 // static
 bool PasswordProtectionServiceBase::CanGetReputationOfURL(const GURL& url) {
+  if (VerdictCacheManager::has_artificial_unsafe_url()) {
+    return true;
+  }
   if (!safe_browsing::CanGetReputationOfUrl(url)) {
     return false;
   }
@@ -281,7 +285,7 @@ int PasswordProtectionServiceBase::GetRequestTimeoutInMS() {
 void PasswordProtectionServiceBase::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindRepeating(&PasswordProtectionServiceBase::
                               RemoveUnhandledSyncPasswordReuseOnURLsDeleted,

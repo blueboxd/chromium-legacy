@@ -111,8 +111,7 @@ bool IsFillableFieldType(ServerFieldType field_type) {
       return true;
 
     case MERCHANT_PROMO_CODE:
-      return base::FeatureList::IsEnabled(
-          features::kAutofillParseMerchantPromoCodeFields);
+      return true;
 
     // Fillable credential fields.
     case USERNAME:
@@ -330,6 +329,21 @@ base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
 
   NOTREACHED();
   return "";
+}
+
+std::ostream& operator<<(std::ostream& o, ServerFieldTypeSet field_type_set) {
+  o << "[";
+  bool first = true;
+  for (const auto type : field_type_set) {
+    if (!first) {
+      o << ", ";
+    } else {
+      first = false;
+    }
+    o << FieldTypeToStringPiece(type);
+  }
+  o << "]";
+  return o;
 }
 
 }  // namespace autofill

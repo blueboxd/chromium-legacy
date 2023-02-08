@@ -12,11 +12,13 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
@@ -33,12 +35,10 @@ public class BookmarkTestUtil {
      * {@link BookmarkModel#isBookmarkModelLoaded()} is true.
      */
     public static void waitForBookmarkModelLoaded() {
-        final BookmarkModel bookmarkModel =
-                TestThreadUtils.runOnUiThreadBlockingNoException(BookmarkModel::new);
+        final BookmarkModel bookmarkModel = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return BookmarkModel.getForProfile(Profile.getLastUsedRegularProfile()); });
 
         CriteriaHelper.pollUiThread(bookmarkModel::isBookmarkModelLoaded);
-
-        TestThreadUtils.runOnUiThreadBlocking(bookmarkModel::destroy);
     }
 
     /**  Do not read partner bookmarks in setUp(), so that the lazy reading is covered. */
@@ -64,6 +64,15 @@ public class BookmarkTestUtil {
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         return (BookmarkEditActivity) ApplicationStatus.getLastTrackedFocusedActivity();
+    }
+
+    public static BookmarkAddEditFolderActivity waitForAddEditFolderActivity() {
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(ApplicationStatus.getLastTrackedFocusedActivity(),
+                    IsInstanceOf.instanceOf(BookmarkAddEditFolderActivity.class));
+        });
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        return (BookmarkAddEditFolderActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 
     public static void waitForOfflinePageSaved(GURL url) {

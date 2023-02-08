@@ -86,6 +86,7 @@
     _textLabel = [[UILabel alloc] init];
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _textLabel.adjustsFontForContentSizeCategory = YES;
+    _textLabel.numberOfLines = 2;
     [_textLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
@@ -137,23 +138,8 @@
                                    constant:-kTableViewVerticalSpacing],
       heightConstraint,
     ]];
-
-    [self configureTextLabelForAccessibility:
-              UIContentSizeCategoryIsAccessibilityCategory(
-                  self.traitCollection.preferredContentSizeCategory)];
   }
   return self;
-}
-
-#pragma mark - Private
-
-// Configures -TableViewImageCell.textLabel for accessibility or not.
-- (void)configureTextLabelForAccessibility:(BOOL)accessibility {
-  if (accessibility) {
-    self.textLabel.numberOfLines = 2;
-  } else {
-    self.textLabel.numberOfLines = 1;
-  }
 }
 
 #pragma mark - UITableViewCell
@@ -161,20 +147,6 @@
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.userInteractionEnabled = YES;
-}
-
-#pragma mark - UIView
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  BOOL isCurrentCategoryAccessibility =
-      UIContentSizeCategoryIsAccessibilityCategory(
-          self.traitCollection.preferredContentSizeCategory);
-  if (isCurrentCategoryAccessibility !=
-      UIContentSizeCategoryIsAccessibilityCategory(
-          previousTraitCollection.preferredContentSizeCategory)) {
-    [self configureTextLabelForAccessibility:isCurrentCategoryAccessibility];
-  }
 }
 
 #pragma mark - UIAccessibility

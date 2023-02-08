@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TOUCH_TO_FILL_DELEGATE_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -36,8 +37,7 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
 
   // Checks whether TTF is eligible for the given web form data. On success
   // triggers the corresponding surface and returns |true|.
-  virtual bool TryToShowTouchToFill(int query_id,
-                                    const FormData& form,
+  virtual bool TryToShowTouchToFill(const FormData& form,
                                     const FormFieldData& field);
 
   // Returns whether the TTF surface is currently being shown.
@@ -51,6 +51,11 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
 
   // TouchToFillDelegate:
   AutofillDriver* GetDriver() override;
+  bool ShouldShowScanCreditCard() override;
+  void ScanCreditCard() override;
+  void OnCreditCardScanned(const CreditCard& card) override;
+  void ShowCreditCardSettings() override;
+  void SuggestionSelected(std::string unique_id) override;
 
  private:
   base::WeakPtr<TouchToFillDelegateImpl> GetWeakPtr();
@@ -64,6 +69,8 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   TouchToFillState ttf_credit_card_state_ = TouchToFillState::kShouldShow;
 
   const raw_ptr<BrowserAutofillManager> manager_;
+  FormData query_form_;
+  FormFieldData query_field_;
 
   base::WeakPtrFactory<TouchToFillDelegateImpl> weak_ptr_factory_{this};
 };

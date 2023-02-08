@@ -32,6 +32,12 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_launcher.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_fast_app_reinstall_starter.h"
+#include "chrome/browser/ash/app_list/arc/arc_pai_starter.h"
+#include "chrome/browser/ash/app_list/arc/intent.h"
 #include "chrome/browser/ash/arc/arc_demo_mode_delegate_impl.h"
 #include "chrome/browser/ash/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/ash/arc/arc_mount_provider.h"
@@ -53,12 +59,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
-#include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
-#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
@@ -769,6 +769,8 @@ void ArcSessionManager::Initialize() {
   const cryptohome::Identification cryptohome_id(
       multi_user_util::GetAccountIdFromProfile(profile_));
   data_remover_ = std::make_unique<ArcDataRemover>(prefs, cryptohome_id);
+
+  arc_session_runner_->set_use_virtio_blk_data(ShouldUseVirtioBlkData(prefs));
 
   // Chrome may be shut down before completing ARC data removal.
   // For such a case, start removing the data now, if necessary.

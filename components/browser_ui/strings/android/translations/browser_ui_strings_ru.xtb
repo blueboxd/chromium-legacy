@@ -32,7 +32,7 @@
 <translation id="1717218214683051432">Датчики движения</translation>
 <translation id="1743802530341753419">Запрашивать разрешение на подключение к устройству (рекомендуется)</translation>
 <translation id="1779089405699405702">Дешифратор изображений</translation>
-<translation id="1785415724048343560">Рекомендуется для максимального удобства</translation>
+<translation id="1785415724048343560">Рекомендуется для оптимальной работы функции</translation>
 <translation id="1818308510395330587">Чтобы браузер "<ph name="APP_NAME" />" мог использовать дополненную реальность, также предоставьте ему доступ к камере в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">Источник: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Связанные сайты могут отслеживать действия в группе</translation>
@@ -69,7 +69,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Разрешено: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и ещё <ph name="NUM_MORE" />}one{Разрешено: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и ещё <ph name="NUM_MORE" />}few{Разрешено: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и ещё <ph name="NUM_MORE" />}many{Разрешено: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и ещё <ph name="NUM_MORE" />}other{Разрешено: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> и ещё <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Скачивание завершено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2442870161001914531">Всегда запрашивать версию для ПК</translation>
+<translation id="2442870161001914531">Всегда запрашивать полную версию сайта</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2490684707762498678">Под управлением приложения "<ph name="APP_NAME" />"</translation>
@@ -193,12 +193,11 @@
 <translation id="5048398596102334565">Предоставить сайтам доступ к датчикам движения (рекомендуется)</translation>
 <translation id="5050380848339752099">Этот сайт передает информацию стороннему приложению, пока вы находитесь в режиме инкогнито.</translation>
 <translation id="5063480226653192405">Использование</translation>
-<translation id="5082281938627763039">Удаляются файлы cookie и другие данные сайтов в домене <ph name="FPS_MEMBER" />, а также сайтов в группе <ph name="FPS_OWNER" />.</translation>
-<translation id="5091013926750941408">Мобильная версия</translation>
-<translation id="509133520954049755">Запрашивать версию для ПК</translation>
+<translation id="5091013926750941408">Мобильный сайт</translation>
+<translation id="509133520954049755">Запрос версии для ПК</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="5123685120097942451">Вкладка инкогнито</translation>
-<translation id="5134599672855298214">Запрашивать мобильную версию (рекомендуется)</translation>
+<translation id="5134599672855298214">Запрос мобильной версии (рекомендуется)</translation>
 <translation id="5186036860380548585">Действие доступно вверху экрана</translation>
 <translation id="5197729504361054390">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> получит доступ к выбранным контактам.</translation>
 <translation id="5216942107514965959">Последнее посещение: сегодня</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5301954838959518834">ОК</translation>
-<translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="534295439873310000">Устройства с NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Предоставлен доступ к вашему экрану</translation>
 <translation id="5922967540311291836">Блокировать сторонние файлы cookie</translation>
 <translation id="5939518447894949180">Сбросить</translation>
+<translation id="5968921426641056619">Введите веб-адрес</translation>
 <translation id="5975083100439434680">Уменьшить</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Управляйте доступом сайта к данным на устройстве.</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">Выбрано: <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Разрешено: <ph name="PERMISSION_1" /> и <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Обычно вы блокируете уведомления. Чтобы разрешить их показ, нажмите "Подробнее".</translation>
+<translation id="7366415735885268578">Добавление сайта</translation>
 <translation id="7383715096023715447">Настройки домена <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Сначала спрашивать</translation>
 <translation id="7423538860840206698">Доступ к данным в буфере обмена заблокирован</translation>
@@ -325,7 +325,7 @@
 <translation id="7719367874908701697">Масштабирование страницы</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7791543448312431591">Добавить</translation>
-<translation id="780301667611848630">Пропустить</translation>
+<translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7804248752222191302">Сайт использует вашу камеру</translation>
 <translation id="7817023149356982970">Вы выйдете из аккаунта на этом сайте.</translation>
 <translation id="7835852323729233924">Воспроизведение медиаконтента</translation>
@@ -364,13 +364,14 @@
 <translation id="8380167699614421159">Этот сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
 <translation id="8394832520002899662">Нажмите, чтобы вернуться на сайт.</translation>
 <translation id="8409345997656833551">Показывать уведомление, если для статьи доступен упрощенный просмотр</translation>
+<translation id="8423565414844018592">Задан масштаб текста <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8441146129660941386">Перемотать назад</translation>
 <translation id="8444433999583714703">Чтобы у приложения "<ph name="APP_NAME" />" был доступ к данным о местоположении, включите геолокацию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Отключить доступ к устройству</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Используется 1 файл cookie}one{Используется # файл cookie}few{Используются # файла cookie}many{Используются # файлов cookie}other{Используется # файла cookie}}</translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
-<translation id="848952951823693243">Всегда запрашивать мобильную версию</translation>
+<translation id="848952951823693243">Всегда запрашивать мобильный сайт</translation>
 <translation id="8499083585497694743">Включить микрофон</translation>
 <translation id="851751545965956758">Не разрешать сайтам подключаться к устройствам</translation>
 <translation id="8525306231823319788">Полноэкранный режим</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Функция NFC на этом устройстве отключена. Включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Запретить сайтам получать доступ к информации и изменять ее через NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блокировать файлы cookie для определенного сайта.</translation>
 <translation id="8959122750345127698">Страница не найдена: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Удалить</translation>

@@ -89,7 +89,7 @@ class BackForwardCacheMetricsBrowserTestBase : public ContentBrowserTest,
 
   void GiveItSomeTime() {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(200));
     run_loop.Run();
   }
@@ -1033,7 +1033,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheMetricsFencedFrameBrowserTest,
       web_contents()->GetPrimaryMainFrame(), fenced_frame_url1);
   NavigationEntryImpl* fenced_frame_entry = FrameTreeNode::From(fenced_frame)
                                                 ->frame_tree()
-                                                ->controller()
+                                                .controller()
                                                 .GetLastCommittedEntry();
   EXPECT_EQ(fenced_frame_entry->back_forward_cache_metrics(), nullptr);
 

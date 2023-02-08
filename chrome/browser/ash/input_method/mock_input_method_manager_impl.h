@@ -28,10 +28,9 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
 
     // MockInputMethodManager::State:
     scoped_refptr<InputMethodManager::State> Clone() const override;
-    std::unique_ptr<InputMethodDescriptors>
-    GetEnabledInputMethodsSortedByLocalizedDisplayNames() const override;
-    std::unique_ptr<InputMethodDescriptors> GetEnabledInputMethods()
+    InputMethodDescriptors GetEnabledInputMethodsSortedByLocalizedDisplayNames()
         const override;
+    InputMethodDescriptors GetEnabledInputMethods() const override;
     const InputMethodDescriptor* GetInputMethodFromId(
         const std::string& input_method_id) const override;
     InputMethodDescriptor GetCurrentInputMethod() const override;
@@ -105,12 +104,5 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
 
 }  // namespace input_method
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
-namespace chromeos {
-namespace input_method {
-using ::ash::input_method::MockInputMethodManagerImpl;
-}  // namespace input_method
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_INPUT_METHOD_MOCK_INPUT_METHOD_MANAGER_IMPL_H_

@@ -4,11 +4,14 @@
 
 import("//build/rust/cargo_crate.gni")
 
-cargo_crate("test_support") {
+cargo_crate("lib") {
   crate_name = "cargo_metadata"
   epoch = "0.14"
   crate_type = "rlib"
-  testonly = true
+
+  # Only for usage from third-party crates. Add the crate to
+  # third_party.toml to use it from first-party code.
+  visibility = [ "//third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -20,6 +23,10 @@ cargo_crate("test_support") {
       "Oliver Schneider <git-spam-no-reply9815368754983@oli-obk.de>"
   cargo_pkg_name = "cargo_metadata"
   cargo_pkg_description = "structured access to the output of `cargo metadata`"
+  library_configs -= [ "//build/config/compiler:chromium_code" ]
+  library_configs += [ "//build/config/compiler:no_chromium_code" ]
+  executable_configs -= [ "//build/config/compiler:chromium_code" ]
+  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
     "//third_party/rust/camino/v1:lib",
     "//third_party/rust/cargo_platform/v0_1:lib",
@@ -27,4 +34,8 @@ cargo_crate("test_support") {
     "//third_party/rust/serde/v1:lib",
     "//third_party/rust/serde_json/v1:lib",
   ]
+}
+group("test_support") {
+  public_deps = [ ":lib" ]
+  testonly = true
 }

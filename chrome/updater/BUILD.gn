@@ -68,6 +68,8 @@ if (is_win || is_mac || is_linux) {
       "app/app_utils.h",
       "app/app_wake.cc",
       "app/app_wake.h",
+      "app/app_wakeall.cc",
+      "app/app_wakeall.h",
       "auto_run_on_os_upgrade_task.cc",
       "auto_run_on_os_upgrade_task.h",
       "check_for_updates_task.cc",
@@ -169,30 +171,30 @@ if (is_win || is_mac || is_linux) {
     ]
 
     if (is_posix) {
-      sources += [ "remove_uninstalled_apps_task_posix.cc" ]
+      sources += [
+        "activity_impl_posix.cc",
+        "activity_impl_util_posix.h",
+        "remove_uninstalled_apps_task_posix.cc",
+      ]
     }
 
     if (is_mac) {
       sources += [
-        "activity_impl_mac.cc",
+        "activity_impl_util_mac.cc",
         "app/app_install_mac.mm",
         "app/server/mac/app_server.h",
         "app/server/mac/server.h",
         "app/server/mac/server.mm",
         "app/server/mac/service_delegate.h",
         "app/server/mac/service_delegate.mm",
+        "app/server/posix/update_service_internal_stub_mac.cc",
         "device_management/dm_storage_mac.mm",
         "installer_mac.cc",
-        "launchd_util.cc",
-        "launchd_util.h",
         "mac/install_from_archive.h",
         "mac/install_from_archive.mm",
         "mac/setup/keystone.h",
         "mac/setup/keystone.mm",
-        "mac/setup/setup.h",
         "mac/setup/setup.mm",
-        "mac/update_service_internal_proxy.h",
-        "mac/update_service_internal_proxy.mm",
         "net/network_fetcher_mac.mm",
         "policy/mac/managed_preference_policy_manager.h",
         "policy/mac/managed_preference_policy_manager.mm",
@@ -201,6 +203,8 @@ if (is_win || is_mac || is_linux) {
         "prefs_mac.mm",
         "setup_mac.mm",
         "update_usage_stats_task_mac.mm",
+        "util/launchd_util.cc",
+        "util/launchd_util.h",
       ]
 
       deps += [
@@ -231,9 +235,10 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
-        "app/server/win/updater_legacy_idl.h",
         "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
+        "ipc/update_service_internal_proxy_win.cc",
+        "ipc/update_service_internal_proxy_win.h",
         "net/network_fetcher_win.cc",
         "policy/win/group_policy_manager.cc",
         "policy/win/group_policy_manager.h",
@@ -245,7 +250,6 @@ if (is_win || is_mac || is_linux) {
         "win/action_handler.cc",
         "win/app_command_runner.cc",
         "win/app_command_runner.h",
-        "win/app_install_controller.cc",
         "win/install_progress_observer.cc",
         "win/install_progress_observer.h",
         "win/installer/exit_code.h",
@@ -286,8 +290,6 @@ if (is_win || is_mac || is_linux) {
         "win/ui/ui_util.h",
         "win/ui/yes_no_dialog.cc",
         "win/ui/yes_no_dialog.h",
-        "win/update_service_internal_proxy.cc",
-        "win/update_service_internal_proxy.h",
       ]
       deps += [
         "//build:branding_buildflags",
@@ -319,29 +321,43 @@ if (is_win || is_mac || is_linux) {
       ]
     }
 
+    if (is_posix) {
+      sources += [
+        "app/server/posix/app_server_posix.cc",
+        "app/server/posix/app_server_posix.h",
+        "app/server/posix/update_service_internal_stub.cc",
+        "app/server/posix/update_service_internal_stub.h",
+        "ipc/ipc_support.cc",
+        "ipc/ipc_support.h",
+        "ipc/update_service_internal_proxy_posix.cc",
+        "ipc/update_service_internal_proxy_posix.h",
+      ]
+
+      deps += [
+        "//chrome/updater/app/server/posix/mojom",
+        "//components/named_mojo_ipc_server",
+      ]
+    }
+
     if (is_linux) {
       sources += [
-        "activity_impl_linux.cc",
+        "activity_impl_util_linux.cc",
+        "app/app_install_linux.cc",
         "app/server/linux/server.cc",
         "app/server/linux/server.h",
         "app/server/linux/update_service_stub.cc",
         "app/server/linux/update_service_stub.h",
+        "app/server/posix/update_service_internal_stub_linux.cc",
         "device_management/dm_storage_linux.cc",
-        "linux/ipc_support.cc",
-        "linux/ipc_support.h",
-        "linux/setup/setup.h",
-        "linux/update_service_internal_proxy.cc",
+        "installer_linux.cc",
+        "linux/setup/setup.cc",
         "net/network_fetcher_linux.cc",
         "prefs_linux.cc",
         "setup_linux.cc",
         "update_usage_stats_task_linux.cc",
       ]
 
-      deps += [
-        "//chrome/updater/app/server/linux/mojom",
-        "//components/named_mojo_ipc_server",
-        "//mojo/core/embedder",
-      ]
+      deps += [ "//mojo/core/embedder" ]
     }
   }
 
@@ -507,8 +523,8 @@ if (is_win || is_mac || is_linux) {
       "update_service.h",
       "updater_scope.cc",
       "updater_scope.h",
-      "util.cc",
-      "util.h",
+      "util/util.cc",
+      "util/util.h",
     ]
 
     deps = [
@@ -521,17 +537,16 @@ if (is_win || is_mac || is_linux) {
 
     if (is_win) {
       sources += [
+        "ipc/proxy_impl_base_win.h",
         "ipc/update_service_proxy_win.cc",
         "ipc/update_service_proxy_win.h",
-        "util_win.cc",
-        "win/proxy_impl_base.h",
+        "util/win_util.cc",
+        "util/win_util.h",
         "win/scoped_handle.h",
         "win/user_info.cc",
         "win/user_info.h",
         "win/win_constants.cc",
         "win/win_constants.h",
-        "win/win_util.cc",
-        "win/win_util.h",
       ]
 
       deps += [ "//chrome/updater/app/server/win:updater_idl_idl" ]
@@ -545,15 +560,14 @@ if (is_win || is_mac || is_linux) {
 
     if (is_linux) {
       sources += [
+        "ipc/ipc_names_linux.cc",
         "ipc/update_service_proxy_linux.cc",
         "ipc/update_service_proxy_linux.h",
         "linux/ipc_constants.cc",
         "linux/ipc_constants.h",
-        "linux/linux_util.cc",
-        "linux/linux_util.h",
+        "util/linux_util.cc",
+        "util/linux_util.h",
       ]
-
-      deps += [ "//chrome/updater/app/server/linux/mojom" ]
     }
 
     if (is_mac) {
@@ -562,17 +576,31 @@ if (is_win || is_mac || is_linux) {
         "app/server/mac/service_protocol.mm",
         "app/server/mac/update_service_wrappers.h",
         "app/server/mac/update_service_wrappers.mm",
+        "ipc/ipc_names_mac.mm",
         "ipc/update_service_proxy_mac.h",
         "ipc/update_service_proxy_mac.mm",
-        "mac/mac_util.h",
-        "mac/mac_util.mm",
         "mac/privileged_helper/service_protocol.h",
         "mac/xpc_service_names.h",
         "mac/xpc_service_names.mm",
-        "util_mac.mm",
+        "util/mac_util.h",
+        "util/mac_util.mm",
       ]
 
       deps += [ "//chrome/common/mac:launchd" ]
+    }
+
+    if (is_posix) {
+      sources += [
+        "ipc/ipc_names.h",
+        "posix/setup.h",
+        "util/posix_util.cc",
+        "util/posix_util.h",
+      ]
+
+      deps += [
+        "//chrome/updater/app/server/posix/mojom",
+        "//components/named_mojo_ipc_server",
+      ]
     }
   }
 
@@ -662,14 +690,14 @@ if (is_win || is_mac || is_linux) {
       "test/server.cc",
       "test/server.h",
       "test_scope.h",
-      "unittest_util.cc",
-      "unittest_util.h",
-      "unittest_util_unittest.cc",
       "update_service_unittest.cc",
       "update_usage_stats_task_unittest.cc",
       "updater_scope_unittest.cc",
       "updater_unittest.cc",
-      "util_unittest.cc",
+      "util/unittest_util.cc",
+      "util/unittest_util.h",
+      "util/unittest_util_unittest.cc",
+      "util/util_unittest.cc",
     ]
 
     deps = [
@@ -705,9 +733,10 @@ if (is_win || is_mac || is_linux) {
         "auto_run_on_os_upgrade_task_unittest.cc",
         "policy/win/group_policy_manager_unittest.cc",
         "test/integration_tests_win.cc",
-        "unittest_util_win.cc",
-        "unittest_util_win.h",
-        "util_win_unittest.cc",
+        "util/unittest_util_win.cc",
+        "util/unittest_util_win.h",
+        "util/util_win_unittest.cc",
+        "util/win_util_unittest.cc",
         "win/app_command_runner_unittest.cc",
         "win/installer_api_unittest.cc",
         "win/manifest_util_unittest.cc",
@@ -716,7 +745,6 @@ if (is_win || is_mac || is_linux) {
         "win/tag_extractor_unittest.cc",
         "win/task_scheduler_unittest.cc",
         "win/ui/l10n_util_unittest.cc",
-        "win/win_util_unittest.cc",
       ]
 
       deps += [
@@ -739,6 +767,7 @@ if (is_win || is_mac || is_linux) {
       ]
 
       data += [
+        "test/data/ProcmonConfiguration.pmc",
         "test/data/signed.exe.gz",
         "test/data/tagged_encode_utf8.exe",
         "test/data/tagged_magic_utf16.exe",
@@ -781,7 +810,7 @@ if (is_win || is_mac || is_linux) {
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
         "policy/mac/managed_preference_policy_manager_unittest.cc",
         "test/integration_tests_mac.mm",
-        "util_mac_unittest.mm",
+        "util/util_mac_unittest.mm",
       ]
 
       deps += [
@@ -872,7 +901,8 @@ if (is_win || is_mac || is_linux) {
         "test/integration_tests_linux.cc",
       ]
 
-      deps += [ "//chrome/updater/app/server/linux/mojom" ]
+      deps += [ "//chrome/updater/app/server/posix/mojom" ]
+      data_deps = [ "//chrome/updater/linux:updater_test" ]
     }
   }
 
@@ -928,6 +958,9 @@ if (is_win || is_mac || is_linux) {
         "//third_party/updater:old_updater",
       ]
     }
+    if (is_linux) {
+      data_deps = [ "//chrome/updater/linux:updater_test" ]
+    }
   }
 
   test("updater_tests_system") {
@@ -961,6 +994,9 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/win:updater_test",
         "//third_party/updater:old_updater",
       ]
+    }
+    if (is_linux) {
+      data_deps += [ "//chrome/updater/linux:updater_test" ]
     }
   }
 

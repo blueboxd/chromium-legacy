@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
@@ -75,7 +76,13 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void PromoteUpdater(const base::Value::List& args);
 #endif
 
-  // Opens the feedback dialog. |args| must be empty.
+  // Opens the feedback dialog.
+  // |description_template| can be empty.
+  virtual void OpenFeedbackDialogWrapper(
+      const std::string& description_template);
+
+  // Opens the feedback dialog.
+  // |args| can be empty, or contains a description template.
   void HandleOpenFeedbackDialog(const base::Value::List& args);
 
   // Opens the help page. |args| must be empty.
@@ -197,7 +204,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleSetConsumerAutoUpdate(const base::Value::List& args);
 #endif
 
-  raw_ptr<Profile> profile_;
+  const raw_ptr<Profile> profile_;
 
   // Specialized instance of the VersionUpdater used to update the browser.
   std::unique_ptr<VersionUpdater> version_updater_;
@@ -206,7 +213,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
   // If true changes to UpgradeObserver are applied, if false they are ignored.
-  bool apply_changes_from_upgrade_observer_;
+  bool apply_changes_from_upgrade_observer_ = false;
 
   // Override to test the EOL string displayed in the About details page.
   raw_ptr<base::Clock> clock_;

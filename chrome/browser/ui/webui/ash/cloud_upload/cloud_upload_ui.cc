@@ -12,6 +12,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/cloud_upload_resources.h"
 #include "chrome/grit/cloud_upload_resources_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -26,9 +27,15 @@ CloudUploadUI::CloudUploadUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui} {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       Profile::FromWebUI(web_ui), chrome::kChromeUICloudUploadHost);
+
+  static constexpr webui::LocalizedString kStrings[] = {
+      {"cancel", IDS_CANCEL},
+  };
+  source->AddLocalizedStrings(kStrings);
   webui::SetupWebUIDataSource(
       source, base::make_span(kCloudUploadResources, kCloudUploadResourcesSize),
       IDR_CLOUD_UPLOAD_MAIN_HTML);
+  source->DisableTrustedTypesCSP();
 }
 
 CloudUploadUI::~CloudUploadUI() = default;
@@ -48,7 +55,8 @@ void CloudUploadUI::BindInterface(
 void CloudUploadUI::CreatePageHandler(
     mojo::PendingReceiver<mojom::PageHandler> receiver) {
   page_handler_ = std::make_unique<CloudUploadPageHandler>(
-      std::move(dialog_args_), std::move(receiver),
+      web_ui(), Profile::FromWebUI(web_ui()), std::move(dialog_args_),
+      std::move(receiver),
       // base::Unretained() because |page_handler_| will not out-live |this|.
       base::BindOnce(&CloudUploadUI::RespondAndCloseDialog,
                      base::Unretained(this)));
@@ -60,8 +68,23 @@ void CloudUploadUI::RespondAndCloseDialog(mojom::UserAction action) {
     case mojom::UserAction::kCancel:
       args.Append(kUserActionCancel);
       break;
-    case mojom::UserAction::kUpload:
-      args.Append(kUserActionUpload);
+    case mojom::UserAction::kSetUpGoogleDrive:
+      args.Append(kUserActionSetUpGoogleDrive);
+      break;
+    case mojom::UserAction::kSetUpOneDrive:
+      args.Append(kUserActionSetUpOneDrive);
+      break;
+    case mojom::UserAction::kUploadToGoogleDrive:
+      args.Append(kUserActionUploadToGoogleDrive);
+      break;
+    case mojom::UserAction::kUploadToOneDrive:
+      args.Append(kUserActionUploadToOneDrive);
+      break;
+    case mojom::UserAction::kConfirmOrUploadToGoogleDrive:
+      args.Append(kUserActionConfirmOrUploadToGoogleDrive);
+      break;
+    case mojom::UserAction::kConfirmOrUploadToOneDrive:
+      args.Append(kUserActionConfirmOrUploadToOneDrive);
       break;
   }
   ui::MojoWebDialogUI::CloseDialog(args);

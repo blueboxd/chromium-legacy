@@ -8,17 +8,18 @@
  */
 
 import 'chrome://resources/js/cr.m.js';
-import 'chrome://resources/js/cr/event_target.js';
+import 'chrome://resources/ash/common/event_target.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import './components/buttons/oobe_text_button.js';
 import './components/oobe_icons.m.js';
 
 import {I18nBehavior} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {$} from 'chrome://resources/js/util.js';
+import {$} from 'chrome://resources/ash/common/util.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Authenticator, AuthMode, AuthParams, SUPPORTED_PARAMS} from './gaia_auth_host/authenticator.js';
@@ -68,6 +69,14 @@ Polymer({
      * Whether user is authenticating on SAML page.
      */
     isSamlPage_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether default SAML IdP is shown.
+     */
+    isDefaultSsoProvider: {
       type: Boolean,
       value: false,
     },
@@ -191,6 +200,7 @@ Polymer({
 
     this.authenticatorParams_ = params;
     this.email_ = data.email;
+    this.isDefaultSsoProvider = data.doSamlRedirect;
     if (!data['doSamlRedirect']) {
       this.doGaiaRedirect_();
     }
@@ -379,6 +389,17 @@ Polymer({
     return this.i18n(
         isManualInput_ ? 'manualPasswordMismatch' :
                          'passwordChangedIncorrectOldPassword');
+  },
+
+  /**
+   * Invoked when "Enter Google Account info" button is pressed on SAML screen.
+   * @private
+   */
+  onChangeSigninProviderClicked_() {
+    this.authenticatorParams_.doSamlRedirect = false;
+    this.authenticatorParams_.enableGaiaActionButtons = true;
+    this.isDefaultSsoProvider = false;
+    this.authenticator_.load(AuthMode.DEFAULT, this.authenticatorParams_);
   },
 
 });

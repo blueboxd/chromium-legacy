@@ -133,9 +133,9 @@ class NavigationLoaderInterceptorBrowserContainer
             [](LoaderCallback callback,
                URLLoaderRequestInterceptor::RequestHandler handler) {
               if (handler) {
-                std::move(callback).Run(
-                    base::MakeRefCounted<SingleRequestURLLoaderFactory>(
-                        std::move(handler)));
+                std::move(callback).Run(base::MakeRefCounted<
+                                        network::SingleRequestURLLoaderFactory>(
+                    std::move(handler)));
               } else {
                 std::move(callback).Run({});
               }
@@ -231,6 +231,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info.client_security_state.Clone();
   new_request->trusted_params->accept_ch_frame_observer =
       std::move(accept_ch_frame_observer);
+  new_request->trusted_params->allow_cookies_from_browser =
+      request_info.allow_cookies_from_browser;
   new_request->is_outermost_main_frame = request_info.is_outermost_main_frame;
   new_request->priority = net::HIGHEST;
   new_request->request_initiator = request_info.common_params->initiator_origin;
@@ -376,10 +378,12 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
   DCHECK(mojo::Equals(lhs->critical_ch, rhs->critical_ch));
   DCHECK_EQ(lhs->xfo, rhs->xfo);
   DCHECK(mojo::Equals(lhs->link_headers, rhs->link_headers));
+  DCHECK(mojo::Equals(lhs->supports_loading_mode, rhs->supports_loading_mode));
   DCHECK(mojo::Equals(lhs->timing_allow_origin, rhs->timing_allow_origin));
   DCHECK(mojo::Equals(lhs->reporting_endpoints, rhs->reporting_endpoints));
   DCHECK(mojo::Equals(lhs->variants_headers, rhs->variants_headers));
   DCHECK(mojo::Equals(lhs->content_language, rhs->content_language));
+  DCHECK(mojo::Equals(lhs->no_vary_search, rhs->no_vary_search));
   NOTREACHED() << "The parsed headers don't match, but we don't know which "
                   "field does not match. Please add a DCHECK before this one "
                   "checking for the missing field.";
@@ -719,7 +723,7 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
         factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(loader_factory));
       } else {
-        factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+        factory = base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
             base::BindOnce(UnknownSchemeCallback, handled));
       }
     } else {
@@ -981,6 +985,12 @@ void NavigationURLLoaderImpl::OnUploadProgress(
     int64_t total_size,
     OnUploadProgressCallback callback) {
   NOTREACHED();
+}
+
+void NavigationURLLoaderImpl::OnTransferSizeUpdated(
+    int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kNavigationURLLoaderImpl);
 }
 
 void NavigationURLLoaderImpl::OnComplete(

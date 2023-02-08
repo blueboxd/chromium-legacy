@@ -29,10 +29,6 @@ namespace display {
 class DisplayMode;
 }  // namespace display
 
-namespace gfx {
-class Point;
-}
-
 namespace ui {
 
 // It is safe to assume there will be no more than 256 connected DRM devices.
@@ -98,6 +94,8 @@ class HardwareDisplayControllerInfo {
   drmModeCrtc* crtc() const { return crtc_.get(); }
   uint8_t index() const { return index_; }
 
+  ScopedDrmConnectorPtr ReleaseConnector() { return std::move(connector_); }
+
  private:
   ScopedDrmConnectorPtr connector_;
   ScopedDrmCrtcPtr crtc_;
@@ -137,8 +135,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     HardwareDisplayControllerInfo* info,
     int fd,
     const base::FilePath& sys_path,
-    uint8_t device_index,
-    const gfx::Point& origin);
+    uint8_t device_index);
 
 int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
@@ -162,6 +159,10 @@ bool ModeIsInterlaced(const drmModeModeInfo& mode);
 bool IsVrrCapable(int fd, drmModeConnector* connector);
 
 bool IsVrrEnabled(int fd, drmModeCrtc* crtc);
+
+display::VariableRefreshRateState GetVariableRefreshRateState(
+    int fd,
+    HardwareDisplayControllerInfo* info);
 
 uint64_t GetEnumValueForName(int fd, int property_id, const char* str);
 

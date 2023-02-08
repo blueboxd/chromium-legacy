@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "base/types/expected.h"
 #include "base/types/optional_util.h"
@@ -16,6 +17,7 @@
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,32 +33,59 @@ TEST(AggregationKeysTest, FromJSON) {
     absl::optional<base::Value> json;
     base::expected<AggregationKeys, SourceRegistrationError> expected;
   } kTestCases[] = {
-      {"Null", absl::nullopt, AggregationKeys()},
-      {"Not a dictionary", base::Value(base::Value::List()),
-       base::unexpected(SourceRegistrationError::kAggregationKeysWrongType)},
-      {"key not a string", base::test::ParseJson(R"({"key":123})"),
-       base::unexpected(
-           SourceRegistrationError::kAggregationKeysValueWrongType)},
-      {"key doesn't start with 0x", base::test::ParseJson(R"({"key":"159"})"),
-       base::unexpected(
-           SourceRegistrationError::kAggregationKeysValueWrongFormat)},
-      {"Invalid key", base::test::ParseJson(R"({"key":"0xG59"})"),
-       base::unexpected(
-           SourceRegistrationError::kAggregationKeysValueWrongFormat)},
-      {"One valid key", base::test::ParseJson(R"({"key":"0x159"})"),
-       *AggregationKeys::FromKeys(
-           {{"key", absl::MakeUint128(/*high=*/0, /*low=*/345)}})},
+      {
+          "Null",
+          absl::nullopt,
+          AggregationKeys(),
+      },
+      {
+          "Not a dictionary",
+          base::Value(base::Value::List()),
+          base::unexpected(SourceRegistrationError::kAggregationKeysWrongType),
+      },
+      {
+          "key not a string",
+          base::test::ParseJson(R"({"key":123})"),
+          base::unexpected(
+              SourceRegistrationError::kAggregationKeysValueWrongType),
+      },
+      {
+          "key doesn't start with 0x",
+          base::test::ParseJson(R"({"key":"159"})"),
+          base::unexpected(
+              SourceRegistrationError::kAggregationKeysValueWrongFormat),
+      },
+      {
+          "Invalid key",
+          base::test::ParseJson(R"({"key":"0xG59"})"),
+          base::unexpected(
+              SourceRegistrationError::kAggregationKeysValueWrongFormat),
+      },
+      {
+          "One valid key",
+          base::test::ParseJson(R"({"key":"0x159"})"),
+          *AggregationKeys::FromKeys(
+              {{"key", absl::MakeUint128(/*high=*/0, /*low=*/345)}}),
+      },
       {"Two valid keys",
        base::test::ParseJson(
            R"({"key1":"0x159","key2":"0x50000000000000159"})"),
        *AggregationKeys::FromKeys({
-           {"key1", absl::MakeUint128(/*high=*/0, /*low=*/345)},
-           {"key2", absl::MakeUint128(/*high=*/5, /*low=*/345)},
+           {
+               "key1",
+               absl::MakeUint128(/*high=*/0, /*low=*/345),
+           },
+           {
+               "key2",
+               absl::MakeUint128(/*high=*/5, /*low=*/345),
+           },
        })},
-      {"Second key invalid",
-       base::test::ParseJson(R"({"key1":"0x159","key2":""})"),
-       base::unexpected(
-           SourceRegistrationError::kAggregationKeysValueWrongFormat)},
+      {
+          "Second key invalid",
+          base::test::ParseJson(R"({"key1":"0x159","key2":""})"),
+          base::unexpected(
+              SourceRegistrationError::kAggregationKeysValueWrongFormat),
+      },
   };
 
   for (const auto& test_case : kTestCases) {
@@ -115,6 +144,44 @@ TEST(AggregationKeysTest, FromJSON_CheckSize) {
     EXPECT_EQ(AggregationKeys::FromJSON(&value).has_value(),
               test_case.Expected().has_value())
         << test_case.description;
+  }
+}
+
+TEST(AggregationKeysTest, FromJSON_RecordsMetric) {
+  using ::base::Bucket;
+  using ::testing::ElementsAre;
+
+  absl::optional<base::Value> json = base::test::ParseJson(R"json({
+    "a": "0x3",
+    "b": "0x4"
+  })json");
+  ASSERT_TRUE(json);
+
+  base::HistogramTester histograms;
+  ASSERT_TRUE(AggregationKeys::FromJSON(base::OptionalToPtr(json)).has_value());
+
+  EXPECT_THAT(histograms.GetAllSamples("Conversions.AggregatableKeysPerSource"),
+              ElementsAre(Bucket(2, 1)));
+}
+
+TEST(AggregationKeysTest, ToJson) {
+  const struct {
+    AggregationKeys input;
+    const char* expected_json;
+  } kTestCases[] = {
+      {
+          AggregationKeys(),
+          R"json({})json",
+      },
+      {
+          *AggregationKeys::FromKeys({{"a", 1}, {"b", 15}}),
+          R"json({"a":"0x1","b":"0xf"})json",
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    EXPECT_THAT(test_case.input.ToJson(),
+                base::test::IsJson(test_case.expected_json));
   }
 }
 

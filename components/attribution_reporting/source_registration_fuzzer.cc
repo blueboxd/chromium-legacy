@@ -19,8 +19,6 @@
 #include "testing/libfuzzer/proto/json_proto_converter.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 namespace attribution_reporting {
 
@@ -50,9 +48,7 @@ DEFINE_PROTO_FUZZER(const json_proto::JsonValue& json_value) {
   if (!input || !input->is_dict())
     return;
 
-  std::ignore = SourceRegistration::Parse(
-      std::move(*input).TakeDict(),
-      /*reporting_origin=*/url::Origin::Create(GURL("https://r.test/")));
+  std::ignore = SourceRegistration::Parse(std::move(*input).TakeDict());
 }
 
 }  // namespace attribution_reporting

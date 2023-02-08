@@ -191,7 +191,11 @@ target(link_target_type, "renderer") {
   }
 
   if (is_linux || is_chromeos) {
-    sources += [ "renderer_main_platform_delegate_linux.cc" ]
+    sources += [
+      "renderer_main_platform_delegate_linux.cc",
+      "renderer_thread_type_handler.cc",
+      "renderer_thread_type_handler.h",
+    ]
   }
 
   if (is_mac) {
@@ -341,6 +345,7 @@ target(link_target_type, "renderer") {
 
   if (is_fuchsia) {
     sources += [ "renderer_main_platform_delegate_fuchsia.cc" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec" ]
 
     deps += [
       "//media/fuchsia/cdm/client",

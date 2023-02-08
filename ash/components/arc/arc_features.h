@@ -18,7 +18,9 @@ BASE_DECLARE_FEATURE(kBootCompletedBroadcastFeature);
 BASE_DECLARE_FEATURE(kCustomTabsExperimentFeature);
 BASE_DECLARE_FEATURE(kDocumentsProviderUnknownSizeFeature);
 BASE_DECLARE_FEATURE(kEnableArcHostVpn);
+BASE_DECLARE_FEATURE(kEnableArcIdleManager);
 BASE_DECLARE_FEATURE(kEnableArcNearbyShareFuseBox);
+BASE_DECLARE_FEATURE(kEnableArcVmDataMigration);
 BASE_DECLARE_FEATURE(kEnableLazyWebViewInit);
 BASE_DECLARE_FEATURE(kEnablePerVmCoreScheduling);
 BASE_DECLARE_FEATURE(kEnableTTSCaching);
@@ -39,8 +41,6 @@ extern const base::FeatureParam<int> kGuestZramSize;
 extern const base::FeatureParam<int> kGuestZramSwappiness;
 BASE_DECLARE_FEATURE(kInstantResponseWindowOpen);
 BASE_DECLARE_FEATURE(kLockGuestMemory);
-BASE_DECLARE_FEATURE(kLogdConfig);
-extern const base::FeatureParam<int> kLogdConfigSize;
 BASE_DECLARE_FEATURE(kLvmApplicationContainers);
 BASE_DECLARE_FEATURE(kKeyboardShortcutHelperIntegrationFeature);
 BASE_DECLARE_FEATURE(kMglruReclaim);
@@ -64,15 +64,8 @@ extern const base::FeatureParam<int> kVmMemoryPSIReportsPeriod;
 BASE_DECLARE_FEATURE(kVmMemorySize);
 extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
 extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
-BASE_DECLARE_FEATURE(kVmBalloonPolicy);
-extern const base::FeatureParam<int> kVmBalloonPolicyModerateKiB;
-extern const base::FeatureParam<int> kVmBalloonPolicyCriticalKiB;
-extern const base::FeatureParam<int> kVmBalloonPolicyReclaimKiB;
 BASE_DECLARE_FEATURE(kVmBroadcastPreNotifyANR);
 BASE_DECLARE_FEATURE(kVmGmsCoreLowMemoryKillerProtection);
-extern const base::FeatureParam<bool> kVmBalloonPolicyResponsive;
-extern const base::FeatureParam<int> kVmBalloonPolicyResponsiveTimeoutMs;
-extern const base::FeatureParam<int> kVmBalloonPolicyResponsiveMaxDeflateBytes;
 
 }  // namespace arc
 

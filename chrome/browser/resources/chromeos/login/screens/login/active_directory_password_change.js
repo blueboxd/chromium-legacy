@@ -12,18 +12,18 @@ import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../../components/oobe_icons.m.js';
 import '../../components/buttons/oobe_next_button.js';
 import '../../components/buttons/oobe_text_button.js';
-import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 import '../../components/dialogs/oobe_adaptive_dialog.js';
-import '../../components/dialogs/oobe_loading_dialog.m.js';
-import '../../components/dialogs/oobe_modal_dialog.m.js';
+import '../../components/dialogs/oobe_loading_dialog.js';
 
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
 import {OobeDialogHostBehavior} from '../../components/behaviors/oobe_dialog_host_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
+import {OobeModalDialog} from '../../components/dialogs/oobe_modal_dialog.js';
 
 
 /**
@@ -64,7 +64,7 @@ const ActiveDirectoryPasswordChangeBase = mixinBehaviors(
 
 /**
  * @typedef {{
- *   errorDialog:  OobeModalDialogElement,
+ *   errorDialog:  OobeModalDialog,
  *   oldPassword:  CrInputElement,
  *   newPassword:  CrInputElement,
  * }}

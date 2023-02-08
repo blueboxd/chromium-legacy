@@ -120,11 +120,14 @@ class PreloadingAttempt;
 // https://www.chromium.org/developers/design-documents/multi-process-architecture
 // .
 //
-// Each WebContents has exactly one NavigationController; each
-// NavigationController belongs to one WebContents. The NavigationController can
-// be obtained from GetController(), and is used to load URLs into the
-// WebContents, navigate it backwards/forwards, etc. See navigation_controller.h
-// for more details.
+// The owner of `std::unique_ptr<content::WebContents> web_contents` is
+// responsible for ensuring that `web_contents` are destroyed (e.g. closed)
+// *before* the corresponding `browser_context` is destroyed.
+//
+// Each WebContents has a `NavigationController`, which can be obtained from
+// `GetController()`, and is used to load URLs into the WebContents, navigate
+// it backwards/forwards, etc.
+// See navigation_controller.h for more details.
 class WebContents : public PageNavigator,
                     public base::SupportsUserData {
  public:
@@ -265,6 +268,13 @@ class WebContents : public PageNavigator,
   };
 
   // Creates a new WebContents.
+  //
+  // The caller is responsible for ensuring that the returned WebContents is
+  // destroyed (e.g. closed) *before* the BrowserContext associated with
+  // `params` is destroyed.  It is a bug if WebContents haven't been destroyed
+  // when the destructor of BrowserContext starts running.  It is not
+  // necessarily a bug if WebContents haven't been destroyed when
+  // BrowserContext::NotifyWillBeDestroyed starts running.
   CONTENT_EXPORT static std::unique_ptr<WebContents> Create(
       const CreateParams& params);
 
@@ -368,6 +378,7 @@ class WebContents : public PageNavigator,
   // Returns the primary main frame for the currently active page. Always
   // non-null except during WebContents destruction. This WebContents may
   // have additional main frames for prerendered pages, bfcached pages, etc.
+  // See docs/frame_trees.md for more details.
   virtual RenderFrameHost* GetPrimaryMainFrame() = 0;
 
   // Returns the current page in the primary frame tree of this WebContents.
@@ -401,6 +412,7 @@ class WebContents : public PageNavigator,
   // reference to RenderFrameHost or a Page (e.g. each IPC from the renderer
   // process should be associated with a particular RenderFrameHost), it should
   // be used instead of getting the primary page from the WebContents.
+  // See docs/frame_trees.md for more details.
   virtual Page& GetPrimaryPage() = 0;
 
   // Returns the focused frame for the primary page or an inner page thereof.
@@ -621,6 +633,11 @@ class WebContents : public PageNavigator,
   // request and reset to false in FrameTreeNode.
   virtual bool WasDiscarded() = 0;
   virtual void SetWasDiscarded(bool was_discarded) = 0;
+
+  // Notifies observers that this WebContents is about to be discarded, and
+  // replaced with `new_contents`. See the comment on
+  // WebContentsObserver::AboutToBeDiscarded.
+  virtual void AboutToBeDiscarded(WebContents* new_contents) = 0;
 
   // Internal state ------------------------------------------------------------
 

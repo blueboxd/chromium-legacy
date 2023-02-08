@@ -209,7 +209,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
           child_tree_root_(parent->PlatformGetRootOfChildTree()) {}
     AllChildrenRange(const AllChildrenRange&) = default;
 
-    class Iterator final {
+    class CONTENT_EXPORT Iterator final {
      public:
       using iterator_category = std::input_iterator_tag;
       using value_type = BrowserAccessibility*;
@@ -375,94 +375,16 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::u16string GetNameAsString16() const;
 
   // `AXPlatformNodeDelegate` implementation.
-  std::u16string GetAuthorUniqueId() const override;
-  const ui::AXNodeData& GetData() const override;
-  const ui::AXTreeData& GetTreeData() const override;
-  ax::mojom::Role GetRole() const override;
-  bool HasBoolAttribute(ax::mojom::BoolAttribute attribute) const override;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute) const override;
-  bool GetBoolAttribute(ax::mojom::BoolAttribute attribute,
-                        bool* value) const override;
-  bool HasFloatAttribute(ax::mojom::FloatAttribute attribute) const override;
-  float GetFloatAttribute(ax::mojom::FloatAttribute attribute) const override;
-  bool GetFloatAttribute(ax::mojom::FloatAttribute attribute,
-                         float* value) const override;
-  const std::vector<std::pair<ax::mojom::IntAttribute, int32_t>>&
-  GetIntAttributes() const override;
-  bool HasIntAttribute(ax::mojom::IntAttribute attribute) const override;
-  int GetIntAttribute(ax::mojom::IntAttribute attribute) const override;
-  bool GetIntAttribute(ax::mojom::IntAttribute attribute,
-                       int* value) const override;
-  const std::vector<std::pair<ax::mojom::StringAttribute, std::string>>&
-  GetStringAttributes() const override;
-  bool HasStringAttribute(ax::mojom::StringAttribute attribute) const override;
-  const std::string& GetStringAttribute(
-      ax::mojom::StringAttribute attribute) const override;
-  bool GetStringAttribute(ax::mojom::StringAttribute attribute,
-                          std::string* value) const override;
-  std::u16string GetString16Attribute(
-      ax::mojom::StringAttribute attribute) const override;
-  bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                            std::u16string* value) const override;
-  const std::string& GetInheritedStringAttribute(
-      ax::mojom::StringAttribute attribute) const override;
-  std::u16string GetInheritedString16Attribute(
-      ax::mojom::StringAttribute attribute) const override;
-  const std::vector<
-      std::pair<ax::mojom::IntListAttribute, std::vector<int32_t>>>&
-  GetIntListAttributes() const override;
-  bool HasIntListAttribute(
-      ax::mojom::IntListAttribute attribute) const override;
-  const std::vector<int32_t>& GetIntListAttribute(
-      ax::mojom::IntListAttribute attribute) const override;
-  bool GetIntListAttribute(ax::mojom::IntListAttribute attribute,
-                           std::vector<int32_t>* value) const override;
-  bool HasStringListAttribute(
-      ax::mojom::StringListAttribute attribute) const override;
-  const std::vector<std::string>& GetStringListAttribute(
-      ax::mojom::StringListAttribute attribute) const override;
-  bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
-                              std::vector<std::string>* value) const override;
-  typedef base::StringPairs HtmlAttributes;
-  bool HasHtmlAttribute(const char* attribute) const override;
-  const HtmlAttributes& GetHtmlAttributes() const override;
-  bool GetHtmlAttribute(const char* attribute,
-                        std::string* value) const override;
-  bool GetHtmlAttribute(const char* attribute,
-                        std::u16string* value) const override;
-  ui::AXTextAttributes GetTextAttributes() const override;
-  bool HasState(ax::mojom::State state) const override;
-  ax::mojom::State GetState() const override;
-  bool HasAction(ax::mojom::Action action) const override;
-  bool HasTextStyle(ax::mojom::TextStyle text_style) const override;
-  ax::mojom::NameFrom GetNameFrom() const override;
-  ax::mojom::DescriptionFrom GetDescriptionFrom() const override;
-  const ui::AXSelection GetUnignoredSelection() const override;
-  AXPosition CreatePositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
-  AXPosition CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
-  gfx::NativeViewAccessible GetNSWindow() override;
-  gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() const override;
   size_t GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(size_t index) override;
-  bool HasModalDialog() const override;
   gfx::NativeViewAccessible GetFirstChild() override;
   gfx::NativeViewAccessible GetLastChild() override;
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
-  bool IsChildOfLeaf() const override;
-  bool IsDescendantOfAtomicTextField() const override;
   bool IsPlatformDocument() const override;
   bool IsLeaf() const override;
   bool IsFocused() const override;
-  bool IsIgnored() const override;
-  bool IsInvisibleOrIgnored() const override;
   bool IsToplevelBrowserWindow() override;
   gfx::NativeViewAccessible GetLowestPlatformAncestor() const override;
   gfx::NativeViewAccessible GetTextFieldAncestor() const override;
@@ -472,14 +394,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
   std::unique_ptr<ChildIterator> ChildrenEnd() override;
 
-  const std::string& GetName() const override;
-  const std::string& GetDescription() const override;
   std::u16string GetHypertext() const override;
-  const std::map<int, int>& GetHypertextOffsetToHyperlinkChildIndex()
-      const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
-  std::u16string GetTextContentUTF16() const override;
-  std::u16string GetValueForControl() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
@@ -509,36 +425,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ui::AXPlatformNodeDelegate* start,
       ui::AXPlatformNodeDelegate* end) override;
 
-  std::string GetLanguage() const override;
-
-  bool IsTable() const override;
-  absl::optional<int> GetTableColCount() const override;
-  absl::optional<int> GetTableRowCount() const override;
   absl::optional<int> GetTableAriaColCount() const override;
   absl::optional<int> GetTableAriaRowCount() const override;
-  absl::optional<int> GetTableCellCount() const override;
-  absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
-  std::vector<ui::AXNodeID> GetColHeaderNodeIds() const override;
-  std::vector<ui::AXNodeID> GetColHeaderNodeIds(int col_index) const override;
-  std::vector<ui::AXNodeID> GetRowHeaderNodeIds() const override;
-  std::vector<ui::AXNodeID> GetRowHeaderNodeIds(int row_index) const override;
   ui::AXPlatformNode* GetTableCaption() const override;
-
-  bool IsTableRow() const override;
-  absl::optional<int> GetTableRowRowIndex() const override;
-
-  bool IsTableCellOrHeader() const override;
-  absl::optional<int> GetTableCellIndex() const override;
-  absl::optional<int> GetTableCellColIndex() const override;
-  absl::optional<int> GetTableCellRowIndex() const override;
-  absl::optional<int> GetTableCellColSpan() const override;
-  absl::optional<int> GetTableCellRowSpan() const override;
-  absl::optional<int> GetTableCellAriaColIndex() const override;
-  absl::optional<int> GetTableCellAriaRowIndex() const override;
-  absl::optional<int32_t> GetCellId(int row_index,
-                                    int col_index) const override;
-  absl::optional<int32_t> CellIndexToId(int cell_index) const override;
-  bool IsCellOrHeaderOfAriaGrid() const override;
 
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
   std::u16string GetLocalizedStringForImageAnnotationStatus(
@@ -549,29 +438,20 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::u16string GetStyleNameAttributeAsLocalizedString() const override;
   ui::TextAttributeMap ComputeTextAttributeMap(
       const ui::TextAttributeList& default_attributes) const override;
-  std::string GetInheritedFontFamilyName() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
-  bool IsMinimized() const override;
-  bool IsText() const override;
   bool IsWebContent() const override;
-  bool IsReadOnlySupported() const override;
-  bool IsReadOnlyOrDisabled() const override;
   bool HasVisibleCaretOrSelection() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
   std::vector<ui::AXPlatformNode*> GetTargetNodesForRelation(
       ax::mojom::IntListAttribute attr) override;
-  std::set<ui::AXPlatformNode*> GetReverseRelations(
+  std::set<ui::AXPlatformNode*> GetSourceNodesForReverseRelations(
       ax::mojom::IntAttribute attr) override;
-  std::set<ui::AXPlatformNode*> GetReverseRelations(
+  std::set<ui::AXPlatformNode*> GetSourceNodesForReverseRelations(
       ax::mojom::IntListAttribute attr) override;
-  bool IsOrderedSetItem() const override;
-  bool IsOrderedSet() const override;
   absl::optional<int> GetPosInSet() const override;
   absl::optional<int> GetSetSize() const override;
-  SkColor GetColor() const override;
-  SkColor GetBackgroundColor() const override;
 
   // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.
@@ -610,6 +490,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
 
   std::string SubtreeToStringHelper(size_t level) override;
+
+  void NotifyAccessibilityApiUsage() const override;
 
   // The UIA tree formatter needs access to GetUniqueId() to identify the
   // starting point for tree dumps.

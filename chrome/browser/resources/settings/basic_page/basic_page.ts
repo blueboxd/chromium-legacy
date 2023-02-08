@@ -235,13 +235,13 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'is-managed-changed', this.onIsManagedChanged_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'sync-status-changed', this.onSyncStatusChanged_.bind(this));
 
     if (loadTimeData.getBoolean('batterySaverModeAvailable')) {
-      this.addWebUIListener(
+      this.addWebUiListener(
           'device-has-battery-changed',
           this.onDeviceHasBatteryChanged_.bind(this));
       this.performanceBrowserProxy_.getDeviceHasBattery().then(
@@ -365,7 +365,7 @@ export class SettingsBasicPageElement extends SettingsBasicPageElementBase {
   }
 
   // <if expr="chromeos_ash">
-  private onOpenChromeOSLanguagesSettingsClick_() {
+  private onOpenChromeOsLanguagesSettingsClick_() {
     const chromeOSLanguagesSettingsPath =
         loadTimeData.getString('chromeOSLanguagesSettingsPath');
     window.location.href =

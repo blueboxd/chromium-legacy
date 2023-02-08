@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/accessibility/public/mojom/accessibility_service.mojom.h"
 
@@ -22,13 +23,21 @@ class AutomationClientImpl;
 // AccessibilityService process over mojom. It is responsible for communicating
 // to the service which features are running and binding helper classes for the
 // service.
-class AccessibilityServiceClient {
+// TODO(crbug.com/1355633): Move to ash/accessibility/service.
+class AccessibilityServiceClient
+    : public ax::mojom::AccessibilityServiceClient {
  public:
   AccessibilityServiceClient();
   AccessibilityServiceClient(const AccessibilityServiceClient&) = delete;
   AccessibilityServiceClient& operator=(const AccessibilityServiceClient&) =
       delete;
-  ~AccessibilityServiceClient();
+  ~AccessibilityServiceClient() override;
+
+  // ax::mojom::AccessibilityServiceClient:
+  void BindAutomation(mojo::PendingRemote<ax::mojom::Automation> automation,
+                      mojo::PendingReceiver<ax::mojom::AutomationClient>
+                          automation_client) override;
+
   void SetProfile(content::BrowserContext* profile);
 
   // Enables or disables accessibility features in the service.
@@ -40,6 +49,8 @@ class AccessibilityServiceClient {
   void SetDictationEnabled(bool enabled);
 
  private:
+  friend class AccessibilityServiceClientTest;
+
   // Called when the profile changes or on destruction. Disconnects all mojom
   // endpoints.
   void Reset();
@@ -59,6 +70,10 @@ class AccessibilityServiceClient {
 
   // Here is the remote to the AT Controller, used to toggle features.
   mojo::Remote<ax::mojom::AssistiveTechnologyController> at_controller_;
+
+  // This class receives mojom requests from the service via the interface
+  // AccessibilityServiceClient.
+  mojo::Receiver<ax::mojom::AccessibilityServiceClient> service_client_{this};
 };
 
 }  // namespace ash

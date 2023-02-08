@@ -273,26 +273,6 @@ void DeviceCloudPolicyManagerAsh::OnPolicyStoreReady(
   CreateManagedSessionServiceAndReporters();
 }
 
-void DeviceCloudPolicyManagerAsh::Unregister(UnregisterCallback callback) {
-  if (!service()) {
-    LOG(ERROR) << "Tried to unregister but DeviceCloudPolicyManagerAsh is "
-               << "not connected.";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  service()->Unregister(std::move(callback));
-}
-
-void DeviceCloudPolicyManagerAsh::Disconnect() {
-  status_uploader_.reset();
-  syslog_uploader_.reset();
-  heartbeat_scheduler_.reset();
-  core()->Disconnect();
-
-  NotifyDisconnected();
-}
-
 void DeviceCloudPolicyManagerAsh::SetSigninProfileSchemaRegistry(
     SchemaRegistry* schema_registry) {
   DCHECK(!signin_profile_forwarding_schema_registry_);
@@ -311,11 +291,6 @@ void DeviceCloudPolicyManagerAsh::OnStateKeysUpdated() {
 void DeviceCloudPolicyManagerAsh::NotifyConnected() {
   for (auto& observer : observers_)
     observer.OnDeviceCloudPolicyManagerConnected();
-}
-
-void DeviceCloudPolicyManagerAsh::NotifyDisconnected() {
-  for (auto& observer : observers_)
-    observer.OnDeviceCloudPolicyManagerDisconnected();
 }
 
 void DeviceCloudPolicyManagerAsh::NotifyGotRegistry() {

@@ -28,6 +28,8 @@
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "ios/chrome/browser/commerce/price_notifications/price_notifications_tab_helper.h"
+#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/commerce/shopping_service_factory.h"
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
@@ -76,7 +78,6 @@
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
-#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -123,7 +124,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   InfoBarManagerImpl::CreateForWebState(web_state);
   BlockedPopupTabHelper::CreateForWebState(web_state);
   FindTabHelper::CreateForWebState(web_state);
-  StoreKitTabHelper::CreateForWebState(web_state);
   ITunesUrlsHandlerTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
@@ -236,6 +236,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     SnapshotTabHelper::CreateForWebState(web_state);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
     PrintTabHelper::CreateForWebState(web_state);
+    ChromeIOSTranslateClient::CreateForWebState(web_state);
   }
 
   InfobarBadgeTabHelper::CreateForWebState(web_state);
@@ -250,8 +251,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   OfflinePageTabHelper::CreateForWebState(
       web_state, ReadingListModelFactory::GetForBrowserState(browser_state));
   PermissionsOverlayTabHelper::CreateForWebState(web_state);
-
-  ChromeIOSTranslateClient::CreateForWebState(web_state);
 
   RepostFormTabHelper::CreateForWebState(web_state);
   NetExportTabHelper::CreateForWebState(web_state);
@@ -276,4 +275,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   }
 
   CaptivePortalTabHelper::CreateForWebState(web_state);
+
+  if (IsPriceNotificationsEnabled()) {
+    PriceNotificationsTabHelper::CreateForWebState(web_state);
+  }
 }

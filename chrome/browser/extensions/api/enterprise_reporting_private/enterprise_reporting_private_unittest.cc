@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/signals/device_info_fetcher.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
@@ -174,8 +175,8 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, StoreDeviceData) {
   extension_function_test_utils::RunFunction(function.get(), std::move(values),
                                              browser(),
                                              extensions::api_test_utils::NONE);
-  ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(0u, function->GetResultList()->size());
+  ASSERT_TRUE(function->GetResultListForTest());
+  EXPECT_EQ(0u, function->GetResultListForTest()->size());
   EXPECT_TRUE(function->GetError().empty());
 }
 
@@ -187,11 +188,11 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
   extension_function_test_utils::RunFunction(function.get(), std::move(values),
                                              browser(),
                                              extensions::api_test_utils::NONE);
-  ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(1u, function->GetResultList()->size());
+  ASSERT_TRUE(function->GetResultListForTest());
+  EXPECT_EQ(1u, function->GetResultListForTest()->size());
   EXPECT_TRUE(function->GetError().empty());
 
-  const base::Value& single_result = (*function->GetResultList())[0];
+  const base::Value& single_result = (*function->GetResultListForTest())[0];
   ASSERT_TRUE(single_result.is_blob());
   EXPECT_EQ(base::Value::BlobStorage(), single_result.GetBlob());
 }
@@ -215,8 +216,8 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
   extension_function_test_utils::RunFunction(function.get(), std::move(values),
                                              browser(),
                                              extensions::api_test_utils::NONE);
-  ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(0u, function->GetResultList()->size());
+  ASSERT_TRUE(function->GetResultListForTest());
+  EXPECT_EQ(0u, function->GetResultListForTest()->size());
   EXPECT_FALSE(function->GetError().empty());
 }
 
@@ -238,8 +239,8 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   extension_function_test_utils::RunFunction(get_function.get(),
                                              std::move(values), browser(),
                                              extensions::api_test_utils::NONE);
-  ASSERT_TRUE(get_function->GetResultList());
-  const base::Value& single_result = (*get_function->GetResultList())[0];
+  ASSERT_TRUE(get_function->GetResultListForTest());
+  const base::Value& single_result = (*get_function->GetResultListForTest())[0];
   EXPECT_TRUE(get_function->GetError().empty());
   ASSERT_TRUE(single_result.is_blob());
   EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result.GetBlob());
@@ -261,11 +262,12 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   extension_function_test_utils::RunFunction(get_function2.get(),
                                              std::move(values2), browser(),
                                              extensions::api_test_utils::NONE);
-  ASSERT_TRUE(get_function2->GetResultList());
-  EXPECT_EQ(1u, get_function2->GetResultList()->size());
+  ASSERT_TRUE(get_function2->GetResultListForTest());
+  EXPECT_EQ(1u, get_function2->GetResultListForTest()->size());
   EXPECT_TRUE(get_function2->GetError().empty());
 
-  const base::Value& single_result2 = (*get_function2->GetResultList())[0];
+  const base::Value& single_result2 =
+      (*get_function2->GetResultListForTest())[0];
   ASSERT_TRUE(single_result2.is_blob());
   EXPECT_EQ(base::Value::BlobStorage(), single_result2.GetBlob());
 }
@@ -1349,7 +1351,7 @@ class UserContextGatedTest : public ExtensionApiUnittest {
         enterprise_signals::features::kNewEvSignalsEnabled);
   }
 
-  device_signals::MockSignalsAggregator* mock_aggregator_;
+  raw_ptr<device_signals::MockSignalsAggregator> mock_aggregator_;
   base::test::ScopedFeatureList scoped_features_;
   base::HistogramTester histogram_tester_;
 };

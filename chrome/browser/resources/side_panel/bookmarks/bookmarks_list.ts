@@ -6,8 +6,8 @@ import './commerce/shopping_list.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {listenOnce} from 'chrome://resources/js/util.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {listenOnce} from 'chrome://resources/js/util_ts.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT, getBookmarkFromElement, isBookmarkFolderElement} from './bookmark_folder.js';
@@ -88,7 +88,7 @@ export class BookmarksListElement extends PolymerElement {
     this.setAttribute('role', 'tree');
     if (loadTimeData.getBoolean('unifiedSidePanel')) {
       listenOnce(this.$.bookmarksContainer, 'dom-change', () => {
-        setTimeout(() => this.bookmarksApi_.showUI(), 0);
+        setTimeout(() => this.bookmarksApi_.showUi(), 0);
       });
     }
     this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);

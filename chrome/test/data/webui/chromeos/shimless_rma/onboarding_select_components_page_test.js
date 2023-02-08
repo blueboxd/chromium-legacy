@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {PromiseResolver} from 'chrome://resources/ash/common/promise_resolver.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {fakeComponentsForRepairStateTest} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
@@ -12,9 +12,9 @@ import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
 import {Component, ComponentRepairStatus} from 'chrome://shimless-rma/shimless_rma_types.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
-export function onboardingSelectComponentsPageTest() {
+suite('onboardingSelectComponentsPageTest', function() {
   /**
    * ShimlessRma is needed to handle the 'transition-state' event used by
    * the rework button.
@@ -301,4 +301,4 @@ export function onboardingSelectComponentsPageTest() {
     await flushTasks();
     assertDeepEquals(componentSecondCameraButton, getDeepActiveElement());
   });
-}
+});

@@ -4,6 +4,8 @@
 
 #include "content/browser/attribution_reporting/attribution_data_host_manager_impl.h"
 
+#include <stddef.h>
+
 #include <utility>
 #include <vector>
 
@@ -15,30 +17,29 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "components/attribution_reporting/aggregatable_trigger_data.h"
-#include "components/attribution_reporting/aggregatable_values.h"
-#include "components/attribution_reporting/aggregation_keys.h"
-#include "components/attribution_reporting/constants.h"
-#include "components/attribution_reporting/event_trigger_data.h"
-#include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_header_utils.h"
+#include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
 using ::attribution_reporting::mojom::SourceRegistrationError;
+using ::blink::mojom::AttributionNavigationType;
+using ::blink::mojom::AttributionRegistrationType;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -60,19 +61,17 @@ void RecordTriggerQueueEvent(TriggerQueueEvent event) {
 // numeric values should never be reused.
 enum class DataHandleStatus {
   kSuccess = 0,
-  kUntrustworthyOrigin = 1,
-  kContextError = 2,
-  kInvalidData = 3,
+  kContextError = 1,
 
-  kMaxValue = kInvalidData,
+  kMaxValue = kContextError,
 };
 
 void RecordSourceDataHandleStatus(DataHandleStatus status) {
-  base::UmaHistogramEnumeration("Conversions.SourceDataHandleStatus", status);
+  base::UmaHistogramEnumeration("Conversions.SourceDataHandleStatus2", status);
 }
 
 void RecordTriggerDataHandleStatus(DataHandleStatus status) {
-  base::UmaHistogramEnumeration("Conversions.TriggerDataHandleStatus", status);
+  base::UmaHistogramEnumeration("Conversions.TriggerDataHandleStatus2", status);
 }
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -87,7 +86,7 @@ enum class NavigationDataHostStatus {
 };
 
 void RecordNavigationDataHostStatus(NavigationDataHostStatus event) {
-  base::UmaHistogramEnumeration("Conversions.NavigationDataHostStatus", event);
+  base::UmaHistogramEnumeration("Conversions.NavigationDataHostStatus2", event);
 }
 
 const base::FeatureParam<base::TimeDelta> kTriggerDelay{
@@ -96,78 +95,80 @@ const base::FeatureParam<base::TimeDelta> kTriggerDelay{
 
 constexpr size_t kMaxDelayedTriggers = 30;
 
-void ReportBadMessageInsecureReportingOrigin() {
-  mojo::ReportBadMessage(
-      "AttributionDataHost: Reporting origin must be secure.");
-}
-
-absl::optional<std::vector<attribution_reporting::AggregatableTriggerData>>
-FromMojo(
-    std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr> mojo) {
-  if (mojo.size() >
-      attribution_reporting::kMaxAggregatableTriggerDataPerTrigger) {
-    return absl::nullopt;
-  }
-
-  std::vector<attribution_reporting::AggregatableTriggerData>
-      aggregatable_trigger_data;
-  aggregatable_trigger_data.reserve(mojo.size());
-
-  for (auto& aggregatable_trigger : mojo) {
-    absl::optional<attribution_reporting::Filters> filters =
-        attribution_reporting::Filters::Create(
-            std::move(aggregatable_trigger->filters->filter_values));
-    if (!filters.has_value())
-      return absl::nullopt;
-
-    absl::optional<attribution_reporting::Filters> not_filters =
-        attribution_reporting::Filters::Create(
-            std::move(aggregatable_trigger->not_filters->filter_values));
-    if (!not_filters.has_value())
-      return absl::nullopt;
-
-    absl::optional<attribution_reporting::AggregatableTriggerData> data =
-        attribution_reporting::AggregatableTriggerData::Create(
-            aggregatable_trigger->key_piece,
-            std::move(aggregatable_trigger->source_keys), std::move(*filters),
-            std::move(*not_filters));
-    if (!data.has_value())
-      return absl::nullopt;
-
-    aggregatable_trigger_data.push_back(std::move(*data));
-  }
-
-  return aggregatable_trigger_data;
-}
-
-enum class RegistrationType {
-  kNone,
-  kSource,
-  kTrigger,
-};
-
 }  // namespace
 
-struct AttributionDataHostManagerImpl::FrozenContext {
+class AttributionDataHostManagerImpl::ReceiverContext {
+ public:
+  ReceiverContext(SuitableOrigin context_origin,
+                  AttributionRegistrationType registration_type,
+                  base::TimeTicks register_time,
+                  bool is_within_fenced_frame,
+                  absl::optional<AttributionInputEvent> input_event,
+                  absl::optional<AttributionNavigationType> nav_type)
+      : context_origin_(std::move(context_origin)),
+        registration_type_(registration_type),
+        register_time_(register_time),
+        is_within_fenced_frame_(is_within_fenced_frame),
+        input_event_(input_event),
+        nav_type_(nav_type) {
+    DCHECK(!nav_type_ ||
+           registration_type_ == AttributionRegistrationType::kSource);
+  }
+
+  ~ReceiverContext() = default;
+
+  ReceiverContext(const ReceiverContext&) = delete;
+  ReceiverContext& operator=(const ReceiverContext&) = delete;
+
+  ReceiverContext(ReceiverContext&&) = default;
+  ReceiverContext& operator=(ReceiverContext&&) = default;
+
+  const SuitableOrigin& context_origin() const { return context_origin_; }
+
+  AttributionRegistrationType registration_type() const {
+    return registration_type_;
+  }
+
+  void set_registration_type(AttributionRegistrationType type) {
+    DCHECK_NE(type, AttributionRegistrationType::kSourceOrTrigger);
+    registration_type_ = type;
+  }
+
+  size_t num_data_registered() const { return num_data_registered_; }
+
+  base::TimeTicks register_time() const { return register_time_; }
+
+  bool is_within_fenced_frame() const { return is_within_fenced_frame_; }
+
+  absl::optional<AttributionNavigationType> nav_type() const {
+    return nav_type_;
+  }
+
+  void IncrementNumDataRegistered() { ++num_data_registered_; }
+
+ private:
   // Top-level origin the data host was created in.
   // Logically const.
-  url::Origin context_origin;
+  SuitableOrigin context_origin_;
 
-  // Source type of this context. Note that data hosts which result in
-  // triggers still have a source type of` kEvent` as they share the same web
-  // API surface.
-  // Logically const.
-  AttributionSourceType source_type;
+  AttributionRegistrationType registration_type_;
 
-  RegistrationType registration_type = RegistrationType::kNone;
-
-  int num_data_registered = 0;
+  size_t num_data_registered_ = 0;
 
   // Logically const.
-  base::TimeTicks register_time;
+  base::TimeTicks register_time_;
 
   // Whether the attribution is registered within a fenced frame tree.
-  bool is_within_fenced_frame;
+  // Logically const.
+  bool is_within_fenced_frame_;
+
+  // Input event associated with the navigation for navigation source data
+  // hosts, `absl::nullopt` otherwise.
+  // Logically const.
+  absl::optional<AttributionInputEvent> input_event_;
+
+  // Logically const.
+  absl::optional<AttributionNavigationType> nav_type_;
 };
 
 struct AttributionDataHostManagerImpl::DelayedTrigger {
@@ -190,12 +191,14 @@ struct AttributionDataHostManagerImpl::DelayedTrigger {
 struct AttributionDataHostManagerImpl::NavigationDataHost {
   mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host;
   base::TimeTicks register_time;
+  AttributionInputEvent input_event;
+  AttributionNavigationType nav_type;
 };
 
 struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
   // Source origin to use for all registrations on a redirect chain. Will not
   // change over the course of the redirect chain.
-  url::Origin source_origin;
+  SuitableOrigin source_origin;
 
   // Number of source data we are waiting to be decoded/received.
   size_t pending_source_data = 0;
@@ -208,6 +211,10 @@ struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
   // The time the first registration header was received for the redirect chain.
   // Will not change over the course of the redirect chain.
   base::TimeTicks register_time;
+
+  // Input event associated with the navigation.
+  AttributionInputEvent input_event;
+  AttributionNavigationType nav_type;
 };
 
 AttributionDataHostManagerImpl::AttributionDataHostManagerImpl(
@@ -224,26 +231,37 @@ AttributionDataHostManagerImpl::~AttributionDataHostManagerImpl() = default;
 
 void AttributionDataHostManagerImpl::RegisterDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-    url::Origin context_origin,
-    bool is_within_fenced_frame) {
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context_origin));
+    SuitableOrigin context_origin,
+    bool is_within_fenced_frame,
+    AttributionRegistrationType registration_type) {
+  receivers_.Add(this, std::move(data_host),
+                 ReceiverContext(std::move(context_origin), registration_type,
+                                 /*register_time=*/base::TimeTicks::Now(),
+                                 is_within_fenced_frame,
+                                 /*input_event=*/absl::nullopt,
+                                 /*nav_type=*/absl::nullopt));
 
-  receivers_.Add(
-      this, std::move(data_host),
-      FrozenContext{.context_origin = std::move(context_origin),
-                    .source_type = AttributionSourceType::kEvent,
-                    .register_time = base::TimeTicks::Now(),
-                    .is_within_fenced_frame = is_within_fenced_frame});
-  data_hosts_in_source_mode_++;
+  switch (registration_type) {
+    case AttributionRegistrationType::kSourceOrTrigger:
+    case AttributionRegistrationType::kSource:
+      data_hosts_in_source_mode_++;
+      break;
+    case AttributionRegistrationType::kTrigger:
+      break;
+  }
 }
 
 bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-    const blink::AttributionSrcToken& attribution_src_token) {
+    const blink::AttributionSrcToken& attribution_src_token,
+    AttributionInputEvent input_event,
+    AttributionNavigationType nav_type) {
   auto [it, inserted] = navigation_data_host_map_.try_emplace(
       attribution_src_token,
       NavigationDataHost{.data_host = std::move(data_host),
-                         .register_time = base::TimeTicks::Now()});
+                         .register_time = base::TimeTicks::Now(),
+                         .input_event = input_event,
+                         .nav_type = nav_type});
   // Should only be possible with a misbehaving renderer.
   if (!inserted)
     return false;
@@ -257,13 +275,10 @@ bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
 void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
     const blink::AttributionSrcToken& attribution_src_token,
     std::string header_value,
-    url::Origin reporting_origin,
-    const url::Origin& source_origin) {
-  if (!network::IsOriginPotentiallyTrustworthy(source_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(reporting_origin)) {
-    return;
-  }
-
+    SuitableOrigin reporting_origin,
+    const SuitableOrigin& source_origin,
+    AttributionInputEvent input_event,
+    AttributionNavigationType nav_type) {
   // Avoid costly isolated JSON parsing below if the header is obviously
   // invalid.
   if (header_value.empty()) {
@@ -275,7 +290,9 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
   auto [it, inserted] = redirect_registrations_.try_emplace(
       attribution_src_token, NavigationRedirectSourceRegistrations{
                                  .source_origin = source_origin,
-                                 .register_time = base::TimeTicks::Now()});
+                                 .register_time = base::TimeTicks::Now(),
+                                 .input_event = input_event,
+                                 .nav_type = nav_type});
   DCHECK(!it->second.navigation_complete);
 
   // Treat ongoing redirect registrations within a chain as a data host for the
@@ -291,29 +308,23 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
       header_value,
       base::BindOnce(&AttributionDataHostManagerImpl::OnRedirectSourceParsed,
                      weak_factory_.GetWeakPtr(), attribution_src_token,
-                     std::move(reporting_origin), header_value));
+                     std::move(reporting_origin), header_value, nav_type));
 }
 
 void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
     const blink::AttributionSrcToken& attribution_src_token,
-    const url::Origin& source_origin,
-    const url::Origin& destination_origin) {
-  if (!network::IsOriginPotentiallyTrustworthy(source_origin) ||
-      !network::IsOriginPotentiallyTrustworthy(destination_origin)) {
-    NotifyNavigationFailure(attribution_src_token);
-    return;
-  }
-
+    const SuitableOrigin& source_origin,
+    AttributionNavigationType nav_type) {
   auto it = navigation_data_host_map_.find(attribution_src_token);
 
   if (it != navigation_data_host_map_.end()) {
     // Source navigations need to navigate the primary main frame to be valid.
     receivers_.Add(
         this, std::move(it->second.data_host),
-        FrozenContext{.context_origin = source_origin,
-                      .source_type = AttributionSourceType::kNavigation,
-                      .register_time = it->second.register_time,
-                      .is_within_fenced_frame = false});
+        ReceiverContext(source_origin, AttributionRegistrationType::kSource,
+                        it->second.register_time,
+                        /*is_within_fenced_frame=*/false,
+                        it->second.input_event, nav_type));
 
     navigation_data_host_map_.erase(it);
     RecordNavigationDataHostStatus(NavigationDataHostStatus::kProcessed);
@@ -365,203 +376,68 @@ void AttributionDataHostManagerImpl::NotifyNavigationFailure(
 }
 
 void AttributionDataHostManagerImpl::SourceDataAvailable(
-    blink::mojom::AttributionSourceDataPtr data) {
-  if (!network::IsOriginPotentiallyTrustworthy(data->reporting_origin)) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    ReportBadMessageInsecureReportingOrigin();
-    return;
-  }
+    attribution_reporting::SuitableOrigin reporting_origin,
+    attribution_reporting::SourceRegistration data) {
+  // This is validated by the Mojo typemapping.
+  DCHECK(reporting_origin.IsValid());
+  DCHECK(data.destination.IsValid());
 
-  if (!network::IsOriginPotentiallyTrustworthy(data->destination)) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Destination origin must be secure.");
-    return;
-  }
+  ReceiverContext& context = receivers_.current_context();
 
-  FrozenContext& context = receivers_.current_context();
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context.context_origin));
-
-  if (context.registration_type == RegistrationType::kTrigger) {
+  if (context.registration_type() == AttributionRegistrationType::kTrigger) {
     RecordSourceDataHandleStatus(DataHandleStatus::kContextError);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Cannot register sources after registering "
-        "a trigger.");
+    mojo::ReportBadMessage("AttributionDataHost: Not eligible for sources.");
     return;
   }
 
-  context.registration_type = RegistrationType::kSource;
-
-  base::Time source_time = base::Time::Now();
-
-  // When converting mojo values to the browser process equivalents, it should
-  // not be possible for there to be an error except in the case of a bad
-  // renderer. All of the validation here is also performed renderer-side.
-
-  absl::optional<attribution_reporting::FilterData> filter_data =
-      attribution_reporting::FilterData::Create(
-          std::move(data->filter_data->filter_values));
-  if (!filter_data.has_value()) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid filter data.");
-    return;
-  }
-
-  absl::optional<attribution_reporting::AggregationKeys> aggregation_keys =
-      attribution_reporting::AggregationKeys::FromKeys(
-          std::move(data->aggregation_keys->keys));
-  if (!aggregation_keys.has_value()) {
-    RecordSourceDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable source.");
-    return;
-  }
+  context.set_registration_type(AttributionRegistrationType::kSource);
 
   RecordSourceDataHandleStatus(DataHandleStatus::kSuccess);
 
-  context.num_data_registered++;
+  context.IncrementNumDataRegistered();
 
-  StorableSource storable_source(
-      CommonSourceInfo(
-          data->source_event_id, context.context_origin,
-          std::move(data->destination), std::move(data->reporting_origin),
-          source_time,
-          CommonSourceInfo::GetExpiryTime(data->expiry, source_time,
-                                          context.source_type),
-          data->event_report_window
-              ? absl::make_optional(CommonSourceInfo::GetExpiryTime(
-                    data->event_report_window, source_time,
-                    context.source_type))
-              : absl::nullopt,
-          data->aggregatable_report_window
-              ? absl::make_optional(CommonSourceInfo::GetExpiryTime(
-                    data->aggregatable_report_window, source_time,
-                    context.source_type))
-              : absl::nullopt,
-          context.source_type, data->priority, std::move(*filter_data),
-          data->debug_key, std::move(*aggregation_keys)),
-      context.is_within_fenced_frame, data->debug_reporting);
+  auto source_type = AttributionSourceType::kEvent;
+  if (auto nav_type = context.nav_type()) {
+    source_type = AttributionSourceType::kNavigation;
 
-  attribution_manager_->HandleSource(std::move(storable_source));
+    base::UmaHistogramEnumeration(
+        "Conversions.SourceRegistration.NavigationType.Background", *nav_type);
+  }
+
+  attribution_manager_->HandleSource(
+      StorableSource(std::move(reporting_origin), std::move(data),
+                     /*source_time=*/base::Time::Now(),
+                     /*source_origin=*/context.context_origin(), source_type,
+                     context.is_within_fenced_frame()));
 }
 
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
-    blink::mojom::AttributionTriggerDataPtr data) {
-  if (!network::IsOriginPotentiallyTrustworthy(data->reporting_origin)) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kUntrustworthyOrigin);
-    ReportBadMessageInsecureReportingOrigin();
-    return;
-  }
+    attribution_reporting::TriggerRegistration data) {
+  // This is validated by the Mojo typemapping.
+  DCHECK(data.reporting_origin.IsValid());
 
-  FrozenContext& context = receivers_.current_context();
-  DCHECK(network::IsOriginPotentiallyTrustworthy(context.context_origin));
+  ReceiverContext& context = receivers_.current_context();
 
-  if (context.source_type == AttributionSourceType::kNavigation) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Navigation-bound data hosts cannot register "
-        "triggers.");
-    return;
-  }
-
-  if (context.registration_type == RegistrationType::kSource) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Cannot register triggers after registering "
-        "a source.");
-    return;
-  }
-
-  if (context.registration_type == RegistrationType::kNone) {
-    OnSourceEligibleDataHostFinished(context.register_time);
-    context.registration_type = RegistrationType::kTrigger;
-  }
-
-  absl::optional<attribution_reporting::Filters> filters =
-      attribution_reporting::Filters::Create(
-          std::move(data->filters->filter_values));
-  if (!filters.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid top-level filters.");
-    return;
-  }
-
-  absl::optional<attribution_reporting::Filters> not_filters =
-      attribution_reporting::Filters::Create(
-          std::move(data->not_filters->filter_values));
-  if (!not_filters.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Invalid top-level negated filters.");
-    return;
-  }
-
-  if (data->event_triggers.size() >
-      attribution_reporting::kMaxEventTriggerData) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Too many event triggers.");
-    return;
-  }
-
-  std::vector<attribution_reporting::EventTriggerData> event_triggers;
-  event_triggers.reserve(data->event_triggers.size());
-
-  for (auto& event_trigger : data->event_triggers) {
-    absl::optional<attribution_reporting::Filters> event_filters =
-        attribution_reporting::Filters::Create(
-            std::move(event_trigger->filters->filter_values));
-    if (!event_filters.has_value()) {
-      RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-      mojo::ReportBadMessage(
-          "AttributionDataHost: Invalid event-trigger filters.");
+  switch (context.registration_type()) {
+    case AttributionRegistrationType::kSource:
+      RecordTriggerDataHandleStatus(DataHandleStatus::kContextError);
+      mojo::ReportBadMessage("AttributionDataHost: Not eligible for triggers.");
       return;
-    }
-
-    absl::optional<attribution_reporting::Filters> not_event_filters =
-        attribution_reporting::Filters::Create(
-            std::move(event_trigger->not_filters->filter_values));
-    if (!not_event_filters.has_value()) {
-      RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-      mojo::ReportBadMessage(
-          "AttributionDataHost: Invalid event-trigger not_filters.");
-      return;
-    }
-
-    event_triggers.emplace_back(
-        event_trigger->data, event_trigger->priority, event_trigger->dedup_key,
-        std::move(*event_filters), std::move(*not_event_filters));
-  }
-
-  absl::optional<std::vector<attribution_reporting::AggregatableTriggerData>>
-      aggregatable_trigger_data =
-          FromMojo(std::move(data->aggregatable_trigger_data));
-  if (!aggregatable_trigger_data.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage(
-        "AttributionDataHost: Invalid aggregatable trigger data.");
-    return;
-  }
-
-  absl::optional<attribution_reporting::AggregatableValues>
-      aggregatable_values = attribution_reporting::AggregatableValues::Create(
-          std::move(data->aggregatable_values));
-  if (!aggregatable_values.has_value()) {
-    RecordTriggerDataHandleStatus(DataHandleStatus::kInvalidData);
-    mojo::ReportBadMessage("AttributionDataHost: Invalid aggregatable values.");
-    return;
+    case AttributionRegistrationType::kSourceOrTrigger:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      context.set_registration_type(AttributionRegistrationType::kTrigger);
+      break;
+    case AttributionRegistrationType::kTrigger:
+      break;
   }
 
   RecordTriggerDataHandleStatus(DataHandleStatus::kSuccess);
 
-  context.num_data_registered++;
+  context.IncrementNumDataRegistered();
 
-  // TODO(linnan): Parse debug reporting from response header.
-  AttributionTrigger trigger(
-      /*destination_origin=*/context.context_origin,
-      std::move(data->reporting_origin), std::move(*filters),
-      std::move(*not_filters), data->debug_key, data->aggregatable_dedup_key,
-      std::move(event_triggers), std::move(*aggregatable_trigger_data),
-      std::move(*aggregatable_values), context.is_within_fenced_frame,
-      data->debug_reporting);
+  AttributionTrigger trigger(std::move(data),
+                             /*destination_origin=*/context.context_origin(),
+                             context.is_within_fenced_frame());
 
   // Handle the trigger immediately if we're not waiting for any sources to be
   // registered.
@@ -622,27 +498,25 @@ void AttributionDataHostManagerImpl::ProcessDelayedTrigger() {
 }
 
 void AttributionDataHostManagerImpl::OnReceiverDisconnected() {
-  const FrozenContext& context = receivers_.current_context();
+  const ReceiverContext& context = receivers_.current_context();
 
-  DCHECK_GE(context.num_data_registered, 0);
-
-  if (context.num_data_registered > 0) {
-    DCHECK_NE(context.registration_type, RegistrationType::kNone);
-
-    if (context.registration_type == RegistrationType::kTrigger) {
-      base::UmaHistogramExactLinear("Conversions.RegisteredTriggersPerDataHost",
-                                    context.num_data_registered, 101);
-    } else {
-      base::UmaHistogramExactLinear("Conversions.RegisteredSourcesPerDataHost",
-                                    context.num_data_registered, 101);
-    }
+  const char* histogram_name = nullptr;
+  switch (context.registration_type()) {
+    case AttributionRegistrationType::kSourceOrTrigger:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      DCHECK_EQ(context.num_data_registered(), 0u);
+      return;
+    case AttributionRegistrationType::kTrigger:
+      histogram_name = "Conversions.RegisteredTriggersPerDataHost";
+      break;
+    case AttributionRegistrationType::kSource:
+      OnSourceEligibleDataHostFinished(context.register_time());
+      histogram_name = "Conversions.RegisteredSourcesPerDataHost";
+      break;
   }
 
-  // If the receiver was handling triggers, there's nothing to do here.
-  if (context.registration_type == RegistrationType::kTrigger)
-    return;
-
-  OnSourceEligibleDataHostFinished(context.register_time);
+  if (size_t num = context.num_data_registered())
+    base::UmaHistogramExactLinear(histogram_name, num, 101);
 }
 
 void AttributionDataHostManagerImpl::OnSourceEligibleDataHostFinished(
@@ -686,8 +560,9 @@ void AttributionDataHostManagerImpl::OnSourceEligibleDataHostFinished(
 
 void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
     const blink::AttributionSrcToken& attribution_src_token,
-    url::Origin reporting_origin,
+    SuitableOrigin reporting_origin,
     std::string header_value,
+    AttributionNavigationType nav_type,
     data_decoder::DataDecoder::ValueOrError result) {
   // TODO(johnidel): Add metrics regarding parsing failures / misconfigured
   // headers.
@@ -698,7 +573,7 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
   if (it == redirect_registrations_.end())
     return;
 
-  DCHECK_GE(it->second.pending_source_data, 0u);
+  DCHECK_GT(it->second.pending_source_data, 0u);
   NavigationRedirectSourceRegistrations& registrations = it->second;
   registrations.pending_source_data--;
 
@@ -718,6 +593,8 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
   }
 
   if (source.has_value()) {
+    base::UmaHistogramEnumeration(
+        "Conversions.SourceRegistration.NavigationType.Foreground", nav_type);
     attribution_manager_->HandleSource(std::move(*source));
   } else {
     attribution_manager_->NotifyFailedSourceRegistration(

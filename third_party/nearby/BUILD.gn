@@ -399,6 +399,7 @@ source_set("platform_api_comm") {
     "src/internal/platform/implementation/server_sync.h",
     "src/internal/platform/implementation/webrtc.h",
     "src/internal/platform/implementation/wifi.h",
+    "src/internal/platform/implementation/wifi_direct.h",
     "src/internal/platform/implementation/wifi_hotspot.h",
     "src/internal/platform/implementation/wifi_lan.h",
   ]
@@ -575,6 +576,27 @@ source_set("platform_base_cancellation_flag") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
+source_set("platform_base_connection_info") {
+  public_configs = [
+    ":nearby_include_config",
+    ":nearby_defines",
+  ]
+  sources = [
+    "src/internal/platform/bluetooth_connection_info.cc",
+    "src/internal/platform/wifi_lan_connection_info.cc",
+  ]
+  public = [
+    "src/internal/platform/bluetooth_connection_info.h",
+    "src/internal/platform/connection_info.h",
+    "src/internal/platform/wifi_lan_connection_info.h",
+  ]
+  public_deps = [
+    ":platform_base",
+    "//third_party/abseil-cpp:absl",
+  ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+}
 
 # src/internal/platform/implementation/shared
 source_set("platform_impl_shared_file") {
@@ -607,6 +629,7 @@ source_set("platform_public_types") {
   public = [
     "src/internal/platform/atomic_boolean.h",
     "src/internal/platform/atomic_reference.h",
+    "src/internal/platform/borrowable.h",
     "src/internal/platform/cancelable.h",
     "src/internal/platform/cancelable_alarm.h",
     "src/internal/platform/condition_variable.h",
@@ -650,6 +673,7 @@ source_set("platform_public_comm") {
     "src/internal/platform/ble_v2.cc",
     "src/internal/platform/bluetooth_classic.cc",
     "src/internal/platform/file.cc",
+    "src/internal/platform/wifi_direct.cc",
     "src/internal/platform/wifi_hotspot.cc",
     "src/internal/platform/wifi_lan.cc",
     "src/internal/platform/wifi_utils.cc",
@@ -660,6 +684,7 @@ source_set("platform_public_comm") {
     "src/internal/platform/bluetooth_adapter.h",
     "src/internal/platform/bluetooth_classic.h",
     "src/internal/platform/webrtc.h",
+    "src/internal/platform/wifi_direct.h",
     "src/internal/platform/wifi_hotspot.h",
     "src/internal/platform/wifi_lan.h",
     "src/internal/platform/wifi_utils.h",
@@ -744,7 +769,9 @@ source_set("presence_types") {
   ]
   public_deps = [
     ":connections_credential_proto",
+    ":connections_device_metadata_proto",
     ":platform_base",
+    ":platform_base_connection_info",
     ":platform_public_logging",
     "//third_party/abseil-cpp:absl",
   ]
@@ -765,6 +792,7 @@ source_set("presence_internal") {
     "src/presence/implementation/base_broadcast_request.cc",
     "src/presence/implementation/credential_manager_impl.cc",
     "src/presence/implementation/encryption.cc",
+    "src/presence/implementation/ldt.cc",
     "src/presence/implementation/scan_manager.cc",
     "src/presence/implementation/service_controller_impl.cc",
   ]
@@ -777,6 +805,7 @@ source_set("presence_internal") {
     "src/presence/implementation/credential_manager.h",
     "src/presence/implementation/credential_manager_impl.h",
     "src/presence/implementation/encryption.h",
+    "src/presence/implementation/ldt.h",
     "src/presence/implementation/scan_manager.h",
     "src/presence/implementation/service_controller.h",
     "src/presence/implementation/service_controller_impl.h",
@@ -788,10 +817,25 @@ source_set("presence_internal") {
     ":platform_public_comm",
     ":platform_public_logging",
     ":platform_public_types",
+    ":presence_ldt_stub",
     ":presence_types",
     ":presence_mediums",
     "//third_party/abseil-cpp:absl",
     "//third_party/boringssl:boringssl",
+  ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+}
+source_set("presence_ldt_stub") {
+  public_configs = [
+    ":nearby_include_config",
+    ":nearby_defines",
+  ]
+  sources = [
+    "src/presence/implementation/np_ldt.c",
+  ]
+  public = [
+    "src/presence/implementation/np_ldt.h",
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

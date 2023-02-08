@@ -21,6 +21,7 @@
 
 namespace ash {
 namespace reporting {
+
 namespace {
 
 constexpr char kLoginLogoutReporterDictionary[] =
@@ -97,13 +98,14 @@ LoginFailureReason GetLoginFailureReasonForReport(
       return LoginFailureReason::UNKNOWN_LOGIN_FAILURE_REASON;
   }
 }
+
 }  // namespace
 
 AccountId LoginLogoutReporter::Delegate::GetLastLoginAttemptAccountId() const {
-  if (!ash::ExistingUserController::current_controller()) {
+  if (!ExistingUserController::current_controller()) {
     return EmptyAccountId();
   }
-  return ash::ExistingUserController::current_controller()
+  return ExistingUserController::current_controller()
       ->GetLastLoginAttemptAccountId();
 }
 
@@ -258,7 +260,7 @@ void LoginLogoutReporter::MaybeReportKioskLoginFailure() {
   // pref service.
   reporter_helper_->ReportEvent(
       std::move(record), ::reporting::Priority::SECURITY,
-      base::BindPostTask(base::ThreadTaskRunnerHandle::Get(),
+      base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
                          std::move(enqueue_cb)));
 }
 

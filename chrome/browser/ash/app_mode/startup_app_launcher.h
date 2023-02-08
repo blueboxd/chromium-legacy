@@ -29,6 +29,7 @@ class StartupAppLauncher : public KioskAppLauncher,
  public:
   StartupAppLauncher(Profile* profile,
                      const std::string& app_id,
+                     bool should_skip_install,
                      Delegate* delegate);
   StartupAppLauncher(const StartupAppLauncher&) = delete;
   StartupAppLauncher& operator=(const StartupAppLauncher&) = delete;
@@ -77,6 +78,8 @@ class StartupAppLauncher : public KioskAppLauncher,
 
   Profile* const profile_;
   const std::string app_id_;
+  const bool should_skip_install_;
+
   int launch_attempt_ = 0;
   LaunchState state_ = LaunchState::kNotStarted;
 
@@ -91,11 +94,5 @@ class StartupAppLauncher : public KioskAppLauncher,
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when the //chrome/browser/chromeos
-// migration is finished.
-namespace chromeos {
-using ::ash::StartupAppLauncher;
-}
 
 #endif  // CHROME_BROWSER_ASH_APP_MODE_STARTUP_APP_LAUNCHER_H_

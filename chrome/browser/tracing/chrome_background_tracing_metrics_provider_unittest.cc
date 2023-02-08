@@ -24,9 +24,9 @@
 // "nogncheck" because of crbug.com/1125897.
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_system_profile_provider.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"  // nogncheck
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -136,13 +136,13 @@ class ChromeBackgroundTracingMetricsProviderChromeOSTest
     chromeos::TpmManagerClient::InitializeFake();
     ash::DemoSession::SetDemoConfigForTesting(
         ash::DemoSession::DemoModeConfig::kNone);
-    chromeos::LoginState::Initialize();
+    ash::LoginState::Initialize();
   }
 
   void TearDown() override {
     ChromeBackgroundTracingMetricsProviderTest::TearDown();
 
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     ash::DemoSession::ResetDemoConfigForTesting();
     chromeos::TpmManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();

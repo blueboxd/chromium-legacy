@@ -243,59 +243,22 @@ bool GetZramIoStats(ZramIoStat* zram_io_stat) {
   return GetZramIoStatsForDevice(zram_io_stat, 0);
 }
 
-ZramMetrics::ZramMetrics() {
-  runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-}
-
+ZramMetrics::ZramMetrics() = default;
 ZramMetrics::~ZramMetrics() = default;
 
-void ZramMetrics::StartOnSequence() {
-  timer_.Start(FROM_HERE, kZramMetricsPeriod,
-               base::BindRepeating(&ZramMetrics::CollectEvents, this));
-}
-
-void ZramMetrics::StopOnSequence() {
-  timer_.Stop();
-}
-
-void ZramMetrics::Stop() {
-  if (!runner_->RunsTasksInCurrentSequence()) {
-    // Post back to the sequence we want to run on.
-    runner_->PostTask(FROM_HERE,
-                      base::BindOnce(&ZramMetrics::StopOnSequence, this));
-    return;
-  }
-
-  StopOnSequence();
-}
-
-void ZramMetrics::Start() {
-  has_old_huge_pages_ = false;
-  if (!runner_->RunsTasksInCurrentSequence()) {
-    // Post back to the sequence we want to run on.
-    runner_->PostTask(FROM_HERE,
-                      base::BindOnce(&ZramMetrics::StartOnSequence, this));
-    return;
-  }
-
-  StartOnSequence();
-}
-
-void ZramMetrics::CollectEvents() {
+bool ZramMetrics::CollectEvents() {
   ZramMmStat zram_mm_stat;
 
   if (!GetZramMmStats(&zram_mm_stat)) {
-    return;
+    return false;
   }
 
   const int kTotalPagesSwapped =
       zram_mm_stat.orig_data_size / base::GetPageSize();
 
+  orig_data_size_mb_ = zram_mm_stat.orig_data_size / kMB;
   UMA_HISTOGRAM_MEMORY_LARGE_MB("ChromeOS.Zram.OrigDataSizeMB",
-                                zram_mm_stat.orig_data_size / kMB);
-
+                                orig_data_size_mb_);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("ChromeOS.Zram.ComprDataSizeMB",
                                 zram_mm_stat.compr_data_size / kMB);
 
@@ -362,7 +325,7 @@ void ZramMetrics::CollectEvents() {
   ZramBdStat zram_bd_stat;
 
   if (!GetZramBdStats(&zram_bd_stat)) {
-    return;
+    return false;
   }
 
   UMA_HISTOGRAM_COUNTS_1M("ChromeOS.Zram.BdCount", zram_bd_stat.bd_count);
@@ -374,7 +337,7 @@ void ZramMetrics::CollectEvents() {
   ZramIoStat zram_io_stat;
 
   if (!GetZramIoStats(&zram_io_stat)) {
-    return;
+    return false;
   }
 
   UMA_HISTOGRAM_COUNTS_1000("ChromeOS.Zram.FailedReads",
@@ -387,6 +350,7 @@ void ZramMetrics::CollectEvents() {
 
   UMA_HISTOGRAM_COUNTS_1000("ChromeOS.Zram.NotifyFree",
                             zram_io_stat.notify_free);
+  return true;
 }
 
 }  // namespace memory

@@ -64,14 +64,14 @@ class SearchResultListViewTest : public views::test::WidgetTest,
     widget_ = CreateTopLevelPlatformWidget();
 
     default_view_ = std::make_unique<SearchResultListView>(
-        nullptr, &view_delegate_, nullptr,
+        &view_delegate_, nullptr,
         SearchResultView::SearchResultViewType::kDefault, true, absl::nullopt);
     default_view_->SetListType(
         SearchResultListView::SearchResultListType::kBestMatch);
     default_view_->SetActive(true);
 
     answer_card_view_ = std::make_unique<SearchResultListView>(
-        nullptr, &view_delegate_, nullptr,
+        &view_delegate_, nullptr,
         SearchResultView::SearchResultViewType::kAnswerCard, true,
         absl::nullopt);
     answer_card_view_->SetListType(
@@ -419,32 +419,6 @@ TEST_P(SearchResultListViewTest, ModelObservers) {
   // Delete from start.
   DeleteResultAt(0);
   ExpectConsistent();
-}
-
-TEST_P(SearchResultListViewTest, HidesAssistantResultWhenTilesVisible) {
-  SetUpSearchResults();
-
-  // No assistant results available.
-  EXPECT_TRUE(GetAssistantResultViews().empty());
-
-  AddAssistantSearchResult();
-
-  // Assistant result should be set and visible.
-  for (const auto* view : GetAssistantResultViews()) {
-    EXPECT_TRUE(view->GetVisible());
-    EXPECT_EQ(view->result()->title(), u"assistant result");
-  }
-
-  // Add a tile result
-  std::unique_ptr<TestSearchResult> tile_result =
-      std::make_unique<TestSearchResult>();
-  tile_result->set_display_type(ash::SearchResultDisplayType::kTile);
-  GetResults()->Add(std::move(tile_result));
-
-  RunPendingMessages();
-
-  // Assistant result should be gone.
-  EXPECT_TRUE(GetAssistantResultViews().empty());
 }
 
 }  // namespace test

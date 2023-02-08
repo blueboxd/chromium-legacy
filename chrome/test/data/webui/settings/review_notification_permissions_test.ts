@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -10,6 +11,7 @@ import {SettingsReviewNotificationPermissionsElement, SiteSettingsPrefsBrowserPr
 import {CrActionMenuElement} from 'chrome://settings/settings.js';
 import {isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
+import {isMac} from 'chrome://resources/js/platform.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
@@ -123,8 +125,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
   }
 
   function getEntries() {
-    return testElement.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    return testElement.shadowRoot!.querySelectorAll('.site-list .site-entry');
   }
 
   test('Notification Permission strings', async function() {
@@ -347,6 +348,36 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
         JSON.stringify(origins2.sort()), JSON.stringify([origin1, origin2]));
   });
 
+  /**
+   * Tests whether pressing the ctrl+z key combination correctly undoes the last
+   * user action.
+   */
+  test('Undo Block via Ctrl+Z', async function() {
+    await browserProxy.whenCalled('getNotificationPermissionReview');
+    flush();
+
+    // User blocks the site.
+    testElement.shadowRoot!.querySelector<HTMLElement>(
+                               '.site-entry #block')!.click();
+    assertAnimation([true, false]);
+
+    const entries = getEntries();
+    const expectedOrigin =
+        entries[0]!.querySelector('.site-representation')!.textContent!.trim();
+    browserProxy.resetResolver('allowNotificationPermissionForOrigins');
+    const notificationText = testElement.i18n(
+        'safetyCheckNotificationPermissionReviewBlockedToastLabel',
+        expectedOrigin);
+    assertNotification(true, notificationText);
+
+    keyDownOn(document.documentElement, 0, isMac ? 'meta' : 'ctrl', 'z');
+
+    const origins =
+        await browserProxy.whenCalled('allowNotificationPermissionForOrigins');
+    assertEquals(origins[0], expectedOrigin);
+    assertNotification(false);
+  });
+
   test('Block All Click single entry', async function() {
     await browserProxy.whenCalled('getNotificationPermissionReview');
     flush();
@@ -380,7 +411,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
 
     // Before review, header and list of permissions are visible.
     assertTrue(isChildVisible(testElement, '#review-header'));
-    assertTrue(isChildVisible(testElement, '.notification-permissions-list'));
+    assertTrue(isChildVisible(testElement, '.site-list'));
     assertFalse(isChildVisible(testElement, '#done-header'));
 
     // Through reviewing permissions the permission list is empty and only the
@@ -389,7 +420,7 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
         'notification-permission-review-list-maybe-changed', []);
     await flushTasks();
     assertFalse(isChildVisible(testElement, '#review-header'));
-    assertFalse(isChildVisible(testElement, '.notification-permissions-list'));
+    assertFalse(isChildVisible(testElement, '.site-list'));
     assertTrue(isChildVisible(testElement, '#done-header'));
 
     // The element returns to showing the list of permissions when new items are
@@ -398,11 +429,11 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
         'notification-permission-review-list-maybe-changed', mockData);
     await flushTasks();
     assertTrue(isChildVisible(testElement, '#review-header'));
-    assertTrue(isChildVisible(testElement, '.notification-permissions-list'));
+    assertTrue(isChildVisible(testElement, '.site-list'));
     assertFalse(isChildVisible(testElement, '#done-header'));
   });
 
-  test('Collapsible List', async function() {
+  test('Collapsible List', function() {
     const expandButton =
         testElement.shadowRoot!.querySelector('cr-expand-button');
     assertTrue(!!expandButton);
@@ -433,9 +464,6 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
   });
 
   /**
-   * TODO(crbug/1374908): Re-enable the commented parts. This is failing on
-   * buildbots.
-   *
    * Tests whether header string updated based on the notification permission
    * list size for plural and singular case.
    */
@@ -448,11 +476,13 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     assertEquals(2, entries.length);
 
     const headerElement =
-        testElement.shadowRoot!.querySelector('#expandButton h2');
+        testElement.shadowRoot!.querySelector('#review-header h2');
     assertTrue(headerElement !== null);
-    // assertEquals(
-    //     'Review 2 sites that recently sent a lot of notifications',
-    //     headerElement.textContent!.trim());
+
+    const headerStringTwo =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'safetyCheckNotificationPermissionReviewPrimaryLabel', 2);
+    assertEquals(headerStringTwo, headerElement.textContent!.trim());
 
     // Check header string for singular case.
     webUIListenerCallback(
@@ -465,8 +495,9 @@ suite('CrSettingsReviewNotificationPermissionsTest', function() {
     entries = getEntries();
     assertEquals(1, entries.length);
 
-    // assertEquals(
-    //     'Review 1 site that recently sent a lot of notifications',
-    //     headerElement.textContent!.trim());
+    const headerStringOne =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'safetyCheckNotificationPermissionReviewPrimaryLabel', 1);
+    assertEquals(headerStringOne, headerElement.textContent!.trim());
   });
 });

@@ -41,15 +41,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUiGpuRasterizationEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kElasticOverscroll);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_ANDROID)
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const char kElasticOverscrollType[];
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const char kElasticOverscrollTypeFilter[];
-COMPONENT_EXPORT(UI_BASE_FEATURES)
-extern const char kElasticOverscrollTypeTransform[];
-#endif  // BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_WIN)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 BASE_DECLARE_FEATURE(kApplyNativeOccludedRegionToWindowTracker);
@@ -206,6 +197,9 @@ bool IsWaylandScreenCoordinatesEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kLacrosColorManagement);
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsLacrosColorManagementEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeRefresh2023();
 
 }  // namespace features
 

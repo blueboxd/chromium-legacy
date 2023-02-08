@@ -43,7 +43,7 @@
 #include "chrome/updater/update_usage_stats_task.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
@@ -665,11 +665,6 @@ void UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork(
           MakeUpdateClientCrxStateChangeCallback(config_, state_update),
           priority == Priority::kForeground,
           MakeUpdateClientCallback(std::move(callback))));
-}
-
-void UpdateServiceImpl::Uninitialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  PrefsCommitPendingWrites(config_->GetPrefService());
 }
 
 UpdateServiceImpl::~UpdateServiceImpl() {

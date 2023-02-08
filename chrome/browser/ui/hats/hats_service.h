@@ -33,7 +33,6 @@ class Browser;
 class Profile;
 
 // Trigger identifiers currently used; duplicates not allowed.
-extern const char kHatsSurveyTriggerAccuracyTips[];
 extern const char kHatsSurveyTriggerAutofillAddress[];
 extern const char kHatsSurveyTriggerAutofillCard[];
 extern const char kHatsSurveyTriggerAutofillPassword[];
@@ -61,6 +60,12 @@ extern const char kHatsSurveyTriggerTrustSafetyPrivacySandbox3NoticeLearnMore[];
 extern const char kHatsSurveyTriggerTrustSafetyPrivacySettings[];
 extern const char kHatsSurveyTriggerTrustSafetyTrustedSurface[];
 extern const char kHatsSurveyTriggerTrustSafetyTransactions[];
+extern const char kHatsSurveyTriggerTrustSafetyV2BrowsingData[];
+extern const char kHatsSurveyTriggerTrustSafetyV2ControlGroup[];
+extern const char kHatsSurveyTriggerTrustSafetyV2PasswordCheck[];
+extern const char kHatsSurveyTriggerTrustSafetyV2SafetyCheck[];
+extern const char kHatsSurveyTriggerTrustSafetyV2TrustedSurface[];
+extern const char kHatsSurveyTriggerTrustSafetyV2PrivacyGuide[];
 extern const char kHatsSurveyTriggerWhatsNew[];
 
 // The Trigger ID for a test HaTS Next survey which is available for testing

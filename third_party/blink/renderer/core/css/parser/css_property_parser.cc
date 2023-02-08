@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/hash_tools.h"
-#include "third_party/blink/renderer/core/css/known_exposed_properties.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/shorthand.h"
+#include "third_party/blink/renderer/core/css/property_bitsets.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_visitor.h"
 
@@ -178,7 +178,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
 }
 
 static inline bool IsExposedInMode(const ExecutionContext* execution_context,
-                                   const CSSProperty& property,
+                                   const CSSUnresolvedProperty& property,
                                    CSSParserMode mode) {
   return mode == kUASheetMode ? property.IsUAExposed(execution_context)
                               : property.IsWebExposed(execution_context);
@@ -235,6 +235,33 @@ static inline bool QuasiLowercaseIntoBuffer(const LChar* src,
   return true;
 }
 
+// The "exposed" property is different from the incoming property in the
+// following cases:
+//
+//  - The property has an alternative property [1] which is enabled. Note that
+//    alternative properties also can have alternative properties.
+//  - The property is not enabled. This is represented by
+//    CSSPropertyID::kInvalid.
+//
+// [1] See documentation near "alternative_of" in css_properties.json5.
+static CSSPropertyID ExposedProperty(CSSPropertyID property_id,
+                                     const ExecutionContext* execution_context,
+                                     CSSParserMode mode) {
+  const CSSUnresolvedProperty& property =
+      CSSUnresolvedProperty::Get(property_id);
+  CSSPropertyID alternative_id = property.GetAlternative();
+  if (alternative_id != CSSPropertyID::kInvalid) {
+    if (CSSPropertyID exposed_id =
+            ExposedProperty(alternative_id, execution_context, mode);
+        exposed_id != CSSPropertyID::kInvalid) {
+      return exposed_id;
+    }
+  }
+  return IsExposedInMode(execution_context, property, mode)
+             ? property_id
+             : CSSPropertyID::kInvalid;
+}
+
 template <typename CharacterType>
 static CSSPropertyID UnresolvedCSSPropertyID(
     const ExecutionContext* execution_context,
@@ -268,22 +295,15 @@ static CSSPropertyID UnresolvedCSSPropertyID(
 
   CSSPropertyID property_id = static_cast<CSSPropertyID>(hash_table_entry->id);
   if (kKnownExposedProperties.Has(property_id)) {
-#if DCHECK_IS_ON()
-    const CSSProperty& property =
-        CSSProperty::Get(ResolveCSSPropertyID(property_id));
-    DCHECK(IsExposedInMode(execution_context, property, mode));
-#endif
-  } else {
-    // The property is behind a runtime flag, so we need to go ahead
-    // and actually do the resolution to see if that flag is on or not.
-    // This should happen only occasionally.
-    const CSSProperty& property =
-        CSSProperty::Get(ResolveCSSPropertyID(property_id));
-    if (!IsExposedInMode(execution_context, property, mode)) {
-      return CSSPropertyID::kInvalid;
-    }
+    DCHECK_EQ(property_id,
+              ExposedProperty(property_id, execution_context, mode));
+    return property_id;
   }
-  return property_id;
+
+  // The property is behind a runtime flag, so we need to go ahead
+  // and actually do the resolution to see if that flag is on or not.
+  // This should happen only occasionally.
+  return ExposedProperty(property_id, execution_context, mode);
 }
 
 CSSPropertyID UnresolvedCSSPropertyID(const ExecutionContext* execution_context,

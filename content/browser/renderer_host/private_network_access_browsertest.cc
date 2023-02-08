@@ -684,7 +684,9 @@ class PrivateNetworkAccessBrowserTestForWorkers
                 features::kPrivateNetworkAccessForWorkers,
                 network::features::kNetworkServiceMemoryCache,
             },
-            {}) {}
+            {
+                features::kPrivateNetworkAccessForWorkersWarningOnly,
+            }) {}
 };
 
 // Test with PNA checks for worker-related fetches enabled and preflight
@@ -698,6 +700,26 @@ class PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkers
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kPrivateNetworkAccessRespectPreflightResults,
                 features::kPrivateNetworkAccessForWorkers,
+                network::features::kNetworkServiceMemoryCache,
+            },
+            {
+                features::kPrivateNetworkAccessForWorkersWarningOnly,
+            }) {}
+};
+
+// Test with PNA checks for worker-related fetches enabled in warning-only mode,
+// including preflights.
+class
+    PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly
+    : public PrivateNetworkAccessBrowserTestBase {
+ public:
+  PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly()
+      : PrivateNetworkAccessBrowserTestBase(
+            {
+                features::kBlockInsecurePrivateNetworkRequests,
+                features::kPrivateNetworkAccessRespectPreflightResults,
+                features::kPrivateNetworkAccessForWorkers,
+                features::kPrivateNetworkAccessForWorkersWarningOnly,
                 network::features::kNetworkServiceMemoryCache,
             },
             {}) {}
@@ -3817,6 +3839,15 @@ IN_PROC_BROWSER_TEST_F(
             EvalJs(root_frame_host(), FetchWorkerScript(kWorkerScriptPath)));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly,
+    FetchWorkerFromInsecurePublicToLocal) {
+  EXPECT_TRUE(NavigateToURL(shell(), InsecurePublicURL(kDefaultPath)));
+
+  EXPECT_EQ(true,
+            EvalJs(root_frame_host(), FetchWorkerScript(kWorkerScriptPath)));
+}
+
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
                        FetchWorkerFromSecureTreatAsPublicToLocal) {
   EXPECT_TRUE(
@@ -3842,6 +3873,15 @@ IN_PROC_BROWSER_TEST_F(
       NavigateToURL(shell(), SecureLocalURL(kTreatAsPublicAddressPath)));
 
   EXPECT_EQ(false,
+            EvalJs(root_frame_host(), FetchWorkerScript(kWorkerScriptPath)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly,
+    FetchWorkerFromSecurePublicToLocalFailedPreflight) {
+  EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
+
+  EXPECT_EQ(true,
             EvalJs(root_frame_host(), FetchWorkerScript(kWorkerScriptPath)));
 }
 
@@ -3886,6 +3926,16 @@ IN_PROC_BROWSER_TEST_F(
                     FetchSharedWorkerScript(kSharedWorkerScriptPath)));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly,
+    FetchSharedWorkerFromInsecurePublicToLocal) {
+  EXPECT_TRUE(NavigateToURL(shell(), InsecurePublicURL(kDefaultPath)));
+
+  ExpectFetchSharedWorkerScriptResult(
+      true, EvalJs(root_frame_host(),
+                   FetchSharedWorkerScript(kSharedWorkerScriptPath)));
+}
+
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
                        FetchSharedWorkerFromSecureTreatAsPublicToLocal) {
   EXPECT_TRUE(
@@ -3915,6 +3965,16 @@ IN_PROC_BROWSER_TEST_F(
   ExpectFetchSharedWorkerScriptResult(
       false, EvalJs(root_frame_host(),
                     FetchSharedWorkerScript(kSharedWorkerScriptPath)));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrivateNetworkAccessBrowserTestRespectPreflightResultsForWorkersWarningOnly,
+    FetchSharedWorkerFromSecurePublicToLocalFailedPreflight) {
+  EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
+
+  ExpectFetchSharedWorkerScriptResult(
+      true, EvalJs(root_frame_host(),
+                   FetchSharedWorkerScript(kSharedWorkerScriptPath)));
 }
 
 IN_PROC_BROWSER_TEST_F(

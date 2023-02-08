@@ -19,9 +19,8 @@
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/media/media_devices_permission_checker.h"
@@ -359,7 +358,7 @@ class MediaDevicesManager::AudioServiceDeviceListener
 
     // Resetting the error handler in a posted task since doing it synchronously
     // results in a browser crash. See https://crbug.com/845142.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&AudioServiceDeviceListener::ConnectToService,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -446,8 +445,8 @@ void MediaDevicesManager::EnumerateDevices(
       request_audio_input_capabilities ? "true" : "false",
       request_video_input_capabilities ? "true" : "false"));
 
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id,
                      render_frame_id),
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
@@ -477,8 +476,8 @@ uint32_t MediaDevicesManager::SubscribeDeviceChangeNotifications(
 
   // Fetch the first device_id_salt for this subscriber's frame, to be able to
   // later detect changes.
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id,
                      render_frame_id),
       base::BindOnce(&MediaDevicesManager::SetSubscriptionLastSeenDeviceIdSalt,
@@ -585,11 +584,6 @@ void MediaDevicesManager::StopMonitoring() {
     SetCachePolicy(static_cast<MediaDeviceType>(i), CachePolicy::NO_CACHE);
 }
 
-bool MediaDevicesManager::IsMonitoringStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return monitoring_started_;
-}
-
 void MediaDevicesManager::OnDevicesChanged(
     base::SystemMonitor::DeviceType device_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -649,12 +643,6 @@ blink::WebMediaDeviceInfoArray MediaDevicesManager::GetCachedDeviceInfo(
     MediaDeviceType type) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return current_snapshot_[static_cast<size_t>(type)];
-}
-
-MediaDevicesPermissionChecker*
-MediaDevicesManager::media_devices_permission_checker() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return permission_checker_.get();
 }
 
 void MediaDevicesManager::SetPermissionChecker(
@@ -928,7 +916,7 @@ void MediaDevicesManager::EnumerateAudioDevices(bool is_input) {
   MediaDeviceType type = is_input ? MediaDeviceType::MEDIA_AUDIO_INPUT
                                   : MediaDeviceType::MEDIA_AUDIO_OUTPUT;
   if (use_fake_devices_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&MediaDevicesManager::DevicesEnumerated,
                                   weak_factory_.GetWeakPtr(), type,
                                   GetFakeAudioDevices(is_input)));
@@ -941,8 +929,19 @@ void MediaDevicesManager::EnumerateAudioDevices(bool is_input) {
 }
 
 void MediaDevicesManager::VideoInputDevicesEnumerated(
+    media::mojom::DeviceEnumerationResult result_code,
     const media::VideoCaptureDeviceDescriptors& descriptors) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (result_code != media::mojom::DeviceEnumerationResult::kSuccess) {
+    std::string log_message = base::StringPrintf(
+        "VideoInputDevicesEnumerated got error %d", result_code);
+    // Log to both WebRTC logs (for feedback reports) and text logs for
+    // manually-collected chrome logs at customers.
+    SendLogMessage(log_message);
+    VLOG(1) << log_message;
+    // TODO(crbug.com/1313822): Propagate this as an error response to the
+    // page and expose in the JS API.
+  }
   blink::WebMediaDeviceInfoArray snapshot;
   for (const auto& descriptor : descriptors) {
     snapshot.emplace_back(descriptor);
@@ -1038,8 +1037,8 @@ void MediaDevicesManager::UpdateSnapshot(
   for (const auto& subscription : subscriptions_) {
     const SubscriptionRequest& request = subscription.second;
     if (request.subscribe_types[static_cast<size_t>(type)]) {
-      base::PostTaskAndReplyWithResult(
-          GetUIThreadTaskRunner({}).get(), FROM_HERE,
+      GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+          FROM_HERE,
           base::BindOnce(salt_and_origin_callback_, request.render_process_id,
                          request.render_frame_id),
           base::BindOnce(&MediaDevicesManager::OnSaltAndOriginForSubscription,

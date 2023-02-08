@@ -139,8 +139,26 @@ DrmDisplay::PrivacyScreenProperty::GetWritePrivacyScreenProperty() const {
   return privacy_screen_legacy_.get();
 }
 
-DrmDisplay::DrmDisplay(const scoped_refptr<DrmDevice>& drm)
-    : drm_(drm), current_color_space_(gfx::ColorSpace::CreateSRGB()) {}
+DrmDisplay::DrmDisplay(const scoped_refptr<DrmDevice>& drm,
+                       HardwareDisplayControllerInfo* info,
+                       const display::DisplaySnapshot* display_snapshot)
+    : display_id_(display_snapshot->display_id()),
+      base_connector_id_(display_snapshot->base_connector_id()),
+      drm_(drm),
+      crtc_(info->crtc()->crtc_id),
+      connector_(info->ReleaseConnector()) {
+  modes_ = GetDrmModeVector(connector_.get());
+  is_hdr_capable_ = display_snapshot->bits_per_channel() > 8 &&
+                    display_snapshot->color_space().IsHDR();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  is_hdr_capable_ =
+      is_hdr_capable_ &&
+      base::FeatureList::IsEnabled(display::features::kUseHDRTransferFunction);
+#endif
+  current_color_space_ = gfx::ColorSpace::CreateSRGB();
+  privacy_screen_property_ =
+      std::make_unique<PrivacyScreenProperty>(drm_, connector_.get());
+}
 
 DrmDisplay::~DrmDisplay() = default;
 
@@ -149,44 +167,12 @@ uint32_t DrmDisplay::connector() const {
   return connector_->connector_id;
 }
 
-std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
-    HardwareDisplayControllerInfo* info,
-    uint8_t device_index) {
-  std::unique_ptr<display::DisplaySnapshot> params = CreateDisplaySnapshot(
-      info, drm_->get_fd(), drm_->device_path(), device_index, origin_);
-  base_connector_id_ = params->base_connector_id();
-  crtc_ = info->crtc()->crtc_id;
-  // TODO(crbug.com/1119499): consider taking ownership of |info->connector()|
-  connector_ = ScopedDrmConnectorPtr(
-      drm_->GetConnector(info->connector()->connector_id));
-  if (!connector_) {
-    PLOG(ERROR) << "Failed to get connector "
-                << info->connector()->connector_id;
-    return nullptr;
-  }
-
-  display_id_ = params->display_id();
-  modes_ = GetDrmModeVector(info->connector());
-  is_hdr_capable_ =
-      params->bits_per_channel() > 8 && params->color_space().IsHDR();
-  privacy_screen_property_ =
-      std::make_unique<PrivacyScreenProperty>(drm(), connector_.get());
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  is_hdr_capable_ =
-      is_hdr_capable_ &&
-      base::FeatureList::IsEnabled(display::features::kUseHDRTransferFunction);
-#endif
-
-  return params;
-}
-
 // When reading DRM state always check that it's still valid. Any sort of events
 // (such as disconnects) may invalidate the state.
 bool DrmDisplay::GetHDCPState(
     display::HDCPState* hdcp_state,
     display::ContentProtectionMethod* protection_method) {
-  if (!connector_)
-    return false;
+  DCHECK(connector_);
 
   TRACE_EVENT1("drm", "DrmDisplay::GetHDCPState", "connector",
                connector_->connector_id);
@@ -249,9 +235,7 @@ bool DrmDisplay::GetHDCPState(
 bool DrmDisplay::SetHDCPState(
     display::HDCPState state,
     display::ContentProtectionMethod protection_method) {
-  if (!connector_) {
-    return false;
-  }
+  DCHECK(connector_);
 
   if (protection_method != display::CONTENT_PROTECTION_METHOD_NONE) {
     ScopedDrmPropertyPtr content_type_property(
@@ -342,6 +326,15 @@ void DrmDisplay::SetColorSpace(const gfx::ColorSpace& color_space) {
   constexpr float kExponent = 1.2;
   FillPowerFunctionValues(&gamma, kNumGammaSamples, kSDRLevel, kExponent);
   CommitGammaCorrection(degamma, gamma);
+}
+
+bool DrmDisplay::SetVrrEnabled(bool vrr_enabled) {
+  if (!drm_->plane_manager()->SetVrrEnabled(crtc_, vrr_enabled)) {
+    LOG(ERROR) << "Failed to set vrr_enabled property for crtc_id = " << crtc_;
+    return false;
+  }
+
+  return true;
 }
 
 void DrmDisplay::CommitGammaCorrection(

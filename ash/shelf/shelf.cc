@@ -408,8 +408,6 @@ void Shelf::CreateHotseatWidget(aura::Window* container) {
   hotseat_transition_metrics_reporter_ =
       std::make_unique<HotseatWidgetAnimationMetricsReporter>(
           HotseatWidgetAnimationMetricsReporter::HotseatElementType::kWidget);
-  Shell::Get()->login_unlock_throughput_recorder()->SetShelfViewIfNotSet(
-      hotseat_widget_->scrollable_shelf_view()->shelf_view());
 }
 
 void Shelf::CreateStatusAreaWidget(aura::Window* shelf_container) {
@@ -612,11 +610,6 @@ void Shelf::ProcessScrollEvent(ui::ScrollEvent* event) {
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   DCHECK(app_list_controller);
-  // |shelf_layout_manager_| handles scroll events to toggle the App List. If
-  // the AppList is already showing, the event must not be handled since hiding
-  // the app list is not in scope for this action.
-  if (app_list_controller->IsVisible(shelf_layout_manager_->display_.id()))
-    return;
 
   shelf_layout_manager_->ProcessScrollEventFromShelf(event);
   event->SetHandled();
@@ -633,11 +626,6 @@ void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
   DCHECK(app_list_controller);
-  // |shelf_layout_manager_| handles mousewheel events to toggle the App List.
-  // If the AppList is already showing, the event must not be handled since
-  // hiding the app list is not in scope for this action.
-  if (app_list_controller->IsVisible(shelf_layout_manager_->display_.id()))
-    return;
 
   shelf_layout_manager_->ProcessMouseWheelEventFromShelf(event);
   event->SetHandled();

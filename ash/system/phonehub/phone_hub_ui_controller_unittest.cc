@@ -4,9 +4,6 @@
 
 #include "ash/system/phonehub/phone_hub_ui_controller.h"
 
-#include "ash/components/phonehub/fake_phone_hub_manager.h"
-#include "ash/components/phonehub/fake_tether_controller.h"
-#include "ash/components/phonehub/phone_model_test_util.h"
 #include "ash/shell.h"
 #include "ash/system/eche/eche_tray.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
@@ -18,6 +15,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/fake_tether_controller.h"
+#include "chromeos/ash/components/phonehub/phone_model_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view.h"
@@ -45,7 +45,7 @@ class PhoneHubUiControllerTest : public AshTestBase,
 
   // AshTestBase:
   void SetUp() override {
-    feature_list_.InitWithFeatures({chromeos::features::kEcheSWA}, {});
+    feature_list_.InitWithFeatures({features::kEcheSWA}, {});
 
     AshTestBase::SetUp();
 
@@ -391,7 +391,8 @@ TEST_F(PhoneHubUiControllerTest, TimerExpiresBluetoothDisconnectedView) {
 TEST_F(PhoneHubUiControllerTest, HandleBubbleOpenedShouldCloseEcheBubble) {
   EcheTray* eche_tray =
       StatusAreaWidgetTestHelper::GetStatusAreaWidget()->eche_tray();
-  eche_tray->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1");
+  eche_tray->LoadBubble(GURL("http://google.com"), gfx::Image(), u"app 1",
+                        u"your phone");
   eche_tray->ShowBubble();
   EXPECT_TRUE(
       eche_tray->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());

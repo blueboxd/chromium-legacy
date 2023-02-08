@@ -10,17 +10,20 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_features.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/crostini_disk.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/ash/crostini_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/guest_os_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,6 +39,7 @@ namespace ash::settings {
 
 namespace mojom {
 using ::chromeos::settings::mojom::kBruschettaDetailsSubpagePath;
+using ::chromeos::settings::mojom::kBruschettaManageSharedFoldersSubpagePath;
 using ::chromeos::settings::mojom::kBruschettaUsbPreferencesSubpagePath;
 using ::chromeos::settings::mojom::kCrostiniBackupAndRestoreSubpagePath;
 using ::chromeos::settings::mojom::kCrostiniDetailsSubpagePath;
@@ -209,15 +213,11 @@ bool IsProfileManaged(Profile* profile) {
 }
 
 bool IsDeviceManaged() {
-  return webui::IsEnterpriseManaged();
+  return policy::IsDeviceEnterpriseManaged();
 }
 
 bool IsAdbSideloadingAllowed() {
   return base::FeatureList::IsEnabled(features::kArcAdbSideloadingFeature);
-}
-
-bool IsDiskResizingAllowed() {
-  return base::FeatureList::IsEnabled(features::kCrostiniDiskResizing);
 }
 
 }  // namespace
@@ -255,6 +255,10 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"bruschettaPageLabel", IDS_SETTINGS_BRUSCHETTA_LABEL},
       {"bruschettaSharedUsbDevicesDescription",
        IDS_SETTINGS_BRUSCHETTA_SHARED_USB_DEVICES_DESCRIPTION},
+      {"bruschettaSharedPathsInstructionsAdd",
+       IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_ADD},
+      {"bruschettaSharedPathsRemoveFailureDialogMessage",
+       IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE},
       {"crostiniPageTitle", IDS_SETTINGS_CROSTINI_TITLE},
       {"crostiniPageLabel", IDS_SETTINGS_CROSTINI_LABEL},
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
@@ -401,17 +405,10 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  if (base::FeatureList::IsEnabled(features::kCrostiniBullseyeUpgrade)) {
-    html_source->AddString(
-        "crostiniContainerUpgrade",
-        l10n_util::GetStringUTF16(
-            IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_BULLSEYE_MESSAGE));
-  } else {
-    html_source->AddString(
-        "crostiniContainerUpgrade",
-        l10n_util::GetStringUTF16(
-            IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_MESSAGE));
-  }
+  html_source->AddString(
+      "crostiniContainerUpgrade",
+      l10n_util::GetStringUTF16(
+          IDS_SETTINGS_CROSTINI_CONTAINER_UPGRADE_BULLSEYE_MESSAGE));
 
   if (auto* pretty_name_value = guest_os::GetContainerPrefValue(
           profile_, crostini::DefaultContainerId(),
@@ -439,6 +436,13 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   // Should the Bruschetta subpage be enabled?
   html_source->AddBoolean("enableBruschetta",
                           bruschetta::BruschettaFeatures::Get()->IsEnabled());
+
+  html_source->AddString(
+      "bruschettaSharedPathsInstructionsLocate",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_LOCATE,
+          base::ASCIIToUTF16(
+              bruschetta::BruschettaChromeOSBaseDirectory().value())));
 
   html_source->AddString(
       "crostiniSubtext",
@@ -496,7 +500,6 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           IsDeviceManaged() || IsProfileManaged(profile_));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
                           IsContainerUpgradeAllowed());
-  html_source->AddBoolean("showCrostiniDiskResize", IsDiskResizingAllowed());
 }
 
 void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
@@ -615,6 +618,14 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kBruschettaDetails, mojom::SearchResultIcon::kPenguin,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kBruschettaUsbPreferencesSubpagePath);
+
+  // Manage shared folders.
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_GUEST_OS_SHARED_PATHS,
+      mojom::Subpage::kBruschettaManageSharedFolders,
+      mojom::Subpage::kBruschettaDetails, mojom::SearchResultIcon::kPenguin,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kBruschettaManageSharedFoldersSubpagePath);
 }
 
 bool CrostiniSection::IsExportImportAllowed() const {
@@ -666,8 +677,7 @@ void CrostiniSection::UpdateSearchTags() {
   if (IsContainerUpgradeAllowed())
     updater.AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
 
-  if (IsDiskResizingAllowed())
-    updater.AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
+  updater.AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
 
   // TODO(crbug:1261319): search concepts for extras containers.
 }

@@ -5,7 +5,7 @@
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {Route, Router, StoredAccount, SyncStatus} from 'chrome://settings/settings.js';
+import {Route, Router, SettingsRoutes, StoredAccount, SyncStatus} from 'chrome://settings/settings.js';
 // clang-format on
 
 interface SyncAllPrefs {
@@ -27,6 +27,8 @@ interface SyncAllPrefs {
   preferencesSynced: boolean;
   readingListRegistered: boolean;
   readingListSynced: boolean;
+  savedTabGroupsRegistered: boolean;
+  savedTabGroupsSynced: boolean;
   syncAllDataTypes: boolean;
   tabsRegistered: boolean;
   tabsSynced: boolean;
@@ -34,6 +36,7 @@ interface SyncAllPrefs {
   themesSynced: boolean;
   typedUrlsRegistered: boolean;
   typedUrlsSynced: boolean;
+  explicitPassphraseTime?: string;
 }
 
 /**
@@ -59,6 +62,8 @@ export function getSyncAllPrefs(): SyncAllPrefs {
     preferencesSynced: true,
     readingListRegistered: true,
     readingListSynced: true,
+    savedTabGroupsRegistered: true,
+    savedTabGroupsSynced: true,
     syncAllDataTypes: true,
     tabsRegistered: true,
     tabsSynced: true,
@@ -98,7 +103,8 @@ export function setupRouterWithSyncRoutes() {
     ABOUT: new Route('/help'),
   };
 
-  Router.resetInstanceForTesting(new Router(routes));
+  Router.resetInstanceForTesting(
+      new Router(routes as unknown as SettingsRoutes));
 }
 
 export function simulateSyncStatus(status: SyncStatus|undefined) {

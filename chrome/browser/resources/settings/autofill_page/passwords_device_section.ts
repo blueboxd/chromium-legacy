@@ -24,7 +24,7 @@ import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -242,7 +242,7 @@ export class PasswordsDeviceSectionElement extends
     };
     SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(
         extractFirstStoredAccountEmail);
-    this.addWebUIListener(
+    this.addWebUiListener(
         'stored-accounts-updated', extractFirstStoredAccountEmail);
   }
 
@@ -338,13 +338,13 @@ export class PasswordsDeviceSectionElement extends
       this.syncDisabled_ = !syncStatus.signedIn;
     };
     SyncBrowserProxyImpl.getInstance().getSyncStatus().then(setSyncDisabled);
-    this.addWebUIListener('sync-status-changed', setSyncDisabled);
+    this.addWebUiListener('sync-status-changed', setSyncDisabled);
 
     const setSignedIn = (storedAccounts: StoredAccount[]) => {
       this.signedIn_ = storedAccounts.length > 0;
     };
     SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(setSignedIn);
-    this.addWebUIListener('stored-accounts-updated', setSignedIn);
+    this.addWebUiListener('stored-accounts-updated', setSignedIn);
 
     const setOptedIn = (optedInForAccountStorage: boolean) => {
       this.optedInForAccountStorage_ = optedInForAccountStorage;
@@ -390,7 +390,7 @@ export class PasswordsDeviceSectionElement extends
   }
 
   private onManageAccountPasswordsClicked_() {
-    OpenWindowProxyImpl.getInstance().openURL(
+    OpenWindowProxyImpl.getInstance().openUrl(
         loadTimeData.getString('googlePasswordManagerUrl'));
   }
 

@@ -28,7 +28,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -66,11 +65,13 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/warning_service.h"
+#include "extensions/common/mojom/event_dispatcher.mojom-forward.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -790,7 +791,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     // Ensure that the callback is called within a time limit.
     weak_ptr_factory_ = std::make_unique<
         base::WeakPtrFactory<ExtensionDownloadsEventRouterData>>(this);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
             &ExtensionDownloadsEventRouterData::DetermineFilenameTimeout,
@@ -950,7 +951,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
     // doesn't keep hogging memory.
     weak_ptr_factory_ = std::make_unique<
         base::WeakPtrFactory<ExtensionDownloadsEventRouterData>>(this);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
             &ExtensionDownloadsEventRouterData::ClearPendingDeterminers,
@@ -1004,12 +1005,12 @@ bool OnDeterminingFilenameWillDispatchCallback(
     content::BrowserContext* browser_context,
     Feature::Context target_context,
     const Extension* extension,
-    const base::DictionaryValue* listener_filter,
-    std::unique_ptr<base::Value::List>* event_args_out,
-    mojom::EventFilteringInfoPtr* event_filtering_info_out) {
+    const base::Value::Dict* listener_filter,
+    absl::optional<base::Value::List>& event_args_out,
+    mojom::EventFilteringInfoPtr& event_filtering_info_out) {
   *any_determiners = true;
   base::Time installed =
-      ExtensionPrefs::Get(browser_context)->GetInstallTime(extension->id());
+      ExtensionPrefs::Get(browser_context)->GetLastUpdateTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
   return true;
 }
@@ -1390,7 +1391,7 @@ void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   bool visible = platform_util::IsVisible(web_contents->GetNativeView());
   if (!visible) {
     if (retries > 0) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&DownloadsAcceptDangerFunction::PromptOrWait, this,
                          download_id, retries - 1),

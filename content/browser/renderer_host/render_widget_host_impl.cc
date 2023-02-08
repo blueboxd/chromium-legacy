@@ -36,7 +36,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "base/trace_event/trace_event.h"
@@ -871,6 +870,8 @@ void RenderWidgetHostImpl::WasShown(
 
   // If we navigated in background, clear the displayed graphics of the
   // previous page before going visible.
+  // TODO(crbug.com/1396336): Checking if there is a content rendering timeout
+  // running isn't ideal for seeing if the tab navigated in the background.
   ForceFirstFrameAfterNavigationTimeout();
   RestartInputEventAckTimeoutIfNecessary();
 
@@ -1001,8 +1002,6 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   const bool is_frame_widget = !self_owned_;
 
   blink::VisualProperties visual_properties;
-
-  // Note: Later in this method, ScreenInfo rects might be overridden!
   visual_properties.screen_infos = GetScreenInfos();
   auto& current_screen_info = visual_properties.screen_infos.mutable_current();
 
@@ -1052,14 +1051,15 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
 
   visual_properties.new_size = view_->GetRequestedRendererSize();
 
-  // While in fullscreen mode, set the ScreenInfo rects to match the view size.
-  // This is needed because web authors often assume screen.width/height are
-  // identical to window.innerWidth/innerHeight while a page is in fullscreen,
-  // and this is not always true for some browser UI features.
-  // https://crbug.com/1060795
-  if (visual_properties.is_fullscreen_granted) {
-    current_screen_info.rect.set_size(visual_properties.new_size);
-    current_screen_info.available_rect.set_size(visual_properties.new_size);
+  // While in fullscreen, provide the view size as a ScreenInfo size override.
+  // This lets `window.screen` provide viewport dimensions while the frame is
+  // fullscreen as a speculative site compatibility measure, because web authors
+  // may assume that screen dimensions match window.innerWidth/innerHeight while
+  // a page is fullscreen, but that is not always true. crbug.com/1367416
+  if (visual_properties.is_fullscreen_granted &&
+      !base::FeatureList::IsEnabled(
+          blink::features::kFullscreenScreenSizeMatchesDisplay)) {
+    current_screen_info.size_override = visual_properties.new_size;
   }
 
   // This widget is for a frame that is the main frame of the outermost frame
@@ -2182,18 +2182,11 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     GetSnapshotFromBrowserCallback callback,
     bool from_surface) {
-  if (!blink_widget_)
-    return;
-
   int snapshot_id = next_browser_snapshot_id_++;
-  base::OnceClosure did_present_callback =
-      base::BindOnce(&RenderWidgetHostImpl::SnapshotFramePresented,
-                     base::Unretained(this), snapshot_id);
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(
         std::make_pair(snapshot_id, std::move(callback)));
-
-    ForceRedrawAndWaitForPresentation(std::move(did_present_callback));
+    RequestForceRedraw(snapshot_id);
     return;
   }
 
@@ -2207,7 +2200,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
   pending_browser_snapshots_.insert(
       std::make_pair(snapshot_id, std::move(callback)));
-  ForceRedrawAndWaitForPresentation(std::move(did_present_callback));
+  RequestForceRedraw(snapshot_id);
 }
 
 void RenderWidgetHostImpl::SelectionChanged(const std::u16string& text,
@@ -2377,10 +2370,14 @@ bool RenderWidgetHostImpl::IsKeyboardLocked() const {
   return view_ ? view_->IsKeyboardLocked() : false;
 }
 
+bool RenderWidgetHostImpl::IsContentRenderingTimeoutRunning() const {
+  return new_content_rendering_timeout_ &&
+         new_content_rendering_timeout_->IsRunning();
+}
+
 void RenderWidgetHostImpl::GetContentRenderingTimeoutFrom(
     RenderWidgetHostImpl* other) {
-  if (other->new_content_rendering_timeout_ &&
-      other->new_content_rendering_timeout_->IsRunning()) {
+  if (other->IsContentRenderingTimeoutRunning()) {
     new_content_rendering_timeout_->Start(
         other->new_content_rendering_timeout_->GetCurrentDelay());
   }
@@ -3083,14 +3080,13 @@ RenderWidgetHostImpl::GetKeyboardLayoutMap() {
   return view_->GetKeyboardLayoutMap();
 }
 
-void RenderWidgetHostImpl::ForceRedrawAndWaitForPresentation(
-    base::OnceClosure presented_callback) {
-  if (!blink_widget_) {
-    std::move(presented_callback).Run();
+void RenderWidgetHostImpl::RequestForceRedraw(int snapshot_id) {
+  if (!blink_widget_)
     return;
-  }
 
-  blink_widget_->ForceRedraw(std::move(presented_callback));
+  blink_widget_->ForceRedraw(
+      base::BindOnce(&RenderWidgetHostImpl::GotResponseToForceRedraw,
+                     base::Unretained(this), snapshot_id));
 }
 
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
@@ -3414,7 +3410,7 @@ void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
     UnlockKeyboard();
 }
 
-void RenderWidgetHostImpl::SnapshotFramePresented(int snapshot_id) {
+void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
   // Snapshots from surface do not need to wait for the screen update.
   if (!pending_surface_browser_snapshots_.empty()) {
     GetView()->CopyFromSurface(
@@ -3431,7 +3427,7 @@ void RenderWidgetHostImpl::SnapshotFramePresented(int snapshot_id) {
   // snapshot will actually pick up that content. Insert a manual delay of
   // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
   // taking the snapshot.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
                      weak_factory_.GetWeakPtr(), snapshot_id),
@@ -3658,8 +3654,7 @@ void RenderWidgetHostImpl::ProgressFlingIfNeeded(base::TimeTicks current_time) {
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
-  if (!new_content_rendering_timeout_ ||
-      !new_content_rendering_timeout_->IsRunning()) {
+  if (!IsContentRenderingTimeoutRunning()) {
     return;
   }
   new_content_rendering_timeout_->Stop();

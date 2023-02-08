@@ -395,7 +395,6 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:jsdoc/recommended',
   ],
   settings: {
     jsdoc: {
@@ -538,7 +537,10 @@ module.exports = {
         message: 'Don\'t use "Interface" as identifier suffix. ' +
             '(go/tsstyle#naming-style)',
       },
-      // Disallow forEach. (go/tsstyle#iterating-containers)
+      // Disallow forEach. (go/tsjs-practices/iteration)
+      // TODO(pihsun): This was relaxed in style guide in cl/430720959,
+      // consider relaxing this if there's place where forEach makes the code
+      // much simpler.
       {
         selector: 'CallExpression[callee.property.name="forEach"]',
         message: 'forEach are not allowed. (go/tsstyle#iterating-containers)',
@@ -700,6 +702,38 @@ module.exports = {
 
     // go/tsstyle#return-types
     '@typescript-eslint/explicit-module-boundary-types': 'error',
+
+    // Upgrade several warning in @typescript-eslint/recommended to error,
+    // since there's no easy way to tell eslint to stop on all warning in
+    // config file.
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-non-null-assertion': 'error',
+
+    // The remaining of jsdoc/recommended, with severity changed to error.
+    // Since there's no easy way to tell eslint to stop on all warning in
+    // config file, we manually copied all rules here.
+    'jsdoc/check-access': 'error',
+    'jsdoc/check-alignment': 'error',
+    'jsdoc/check-param-names': 'error',
+    'jsdoc/check-property-names': 'error',
+    'jsdoc/check-tag-names': 'error',
+    'jsdoc/check-types': 'error',
+    'jsdoc/check-values': 'error',
+    'jsdoc/empty-tags': 'error',
+    'jsdoc/implements-on-classes': 'error',
+    'jsdoc/newline-after-description': 'error',
+    'jsdoc/no-undefined-types': 'error',
+    'jsdoc/require-param-description': 'error',
+    'jsdoc/require-param-name': 'error',
+    'jsdoc/require-property': 'error',
+    'jsdoc/require-property-description': 'error',
+    'jsdoc/require-property-name': 'error',
+    'jsdoc/require-property-type': 'error',
+    'jsdoc/require-returns-check': 'error',
+    'jsdoc/require-returns-description': 'error',
+    'jsdoc/require-yields-check': 'error',
+    'jsdoc/tag-lines': 'error',
+    'jsdoc/valid-types': 'error',
   }),
   overrides: [{
     files: ['**/*.ts'],

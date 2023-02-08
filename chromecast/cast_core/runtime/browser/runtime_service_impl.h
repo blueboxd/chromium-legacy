@@ -14,9 +14,9 @@
 #include "chromecast/cast_core/runtime/browser/cast_runtime_action_recorder.h"
 #include "chromecast/cast_core/runtime/browser/cast_runtime_metrics_recorder.h"
 #include "chromecast/cast_core/runtime/browser/cast_runtime_metrics_recorder_service.h"
-#include "chromecast/cast_core/runtime/browser/runtime_application_dispatcher_base.h"
 #include "chromecast/cast_core/runtime/browser/runtime_application_service_impl.h"
 #include "components/cast_receiver/browser/public/application_client.h"
+#include "components/cast_receiver/browser/public/runtime_application_dispatcher.h"
 #include "components/cast_receiver/common/public/status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cast_core/public/src/proto/metrics/metrics_recorder.castcore.pb.h"
@@ -26,11 +26,9 @@ namespace chromecast {
 
 class CastWebService;
 
-// A gRPC-based implementation of RuntimeApplicationDispatcher for use
-// with Cast Core.
+// An implementation of the gRPC-defined RuntimeService for use with Cast Core.
 class RuntimeServiceImpl final
-    : public RuntimeApplicationDispatcherBase<RuntimeApplicationServiceImpl>,
-      public CastRuntimeMetricsRecorder::EventBuilderFactory {
+    : public CastRuntimeMetricsRecorder::EventBuilderFactory {
  public:
   // |application_client| and |web_service| are expected to persist for the
   // lifetime of this instance.
@@ -40,16 +38,14 @@ class RuntimeServiceImpl final
                      std::string runtime_service_endpoint);
   ~RuntimeServiceImpl() override;
 
-  // RuntimeApplicationDispatcher implementation.
-  cast_receiver::Status Start() override;
-  cast_receiver::Status Stop() override;
+  // Starts and stops the runtime service, including the gRPC completion queue.
+  cast_receiver::Status Start();
+  cast_receiver::Status Stop();
 
   // CastRuntimeMetricsRecorder::EventBuilderFactory overrides:
   std::unique_ptr<CastEventBuilder> CreateEventBuilder() override;
 
  private:
-  using Base = RuntimeApplicationDispatcherBase<RuntimeApplicationServiceImpl>;
-
   // RuntimeService gRPC handlers:
   void HandleLoadApplication(
       cast::runtime::LoadApplicationRequest request,
@@ -106,6 +102,11 @@ class RuntimeServiceImpl final
   const std::string runtime_service_endpoint_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  std::unique_ptr<cast_receiver::RuntimeApplicationDispatcher<
+      RuntimeApplicationServiceImpl>>
+      application_dispatcher_;
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::raw_ref<CastWebService> const web_service_;

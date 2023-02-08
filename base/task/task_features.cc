@@ -8,6 +8,7 @@
 
 #include "base/base_export.h"
 #include "base/feature_list.h"
+#include "base/threading/platform_thread.h"
 
 namespace base {
 
@@ -21,14 +22,9 @@ namespace base {
 // must be aware that all tests sharing a process will have the same state,
 // regardless of future ScopedFeatureList instances.
 
-#if HAS_NATIVE_THREAD_POOL()
-BASE_FEATURE(kUseNativeThreadPool,
-             "UseNativeThreadPool",
+BASE_FEATURE(kUseUtilityThreadGroup,
+             "UseUtilityThreadGroup",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kUseBackgroundNativeThreadPool,
-             "UseBackgroundNativeThreadPool",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 BASE_FEATURE(kNoWorkerThreadReclaim,
              "NoWorkerThreadReclaim",
@@ -100,7 +96,16 @@ BASE_EXPORT void InitializeTaskLeeway() {
   g_task_leeway.store(kTaskLeewayParam.Get(), std::memory_order_relaxed);
 }
 
-BASE_EXPORT TimeDelta GetTaskLeeway() {
+BASE_EXPORT TimeDelta GetTaskLeewayForCurrentThread() {
+  // For some threads, there might be a override of the leeway, so check it
+  // first.
+  auto leeway_override = PlatformThread::GetThreadLeewayOverride();
+  if (leeway_override.has_value())
+    return leeway_override.value();
+  return g_task_leeway.load(std::memory_order_relaxed);
+}
+
+BASE_EXPORT TimeDelta GetDefaultTaskLeeway() {
   return g_task_leeway.load(std::memory_order_relaxed);
 }
 

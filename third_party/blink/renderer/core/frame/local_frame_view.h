@@ -119,7 +119,6 @@ class LocalFrameUkmAggregator;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
-struct MobileFriendliness;
 struct PhysicalOffset;
 struct PhysicalRect;
 
@@ -707,12 +706,11 @@ class CORE_EXPORT LocalFrameView final
   MobileFriendlinessChecker* GetMobileFriendlinessChecker() const {
     return mobile_friendliness_checker_;
   }
-  void DidChangeMobileFriendliness(const MobileFriendliness& mf);
   void RegisterTapEvent(Element* target);
 
   // Returns the UKM aggregator for this frame's local root, creating it if
-  // necessary.
-  LocalFrameUkmAggregator& EnsureUkmAggregator();
+  // necessary. Returns null if no aggregator is needed, such as for SVG images.
+  LocalFrameUkmAggregator* GetUkmAggregator();
   void ResetUkmAggregatorForTesting();
 
   // Report the First Contentful Paint signal to the LocalFrameView.
@@ -773,6 +771,8 @@ class CORE_EXPORT LocalFrameView final
   void AddPendingOpacityUpdate(LayoutObject& object);
   bool RemovePendingOpacityUpdate(const LayoutObject& object);
   bool UpdateAllPendingOpacityUpdates();
+
+  void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
  protected:
   void FrameRectsChanged(const gfx::Rect&) override;
@@ -948,7 +948,6 @@ class CORE_EXPORT LocalFrameView final
 
   void ForAllChildViewsAndPlugins(
       base::FunctionRef<void(EmbeddedContentView&)>);
-  void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
   enum TraversalOrder { kPreOrder, kPostOrder };
   void ForAllNonThrottledLocalFrameViews(
@@ -1016,6 +1015,8 @@ class CORE_EXPORT LocalFrameView final
   bool AnyFrameIsPrintingOrPaintingPreview();
 
   DarkModeFilter& EnsureDarkModeFilter();
+
+  bool HasViewTransitionThrottlingRendering() const;
 
   LayoutSize size_;
 

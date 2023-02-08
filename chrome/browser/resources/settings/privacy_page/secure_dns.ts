@@ -23,8 +23,9 @@ import '../settings_shared.css.js';
 import './secure_dns_input.js';
 
 import {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
-import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
@@ -139,7 +140,7 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
   private secureDnsRadio_: SecureDnsMode;
   private resolverOptions_: ResolverOption[];
   private lastResolverOption_: string;
-  private privacyPolicyString_: string;
+  private privacyPolicyString_: TrustedHTML;
   private secureDnsInputValue_: string;
   private browserProxy_: PrivacyPageBrowserProxy =
       PrivacyPageBrowserProxyImpl.getInstance();
@@ -159,7 +160,7 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
       // Listen to changes in the host resolver configuration and update the
       // UI representation to match. (Changes to the host resolver configuration
       // may be generated in ways other than direct UI manipulation).
-      this.addWebUIListener(
+      this.addWebUiListener(
           'secure-dns-setting-changed',
           (setting: SecureDnsSetting) =>
               this.onSecureDnsPrefsChanged_(setting));
@@ -192,7 +193,7 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
         assertNotReached('Received unknown secure DNS mode');
     }
 
-    this.updateManagementView_(setting.managementMode);
+    this.updateManagementView_(setting);
   }
 
   /**
@@ -295,7 +296,7 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
    * Updates the setting to communicate the type of management, if any. The
    * setting is always collapsed if there is any management.
    */
-  private updateManagementView_(managementMode: SecureDnsUiManagementMode) {
+  private updateManagementView_(setting: SecureDnsSetting) {
     if (this.prefs === undefined) {
       return;
     }
@@ -306,19 +307,32 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: this.secureDnsToggle_.value,
     };
+
+    // The message to be displayed when the device is managed. On Chrome OS, if
+    // the effective template URI contains identifiers (which are
+    // hashed with a salt and hex encoded), then the message will contain the
+    // template URI for display in which the identifiers are shown in plain
+    // text.
+    let secureDescription = loadTimeData.getString('secureDnsDescription');
+    // <if expr="chromeos_ash">
+    if (setting.dohWithIdentifiersActive) {
+      secureDescription = loadTimeData.substituteString(
+          loadTimeData.getString('secureDnsWithIdentifiersDescription'),
+          setting.configForDisplay);
+    }
+    // </if>
+
     if (this.getPref('dns_over_https.mode').enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED) {
       pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       pref.controlledBy = this.getPref('dns_over_https.mode').controlledBy;
-      this.secureDnsDescription_ =
-          loadTimeData.getString('secureDnsDescription');
+      this.secureDnsDescription_ = secureDescription;
     } else {
       // If the secure DNS mode was forcefully overridden by Chrome, provide an
       // explanation in the setting subtitle.
-      switch (managementMode) {
+      switch (setting.managementMode) {
         case SecureDnsUiManagementMode.NO_OVERRIDE:
-          this.secureDnsDescription_ =
-              loadTimeData.getString('secureDnsDescription');
+          this.secureDnsDescription_ = secureDescription;
           break;
         case SecureDnsUiManagementMode.DISABLED_MANAGED:
           pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
@@ -332,7 +346,8 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
           break;
         default:
           assertNotReached(
-              'Received unknown secure DNS management mode ' + managementMode);
+              'Received unknown secure DNS management mode ' +
+              setting.managementMode);
       }
     }
     this.secureDnsToggle_ = pref;
@@ -393,9 +408,9 @@ export class SettingsSecureDnsElement extends SettingsSecureDnsElementBase {
       return;
     }
 
-    this.privacyPolicyString_ = loadTimeData.substituteString(
+    this.privacyPolicyString_ = sanitizeInnerHtml(loadTimeData.substituteString(
         loadTimeData.getString('secureDnsSecureDropdownModePrivacyPolicy'),
-        resolver.policy);
+        resolver.policy));
   }
 
   /**

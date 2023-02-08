@@ -1,7 +1,7 @@
 # Copyright 2021 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Definitions of builders in the chromium.fuzz builder group."""
+"""Definitions of builders in the chromium.fyi builder group."""
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
@@ -107,9 +107,6 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
@@ -257,9 +254,6 @@ ci.builder(
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "lacros-amd64-generic-rel-skylab-try",
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
 )
@@ -294,9 +288,6 @@ ci.builder(
         skylab_upload_location = builder_config.skylab_upload_location(
             gs_bucket = "lacros-arm64-generic-rel-skylab-try",
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
 )
@@ -315,6 +306,7 @@ ci.builder(
 ci.builder(
     name = "linux-chromeos-annotator-rel",
     builderless = True,
+    branch_selector = branches.STANDARD_MILESTONE,
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -329,9 +321,6 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
@@ -342,77 +331,6 @@ ci.builder(
     execution_timeout = 3 * time.hour,
     os = os.LINUX_DEFAULT,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-)
-
-ci.builder(
-    name = "linux-ash-chromium-builder-fyi-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "lcr",
-    ),
-    os = os.LINUX_DEFAULT,
-    properties = {
-        # The format of these properties is defined at archive/properties.proto
-        "$build/archive": {
-            "archive_datas": [
-                {
-                    "files": [
-                        "chrome",
-                        "chrome_100_percent.pak",
-                        "chrome_200_percent.pak",
-                        "chrome_crashpad_handler",
-                        "headless_lib_data.pak",
-                        "headless_lib_strings.pak",
-                        "icudtl.dat",
-                        "libminigbm.so",
-                        "nacl_helper",
-                        "nacl_irt_x86_64.nexe",
-                        "resources.pak",
-                        "snapshot_blob.bin",
-                        "test_ash_chrome",
-                    ],
-                    "dirs": ["locales", "swiftshader"],
-                    "gcs_bucket": "ash-chromium-on-linux-prebuilts",
-                    "gcs_path": "x86_64/{%position%}/ash-chromium.zip",
-                    "archive_type": "ARCHIVE_TYPE_ZIP",
-                    "latest_upload": {
-                        "gcs_path": "x86_64/latest/ash-chromium.txt",
-                        "gcs_file_content": "{%position%}",
-                    },
-                },
-            ],
-        },
-    },
-)
-
-ci.builder(
-    name = "linux-lacros-tester-rel-reviver",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium_no_telemetry_dependencies",
-            apply_configs = [
-                "chromeos",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-chromiumos-archive",
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "default",
-        short_name = "rev",
-    ),
-    os = os.LINUX_DEFAULT,
-    # To avoid peak hours, we run it from 8PM TO 4AM PST. It is
-    # 3 AM to 11 AM UTC.
-    schedule = "0 3,5,7,9 * * *",
 )
 
 ci.builder(
@@ -467,37 +385,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-blink-v8-sandbox-future-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "SB",
-    ),
-    notifies = ["v8-sandbox-fyi-bots"],
-    os = os.LINUX_DEFAULT,
-    builder_spec = builder_config.builder_spec(
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-    ),
-)
-
-ci.builder(
-    name = "linux-example-builder",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-    ),
-    os = os.LINUX_DEFAULT,
-    schedule = "with 12h interval",
-    triggered_by = [],
-)
-
-ci.builder(
     name = "linux-fieldtrial-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -505,13 +392,13 @@ ci.builder(
     os = os.LINUX_DEFAULT,
 )
 
-ci.builder(
-    name = "mac-fieldtrial-rel",
-    builderless = False,
+ci.thin_tester(
+    name = "mac-fieldtrial-tester",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
     builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
         chromium_config = builder_config.chromium_config(
             config = "chromium",
             apply_configs = ["mb"],
@@ -523,7 +410,7 @@ ci.builder(
         ),
     ),
     cores = None,
-    os = os.MAC_DEFAULT,
+    triggered_by = ["ci/mac-arm64-rel"],
 )
 
 ci.builder(
@@ -632,13 +519,18 @@ ci.builder(
     ),
     builder_spec = builder_config.builder_spec(
         chromium_config = builder_config.chromium_config(
-            config = "chromium",
+            config = "android",
             apply_configs = ["mb"],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
         ),
         gclient_config = builder_config.gclient_config(
             config = "chromium",
+            apply_configs = ["android"],
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
         ),
     ),
     builderless = True,
@@ -769,9 +661,6 @@ ci.thin_tester(
             target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
     console_view_entry = consoles.console_view_entry(
@@ -832,9 +721,6 @@ ci.builder(
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
             target_platform = builder_config.target_platform.MAC,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
@@ -1410,7 +1296,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
     service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
     goma_backend = goma.backend.RBE_PROD,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     use_clang_coverage = True,
     # Target luci-chromium-ci-bionic-us-central1-b-ssd-16-*.
     os = os.LINUX_DEFAULT,
@@ -1422,7 +1308,7 @@ ci.builder(
     name = "build-perf-windows",
     description_html = """\
 This builder measures Windows build performance with and without remote caches.<br/>\
-The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_rel_ng-compilator">win10_chromium_x64_rel_ng-compilator</a>.\
+The build configs and the bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium/builders/try/win-rel-compilator">win-rel-compilator</a>.\
 """,
     builderless = True,
     builder_spec = builder_config.builder_spec(
@@ -1605,6 +1491,30 @@ fyi_mac_builder(
     ),
     description_html = "experiment reclient on mac-arm. should be removed after the migration. crbug.com/1252626",
     reclient_jobs = None,
+)
+
+fyi_mac_builder(
+    name = "mac-12-wpt-fyi-rel",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    # TODO(crbug.com/1385202): Enable scheduler when machine has been allocated.
+    schedule = "triggered",
+    triggered_by = [],
+    os = os.MAC_12,
 )
 
 ci.builder(
@@ -2031,32 +1941,6 @@ fyi_ios_builder(
 
 ci.builder(
     # An FYI version of the following builders that runs on Focal:
-    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Builder
-    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Tests
-    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
-    # has migrated to focal.
-    name = "Linux MSan Focal",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium_msan",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-        ),
-    ),
-    console_view_entry = consoles.console_view_entry(
-        category = "msan",
-        short_name = "lin",
-    ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    os = os.LINUX_FOCAL,
-    execution_timeout = 16 * time.hour,
-)
-
-ci.builder(
-    # An FYI version of the following builders that runs on Focal:
     # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Builder
     # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Tests
     # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
@@ -2159,6 +2043,32 @@ ci.builder(
 )
 
 ci.builder(
+    name = "win11-wpt-content-shell-fyi-rel",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win11",
+    ),
+    os = os.WINDOWS_ANY,
+    goma_backend = None,
+    experimental = True,
+    reclient_jobs = reclient.jobs.DEFAULT,
+    reclient_instance = reclient.instance.DEFAULT_TRUSTED,
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    schedule = "with 5h interval",
+    triggered_by = [],
+)
+
+ci.builder(
     name = "win32-arm64-rel",
     console_view_entry = consoles.console_view_entry(
         category = "win32|arm64",
@@ -2205,49 +2115,4 @@ ci.builder(
     notifies = ["annotator-rel"],
     os = os.WINDOWS_DEFAULT,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
-)
-
-ci.builder(
-    name = "Blink Unexpected Pass Finder",
-    builderless = True,
-    cores = "16",
-    console_view_entry = consoles.console_view_entry(
-        short_name = "upf",
-    ),
-    executable = "recipe:chromium_expectation_files/expectation_file_scripts",
-    # This will eventually be set to run on a schedule, but only support
-    # manual triggering for now until we get a successful build.
-    schedule = "triggered",
-    triggered_by = [],
-    service_account = "chromium-automated-expectation@chops-service-accounts.iam.gserviceaccount.com",
-    properties = {
-        "scripts": [
-            {
-                "step_name": "remove_stale_blink_expectations",
-                "script": "third_party/blink/tools/remove_stale_expectations.py",
-                "script_type": "UNEXPECTED_PASS",
-                "submit_type": "MANUAL",
-                "reviewer_list": {
-                    "reviewer": ["bsheedy@chromium.org"],
-                },
-                "cl_title": "Remove stale Blink expectations",
-                "args": [
-                    "--project",
-                    "chrome-unexpected-pass-data",
-                    "--no-include-internal-builders",
-                    "--remove-stale-expectations",
-                    "--large-query-mode",
-                    "--num-samples",
-                    "200",
-                    # We need to limit the max number of parallel jobs in order
-                    # to avoid having large memory usage spikes that can kill
-                    # the bot due to swap space not being enabled.
-                    "--jobs",
-                    "2",
-                ],
-            },
-        ],
-    },
-    goma_backend = goma.backend.RBE_PROD,
-    reclient_instance = None,
 )

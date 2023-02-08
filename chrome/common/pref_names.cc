@@ -1781,9 +1781,13 @@ const char kForceMajorVersionToMinorPositionInUserAgent[] =
 const char kSidePanelHorizontalAlignment[] = "side_panel.is_right_aligned";
 #endif
 
-// Number of minutes of inactivity before closing the profile and showing the
-// Profile Picker. Controlled via the IdleProfileCloseTimeout policy.
-const char kIdleProfileCloseTimeout[] = "idle_profile_close_timeout";
+// Number of minutes of inactivity before running actions from
+// kIdleTimeoutActions. Controlled via the IdleTimeout policy.
+const char kIdleTimeout[] = "idle_timeout";
+
+// Actions to run when the idle timeout is reached. Controller via the
+// IdleTimeoutActions policy.
+const char kIdleTimeoutActions[] = "idle_timeout_actions";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -1939,6 +1943,12 @@ const char kDefaultTasksBySuffix[] = "filebrowser.tasks.default_by_suffix";
 // DefaultHandlersForFileExtensions policy.
 const char kDefaultHandlersForFileExtensions[] =
     "filebrowser.default_handlers_for_file_extensions";
+
+// Whether the office files setup flow has ever been completed by the user.
+const char kOfficeSetupComplete[] = "filebrowser.office.setup_complete";
+
+// Whether we should always move office files without prompting the user first.
+const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
 #endif
 
 // A flag to enable/disable the Shared Clipboard feature which enables users to
@@ -2369,11 +2379,32 @@ const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 // String specifying the secure DNS mode to use. Any string other than
 // "secure" or "automatic" will be mapped to the default "off" mode.
 const char kDnsOverHttpsMode[] = "dns_over_https.mode";
+
 // String containing a space-separated list of DNS over HTTPS templates to use
 // in secure mode or automatic mode. If no templates are specified in automatic
 // mode, we will attempt discovery of DoH servers associated with the configured
 // insecure resolvers.
 const char kDnsOverHttpsTemplates[] = "dns_over_https.templates";
+
+#if BUILDFLAG(IS_CHROMEOS)
+// String containing a space-separated list of DNS over HTTPS templates to use
+// in secure mode or automatic mode. If no templates are specified in automatic
+// mode, we will attempt discovery of DoH servers associated with the configured
+// insecure resolvers.
+// This is very similar to kDnsOverHttpsTemplates except that on ChromeOS it
+// supports additional variables which are used to transport identity
+// information to the DNS provider. This is ignored on all other platforms than
+// ChromeOS. On ChromeOS if it exists it will override kDnsOverHttpsTemplates,
+// otherwise kDnsOverHttpsTemplates will be used. This pref is only evaluated if
+// kDnsOverHttpsSalt is set.
+const char kDnsOverHttpsTemplatesWithIdentifiers[] =
+    "dns_over_https.templates_with_identifiers";
+// String containing a salt value. This is used together with
+// kDnsOverHttpsTemplatesWithIdentifiers, only. The value will be used as a salt
+// to a hash applied to the various identity variables to prevent dictionary
+// attacks.
+const char kDnsOverHttpsSalt[] = "dns_over_https.salt";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Boolean that specifies whether additional DNS query types (e.g. HTTPS) may be
 // queried alongside the traditional A and AAAA queries.
@@ -3074,7 +3105,7 @@ const char kLacrosAccessibilityLargeCursorEnabled[] =
 // settings.a11y.screen_magnifier_type2, but we only shipped one type (full).
 // See http://crbug.com/170850 for history.
 const char kLacrosAccessibilityScreenMagnifierEnabled[] =
-    "lacros.ettings.a11y.screen_magnifier";
+    "lacros.settings.a11y.screen_magnifier";
 
 // A boolean pref which determines whether select-to-speak is enabled.
 const char kLacrosAccessibilitySelectToSpeakEnabled[] =
@@ -3638,5 +3669,23 @@ const char kAccessControlAllowMethodsInCORSPreflightSpecConformant[] =
 // A time preference keeping track of the last time the DIPS service performed
 // DIPS-related repeated actions (logging metrics, clearing state, etc).
 const char kDIPSTimerLastUpdate[] = "dips_timer_last_update";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// A dictionary that keeps client_ids assigned by Authorization Servers indexed
+// by URLs of these servers. It does not contain empty strings.
+const char kPrintingOAuth2AuthorizationServers[] =
+    "printing.oauth2_authorization_servers";
+#endif
+
+// If true, the feature ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes
+// will be allowed, otherwise attempts to enable the feature will be
+// disallowed.
+const char kThrottleNonVisibleCrossOriginIframesAllowed[] =
+    "throttle_non_visible_cross_origin_iframes_allowed";
+
+// If true, the feature NewBaseUrlInheritanceBehavior will be allowed, otherwise
+// attempts to enable the feature will be disallowed.
+const char kNewBaseUrlInheritanceBehaviorAllowed[] =
+    "new_base_url_inheritance_behavior_allowed";
 
 }  // namespace prefs

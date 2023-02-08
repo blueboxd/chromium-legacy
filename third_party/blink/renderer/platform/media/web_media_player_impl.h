@@ -36,6 +36,7 @@
 #include "media/base/routing_token_callback.h"
 #include "media/base/simple_watch_timer.h"
 #include "media/base/text_track.h"
+#include "media/filters/demuxer_manager.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/playback_events_recorder.mojom.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
@@ -110,6 +111,7 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
       public WebMediaPlayerDelegate::Observer,
       public media::Pipeline::Client,
       public media::MediaObserverClient,
+      public media::DemuxerManager::Client,
       public WebSurfaceLayerBridgeObserver,
       public SmoothnessHelper::Client {
  public:
@@ -261,7 +263,9 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   void OnFrameHidden() override;
   void OnFrameShown() override;
   void OnIdleTimeout() override;
+
   void RequestRemotePlaybackDisabled(bool disabled) override;
+  void RequestMediaRemoting() override;
 
 #if BUILDFLAG(IS_ANDROID)
   // TODO(https://crbug.com/839651): Rename Flinging[Started/Stopped] to
@@ -424,6 +428,9 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   // Called after asynchronous initialization of a multibuffer data source
   // completes.
   void MultiBufferDataSourceInitialized(bool success);
+
+  // Called after synchronous or asynchronous MemoryDataSource initialization.
+  void MemoryDataSourceInitialized(bool success, size_t data_size);
 
   // Called if the |MultiBufferDataSource| is redirected.
   void OnDataSourceRedirected();
@@ -700,6 +707,8 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
 #if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<media::Demuxer> CreateMediaUrlDemuxer(
       bool expect_hls_content);
+
+  media::PipelineStatus StartHLSFallback();
 #endif
 
   absl::optional<media::DemuxerType> GetDemuxerType() const;
@@ -834,7 +843,6 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   std::unique_ptr<media::Demuxer> demuxer_;
 
   // |data_source_| will be null if we're using the ChunkDemuxer.
-  MultiBufferDataSource* mb_data_source_ = nullptr;
   std::unique_ptr<media::DataSource> data_source_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

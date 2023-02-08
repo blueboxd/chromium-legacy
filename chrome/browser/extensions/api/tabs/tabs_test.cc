@@ -70,7 +70,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -868,8 +867,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExtensionAPICannotNavigateDevtools) {
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 

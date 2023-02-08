@@ -110,8 +110,7 @@ import java.util.concurrent.TimeUnit;
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
-@Features.DisableFeatures({ChromeFeatureList.EXPLORE_SITES, ChromeFeatureList.QUERY_TILES,
-        ChromeFeatureList.VIDEO_TUTORIALS})
+@Features.DisableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.VIDEO_TUTORIALS})
 public class NewTabPageTest {
     /**
      * Parameter set controlling whether scrollable mvt is enabled.
@@ -629,16 +628,6 @@ public class NewTabPageTest {
                     /*beginVoiceSearch=*/true, /*pastedText=*/"");
             verify(mFeedReliabilityLogger).onVoiceSearch();
         });
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "FeedNewTabPage", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.FEED_ABLATION)
-    public void testRender_LoadNewTabPageWithDisabledFeed() throws IOException {
-        mRenderTestRule.render(
-                mActivityTestRule.getActivity().getActivityTab().getNativePage().getView(),
-                "feed_is_ablated");
     }
 
     @Test

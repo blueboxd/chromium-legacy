@@ -10,7 +10,7 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -27,10 +27,9 @@ void MockDisplayInfoProvider::SetDisplayProperties(
     ErrorCallback callback) {
   // Should get called only once per test case.
   DCHECK(!set_info_value_);
-  set_info_value_ = base::DictionaryValue::From(
-      base::Value::ToUniquePtrValue(base::Value(properties.ToValue())));
+  set_info_value_ = properties.ToValue();
   set_info_display_id_ = display_id;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
 }
 
@@ -80,7 +79,7 @@ bool MockDisplayInfoProvider::calibration_changed(const std::string& id) const {
 void MockDisplayInfoProvider::ShowNativeTouchCalibration(
     const std::string& id,
     ErrorCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 native_touch_calibration_success_
                                     ? absl::nullopt
@@ -91,7 +90,7 @@ void MockDisplayInfoProvider::SetMirrorMode(
     const api::system_display::MirrorModeInfo& info,
     ErrorCallback callback) {
   mirror_mode_ = info.mode;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt));
 }
 

@@ -697,7 +697,7 @@ ProfileNetworkContextService::CreateClientCertStore() {
   // selection dialog.
   return nullptr;
 #elif BUILDFLAG(IS_FUCHSIA)
-  // TODO(crbug.com/1235293)
+  // TODO(crbug.com/1380609): Implement ClientCertStore support.
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 #else
@@ -871,7 +871,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params);
 
   network_context_params->enable_certificate_reporting = true;
-  network_context_params->enable_expect_ct_reporting = true;
 
   SCTReportingService* sct_reporting_service =
       SCTReportingServiceFactory::GetForBrowserContext(profile_);
@@ -899,7 +898,8 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   bool is_trial_comparison_supported = !in_memory;
 
   cert_verifier::mojom::CertVerifierServiceParamsPtr
-      cert_verifier_configuration = GetChromeCertVerifierServiceParams();
+      cert_verifier_configuration =
+          GetChromeCertVerifierServiceParams(/*local_state=*/nullptr);
   DCHECK(cert_verifier_configuration);
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   is_trial_comparison_supported &=

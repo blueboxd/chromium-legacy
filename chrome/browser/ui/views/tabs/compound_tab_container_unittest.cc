@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "tab_style_views.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,7 +42,7 @@ class FakeTabContainerController final : public TabContainerController {
     return tab_strip_controller_->IsValidIndex(index);
   }
 
-  int GetActiveIndex() const override {
+  absl::optional<int> GetActiveIndex() const override {
     return tab_strip_controller_->GetActiveIndex();
   }
 
@@ -83,9 +84,22 @@ class FakeTabContainerController final : public TabContainerController {
     return nullptr;
   }
 
+  bool IsAnimatingInTabStrip() const override { return false; }
+
+  MOCK_METHOD(void,
+              UpdateAnimationTarget,
+              (TabSlotView*, gfx::Rect),
+              (override));
+
  private:
   const raw_ref<TabStripController> tab_strip_controller_;
 };
+
+void SetTabDataPinned(Tab* tab, TabPinned pinned) {
+  TabRendererData tab_data = tab->data();
+  tab_data.pinned = pinned == TabPinned::kPinned;
+  tab->SetData(tab_data);
+}
 }  // namespace
 
 class CompoundTabContainerTest : public ChromeViewsTestBase {
@@ -101,12 +115,14 @@ class CompoundTabContainerTest : public ChromeViewsTestBase {
     tab_strip_controller_ = std::make_unique<FakeBaseTabStripController>();
     tab_container_controller_ = std::make_unique<FakeTabContainerController>(
         *(tab_strip_controller_.get()));
+    ON_CALL(*tab_container_controller_, UpdateAnimationTarget)
+        .WillByDefault(testing::Return());
     tab_slot_controller_ =
         std::make_unique<FakeTabSlotController>(tab_strip_controller_.get());
 
     std::unique_ptr<TabDragContextBase> drag_context =
         std::make_unique<FakeTabDragContext>();
-    std::unique_ptr<TabContainer> tab_container =
+    std::unique_ptr<CompoundTabContainer> tab_container =
         std::make_unique<CompoundTabContainer>(
             raw_ref<TabContainerController>(*(tab_container_controller_.get())),
             nullptr /*hover_card_controller*/, drag_context.get(),
@@ -156,9 +172,7 @@ class CompoundTabContainerTest : public ChromeViewsTestBase {
       AddTabToGroup(model_index, group.value());
     }
 
-    TabRendererData tab_data = tab->data();
-    tab_data.pinned = pinned == TabPinned::kPinned;
-    tab->SetData(tab_data);
+    SetTabDataPinned(tab, pinned);
 
     return tab;
   }
@@ -195,7 +209,7 @@ class CompoundTabContainerTest : public ChromeViewsTestBase {
   std::unique_ptr<FakeTabContainerController> tab_container_controller_;
   std::unique_ptr<FakeTabSlotController> tab_slot_controller_;
   raw_ptr<TabDragContextBase> drag_context_;
-  raw_ptr<TabContainer> tab_container_;
+  raw_ptr<CompoundTabContainer> tab_container_;
   std::unique_ptr<views::Widget> widget_;
 
   int tab_container_width_ = 0;
@@ -208,15 +222,47 @@ TEST_F(CompoundTabContainerTest, PinnedTabReparents) {
       views::AsViewClass<TabContainer>(tab->parent());
   ASSERT_NE(pinned_container, nullptr);
 
-  // Unpin the tab and it should move to a new TabContainer.
+  // Unpin the tab and it should move to the compound container for animation.
+  SetTabDataPinned(tab, TabPinned::kUnpinned);
   tab_container_->SetTabPinned(0, TabPinned::kUnpinned);
+  EXPECT_EQ(tab->parent(), tab_container_);
+
+  // Complete the animation and it should move to the other TabContainer.
+  tab_container_->CompleteAnimationAndLayout();
   TabContainer* const unpinned_container =
       views::AsViewClass<TabContainer>(tab->parent());
   ASSERT_NE(unpinned_container, nullptr);
   EXPECT_NE(pinned_container, unpinned_container);
 
-  // Re-pin the tab and it should move back.
+  // Re-pin the tab and it should animate in the compound container again.
+  SetTabDataPinned(tab, TabPinned::kPinned);
   tab_container_->SetTabPinned(0, TabPinned::kPinned);
+  EXPECT_EQ(tab->parent(), tab_container_);
+
+  // Complete animation and it should be back in the pinned container.
+  tab_container_->CompleteAnimationAndLayout();
+  EXPECT_EQ(tab->parent(), pinned_container);
+}
+
+TEST_F(CompoundTabContainerTest, PinDuringUnpinAnimation) {
+  // Start with one tab, initially pinned.
+  Tab* const tab = AddTab(0, TabPinned::kPinned);
+  TabContainer* const pinned_container =
+      views::AsViewClass<TabContainer>(tab->parent());
+  ASSERT_NE(pinned_container, nullptr);
+
+  // Unpin the tab and it should move to the compound container for animation.
+  SetTabDataPinned(tab, TabPinned::kUnpinned);
+  tab_container_->SetTabPinned(0, TabPinned::kUnpinned);
+  EXPECT_EQ(tab->parent(), tab_container_);
+
+  // Re-pin the tab and it should still be in the compound container.
+  SetTabDataPinned(tab, TabPinned::kPinned);
+  tab_container_->SetTabPinned(0, TabPinned::kPinned);
+  EXPECT_EQ(tab->parent(), tab_container_);
+
+  // Complete animation and it should be back in the pinned container.
+  tab_container_->CompleteAnimationAndLayout();
   EXPECT_EQ(tab->parent(), pinned_container);
 }
 
@@ -253,22 +299,29 @@ TEST_F(CompoundTabContainerTest, MoveTabBetweenContainers) {
   const views::View* const unpinned_container =
       AddTab(1, TabPinned::kUnpinned)->parent();
   Tab* const moving_tab = AddTab(2, TabPinned::kUnpinned);
-  TabRendererData moving_tab_data = moving_tab->data();
 
   // Pin `moving_tab` as part of a move.
-  moving_tab_data.pinned = true;
-  moving_tab->SetData(moving_tab_data);
+  SetTabDataPinned(moving_tab, TabPinned::kPinned);
   tab_container_->MoveTab(2, 1);
-  // It should be pinned and at index 1.
+  // It should be in the compound container, animating.
+  EXPECT_EQ(moving_tab->parent(), tab_container_);
+  EXPECT_TRUE(tab_container_->IsAnimating());
+
+  // Finish animating and it should be pinned and at index 1.
+  tab_container_->CompleteAnimationAndLayout();
   EXPECT_EQ(moving_tab->parent(), pinned_container);
   EXPECT_EQ(tab_container_->GetTabAtModelIndex(1), moving_tab);
 
   // Move it to index 0, then unpin it as part of another move.
   tab_container_->MoveTab(1, 0);
-  moving_tab_data.pinned = false;
-  moving_tab->SetData(moving_tab_data);
+  SetTabDataPinned(moving_tab, TabPinned::kUnpinned);
   tab_container_->MoveTab(0, 1);
+  // It should be in the compound container, animating.
+  EXPECT_EQ(moving_tab->parent(), tab_container_);
+  EXPECT_TRUE(tab_container_->IsAnimating());
+
   // It should be unpinned and at index 1.
+  tab_container_->CompleteAnimationAndLayout();
   EXPECT_EQ(moving_tab->parent(), unpinned_container);
   EXPECT_EQ(tab_container_->GetTabAtModelIndex(1), moving_tab);
 }
@@ -324,11 +377,11 @@ TEST_F(CompoundTabContainerTest, GetIndexOfFirstNonClosingTab) {
   // There is no next tab, and this one is unpinned.
   RemoveTab(0);
   EXPECT_EQ(tab_container_->GetModelIndexOfFirstNonClosingTab(first_unpinned),
-            -1);
+            absl::nullopt);
 
   // There is no next tab, and this one is pinned.
   EXPECT_EQ(tab_container_->GetModelIndexOfFirstNonClosingTab(first_pinned),
-            -1);
+            absl::nullopt);
 }
 
 TEST_F(CompoundTabContainerTest, ExitsClosingModeAtStandardWidth) {
@@ -430,4 +483,37 @@ TEST_F(CompoundTabContainerTest, ExitsClosingModeWhenClosingLastUnpinnedTab) {
   RemoveTab(tab_container_->GetTabCount() - 1);
   tab_container_->CompleteAnimationAndLayout();
   EXPECT_FALSE(tab_container_->InTabClose());
+}
+
+TEST_F(CompoundTabContainerTest, UpdateAnimationTarget) {
+  using testing::Return;
+
+  gfx::Rect animation_target(10, 10);
+
+  // Start with one unpinned tab.
+  Tab* tab = AddTab(0, TabPinned::kUnpinned);
+  // Verify that animation target updates for unpinned container are unchanged
+  // when there are no pinned tabs.
+  EXPECT_CALL(*tab_container_controller_,
+              UpdateAnimationTarget(testing::_, animation_target))
+      .WillOnce(Return());
+  tab_container_->UpdateAnimationTarget(tab, animation_target,
+                                        TabPinned::kUnpinned);
+
+  // Add a pinned tab.
+  AddTab(0, TabPinned::kPinned);
+  // Verify that animation target updates for pinned container are unchanged.
+  EXPECT_CALL(*tab_container_controller_,
+              UpdateAnimationTarget(testing::_, animation_target))
+      .WillOnce(Return());
+  tab_container_->UpdateAnimationTarget(tab, animation_target,
+                                        TabPinned::kPinned);
+
+  // Verify that animation target updates for unpinned container are adjusted
+  // when there are pinned tabs.
+  EXPECT_CALL(*tab_container_controller_,
+              UpdateAnimationTarget(testing::_, testing::Ne(animation_target)))
+      .WillOnce(Return());
+  tab_container_->UpdateAnimationTarget(tab, animation_target,
+                                        TabPinned::kUnpinned);
 }

@@ -8,12 +8,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
-#include "chromeos/ash/components/login/auth/metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
-#include "chromeos/metrics/login_event_recorder.h"
+#include "chromeos/ash/components/metrics/login_event_recorder.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -23,7 +24,7 @@
 namespace ash {
 
 LoginPerformer::LoginPerformer(Delegate* delegate,
-                               MetricsRecorder* metrics_recorder)
+                               AuthMetricsRecorder* metrics_recorder)
     : delegate_(delegate),
       metrics_recorder_(metrics_recorder),
       last_login_failure_(AuthFailure(AuthFailure::NONE)) {
@@ -49,7 +50,7 @@ void LoginPerformer::OnAuthFailure(const AuthFailure& failure) {
              << ", error.state=" << failure.error().state();
 
   last_login_failure_ = failure;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&LoginPerformer::NotifyAuthFailure,
                                 weak_factory_.GetWeakPtr(), failure));
 }
@@ -68,7 +69,7 @@ void LoginPerformer::OnAuthSuccess(const UserContext& user_context) {
   metrics_recorder_->OnIsLoginOffline(is_login_offline);
 
   VLOG(1) << "LoginSuccess hash: " << user_context.GetUserIDHash();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&LoginPerformer::NotifyAuthSuccess,
                                 weak_factory_.GetWeakPtr(), user_context));
 }
@@ -77,7 +78,7 @@ void LoginPerformer::OnOffTheRecordAuthSuccess() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics_recorder_->OnGuestLoignSuccess();
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&LoginPerformer::NotifyOffTheRecordAuthSuccess,
                                 weak_factory_.GetWeakPtr()));
 }
@@ -87,19 +88,21 @@ void LoginPerformer::OnPasswordChangeDetected(const UserContext& user_context) {
   password_changed_ = true;
   password_changed_callback_count_++;
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&LoginPerformer::NotifyPasswordChangeDetected,
                                 weak_factory_.GetWeakPtr(), user_context));
 }
 
-void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context,
-                                             bool has_incomplete_migration) {
+void LoginPerformer::OnOldEncryptionDetected(
+    std::unique_ptr<UserContext> user_context,
+    bool has_incomplete_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&LoginPerformer::NotifyOldEncryptionDetected,
-                                weak_factory_.GetWeakPtr(), user_context,
-                                has_incomplete_migration));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LoginPerformer::NotifyOldEncryptionDetected,
+                     weak_factory_.GetWeakPtr(), std::move(user_context),
+                     has_incomplete_migration));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +130,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
   const AccountId& account_id = user_context.GetAccountId();
   if (!IsUserAllowlisted(account_id, &wildcard_match,
                          user_context.GetUserType())) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&LoginPerformer::NotifyAllowlistCheckFailure,
                                   weak_factory_.GetWeakPtr()));
     return;
@@ -190,6 +193,13 @@ void LoginPerformer::LoginAsWebKioskAccount(
   authenticator_->LoginAsWebKioskAccount(web_app_account_id);
 }
 
+void LoginPerformer::LoginAuthenticated(
+    std::unique_ptr<UserContext> user_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureAuthenticator();
+  authenticator_->LoginAuthenticated(std::move(user_context));
+}
+
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   authenticator_->RecoverEncryptedData(
@@ -224,7 +234,7 @@ void LoginPerformer::NotifyAuthSuccess(const UserContext& user_context) {
   DCHECK(delegate_);
   // After delegate_->OnAuthSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
-  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE, this);
   delegate_->OnAuthSuccess(user_context);
 }
 
@@ -243,17 +253,18 @@ void LoginPerformer::NotifyPasswordChangeDetected(
 }
 
 void LoginPerformer::NotifyOldEncryptionDetected(
-    const UserContext& user_context,
+    std::unique_ptr<UserContext> user_context,
     bool has_incomplete_migration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_);
-  delegate_->OnOldEncryptionDetected(user_context, has_incomplete_migration);
+  delegate_->OnOldEncryptionDetected(std::move(user_context),
+                                     has_incomplete_migration);
 }
 
 void LoginPerformer::StartLoginCompletion() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Online login completion started.";
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
+  LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   EnsureAuthenticator();
   authenticator_->CompleteLogin(std::make_unique<UserContext>(user_context_));
   user_context_.ClearSecrets();
@@ -262,7 +273,7 @@ void LoginPerformer::StartLoginCompletion() {
 void LoginPerformer::StartAuthentication() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Offline auth started.";
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
+  LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   DCHECK(delegate_);
   EnsureAuthenticator();
   authenticator_->AuthenticateToLogin(

@@ -39,6 +39,9 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
+import org.chromium.chrome.browser.customtabs.features.TabInteractionRecorder;
+import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreManager;
+import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreMessageController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -107,6 +110,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     private final Supplier<Bundle> mSavedInstanceStateSupplier;
     private final ActivityWindowAndroid mWindowAndroid;
     private final TabModelInitializer mTabModelInitializer;
+    private final SessionRestoreMessageController mRestoreMsgController;
 
     @Nullable
     private final CustomTabsSessionToken mSession;
@@ -130,7 +134,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             Lazy<CustomTabIncognitoManager> customTabIncognitoManager,
             Lazy<AsyncTabParamsManager> asyncTabParamsManager,
             @Named(SAVED_INSTANCE_SUPPLIER) Supplier<Bundle> savedInstanceStateSupplier,
-            ActivityWindowAndroid windowAndroid, TabModelInitializer tabModelInitializer) {
+            ActivityWindowAndroid windowAndroid, TabModelInitializer tabModelInitializer,
+            SessionRestoreMessageController restoreMsgController) {
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mActivity = activity;
         mConnection = connection;
@@ -158,6 +163,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         // Save speculated url, because it will be erased later with mConnection.takeHiddenTab().
         mTabProvider.setSpeculatedUrl(mConnection.getSpeculatedUrl(mSession));
 
+        mRestoreMsgController = restoreMsgController;
         lifecycleDispatcher.register(this);
     }
 
@@ -192,7 +198,10 @@ public class CustomTabActivityTabController implements InflationObserver {
      */
     public void closeTab() {
         TabModel model = mTabFactory.getTabModelSelector().getCurrentModel();
-        model.closeTab(mTabProvider.getTab(), false, false, false);
+        Tab currentTab = mTabProvider.getTab();
+        if (!maybeStoreTab(currentTab)) {
+            model.closeTab(currentTab, false, false, false);
+        }
     }
 
     public boolean onlyOneTabRemaining() {
@@ -201,6 +210,12 @@ public class CustomTabActivityTabController implements InflationObserver {
     }
 
     public void closeAndForgetTab() {
+        // TODO(https://crbug.com/1379452): Store all the tabs in the tab model.
+        if (mTabFactory.getTabModelSelector().getCurrentModel().getCount() > 0) {
+            // Ignore the results, as we are closing all the tabs regardless at the end.
+            maybeStoreTab(mTabProvider.getTab());
+        }
+
         mTabFactory.getTabModelSelector().closeAllTabs(true);
         mTabPersistencePolicy.deleteMetadataStateFileAsync();
     }
@@ -375,8 +390,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             return webContents;
         }
 
-        webContents = mWarmupManager.takeSpareWebContents(mIntentDataProvider.isIncognito(),
-                false /*initiallyHidden*/, WarmupManager.FOR_CCT);
+        webContents = mWarmupManager.takeSpareWebContents(
+                mIntentDataProvider.isIncognito(), false /*initiallyHidden*/);
         if (webContents != null) {
             recordWebContentsStateOnLaunch(WebContentsState.SPARE_WEBCONTENTS);
             return webContents;
@@ -476,5 +491,28 @@ public class CustomTabActivityTabController implements InflationObserver {
         };
 
         tab.addObserver(mediaObserver);
+    }
+
+    /**
+     * Store the tab into {@link SessionRestoreManager}.
+     * @param tab The tab to be stored.
+     * @return Whether storing tab succeeded.
+     */
+    private boolean maybeStoreTab(@Nullable Tab tab) {
+        if (tab == null || mConnection.getSessionRestoreManager() == null) return false;
+
+        SessionRestoreManager sessionRestoreManager = mConnection.getSessionRestoreManager();
+        TabInteractionRecorder recorder = TabInteractionRecorder.getFromTab(tab);
+        if (recorder == null || !recorder.hadInteraction()) {
+            return false;
+        }
+
+        // TODO(wenyufu): Add observer to record metrics for tab eviction.
+        boolean success = sessionRestoreManager.store(tab);
+        if (!success) {
+            return false;
+        }
+        mTabProvider.removeTab();
+        return true;
     }
 }

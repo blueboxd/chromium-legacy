@@ -57,8 +57,13 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if BUILDFLAG(IS_MAC)
@@ -720,14 +725,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   Profile* profile = GetBrowser()->profile();
   url::Origin test_origin = url::Origin::Create(GURL("https://example.test/"));
   const std::string serialized_test_origin = test_origin.Serialize();
-  base::Value origin_pref(base::Value::Type::DICTIONARY);
-  origin_pref.SetKey(serialized_test_origin,
-                     base::Value(base::Value::Type::DICTIONARY));
-  base::Value* allowed_protocols_for_origin =
-      origin_pref.FindDictKey(serialized_test_origin);
-  allowed_protocols_for_origin->SetBoolKey("tel", true);
-  profile->GetPrefs()->Set(prefs::kProtocolHandlerPerOriginAllowedProtocols,
-                           origin_pref);
+  base::Value::Dict allowed_protocols_for_origin;
+  allowed_protocols_for_origin.Set("tel", true);
+  base::Value::Dict origin_pref;
+  origin_pref.Set(serialized_test_origin,
+                  std::move(allowed_protocols_for_origin));
+  profile->GetPrefs()->SetDict(prefs::kProtocolHandlerPerOriginAllowedProtocols,
+                               std::move(origin_pref));
   ExternalProtocolHandler::BlockState block_state =
       ExternalProtocolHandler::GetBlockState("tel", &test_origin, profile);
   ASSERT_EQ(ExternalProtocolHandler::DONT_BLOCK, block_state);
@@ -768,20 +772,23 @@ class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
   void ClearSiteDataAndWait(
       const url::Origin& origin,
       const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
-      const absl::optional<blink::StorageKey>& storage_key) {
+      const absl::optional<blink::StorageKey>& storage_key,
+      const std::set<std::string>& storage_buckets_to_remove) {
     base::RunLoop loop;
-    content::ClearSiteData(/*browser_context_getter=*/base::BindRepeating(
-                               [](content::BrowserContext* browser_context) {
-                                 return browser_context;
-                               },
-                               base::Unretained(GetBrowser()->profile())),
-                           /*origin=*/origin,
-                           /*clear_cookies=*/true, /*clear_storage=*/true,
-                           /*clear_cache=*/true,
-                           /*avoid_closing_connections=*/true,
-                           /*cookie_partition_key=*/cookie_partition_key,
-                           /*storage_key=*/storage_key,
-                           /*callback=*/loop.QuitClosure());
+    content::ClearSiteData(
+        /*browser_context_getter=*/base::BindRepeating(
+            [](content::BrowserContext* browser_context) {
+              return browser_context;
+            },
+            base::Unretained(GetBrowser()->profile())),
+        /*origin=*/origin,
+        /*clear_cookies=*/true, /*clear_storage=*/true,
+        /*clear_cache=*/true,
+        /*storage_buckets_to_remove=*/ storage_buckets_to_remove,
+        /*avoid_closing_connections=*/true,
+        /*cookie_partition_key=*/cookie_partition_key,
+        /*storage_key=*/storage_key,
+        /*callback=*/loop.QuitClosure());
     loop.Run();
   }
 
@@ -929,12 +936,90 @@ IN_PROC_BROWSER_TEST_F(
                                                            &sync_service);
 
     ClearSiteDataAndWait(test_case.origin, test_case.cookie_partition_key,
-                         test_case.storage_key);
+                         test_case.storage_key, {});
 
     ASSERT_EQ(password_manager::features_util::IsOptedInForAccountStorage(
                   prefs, &sync_service),
               test_case.expects_opted_in);
   }
+}
+
+// Storage Buckets
+
+class BrowsingDataRemoverStorageBucketsBrowserTest
+    : public BrowsingDataRemoverBrowserTest {
+ public:
+  BrowsingDataRemoverStorageBucketsBrowserTest() {
+    features_.InitWithFeatures({blink::features::kStorageBuckets,
+                                net::features::kThirdPartyStoragePartitioning},
+                               {});
+  }
+
+  void ClearSiteDataAndWait(
+      const url::Origin& origin,
+      const absl::optional<blink::StorageKey>& storage_key,
+      const std::set<std::string>& storage_buckets_to_remove) {
+    base::RunLoop loop;
+    content::ClearSiteData(
+        /*browser_context_getter=*/base::BindRepeating(
+            [](content::BrowserContext* browser_context) {
+              return browser_context;
+            },
+            base::Unretained(GetBrowser()->profile())),
+        /*origin=*/origin,
+        /*clear_cookies=*/true, /*clear_storage=*/false,
+        /*clear_cache=*/true,
+        /*storage_buckets_to_remove=*/ storage_buckets_to_remove,
+        /*avoid_closing_connections=*/true,
+        /*cookie_partition_key=*/absl::nullopt,
+        /*storage_key=*/storage_key,
+        /*callback=*/loop.QuitClosure());
+    loop.Run();
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverStorageBucketsBrowserTest,
+                       ClearSiteDataStorageBuckets) {
+  GURL url("https://example.com");
+  url::Origin origin = url::Origin::Create(url);
+  auto storage_key = blink::StorageKey(origin);
+
+  storage::QuotaManager* quota_manager =
+      GetBrowser()->profile()->GetDefaultStoragePartition()->GetQuotaManager();
+
+  auto* quota_manager_proxy = quota_manager->proxy();
+
+  quota_manager_proxy->CreateBucketForTesting(
+      storage_key, "drafts", blink::mojom::StorageType::kTemporary,
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(
+          [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
+          }));
+  quota_manager_proxy->CreateBucketForTesting(
+      storage_key, "inbox", blink::mojom::StorageType::kTemporary,
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(
+          [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
+          }));
+  quota_manager_proxy->CreateBucketForTesting(
+      storage_key, "attachments", blink::mojom::StorageType::kTemporary,
+      base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce(
+          [](storage::QuotaErrorOr<storage::BucketInfo> error_or_bucket_info) {
+          }));
+
+  ClearSiteDataAndWait(origin, storage_key, {"drafts", "attachments"});
+
+  quota_manager_proxy->GetBucketsForStorageKey(
+      storage_key, blink::mojom::StorageType::kTemporary,
+      /*delete_expired*/ false, base::SequencedTaskRunnerHandle::Get(),
+      base::BindOnce([](storage::QuotaErrorOr<std::set<storage::BucketInfo>>
+                            error_or_buckets) {
+        EXPECT_EQ(1u, error_or_buckets.value().size());
+      }));
 }
 
 // Parameterized to run tests for different deletion time ranges.

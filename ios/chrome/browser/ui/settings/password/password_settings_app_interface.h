@@ -17,6 +17,7 @@
 // Sets a re-authentication mock (i.e. what asks user for fingerprint to
 // view password) and its options for next test.
 + (void)setUpMockReauthenticationModule;
++ (void)setUpMockReauthenticationModuleForAddPassword;
 + (void)setUpMockReauthenticationModuleForExport;
 + (void)mockReauthenticationModuleExpectedResult:
     (ReauthenticationResult)expectedResult;
@@ -59,6 +60,9 @@
 
 // Returns YES if credential service is enabled.
 + (BOOL)isCredentialsServiceEnabled;
+
+// See password_manager::features_util::IsOptedInForAccountStorage().
++ (BOOL)isOptedInForAccountStorage;
 
 @end
 

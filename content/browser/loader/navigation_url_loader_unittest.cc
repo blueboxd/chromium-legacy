@@ -95,7 +95,9 @@ class NavigationURLLoaderTest : public testing::Test {
             nullptr /* trust_token_params */, absl::nullopt /* impression */,
             base::TimeTicks() /* renderer_before_unload_start */,
             base::TimeTicks() /* renderer_before_unload_end */,
-            absl::nullopt /* web_bundle_token */);
+            absl::nullopt /* web_bundle_token */,
+            blink::mojom::NavigationInitiatorActivationAndAdStatus::
+                kDidNotStartWithTransientActivation);
     auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
@@ -127,7 +129,8 @@ class NavigationURLLoaderTest : public testing::Test {
             nullptr /* client_security_state */,
             absl::nullopt /* devtools_accepted_stream_types */,
             false /* is_pdf */,
-            content::WeakDocumentPtr() /* initiator_document */));
+            content::WeakDocumentPtr() /* initiator_document */,
+            false /* allow_cookies_from_browser */));
     return NavigationURLLoader::Create(
         browser_context_.get(), storage_partition, std::move(request_info),
         nullptr, nullptr, nullptr, delegate,

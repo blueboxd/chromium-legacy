@@ -37,11 +37,15 @@ const base::FeatureParam<bool> kShowSampleContent{&kPageInfoAboutThisSiteEn,
 
 BASE_FEATURE(kPageInfoAboutThisSiteMoreInfo,
              "PageInfoAboutThisSiteMoreInfo",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kPageInfoAboutThisSiteDescriptionPlaceholder,
              "PageInfoAboutThisSiteDescriptionPlaceholder",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPageInfoHistoryDesktop,

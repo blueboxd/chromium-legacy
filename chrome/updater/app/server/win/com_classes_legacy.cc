@@ -47,12 +47,12 @@
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/app_command_runner.h"
 #include "chrome/updater/win/scoped_handle.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -682,7 +682,7 @@ STDMETHODIMP LegacyProcessLauncherImpl::LaunchCmdElevated(
   if (!::DuplicateHandle(
           ::GetCurrentProcess(), process.Handle(), caller_proc_handle.Get(),
           ScopedKernelHANDLE::Receiver(duplicate_proc_handle).get(),
-          PROCESS_QUERY_INFORMATION | SYNCHRONIZE, FALSE, 0)) {
+          PROCESS_QUERY_LIMITED_INFORMATION | SYNCHRONIZE, FALSE, 0)) {
     HRESULT hr = HRESULTFromLastError();
     VLOG(1) << "Failed to duplicate the handle " << hr;
     return hr;

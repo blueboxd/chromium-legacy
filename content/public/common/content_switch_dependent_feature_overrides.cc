@@ -46,6 +46,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(blink::features::kUserAgentClientHint),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(blink::features::kDocumentPictureInPictureAPI),
+     base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kOriginIsolationHeader),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
@@ -73,6 +76,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
      std::cref(features::kPrivateNetworkAccessForWorkers),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
+     std::cref(features::kPrivateNetworkAccessForWorkersWarningOnly),
+     base::FeatureList::OVERRIDE_DISABLE_FEATURE},
+    {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(features::kPrivateNetworkAccessRespectPreflightResults),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
     {switches::kEnableExperimentalWebPlatformFeatures,
@@ -99,10 +105,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     {switches::kEnableExperimentalWebPlatformFeatures,
      std::cref(blink::features::kPendingBeaconAPI),
      base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-    {switches::kEnableExperimentalWebPlatformFeatures,
-     std::cref(blink::features::
-                   kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes),
-     base::FeatureList::OVERRIDE_USE_DEFAULT},
 
     // Overrides for --enable-experimental-cookie-features.
     {switches::kEnableExperimentalCookieFeatures,

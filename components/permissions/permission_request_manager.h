@@ -13,11 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_request_queue.h"
 #include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/request_type.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -159,6 +161,7 @@ class PermissionRequestManager
   void Deny() override;
   void Dismiss() override;
   void Ignore() override;
+  void PreIgnoreQuietPrompt() override;
   bool WasCurrentRequestAlreadyDisplayed() override;
   bool ShouldDropCurrentRequestIfCannotShowQuietly() const override;
   bool ShouldCurrentRequestUseQuietUI() const override;
@@ -199,6 +202,12 @@ class PermissionRequestManager
   // For testing only, clear the existing ui selectors.
   void clear_permission_ui_selector_for_testing() {
     permission_ui_selectors_.clear();
+  }
+
+  // Getter for testing.
+  const std::vector<std::unique_ptr<PermissionUiSelector>>&
+  get_permission_ui_selectors_for_testing() {
+    return permission_ui_selectors_;
   }
 
   void set_view_factory_for_testing(PermissionPrompt::Factory view_factory) {
@@ -321,7 +330,8 @@ class PermissionRequestManager
   // Calls PermissionDenied on a request and all its duplicates.
   void PermissionDeniedIncludingDuplicates(PermissionRequest* request);
   // Calls Cancelled on a request and all its duplicates.
-  void CancelledIncludingDuplicates(PermissionRequest* request);
+  void CancelledIncludingDuplicates(PermissionRequest* request,
+                                    bool is_final_decision = true);
   // Calls RequestFinished on a request and all its duplicates.
   void RequestFinishedIncludingDuplicates(PermissionRequest* request);
 
@@ -345,6 +355,8 @@ class PermissionRequestManager
   void LogWarningToConsole(const char* message);
 
   void DoAutoResponseForTesting();
+
+  void PreIgnoreQuietPromptInternal();
 
   // Factory to be used to create views when needed.
   PermissionPrompt::Factory view_factory_;
@@ -370,8 +382,7 @@ class PermissionRequestManager
   std::vector<PermissionRequest*> requests_;
 
   struct PermissionRequestSource {
-    int render_process_id;
-    int render_frame_id;
+    content::GlobalRenderFrameHostId requesting_frame_id;
 
     bool IsSourceFrameInactiveAndDisallowActivation() const;
   };
@@ -461,6 +472,10 @@ class PermissionRequestManager
   absl::optional<base::TimeDelta> time_to_decision_for_test_;
 
   absl::optional<bool> enabled_app_level_notification_permission_for_testing_;
+
+  // A timer is used to pre-ignore the permission request if it's been displayed
+  // as a quiet chip.
+  base::OneShotTimer preignore_timer_;
 
   base::WeakPtrFactory<PermissionRequestManager> weak_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();

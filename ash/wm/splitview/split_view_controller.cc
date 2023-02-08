@@ -96,15 +96,13 @@ constexpr float kFixedPositionRatios[] = {0.f, 0.5f, 1.0f};
 constexpr float kBlackScrimFadeInRatio = 0.1f;
 constexpr float kBlackScrimOpacity = 0.4f;
 
-// If performant split view resizing is enabled, the speed at which the divider
-// is moved controls whether windows are scaled or translated. If the divider is
-// moved more than this many pixels per second, the "fast" mode is enabled.
-constexpr int kPerformantSplitViewThresholdPixelsPerSec = 72;
+// The speed at which the divider is moved controls whether windows are scaled
+// or translated. If the divider is moved more than this many pixels per second,
+// the "fast" mode is enabled.
+constexpr int kSplitViewThresholdPixelsPerSec = 72;
 
-// If performant split view resizing is enabled, this is how often the divider
-// drag speed is checked.
-constexpr base::TimeDelta kPerformantSplitViewChunkTime =
-    base::Milliseconds(500);
+// This is how often the divider drag speed is checked.
+constexpr base::TimeDelta kSplitViewChunkTime = base::Milliseconds(500);
 
 // Records the animation smoothness when the divider is released during a resize
 // and animated to a fixed position ratio.
@@ -592,6 +590,9 @@ class SplitViewController::AutoSnapController
   base::flat_set<aura::Window*> observed_windows_;
 };
 
+// Helper class that prepares windows that are changing to snapped window state.
+// This allows async window state type changes and handles calls to
+// SplitViewController when necessary.
 class SplitViewController::ToBeSnappedWindowsObserver
     : public aura::WindowObserver,
       public WindowStateObserver {
@@ -915,10 +916,15 @@ void SplitViewController::AttachSnappingWindow(aura::Window* window,
 
     auto_snap_controller_ = std::make_unique<AutoSnapController>(this);
 
-    // If there is pre-set |divider_position_|, use it. It can happen during
-    // tablet <-> clamshell transition or multi-user transition.
-    divider_position_ = (divider_position_ < 0) ? GetDefaultDividerPosition()
-                                                : divider_position_;
+    // Get the divider position given by `snap_ratio`, or if there is pre-set
+    // |divider_position_|, use it. It can happen during tablet <-> clamshell
+    // transition or multi-user transition.
+    absl::optional<float> snap_ratio = WindowState::Get(window)->snap_ratio();
+    divider_position_ =
+        (divider_position_ < 0)
+            ? GetDividerPosition(snap_position,
+                                 snap_ratio ? *snap_ratio : kDefaultSnapRatio)
+            : divider_position_;
     default_snap_position_ = snap_position;
 
     // There is no divider bar in clamshell splitview mode.
@@ -1278,7 +1284,7 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
   // normal mode if the user stops dragging. Note: if the timer is already
   // active, this will simply move the deadline forward.
   if (tablet_resize_mode_ == TabletResizeMode::kFast) {
-    resize_timer_.Start(FROM_HERE, kPerformantSplitViewChunkTime, this,
+    resize_timer_.Start(FROM_HERE, kSplitViewChunkTime, this,
                         &SplitViewController::OnResizeTimer);
   }
 
@@ -2176,9 +2182,6 @@ void SplitViewController::UpdateBlackScrim(
 }
 
 void SplitViewController::UpdateResizeBackdrop() {
-  if (!features::IsPerformantSplitViewResizingEnabled())
-    return;
-
   // Creates a backdrop layer. It is stacked below the snapped window.
   auto create_backdrop = [](aura::Window* window) {
     auto resize_backdrop_layer =
@@ -2728,9 +2731,6 @@ void SplitViewController::OnResizeTimer() {
 void SplitViewController::UpdateTabletResizeMode(
     base::TimeTicks event_time_ticks,
     const gfx::Point& event_location) {
-  if (!features::IsPerformantSplitViewResizingEnabled())
-    return;
-
   if (IsLayoutHorizontal(root_window_)) {
     accumulated_drag_distance_ +=
         std::abs(event_location.x() - previous_event_location_.x());
@@ -2746,13 +2746,12 @@ void SplitViewController::UpdateTabletResizeMode(
   // the divider has been dragged. When the chunk gone on for long enough, we
   // calculate the drag speed based on `accumulated_drag_distance_` and update
   // the resize mode accordingly.
-  if (chunk_time_ticks >= kPerformantSplitViewChunkTime) {
+  if (chunk_time_ticks >= kSplitViewChunkTime) {
     int drag_per_second =
         accumulated_drag_distance_ / chunk_time_ticks.InSecondsF();
-    tablet_resize_mode_ =
-        drag_per_second > kPerformantSplitViewThresholdPixelsPerSec
-            ? TabletResizeMode::kFast
-            : TabletResizeMode::kNormal;
+    tablet_resize_mode_ = drag_per_second > kSplitViewThresholdPixelsPerSec
+                              ? TabletResizeMode::kFast
+                              : TabletResizeMode::kNormal;
 
     accumulated_drag_time_ticks_ = event_time_ticks;
     accumulated_drag_distance_ = 0;

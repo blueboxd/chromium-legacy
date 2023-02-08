@@ -1801,7 +1801,9 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step3(
 
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_CHROMEOS_ASH) && \
+                          (defined(ADDRESS_SANITIZER) || !defined(NDEBUG)))
+// https://crbug.com/1393605: Flaky at ChromeOS ASAN and Debug builds
 #define MAYBE_CrossTabDrag DISABLED_CrossTabDrag
 #else
 #define MAYBE_CrossTabDrag CrossTabDrag
@@ -2038,7 +2040,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragUpdateScreenCoordinates) {
   browser()->window()->SetBounds(gfx::Rect(200, 100, 700, 500));
   do {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   } while (browser()->window()->GetBounds().origin() != gfx::Point(200, 100));

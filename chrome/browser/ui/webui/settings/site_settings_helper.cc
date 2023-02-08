@@ -170,6 +170,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::NOTIFICATION_INTERACTIONS, nullptr},
     {ContentSettingsType::REDUCED_ACCEPT_LANGUAGE, nullptr},
     {ContentSettingsType::NOTIFICATION_PERMISSION_REVIEW, nullptr},
+    {ContentSettingsType::FEDERATED_IDENTITY_IDENTITY_PROVIDER_SIGNIN_STATUS,
+     nullptr},
     // PPAPI_BROKER has been deprecated. The content setting is not used or
     // called from UI, so we don't need a representation JS string.
     {ContentSettingsType::DEPRECATED_PPAPI_BROKER, nullptr},
@@ -1047,11 +1049,11 @@ absl::optional<std::string> GetIsolatedWebAppName(Profile* profile,
   absl::optional<std::string> app_name;
   if (auto* provider = web_app::WebAppProvider::GetForWebApps(profile)) {
     if (absl::optional<web_app::AppId> app_id =
-            provider->registrar().FindAppWithUrlInScope(origin)) {
-      if (!provider->registrar().IsIsolated(*app_id)) {
+            provider->registrar_unsafe().FindAppWithUrlInScope(origin)) {
+      if (!provider->registrar_unsafe().IsIsolated(*app_id)) {
         return app_name;
       }
-      app_name = provider->registrar().GetAppShortName(*app_id);
+      app_name = provider->registrar_unsafe().GetAppShortName(*app_id);
     }
   }
   return app_name;

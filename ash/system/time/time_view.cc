@@ -33,6 +33,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/events/event.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
@@ -129,7 +130,6 @@ void VerticalDateView::UpdateText() {
     return;
   text_label_->SetText(new_text);
   text_label_->SetTooltipText(base::TimeFormatFriendlyDate(time_to_show));
-  text_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 TimeView::TimeView(ClockLayout clock_layout, ClockModel* model, Type type)
@@ -194,10 +194,10 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
   Layout();
 }
 
-void TimeView::SetTextColor(SkColor color,
+void TimeView::SetTextColor(ui::ColorId color_id,
                             bool auto_color_readability_enabled) {
   auto set_color = [&](views::Label* label) {
-    label->SetEnabledColor(color);
+    label->SetEnabledColorId(color_id);
     label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled);
   };
 
@@ -301,8 +301,6 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
                         now, model_->hour_clock_type(), base::kKeepAmPm) +
                     u", " + friendly_format_date);
 
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
-
   switch (type_) {
     case kTime: {
       // Calculate horizontal clock layout label.
@@ -314,8 +312,6 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
           horizontal_label_->GetText().length() != current_time.length();
       horizontal_label_->SetText(current_time);
       horizontal_label_->SetTooltipText(friendly_format_date);
-      horizontal_label_->NotifyAccessibilityEvent(
-          ax::mojom::Event::kTextChanged, true);
 
       // Calculate vertical clock layout labels.
       std::u16string current_hours =
@@ -326,10 +322,6 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
 
       vertical_label_hours_->SetText(current_hours);
       vertical_label_minutes_->SetText(current_minutes);
-      vertical_label_hours_->NotifyAccessibilityEvent(
-          ax::mojom::Event::kTextChanged, true);
-      vertical_label_minutes_->NotifyAccessibilityEvent(
-          ax::mojom::Event::kTextChanged, true);
 
       Layout();
 
@@ -344,8 +336,6 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
       const std::u16string current_date = FormatDate(now);
       horizontal_label_date_->SetText(current_date);
       horizontal_label_date_->SetTooltipText(friendly_format_date);
-      horizontal_label_date_->NotifyAccessibilityEvent(
-          ax::mojom::Event::kTextChanged, true);
       date_view_->UpdateText();
     }
   }

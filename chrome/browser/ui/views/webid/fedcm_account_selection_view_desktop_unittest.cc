@@ -148,7 +148,7 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
                             account_info.second);
     }
     return IdentityProviderDisplayData(u"", content::IdentityProviderMetadata(),
-                                       content::ClientIdData(GURL(), GURL()),
+                                       content::ClientMetadata(GURL(), GURL()),
                                        std::move(accounts));
   }
 
@@ -159,7 +159,7 @@ class FedCmAccountSelectionViewDesktopTest : public ChromeViewsTestBase {
     controller->Show(
         kRpEtldPlusOne,
         {{kIdpEtldPlusOne, accounts, content::IdentityProviderMetadata(),
-          content::ClientIdData(GURL(), GURL())}},
+          content::ClientMetadata(GURL(), GURL())}},
         SignInMode::kExplicit);
     return controller;
   }
@@ -253,4 +253,61 @@ TEST_F(FedCmAccountSelectionViewDesktopTest, MultipleAccountFlowBack) {
   observer->OnAccountSelected(accounts[1], idp_data);
   EXPECT_TRUE(bubble_view_->show_verifying_sheet_);
   EXPECT_THAT(bubble_view_->account_ids_, testing::ElementsAre(kAccountId2));
+}
+
+namespace {
+
+// AccountSelectionViewDelegate which deletes the FedCmAccountSelectionView in
+// OnAccountSelected().
+class ViewDeletingAccountSelectionViewDelegate
+    : public MockAccountSelectionViewDelegate {
+ public:
+  explicit ViewDeletingAccountSelectionViewDelegate(
+      content::WebContents* web_contents)
+      : MockAccountSelectionViewDelegate(web_contents) {}
+  ~ViewDeletingAccountSelectionViewDelegate() override = default;
+
+  ViewDeletingAccountSelectionViewDelegate(
+      const ViewDeletingAccountSelectionViewDelegate&) = delete;
+  ViewDeletingAccountSelectionViewDelegate& operator=(
+      const ViewDeletingAccountSelectionViewDelegate&) = delete;
+
+  void SetView(std::unique_ptr<FedCmAccountSelectionView> view) {
+    view_ = std::move(view);
+  }
+
+  void OnAccountSelected(const GURL&,
+                         const content::IdentityRequestAccount&) override {
+    view_.reset();
+  }
+
+ private:
+  std::unique_ptr<FedCmAccountSelectionView> view_;
+};
+
+}  // namespace
+
+TEST_F(FedCmAccountSelectionViewDesktopTest, AccountSelectedDeletesView) {
+  delegate_ = std::make_unique<ViewDeletingAccountSelectionViewDelegate>(
+      test_web_contents_.get());
+  ViewDeletingAccountSelectionViewDelegate* view_deleting_delegate =
+      static_cast<ViewDeletingAccountSelectionViewDelegate*>(delegate_.get());
+
+  const char kAccountId1[] = "account_id1";
+  IdentityProviderDisplayData idp_data = CreateIdentityProviderDisplayData({
+      {kAccountId1, LoginState::kSignIn},
+  });
+  const std::vector<Account>& accounts = idp_data.accounts_;
+
+  AccountSelectionBubbleView::Observer* observer = nullptr;
+  {
+    std::unique_ptr<TestFedCmAccountSelectionView> controller =
+        CreateAndShow(accounts);
+    observer =
+        static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
+    view_deleting_delegate->SetView(std::move(controller));
+  }
+
+  // Destroys FedCmAccountSelectionView. Should not cause crash.
+  observer->OnAccountSelected(accounts[0], idp_data);
 }

@@ -25,11 +25,14 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -66,6 +69,8 @@ using ::testing::UnorderedElementsAre;
 
 using AttributionFilterData = ::attribution_reporting::FilterData;
 using AttributionFilters = ::attribution_reporting::Filters;
+
+using ::attribution_reporting::SuitableOrigin;
 
 // Default max number of conversions for a single impression for testing.
 const int kMaxConversions = 3;
@@ -135,14 +140,15 @@ class AttributionStorageTest : public testing::Test {
     // TOO(apaseltiner): Replace this logic with explicit setting of expected
     // values.
     auto event_trigger = base::ranges::find_if(
-        conversion.event_triggers(),
+        conversion.registration().event_triggers.vec(),
         [&](const attribution_reporting::EventTriggerData& event_trigger) {
           return AttributionFiltersMatch(source.common_info().filter_data(),
                                          source.common_info().source_type(),
                                          event_trigger.filters,
                                          event_trigger.not_filters);
         });
-    CHECK(event_trigger != conversion.event_triggers().end());
+    CHECK(event_trigger !=
+          conversion.registration().event_triggers.vec().end());
 
     return ReportBuilder(AttributionInfoBuilder(source)
                              .SetTime(base::Time::Now())
@@ -226,6 +232,21 @@ TEST_F(AttributionStorageTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
       ElementsAre(CommonSourceInfoIs(SourceBuilder().BuildCommonInfo())));
 }
 
+TEST_F(AttributionStorageTest, UniqueReportWindowsStored_ValuesIdentical) {
+  storage()->StoreSource(SourceBuilder()
+                             .SetExpiry(base::Days(30))
+                             .SetEventReportWindow(base::Days(15))
+                             .SetAggregatableReportWindow(base::Days(5))
+                             .Build());
+  EXPECT_THAT(storage()->GetActiveSources(),
+              ElementsAre(CommonSourceInfoIs(
+                  SourceBuilder()
+                      .SetExpiry(base::Days(30))
+                      .SetEventReportWindow(base::Days(15))
+                      .SetAggregatableReportWindow(base::Days(5))
+                      .BuildCommonInfo())));
+}
+
 TEST_F(AttributionStorageTest,
        GetWithNoMatchingImpressions_NoImpressionsReturned) {
   EXPECT_THAT(
@@ -287,6 +308,33 @@ TEST_F(AttributionStorageTest, ImpressionExpired_NoConversionsStored) {
 
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kNoMatchingImpressions,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+}
+
+TEST_F(AttributionStorageTest, ImpressionReportWindowPassed_NoReportGenerated) {
+  storage()->StoreSource(
+      SourceBuilder().SetEventReportWindow(base::Milliseconds(2)).Build());
+  task_environment_.FastForwardBy(base::Milliseconds(3));
+
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kReportWindowPassed,
+            MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
+}
+
+TEST_F(AttributionStorageTest,
+       AggregatableReportWindowPassed_NoReportGenerated) {
+  SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
+
+  storage()->StoreSource(
+      source_builder.SetAggregatableReportWindow(base::Milliseconds(2))
+          .Build());
+
+  task_environment_.FastForwardBy(base::Milliseconds(3));
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(
+          DefaultAggregatableTriggerBuilder().Build()),
+      AllOf(CreateReportEventLevelStatusIs(
+                AttributionTrigger::EventLevelResult::kSuccess),
+            CreateReportAggregatableStatusIs(
+                AttributionTrigger::AggregatableResult::kReportWindowPassed)));
 }
 
 TEST_F(AttributionStorageTest, ImpressionExpired_ConversionsStoredPrior) {
@@ -2615,7 +2663,7 @@ TEST_F(AttributionStorageTest, SourceFilterData_RoundTrips) {
 }
 
 TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   storage()->StoreSource(SourceBuilder()
                              .SetSourceType(AttributionSourceType::kNavigation)
@@ -2626,22 +2674,29 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
   EXPECT_EQ(
       AttributionTrigger::EventLevelResult::kNoMatchingConfigurations,
       MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
-          origin, origin,
-          /*filters=*/AttributionFilters(),
-          /*not_filters=*/AttributionFilters(),
-          /*debug_key=*/absl::nullopt,
-          /*aggregatable_dedup_key=*/absl::nullopt,
-          {attribution_reporting::EventTriggerData(
-              /*data=*/11,
-              /*priority=*/12,
-              /*dedup_key=*/13,
-              /*filters=*/
-              AttributionFiltersForSourceType(AttributionSourceType::kEvent),
-              /*not_filters=*/AttributionFilters())},
-          /*aggregatable_trigger_data=*/{},
-          /*aggregatable_values=*/
-          attribution_reporting::AggregatableValues(),
-          /*is_within_fenced_frame=*/false, /*debug_reporting=*/false)));
+          attribution_reporting::TriggerRegistration(
+              origin,
+              /*filters=*/AttributionFilters(),
+              /*not_filters=*/AttributionFilters(),
+              /*debug_key=*/absl::nullopt,
+              /*aggregatable_dedup_key=*/absl::nullopt,
+              *attribution_reporting::EventTriggerDataList::Create(
+                  {attribution_reporting::EventTriggerData(
+                      /*data=*/11,
+                      /*priority=*/12,
+                      /*dedup_key=*/13,
+                      /*filters=*/
+                      AttributionFiltersForSourceType(
+                          AttributionSourceType::kEvent),
+                      /*not_filters=*/AttributionFilters())}),
+              /*aggregatable_trigger_data=*/
+              attribution_reporting::AggregatableTriggerDataList(),
+              /*aggregatable_values=*/
+              attribution_reporting::AggregatableValues(),
+              /*debug_reporting=*/false,
+              ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+          /*destination_origin=*/origin,
+          /*is_within_fenced_frame=*/false)));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
@@ -2650,7 +2705,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
 }
 
 TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   storage()->StoreSource(
       SourceBuilder()
@@ -2716,17 +2771,25 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
           })),
   };
 
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
-                origin, origin,
-                /*filters=*/AttributionFilters(),
-                /*not_filters=*/AttributionFilters(),
-                /*debug_key=*/absl::nullopt,
-                /*aggregatable_dedup_key=*/absl::nullopt, event_triggers,
-                /*aggregatable_trigger_data=*/{},
-                /*aggregatable_values=*/
-                attribution_reporting::AggregatableValues(),
-                /*is_within_fenced_frame=*/false, /*debug_reporting=*/false)));
+  EXPECT_EQ(
+      AttributionTrigger::EventLevelResult::kSuccess,
+      MaybeCreateAndStoreEventLevelReport(AttributionTrigger(
+          attribution_reporting::TriggerRegistration(
+              /*reporting_origin=*/origin,
+              /*filters=*/AttributionFilters(),
+              /*not_filters=*/AttributionFilters(),
+              /*debug_key=*/absl::nullopt,
+              /*aggregatable_dedup_key=*/absl::nullopt,
+              *attribution_reporting::EventTriggerDataList::Create(
+                  event_triggers),
+              /*aggregatable_trigger_data=*/
+              attribution_reporting::AggregatableTriggerDataList(),
+              /*aggregatable_values=*/
+              attribution_reporting::AggregatableValues(),
+              /*debug_reporting=*/false,
+              ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+          /*destination_origin=*/origin,
+          /*is_within_fenced_frame=*/false)));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
               ElementsAre(EventLevelDataIs(
@@ -2737,7 +2800,7 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
 }
 
 TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
-  const auto origin = url::Origin::Create(GURL("https://r.test"));
+  const auto origin = *SuitableOrigin::Deserialize("https://r.test");
 
   std::vector<attribution_reporting::AggregatableTriggerData>
       aggregatable_trigger_data{
@@ -2759,41 +2822,58 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
               *attribution_reporting::AggregationKeys::FromKeys({{"0", 1}}))
           .Build());
 
-  AttributionTrigger trigger1(origin, origin,
-                              /*filters=*/
-                              *AttributionFilters::Create({
-                                  {"abc", {"456"}},
-                              }),
-                              /*not_filters=*/AttributionFilters(),
-                              /*debug_key=*/absl::nullopt,
-                              /*aggregatable_dedup_key=*/absl::nullopt,
-                              /*event_triggers=*/{}, aggregatable_trigger_data,
-                              aggregatable_values,
-                              /*is_within_fenced_frame=*/false,
-                              /*debug_reporting=*/false);
+  AttributionTrigger trigger1(
+      attribution_reporting::TriggerRegistration(
+          origin,
+          /*filters=*/
+          *AttributionFilters::Create({
+              {"abc", {"456"}},
+          }),
+          /*not_filters=*/AttributionFilters(),
+          /*debug_key=*/absl::nullopt,
+          /*aggregatable_dedup_key=*/absl::nullopt,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
+          /*debug_reporting=*/false,
+          ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+      /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
 
-  AttributionTrigger trigger2(origin, origin,
-                              /*filters=*/
-                              *AttributionFilters::Create({
-                                  {"abc", {"123"}},
-                              }),
-                              /*not_filters=*/AttributionFilters(),
-                              /*debug_key=*/absl::nullopt,
-                              /*aggregatable_dedup_key=*/absl::nullopt,
-                              /*event_triggers=*/{}, aggregatable_trigger_data,
-                              aggregatable_values,
-                              /*is_within_fenced_frame=*/false,
-                              /*debug_reporting=*/false);
+  AttributionTrigger trigger2(
+      attribution_reporting::TriggerRegistration(
+          origin,
+          /*filters=*/
+          *AttributionFilters::Create({
+              {"abc", {"123"}},
+          }),
+          /*not_filters=*/AttributionFilters(),
+          /*debug_key=*/absl::nullopt,
+          /*aggregatable_dedup_key=*/absl::nullopt,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
+          /*debug_reporting=*/false,
+          ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+      /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
 
   AttributionTrigger trigger3(
-      origin, origin,
-      /*filters=*/AttributionFilters(),
-      /*not_filters=*/
-      AttributionFiltersForSourceType(AttributionSourceType::kNavigation),
-      /*debug_key=*/absl::nullopt,
-      /*aggregatable_dedup_key=*/absl::nullopt,
-      /*event_triggers=*/{}, aggregatable_trigger_data, aggregatable_values,
-      /*is_within_fenced_frame=*/false, /*debug_reporting=*/false);
+      attribution_reporting::TriggerRegistration(
+          origin,
+          /*filters=*/AttributionFilters(),
+          /*not_filters=*/
+          AttributionFiltersForSourceType(AttributionSourceType::kNavigation),
+          /*debug_key=*/absl::nullopt,
+          /*aggregatable_dedup_key=*/absl::nullopt,
+          /*event_triggers=*/attribution_reporting::EventTriggerDataList(),
+          *attribution_reporting::AggregatableTriggerDataList::Create(
+              aggregatable_trigger_data),
+          aggregatable_values,
+          /*debug_reporting=*/false,
+          ::aggregation_service::mojom::AggregationCoordinator::kDefault),
+      /*destination_origin=*/origin,
+      /*is_within_fenced_frame=*/false);
 
   EXPECT_THAT(storage()->MaybeCreateAndStoreReport(trigger1),
               AllOf(CreateReportEventLevelStatusIs(
@@ -2988,6 +3068,32 @@ TEST_F(AttributionStorageTest,
   ASSERT_THAT(storage()->GetAttributionReports(base::Time::Max()),
               ElementsAre(ReportSourceIs(SourceEventIdIs(3)),
                           ReportSourceIs(SourceEventIdIs(7))));
+}
+
+TEST_F(AttributionStorageTest, AggregationCoordinator_RoundTrip) {
+  for (auto aggregation_coordinator :
+       {::aggregation_service::mojom::AggregationCoordinator::kAwsCloud}) {
+    storage()->StoreSource(
+        TestAggregatableSourceProvider().GetBuilder().Build());
+
+    EXPECT_THAT(
+        storage()->MaybeCreateAndStoreReport(
+            DefaultAggregatableTriggerBuilder()
+                .SetAggregationCoordinator(aggregation_coordinator)
+                .Build(/*generate_event_trigger_data=*/false)),
+        AllOf(CreateReportAggregatableStatusIs(
+                  AttributionTrigger::AggregatableResult::kSuccess),
+              NewAggregatableReportIs(Optional(AggregatableAttributionDataIs(
+                  AggregationCoordinatorIs(aggregation_coordinator))))));
+    EXPECT_THAT(
+        storage()->GetAttributionReports(/*max_report_time=*/base::Time::Max()),
+        ElementsAre(AggregatableAttributionDataIs(
+            AggregationCoordinatorIs(aggregation_coordinator))));
+
+    storage()->ClearData(/*delete_begin=*/base::Time::Min(),
+                         /*delete_end=*/base::Time::Max(),
+                         /*filter=*/base::NullCallback());
+  }
 }
 
 }  // namespace content

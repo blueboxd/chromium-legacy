@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/extensions/api/messaging/native_message_port.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,7 +142,7 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
 
   bool UseBidirectionalNativeMessaging() {
     return base::FeatureList::IsEnabled(
-        chromeos::features::kDriveFsBidirectionalNativeMessaging);
+        ash::features::kDriveFsBidirectionalNativeMessaging);
   }
 
   DriveIntegrationService* drive_service_ = nullptr;
@@ -156,7 +156,7 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
   Client* client_ = nullptr;
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_ =
-      base::ThreadTaskRunnerHandle::Get();
+      base::SingleThreadTaskRunner::GetCurrentDefault();
 
   base::WeakPtrFactory<DriveFsNativeMessageHost> weak_ptr_factory_{this};
 };
@@ -173,7 +173,7 @@ CreateDriveFsInitiatedNativeMessageHost(
         extension_receiver,
     mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> drivefs_remote) {
   if (!base::FeatureList::IsEnabled(
-          chromeos::features::kDriveFsBidirectionalNativeMessaging)) {
+          ash::features::kDriveFsBidirectionalNativeMessaging)) {
     return nullptr;
   }
   return std::make_unique<DriveFsNativeMessageHost>(

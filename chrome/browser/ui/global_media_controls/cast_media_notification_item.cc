@@ -12,6 +12,8 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
+#include "chrome/browser/ui/global_media_controls/media_item_ui_metrics.h"
+#include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/media_message_center/media_notification_view.h"
@@ -176,7 +178,7 @@ void CastMediaNotificationItem::SetView(
     media_message_center::MediaNotificationView* view) {
   view_ = view;
   if (view_)
-    view_->UpdateWithVectorIcon(vector_icons::kMediaRouterIdleIcon);
+    view_->UpdateWithVectorIcon(&vector_icons::kMediaRouterIdleIcon);
 
   UpdateView();
   if (view_ && !recorded_metadata_metrics_) {
@@ -211,12 +213,15 @@ void CastMediaNotificationItem::Dismiss() {
   is_active_ = false;
 }
 
+void CastMediaNotificationItem::SetVolume(float volume) {
+  session_controller_->SetVolume(volume);
+}
 void CastMediaNotificationItem::SetMute(bool mute) {
   session_controller_->SetMute(mute);
 }
 
-void CastMediaNotificationItem::SetVolume(float volume) {
-  session_controller_->SetVolume(volume);
+bool CastMediaNotificationItem::RequestMediaRemoting() {
+  return false;
 }
 
 media_message_center::SourceType CastMediaNotificationItem::SourceType() {
@@ -283,24 +288,8 @@ void CastMediaNotificationItem::StopCasting(
   feature_engagement::TrackerFactory::GetForBrowserContext(profile_)
       ->NotifyEvent("media_route_stopped_from_gmc");
 
-  global_media_controls::GlobalMediaControlsCastActionAndEntryPoint action;
-  switch (entry_point) {
-    case global_media_controls::GlobalMediaControlsEntryPoint::kToolbarIcon:
-      action = global_media_controls::
-          GlobalMediaControlsCastActionAndEntryPoint::kStopViaToolbarIcon;
-      break;
-    case global_media_controls::GlobalMediaControlsEntryPoint::kPresentation:
-      action = global_media_controls::
-          GlobalMediaControlsCastActionAndEntryPoint::kStopViaPresentation;
-      break;
-    case global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray:
-      action = global_media_controls::
-          GlobalMediaControlsCastActionAndEntryPoint::kStopViaSystemTray;
-      break;
-  }
-  base::UmaHistogramEnumeration(
-      media_message_center::MediaNotificationItem::kCastStartStopHistogramName,
-      action);
+  MediaItemUIMetrics::RecordStopCastingMetrics(
+      media_router::MediaCastMode::PRESENTATION, entry_point);
 }
 
 mojo::PendingRemote<media_router::mojom::MediaStatusObserver>

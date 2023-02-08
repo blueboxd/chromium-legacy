@@ -33,6 +33,9 @@ namespace gpu {
 class SyncPointManager;
 struct GpuPreferences;
 
+// Forward-decl of the new DFS-based Scheduler.
+class SchedulerDfs;
+
 class GPU_EXPORT Scheduler {
   // A callback to be used for reporting when the task is ready to run (when the
   // dependencies have been solved).
@@ -109,9 +112,9 @@ class GPU_EXPORT Scheduler {
   // Schedules task (closure) to run on the sequence. The task is blocked until
   // the sync token fences are released or determined to be invalid. Tasks are
   // run in the order in which they are submitted.
-  void ScheduleTask(Task task);
+  void ScheduleTask(Scheduler::Task task);
 
-  void ScheduleTasks(std::vector<Task> tasks);
+  void ScheduleTasks(std::vector<Scheduler::Task> tasks);
 
   // Continue running task on the sequence with the closure. This must be called
   // while running a previously scheduled task.
@@ -126,6 +129,11 @@ class GPU_EXPORT Scheduler {
   base::TimeDelta TakeTotalBlockingTime();
 
   base::SingleThreadTaskRunner* GetTaskRunnerForTesting(SequenceId sequence_id);
+
+  // Returns pointer to a SchedulerDfs instance if the feature flag
+  // kUseGpuSchedulerDfs is enabled. Otherwise returns null. Used in unit test
+  // to directly test methods that exist only in SchedulerDfs.
+  SchedulerDfs* GetSchedulerDfsForTesting() { return scheduler_dfs_.get(); }
 
  private:
   struct SchedulingState {
@@ -370,7 +378,7 @@ class GPU_EXPORT Scheduler {
                               SequenceId release_sequence_id,
                               SequenceId waiting_sequence_id);
 
-  void ScheduleTaskHelper(Task task);
+  void ScheduleTaskHelper(Scheduler::Task task);
 
   void TryScheduleSequence(Sequence* sequence);
 
@@ -416,6 +424,11 @@ class GPU_EXPORT Scheduler {
   // Accumulated time the thread was blocked during running task
   base::TimeDelta total_blocked_time_ GUARDED_BY(lock_);
   const bool blocked_time_collection_enabled_;
+
+  // A pointer to a SchedulerDfs instance. If set, all public SchedulerDfs
+  // methods are forwarded to this SchedulerDfs instance. |scheduler_dfs_| is
+  // set depending on a Finch experimental feature.
+  std::unique_ptr<SchedulerDfs> scheduler_dfs_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SchedulerTest, StreamPriorities);

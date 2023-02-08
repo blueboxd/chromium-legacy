@@ -14,9 +14,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -161,7 +160,7 @@ void OnDeviceHeadProvider::Start(const AutocompleteInput& input,
       new OnDeviceHeadProviderParams(on_device_search_request_id_, input));
 
   done_ = false;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&OnDeviceHeadProvider::DoSearch,
                      weak_ptr_factory_.GetWeakPtr(), std::move(params)));
@@ -222,8 +221,8 @@ void OnDeviceHeadProvider::DoSearch(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      worker_task_runner_.get(), FROM_HERE,
+  worker_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&OnDeviceHeadProvider::GetSuggestionsFromModel,
                      GetOnDeviceHeadModelFilename(), provider_max_matches_,
                      std::move(params)),

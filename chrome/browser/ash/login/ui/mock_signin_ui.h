@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_LOGIN_UI_MOCK_SIGNIN_UI_H_
 
 #include <memory>
+
 #include "chrome/browser/ash/login/ui/signin_ui.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/login/base_screen_handler_utils.h"
@@ -27,9 +28,9 @@ class MockSigninUI : public SigninUI {
   MOCK_METHOD(void, ShowNewTermsForFlexUsers, (), (override));
   MOCK_METHOD(void,
               StartEncryptionMigration,
-              (const UserContext&,
+              (std::unique_ptr<UserContext>,
                EncryptionMigrationMode,
-               base::OnceCallback<void(const UserContext&)>),
+               base::OnceCallback<void(std::unique_ptr<UserContext>)>),
               (override));
   MOCK_METHOD(void,
               SetAuthSessionForOnboarding,
@@ -53,11 +54,5 @@ class MockSigninUI : public SigninUI {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::MockSigninUI;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_MOCK_SIGNIN_UI_H_

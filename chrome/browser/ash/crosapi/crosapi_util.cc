@@ -57,6 +57,7 @@
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/cros_display_config.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/desk.mojom.h"
 #include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "chromeos/crosapi/mojom/device_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/device_local_account_extension_service.mojom.h"
@@ -113,6 +114,7 @@
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "chromeos/crosapi/mojom/virtual_keyboard.mojom.h"
 #include "chromeos/crosapi/mojom/vpn_extension_observer.mojom.h"
 #include "chromeos/crosapi/mojom/vpn_service.mojom.h"
@@ -224,8 +226,10 @@ mojom::DevicePropertiesPtr GetDeviceProperties() {
   policy::BrowserPolicyConnectorAsh* policy_connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
   result->directory_device_id = policy_connector->GetDirectoryApiID();
-  result->serial_number = chromeos::system::StatisticsProvider::GetInstance()
-                              ->GetEnterpriseMachineID();
+  result->serial_number =
+      std::string(chromeos::system::StatisticsProvider::GetInstance()
+                      ->GetMachineID()
+                      .value_or(""));
   result->annotated_asset_id = policy_connector->GetDeviceAssetID();
   result->annotated_location = policy_connector->GetDeviceAnnotatedLocation();
   auto* device_name_policy_handler =
@@ -248,7 +252,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 97,
+static_assert(crosapi::mojom::Crosapi::Version_ == 99,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -276,6 +280,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
     MakeInterfaceVersionEntry<crosapi::mojom::CrosDisplayConfigController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Crosapi>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::Desk>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeskTemplate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceAttributes>(),
     MakeInterfaceVersionEntry<
@@ -340,6 +345,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::VideoConferenceManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VirtualKeyboard>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VpnExtensionObserver>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VpnService>(),
@@ -553,6 +559,8 @@ void InjectBrowserInitParams(
 
   params->enable_float_window =
       base::FeatureList::IsEnabled(chromeos::wm::features::kFloatWindow);
+  params->enable_partial_split =
+      base::FeatureList::IsEnabled(chromeos::wm::features::kPartialSplit);
 
   params->is_cloud_gaming_device =
       chromeos::features::IsCloudGamingDeviceEnabled();

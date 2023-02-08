@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_utils.h"
@@ -19,6 +20,7 @@
 #include "ash/system/unified/notification_icons_controller.h"
 #include "base/i18n/number_formatting.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -42,17 +44,15 @@ constexpr int kNumberIconFontSize = 11;
 
 constexpr auto kSeparatorPadding = gfx::Insets::VH(6, 4);
 
-gfx::FontList GetNumberIconFontList() {
-  // |kNumberIconFontSize| is hard-coded as 11, which whould be updated when
+const gfx::FontList& GetNumberIconFontList() {
+  // |kNumberIconFontSize| is hard-coded as 11, which should be updated when
   // the tray icon size is changed.
   DCHECK_EQ(18, kUnifiedTrayIconSize);
 
-  gfx::Font default_font;
-  int font_size_delta = kNumberIconFontSize - default_font.GetFontSize();
-  gfx::Font font = default_font.Derive(font_size_delta, gfx::Font::NORMAL,
-                                       gfx::Font::Weight::BOLD);
-  DCHECK_EQ(kNumberIconFontSize, font.GetFontSize());
-  return gfx::FontList(font);
+  static gfx::FontList font_list({"Roboto"}, gfx::Font::NORMAL,
+                                 kNumberIconFontSize,
+                                 gfx::Font::Weight::MEDIUM);
+  return font_list;
 }
 
 ui::ColorId SeparatorIconColorId(session_manager::SessionState state) {
@@ -74,9 +74,12 @@ bool ShouldShowCounterView() {
 
 class NumberIconImageSource : public gfx::CanvasImageSource {
  public:
-  explicit NumberIconImageSource(size_t count)
+  explicit NumberIconImageSource(
+      NotificationCounterView* NotificationCounterView,
+      size_t count)
       : CanvasImageSource(
             gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize)),
+        notification_counter_view_(NotificationCounterView),
         count_(count) {
     DCHECK_LE(count_, kTrayNotificationMaxCount + 1);
   }
@@ -86,7 +89,8 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
   void Draw(gfx::Canvas* canvas) override {
     SkColor tray_icon_color =
-        TrayIconColor(Shell::Get()->session_controller()->GetSessionState());
+        notification_counter_view_->GetColorProvider()->GetColor(
+            kColorAshIconColorPrimary);
     // Paint the contents inside the circle background. The color doesn't matter
     // as it will be hollowed out by the XOR operation.
     if (count_ > kTrayNotificationMaxCount) {
@@ -109,6 +113,7 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
   }
 
  private:
+  NotificationCounterView* notification_counter_view_;
   size_t count_;
 };
 
@@ -155,7 +160,8 @@ void NotificationCounterView::Update() {
   int icon_id = std::min(notification_count, kTrayNotificationMaxCount + 1);
   if (icon_id != count_for_display_) {
     image_view()->SetImage(
-        gfx::CanvasImageSource::MakeImageSkia<NumberIconImageSource>(icon_id));
+        gfx::CanvasImageSource::MakeImageSkia<NumberIconImageSource>(this,
+                                                                     icon_id));
     count_for_display_ = icon_id;
   }
   SetVisible(true);
@@ -173,7 +179,7 @@ void NotificationCounterView::OnThemeChanged() {
   TrayItemView::OnThemeChanged();
   image_view()->SetImage(
       gfx::CanvasImageSource::MakeImageSkia<NumberIconImageSource>(
-          count_for_display_));
+          this, count_for_display_));
 }
 
 const char* NotificationCounterView::GetClassName() const {
@@ -195,9 +201,8 @@ void QuietModeView::Update() {
   // DCHECK_EQ(kTrayIconSize,
   //     gfx::GetDefaultSizeOfVectorIcon(kSystemTrayDoNotDisturbIcon));
   if (message_center::MessageCenter::Get()->IsQuietMode()) {
-    image_view()->SetImage(gfx::CreateVectorIcon(
-        kSystemTrayDoNotDisturbIcon,
-        TrayIconColor(Shell::Get()->session_controller()->GetSessionState())));
+    image_view()->SetImage(ui::ImageModel::FromVectorIcon(
+        kSystemTrayDoNotDisturbIcon, kColorAshIconColorPrimary));
     SetVisible(true);
   } else {
     SetVisible(false);

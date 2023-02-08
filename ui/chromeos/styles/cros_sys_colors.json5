@@ -25,6 +25,10 @@
       dark: '$cros.ref.primary80',
       generate_per_mode: true,
     },
+    'inverse-primary': {
+      light: '$cros.ref.primary80',
+      dark: '$cros.ref.primary40',
+    },
     'on-primary': {
       light: '$cros.ref.primary100',
       dark:  '$cros.ref.primary20',
@@ -126,7 +130,8 @@
     },
     'app-base-elevated': {
       light: '$cros.ref.neutralvariant100',
-      dark:  'blend(rgba($black.rgb, 0.4), $cros.ref.neutral10)',
+      /* In dark mode we layer primary80 @ 11% ontop of neutral80 @ 2% ontop of neutral 10. */
+      dark: 'blend(rgba($cros.ref.primary80.rgb, .11), blend(rgba($cros.ref.neutral80.rgb, .02), $cros.ref.neutral10))',
       generate_per_mode: true,
     },
 
@@ -193,12 +198,77 @@
       dark: '$cros.ref.primary10',
     },
 
+    /* Harmonized colors */
+    'on-positive-container': {
+      light: '$cros.ref.green30',
+      dark: '$cros.ref.green90',
+    },
+    'positive-container': {
+      light: '$cros.ref.green95',
+      dark: 'blend(rgba($cros.ref.green95.rgb, 0.20), $black)',
+    },
+    'positive': {
+      light: '$cros.ref.green50',
+      dark: '$cros.ref.green80',
+    },
+
+    'on-warning-container': {
+      light: '$cros.ref.yellow30',
+      dark: '$cros.ref.yellow80',
+    },
+    'warning-container': {
+      light: '$cros.ref.yellow90',
+      dark: 'blend(rgba($cros.ref.yellow90.rgb, 0.20), $black)',
+    },
+    'warning': {
+      light: '$cros.ref.yellow30',
+      dark: '$cros.ref.yellow80',
+    },
+
+    'on-error-container': {
+      light: '$cros.ref.red30',
+      dark: '$cros.ref.red80',
+    },
+    'error-container': {
+      light: '$cros.ref.red90',
+      dark: 'blend(rgba($cros.ref.red80.rgb, 0.20), $black)',
+    },
+    'error': {
+      light: '$cros.ref.red50',
+      dark: '$cros.ref.red80',
+    },
+
+    'on-progress-container': {
+      light: '$cros.ref.blue30',
+      dark: '$cros.ref.blue80',
+    },
+    'progress-container': {
+      light: '$cros.ref.blue90',
+      dark: 'blend(rgba($cros.ref.blue80.rgb, 0.20), $black)',
+    },
+    'progress': {
+      light: '$cros.ref.blue50',
+      dark: '$cros.ref.blue80',
+    },
+
+    'system-on-negative-container': {
+      light: '$cros.ref.red10',
+      dark: '$cros.ref.red10',
+    },
+    'system-negative-container': {
+      light: '$cros.ref.red80',
+      dark: '$cros.ref.red80',
+    },
 
     /* Text and icons */
     'on-surface': {
       light: '$cros.ref.neutral10',
       dark: '$cros.ref.neutral90',
       generate_per_mode: true,
+    },
+    'inverse-on-surface': {
+      light: '$cros.ref.neutral95',
+      dark: '$cros.ref.neutral10',
     },
     'on-surface-bodytext': {
       light: '$cros.ref.neutral40',
@@ -208,6 +278,7 @@
       light: 'rgba($cros.sys.on-surface.rgb, 0.38)',
       dark: 'rgba($cros.sys.on-surface.rgb, 0.38)',
     },
+    'disabled-container': 'rgba($cros.sys.on-surface.rgb, 0.12)',
     // TODO(b/224402466): Add cros.sys.warning
     // TODO(b/224402466): Add cros.sys.success
 
@@ -222,17 +293,9 @@
       light: 'rgba($cros.ref.neutral10.rgb, 0.10)',
       dark: 'rgba($cros.ref.neutral10.rgb, 0.06)',
     },
-    'hover-on-quiet': {
-      light: 'rgba($cros.ref.neutral10.rgb, 0.06)',
-      dark: 'rgba($cros.ref.neutral10.rgb, 0.16)',
-    },
-    'hover-on-base': {
+    'hover-on-subtle': {
       light: 'rgba($cros.ref.neutral10.rgb, 0.06)',
       dark: 'rgba($cros.ref.neutral99.rgb, 0.1)',
-    },
-    'hover-alt': {
-      light: 'rgba($cros.ref.neutral99.rgb, 0.1)',
-      dark: 'rgba($cros.ref.neutral10.rgb, 0.06)',
     },
     'ripple-primary': {
       light: 'rgba($cros.ref.primary70.rgb, 0.32)',
@@ -240,10 +303,10 @@
     },
     'ripple-neutral-on-prominent': {
       light: 'rgba($cros.ref.neutral99.rgb, 0.16)',
-      dark: 'rgba($cros.ref.neutral10.rgb, 0.12)',
+      dark: 'rgba($cros.ref.neutral10.rgb, 0.08)',
     },
-    'ripple-neutral-on-quiet': {
-      light: 'rgba($cros.ref.neutral10.rgb, 0.6)',
+    'ripple-neutral-on-subtle': {
+      light: 'rgba($cros.ref.neutral10.rgb, 0.12)',
       dark: 'rgba($cros.ref.neutral90.rgb, 0.16)',
     },
     'highlight-shape': {
@@ -253,6 +316,10 @@
     'highlight-text': {
       light: 'rgba($cros.ref.primary70.rgb, 0.6)',
       dark: 'rgba($cros.ref.primary70.rgb, 0.6)',
+    },
+    'focus-ring': {
+      light: '$cros.ref.primary40',
+      dark: '$cros.ref.primary80',
     }
   },
 }

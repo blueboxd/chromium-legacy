@@ -5,7 +5,7 @@
 GEN_INCLUDE(['dictation_test_base.js']);
 
 /** Test fixture for editing_util.js. */
-DictationEditingUtilTest = class extends DictationE2ETestDisallowConsole {
+DictationEditingUtilTest = class extends DictationE2ETestAllowConsole {
   /** @override */
   async setUpDeferred() {
     await super.setUpDeferred();
@@ -427,6 +427,12 @@ AX_TEST_F('DictationEditingUtilTest', 'SmartSpacing', function() {
   caretIndex = value.length;
   commitText = 'world';
   assertEquals(' world', f());
+
+  // The below pattern is observed in an empty gmail compose box.
+  value = '\n';
+  caretIndex = value.length;
+  commitText = 'Hello';
+  assertEquals('Hello', f());
 });
 
 AX_TEST_F('DictationEditingUtilTest', 'SmartCapitalization', function() {
@@ -475,6 +481,12 @@ AX_TEST_F('DictationEditingUtilTest', 'SmartCapitalization', function() {
   caretIndex = value.length;
   commitText = 'world';
   assertEquals('world', f());
+
+  // The below pattern is observed in an empty gmail compose box.
+  value = '\n';
+  caretIndex = value.length;
+  commitText = 'hello';
+  assertEquals('Hello', f());
 });
 
 AX_TEST_F('DictationEditingUtilTest', 'NavNextSentJa', function() {

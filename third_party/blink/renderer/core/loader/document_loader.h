@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/fenced_frame_reporting.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -109,9 +111,12 @@ class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
 
+namespace scheduler {
+class TaskAttributionId;
+}  // namespace scheduler
 namespace mojom {
 enum class CommitResult : int32_t;
-}
+}  // namespace mojom
 
 namespace {
 struct SameSizeAsDocumentLoader;
@@ -193,7 +198,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return last_navigation_had_transient_user_activation_;
   }
   void SetCodeCacheHost(
-      mojo::PendingRemote<mojom::CodeCacheHost> code_cache_host) override;
+      CrossVariantMojoRemote<mojom::blink::CodeCacheHostInterfaceBase>
+          code_cache_host) override;
   WebString OriginCalculationDebugInfo() const override {
     return origin_calculation_debug_info_;
   }
@@ -231,14 +237,17 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   // |is_synchronously_committed| is described in comment for
   // CommitSameDocumentNavigation.
-  void UpdateForSameDocumentNavigation(const KURL&,
-                                       HistoryItem*,
-                                       mojom::blink::SameDocumentNavigationType,
-                                       scoped_refptr<SerializedScriptValue>,
-                                       WebFrameLoadType,
-                                       const SecurityOrigin* initiator_origin,
-                                       bool is_browser_initiated,
-                                       bool is_synchronously_committed);
+  void UpdateForSameDocumentNavigation(
+      const KURL&,
+      HistoryItem*,
+      mojom::blink::SameDocumentNavigationType,
+      scoped_refptr<SerializedScriptValue>,
+      WebFrameLoadType,
+      const SecurityOrigin* initiator_origin,
+      bool is_browser_initiated,
+      bool is_synchronously_committed,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id);
 
   const ResourceResponse& GetResponse() const { return response_; }
 
@@ -286,7 +295,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const SecurityOrigin* initiator_origin,
       bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
-      bool is_browser_initiated);
+      bool is_browser_initiated,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id);
 
   void SetDefersLoading(LoaderFreezeMode);
 
@@ -381,7 +392,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   CodeCacheHost* GetCodeCacheHost();
   static void DisableCodeCacheForTesting();
 
-  mojo::PendingRemote<blink::mojom::CodeCacheHost> CreateWorkerCodeCacheHost();
+  mojo::PendingRemote<mojom::blink::CodeCacheHost> CreateWorkerCodeCacheHost();
 
   HashMap<KURL, EarlyHintsPreloadEntry> GetEarlyHintsPreloadedResources();
 
@@ -389,8 +400,14 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return ad_auction_components_;
   }
 
-  const mojom::blink::FencedFrameReportingPtr& FencedFrameReporting() const {
+  const absl::optional<blink::FencedFrameReporting>& FencedFrameReporting()
+      const {
     return fenced_frame_reporting_;
+  }
+
+  const absl::optional<FencedFrame::RedactedFencedFrameProperties>&
+  FencedFrameProperties() const {
+    return fenced_frame_properties_;
   }
 
   // Detect if the page is reloaded or after form submitted. This method is
@@ -442,6 +459,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   network::mojom::NavigationDeliveryType GetNavigationDeliveryType() const {
     return navigation_delivery_type_;
   }
+
+  void UpdateSubresourceLoadMetrics(
+      uint32_t number_of_subresources_loaded,
+      uint32_t number_of_subresource_loads_handled_by_service_worker);
 
  protected:
   // Based on its MIME type, if the main document's response corresponds to an
@@ -505,7 +526,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const SecurityOrigin* initiator_origin,
       bool is_browser_initiated,
       bool is_synchronously_committed,
-      mojom::blink::TriggeringEventInfo);
+      mojom::blink::TriggeringEventInfo,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id);
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.
@@ -768,7 +791,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // reporting metadata which in turn is a map from the event type to the
   // reporting url. `nullptr` otherwise.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  mojom::blink::FencedFrameReportingPtr fenced_frame_reporting_;
+  absl::optional<blink::FencedFrameReporting> fenced_frame_reporting_;
 
   std::unique_ptr<ExtraData> extra_data_;
 
@@ -780,6 +803,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Provides state from the previous Document that will be replaced by this
   // navigation for a ViewTransition.
   absl::optional<ViewTransitionState> view_transition_state_;
+
+  absl::optional<FencedFrame::RedactedFencedFrameProperties>
+      fenced_frame_properties_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

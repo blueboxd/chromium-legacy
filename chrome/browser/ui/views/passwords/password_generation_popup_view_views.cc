@@ -35,6 +35,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -42,6 +43,12 @@ namespace {
 // The max width prevents the popup from growing too much when the password
 // field is too long.
 constexpr int kPasswordGenerationMaxWidth = 480;
+
+// Fixed dimensions of the minimized version of the popup, displayed in
+// `kPasswordStrengthIndicatorWithMinimizedState` experiment when the typed
+// password is weak and has over 5 characters.
+constexpr int kMinimizedPopupWidth = 42;
+constexpr int kMinimizedPopupHeight = 32;
 
 // The default icon size used in the password generation drop down.
 constexpr int kIconSize = 16;
@@ -228,7 +235,9 @@ bool PasswordGenerationPopupViewViews::Show() {
 void PasswordGenerationPopupViewViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
-  password_view_->reset_controller();
+  if (FullPopupVisible()) {
+    password_view_->reset_controller();
+  }
 
   DoHide();
 }
@@ -241,7 +250,9 @@ void PasswordGenerationPopupViewViews::UpdateState() {
 }
 
 void PasswordGenerationPopupViewViews::UpdateGeneratedPasswordValue() {
-  password_view_->UpdateGeneratedPassword(controller_->password());
+  if (FullPopupVisible()) {
+    password_view_->UpdateGeneratedPassword(controller_->password());
+  }
   Layout();
 }
 
@@ -250,6 +261,8 @@ bool PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
 }
 
 void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
+  DCHECK(FullPopupVisible());
+
   if (controller_->password_selected())
     NotifyAXSelection(this);
 
@@ -263,6 +276,16 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
 }
 
 void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
+  if (controller_->IsStateMinimized()) {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    auto warning_icon = std::make_unique<views::ImageView>();
+    warning_icon->SetImage(ui::ImageModel::FromVectorIcon(
+        vector_icons::kNotificationWarningIcon, ui::kColorAlertMediumSeverity,
+        kIconSize));
+    AddChildView(std::move(warning_icon));
+    return;
+  }
+
   // Add 1px distance between views for the separator.
   views::BoxLayout* box_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -276,10 +299,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   const int kHorizontalMargin =
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordStrengthIndicator)) {
-    // TODO(crbug.com/1345766): Adjust according to the calculated password
-    // strength.
+  if (controller_->IsUserTypedPasswordWeak()) {
     auto* password_strength_view = AddChildView(CreatePasswordStrengthView(
         l10n_util::GetStringUTF16(IDS_PASSWORD_WEAKNESS_INDICATOR)));
     password_strength_view->SetBorder(views::CreateEmptyBorder(
@@ -315,12 +335,18 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
                         kHorizontalMargin)));
 }
 
+bool PasswordGenerationPopupViewViews::FullPopupVisible() const {
+  return password_view_;
+}
+
 void PasswordGenerationPopupViewViews::OnThemeChanged() {
   autofill::AutofillPopupBaseView::OnThemeChanged();
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
-  password_view_->UpdateBackground(controller_->password_selected()
-                                       ? GetSelectedBackgroundColor()
-                                       : GetBackgroundColor());
+  if (FullPopupVisible()) {
+    password_view_->UpdateBackground(controller_->password_selected()
+                                         ? GetSelectedBackgroundColor()
+                                         : GetBackgroundColor());
+  }
   if (help_styled_label_) {
     help_styled_label_->SetDisplayedOnBackgroundColor(
         GetFooterBackgroundColor());
@@ -336,10 +362,12 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 
   // Divider line needs to be drawn after OnPaint() otherwise the background
   // will overwrite the divider.
-  gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
-                           password_view_->width(), 1);
-  canvas->FillRect(divider_bounds,
-                   GetColorProvider()->GetColor(GetSeparatorColorId()));
+  if (FullPopupVisible()) {
+    gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
+                             password_view_->width(), 1);
+    canvas->FillRect(divider_bounds,
+                     GetColorProvider()->GetColor(GetSeparatorColorId()));
+  }
 }
 
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
@@ -354,6 +382,10 @@ void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
 }
 
 gfx::Size PasswordGenerationPopupViewViews::CalculatePreferredSize() const {
+  if (!FullPopupVisible()) {
+    return gfx::Size(kMinimizedPopupWidth, kMinimizedPopupHeight);
+  }
+
   int width =
       std::max(password_view_->GetPreferredSize().width(),
                gfx::ToEnclosingRect(controller_->element_bounds()).width());

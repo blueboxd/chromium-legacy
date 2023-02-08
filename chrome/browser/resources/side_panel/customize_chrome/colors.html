@@ -1,0 +1,37 @@
+<style>
+  cr-grid {
+    --cr-grid-gap: 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  customize-chrome-check-mark {
+    --customize-chrome-check-mark-wrapper-end: -1px;
+  }
+</style>
+<!-- TODO(crbug.com/1384229): Make grid adaptive. -->
+<cr-grid columns="4">
+  <!-- TODO(crbug.com/1384229): Add extracted color. -->
+  <customize-chrome-check-mark-wrapper checked>
+    <customize-chrome-color
+        id="defaultColor"
+        background-color="[[defaultColor_.background]]"
+        foreground-color="[[defaultColor_.foreground]]"
+        title="$i18n{defaultColorName}"
+        on-click="onDefaultColorClick_">
+    </customize-chrome-color>
+  </customize-chrome-check-mark-wrapper>
+  <template id="chromeColors" is="dom-repeat" items="[[colors_]]">
+    <!-- TODO(crbug.com/1384229): Only set checked if selected. -->
+    <customize-chrome-check-mark-wrapper checked>
+      <customize-chrome-color
+          class="chrome-color"
+          background-color="[[item.background]]"
+          foreground-color="[[item.foreground]]"
+          title="[[item.name]]"
+          on-click="onChromeColorClick_">
+      </customize-chrome-color>
+    </customize-chrome-check-mark-wrapper>
+  </template>
+  <!-- TODO(crbug.com/1384229): Add color picker. -->
+</cr-grid>

@@ -17,6 +17,7 @@
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -82,7 +83,7 @@ void TakeScreenshot(
       std::move(on_screenshot_taken));
   screenshot_request->set_area(request_bounds);
   screenshot_request->set_result_task_runner(
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
   screenshot_layer->RequestCopyOfOutput(std::move(screenshot_request));
 }
 
@@ -335,9 +336,9 @@ int RootWindowDeskSwitchAnimator::EndSwipeAnimation(bool is_fast_swipe) {
   // local so we do not try to access a member of a deleted object.
   int local_ending_desk_index = -1;
 
-  // For the improvements trial, try animating to `ending_desk_index_`
-  // regardless of how much of it is visible.
-  if (is_fast_swipe && features::AreDesksTrackpadSwipeImprovementsEnabled()) {
+  // Try animating to `ending_desk_index_` regardless of how much of it is
+  // visible.
+  if (is_fast_swipe) {
     local_ending_desk_index = ending_desk_index_;
     // If the ending desk screenshot is underway, it will call
     // `StartAnimation()` when finished.

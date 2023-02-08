@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_confirmation_result.h"
@@ -44,6 +43,7 @@
 #include "components/safe_browsing/content/common/file_type_policies.h"
 #include "components/safe_browsing/content/common/file_type_policies_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -66,6 +66,14 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #endif
 
 using download::DownloadItem;
@@ -115,12 +123,12 @@ class NullWebContentsDelegate : public content::WebContentsDelegate {
 //   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result0) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), result0));
 }
 
 ACTION_P2(ScheduleCallback2, result0, result1) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), result0, result1));
 }
 
@@ -511,7 +519,8 @@ void CompletionCallbackWrapper(
     std::unique_ptr<DownloadTargetInfo>* target_info_receiver,
     std::unique_ptr<DownloadTargetInfo> target_info) {
   target_info_receiver->swap(target_info);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(closure));
 }
 
 std::unique_ptr<DownloadTargetInfo>
@@ -2814,5 +2823,139 @@ TEST_F(DownloadTargetDeterminerTest, DetermineLocalPathReturnsContentUri) {
   EXPECT_EQ(target_info->target_path.value(), "content://media/123");
 }
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Tests that DLP policies are checked before determining the download path.
+class DownloadTargetDeterminerDlpTest : public DownloadTargetDeterminerTest {
+ protected:
+  DownloadTargetDeterminerDlpTest()
+      : profile_(std::make_unique<TestingProfile>()),
+        user_manager_(new ash::FakeChromeUserManager()),
+        scoped_user_manager_(std::make_unique<user_manager::ScopedUserManager>(
+            base::WrapUnique(user_manager_))) {}
+
+  class MockFilesController : public policy::DlpFilesController {
+   public:
+    explicit MockFilesController(const policy::DlpRulesManager& rules_manager)
+        : DlpFilesController(rules_manager) {}
+    ~MockFilesController() override = default;
+
+    MOCK_METHOD(bool,
+                ShouldPromptBeforeDownload,
+                (const DlpFileDestination&, const base::FilePath&),
+                (override));
+  };
+
+  void SetUp() override {
+    DownloadTargetDeterminerTest::SetUp();
+
+    AccountId account_id =
+        AccountId::FromUserEmailGaiaId("test@example.com", "12345");
+    profile_->SetIsNewProfile(true);
+    user_manager::User* user =
+        user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+            account_id, /*is_affiliated=*/false,
+            user_manager::USER_TYPE_REGULAR, profile_.get());
+    user_manager_->UserLoggedIn(account_id, user->username_hash(),
+                                /*browser_restart=*/false,
+                                /*is_child=*/false);
+    user_manager_->SimulateUserProfileLoad(account_id);
+  }
+
+  void TearDown() override {
+    scoped_user_manager_.reset();
+    profile_.reset();
+
+    DownloadTargetDeterminerTest::TearDown();
+  }
+
+  std::unique_ptr<KeyedService> SetDlpRulesManager(
+      content::BrowserContext* context) {
+    auto dlp_rules_manager =
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+    rules_manager_ = dlp_rules_manager.get();
+    return dlp_rules_manager;
+  }
+
+  void SetupRulesManager() {
+    policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
+        profile_.get(),
+        base::BindRepeating(
+            &DownloadTargetDeterminerDlpTest::SetDlpRulesManager,
+            base::Unretained(this)));
+    ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
+
+    ON_CALL(*rules_manager_, IsFilesPolicyEnabled)
+        .WillByDefault(testing::Return(true));
+    mock_files_controller_ =
+        std::make_unique<MockFilesController>(*rules_manager_);
+    ON_CALL(*rules_manager_, GetDlpFilesController)
+        .WillByDefault(testing::Return(mock_files_controller_.get()));
+  }
+
+  std::unique_ptr<TestingProfile> profile_;
+  ash::FakeChromeUserManager* user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+  std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
+};
+
+// Even if the download path is managed, we should prompt if the download path
+// is blocked by DLP.
+TEST_F(DownloadTargetDeterminerDlpTest, ManagedPath_ShouldPrompt) {
+  SetupRulesManager();
+
+  const DownloadTestCase kManagedPathTestCase = {
+      AUTOMATIC,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/foo.txt",
+      "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("foo.txt"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_CRDOWNLOAD};
+
+  SetManagedDownloadPath(test_download_dir());
+  ASSERT_TRUE(download_prefs()->IsDownloadPathManaged());
+  EXPECT_CALL(*delegate(),
+              RequestConfirmation_(
+                  _, GetPathInDownloadDir(FILE_PATH_LITERAL("foo.txt")),
+                  DownloadConfirmationReason::DLP_BLOCKED, _));
+  EXPECT_CALL(*mock_files_controller_, ShouldPromptBeforeDownload)
+      .WillOnce(testing::Return(true));
+  RunTestCasesWithActiveItem(&kManagedPathTestCase, 1);
+}
+
+// Even if "Prompt for download" user preference is set to false, we should
+// prompt if the download path is blocked by DLP.
+TEST_F(DownloadTargetDeterminerDlpTest, PromptAlways_SafeAutomatic) {
+  SetupRulesManager();
+
+  const DownloadTestCase kSafeAutomatic = {
+      AUTOMATIC,
+      download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadFileType::NOT_DANGEROUS,
+      "http://example.com/automatic.txt",
+      "text/plain",
+      FILE_PATH_LITERAL(""),
+
+      FILE_PATH_LITERAL("automatic.txt"),
+      DownloadItem::TARGET_DISPOSITION_PROMPT,
+
+      EXPECT_CRDOWNLOAD};
+
+  SetPromptForDownload(false);
+  EXPECT_CALL(*mock_files_controller_, ShouldPromptBeforeDownload)
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(*delegate(),
+              RequestConfirmation_(
+                  _, GetPathInDownloadDir(FILE_PATH_LITERAL("automatic.txt")),
+                  DownloadConfirmationReason::DLP_BLOCKED, _));
+  RunTestCasesWithActiveItem(&kSafeAutomatic, 1);
+}
+#endif
 
 }  // namespace

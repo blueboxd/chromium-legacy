@@ -439,6 +439,53 @@ TEST_F(AnnotationAgentImplTest, AgentFailsAttachmentReportsToHost) {
   EXPECT_TRUE(host.did_finish_attachment_rect_->IsEmpty());
 }
 
+// Tests that an overlapping marker still reports a completed attachment to the
+// host.
+TEST_F(AnnotationAgentImplTest, AttachmentToOverlappingMarkerReportsToHost) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p id='text'>TEST FOO PAGE BAR</p>
+  )HTML");
+
+  Element* element_text = GetDocument().getElementById("text");
+
+  auto* agent = CreateAgentFailsAttach();
+  ASSERT_TRUE(agent);
+  RangeInFlatTree* range_foo =
+      CreateRangeToExpectedText(element_text, 5, 13, "FOO PAGE");
+  auto* agent_foo = CreateAgentForRange(range_foo);
+  ASSERT_TRUE(agent_foo);
+
+  RangeInFlatTree* range_bar =
+      CreateRangeToExpectedText(element_text, 9, 17, "PAGE BAR");
+  auto* agent_bar = CreateAgentForRange(range_bar);
+  ASSERT_TRUE(agent_bar);
+
+  MockAnnotationAgentHost host_foo;
+  MockAnnotationAgentHost host_bar;
+  host_foo.BindToAgent(*agent_foo);
+  host_bar.BindToAgent(*agent_bar);
+
+  ASSERT_FALSE(host_foo.did_finish_attachment_rect_);
+  ASSERT_FALSE(host_bar.did_finish_attachment_rect_);
+
+  agent_foo->Attach();
+  ASSERT_TRUE(agent_foo->IsAttached());
+
+  host_foo.FlushForTesting();
+
+  EXPECT_TRUE(host_foo.did_finish_attachment_rect_);
+  ASSERT_FALSE(host_bar.did_finish_attachment_rect_);
+
+  agent_bar->Attach();
+  ASSERT_TRUE(agent_bar->IsAttached());
+
+  host_bar.FlushForTesting();
+  EXPECT_TRUE(host_bar.did_finish_attachment_rect_);
+}
+
 // Tests that attached agents report the document-coordinate rects of the
 // ranges to the host.
 TEST_F(AnnotationAgentImplTest, AttachmentReportsRectsToHost) {
@@ -641,6 +688,53 @@ TEST_F(AnnotationAgentImplTest, AgentScrollIntoViewZoomed) {
   host_foo.FlushForTesting();
 
   EXPECT_TRUE(ExpectInViewport(*element_foo));
+}
+
+// Test that calling ScrollIntoView while layout is dirty causes the page to
+// update layout and correctly ScrollIntoView the agent.
+TEST_F(AnnotationAgentImplTest, ScrollIntoViewWithDirtyLayout) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        position: absolute;
+        top: 100px;
+      }
+    </style>
+    <p id='text'>FOO BAR</p>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* element_text = GetDocument().getElementById("text");
+
+  RangeInFlatTree* range_foo =
+      CreateRangeToExpectedText(element_text, 0, 3, "FOO");
+  auto* agent_foo = CreateAgentForRange(range_foo);
+  ASSERT_TRUE(agent_foo);
+
+  ASSERT_TRUE(ExpectInViewport(*element_text));
+  ASSERT_EQ(GetDocument().View()->GetRootFrameViewport()->GetScrollOffset(),
+            ScrollOffset());
+
+  MockAnnotationAgentHost host_foo;
+  host_foo.BindToAgent(*agent_foo);
+  agent_foo->Attach();
+  ASSERT_TRUE(agent_foo->IsAttached());
+  host_foo.FlushForTesting();
+
+  element_text->setAttribute(html_names::kStyleAttr, "top: 2000px");
+
+  // Invoking ScrollIntoView on the agent should perform layout and then cause
+  // the attached content to scroll into the viewport.
+  host_foo.agent_->ScrollIntoView();
+  host_foo.FlushForTesting();
+
+  EXPECT_TRUE(ExpectInViewport(*element_text));
+  EXPECT_GT(GetDocument().View()->GetRootFrameViewport()->GetScrollOffset().y(),
+            1000);
 }
 
 }  // namespace blink

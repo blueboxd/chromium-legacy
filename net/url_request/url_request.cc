@@ -14,9 +14,10 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "net/base/auth.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -591,7 +592,7 @@ URLRequest::URLRequest(const GURL& url,
       creation_time_(base::TimeTicks::Now()),
       traffic_annotation_(traffic_annotation) {
   // Sanity check out environment.
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+  DCHECK(base::SingleThreadTaskRunner::HasCurrentDefault());
 
   context->url_requests()->insert(this);
   net_log_.BeginEvent(NetLogEventType::REQUEST_ALIVE, [&] {
@@ -776,6 +777,9 @@ int URLRequest::Read(IOBuffer* dest, int dest_size) {
     // Caller is not too bright.  I guess we've done what they asked.
     return OK;
   }
+
+  // Caller should provide a buffer.
+  DCHECK(dest && dest->data());
 
   int rv = job_->Read(dest, dest_size);
   if (rv == ERR_IO_PENDING) {

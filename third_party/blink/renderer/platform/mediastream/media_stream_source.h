@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/display/types/display_constants.h"
 
 namespace blink {
 
@@ -88,17 +89,18 @@ class PLATFORM_EXPORT MediaStreamSource final
       ReadyState state = kReadyStateLive,
       bool requires_consumer = false);
 
-  // TODO(crbug.com/1302689): Remove once all callers have been migrated.
-  [[deprecated(
-      "Provide a WebPlatformMediaStreamSource during "
-      "construction")]] MediaStreamSource(const String& id,
-                                          StreamType type,
-                                          const String& name,
-                                          bool remote,
-                                          ReadyState state = kReadyStateLive,
-                                          bool requires_consumer = false);
+  MediaStreamSource(
+      const String& id,
+      int64_t display_id,
+      StreamType type,
+      const String& name,
+      bool remote,
+      std::unique_ptr<WebPlatformMediaStreamSource> platform_source,
+      ReadyState state = kReadyStateLive,
+      bool requires_consumer = false);
 
   const String& Id() const { return id_; }
+  int64_t GetDisplayId() const { return display_id_; }
   StreamType GetType() const { return type_; }
   const String& GetName() const { return name_; }
   bool Remote() const { return remote_; }
@@ -182,7 +184,13 @@ class PLATFORM_EXPORT MediaStreamSource final
     Vector<const float*> bus_vector_;
   };
 
+  // The ID of this MediaStreamSource object itself.
   String id_;
+  // If this MediaStreamSource object is associated with a display,
+  // then `display_id_` holds the display's own ID.
+  // Otherwise, display::kInvalidDisplayId.
+  // This attribute is currently only set on ChromeOS.
+  int64_t display_id_ = display::kInvalidDisplayId;
   StreamType type_;
   String name_;
   String group_id_;

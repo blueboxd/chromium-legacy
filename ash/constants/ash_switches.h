@@ -27,6 +27,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAllowFailedPolicyFetchForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowOsInstall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAllowRAInDevMode[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAlmanacApiUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAlwaysEnableHdcp[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppAutoLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAppOemManifestFile[];
@@ -84,8 +85,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshTouchHud[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiMode[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiModeClamshell[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAshUiModeTablet[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAshUseCrOSMojoServiceManager[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAuraLegacyPowerButton[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCellularFirst[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperLarge[];
@@ -99,6 +98,10 @@ extern const char kCryptohomeUseOldEncryptionForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperIsOem[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperLarge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDefaultWallpaperSmall[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDemoModeEnrollingUsername[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDemoModeForceArcOfflineProvision[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeHighlightsApp[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDemoModeScreensaverApp[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -249,9 +252,12 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeTimezoneOverrideForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeTriggerSyncTimeoutForTests[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kForceHiddenNetworkMigration[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kProfileRequiresPolicy[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPublicAccountsSamlAclUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeBluetoothDevices[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeCastDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRegulatoryLabelDir[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRevenBranding[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRlzPingDelay[];

@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Vumela amasayithi ukuthi afinyelele kuzinzwa zokunyakaza (kunconyiwe)</translation>
 <translation id="5050380848339752099">Le sayithi limayelana nokwabelana ulwazi ne-app ngaphandle kwemodi ye-incognito.</translation>
 <translation id="5063480226653192405">Ukusetshenziswa</translation>
-<translation id="5082281938627763039">Lokhu kusula amakhukhi kanye nenye idatha yesayithi ye-<ph name="FPS_MEMBER" /> neyamasayithi aseqenjini lamasayithi ka-<ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Isayithi leselula</translation>
 <translation id="509133520954049755">Cela ukubuka kwedeskithophu</translation>
 <translation id="5100237604440890931">Igoqiwe - chofoza ukuze unwebe.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Hudula kusukela phezulu uphinde uthinte inkinobho yokubuyela emuva ukuze uphume kusikrini esigcwele.</translation>
 <translation id="5300589172476337783">Bonisa</translation>
 <translation id="5301954838959518834">OK, ngiyezwa</translation>
-<translation id="5313967007315987356">Engeza isayithi</translation>
 <translation id="5317780077021120954">Londoloza</translation>
 <translation id="5335288049665977812">Vumela amasayithi ukuthi aqalise i-JavaScript (kunconyiwe)</translation>
 <translation id="534295439873310000">Amadivayisi e-NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Yabelana ngesikrini sakho</translation>
 <translation id="5922967540311291836">Vimba amakhukhi angahlangene ngqo:</translation>
 <translation id="5939518447894949180">Setha kabusha</translation>
+<translation id="5968921426641056619">Faka ikheli lewebhu</translation>
 <translation id="5975083100439434680">Hlehlisa isithombe</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" />, <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Lawula ukufinyelela leli sayithi kudivayisi yakho</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> kukhethiwe</translation>
 <translation id="7260727271532453612">I-<ph name="PERMISSION_1" /> ne-<ph name="PERMISSION_2" /> kuvunyelwe</translation>
 <translation id="7302486331832100261">Uvamise ukuvimba izaziso. Ukuze uvumele, thepha imininingwane.</translation>
+<translation id="7366415735885268578">Engeza isayithi</translation>
 <translation id="7383715096023715447">Amasethingi e-<ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Buza kuqala</translation>
 <translation id="7423538860840206698">Kuvinjelwe kusukela ekufundeni ibhodi lokunamathisela</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Leli sayithi libonisa izikhangiso ezingathandeki noma ezidukisayo</translation>
 <translation id="8394832520002899662">Thepha ukubuyela kusayithi</translation>
 <translation id="8409345997656833551">Thola isaziso uma indaba ingaboniswa ekubukeni okwenziwe lula</translation>
+<translation id="8423565414844018592">Isikali sombhalo sisethwelwe ku-<ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Izilungiselelo</translation>
 <translation id="8441146129660941386">Funela emuva</translation>
 <translation id="8444433999583714703">Ukuze uvumele i-<ph name="APP_NAME" /> ukuba ifinyelele indawo yakho, vula nendawo <ph name="BEGIN_LINK" />Kumasethingi e-Android<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">I-NFC ivaliwe kule divayisi. Ivule kokuthi <ph name="BEGIN_LINK" />Izilungiselelo ze-Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Vimba amasayithi ekuboneni nasekuguquleni ulwazi kumadivayisi e-NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Vimbela amakhukhi kusayithi elithile.</translation>
 <translation id="8959122750345127698">Ukuzulazula akufinyeleleki: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Khohlwa</translation>

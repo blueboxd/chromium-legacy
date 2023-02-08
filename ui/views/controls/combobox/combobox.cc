@@ -19,6 +19,7 @@
 #include "ui/base/menu_source_utils.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
@@ -144,7 +145,12 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
-  SetBackgroundColorId(ui::kColorTextfieldBackground);
+  if (features::IsChromeRefresh2023()) {
+    // TODO(crbug.com/1392549): Replace placeholder color id.
+    SetBackgroundColorId(ui::kColorSubtleAccent);
+  } else {
+    SetBackgroundColorId(ui::kColorTextfieldBackground);
+  }
   UpdateBorder();
 
   arrow_button_ =
@@ -265,7 +271,14 @@ void Combobox::SetBorderColorId(ui::ColorId color_id) {
 
 void Combobox::SetBackgroundColorId(ui::ColorId color_id) {
   SetBackground(CreateThemedRoundedRectBackground(
-      color_id, FocusableBorder::kCornerRadiusDp));
+      color_id, features::IsChromeRefresh2023()
+                    ? FocusableBorder::kChromeRefresh2023CornerRadiusDp
+                    : FocusableBorder::kCornerRadiusDp));
+}
+
+void Combobox::SetForegroundColorId(ui::ColorId color_id) {
+  foreground_color_id_ = color_id;
+  SchedulePaint();
 }
 
 void Combobox::SetEventHighlighting(bool should_highlight) {
@@ -329,7 +342,7 @@ gfx::Size Combobox::CalculatePreferredSize() const {
 
   // If an arrow is being shown, add extra width to include that arrow.
   if (should_show_arrow_) {
-    width += kComboboxArrowContainerWidth;
+    width += GetComboboxArrowContainerWidthAndMargins();
   }
 
   const int height = LayoutProvider::GetControlHeightForFont(
@@ -563,7 +576,10 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   }
 
   // Draw the text.
-  SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
+  SkColor text_color =
+      foreground_color_id_.has_value()
+          ? GetColorProvider()->GetColor(foreground_color_id_.value())
+          : GetTextColorForEnableState(*this, GetEnabled());
   std::u16string text = GetModel()->GetItemAt(selected_index_.value());
   const gfx::FontList& font_list = GetFontList();
 
@@ -579,7 +595,7 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   int text_width = gfx::GetStringWidth(text, font_list);
   int available_width = width() - x - insets.right();
   if (should_show_arrow_) {
-    available_width -= kComboboxArrowContainerWidth;
+    available_width -= GetComboboxArrowContainerWidthAndMargins();
   }
   text_width = std::min(text_width, available_width);
 
@@ -588,11 +604,20 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   canvas->DrawStringRect(text, font_list, text_color, text_bounds);
 
   // Draw the arrow.
+  // TODO(crbug.com/1392549): Replace placeholder spacing and color values for
+  // ChromeRefresh2023.
   if (should_show_arrow_) {
-    gfx::Rect arrow_bounds(width() - kComboboxArrowContainerWidth, 0,
-                           kComboboxArrowContainerWidth, height());
+    gfx::Rect arrow_bounds(width() - GetComboboxArrowContainerWidthAndMargins(),
+                           0, kComboboxArrowContainerWidth, height());
     arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
     AdjustBoundsForRTLUI(&arrow_bounds);
+
+    if (features::IsChromeRefresh2023()) {
+      PaintComboboxArrowBackground(
+          GetColorProvider()->GetColor(ui::kColorAlertHighSeverity), canvas,
+          gfx::PointF(width() - GetComboboxArrowContainerWidthAndMargins(),
+                      (height() - kComboboxArrowContainerWidth) / 2.0f));
+    }
     PaintComboboxArrow(text_color, arrow_bounds, canvas);
   }
 }

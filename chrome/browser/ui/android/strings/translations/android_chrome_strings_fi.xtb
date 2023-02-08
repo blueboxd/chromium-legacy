@@ -21,8 +21,9 @@
 <translation id="1110914759170138831">Korostusta lyhennettiin</translation>
 <translation id="1111673857033749125">Muilla laitteilla tallentamasi kirjanmerkit näytetään täällä.</translation>
 <translation id="1113597929977215864">Näytä yksinkertaistettu näkymä</translation>
-<translation id="1118561384561215815">Apua verkossa oleviin tehtäviin</translation>
 <translation id="1123070903960493543">Chromen käyttösi, valitsemasi asetukset, tiedot Chromen kaatumisista</translation>
+<translation id="1126013303640354461">Google Payn maksutapoja ja osoitteita ei salata. Chromen selaushistoriaa ei synkronoida.
+Salatun datasi voi lukea vain tunnuslauseen avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muuttaa asetusta, synkronointi on nollattava. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">Ei suojaa sinua vaarallisilta sivustoilta, latauksilta ja laajennuksilta. Voit silti käyttää Selaussuojaa muissa Googlen palveluissa, joissa se on saatavilla, kuten Gmailissa ja Haussa.</translation>
 <translation id="1129510026454351943">Tiedot: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">Älä ehdota näiden sivustojen kääntämistä</translation>
@@ -31,7 +32,6 @@
 <translation id="1149401351239820326">Viimeinen voimassaolokuukausi</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" /> avautuu Chromessa. Jatkamalla hyväksyt <ph name="BEGIN_LINK1" />Googlen käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />Google Chromen ja Chrome-käyttöjärjestelmän lisäkäyttöehdot<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Sivu ei saatavilla offline-tilassa: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">Katso suositut sivustot napauttamalla Suosituimmat sivustot ‑painiketta</translation>
 <translation id="1173894706177603556">Muuta nimeä</translation>
 <translation id="1177863135347784049">Muokattu</translation>
 <translation id="1181037720776840403">Poista</translation>
@@ -123,11 +123,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="1571304935088121812">Kopioi käyttäjänimi</translation>
 <translation id="1592864538817356322">Perustason suojaus:</translation>
 <translation id="1594635596540195766">Alla olevassa listassa on <ph name="SUGGESTIONS_COUNT" /> suositeltua kohdetta.</translation>
-<translation id="161647866166517041">Roskasisällön ja petosten vähentäminen auttaa sivustoja estämään petoksia ja erottamaan botteja ihmisistä luottamusmerkkien avulla.
-
-Sivusto voi myöntää selaimeesi luottamusmerkin sen perusteella, miten toimit sivulla, esim. jos kirjaudut säännöllisesti sisään tilille. Jos muut myöhemmin käyttämäsi sivustot löytävät kelvollisen luottamusmerkin, ne pitävät sinua todennäköisemmin ihmisenä.
-
-Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa niiden avulla.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Miten voit vaikuttaa dataasi:<ph name="END_BOLD" /> Yksityisyytesi suojaamiseksi poistamme automaattisesti yli neljä viikkoa vanhat kiinnostuksen kohteet. Kun jatkat selaamista, kiinnostuksen kohde voi näkyä listalla uudelleen. Voit myös poistaa kiinnostuksen kohteet, joita et halua Chromen ottavan huomioon.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Poista 1 valittu kohde}other{Poista # valittua kohdetta}}</translation>
 <translation id="1633659023549081553">Löydä uutta sisältöä Chromen etusivulta</translation>
@@ -240,7 +235,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2286841657746966508">Laskutusosoite</translation>
 <translation id="228704530595896923">Jakamisvaihtoehtojen lista.</translation>
 <translation id="230115972905494466">Yhteensopivia laitteita ei löytynyt.</translation>
-<translation id="230155349749732438">Käyttääksesi tätä asetusta <ph name="BEGIN_LINK" />Paranna hakuja ja selausta<ph name="END_LINK" /> ‑toiminnon on oltava päällä</translation>
 <translation id="2318045970523081853">Soita napauttamalla</translation>
 <translation id="2321086116217818302">Valmistellaan salasanoja…</translation>
 <translation id="2323763861024343754">Sivustotietoja tallennettu</translation>
@@ -266,7 +260,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2472163211318554013">Saat eniten irti Chromesta kirjautumalla sisään</translation>
 <translation id="247737702124049222">Kuvaselitykset ovat päällä</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
-<translation id="2485422356828889247">Poista</translation>
 <translation id="2494974097748878569">Chromen Google Assistant</translation>
 <translation id="2496180316473517155">Selaushistoria</translation>
 <translation id="2497852260688568942">Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
@@ -289,6 +282,11 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2569733278091928697">Voit helposti ylläpitää esimerkiksi mediaohjaimia, incognito-käyttökertoja ja latauksia</translation>
 <translation id="2571711316400087311">Tarjoudu lähettämään muunkielisiä sivuja Google Kääntäjälle</translation>
 <translation id="2573452357057307036">Katso, miten voit valita Chromen oletusselaimeksi</translation>
+<translation id="2580436639406015883">Roskasisällön ja petosten vähentäminen auttaa sivustoja estämään petoksia ja erottamaan botteja ihmisistä yksityisten tilamerkkien avulla.
+
+Sivusto voi myöntää selaimellesi yksityisen tilamerkin sen perusteella, miten toimit sivulla, esim. jos kirjaudut säännöllisesti sisään tilille. Jos muut myöhemmin käyttämäsi sivustot löytävät kelvollisen yksityisen tilamerkin, ne pitävät sinua todennäköisemmin ihmisenä.
+
+Yksityiset tilamerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa niiden avulla.</translation>
 <translation id="2581165646603367611">Evästeet, välimuisti ja muut Chromen vähemmän tärkeinä pitämät sivustotiedot poistetaan.</translation>
 <translation id="2587052924345400782">Uudempi versio on saatavilla.</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -324,7 +322,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="2781151931089541271">1 sekunti jäljellä</translation>
 <translation id="2788468313014644040">Ryhmän numero</translation>
 <translation id="2800066122460699237">Tämä välilehti suljetaan: <ph name="TAB_TITLE" /></translation>
-<translation id="2805756323405976993">Sovellukset</translation>
 <translation id="2806840421670364300">FLoC-kohdentaminen</translation>
 <translation id="281504910091592009">Katso ja ylläpidä <ph name="BEGIN_LINK" />Google-tilille<ph name="END_LINK" /> tallennettuja salasanoja</translation>
 <translation id="2818669890320396765">Kirjaudu sisään ja ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla</translation>
@@ -400,6 +397,7 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="3130863904455712965">Historia ja muita</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Chromen etusivu</translation>
+<translation id="3157931365184549694">Palauta</translation>
 <translation id="3166827708714933426">Välilehti- ja ikkunapikanäppäimet</translation>
 <translation id="316694332262407393">Chrome on jo käynnissä täällä.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -429,7 +427,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="3269093882174072735">Lataa kuva</translation>
 <translation id="3280562213547448728">Puhehaku</translation>
 <translation id="3282568296779691940">Kirjaudu Chromeen</translation>
-<translation id="3284510035090979597">Proaktiivinen avustus</translation>
 <translation id="3285080554353377245">Video-ohjeita Chromen käyttöön</translation>
 <translation id="3288003805934695103">Lataa sivu uudelleen.</translation>
 <translation id="3290249595466894471">Lähettää myös pienen näytteen sivuista, latauksista, laajennustoiminnasta ja järjestelmätiedoista auttaakseen löytämään uusia uhkia</translation>
@@ -454,6 +451,7 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="3428747202529429621">Pitää sinut turvassa Chromessa ja voi parantaa suojaustasi muissa Google-sovelluksissa, kun olet sisäänkirjautuneena</translation>
 <translation id="3429160811076349561">Kokeiluominaisuudet ovat poissa käytöstä</translation>
 <translation id="3435465986463792564">Onko monta ikkunaa auki? Voit ylläpitää niitä täältä</translation>
+<translation id="3435738964857648380">Suojaus</translation>
 <translation id="3443221991560634068">Päivitä nykyinen sivu</translation>
 <translation id="3444179773590444986">Haluatko antaa palautetta sivustojen tummasta teemasta?</translation>
 <translation id="3452832259067974318">Yksityisyytesi suojaamiseksi Chrome ei täytä salasanaasi automaattisesti tähän kenttään.</translation>
@@ -552,11 +550,13 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="4016425174436051808">Ei voi seurata. Jotain meni pieleen.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4035877632587724847">Älä salli</translation>
+<translation id="4036177530563778041">Jatka helposti siitä, mihin jäit</translation>
 <translation id="4045764304651014138">Käyttödata</translation>
 <translation id="405399507749852140">Voit saada ilmoituksen, jos hinta laskee jollakin sivustolla</translation>
 <translation id="4056223980640387499">Seepia</translation>
 <translation id="4060598801229743805">Toimintoja on käytettävissä näytön yläosassa.</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
+<translation id="4072805772816336153">Yritä myöhemmin uudelleen</translation>
 <translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="4084712963632273211">Lähde: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Googlen toimittama<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Voit kirjautua sisään QR-koodin näyttävälle laitteelle tämän tabletin avulla.</translation>
@@ -573,8 +573,12 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="4137746084635924146">Laitteen kieli</translation>
 <translation id="414128724510021958">Oletusarvoiset tietokonesivustot</translation>
 <translation id="4141536112466364990">Tutustu Chromeen</translation>
+<translation id="4147131678541801076">Kokeilujen aikana roskasisällön ja petosten vähentäminen auttaa sivustoja estämään petoksia ja erottamaan botteja ihmisistä yksityisten tilamerkkien avulla.
+
+Sivusto voi myöntää selaimellesi yksityisen tilamerkin sen perusteella, miten toimit sivulla, esim. jos kirjaudut säännöllisesti sisään tilille. Jos muut myöhemmin käyttämäsi sivustot löytävät kelvollisen yksityisen tilamerkin, ne pitävät sinua todennäköisemmin ihmisenä.
+
+Yksityiset tilamerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa niiden avulla.</translation>
 <translation id="4162867837470729563">Jakamisvaihtoehtojen lista koko näytön kokoisena.</translation>
-<translation id="4165986682804962316">Sivustoasetukset</translation>
 <translation id="4170011742729630528">Palvelu ei ole käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="4177222230309051052">Hae kaikki kirjanmerkkisi</translation>
 <translation id="4181841719683918333">Kielet</translation>
@@ -584,7 +588,6 @@ Kun poistat selaushistorian (kokonaan tai vain tietyn sivuston osalta), poistat 
 <translation id="4209895695669353772">Ota synkronointi käyttöön, niin näet Googlen suosittelemaa yksilöllistä sisältöä</translation>
 <translation id="4214315110991671325">Jos sallit evästeet, Chrome voi käyttää niitä esilataamiseen.</translation>
 <translation id="4225895483398857530">Työkalupalkin pikakuvake</translation>
-<translation id="4227318652298512614">Seuraa haluamiasi sivustoja</translation>
 <translation id="4242533952199664413">Avaa asetukset</translation>
 <translation id="4248098802131000011">Suojaa salasanasi tietosuojaloukkauksilta ja muilta tietoturvaongelmilta</translation>
 <translation id="424864128008805179">Kirjaudutaanko ulos Chromesta?</translation>
@@ -681,6 +684,8 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Salasanat tallennetaan Google Salasanoihin tällä laitteella</translation>
 <translation id="4766678251456904326">Lisää tili laitteelle</translation>
+<translation id="4769095993849849966">Uusi tiedostonimi</translation>
+<translation id="4778653490315793244">Ei vielä näytettävää</translation>
 <translation id="4787736314074622408">Poistetaanko <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Auttaa hoitamaan asioita verkossa, esim. maksamaan</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
@@ -744,6 +749,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5032430150487044192">QR-koodin luominen ei onnistu</translation>
 <translation id="5039804452771397117">Salli</translation>
+<translation id="5040262127954254034">Tietosuoja</translation>
 <translation id="504456571576643789">Huomioitavaa</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Muita toimintoja<ph name="END_LINK1" /> voidaan tallentaa Google-tilillesi, kun olet kirjautuneena sisään. Voit poistaa niitä koska vain.</translation>
 <translation id="506254248375231072">Ei välilehtiä</translation>
@@ -872,7 +878,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5795872532621730126">Hae ja selaa</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# tunti sitten}other{# tuntia sitten}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Kaikki oikeudet pidätetään.</translation>
-<translation id="5810864297166300463">Verkkoapu</translation>
 <translation id="5813552293717797987"><ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" /> ylläpitävät tätä selainta.</translation>
 <translation id="5814131985548525293">Kirjoita tähän tai aloita napauttamalla puhekuvaketta</translation>
 <translation id="5814749351757353073">Pysy ajan tasalla lempisivustojesi tapahtumista</translation>
@@ -895,7 +900,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5869789175361934029">Jatka toisella laitteella</translation>
 <translation id="587735546353481577">Jos haluat seurata sivustoa, siirry sille, avaa Chrome-valikko ja valitse Seuraa.</translation>
 <translation id="5879072387416556377">Parempia ehdotuksia</translation>
-<translation id="5884076754568147479">Jotta tehtävien hoitaminen sujuisi helpommin, Google saa tiedot niiden sivustojen URL-osoitteista ja sisällöstä, joilla käytät Assistantia, sekä Assistantin kautta lähettämäsi tiedot</translation>
 <translation id="5906513782029855931">Sivustojen URL-osoitteiden avulla Google Assistantia voi auttaa sinua tekemään asioita. Voit poistaa Assistantin käytöstä Chromen asetuksissa.</translation>
 <translation id="5916664084637901428">Päällä</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
@@ -980,11 +984,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6363990818884053551">Aloita synkronointi todentamalla henkilöllisyytesi</translation>
 <translation id="6364438453358674297">Poistetaanko ehdotus historiasta?</translation>
 <translation id="6380100320871303656">Esilataa useammin sivuja, joita Chromen mukaan avaat todennäköisesti. Asetus voi saada datankäytön lisääntymään.</translation>
-<translation id="6385407407546870227">Kokeilujen aikana roskasisällön ja petosten vähentäminen auttaa sivustoja estämään petoksia ja erottamaan botteja ihmisistä luottamusmerkkien avulla.
-
-Sivusto voi myöntää selaimellesi luottamusmerkin sen perusteella, miten toimit sivulla, esim. jos kirjaudut säännöllisesti sisään tilille. Jos muut myöhemmin käyttämäsi sivustot löytävät kelvollisen luottamusmerkin, ne pitävät sinua todennäköisemmin ihmisenä.
-
-Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa niiden avulla.</translation>
 <translation id="6394791151443660613">Haku: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">LINKITÄ</translation>
 <translation id="6397616442223433927">Verkkoyhteys palautettu</translation>
@@ -1107,6 +1106,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="6903907808598579934">Ota synkronointi käyttöön</translation>
 <translation id="6908998565271542516">Vaihtoehto hyväksyä tai jättää hyväksymättä koko näytön kokoinen verkkosivusto</translation>
 <translation id="6909589135458168665">Sivujen esilataus</translation>
+<translation id="692924882724759447">Katso seuraamasi sivustot täältä</translation>
 <translation id="6942665639005891494">Muuta oletuslataussijaintia milloin tahansa Asetukset-valikon kautta</translation>
 <translation id="694267552845942083">Valitset parhaillaan synkronointiasetuksia. Viimeistele synkronoinnin käyttöönotto napauttamalla näytön alaosasta Vahvista-painiketta. Siirry ylös</translation>
 <translation id="6945221475159498467">Valitse</translation>
@@ -1123,6 +1123,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="7029390216614421513">Aseta QR- tai viivakoodi tämän kehyksen sisälle.</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="7030304022046916278">Lähettää URL-osoitteita Selaussuojan tarkistettavaksi</translation>
+<translation id="7030585293819777123">Jatketaanko edellistä tehtävää?</translation>
 <translation id="7037830628447527439">Kirjaudu Chromeen Google-tililläsi</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="7054588988317389591">Muodostetaanko kuvaselitykset?</translation>
@@ -1300,6 +1301,7 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="7971136598759319605">Aktiivinen 1 päivä sitten</translation>
 <translation id="7975379999046275268">Esikatsele sivu <ph name="BEGIN_NEW" />Uusi<ph name="END_NEW" /></translation>
 <translation id="7986497153528221272">Jos haluat nähdä salasanat, sinun on asetettava näytön lukitus laitteellesi</translation>
+<translation id="7995059495660416932">Näet sisältöä, kun se tulee saataville</translation>
 <translation id="799576009106109668">Selaaminen sujuu nopeammin, koska sisältö ladataan proaktiivisesti tällä hetkellä auki olevan verkkosivun perusteella</translation>
 <translation id="7998918019931843664">Avaa suljettu välilehti uudelleen</translation>
 <translation id="8004582292198964060">Selain</translation>
@@ -1340,7 +1342,6 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="8127542551745560481">Muokkaa etusivua</translation>
 <translation id="8130309322784422030">Tallennetut sisäänkirjautumistietosi voivat olla vanhentuneita</translation>
 <translation id="813082847718468539">Näytä sivuston tiedot</translation>
-<translation id="8153351135626613369">Assistant tulee näkyviin, kun se havaitsee mahdollisuuden auttaa sinua tuetulla verkkosivulla</translation>
 <translation id="8156139159503939589">Mitä kieliä ymmärrät?</translation>
 <translation id="8168435359814927499">Sisältö</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> tiedostoa jäljellä</translation>
@@ -1372,7 +1373,6 @@ Luottamusmerkit parantavat yksityisyyttä verkossa, eikä sinua voi tunnistaa ni
 <translation id="8352996530981010042">Reaktioiden lataaminen ei onnistunut. Yritä uudelleen.</translation>
 <translation id="8354977102499939946">Hae nopeasti äänikomennoilla. Voit muokata pikakuvaketta asetuksista.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> latausta palautettu</translation>
-<translation id="8364299278605033898">Katso suositut sivustot</translation>
 <translation id="8368001212524806591">Seuraa hintaa</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Miten käytämme tätä dataa:<ph name="END_BOLD" /> Chrome voi rakentaa kuvaa kiinnostuksen kohteistasi. Sivut, joilla käyt, voivat myöhemmin pyytää Chromelta tietoa kiinnostuksen kohteistasi ja personoida näkemiäsi mainoksia.</translation>
 <translation id="8387617938027387193">Todenna henkilöllisyytesi</translation>

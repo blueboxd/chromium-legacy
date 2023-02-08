@@ -93,7 +93,7 @@ WaylandDataDragController::WaylandDataDragController(
     : connection_(connection),
       data_device_manager_(data_device_manager),
       data_device_(data_device_manager->GetDevice()),
-      window_manager_(connection->wayland_window_manager()),
+      window_manager_(connection->window_manager()),
       pointer_delegate_(pointer_delegate),
       touch_delegate_(touch_delegate) {
   DCHECK(connection_);
@@ -181,10 +181,17 @@ bool WaylandDataDragController::StartSession(const OSExchangeData& data,
 
 void WaylandDataDragController::UpdateDragImage(const gfx::ImageSkia& image,
                                                 const gfx::Vector2d& offset) {
-  DCHECK(icon_surface_);
-  DCHECK(origin_window_);
-
   icon_bitmap_ = GetDragImage(image);
+
+  if (icon_surface_ && window_) {
+    icon_surface_->set_surface_buffer_scale(window_->window_scale());
+    icon_surface_->ApplyPendingState();
+
+    icon_offset_ = gfx::ScaleToRoundedPoint({offset.x(), offset.y()},
+                                            1.0f / window_->window_scale());
+  } else {
+    icon_offset_ = {offset.x(), offset.y()};
+  }
 
   DrawIconInternal();
 }
@@ -258,8 +265,13 @@ void WaylandDataDragController::DrawIconInternal() {
   DVLOG(3) << "Drawing drag icon. size=" << size.ToString();
   wl::DrawBitmap(*icon_bitmap_, icon_buffer_.get());
   auto* const surface = icon_surface_->surface();
-  wl_surface_attach(surface, icon_buffer_->get(), icon_offset_.x(),
-                    icon_offset_.y());
+  if (wl::get_version_of_object(surface) < WL_SURFACE_OFFSET_SINCE_VERSION) {
+    wl_surface_attach(surface, icon_buffer_->get(), icon_offset_.x(),
+                      icon_offset_.y());
+  } else {
+    wl_surface_attach(surface, icon_buffer_->get(), 0, 0);
+    wl_surface_offset(surface, icon_offset_.x(), icon_offset_.y());
+  }
   wl_surface_damage(surface, 0, 0, size.width(), size.height());
   wl_surface_commit(surface);
 }

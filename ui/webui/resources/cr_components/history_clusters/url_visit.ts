@@ -13,7 +13,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {CrActionMenuElement} from '../../cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_render.js';
-import {loadTimeData} from '../../js/load_time_data.m.js';
+import {loadTimeData} from '../../js/load_time_data.js';
 
 import {BrowserProxyImpl} from './browser_proxy.js';
 import {Annotation, URLVisit} from './history_clusters.mojom-webui.js';
@@ -252,7 +252,7 @@ class VisitRowElement extends ClusterMenuElementBase {
   private openUrl_(event: MouseEvent|KeyboardEvent) {
     BrowserProxyImpl.getInstance().handler.openHistoryCluster(
         this.visit.normalizedUrl, {
-          middleButton: false,
+          middleButton: (event as MouseEvent).button === 1,
           altKey: event.altKey,
           ctrlKey: event.ctrlKey,
           metaKey: event.metaKey,

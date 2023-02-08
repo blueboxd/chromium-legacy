@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -89,6 +90,19 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
       kResponseNotFound,
     };
 
+    static ReadResponseError ForError(
+        const SignedWebBundleReader::ReadIntegrityBlockAndMetadataError& error);
+
+    static ReadResponseError ForMetadataValidationError(
+        const std::string& error);
+
+    static ReadResponseError ForError(
+        const SignedWebBundleReader::ReadResponseError& error);
+
+    Type type;
+    std::string message;
+
+   private:
     static ReadResponseError ForOtherError(const std::string& message) {
       return ReadResponseError(Type::kOtherError, message);
     }
@@ -97,10 +111,6 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
       return ReadResponseError(Type::kResponseNotFound, message);
     }
 
-    Type type;
-    std::string message;
-
-   private:
     ReadResponseError(Type type, const std::string& message)
         : type(type), message(message) {}
   };
@@ -117,7 +127,48 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
                     const network::ResourceRequest& resource_request,
                     ReadResponseCallback callback);
 
+  // This enum represents every error type that can occur during integrity block
+  // and metadata parsing, before responses are read from Signed Web Bundles.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ReadIntegrityBlockAndMetadataStatus {
+    kSuccess = 0,
+    // Integrity Block-related errors
+    kIntegrityBlockParserInternalError = 1,
+    kIntegrityBlockParserFormatError = 2,
+    kIntegrityBlockParserVersionError = 3,
+    kIntegrityBlockValidationError = 4,
+
+    // Signature verification errors
+    kSignatureVerificationError = 5,
+
+    // Metadata-related errors
+    kMetadataParserInternalError = 6,
+    kMetadataParserFormatError = 7,
+    kMetadataParserVersionError = 8,
+    kMetadataValidationError = 9,
+
+    kMaxValue = kMetadataValidationError
+  };
+
+  // This enum represents every error type that can occur during response head
+  // parsing, after integrity block and metadata have been read successfully.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ReadResponseHeadStatus {
+    kSuccess = 0,
+    kResponseHeadParserInternalError = 1,
+    kResponseHeadParserFormatError = 2,
+    kResponseNotFoundError = 3,
+    kMaxValue = kResponseNotFoundError
+  };
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(IsolatedWebAppReaderRegistryTest,
+                           TestConcurrentRequests);
+
   void OnIntegrityBlockRead(
       const base::FilePath& web_bundle_path,
       const web_package::SignedWebBundleId& web_bundle_id,
@@ -136,7 +187,8 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
   void OnIntegrityBlockAndMetadataRead(
       const base::FilePath& web_bundle_path,
       const web_package::SignedWebBundleId& web_bundle_id,
-      absl::optional<SignedWebBundleReader::ReadError> read_error);
+      absl::optional<SignedWebBundleReader::ReadIntegrityBlockAndMetadataError>
+          read_integrity_block_and_metadata_error);
 
   void DoReadResponse(SignedWebBundleReader& reader,
                       network::ResourceRequest resource_request,
@@ -147,6 +199,14 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
       ReadResponseCallback callback,
       base::expected<web_package::mojom::BundleResponsePtr,
                      SignedWebBundleReader::ReadResponseError> response_head);
+
+  ReadIntegrityBlockAndMetadataStatus GetStatusFromError(
+      const SignedWebBundleReader::ReadIntegrityBlockAndMetadataError& error);
+
+  ReadResponseHeadStatus GetStatusFromError(
+      const SignedWebBundleReader::ReadResponseError& error);
+
+  enum class ReaderCacheState;
 
   // A thin wrapper around `base::flat_map<base::FilePath, Cache::Entry>` that
   // automatically removes entries from the cache if they have not been accessed
@@ -197,6 +257,15 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
 
       const base::TimeTicks last_access() const { return last_access_; }
 
+      ReaderCacheState AsReaderCacheState() {
+        switch (state) {
+          case State::kPending:
+            return ReaderCacheState::kCachedPending;
+          case State::kReady:
+            return ReaderCacheState::kCachedReady;
+        }
+      }
+
       enum class State { kPending, kReady };
 
       State state = State::kPending;
@@ -220,6 +289,15 @@ class IsolatedWebAppReaderRegistry : public KeyedService {
     base::flat_map<base::FilePath, Entry> cache_;
     base::RepeatingTimer cleanup_timer_;
     SEQUENCE_CHECKER(sequence_checker_);
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ReaderCacheState {
+    kNotCached = 0,
+    kCachedReady = 1,
+    kCachedPending = 2,
+    kMaxValue = kCachedPending
   };
 
   Cache reader_cache_;

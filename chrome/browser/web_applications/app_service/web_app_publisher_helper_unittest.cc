@@ -9,14 +9,16 @@
 #include <sstream>
 #include <utility>
 
+#include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/traits_bag.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -33,14 +35,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_manager.h"
-#endif
-
-namespace ash {
-class SystemWebAppManager;
-}
 
 namespace web_app {
 
@@ -91,15 +85,8 @@ class WebAppPublisherHelperTest : public testing::Test {
 
     provider_ = WebAppProvider::GetForWebApps(profile());
 
-    ash::SystemWebAppManager* swa_manager_ptr = nullptr;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    swa_manager_ = std::make_unique<ash::TestSystemWebAppManager>(profile());
-    swa_manager_ptr = swa_manager_.get();
-#endif
-
     publisher_ = std::make_unique<WebAppPublisherHelper>(
-        profile(), provider_,
-        /*swa_manager=*/swa_manager_ptr, &no_op_delegate_,
+        profile(), provider_, &no_op_delegate_,
         /*observe_media_requests=*/false);
 
     test::AwaitStartWebAppProviderAndSubsystems(profile());
@@ -110,11 +97,8 @@ class WebAppPublisherHelperTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   NoOpWebAppPublisherDelegate no_op_delegate_;
-  WebAppProvider* provider_;
+  raw_ptr<WebAppProvider> provider_;
   std::unique_ptr<WebAppPublisherHelper> publisher_;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<ash::TestSystemWebAppManager> swa_manager_;
-#endif
 };
 
 TEST_F(WebAppPublisherHelperTest, CreateWebApp_Minimal) {
@@ -126,7 +110,7 @@ TEST_F(WebAppPublisherHelperTest, CreateWebApp_Minimal) {
   info->start_url = start_url;
 
   AppId app_id = test::InstallWebApp(profile(), std::move(info));
-  const WebApp* web_app = provider_->registrar().GetAppById(app_id);
+  const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
   apps::AppPtr app = publisher_->CreateWebApp(web_app);
 
   EXPECT_EQ(app->app_id, app_id);
@@ -181,7 +165,7 @@ TEST_F(WebAppPublisherHelperTest, CreateWebApp_NoteTaking) {
   info->note_taking_new_note_url = new_note_url;
 
   AppId app_id = test::InstallWebApp(profile(), std::move(info));
-  const WebApp* web_app = provider_->registrar().GetAppById(app_id);
+  const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
   apps::AppPtr app = publisher_->CreateWebApp(web_app);
 
   EXPECT_TRUE(HandlesIntent(app, apps_util::CreateCreateNoteIntent()));
@@ -202,7 +186,7 @@ TEST_F(WebAppPublisherHelperTest, CreateWebApp_LockScreen_DisabledByFlag) {
   info->lock_screen_start_url = lock_screen_url;
 
   AppId app_id = test::InstallWebApp(profile(), std::move(info));
-  const WebApp* web_app = provider_->registrar().GetAppById(app_id);
+  const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
   apps::AppPtr app = publisher_->CreateWebApp(web_app);
 
   EXPECT_FALSE(HandlesIntent(app, apps_util::CreateStartOnLockScreenIntent()));
@@ -328,7 +312,7 @@ TEST_F(WebAppPublisherHelperTest_WebLockScreenApi, CreateWebApp_LockScreen) {
   info->lock_screen_start_url = lock_screen_url;
 
   AppId app_id = test::InstallWebApp(profile(), std::move(info));
-  const WebApp* web_app = provider_->registrar().GetAppById(app_id);
+  const WebApp* web_app = provider_->registrar_unsafe().GetAppById(app_id);
   apps::AppPtr app = publisher_->CreateWebApp(web_app);
 
   EXPECT_TRUE(HandlesIntent(app, apps_util::CreateStartOnLockScreenIntent()));

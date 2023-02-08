@@ -17,9 +17,9 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -208,13 +208,34 @@ DrmDisplayHostManager::DrmDisplayHostManager(
   auto display_infos =
       GetAvailableDisplayControllerInfos(primary_drm_device_handle_->fd());
   has_dummy_display_ = !display_infos.empty();
-  for (const auto& display_info : display_infos) {
+  MapEdidIdToDisplaySnapshot edid_id_collision_map;
+  for (auto& display_info : display_infos) {
+    // Create a dummy DisplaySnapshot and resolve display ID collisions.
+    std::unique_ptr<display::DisplaySnapshot> current_display_snapshot =
+        CreateDisplaySnapshot(display_info.get(),
+                              primary_drm_device_handle_->fd(),
+                              primary_drm_device_handle_->sys_path(), 0);
+
+    const auto colliding_display_snapshot_iter =
+        edid_id_collision_map.find(current_display_snapshot->edid_display_id());
+    if (colliding_display_snapshot_iter != edid_id_collision_map.end()) {
+      // Resolve collisions by adding each colliding display's connector index
+      // to its display ID.
+      current_display_snapshot->AddIndexToDisplayId();
+
+      display::DisplaySnapshot* colliding_display_snapshot =
+          colliding_display_snapshot_iter->second;
+      colliding_display_snapshot->AddIndexToDisplayId();
+      edid_id_collision_map[colliding_display_snapshot->edid_display_id()] =
+          colliding_display_snapshot;
+    }
+
+    // Update the map with the new (or potentially resolved) display snapshot.
+    edid_id_collision_map[current_display_snapshot->edid_display_id()] =
+        current_display_snapshot.get();
+
     displays_.push_back(std::make_unique<DrmDisplayHost>(
-        proxy_,
-        CreateDisplaySnapshot(
-            display_info.get(), primary_drm_device_handle_->fd(),
-            primary_drm_device_handle_->sys_path(), 0, gfx::Point()),
-        true /* is_dummy */));
+        proxy_, std::move(current_display_snapshot), true /* is_dummy */));
   }
 }
 
@@ -354,28 +375,30 @@ void DrmDisplayHostManager::ProcessEvent() {
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
               base::BindOnce(
                   &OpenDeviceAsync, event.path,
-                  base::ThreadTaskRunnerHandle::Get(),
+                  base::SingleThreadTaskRunner::GetCurrentDefault(),
                   base::BindOnce(&DrmDisplayHostManager::OnAddGraphicsDevice,
                                  weak_ptr_factory_.GetWeakPtr())));
           task_pending_ = true;
         }
         break;
       case DeviceEvent::CHANGE:
-        task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&DrmDisplayHostManager::OnUpdateGraphicsDevice,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           event.display_event_props));
+        task_pending_ =
+            base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+                FROM_HERE,
+                base::BindOnce(&DrmDisplayHostManager::OnUpdateGraphicsDevice,
+                               weak_ptr_factory_.GetWeakPtr(),
+                               event.display_event_props));
         break;
       case DeviceEvent::REMOVE:
         DCHECK(event.path != primary_graphics_card_path_)
             << "Removing primary graphics card";
         auto it = drm_devices_.find(event.path);
         if (it != drm_devices_.end()) {
-          task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::BindOnce(&DrmDisplayHostManager::OnRemoveGraphicsDevice,
-                             weak_ptr_factory_.GetWeakPtr(), it->second));
+          task_pending_ =
+              base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(&DrmDisplayHostManager::OnRemoveGraphicsDevice,
+                                 weak_ptr_factory_.GetWeakPtr(), it->second));
           drm_devices_.erase(it);
         }
         break;
@@ -441,7 +464,7 @@ void DrmDisplayHostManager::OnGpuThreadReady() {
   // delegate know that the display configuration changed and it needs to
   // update it again.
   if (!get_displays_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -486,7 +509,7 @@ void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
   }
 
   if (!get_displays_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DrmDisplayHostManager::RunUpdateDisplaysCallback,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -530,7 +553,7 @@ void DrmDisplayHostManager::GpuTookDisplayControl(bool status) {
     display_externally_controlled_ = false;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(take_display_control_callback_), status));
   take_display_control_callback_.Reset();
@@ -551,7 +574,7 @@ void DrmDisplayHostManager::GpuRelinquishedDisplayControl(bool status) {
     display_externally_controlled_ = true;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(relinquish_display_control_callback_), status));
   relinquish_display_control_callback_.Reset();

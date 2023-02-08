@@ -56,7 +56,7 @@
 <translation id="2018879682492276940">安装失败。请重试。</translation>
 <translation id="2071318482926839249">另一帐号已经登录。Chrome 可为您创建一份专属的个人资料，以将您的浏览数据单独存储。</translation>
 <translation id="207902854391093810">在试用期间，Ad measurement 允许您访问的网站向 Chrome 请求信息来对网站上的广告进行效果衡量。Ad measurement 会在网站间传输尽可能少的信息，从而限制跨网站跟踪。</translation>
-<translation id="2091012649849228750">若要接收后续 Google Chrome 更新，您需使用 Windows 10 或更高版本。此计算机目前使用的是 Windows 8。</translation>
+<translation id="2091012649849228750">若要接收后续 Google Chrome 更新，您需使用 Windows 10 或更高版本。该计算机目前使用的是 Windows 8。</translation>
 <translation id="2094648590148273905">ChromeOS Flex 条款</translation>
 <translation id="2094919256425865063">仍要退出 Chrome？</translation>
 <translation id="2106831557840787829">ChromeOS Flex 是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux 开发环境<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
@@ -80,7 +80,6 @@
 <translation id="2401189691232800402">Chrome 操作系统系统</translation>
 <translation id="2467438592969358367">Google Chrome 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
 <translation id="2485422356828889247">卸载</translation>
-<translation id="2494974097748878569">Chrome 中的 Google 助理</translation>
 <translation id="2534507159460261402">Google Pay（已复制到 Chrome）</translation>
 <translation id="2559253115192232574">之后，您访问的网站可向 Chrome 请求查看您的兴趣，以便向您展示个性化广告。Chrome 最多可共享 3 项兴趣信息。</translation>
 <translation id="2563121210305478421">重新启动 Chrome？</translation>
@@ -213,7 +212,7 @@
 <translation id="4970947549776831107">Chrome 屏蔽了此文件，因为这类文件包含危险内容</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5037581483200764584">若要接收后续 Google Chrome 更新，您需使用 macOS 10.13 或更高版本。该计算机目前使用的是 OS X 10.11。</translation>
-<translation id="5098668839038261629">若开启此选项，关闭所有窗口的同时您也会退出 Chrome</translation>
+<translation id="5098668839038261629">当此设置处于开启状态时，关闭所有窗口的操作也会致使您退出 Chrome</translation>
 <translation id="5132929315877954718">查找适用于Google Chrome的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="5139423532931106058">自定义您的 Chrome 个人资料</translation>
 <translation id="5163087008893166964">欢迎使用 Chrome；已打开新的浏览器窗口</translation>
@@ -281,7 +280,6 @@
 <translation id="6739177684496155661">使用一份新的 Chrome 个人资料继续浏览？</translation>
 <translation id="6750954913813541382">为了修正拼写错误，Chrome 会将您在浏览器中输入的文字发送给 Google</translation>
 <translation id="677276454032249905">仍要退出 Chrome？</translation>
-<translation id="6785872064505734160">Chrome 中的 Google 助理可帮您在各网站上完成所需操作</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
 <translation id="6881299373831449287">正在更新 Chrome</translation>
 <translation id="6885412569789873916">Chrome 测试版应用</translation>

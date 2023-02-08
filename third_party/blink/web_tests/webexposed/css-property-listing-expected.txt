@@ -59,7 +59,6 @@ All changes to this list should go through Blink's feature review process: http:
     all
     anchor-name
     anchor-scroll
-    animation-delay
     animation-delay-end
     animation-delay-start
     animation-direction
@@ -196,10 +195,12 @@ All changes to this list should go through Blink's feature review process: http:
     font-synthesis-small-caps
     font-synthesis-style
     font-synthesis-weight
+    font-variant-alternates
     font-variant-caps
     font-variant-east-asian
     font-variant-ligatures
     font-variant-numeric
+    font-variant-position
     font-variation-settings
     font-weight
     forced-color-adjust
@@ -234,7 +235,6 @@ All changes to this list should go through Blink's feature review process: http:
     lighting-color
     line-break
     line-height
-    line-height-step
     list-style-image
     list-style-position
     list-style-type
@@ -445,7 +445,8 @@ All changes to this list should go through Blink's feature review process: http:
         -webkit-text-stroke-color
         -webkit-text-stroke-width
     animation
-        animation-delay
+        animation-delay-end
+        animation-delay-start
         animation-direction
         animation-duration
         animation-fill-mode
@@ -454,6 +455,9 @@ All changes to this list should go through Blink's feature review process: http:
         animation-play-state
         animation-timeline
         animation-timing-function
+    animation-delay
+        animation-delay-end
+        animation-delay-start
     background
         background-attachment
         background-clip
@@ -607,10 +611,12 @@ All changes to this list should go through Blink's feature review process: http:
         font-size
         font-stretch
         font-style
+        font-variant-alternates
         font-variant-caps
         font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
+        font-variant-position
         font-weight
         line-height
     font-synthesis
@@ -618,10 +624,12 @@ All changes to this list should go through Blink's feature review process: http:
         font-synthesis-style
         font-synthesis-weight
     font-variant
+        font-variant-alternates
         font-variant-caps
         font-variant-east-asian
         font-variant-ligatures
         font-variant-numeric
+        font-variant-position
     gap
         column-gap
         row-gap

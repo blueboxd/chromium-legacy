@@ -5,6 +5,7 @@
 #include "ash/system/notification_center/notification_center_view.h"
 
 #include <algorithm>
+#include <climits>
 #include <memory>
 
 #include "ash/constants/ash_features.h"
@@ -27,6 +28,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/background.h"
@@ -40,6 +42,10 @@
 namespace ash {
 
 namespace {
+
+// Inset the top and the bottom of the scroll bar so it won't be clipped by
+// rounded corners.
+constexpr auto kScrollBarInsets = gfx::Insets::TLBR(16, 0, 16, 0);
 
 constexpr base::TimeDelta kHideStackingBarAnimationDuration =
     base::Milliseconds(330);
@@ -87,13 +93,16 @@ NotificationCenterView::NotificationCenterView(
           features::IsNotificationsRefreshEnabled()),
       animation_(std::make_unique<gfx::LinearAnimation>(this)),
       focus_search_(std::make_unique<views::FocusSearch>(this, false, false)) {
-  if (is_notifications_refresh_enabled_)
-    scroll_bar_ = new RoundedMessageCenterScrollBar(this);
-  else
+  if (is_notifications_refresh_enabled_) {
+    auto* scroll_bar = new RoundedMessageCenterScrollBar(this);
+    scroll_bar->SetInsets(kScrollBarInsets);
+    scroll_bar_ = scroll_bar;
+  } else {
     scroll_bar_ = new MessageCenterScrollBar(this);
+  }
 
   if (is_notifications_refresh_enabled_) {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
+    layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kMessageCenterPadding)));
   }
@@ -130,7 +139,18 @@ void NotificationCenterView::Init() {
     scroller_->layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF{kMessageCenterScrollViewCornerRadius});
   }
+
   AddChildView(scroller_);
+
+  // Make sure the scroll view takes up the entirety of available height in the
+  // revamped notification center view. With the QsRevamp we do not manually
+  // calculate sizes for any of the views, only relying on a max height
+  // constraint for the `TrayBubbleView` so we need to set flex for the scroll
+  // view here.
+  if (features::IsQsRevampEnabled()) {
+    scroller_->ClipHeightTo(0, INT_MAX);
+    layout_manager_->SetFlexForView(scroller_, 1);
+  }
 
   if (is_notifications_refresh_enabled_)
     AddChildView(notification_bar_);

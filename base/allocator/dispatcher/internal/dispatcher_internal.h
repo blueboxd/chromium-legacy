@@ -11,6 +11,7 @@
 #include "base/allocator/dispatcher/internal/tools.h"
 #include "base/allocator/dispatcher/reentry_guard.h"
 #include "base/allocator/dispatcher/subsystem.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
@@ -202,6 +203,12 @@ struct DispatcherImpl {
     return self->next->get_size_estimate_function(self->next, address, context);
   }
 
+  static bool ClaimedAddressFn(const AllocatorDispatch* self,
+                               void* address,
+                               void* context) {
+    return self->next->claimed_address_function(self->next, address, context);
+  }
+
   static unsigned BatchMallocFn(const AllocatorDispatch* self,
                                 size_t size,
                                 void** results,
@@ -240,6 +247,13 @@ struct DispatcherImpl {
     // ReentryGuard, see ReallocFn for details.
     DoNotifyFree(address);
     self->next->free_definite_size_function(self->next, address, size, context);
+  }
+
+  static void TryFreeDefaultFn(const AllocatorDispatch* self,
+                               void* address,
+                               void* context) {
+    DoNotifyFree(address);
+    self->next->try_free_default_function(self->next, address, context);
   }
 
   static void* AlignedMallocFn(const AllocatorDispatch* self,
@@ -316,9 +330,11 @@ AllocatorDispatch DispatcherImpl<ObserverTypes...>::allocator_dispatch_ = {
     &ReallocFn,
     &FreeFn,
     &GetSizeEstimateFn,
+    &ClaimedAddressFn,
     &BatchMallocFn,
     &BatchFreeFn,
     &FreeDefiniteSizeFn,
+    &TryFreeDefaultFn,
     &AlignedMallocFn,
     &AlignedReallocFn,
     &AlignedFreeFn,

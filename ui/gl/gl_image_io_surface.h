@@ -66,6 +66,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
 
+  const gfx::ColorSpace& color_space() const { return color_space_; }
   gfx::BufferFormat format() const { return format_; }
   gfx::GenericSharedMemoryId io_surface_id() const { return io_surface_id_; }
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface() { return io_surface_; }
@@ -73,9 +74,6 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer() {
     return cv_pixel_buffer_;
   }
-
-  // Downcasts from |image|. Returns |nullptr| on failure.
-  static GLImageIOSurface* FromGLImage(GLImage* image);
 
  protected:
   GLImageIOSurface(const gfx::Size& size);

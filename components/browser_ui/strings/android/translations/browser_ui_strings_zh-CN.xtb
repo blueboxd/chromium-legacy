@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">允许网站使用移动传感器（推荐）</translation>
 <translation id="5050380848339752099">该网站即将与某个并非处于无痕模式下的应用共享信息。</translation>
 <translation id="5063480226653192405">空间占用量</translation>
-<translation id="5082281938627763039">此操作会删除 <ph name="FPS_MEMBER" /> 以及 <ph name="FPS_OWNER" /> 网站群组中的网站的 Cookie 和其他网站数据</translation>
 <translation id="5091013926750941408">移动网站</translation>
 <translation id="509133520954049755">请求获取桌面版视图</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="5300589172476337783">显示</translation>
 <translation id="5301954838959518834">知道了</translation>
-<translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
 <translation id="534295439873310000">NFC 设备</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">正在共享您的屏幕</translation>
 <translation id="5922967540311291836">阻止第三方 Cookie：</translation>
 <translation id="5939518447894949180">重置</translation>
+<translation id="5968921426641056619">输入网址</translation>
 <translation id="5975083100439434680">缩小</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">控制此网站对您的设备的访问权限</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7260727271532453612">已授予“<ph name="PERMISSION_1" />”权限和“<ph name="PERMISSION_2" />”权限</translation>
 <translation id="7302486331832100261">您通常会屏蔽通知。要允许显示通知，请点按“详细信息”。</translation>
+<translation id="7366415735885268578">添加网站</translation>
 <translation id="7383715096023715447"><ph name="DOMAIN" /> 的设置</translation>
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7423538860840206698">已阻止读取剪贴板中的内容</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8394832520002899662">点按即可返回到网站</translation>
 <translation id="8409345997656833551">当文章能以简化版视图显示时通知我</translation>
+<translation id="8423565414844018592">文字缩放比例目前设为 <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8441146129660941386">后退</translation>
 <translation id="8444433999583714703">若要允许 <ph name="APP_NAME" /> 获取您的位置信息，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启位置信息服务。</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">此设备的 NFC 功能处于关闭状态。请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此功能。</translation>
 <translation id="8928445016601307354">禁止网站查看和更改 NFC 设备上的信息</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">阻止特定网站使用 Cookie。</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
 <translation id="8986362086234534611">不保存</translation>

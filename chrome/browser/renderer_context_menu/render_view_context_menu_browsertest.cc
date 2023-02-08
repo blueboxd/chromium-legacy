@@ -62,6 +62,7 @@
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/lens/lens_features.h"
 #include "components/lens/lens_metadata.mojom.h"
+#include "components/lens/lens_testing_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_data.h"
@@ -106,6 +107,8 @@
 #include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/page_state/page_state.h"
+#include "third_party/blink/public/common/page_state/page_state_serialization.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -1827,6 +1830,18 @@ class SearchByRegionBrowserBaseTest : public InProcessBrowserTest {
       quit_closure_.Run();
   }
 
+  // Ensures the last request seen by |web_contents| contained encoded image
+  // data
+  void ExpectThatRequestContainsImageData(content::WebContents* web_contents) {
+    auto* last_entry = web_contents->GetController().GetLastCommittedEntry();
+    EXPECT_TRUE(last_entry);
+    EXPECT_TRUE(last_entry->GetHasPostData());
+
+    std::string post_data = last_entry->GetPageState().ToEncodedData();
+    std::string image_bytes = lens::GetImageBytesFromEncodedPostData(post_data);
+    EXPECT_FALSE(image_bytes.empty());
+  }
+
   // Sets up a custom test default search engine in order to test region search
   // for non-Google DSEs. Parameter to choose whether this test search engine
   // supports side image search.
@@ -1887,7 +1902,7 @@ class SearchByRegionWithSidePanelBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
-  void SimulateDragAndVerifyLensUrl(RenderViewContextMenu* menu) {
+  void SimulateDragAndVerifyLensRequest(RenderViewContextMenu* menu) {
     // Create the Lens side panel controller if it does not exist. This allows
     // us to get the side panel web contents without waiting for it to be
     // created post-drag on a first time start up.
@@ -1908,6 +1923,7 @@ class SearchByRegionWithSidePanelBrowserTest
     std::string side_panel_content =
         contents->GetLastCommittedURL().GetContent();
     VerifyLensUrl(side_panel_content, expected_content);
+    ExpectThatRequestContainsImageData(contents);
   }
 
   void AttemptLensRegionSearchWithSidePanel() {
@@ -1917,7 +1933,7 @@ class SearchByRegionWithSidePanelBrowserTest
     menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
         IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
         base::BindOnce(&SearchByRegionWithSidePanelBrowserTest::
-                           SimulateDragAndVerifyLensUrl,
+                           SimulateDragAndVerifyLensRequest,
                        base::Unretained(this)));
     RightClickToOpenContextMenu();
   }
@@ -1988,7 +2004,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     VerifyLensUrl(side_panel_content, expected_content);
   }
 
-  void SimulateDragAndVerifyLensUrl(RenderViewContextMenu* menu) {
+  void SimulateDragAndVerifyLensRequest(RenderViewContextMenu* menu) {
     SearchByRegionBrowserBaseTest::SimulateDragAndVerifyOverlayUI(menu);
     content::WebContents* contents =
         GetLensUnifiedSidePanelWebContentsAfterNavigation();
@@ -1997,6 +2013,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     std::string side_panel_content =
         contents->GetLastCommittedURL().GetContent();
     VerifyLensUrl(side_panel_content, expected_content);
+    ExpectThatRequestContainsImageData(contents);
   }
 
   void SimulateDragAndVerifyNonGoogleUrl(RenderViewContextMenu* menu) {
@@ -2014,6 +2031,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
         side_panel_content,
         testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
                               ".*sideimagesearch=1"));
+    ExpectThatRequestContainsImageData(contents);
     quit_closure_.Run();
   }
 
@@ -2037,7 +2055,7 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
     menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
         IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
         base::BindOnce(&SearchByRegionWithUnifiedSidePanelBrowserTest::
-                           SimulateDragAndVerifyLensUrl,
+                           SimulateDragAndVerifyLensRequest,
                        base::Unretained(this)));
     RightClickToOpenContextMenu();
   }
@@ -2177,221 +2195,6 @@ IN_PROC_BROWSER_TEST_F(
 
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-// Maintains image search test state. In particular, note that |menu_observer_|
-// must live until the right-click completes asynchronously.
-class SearchByImageBrowserTest : public InProcessBrowserTest {
- protected:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        lens::features::kLensStandalone,
-        std::map<std::string, std::string>{
-            {lens::features::kEnableSidePanelForLens.name, "true"}});
-    InProcessBrowserTest::SetUp();
-  }
-
-  void SetupAndLoadValidImagePage() {
-    constexpr char kValidImage[] = "/image_search/valid.png";
-    SetupAndLoadImagePage(kValidImage);
-  }
-
-  void SetupAndLoadCorruptImagePage() {
-    constexpr char kCorruptImage[] = "/image_search/corrupt.png";
-    SetupAndLoadImagePage(kCorruptImage);
-  }
-
-  void SetupAndLoadImagePage(const std::string& image_path) {
-    // The test server must start first, so that we know the port that the test
-    // server is using.
-    ASSERT_TRUE(embedded_test_server()->Start());
-    SetupImageSearchEngine();
-
-    // Go to a page with an image in it. The test server doesn't serve the image
-    // with the right MIME type, so use a data URL to make a page containing it.
-    GURL image_url(embedded_test_server()->GetURL(image_path));
-    GURL page("data:text/html,<img src='" + image_url.spec() + "'>");
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page));
-  }
-
-  void AttemptImageSearch() {
-    // |menu_observer_| will cause the search-by-image menu item to be clicked.
-    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
-        IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE);
-    RightClickImage();
-  }
-
-  void AttemptLensImageSearch() {
-    // |menu_observer_| will cause the search lens for image menu item to be
-    // clicked.
-    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
-        IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE);
-    RightClickImage();
-  }
-
-  // Right-click where the image should be.
-  void RightClickImage() {
-    content::WebContents* tab =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    content::SimulateMouseClickAt(tab, 0, blink::WebMouseEvent::Button::kRight,
-                                  gfx::Point(15, 15));
-  }
-
-  GURL GetImageSearchURL() {
-    static const char kImageSearchURL[] = "/imagesearch";
-    return embedded_test_server()->GetURL(kImageSearchURL);
-  }
-
-  GURL GetLensImageSearchURL() {
-    static const char kLensImageSearchURL[] = "/imagesearch?ep=ccm";
-    return embedded_test_server()->GetURL(kLensImageSearchURL);
-  }
-
- private:
-  void SetupImageSearchEngine() {
-    static const char16_t kShortName[] = u"test";
-    static const char kSearchURL[] = "/search?q={searchTerms}";
-    static const char kImageSearchPostParams[] =
-        "thumb={google:imageThumbnail}";
-    static const char kSideImageSearchParam[] = "sideimagesearch";
-
-    TemplateURLService* model =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    ASSERT_TRUE(model);
-    search_test_utils::WaitForTemplateURLServiceToLoad(model);
-    ASSERT_TRUE(model->loaded());
-
-    TemplateURLData data;
-    data.SetShortName(kShortName);
-    data.SetKeyword(data.short_name());
-    data.SetURL(embedded_test_server()->GetURL(kSearchURL).spec());
-    data.image_url = GetImageSearchURL().spec();
-    data.image_url_post_params = kImageSearchPostParams;
-    data.side_image_search_param = kSideImageSearchParam;
-
-    TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
-    ASSERT_TRUE(template_url);
-    model->SetUserSelectedDefaultSearchProvider(template_url);
-  }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    menu_observer_.reset();
-  }
-
-  std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
-  SetupAndLoadValidImagePage();
-
-  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
-  AttemptImageSearch();
-
-  // The browser should open a new tab for an image search.
-  content::WebContents* new_tab = add_tab.Wait();
-  content::WaitForLoadStop(new_tab);
-  EXPECT_EQ(GetImageSearchURL(), new_tab->GetLastCommittedURL());
-}
-
-IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
-  SetupAndLoadCorruptImagePage();
-
-  // Open and close a context menu.
-  ContextMenuWaiter waiter;
-  RightClickImage();
-  waiter.WaitForMenuOpenAndClose();
-
-  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
-  browser()
-      ->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetPrimaryMainFrame()
-      ->GetRemoteAssociatedInterfaces()
-      ->GetInterface(&chrome_render_frame);
-
-  auto callback = [](bool* response_received, base::OnceClosure quit,
-                     const std::vector<uint8_t>& thumbnail_data,
-                     const gfx::Size& original_size,
-                     const std::string& file_extension,
-                     std::vector<lens::mojom::LatencyLogPtr> log_data) {
-    *response_received = true;
-    std::move(quit).Run();
-  };
-
-  base::RunLoop run_loop;
-  bool response_received = false;
-  chrome_render_frame->RequestImageForContextNode(
-      0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
-      chrome::mojom::kDefaultQuality,
-      base::BindOnce(callback, &response_received, run_loop.QuitClosure()));
-  run_loop.Run();
-
-  // The browser should receive a response from the renderer, because the
-  // renderer should not crash.
-  ASSERT_TRUE(response_received);
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       LensImageSearchWithValidImage) {
-  lens::CreateLensSidePanelControllerForTesting(browser());
-  SetupAndLoadValidImagePage();
-
-  content::WebContents* side_panel_contents =
-      lens::GetLensSidePanelWebContentsForTesting(browser());
-  EXPECT_TRUE(side_panel_contents);
-
-  AttemptLensImageSearch();
-
-  // Wait for the image search to commence a navigation upon the side panel web
-  // contents.
-  content::TestNavigationObserver nav_observer(side_panel_contents);
-  nav_observer.Wait();
-
-  std::string expected_content = GetLensImageSearchURL().GetContent();
-  std::string side_panel_content =
-      side_panel_contents->GetLastCommittedURL().GetContent();
-
-  // Match strings up to the query.
-  std::size_t query_start_pos = side_panel_content.find("?");
-  EXPECT_EQ(expected_content.substr(0, query_start_pos),
-            side_panel_content.substr(0, query_start_pos));
-  // Match the query parameters, without the value of start_time.
-  EXPECT_THAT(side_panel_content,
-              testing::MatchesRegex(
-                  ".*ep=ccm&re=dcsp&s=csp&st=\\d+&sideimagesearch=1"));
-}
-#endif
-
-IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
-                       LensImageSearchWithValidImageInProgressiveWebApp) {
-  // Creates a Progressive Web App and set it to the default browser
-  Browser* pwa_browser = InProcessBrowserTest::CreateBrowserForApp(
-      "test_app", browser()->profile());
-  CloseBrowserSynchronously(browser());
-  SelectFirstBrowser();
-  ASSERT_EQ(pwa_browser, browser());
-
-  SetupAndLoadValidImagePage();
-
-  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
-  AttemptLensImageSearch();
-
-  // The browser should open a new tab for an image search.
-  content::WebContents* new_tab = add_tab.Wait();
-  content::WaitForLoadStop(new_tab);
-
-  std::string expected_content = GetLensImageSearchURL().GetContent();
-  std::string new_tab_content = new_tab->GetLastCommittedURL().GetContent();
-
-  // Match strings up to the query.
-  std::size_t query_start_pos = new_tab_content.find("?");
-  EXPECT_EQ(expected_content.substr(0, query_start_pos),
-            new_tab_content.substr(0, query_start_pos));
-  // Match the query parameters, without the value of start_time.
-  EXPECT_THAT(new_tab_content,
-              testing::MatchesRegex(".*ep=ccm&re=df&s=&st=\\d+"));
-}
-
 #if BUILDFLAG(ENABLE_PDF)
 IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
                        FullPagePdfHasPageItems) {
@@ -2502,7 +2305,7 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
         IsScreenReaderEnabled());
     if (IsComponentReady()) {
       screen_ai::ScreenAIInstallState::GetInstance()
-          ->set_component_ready_for_testing();
+          ->SetComponentReadyForTesting();
     }
   }
 

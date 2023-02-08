@@ -477,7 +477,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-03-26">
+    units="microseconds" expires_after="2023-06-04">
   <owner>nzolghadr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -821,7 +821,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-03-19">
+    units="microseconds" expires_after="2023-05-27">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -990,7 +990,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDuration" units="ms"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -1001,7 +1001,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2023-03-26">
+    expires_after="2023-05-27">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -1149,7 +1149,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-03-26">
+    units="microseconds" expires_after="2023-06-04">
   <owner>flackr@chromium.org</owner>
   <owner>arakeri@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1574,7 +1574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-03-19">
+    units="microseconds" expires_after="2023-05-27">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -1727,7 +1727,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Touch.TimedOutOnDesktopSite" enum="BooleanTimedOut"
-    expires_after="2021-08-15">
+    expires_after="2023-10-31">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1735,18 +1735,24 @@ chromium-metrics-reviews@google.com.
     renderer for any event in a contiguous touch sequence exceeds the
     desktop-specific timeout threshold.
 
+    Warning: This histogram has incomplete data. It expired on 2021-08-15 and
+    then got re-enabled on M110.
+
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.Touch.TimedOutOnMobileSite" enum="BooleanTimedOut"
-    expires_after="2021-08-15">
+    expires_after="2023-10-31">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
     On mobile-optimized sites, whether the ack response from the renderer for
     any event in a contiguous touch sequence exceeds the mobile-specific timeout
     threshold.
+
+    Warning: This histogram has incomplete data. It expired on 2021-08-15 and
+    then got re-enabled on M110.
 
     Team: input-dev@chromium.org.
   </summary>
@@ -1904,7 +1910,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EventLatency.TotalLatency" units="microseconds"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>mohsen@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1959,6 +1965,9 @@ chromium-metrics-reviews@google.com.
     This histogram only records metrics on machines with high-resolution clocks.
   </summary>
   <token key="NonPinchEventType">
+    <variant name="FirstGestureScrollUpdate"
+        summary="gesture-scroll-update events that are the first one in a
+                 scroll sequence"/>
     <variant name="GestureDoubleTap" summary="gesture-double-tap events"/>
     <variant name="GestureLongPress" summary="gesture-long-press events"/>
     <variant name="GestureLongTap" summary="gesture-long-tap events"/>

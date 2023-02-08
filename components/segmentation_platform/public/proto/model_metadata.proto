@@ -8,6 +8,7 @@ option optimize_for = LITE_RUNTIME;
 package segmentation_platform.proto;
 
 import "components/segmentation_platform/public/proto/aggregation.proto";
+import "components/segmentation_platform/public/proto/output_config.proto";
 import "components/segmentation_platform/public/proto/types.proto";
 
 // The version is used to verify if the metadata provided by the server is
@@ -285,8 +286,11 @@ message UMAOutput {
 
 // Metadata about a segmentation model for a given segment. Contains information
 // on how to use the model such as collecting signals, interpreting results etc.
-// Next tag: 14
+// Next tag: 16
 message SegmentationModelMetadata {
+  // Values for obsolete fields.
+  reserved 15;
+
   // The version information needed to validate segmentation models.
   optional VersionInfo version_info = 9;
 
@@ -365,10 +369,14 @@ message SegmentationModelMetadata {
     RETURN_TYPE_MULTISEGMENT = 2;
     // Model returns a float between 0 and 1.
     RETURN_TYPE_PROBABILITY = 3;
-    // Model returns any float value.
-    // TODO(haileywang): Add support for recording histograms of float return
-    // type.
-    RETURN_TYPE_FLOAT = 4;
+    // Model returns any integer value.
+    RETURN_TYPE_INTEGER = 4;
   }
+  // TODO(ritikagup@): Deprecate the field.
   optional OutputDescription return_type = 14;
+
+  // Contains information about the model results. Supplied by the client. It
+  // gives a description of how should the results look like and how to
+  // interpret them.
+  optional OutputConfig output_config = 16;
 }

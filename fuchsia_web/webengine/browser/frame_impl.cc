@@ -23,8 +23,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/chromecast_buildflags.h"
 #include "content/public/browser/audio_stream_broker.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -43,7 +44,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
-#include "fuchsia_web/webengine/browser/accessibility_bridge.h"
 #include "fuchsia_web/webengine/browser/context_impl.h"
 #include "fuchsia_web/webengine/browser/event_filter.h"
 #include "fuchsia_web/webengine/browser/frame_layout_manager.h"
@@ -448,13 +448,6 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
 
   content::UpdateFontRendererPreferencesFromSystemSettings(
       web_contents_->GetMutableRendererPrefs());
-
-  // TODO(http://crbug.com/1254073): Deprecate autoplay_policy in
-  // CreateFrameParams.
-  if (params_for_popups_.has_autoplay_policy()) {
-    content_area_settings_.set_autoplay_policy(
-        params_for_popups_.autoplay_policy());
-  }
 }
 
 FrameImpl::~FrameImpl() {
@@ -465,6 +458,39 @@ FrameImpl::~FrameImpl() {
   auto it = WebContentsToFrameImplMap().find(web_contents_.get());
   DCHECK(it != map.end() && it->second == this);
   map.erase(it);
+}
+
+void FrameImpl::EnableExplicitSitesFilter(std::string error_page) {
+  explicit_sites_filter_error_page_ = std::move(error_page);
+}
+
+void FrameImpl::OverrideWebPreferences(
+    blink::web_pref::WebPreferences* web_prefs) {
+  if (content_area_settings_.has_hide_scrollbars()) {
+    web_prefs->hide_scrollbars = content_area_settings_.hide_scrollbars();
+  } else {
+    // Verify that hide_scrollbars defaults to false, per FIDL API.
+    DCHECK(!web_prefs->hide_scrollbars);
+  }
+
+  if (content_area_settings_.has_autoplay_policy()) {
+    switch (content_area_settings_.autoplay_policy()) {
+      case fuchsia::web::AutoplayPolicy::ALLOW:
+        web_prefs->autoplay_policy =
+            blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
+        break;
+      case fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION:
+        web_prefs->autoplay_policy =
+            blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
+        break;
+    }
+  } else {
+    // REQUIRE_USER_ACTIVATION is the default per the FIDL API.
+    web_prefs->autoplay_policy =
+        blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
+  }
+
+  theme_manager_.ApplyThemeToWebPreferences(web_prefs);
 }
 
 zx::unowned_channel FrameImpl::GetBindingChannelForTest() const {
@@ -658,7 +684,6 @@ void FrameImpl::DestroyWindowTreeHost() {
   window_tree_host_->compositor()->SetVisible(false);
   window_tree_host_.reset();
   accessibility_bridge_.reset();
-  v2_accessibility_bridge_.reset();
 
   // Allows posted focus events to process before the FocusController is torn
   // down.
@@ -685,7 +710,7 @@ void FrameImpl::OnMediaPlayerDisconnect() {
 bool FrameImpl::OnAccessibilityError(zx_status_t error) {
   // The task is posted so |accessibility_bridge_| does not tear |this| down
   // while events are still being processed.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&FrameImpl::CloseAndDestroyFrame,
                                 weak_factory_.GetWeakPtr(), error));
 
@@ -751,36 +776,15 @@ void FrameImpl::UpdateRenderFrameZoomLevel(
 }
 
 void FrameImpl::ConnectToAccessibilityBridge() {
-  if (use_v2_accessibility_bridge_) {
-    // TODO(crbug.com/1291613): Replace callbacks with an interface that
-    // FrameImpl implements.
-    v2_accessibility_bridge_ =
-        std::make_unique<ui::AccessibilityBridgeFuchsiaImpl>(
-            root_window(), window_tree_host_->CreateViewRef(),
-            base::BindRepeating(&FrameImpl::SetAccessibilityEnabled,
-                                base::Unretained(this)),
-            base::BindRepeating(&FrameImpl::OnAccessibilityError,
-                                base::Unretained(this)),
-            inspect_node_.CreateChild(kAccessibilityInspectNodeName));
-  } else {
-    fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager;
-    if (!semantics_manager_for_test_) {
-      semantics_manager =
-          base::ComponentContextForProcess()
-              ->svc()
-              ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
-    }
-
-    // If the SemanticTree owned by |accessibility_bridge_| is disconnected, it
-    // will cause |this| to be closed.
-    accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-        semantics_manager_for_test_ ? semantics_manager_for_test_
-                                    : semantics_manager.get(),
-        window_tree_host_.get(), web_contents_.get(),
-        base::BindOnce(&FrameImpl::OnAccessibilityError,
-                       base::Unretained(this)),
-        inspect_node_.CreateChild(kAccessibilityInspectNodeName));
-  }
+  // TODO(crbug.com/1291613): Replace callbacks with an interface that
+  // FrameImpl implements.
+  accessibility_bridge_ = std::make_unique<ui::AccessibilityBridgeFuchsiaImpl>(
+      root_window(), window_tree_host_->CreateViewRef(),
+      base::BindRepeating(&FrameImpl::SetAccessibilityEnabled,
+                          base::Unretained(this)),
+      base::BindRepeating(&FrameImpl::OnAccessibilityError,
+                          base::Unretained(this)),
+      inspect_node_.CreateChild(kAccessibilityInspectNodeName));
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
@@ -1125,126 +1129,6 @@ void FrameImpl::SetMediaSettings(
     set_audio_output_usage_callback_.Run(media_settings.renderer_usage());
 }
 
-void FrameImpl::MediaStartedPlaying(const MediaPlayerInfo& video_type,
-                                    const content::MediaPlayerId& id) {
-  base::RecordComputedAction("MediaPlay");
-}
-
-void FrameImpl::MediaStoppedPlaying(
-    const MediaPlayerInfo& video_type,
-    const content::MediaPlayerId& id,
-    WebContentsObserver::MediaStoppedReason reason) {
-  base::RecordComputedAction("MediaPause");
-}
-
-void FrameImpl::GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) {
-  if (!web_contents_->GetPrimaryMainFrame()->GetProcess()->IsReady()) {
-    // Renderer process is not yet started.
-    callback(0);
-    return;
-  }
-
-  zx_info_task_stats_t task_stats;
-  zx_status_t status = zx_object_get_info(
-      web_contents_->GetPrimaryMainFrame()->GetProcess()->GetProcess().Handle(),
-      ZX_INFO_TASK_STATS, &task_stats, sizeof(task_stats), nullptr, nullptr);
-
-  if (status != ZX_OK) {
-    // Fail gracefully by returning zero.
-    ZX_LOG(WARNING, status) << "zx_object_get_info(ZX_INFO_TASK_STATS)";
-    callback(0);
-    return;
-  }
-
-  callback(task_stats.mem_private_bytes);
-}
-
-void FrameImpl::SetNavigationPolicyProvider(
-    fuchsia::web::NavigationPolicyProviderParams params,
-    fidl::InterfaceHandle<fuchsia::web::NavigationPolicyProvider> provider) {
-  navigation_policy_handler_ = std::make_unique<NavigationPolicyHandler>(
-      std::move(params), std::move(provider));
-}
-
-void FrameImpl::OnThemeManagerError() {
-  // TODO(crbug.com/1148454): Destroy the frame once a fake Display service is
-  // implemented.
-  // this->CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
-}
-
-void FrameImpl::SetPreferredTheme(fuchsia::settings::ThemeType theme) {
-  fuchsia::web::ContentAreaSettings settings;
-  settings.set_theme(theme);
-  SetContentAreaSettings(std::move(settings));
-}
-
-void FrameImpl::SetPageScale(float scale) {
-  fuchsia::web::ContentAreaSettings settings;
-  settings.set_page_scale(scale);
-  SetContentAreaSettings(std::move(settings));
-}
-
-void FrameImpl::SetContentAreaSettings(
-    fuchsia::web::ContentAreaSettings settings) {
-  if (settings.has_hide_scrollbars())
-    content_area_settings_.set_hide_scrollbars(settings.hide_scrollbars());
-  if (settings.has_autoplay_policy())
-    content_area_settings_.set_autoplay_policy(settings.autoplay_policy());
-  if (settings.has_theme()) {
-    content_area_settings_.set_theme(settings.theme());
-    theme_manager_.SetTheme(settings.theme());
-  }
-  if (settings.has_page_scale()) {
-    if (settings.page_scale() <= 0.0) {
-      LOG(ERROR) << "SetPageScale() called with nonpositive scale.";
-      CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
-      return;
-    }
-    if (!(content_area_settings_.has_page_scale() &&
-          (settings.page_scale() == content_area_settings_.page_scale()))) {
-      content_area_settings_.set_page_scale(settings.page_scale());
-      UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
-    }
-  }
-
-  web_contents_->OnWebPreferencesChanged();
-}
-
-void FrameImpl::ResetContentAreaSettings() {
-  content_area_settings_ = fuchsia::web::ContentAreaSettings();
-  web_contents_->OnWebPreferencesChanged();
-  UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
-}
-
-void FrameImpl::OverrideWebPreferences(
-    blink::web_pref::WebPreferences* web_prefs) {
-  if (content_area_settings_.has_hide_scrollbars()) {
-    web_prefs->hide_scrollbars = content_area_settings_.hide_scrollbars();
-  } else {
-    // Verify that hide_scrollbars defaults to false, per FIDL API.
-    DCHECK(!web_prefs->hide_scrollbars);
-  }
-
-  if (content_area_settings_.has_autoplay_policy()) {
-    switch (content_area_settings_.autoplay_policy()) {
-      case fuchsia::web::AutoplayPolicy::ALLOW:
-        web_prefs->autoplay_policy =
-            blink::mojom::AutoplayPolicy::kNoUserGestureRequired;
-        break;
-      case fuchsia::web::AutoplayPolicy::REQUIRE_USER_ACTIVATION:
-        web_prefs->autoplay_policy =
-            blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
-        break;
-    }
-  } else {
-    // REQUIRE_USER_ACTIVATION is the default per the FIDL API.
-    web_prefs->autoplay_policy =
-        blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired;
-  }
-
-  theme_manager_.ApplyThemeToWebPreferences(web_prefs);
-}
-
 void FrameImpl::ForceContentDimensions(
     std::unique_ptr<fuchsia::ui::gfx::vec2> web_dips) {
   if (!web_dips) {
@@ -1303,6 +1187,102 @@ void FrameImpl::SetPermissionState(
   }
 
   permission_controller_.SetPermissionState(type, web_origin.value(), state);
+}
+
+void FrameImpl::GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) {
+  if (!web_contents_->GetPrimaryMainFrame()->GetProcess()->IsReady()) {
+    // Renderer process is not yet started.
+    callback(0);
+    return;
+  }
+
+  zx_info_task_stats_t task_stats;
+  zx_status_t status = zx_object_get_info(
+      web_contents_->GetPrimaryMainFrame()->GetProcess()->GetProcess().Handle(),
+      ZX_INFO_TASK_STATS, &task_stats, sizeof(task_stats), nullptr, nullptr);
+
+  if (status != ZX_OK) {
+    // Fail gracefully by returning zero.
+    ZX_LOG(WARNING, status) << "zx_object_get_info(ZX_INFO_TASK_STATS)";
+    callback(0);
+    return;
+  }
+
+  callback(task_stats.mem_private_bytes);
+}
+
+void FrameImpl::SetNavigationPolicyProvider(
+    fuchsia::web::NavigationPolicyProviderParams params,
+    fidl::InterfaceHandle<fuchsia::web::NavigationPolicyProvider> provider) {
+  navigation_policy_handler_ = std::make_unique<NavigationPolicyHandler>(
+      std::move(params), std::move(provider));
+}
+
+void FrameImpl::SetContentAreaSettings(
+    fuchsia::web::ContentAreaSettings settings) {
+  if (settings.has_hide_scrollbars())
+    content_area_settings_.set_hide_scrollbars(settings.hide_scrollbars());
+  if (settings.has_autoplay_policy())
+    content_area_settings_.set_autoplay_policy(settings.autoplay_policy());
+  if (settings.has_theme()) {
+    content_area_settings_.set_theme(settings.theme());
+    theme_manager_.SetTheme(settings.theme());
+  }
+  if (settings.has_page_scale()) {
+    if (settings.page_scale() <= 0.0) {
+      LOG(ERROR) << "SetPageScale() called with nonpositive scale.";
+      CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
+      return;
+    }
+    if (!(content_area_settings_.has_page_scale() &&
+          (settings.page_scale() == content_area_settings_.page_scale()))) {
+      content_area_settings_.set_page_scale(settings.page_scale());
+      UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
+    }
+  }
+
+  web_contents_->OnWebPreferencesChanged();
+}
+
+void FrameImpl::ResetContentAreaSettings() {
+  content_area_settings_ = fuchsia::web::ContentAreaSettings();
+  web_contents_->OnWebPreferencesChanged();
+  UpdateRenderFrameZoomLevel(web_contents_->GetPrimaryMainFrame());
+}
+
+void FrameImpl::Close(fuchsia::web::FrameCloseRequest request) {
+  // By default allow a couple of seconds in case the page content needs to
+  // e.g. collate metrics and send them to the network.
+  constexpr auto kDefaultFrameCloseTimeout = base::Seconds(2u);
+
+  auto timeout = request.has_timeout()
+                     ? base::TimeDelta::FromZxDuration(request.timeout())
+                     : kDefaultFrameCloseTimeout;
+
+  // If the content does not need any handlers to be run, or a zero timeout was
+  // specified, then teardown the content immediately and close.
+  if (!web_contents_->NeedToFireBeforeUnloadOrUnloadEvents() ||
+      timeout.is_zero()) {
+    CloseAndDestroyFrame(ZX_OK);
+    return;
+  }
+
+  // Request that `web_contents_` allow the page to gracefully teardown:
+  // - Destroy the WindowTreeHost, causing the page to receive "pagehide" and
+  //   "visibilitychange" events.
+  // - Fire the "beforeunload" event, ignoring the result.
+  // - Fire the "onunload" event, and teardown the page if that completes.
+  DestroyWindowTreeHost();
+  web_contents_->DispatchBeforeUnload(false /* auto_cancel */);
+  web_contents_->ClosePage();
+
+  // (Re-)start the teardown timeout. If the page closes before this timer
+  // fires then `CloseContents()` will be invoked, causing the `Frame` to be
+  // closed with `ZX_OK`.
+  close_page_timeout_.Start(
+      FROM_HERE, timeout,
+      base::BindOnce(&FrameImpl::CloseAndDestroyFrame, base::Unretained(this),
+                     ZX_ERR_TIMED_OUT));
 }
 
 void FrameImpl::CloseContents(content::WebContents* source) {
@@ -1517,9 +1497,22 @@ void FrameImpl::ResourceLoadComplete(
   }
 }
 
-// TODO(crbug.com/1136681#c6): Move below GetBindingChannelForTest when fixed.
-void FrameImpl::EnableExplicitSitesFilter(std::string error_page) {
-  explicit_sites_filter_error_page_ = std::move(error_page);
+void FrameImpl::MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                                    const content::MediaPlayerId& id) {
+  base::RecordComputedAction("MediaPlay");
+}
+
+void FrameImpl::MediaStoppedPlaying(
+    const MediaPlayerInfo& video_type,
+    const content::MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
+  base::RecordComputedAction("MediaPause");
+}
+
+void FrameImpl::OnPixelScaleUpdate(float pixel_scale) {
+  if (accessibility_bridge_) {
+    accessibility_bridge_->SetPixelScale(pixel_scale);
+  }
 }
 
 void FrameImpl::SetAccessibilityEnabled(bool enabled) {
@@ -1534,8 +1527,8 @@ void FrameImpl::SetAccessibilityEnabled(bool enabled) {
   }
 }
 
-void FrameImpl::OnPixelScaleUpdate(float pixel_scale) {
-  if (v2_accessibility_bridge_) {
-    v2_accessibility_bridge_->SetPixelScale(pixel_scale);
-  }
+void FrameImpl::OnThemeManagerError() {
+  // TODO(crbug.com/1148454): Destroy the frame once a fake Display service is
+  // implemented.
+  // this->CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
 }

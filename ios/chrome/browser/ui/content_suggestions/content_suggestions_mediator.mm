@@ -319,11 +319,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)openMostVisitedItem:(NSObject*)item
                     atIndex:(NSInteger)mostVisitedIndex {
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(self.webState);
-  if (NTPHelper && NTPHelper->IgnoreLoadRequests())
-    return;
-
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
     [self.NTPMetrics recordContentSuggestionsActionForType:
                          IOSContentSuggestionsActionType::kShortcuts];
@@ -691,7 +686,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   self.readingListUnreadCount = model->unread_size();
   if (self.readingListItem) {
     self.readingListItem.count = self.readingListUnreadCount;
-    [self.consumer updateReadingListCount:self.readingListUnreadCount];
+    [self.consumer updateShortcutTileConfig:self.readingListItem];
   }
 }
 

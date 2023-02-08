@@ -1195,7 +1195,13 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, RecentlyClosedGroup) {
+// Flaky (https://crbug.com/1383903)
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_RecentlyClosedGroup DISABLED_RecentlyClosedGroup
+#else
+#define MAYBE_RecentlyClosedGroup RecentlyClosedGroup
+#endif
+IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, MAYBE_RecentlyClosedGroup) {
   ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
 
   constexpr int kNumTabs = 2;
@@ -2820,11 +2826,6 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
 
 // Tests that an initial NavigationEntry does not get restored.
 IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, RestoreInitialEntry) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // This test specifically tests initial NavigationEntries, which can't be
-    // created when the InitialNavigationEntry flag is turned off.
-    return;
-  }
   GURL main_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
   url::Origin main_origin = url::Origin::Create(main_url);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
@@ -3067,7 +3068,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
                                        base::OnceClosure finish_response) {
           // Never starts the response, but informs the test the request has
           // been received.
-          base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
               FROM_HERE,
               base::BindOnce([](base::RunLoop* loop) { loop->Quit(); }, &loop),
               base::Seconds(1));
@@ -4022,7 +4023,7 @@ IN_PROC_BROWSER_TEST_F(TabbedAppSessionRestoreTest, RestorePinnedAppTab) {
 
   // Expect a tabbed app was opened with a pinned tab.
   EXPECT_TRUE(web_app::WebAppProvider::GetForTest(profile)
-                  ->registrar()
+                  ->registrar_unsafe()
                   .IsTabbedWindowModeEnabled(app_id));
   EXPECT_TRUE(tab_strip->IsTabPinned(0));
 
@@ -4072,7 +4073,7 @@ IN_PROC_BROWSER_TEST_F(TabbedAppSessionRestoreTest, RestorePinnedAppTab) {
     if (browser->type() == Browser::Type::TYPE_APP) {
       EXPECT_TRUE(web_app::AppBrowserController::IsForWebApp(browser, app_id));
       EXPECT_TRUE(web_app::WebAppProvider::GetForTest(browser->profile())
-                      ->registrar()
+                      ->registrar_unsafe()
                       .IsTabbedWindowModeEnabled(app_id));
 
       EXPECT_EQ(browser->tab_strip_model()->GetWebContentsAt(0)->GetURL(),

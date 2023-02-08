@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_callback.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -19,6 +20,8 @@
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -131,6 +134,7 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_impl.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
@@ -795,26 +799,6 @@ StoragePartition::StorageKeyMatcherFunction CreateGenericStorageKeyMatcher(
                              storage_key);
 }
 
-void ClearPluginPrivateDataOnFileTaskRunner(
-    scoped_refptr<storage::FileSystemContext> filesystem_context,
-    base::OnceClosure callback) {
-  DCHECK(filesystem_context->default_file_task_runner()
-             ->RunsTasksInCurrentSequence());
-  DVLOG(3) << "Clearing plugin data: " << filesystem_context;
-
-  // The Plugin Private File System has been deprecated. Delete all data at
-  // %profile/File System/Plugins.
-  auto plugin_path = filesystem_context->partition_path()
-                         .Append(storage::kFileSystemDirectory)
-                         .Append(FILE_PATH_LITERAL("Plugins"));
-
-  filesystem_context->default_file_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&base::DeletePathRecursively),
-                     plugin_path),
-      std::move(callback));
-}
-
 }  // namespace
 
 class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
@@ -1035,8 +1019,8 @@ class StoragePartitionImpl::DataDeletionHelper {
     kQuota = 3,
     kLocalStorage = 4,
     kSessionStorage = 5,
-    kShaderCache = 6,  // Deprecated in favor of using kGpuCache.
-    kPluginPrivate = 7,
+    kShaderCache = 6,    // Deprecated in favor of using kGpuCache.
+    kPluginPrivate = 7,  // Deprecated.
     kConversions = 8,
     kAggregationService = 9,
     kSharedStorage = 10,
@@ -2165,50 +2149,6 @@ void StoragePartitionImpl::OnTrustAnchorUsed() {
 }
 #endif
 
-void StoragePartitionImpl::OnTrustTokenIssuanceDivertedToSystem(
-    network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
-    OnTrustTokenIssuanceDivertedToSystemCallback callback) {
-  if (!local_trust_token_fulfiller_ &&
-      !attempted_to_bind_local_trust_token_fulfiller_) {
-    attempted_to_bind_local_trust_token_fulfiller_ = true;
-    ProvisionallyBindUnboundLocalTrustTokenFulfillerIfSupportedBySystem();
-  }
-
-  if (!local_trust_token_fulfiller_) {
-    auto response = network::mojom::FulfillTrustTokenIssuanceAnswer::New();
-    response->status =
-        network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
-    std::move(callback).Run(std::move(response));
-    return;
-  }
-
-  int callback_key = next_pending_trust_token_issuance_callback_key_++;
-  pending_trust_token_issuance_callbacks_.emplace(callback_key,
-                                                  std::move(callback));
-
-  local_trust_token_fulfiller_->FulfillTrustTokenIssuance(
-      std::move(request),
-      base::BindOnce(
-          [](int callback_key, base::WeakPtr<StoragePartitionImpl> partition,
-             network::mojom::FulfillTrustTokenIssuanceAnswerPtr answer) {
-            if (!partition)
-              return;
-
-            if (!base::Contains(
-                    partition->pending_trust_token_issuance_callbacks_,
-                    callback_key)) {
-              return;
-            }
-            auto callback =
-                std::move(partition->pending_trust_token_issuance_callbacks_.at(
-                    callback_key));
-            partition->pending_trust_token_issuance_callbacks_.erase(
-                callback_key);
-            std::move(callback).Run(std::move(answer));
-          },
-          callback_key, weak_factory_.GetWeakPtr()));
-}
-
 void StoragePartitionImpl::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {
   bool allowed =
@@ -2642,17 +2582,12 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       (remove_mask_ & REMOVE_DATA_MASK_PRIVATE_AGGREGATION_INTERNAL)) {
     private_aggregation_manager->ClearBudgetData(
         begin, end, generic_filter,
-        CreateTaskCompletionClosure(TracingDataType::kPrivateAggregation));
-  }
 
-  // TODO(crbug.com/1340250): The Plugin Private File System is removed, but
-  // some devices may still have old data on their machine. For now greedily try
-  // to delete this data, but we'll want to remove this code at some point.
-  filesystem_context->default_file_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&ClearPluginPrivateDataOnFileTaskRunner,
-                                base::WrapRefCounted(filesystem_context),
-                                CreateTaskCompletionClosure(
-                                    TracingDataType::kPluginPrivate)));
+        // Wrapping the callback ensures that the callback is still run in the
+        // case that the storage partition is deleted before the task is posted.
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            CreateTaskCompletionClosure(TracingDataType::kPrivateAggregation)));
+  }
 
   if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI) &&
       shared_storage_manager &&
@@ -2689,6 +2624,56 @@ void StoragePartitionImpl::ClearDataForOrigin(
                 /*filter_builder=*/nullptr, StorageKeyPolicyMatcherFunction(),
                 std::move(deletion_filter), false, base::Time(),
                 base::Time::Max(), std::move(callback));
+}
+
+void StoragePartitionImpl::ClearDataForBuckets(
+    const blink::StorageKey& storage_key,
+    const std::set<std::string>& storage_buckets,
+    base::OnceClosure callback) {
+  DCHECK(initialized_);
+
+  const auto remove_buckets_done =
+      base::BarrierCallback<blink::mojom::QuotaStatusCode>(
+          storage_buckets.size(),
+          BindPostTask(
+              base::SequencedTaskRunnerHandle::Get(),
+              base::BindOnce(&StoragePartitionImpl::ClearDataForBucketsDone,
+                             base::Unretained(this), storage_key,
+                             storage_buckets, std::move(callback))));
+
+  storage::QuotaManagerProxy* quota_manager_proxy = GetQuotaManagerProxy();
+
+  for (const auto& bucket : storage_buckets) {
+    quota_manager_proxy->DeleteBucket(storage_key, bucket,
+                                      base::SequencedTaskRunnerHandle::Get(),
+                                      remove_buckets_done);
+  }
+}
+
+void StoragePartitionImpl::ClearDataForBucketsDone(
+    const blink::StorageKey& storage_key,
+    const std::set<std::string>& storage_buckets,
+    base::OnceClosure callback,
+    const std::vector<blink::mojom::QuotaStatusCode>& status_codes) {
+  auto bucket_iterator = storage_buckets.begin();
+
+  for (const auto status_code : status_codes) {
+    if (bucket_iterator == storage_buckets.end()) {
+      break;
+    }
+
+    const std::string bucket_name = *bucket_iterator;
+
+    if (status_code != blink::mojom::QuotaStatusCode::kOk) {
+      DLOG(ERROR) << "Couldn't remove bucket with name" << bucket_name
+                  << " with storage key " << storage_key.GetDebugString()
+                  << ". Status: " << static_cast<int>(status_code);
+    }
+
+    ++bucket_iterator;
+  }
+
+  std::move(callback).Run();
 }
 
 void StoragePartitionImpl::ClearData(uint32_t remove_mask,
@@ -3069,19 +3054,6 @@ StoragePartitionImpl::CreateCookieAccessObserverForServiceWorker() {
   return remote;
 }
 
-void StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError() {
-  auto not_found_answer =
-      network::mojom::FulfillTrustTokenIssuanceAnswer::New();
-  // kNotFound represents a case where the local system was unable to provide an
-  // answer to the request.
-  not_found_answer->status =
-      network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
-
-  for (auto& key_and_callback : pending_trust_token_issuance_callbacks_)
-    std::move(key_and_callback.second).Run(not_found_answer.Clone());
-  pending_trust_token_issuance_callbacks_.clear();
-}
-
 void StoragePartitionImpl::OpenLocalStorageForProcess(
     int process_id,
     const blink::StorageKey& storage_key,
@@ -3105,23 +3077,6 @@ void StoragePartitionImpl::BindSessionStorageAreaForProcess(
   dom_storage_context_->BindStorageArea(storage_key, absl::nullopt,
                                         namespace_id, std::move(receiver),
                                         std::move(handle), base::DoNothing());
-}
-
-void StoragePartitionImpl::
-    ProvisionallyBindUnboundLocalTrustTokenFulfillerIfSupportedBySystem() {
-  if (local_trust_token_fulfiller_)
-    return;
-
-#if BUILDFLAG(IS_ANDROID)
-  GetGlobalJavaInterfaces()->GetInterface(
-      local_trust_token_fulfiller_.BindNewPipeAndPassReceiver());
-#endif  // BUILDFLAG(IS_ANDROID)
-
-  if (local_trust_token_fulfiller_) {
-    local_trust_token_fulfiller_.set_disconnect_handler(base::BindOnce(
-        &StoragePartitionImpl::OnLocalTrustTokenFulfillerConnectionError,
-        weak_factory_.GetWeakPtr()));
-  }
 }
 
 absl::optional<blink::StorageKey> StoragePartitionImpl::CalculateStorageKey(

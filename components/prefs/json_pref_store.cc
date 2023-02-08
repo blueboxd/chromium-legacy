@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -26,8 +27,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/prefs/pref_filter.h"
@@ -60,6 +59,13 @@ bool BackupPrefsFile(const base::FilePath& path) {
   const bool bad_existed = base::PathExists(bad);
   base::Move(path, bad);
   return bad_existed;
+}
+
+bool PrefStoreBackgroundSerializationEnabledOrFeatureListUnavailable() {
+  // TODO(crbug.com/1364606#c12): Ensure that this is not invoked before
+  // FeatureList initialization.
+  return !base::FeatureList::GetInstance() ||
+         base::FeatureList::IsEnabled(kPrefStoreBackgroundSerialization);
 }
 
 PersistentPrefStore::PrefReadError HandleReadErrors(
@@ -310,9 +316,8 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
   error_delegate_.reset(error_delegate);
 
   // Weakly binds the read task so that it doesn't kick in during shutdown.
-  base::PostTaskAndReplyWithResult(
-      file_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ReadPrefsFromDisk, path_),
+  file_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&ReadPrefsFromDisk, path_),
       base::BindOnce(&JsonPrefStore::OnFileRead, AsWeakPtr()));
 }
 
@@ -422,7 +427,7 @@ void JsonPrefStore::RegisterOnNextSuccessfulWriteReply(
             base::BindOnce(
                 &JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
                 AsWeakPtr()),
-            base::SequencedTaskRunnerHandle::Get()));
+            base::SequencedTaskRunner::GetCurrentDefault()));
   }
 }
 
@@ -439,7 +444,7 @@ void JsonPrefStore::RegisterOnNextWriteSynchronousCallbacks(
           base::BindOnce(
               &JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
               AsWeakPtr()),
-          base::SequencedTaskRunnerHandle::Get()));
+          base::SequencedTaskRunner::GetCurrentDefault()));
 }
 
 void JsonPrefStore::OnStoreDeletionFromDisk() {
@@ -554,7 +559,7 @@ void JsonPrefStore::ScheduleWrite(uint32_t flags) {
 
   if (flags & LOSSY_PREF_WRITE_FLAG)
     pending_lossy_write_ = true;
-  else if (base::FeatureList::IsEnabled(kPrefStoreBackgroundSerialization))
+  else if (PrefStoreBackgroundSerializationEnabledOrFeatureListUnavailable())
     writer_.ScheduleWriteWithBackgroundDataSerializer(this);
   else
     writer_.ScheduleWrite(this);

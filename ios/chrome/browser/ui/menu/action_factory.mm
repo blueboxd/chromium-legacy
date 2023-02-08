@@ -27,7 +27,7 @@
 
 @implementation ActionFactory
 
-- (instancetype)initWithScenario:(MenuScenario)scenario {
+- (instancetype)initWithScenario:(MenuScenarioHistogram)scenario {
   if (self = [super init]) {
     _histogram = GetActionsHistogramName(scenario);
   }
@@ -168,9 +168,10 @@
 }
 
 - (UIAction*)actionToMarkAsUnreadWithBlock:(ProceduralBlock)block {
-  UIImage* image = UseSymbols() ? DefaultSymbolWithPointSize(
-                                      kHideActionSymbol, kSymbolActionPointSize)
-                                : [UIImage imageNamed:@"remove"];
+  UIImage* image = UseSymbols()
+                       ? DefaultSymbolWithPointSize(kMarkAsUnreadActionSymbol,
+                                                    kSymbolActionPointSize)
+                       : [UIImage imageNamed:@"remove"];
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_READING_LIST_MARK_AS_UNREAD_ACTION)
                          image:image
@@ -181,7 +182,7 @@
 - (UIAction*)actionToOpenOfflineVersionInNewTabWithBlock:
     (ProceduralBlock)block {
   UIImage* image = UseSymbols()
-                       ? DefaultSymbolWithPointSize(kCheckMarkCircleSymbol,
+                       ? DefaultSymbolWithPointSize(kCheckmarkCircleSymbol,
                                                     kSymbolActionPointSize)
                        : [UIImage imageNamed:@"offline"];
   return [self actionWithTitle:l10n_util::GetNSString(
@@ -293,7 +294,7 @@
 
 - (UIAction*)actionToSelectTabsWithBlock:(ProceduralBlock)block {
   UIImage* image = UseSymbols()
-                       ? DefaultSymbolWithPointSize(kCheckMarkCircleSymbol,
+                       ? DefaultSymbolWithPointSize(kCheckmarkCircleSymbol,
                                                     kSymbolActionPointSize)
                        : [UIImage imageNamed:@"select"];
   UIAction* action = [self

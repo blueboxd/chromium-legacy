@@ -13,10 +13,10 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/ash/components/login/auth/auth_status_consumer.h"
 #include "chromeos/ash/components/login/auth/authenticator.h"
 #include "chromeos/ash/components/login/auth/extended_authenticator.h"
-#include "chromeos/ash/components/login/auth/metrics_recorder.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
 #include "components/user_manager/user_type.h"
@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   };
 
   explicit LoginPerformer(Delegate* delegate,
-                          MetricsRecorder* metrics_recorder);
+                          AuthMetricsRecorder* metrics_recorder);
 
   LoginPerformer(const LoginPerformer&) = delete;
   LoginPerformer& operator=(const LoginPerformer&) = delete;
@@ -87,12 +87,16 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   // Performs a login into the Web kiosk mode account with |web_app_account_id|.
   void LoginAsWebKioskAccount(const AccountId& web_app_account_id);
 
+  // Performs final stages of the login for user already authenticated via
+  // `AuthSession`.
+  void LoginAuthenticated(std::unique_ptr<UserContext> user_context);
+
   // AuthStatusConsumer implementation:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
   void OnPasswordChangeDetected(const UserContext& user_context) override;
-  void OnOldEncryptionDetected(const UserContext& user_context,
+  void OnOldEncryptionDetected(std::unique_ptr<UserContext>,
                                bool has_incomplete_migration) override;
 
   // Migrates cryptohome using |old_password| specified.
@@ -188,7 +192,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   void NotifyAuthSuccess(const UserContext& user_context);
   void NotifyOffTheRecordAuthSuccess();
   void NotifyPasswordChangeDetected(const UserContext& user_context);
-  void NotifyOldEncryptionDetected(const UserContext& user_context,
+  void NotifyOldEncryptionDetected(std::unique_ptr<UserContext> user_context,
                                    bool has_incomplete_migration);
   void NotifyAllowlistCheckFailure();
 
@@ -196,7 +200,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   scoped_refptr<Authenticator> authenticator_;
 
   // Used for metric reporting.
-  const raw_ptr<MetricsRecorder> metrics_recorder_;
+  const raw_ptr<AuthMetricsRecorder, DanglingUntriaged> metrics_recorder_;
 
   // Represents last login failure that was encountered when communicating to
   // sign-in server. AuthFailure.LoginFailureNone() by default.

@@ -28,6 +28,7 @@
  *    MeasureLatency: boolean,
  *    sendStartSignaling: boolean,
  *    disable_stun_server: boolean,
+ *    check_android_network_info: boolean,
  * }}
  */
 /* #export */ let SystemInfo;
@@ -106,4 +107,6 @@
   STREAM_ACTION: 'stream_action',
   // Message for virtual keyboard state
   IS_VIRTUAL_KEYBOARD_ENABLED: 'is_virtual_keyboard_enabled',
+  // Message for Android network info
+  ANDROID_NETWORK_INFO: 'android-network-info',
 };

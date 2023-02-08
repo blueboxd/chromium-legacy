@@ -15,13 +15,13 @@ import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert} from 'chrome://resources/js/assert.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {skColorToRgba} from 'chrome://resources/js/color_utils.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {FocusOutlineManager} from 'chrome://resources/js/focus_outline_manager.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {isMac} from 'chrome://resources/js/platform.js';
-import {hasKeyModifiers} from 'chrome://resources/js/util.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util_ts.js';
 import {TextDirection} from 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-webui.js';
 import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
@@ -288,7 +288,8 @@ export class MostVisitedElement extends MostVisitedElementBase {
                   'most-visited-mojo', 'most-visited-mojo-start');
               this.visible_ = info.visible;
               this.customLinksEnabled_ = info.customLinksEnabled;
-              this.tiles_ = info.tiles.slice(0, assert(this.maxTiles_));
+              assert(this.maxTiles_);
+              this.tiles_ = info.tiles.slice(0, this.maxTiles_);
             });
     performance.mark('most-visited-mojo-start');
     this.eventTracker_.add(document, 'visibilitychange', () => {
@@ -304,10 +305,9 @@ export class MostVisitedElement extends MostVisitedElementBase {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.mediaListenerWideWidth_.removeListener(
-        assert(this.boundOnWidthChange_));
-    this.mediaListenerMediumWidth_.removeListener(
-        assert(this.boundOnWidthChange_));
+    assert(this.boundOnWidthChange_);
+    this.mediaListenerWideWidth_.removeListener(this.boundOnWidthChange_);
+    this.mediaListenerMediumWidth_.removeListener(this.boundOnWidthChange_);
     this.ownerDocument.removeEventListener(
         'keydown', this.boundOnDocumentKeyDown_);
     this.eventTracker_.removeAll();
@@ -834,9 +834,9 @@ export class MostVisitedElement extends MostVisitedElementBase {
 
   private onTilesRendered_() {
     performance.measure('most-visited-rendered');
+    assert(this.maxVisibleTiles_);
     this.pageHandler_.onMostVisitedTilesRendered(
-        this.tiles_.slice(0, assert(this.maxVisibleTiles_)),
-        this.windowProxy_.now());
+        this.tiles_.slice(0, this.maxVisibleTiles_), this.windowProxy_.now());
   }
 }
 

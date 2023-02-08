@@ -71,7 +71,7 @@ class DownloadUIModel {
         offline_items_collection::FailState fail_state) const;
 
     // Unknowned model to create statuses.
-    DownloadUIModel* model_ = nullptr;
+    raw_ptr<DownloadUIModel> model_ = nullptr;
   };
 
   // Used in Download shelf and page, default option.
@@ -276,9 +276,6 @@ class DownloadUIModel {
   // Is this download a mixed content download, but not something more severe?
   // Implies IsDangerous() and !IsMalicious().
   virtual bool IsMixedContent() const;
-
-  // Is safe browsing download feedback feature available for this download?
-  virtual bool ShouldAllowDownloadFeedback() const;
 
   // Returns |true| if this download is expected to complete successfully and
   // thereafter be removed from the shelf.  Downloads that are opened

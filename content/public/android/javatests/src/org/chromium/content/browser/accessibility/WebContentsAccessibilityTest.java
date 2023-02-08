@@ -37,6 +37,7 @@ import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Acces
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SET_TEXT;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SHOW_ON_SCREEN;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER;
+import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_PARAGRAPH;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD;
 
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.NODE_TIMEOUT_ERROR;
@@ -69,7 +70,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.Spannable;
@@ -93,7 +93,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
-import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.ContentFeatureList;
@@ -274,7 +273,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testMaxContentChangedEventsFired_default() throws Throwable {
         // Build a simple web page with complex visibility change.
@@ -310,7 +308,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @SmallTest
-    @MinAndroidSdkLevel(Build.VERSION_CODES.N)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testMaxContentChangedEventsFired_largeLimit() throws Throwable {
         // Build a simple web page with complex visibility change.
@@ -1095,6 +1092,46 @@ public class WebContentsAccessibilityTest {
             Assert.assertEquals(7, mTestData.getSelectionFromIndex());
             Assert.assertEquals(i + 1, mTestData.getSelectionToIndex());
         }
+    }
+
+    /**
+     * Ensures paragraph navigation actions correctly navigate to the next paragraph and stop at
+     * the last paragraph.
+     */
+    @Test
+    @SmallTest
+    public void testEvent_paragraphGranularity() throws Throwable {
+        setupTestWithHTML("<p>Paragraph 1</p>"
+                + "<p>Paragraph 2</p>"
+                + "<p>Paragraph 3</p>"
+                + "<p>Paragraph 4</p>"
+                + "<p>Paragraph 5</p>");
+
+        // Set granularity to PARAGRAPH
+        Bundle args = new Bundle();
+        args.putInt(ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT, MOVEMENT_GRANULARITY_PARAGRAPH);
+        args.putBoolean(ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN, false);
+
+        int[] paragraphs = new int[5];
+        for (int i = 0; i < 5; i++) {
+            paragraphs[i] = waitForNodeMatching(sTextMatcher, "Paragraph " + (i + 1));
+        }
+
+        // Simulate swiping forward
+        for (int i = 0; i < 4; i++) {
+            mTestData.setReceivedAccessibilityFocusEvent(false);
+            // Perform our text selection/traversal action.
+            performActionOnUiThread(paragraphs[i], ACTION_NEXT_AT_MOVEMENT_GRANULARITY, args);
+
+            // Poll until accessibility focus has changed
+            CriteriaHelper.pollUiThread(
+                    () -> { return mTestData.hasReceivedAccessibilityFocusEvent(); });
+        }
+
+        // Ensure the last paragraph has accessibility focus
+        AccessibilityNodeInfoCompat lastParagraphNodeInfo =
+                createAccessibilityNodeInfo(paragraphs[4]);
+        Assert.assertTrue(lastParagraphNodeInfo.isAccessibilityFocused());
     }
 
     // ------------------ Tests of AccessibilityNodeInfo objects ------------------ //

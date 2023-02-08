@@ -8,6 +8,7 @@ import {FileType} from '../../../common/js/file_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
 import {EntryLocation} from '../../../externs/entry_location.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
+import {VolumeManager} from '../../../externs/volume_manager.js';
 import {FileListModel} from '../file_list_model.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
 
@@ -346,9 +347,10 @@ class FileListSelectionController extends ListSelectionController {
  * @param {ListItem} li List item.
  * @param {Entry|FilesAppEntry} entry The entry.
  * @param {!MetadataModel} metadataModel Cache to
- *     retrieve metadada.
+ *     retrieve metadata.
+ * @param {!VolumeManager} volumeManager Used to retrieve VolumeInfo.
  */
-filelist.decorateListItem = (li, entry, metadataModel) => {
+filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
   // The metadata may not yet be ready. In that case, the list item will be
   // updated when the metadata is ready via updateListItemsMetadata. For files
@@ -369,6 +371,8 @@ filelist.decorateListItem = (li, entry, metadataModel) => {
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
   li.setAttribute('role', 'option');
+  li.toggleAttribute(
+      'disabled', filelist.isDlpBlocked(entry, metadataModel, volumeManager));
 
   Object.defineProperty(li, 'selected', {
     /**
@@ -390,6 +394,38 @@ filelist.decorateListItem = (li, entry, metadataModel) => {
       }
     },
   });
+};
+
+/**
+ * Returns whether `entry` is blocked by DLP.
+ *
+ * Relies on the fact that volumeManager.isDisabled() can only be true for dirs
+ * in file-saveas dialogs, while metadata.isRestrictedForDestination can only be
+ * true for files in other types of select dialogs.
+ * @param {Entry|FilesAppEntry} entry The entry.
+ * @param {!MetadataModel} metadataModel Used to retrieve
+ *     isRestrictedForDestination value.
+ * @param {!VolumeManager} volumeManager Used to retrieve VolumeInfo and check
+ *     if it's disabled.
+ * @return {boolean} If `entry` is DLP blocked.
+ */
+filelist.isDlpBlocked = (entry, metadataModel, volumeManager) => {
+  if (!util.isDlpEnabled()) {
+    return false;
+  }
+  // TODO(b/259184588): Properly handle case when VolumeInfo is not
+  // available. E.g. for Crostini we might not have VolumeInfo before it's
+  // mounted.
+  const volumeInfo = volumeManager.getVolumeInfo(assert(entry));
+  if (volumeInfo && volumeManager.isDisabled(volumeInfo.volumeType)) {
+    return true;
+  }
+  const metadata =
+      metadataModel.getCache([entry], ['isRestrictedForDestination'])[0];
+  if (metadata && !!metadata.isRestrictedForDestination) {
+    return true;
+  }
+  return false;
 };
 
 /**
@@ -435,7 +471,7 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
  */
 filelist.renderPinned = (doc) => {
   const icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
-  icon.className = 'detail-pinned';
+  icon.className = 'inline-status';
   icon.setAttribute('aria-label', str('OFFLINE_COLUMN_LABEL'));
   return icon;
 };

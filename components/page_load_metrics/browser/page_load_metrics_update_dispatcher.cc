@@ -53,8 +53,7 @@ bool EventsInOrder(const absl::optional<base::TimeDelta>& first,
 }
 
 internal::PageLoadTimingStatus IsValidPageLoadTiming(
-    const mojom::PageLoadTiming& timing,
-    bool is_prerendered) {
+    const mojom::PageLoadTiming& timing) {
   if (page_load_metrics::IsEmpty(timing))
     return internal::INVALID_EMPTY_TIMING;
 
@@ -65,6 +64,18 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
   }
 
   // Verify proper ordering between the various timings.
+
+  // Note for activation_start
+  //
+  // PaintTiming is composed in MetricsRenderFrameObserver::GetTiming,
+  // which also clamps wall clocks as navigation_start origin.
+  // Majority of wall clocks are taken in render side, but
+  // activation_start is taken in browser side
+  // PageImpl::ActivateForPrerendering. Besides, there is no control
+  // of these events. Therefore, we don't have any order relations
+  // between activation_start and others except for navigation_start.
+  // (Always 0 = navigation_start <= activation_start for main frames as
+  // navigation_start origin TimeDelta.)
 
   if (!EventsInOrder(timing.response_start, timing.parse_timing->parse_start)) {
     // We sometimes get a zero response_start with a non-zero parse start. See
@@ -151,30 +162,11 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_ORDER_DOM_CONTENT_LOADED_LOAD;
   }
 
-  // If the page is prerendered, `parse_start <= activation_start <=
-  // first_paint`.
-  // If the page is non prerendered, `parse_start <= first_paint`.
-  if (is_prerendered) {
-    if (!EventsInOrder(timing.parse_timing->parse_start,
-                       timing.activation_start)) {
-      LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
-                 << " for activation_start " << timing.activation_start;
-      return internal::INVALID_ORDER_PARSE_START_ACTIVATION_START;
-    }
-
-    if (!EventsInOrder(timing.activation_start,
-                       timing.paint_timing->first_paint)) {
-      LOG(ERROR) << "Invalid activation_start " << timing.activation_start
-                 << " for first_paint " << timing.paint_timing->first_paint;
-      return internal::INVALID_ORDER_ACTIVATION_START_FIRST_PAINT;
-    }
-  } else {
-    if (!EventsInOrder(timing.parse_timing->parse_start,
-                       timing.paint_timing->first_paint)) {
-      LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
-                 << " for first_paint " << timing.paint_timing->first_paint;
-      return internal::INVALID_ORDER_PARSE_START_FIRST_PAINT;
-    }
+  if (!EventsInOrder(timing.parse_timing->parse_start,
+                     timing.paint_timing->first_paint)) {
+    LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
+               << " for first_paint " << timing.paint_timing->first_paint;
+    return internal::INVALID_ORDER_PARSE_START_FIRST_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing->first_paint,
@@ -446,7 +438,6 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       main_frame_metadata_(mojom::FrameMetadata::New()),
       subframe_metadata_(mojom::FrameMetadata::New()),
       page_input_timing_(mojom::InputTiming::New()),
-      mobile_friendliness_(blink::MobileFriendliness()),
       is_prerendered_page_load_(navigation_handle->IsInPrerenderedMainFrame()) {
 }
 
@@ -476,7 +467,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr new_cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
     uint32_t soft_navigation_count) {
   if (embedder_interface_->IsExtensionUrl(
           render_frame_host->GetLastCommittedURL())) {
@@ -498,8 +489,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateMainFrameMetadata(render_frame_host, std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
     UpdateMainFrameRenderData(*render_data);
-    if (mobile_friendliness.has_value()) {
-      UpdateMainFrameMobileFriendliness(*mobile_friendliness);
+    if (subresource_load_metrics) {
+      UpdateMainFrameSubresourceLoadMetrics(*subresource_load_metrics);
     }
     UpdateSoftNavigationCount(soft_navigation_count);
   } else {
@@ -507,11 +498,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
     // This path is just for the AMP metrics.
     UpdateSubFrameInputTiming(render_frame_host, *input_timing_delta);
-    if (mobile_friendliness.has_value())
-      UpdateSubFrameMobileFriendliness(*mobile_friendliness);
   }
   UpdatePageInputTiming(*input_timing_delta);
-  UpdatePageRenderData(*render_data);
+  UpdatePageRenderData(*render_data, is_main_frame);
   if (!is_main_frame) {
     // This path is just for the AMP metrics.
     OnSubFrameRenderDataChanged(render_frame_host, *render_data);
@@ -642,14 +631,9 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
   MaybeUpdateMainFrameIntersectionRect(render_frame_host, subframe_metadata);
 }
 
-void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMobileFriendliness(
-    const blink::MobileFriendliness& mobile_friendliness) {
-  mobile_friendliness_ = mobile_friendliness;
-}
-
-void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMobileFriendliness(
-    const blink::MobileFriendliness& mobile_friendliness) {
-  client_->OnSubFrameMobileFriendlinessChanged(mobile_friendliness);
+void PageLoadMetricsUpdateDispatcher::UpdateMainFrameSubresourceLoadMetrics(
+    const mojom::SubresourceLoadMetrics& subresource_load_metrics) {
+  subresource_load_metrics_ = subresource_load_metrics;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSoftNavigationCount(
@@ -719,10 +703,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
     return;
   }
 
-  const bool is_prerendered =
-      (client_->GetPrerenderingState() != PrerenderingState::kNoPrerendering);
-  internal::PageLoadTimingStatus status =
-      IsValidPageLoadTiming(*new_timing, is_prerendered);
+  internal::PageLoadTimingStatus status = IsValidPageLoadTiming(*new_timing);
   UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingStatus, status,
                             internal::LAST_PAGE_LOAD_TIMING_STATUS);
   if (status != internal::VALID) {
@@ -791,12 +772,16 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(
         input_timing_delta.num_interactions,
         *(input_timing_delta.max_event_durations));
   }
-  if (page_input_timing_->num_input_events > 0)
-    client_->OnPageInputTimingChanged(page_input_timing_->num_input_events);
+  if (input_timing_delta.num_interactions ||
+      page_input_timing_->num_input_events) {
+    client_->OnPageInputTimingChanged(input_timing_delta.num_interactions,
+                                      page_input_timing_->num_input_events);
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
-    const mojom::FrameRenderDataUpdate& render_data) {
+    const mojom::FrameRenderDataUpdate& render_data,
+    bool is_main_frame) {
   page_render_data_.layout_shift_score += render_data.layout_shift_delta;
   layout_shift_normalization_.AddNewLayoutShifts(
       render_data.new_layout_shifts, base::TimeTicks::Now(),
@@ -823,6 +808,7 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
       render_data.all_layout_call_count_delta;
   page_render_data_.ng_layout_call_count +=
       render_data.ng_layout_call_count_delta;
+  client_->OnPageRenderDataChanged(render_data, is_main_frame);
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
@@ -900,10 +886,8 @@ void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
 
   current_merged_page_timing_ = pending_merged_page_timing_->Clone();
 
-  const bool is_prerendered =
-      (client_->GetPrerenderingState() != PrerenderingState::kNoPrerendering);
   internal::PageLoadTimingStatus status =
-      IsValidPageLoadTiming(*pending_merged_page_timing_, is_prerendered);
+      IsValidPageLoadTiming(*pending_merged_page_timing_);
   UMA_HISTOGRAM_ENUMERATION(internal::kPageLoadTimingDispatchStatus, status,
                             internal::LAST_PAGE_LOAD_TIMING_STATUS);
 

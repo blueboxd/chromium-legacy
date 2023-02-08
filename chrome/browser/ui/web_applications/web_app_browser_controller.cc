@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -23,9 +24,8 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
-#include "chrome/browser/web_applications/commands/callback_command.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -155,11 +155,22 @@ bool WebAppBrowserController::IsWindowControlsOverlayEnabled() const {
          registrar().GetWindowControlsOverlayEnabled(app_id());
 }
 
-void WebAppBrowserController::ToggleWindowControlsOverlayEnabled() {
+void WebAppBrowserController::ToggleWindowControlsOverlayEnabled(
+    base::OnceClosure on_complete) {
   DCHECK(AppUsesWindowControlsOverlay());
 
-  provider_->sync_bridge().SetAppWindowControlsOverlayEnabled(
-      app_id(), !registrar().GetWindowControlsOverlayEnabled(app_id()));
+  provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
+      "WebAppBrowserController::ToggleWindowControlsOverlayEnabled",
+      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      base::BindOnce(
+          [](base::OnceClosure on_complete, const AppId& app_id,
+             AppLock& lock) {
+            lock.sync_bridge().SetAppWindowControlsOverlayEnabled(
+                app_id,
+                !lock.registrar().GetWindowControlsOverlayEnabled(app_id));
+            std::move(on_complete).Run();
+          },
+          std::move(on_complete), app_id()));
 }
 
 bool WebAppBrowserController::AppUsesBorderlessMode() const {
@@ -168,12 +179,7 @@ bool WebAppBrowserController::AppUsesBorderlessMode() const {
 }
 
 bool WebAppBrowserController::IsIsolatedWebApp() const {
-  if (!web_contents())
-    return false;
-
-  return web_contents()->GetPrimaryMainFrame()->GetWebExposedIsolationLevel() >=
-         content::RenderFrameHost::WebExposedIsolationLevel::
-             kMaybeIsolatedApplication;
+  return registrar().IsIsolated(app_id());
 }
 
 gfx::Rect WebAppBrowserController::GetDefaultBounds() const {
@@ -208,16 +214,16 @@ bool WebAppBrowserController::AlwaysShowToolbarInFullscreen() const {
 }
 
 void WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen() {
-  // base::Unretained is safe as the command manager won't execute the command
-  // if the provider no longer exists.
-  provider_->command_manager().ScheduleCommand(
-      std::make_unique<CallbackCommand>(
-          std::make_unique<AppLockDescription, base::flat_set<AppId>>(
-              {app_id()}),
-          base::BindOnce(
-              &WebAppSyncBridge::SetAlwaysShowToolbarInFullscreen,
-              base::Unretained(&provider_->sync_bridge()), app_id(),
-              !registrar().AlwaysShowToolbarInFullscreen(app_id()))));
+  provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
+      "WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen",
+      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      base::BindOnce(
+          [](const AppId& app_id, AppLock& lock) {
+            lock.sync_bridge().SetAlwaysShowToolbarInFullscreen(
+                app_id,
+                !lock.registrar().AlwaysShowToolbarInFullscreen(app_id));
+          },
+          app_id()));
 }
 #endif
 
@@ -236,9 +242,9 @@ void WebAppBrowserController::CheckDigitalAssetLinkRelationshipForAndroidApp(
   // and will be destroyed if this object is destroyed.
   // TODO(swestphal): Support passing several fingerprints for verification.
   std::vector<std::string> fingerprints{fingerprint};
-  const std::string origin = GetAppStartUrl().DeprecatedGetOriginAsURL().spec();
   asset_link_handler_->CheckDigitalAssetLinkRelationshipForAndroidApp(
-      origin, kRelationship, std::move(fingerprints), package_name,
+      url::Origin::Create(GetAppStartUrl()), kRelationship,
+      std::move(fingerprints), package_name,
       base::BindOnce(&WebAppBrowserController::OnRelationshipCheckComplete,
                      base::Unretained(this)));
 }
@@ -453,8 +459,8 @@ std::u16string WebAppBrowserController::GetTitle() const {
 
   std::u16string raw_title = AppBrowserController::GetTitle();
 
-  std::u16string app_name =
-      base::UTF8ToUTF16(provider_->registrar().GetAppShortName(app_id()));
+  std::u16string app_name = base::UTF8ToUTF16(
+      provider_->registrar_unsafe().GetAppShortName(app_id()));
   if (base::StartsWith(raw_title, app_name)) {
     return raw_title;
   }
@@ -515,7 +521,7 @@ void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
 }
 
 const WebAppRegistrar& WebAppBrowserController::registrar() const {
-  return provider_->registrar();
+  return provider_->registrar_unsafe();
 }
 
 const WebAppInstallManager& WebAppBrowserController::install_manager() const {

@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_context.h"
@@ -351,8 +350,8 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParse(
     return;
   }
 
-  const base::DictionaryValue* parsed_manifest;
-  if (!result->GetAsDictionary(&parsed_manifest)) {
+  const base::Value::Dict* parsed_manifest = result->GetIfDict();
+  if (!parsed_manifest) {
     Respond(Error(keys::kManifestParseError));
     Release();
     return;
@@ -361,7 +360,8 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParse(
   std::string error;
   scoped_refptr<Extension> extension =
       Extension::Create(base::FilePath(), ManifestLocation::kInvalidLocation,
-                        *parsed_manifest, Extension::NO_FLAGS, &error);
+                        base::DictAdapterForMigration(*parsed_manifest),
+                        Extension::NO_FLAGS, &error);
   // TODO(lazyboy): Do we need to use |error|?
   if (!extension) {
     Respond(Error(keys::kExtensionCreateError));
@@ -633,7 +633,7 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
     uninstall_dialog_ = delegate->UninstallFunctionDelegate(
         this, target_extension, show_programmatic_uninstall_ui);
   } else {  // No confirm dialog.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&ManagementUninstallFunctionBase::UninstallExtension,
                        this));

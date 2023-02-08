@@ -204,12 +204,12 @@ void GoFullscreen(Element& element,
   else
     DCHECK(!HasFullscreenFlag(element));
 
-  // If there are any open popovers, close them immediately.
+  // If there are any open popovers, close them.
   if (RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
           document.GetExecutionContext())) {
     HTMLElement::HideAllPopoversUntil(
         nullptr, document, HidePopoverFocusBehavior::kNone,
-        HidePopoverForcingLevel::kHideImmediately);
+        HidePopoverForcingLevel::kHideAfterAnimations);
   }
 
   // To fullscreen an |element| within a |document|, set the |element|'s
@@ -395,6 +395,15 @@ const char* FullscreenElementNotReady(const Element& element,
   // attribute name allowfullscreen.
   if (!AllowedToUseFullscreen(element.GetDocument(), report_on_failure))
     return "Disallowed by permissions policy";
+
+  if (auto* html_element = DynamicTo<HTMLElement>(element);
+      html_element &&
+      RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
+          element.GetDocument().GetExecutionContext()) &&
+      html_element->HasPopoverAttribute() && html_element->popoverOpen()) {
+    return "The element is already open as a Popover, and therefore cannot be "
+           "opened via the fullscreen API.";
+  }
 
   return nullptr;
 }

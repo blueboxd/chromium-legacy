@@ -8,12 +8,12 @@
 
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_sync_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_view.h"
-#include "chrome/browser/ui/views/profiles/profile_management_flow_controller.h"
+#include "chrome/browser/ui/views/profiles/profile_management_flow_controller_impl.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
@@ -135,8 +135,9 @@ class ProfileCreationSignedInFlowController
     // Record unfinished signed-in profile creation.
     if (!is_finishing_) {
       // Schedule the profile for deletion, it's not needed any more.
-      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-          profile()->GetPath());
+      g_browser_process->profile_manager()
+          ->GetDeleteProfileHelper()
+          .ScheduleEphemeralProfileForDeletion(profile()->GetPath());
 
       // TODO(crbug.com/1300109): Consider moving this recording into
       // ProfilePickerTurnSyncOnDelegate and unify this code with Cancel().
@@ -169,8 +170,9 @@ class ProfileCreationSignedInFlowController
     is_finishing_ = true;
 
     // Schedule the profile for deletion, it's not needed any more.
-    g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-        profile()->GetPath());
+    g_browser_process->profile_manager()
+        ->GetDeleteProfileHelper()
+        .ScheduleEphemeralProfileForDeletion(profile()->GetPath());
   }
 
   void FinishAndOpenBrowser(PostHostClearedCallback callback) override {
@@ -256,103 +258,46 @@ ProfilePickerFlowController::ProfilePickerFlowController(
     ProfilePickerWebContentsHost* host,
     ClearHostClosure clear_host_callback,
     ProfilePicker::EntryPoint entry_point)
-    : ProfileManagementFlowController(host,
-                                      std::move(clear_host_callback),
-                                      Step::kProfilePicker),
-      entry_point_(entry_point) {
-  RegisterStep(initial_step(),
-               ProfileManagementStepController::CreateForProfilePickerApp(
-                   host, GetInitialURL(entry_point_)));
-}
+    : ProfileManagementFlowControllerImpl(host, std::move(clear_host_callback)),
+      entry_point_(entry_point) {}
 
 ProfilePickerFlowController::~ProfilePickerFlowController() = default;
+
+void ProfilePickerFlowController::Init(
+    StepSwitchFinishedCallback step_switch_finished_callback) {
+  RegisterStep(Step::kProfilePicker,
+               ProfileManagementStepController::CreateForProfilePickerApp(
+                   host(), GetInitialURL(entry_point_)));
+  SwitchToStep(Step::kProfilePicker, /*reset_state=*/true,
+               std::move(step_switch_finished_callback));
+}
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProfilePickerFlowController::SwitchToDiceSignIn(
     absl::optional<SkColor> profile_color,
-    base::OnceCallback<void(bool)> switch_finished_callback) {
+    StepSwitchFinishedCallback switch_finished_callback) {
   DCHECK_EQ(Step::kProfilePicker, current_step());
 
   profile_color_ = profile_color;
-  bool step_needs_registration = !IsStepInitialized(Step::kAccountSelection);
-  if (step_needs_registration) {
-    RegisterStep(
-        Step::kAccountSelection,
-        ProfileManagementStepController::CreateForDiceSignIn(
-            host(), std::make_unique<ProfilePickerDiceSignInProvider>(host()),
-            base::BindOnce(
-                &ProfilePickerFlowController::SwitchToPostSignIn,
-                // Unretained ok: `this` outlives the step controllers.
-                base::Unretained(this))));
-  }
-  auto pop_closure = base::BindOnce(
-      &ProfilePickerFlowController::SwitchToStep,
-      // Unretained ok:`this` outlives the step controllers.
-      base::Unretained(this), Step::kProfilePicker,
-      /*reset_state=*/false, /*pop_step_callback=*/base::OnceClosure(),
-      /*step_switch_finished_callback=*/base::OnceCallback<void(bool)>());
-  SwitchToStep(Step::kAccountSelection,
-               /*reset_state=*/step_needs_registration, std::move(pop_closure),
-               std::move(switch_finished_callback));
+  SwitchToIdentityStepsFromAccountSelection(
+      std::move(switch_finished_callback));
 }
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 void ProfilePickerFlowController::SwitchToPostSignIn(
     Profile* signed_in_profile,
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    bool is_saml,
-#endif
+    absl::optional<SkColor> profile_color,
     std::unique_ptr<content::WebContents> contents) {
-  DCHECK(!signin_util::IsForceSigninEnabled());
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DCHECK_EQ(Step::kAccountSelection, current_step());
-#endif
-  DCHECK(signed_in_profile);
-  DCHECK(!IsStepInitialized(Step::kPostSignInFlow));
-
-  Step step = Step::kPostSignInFlow;
-  auto finish_flow_callback = FinishFlowCallback(
-      base::BindOnce(&ProfilePickerFlowController::FinishFlowAndRunInBrowser,
-                     // Unretained ok: the flow will be closed when we run
-                     // `finish_flow_callback`, so `this` will still be alive.
-                     base::Unretained(this),
-                     // Unretained ok: `signed_in_flow` keeps the profile alive
-                     // and will be alive until this callback runs.
-                     base::Unretained(signed_in_profile)));
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (is_saml) {
-    step = Step::kFinishSamlSignin;
-    RegisterStep(step,
-                 ProfileManagementStepController::CreateForFinishSamlSignIn(
-                     host(), signed_in_profile, std::move(contents),
-                     profile_color_, std::move(finish_flow_callback)));
-  } else
-#endif
-  {
-    auto signed_in_flow =
-        std::make_unique<ProfileCreationSignedInFlowController>(
-            host(), signed_in_profile, std::move(contents), profile_color_,
-            std::move(finish_flow_callback));
-
-    weak_signed_in_flow_controller_ = signed_in_flow->GetWeakPtr();
-    RegisterStep(Step::kPostSignInFlow,
-                 ProfileManagementStepController::CreateForPostSignInFlow(
-                     host(), std::move(signed_in_flow)));
-  }
-
-  SwitchToStep(step, /*reset_state=*/true);
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // If we need to go back, we should go all the way to the beginning of the
-  // flow and after that, recreate the account selection step to ensure no data
-  // leaks if we select a different account.
-  // We also erase the step after the switch here because it holds a
-  // `ScopedProfileKeepAlive` and we need the next step to register its own
-  // before this the account selection's is released.
-  UnregisterStep(Step::kAccountSelection);
-#endif
+  DCHECK_EQ(Step::kProfilePicker, current_step());
+  profile_color_ = profile_color;
+  SwitchToIdentityStepsFromPostSignIn(
+      signed_in_profile,
+      content::WebContents::Create(
+          content::WebContents::CreateParams(signed_in_profile)),
+      StepSwitchFinishedCallback());
 }
+#endif
 
 base::FilePath ProfilePickerFlowController::GetSwitchProfilePathOrEmpty()
     const {
@@ -394,4 +339,28 @@ void ProfilePickerFlowController::CancelPostSignInFlow() {
           << "CancelPostSignInFlow() is not reachable from this entry point";
       return;
   }
+}
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+std::unique_ptr<ProfilePickerDiceSignInProvider>
+ProfilePickerFlowController::CreateDiceSignInProvider() {
+  return std::make_unique<ProfilePickerDiceSignInProvider>(host());
+}
+
+absl::optional<SkColor> ProfilePickerFlowController::GetProfileColor() {
+  return profile_color_;
+}
+#endif
+
+std::unique_ptr<ProfilePickerSignedInFlowController>
+ProfilePickerFlowController::CreateSignedInFlowController(
+    Profile* signed_in_profile,
+    std::unique_ptr<content::WebContents> contents,
+    FinishFlowCallback finish_flow_callback) {
+  DCHECK(!weak_signed_in_flow_controller_);
+  auto signed_in_flow = std::make_unique<ProfileCreationSignedInFlowController>(
+      host(), signed_in_profile, std::move(contents), profile_color_,
+      std::move(finish_flow_callback));
+  weak_signed_in_flow_controller_ = signed_in_flow->GetWeakPtr();
+  return signed_in_flow;
 }

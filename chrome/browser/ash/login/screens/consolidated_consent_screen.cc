@@ -13,6 +13,7 @@
 #include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -47,16 +48,18 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 
-using ArcBackupAndRestoreConsent =
-    sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent;
-using ArcGoogleLocationServiceConsent =
-    sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent;
-using ArcPlayTermsOfServiceConsent =
-    sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
-using sync_pb::UserConsentTypes;
-
 namespace ash {
+
 namespace {
+
+using ArcBackupAndRestoreConsent =
+    ::sync_pb::UserConsentTypes::ArcBackupAndRestoreConsent;
+using ArcGoogleLocationServiceConsent =
+    ::sync_pb::UserConsentTypes::ArcGoogleLocationServiceConsent;
+using ArcPlayTermsOfServiceConsent =
+    ::sync_pb::UserConsentTypes::ArcPlayTermsOfServiceConsent;
+using ::sync_pb::UserConsentTypes;
+
 constexpr const char kBackDemoButtonClicked[] = "back";
 constexpr const char kAcceptButtonClicked[] = "tos-accept";
 
@@ -81,6 +84,33 @@ std::string GetCrosEulaOnlineUrl() {
   return base::StringPrintf(chrome::kCrosEulaOnlineURLPath,
                             g_browser_process->GetApplicationLocale().c_str());
 }
+
+ConsolidatedConsentScreen::RecoveryOptInResult GetRecoveryOptInResult(
+    const WizardContext::RecoverySetup& recovery_setup) {
+  if (!recovery_setup.is_supported)
+    return ConsolidatedConsentScreen::RecoveryOptInResult::kNotSupported;
+
+  if (recovery_setup.ask_about_recovery_consent) {
+    // The user was shown the opt-in checkbox.
+    if (recovery_setup.recovery_factor_opted_in)
+      return ConsolidatedConsentScreen::RecoveryOptInResult::kUserOptIn;
+    return ConsolidatedConsentScreen::RecoveryOptInResult::kUserOptOut;
+  }
+
+  // The user was not shown the opt-in checkbox. In this case the policy value
+  // is used.
+  if (recovery_setup.recovery_factor_opted_in)
+    return ConsolidatedConsentScreen::RecoveryOptInResult::kPolicyOptIn;
+  return ConsolidatedConsentScreen::RecoveryOptInResult::kPolicyOptOut;
+}
+
+void RecordRecoveryOptinResult(
+    const WizardContext::RecoverySetup& recovery_setup) {
+  base::UmaHistogramEnumeration(
+      "OOBE.ConsolidatedConsentScreen.RecoveryOptInResult",
+      GetRecoveryOptInResult(recovery_setup));
+}
+
 }  // namespace
 
 std::string ConsolidatedConsentScreen::GetResultString(Result result) {
@@ -186,9 +216,11 @@ void ConsolidatedConsentScreen::ShowImpl() {
   data.Set("crosEulaUrl", GetCrosEulaOnlineUrl());
   // Option that controls if Recovery factor opt-in should be shown for the
   // user.
-  data.Set("showRecoveryOption", context()->ask_about_recovery_consent);
+  data.Set("showRecoveryOption",
+           context()->recovery_setup.ask_about_recovery_consent);
   // Default value for recovery opt toggle.
-  data.Set("recoveryOptionDefault", context()->ask_about_recovery_consent);
+  data.Set("recoveryOptionDefault",
+           context()->recovery_setup.recovery_factor_opted_in);
 
   view_->Show(std::move(data));
 }
@@ -269,9 +301,8 @@ void ConsolidatedConsentScreen::OnOwnershipStatusCheckDone(
   // If the user is not the owner and the owner disabled metrics, the user
   // is not allowed to update the usage opt-in.
   if (view_) {
-    view_->SetUsageOptinHidden(
-        !is_owner_.value_or(false) &&
-        !ash::StatsReportingController::Get()->IsEnabled());
+    view_->SetUsageOptinHidden(!is_owner_.value_or(false) &&
+                               !StatsReportingController::Get()->IsEnabled());
   }
 
   const bool is_demo = arc::IsArcDemoModeSetupFlow();
@@ -303,7 +334,7 @@ void ConsolidatedConsentScreen::OnOwnershipStatusCheckDone(
       is_enabled = *metrics_service->GetCurrentUserMetricsConsent();
     } else {
       DCHECK(g_browser_process->local_state());
-      is_enabled = ash::StatsReportingController::Get()->IsEnabled();
+      is_enabled = StatsReportingController::Get()->IsEnabled();
     }
 
     UpdateMetricsMode(is_enabled, is_managed);
@@ -374,7 +405,7 @@ void ConsolidatedConsentScreen::RecordConsents(
 void ConsolidatedConsentScreen::ReportUsageOptIn(bool is_enabled) {
   DCHECK(is_owner_.has_value());
   if (is_owner_.value()) {
-    ash::StatsReportingController::Get()->SetEnabled(
+    StatsReportingController::Get()->SetEnabled(
         ProfileManager::GetActiveUserProfile(), is_enabled);
     return;
   }
@@ -394,7 +425,7 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
                                          bool enable_recovery) {
   ReportUsageOptIn(enable_stats_usage);
 
-  context()->recovery_factor_opted_in = enable_recovery;
+  context()->recovery_setup.recovery_factor_opted_in = enable_recovery;
 
   if (arc::IsArcDemoModeSetupFlow() ||
       !arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
@@ -429,6 +460,7 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
 }
 
 void ConsolidatedConsentScreen::ExitScreenWithAcceptedResult() {
+  RecordRecoveryOptinResult(context()->recovery_setup);
   StartupUtils::MarkEulaAccepted();
   network_portal_detector::GetInstance()->Enable();
 

@@ -47,7 +47,6 @@
 #include "chromeos/ash/components/dbus/human_presence/human_presence_dbus_client.h"
 #include "chromeos/ash/components/dbus/image_burner/image_burner_client.h"
 #include "chromeos/ash/components/dbus/image_loader/image_loader_client.h"
-#include "chromeos/ash/components/dbus/ip_peripheral/ip_peripheral_service_client.h"
 #include "chromeos/ash/components/dbus/kerberos/kerberos_client.h"
 #include "chromeos/ash/components/dbus/lorgnette_manager/lorgnette_manager_client.h"
 #include "chromeos/ash/components/dbus/media_analytics/media_analytics_client.h"
@@ -82,6 +81,7 @@
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
+#include "chromeos/dbus/ip_peripheral/ip_peripheral_service_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/missive/missive_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
@@ -174,7 +174,7 @@ void InitializeDBus() {
   InitializeDBusClient<ImageBurnerClient>(bus);
   InitializeDBusClient<ImageLoaderClient>(bus);
   InitializeDBusClient<InstallAttributesClient>(bus);
-  InitializeDBusClient<IpPeripheralServiceClient>(bus);
+  InitializeDBusClient<chromeos::IpPeripheralServiceClient>(bus);
   InitializeDBusClient<KerberosClient>(bus);
   InitializeDBusClient<LorgnetteManagerClient>(bus);
   InitializeDBusClient<chromeos::MachineLearningClient>(bus);
@@ -207,7 +207,7 @@ void InitializeDBus() {
   // Initialize the device settings service so that we'll take actions per
   // signals sent from the session manager. This needs to happen before
   // g_browser_process initializes BrowserPolicyConnector.
-  chromeos::DeviceSettingsService::Initialize();
+  DeviceSettingsService::Initialize();
   InstallAttributes::Initialize();
 }
 
@@ -237,16 +237,16 @@ void InitializeFeatureListDependentDBus() {
     InitializeDBusClient<CfmHotlineClient>(bus);
   }
 #endif
-  if (ash::shimless_rma::IsShimlessRmaAllowed()) {
+  if (shimless_rma::IsShimlessRmaAllowed()) {
     InitializeDBusClient<RmadClient>(bus);
   }
-  if (ash::features::IsRgbKeyboardEnabled()) {
+  if (features::IsRgbKeyboardEnabled()) {
     InitializeDBusClient<RgbkbdClient>(bus);
   }
-  InitializeDBusClient<chromeos::WilcoDtcSupportdClient>(bus);
+  InitializeDBusClient<WilcoDtcSupportdClient>(bus);
 
-  if (ash::features::IsSnoopingProtectionEnabled() ||
-      ash::features::IsQuickDimEnabled()) {
+  if (features::IsSnoopingProtectionEnabled() ||
+      features::IsQuickDimEnabled()) {
     InitializeDBusClient<HumanPresenceDBusClient>(bus);
   }
 }
@@ -254,11 +254,11 @@ void InitializeFeatureListDependentDBus() {
 void ShutdownDBus() {
   // Feature list-dependent D-Bus clients are shut down first because we try to
   // shut down in reverse order of initialization (in case of dependencies).
-  if (ash::features::IsSnoopingProtectionEnabled() ||
-      ash::features::IsQuickDimEnabled()) {
+  if (features::IsSnoopingProtectionEnabled() ||
+      features::IsQuickDimEnabled()) {
     HumanPresenceDBusClient::Shutdown();
   }
-  chromeos::WilcoDtcSupportdClient::Shutdown();
+  WilcoDtcSupportdClient::Shutdown();
 #if BUILDFLAG(PLATFORM_CFM)
   if (base::FeatureList::IsEnabled(cfm::features::kMojoServices)) {
     CfmHotlineClient::Shutdown();
@@ -287,16 +287,17 @@ void ShutdownDBus() {
   SeneschalClient::Shutdown();
   RuntimeProbeClient::Shutdown();
   ResourcedClient::Shutdown();
-  if (ash::features::IsRgbKeyboardEnabled()) {
+  if (features::IsRgbKeyboardEnabled()) {
     RgbkbdClient::Shutdown();
   }
-  if (ash::shimless_rma::IsShimlessRmaAllowed()) {
+  if (shimless_rma::IsShimlessRmaAllowed()) {
     RmadClient::Shutdown();
   }
   chromeos::PowerManagerClient::Shutdown();
   chromeos::PermissionBrokerClient::Shutdown();
   PciguardClient::Shutdown();
   PatchPanelClient::Shutdown();
+  PrivateComputingClient::Shutdown();
   OsInstallClient::Shutdown();
   OobeConfigurationClient::Shutdown();
   chromeos::MissiveClient::Shutdown();
@@ -304,7 +305,7 @@ void ShutdownDBus() {
   chromeos::MachineLearningClient::Shutdown();
   LorgnetteManagerClient::Shutdown();
   KerberosClient::Shutdown();
-  IpPeripheralServiceClient::Shutdown();
+  chromeos::IpPeripheralServiceClient::Shutdown();
   InstallAttributesClient::Shutdown();
   ImageLoaderClient::Shutdown();
   ImageBurnerClient::Shutdown();

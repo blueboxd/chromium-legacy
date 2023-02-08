@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
@@ -43,8 +44,8 @@
 #include "ui/views/view_class_properties.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/borealis/borealis_util.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
 namespace {
@@ -110,7 +111,7 @@ class UninstallCheckboxView : public views::View,
   views::Checkbox* checkbox() { return checkbox_; }
 
  private:
-  views::Checkbox* checkbox_;
+  raw_ptr<views::Checkbox> checkbox_;
   std::unique_ptr<CheckboxTargeter> checkbox_targeter_;
 };
 

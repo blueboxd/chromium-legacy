@@ -107,6 +107,9 @@ extern const char kUninstallIfUnusedSwitch[];
 // scheduled to invoke the updater periodically.
 extern const char kWakeSwitch[];
 
+// Kicks off the update service for all versions.
+extern const char kWakeAllSwitch[];
+
 // The updater needs to operate in the system context.
 extern const char kSystemSwitch[];
 
@@ -353,6 +356,12 @@ inline constexpr int kErrorFailedToInstallLegacyUpdater = 34;
 
 // A Mojo remote was unexpectedly disconnected.
 inline constexpr int kErrorMojoDisconnect = 35;
+
+// Failed to copy the updater binary.
+inline constexpr int kErrorFailedToCopyBinary = 36;
+
+// Failed to delete a socket file
+inline constexpr int kErrorFailedToDeleteSocket = 37;
 
 inline constexpr int kErrorTagParsing = 50;
 

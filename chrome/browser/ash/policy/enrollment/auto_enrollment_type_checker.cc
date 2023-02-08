@@ -31,12 +31,10 @@ bool IsGoogleBrandedChrome() {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return false;
 #else
-  std::string firmware_type;
-  bool is_chrome_branded =
-      !ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-          ash::system::kFirmwareTypeKey, &firmware_type) ||
-      firmware_type != ash::system::kFirmwareTypeValueNonchrome;
-  return is_chrome_branded;
+  const absl::optional<base::StringPiece> firmware_type =
+      ash::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          ash::system::kFirmwareTypeKey);
+  return firmware_type != ash::system::kFirmwareTypeValueNonchrome;
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
@@ -115,18 +113,18 @@ bool AutoEnrollmentTypeChecker::IsEnabled() {
 AutoEnrollmentTypeChecker::FRERequirement
 AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD(
     chromeos::system::StatisticsProvider* statistics_provider) {
-  std::string check_enrollment_value;
-  bool fre_flag_found = statistics_provider->GetMachineStatistic(
-      ash::system::kCheckEnrollmentKey, &check_enrollment_value);
+  const absl::optional<base::StringPiece> check_enrollment_value =
+      statistics_provider->GetMachineStatistic(
+          ash::system::kCheckEnrollmentKey);
 
-  if (fre_flag_found) {
+  if (check_enrollment_value) {
     if (check_enrollment_value == "0")
       return FRERequirement::kExplicitlyNotRequired;
     if (check_enrollment_value == "1")
       return FRERequirement::kExplicitlyRequired;
 
     LOG(ERROR) << "Unexpected value for " << ash::system::kCheckEnrollmentKey
-               << ": " << check_enrollment_value;
+               << ": " << check_enrollment_value.value();
     LOG(WARNING) << "Forcing auto enrollment check.";
     return FRERequirement::kExplicitlyRequired;
   }
@@ -143,20 +141,29 @@ AutoEnrollmentTypeChecker::GetFRERequirementAccordingToVPD(
   // check if the device was never owned. If VPD is broken, continue with FRE
   // check.
   switch (statistics_provider->GetVpdStatus()) {
+    // If RO_VPD is broken, state keys are not available and FRE check
+    // cannot start. To not to get stuck with forced re-enrollment, do not
+    // enforce it and let users cancel in case of permanent error.
+    case ash::system::StatisticsProvider::VpdStatus::kInvalid:
+      // Both RO and RW VPDs are broken and state keys are not available.
+      // Require re-enrollment but do not force it.
+      LOG(WARNING) << "RO_VPD and RW_VPD are broken.";
+      return FRERequirement::kRequired;
     case ash::system::StatisticsProvider::VpdStatus::kRoInvalid:
-      LOG(WARNING) << "RO_VPD is borken, but RW_VPD is valid. "
-                      "Proceeding with ownership check.";
+      // RO_VPD is broken, but RW_VPD is valid. `kActivateDateKey` indicating
+      // ownership is available and trustworthy. Proceed with with ownership
+      // check and require  re-enrollment if the device was owned.
+      LOG(WARNING) << "RO_VPD is broken. Proceeding with ownership check.";
       [[fallthrough]];
     case ash::system::StatisticsProvider::VpdStatus::kValid:
       if (!statistics_provider->GetMachineStatistic(
-              ash::system::kActivateDateKey, nullptr)) {
+              ash::system::kActivateDateKey)) {
         // The device has never been activated (enterprise enrolled or
         // consumer-owned) so doing a FRE check is not necessary.
         return FRERequirement::kNotRequired;
       }
       return FRERequirement::kRequired;
     case ash::system::StatisticsProvider::VpdStatus::kRwInvalid:
-    case ash::system::StatisticsProvider::VpdStatus::kInvalid:
       // VPD is in invalid state and FRE flag cannot be assessed. Force FRE
       // check to prevent enrollment escapes.
       LOG(ERROR) << "VPD could not be read, forcing auto-enrollment check.";
@@ -209,16 +216,17 @@ AutoEnrollmentTypeChecker::GetInitialStateDeterminationRequirement(
   }
   const ash::system::FactoryPingEmbargoState embargo_state =
       ash::system::GetEnterpriseManagementPingEmbargoState(statistics_provider);
-  if (statistics_provider->GetEnterpriseMachineID().empty()) {
+  const absl::optional<base::StringPiece> serial_number =
+      statistics_provider->GetMachineID();
+  if (!serial_number || serial_number->empty()) {
     LOG(WARNING)
         << "Skip Initial State Determination due to missing serial number.";
     return InitialStateDeterminationRequirement::kNotRequired;
   }
 
-  std::string rlz_brand_code;
-  const bool rlz_brand_code_found = statistics_provider->GetMachineStatistic(
-      ash::system::kRlzBrandCodeKey, &rlz_brand_code);
-  if (!rlz_brand_code_found || rlz_brand_code.empty()) {
+  const absl::optional<base::StringPiece> rlz_brand_code =
+      statistics_provider->GetMachineStatistic(ash::system::kRlzBrandCodeKey);
+  if (!rlz_brand_code || rlz_brand_code->empty()) {
     LOG(WARNING)
         << "Skip Initial State Determination due to missing brand code.";
     return InitialStateDeterminationRequirement::kNotRequired;

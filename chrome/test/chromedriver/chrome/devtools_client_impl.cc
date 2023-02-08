@@ -18,7 +18,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -297,6 +298,9 @@ Status DevToolsClientImpl::StartBidiServer(std::string bidi_mapper_script,
                   "BiDi tunnel is already set up in this client"};
   }
   Status status{kOk};
+  // TODO(https://crbug.com/chromedriver/4295#c1): implement the proper solution
+  // by waiting for the initial page navigation to be finished.
+  base::PlatformThread::Sleep(base::Milliseconds(200));
   // Page clients have target_id coinciding with id
   std::string target_id = id_;
   {
@@ -417,51 +421,41 @@ Status DevToolsClientImpl::AttachTo(DevToolsClientImpl* parent) {
                   "cannot attach to a parent that has no socket"};
   }
 
-  if (parent->IsConnected()) {
-    ResetListeners();
-    parent_ = parent;
-    parent_->children_[session_id_] = this;
-    Status status = OnConnected();
-    if (status.IsError()) {
-      return status;
-    }
-  } else {
-    parent_ = parent;
-    parent_->children_[session_id_] = this;
-  }
+  Status status{kOk};
 
-  return Status{kOk};
+  if (parent->IsConnected())
+    ResetListeners();
+
+  parent_ = parent;
+  parent_->children_[session_id_] = this;
+
+  if (parent->IsConnected())
+    status = OnConnected();
+
+  return status;
 }
 
-Status DevToolsClientImpl::ConnectIfNecessary() {
+Status DevToolsClientImpl::Connect() {
   if (stack_count_)
     return Status(kUnknownError, "cannot connect when nested");
-  if (IsNull()) {
+  if (!socket_) {
     return Status(kUnknownError, "cannot connect without a socket");
   }
+  if (socket_->IsConnected())
+    return Status(kOk);
 
-  if (parent_ == nullptr) {
-    // This is the browser level DevToolsClient
-    if (socket_->IsConnected())
-      return Status(kOk);
+  ResetListeners();
 
-    ResetListeners();
-
-    if (!socket_->Connect(url_)) {
-      // Try to close devtools frontend and then reconnect.
-      Status status = frontend_closer_func_.Run();
-      if (status.IsError())
-        return status;
-      if (!socket_->Connect(url_))
-        return Status(kDisconnected, "unable to connect to renderer");
-    }
-
-    return OnConnected();
-
-  } else {
-    // This is a page or frame level DevToolsClient
-    return parent_->ConnectIfNecessary();
+  if (!socket_->Connect(url_)) {
+    // Try to close devtools frontend and then reconnect.
+    Status status = frontend_closer_func_.Run();
+    if (status.IsError())
+      return status;
+    if (!socket_->Connect(url_))
+      return Status(kDisconnected, "unable to connect to renderer");
   }
+
+  return OnConnected();
 }
 
 void DevToolsClientImpl::ResetListeners() {
@@ -471,18 +465,12 @@ void DevToolsClientImpl::ResetListeners() {
                     "Some listeners might end-up working incorrectly.";
   }
 
-  // We are going to reconnect, therefore the remote end must be reconfigured
-  is_remote_end_configured_ = false;
-
-  // These lines must be before the SendCommandXxx calls in SetUpDevTools
   unnotified_connect_listeners_.clear();
   for (DevToolsEventListener* listener : listeners_) {
     if (listener->ListensToConnections()) {
       unnotified_connect_listeners_.push_back(listener);
     }
   }
-  unnotified_event_listeners_.clear();
-  response_info_map_.clear();
 
   for (auto child : children_) {
     child.second->ResetListeners();
@@ -522,10 +510,6 @@ Status DevToolsClientImpl::OnConnected() {
 }
 
 Status DevToolsClientImpl::SetUpDevTools() {
-  if (is_remote_end_configured_) {
-    return Status{kOk};
-  }
-
   if (id_ != kBrowserwideDevToolsClientId &&
       (GetOwner() == nullptr || !GetOwner()->IsServiceWorker())) {
     // This is a page or frame level DevToolsClient
@@ -549,7 +533,6 @@ Status DevToolsClientImpl::SetUpDevTools() {
       return status;
   }
 
-  is_remote_end_configured_ = true;
   return Status{kOk};
 }
 
@@ -1169,8 +1152,8 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfEvent() {
   while (unnotified_event_listeners_.size()) {
     DevToolsEventListener* listener = unnotified_event_listeners_.front();
     unnotified_event_listeners_.pop_front();
-    Status status = listener->OnEvent(
-        this, unnotified_event_->method, *unnotified_event_->params);
+    const base::Value::Dict& dict = unnotified_event_->params->GetDict();
+    Status status = listener->OnEvent(this, unnotified_event_->method, dict);
     if (status.IsError()) {
       unnotified_event_listeners_.clear();
       return status;
@@ -1210,23 +1193,23 @@ bool ParseInspectorMessage(const std::string& message,
   // strings. For example, webplatform tests use this to check string handling
   std::unique_ptr<base::Value> message_value = base::JSONReader::ReadDeprecated(
       message, base::JSON_REPLACE_INVALID_CHARACTERS);
-  base::DictionaryValue* message_dict;
-  if (!message_value || !message_value->GetAsDictionary(&message_dict))
+  base::Value::Dict* message_dict =
+      message_value ? message_value->GetIfDict() : nullptr;
+  if (!message_dict)
     return false;
   session_id->clear();
-  if (const std::string* str = message_dict->FindStringKey("sessionId"))
+  if (const std::string* str = message_dict->FindString("sessionId"))
     *session_id = *str;
 
-  base::Value* id_value = message_dict->FindKey("id");
+  base::Value* id_value = message_dict->Find("id");
   if (!id_value) {
-    std::string method;
-    if (!message_dict->GetString("method", &method))
+    const std::string* method = message_dict->FindString("method");
+    if (!method)
       return false;
-    base::DictionaryValue* params = nullptr;
     bool is_bidi_message = false;
-    if (message_dict->GetDictionary("params", &params)) {
-      Status status =
-          IsBidiMessage(method, params->GetDict(), &is_bidi_message);
+    base::Value::Dict* params = message_dict->FindDict("params");
+    if (params) {
+      Status status = IsBidiMessage(*method, *params, &is_bidi_message);
       if (status.IsError()) {
         LOG(WARNING) << status.message();
         return false;
@@ -1235,7 +1218,7 @@ bool ParseInspectorMessage(const std::string& message,
 
     if (is_bidi_message) {
       base::Value::Dict payload;
-      Status status = DeserializePayload(params->GetDict(), &payload);
+      Status status = DeserializePayload(*params, &payload);
       if (status.IsError()) {
         LOG(WARNING) << status.message();
         return false;
@@ -1321,21 +1304,19 @@ bool ParseInspectorMessage(const std::string& message,
 
       // Replace the payload string with the deserialized value to avoid
       // double deserialization in the BidiTracker.
-      params->GetDict().Set("payload", std::move(payload));
+      params->Set("payload", std::move(payload));
     }  // BiDi message
 
     *type = kEventMessageType;
-    event->method = method;
+    event->method = *method;
     if (params) {
       event->params = base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(params->Clone()));
+          base::Value::ToUniquePtrValue(base::Value(params->Clone())));
     } else {
       event->params = std::make_unique<base::DictionaryValue>();
     }
     return true;
   } else if (id_value->is_int()) {
-    base::DictionaryValue* unscoped_error = nullptr;
-    base::DictionaryValue* unscoped_result = nullptr;
     *type = kCommandResponseMessageType;
     command_response->id = id_value->GetInt();
     // As per Chromium issue 392577, DevTools does not necessarily return a
@@ -1343,10 +1324,11 @@ bool ParseInspectorMessage(const std::string& message,
     // Tracing.start and Tracing.end command responses do not contain one.
     // So, if neither "error" nor "result" keys are present, just provide
     // a blank result dictionary.
-    if (message_dict->GetDictionary("result", &unscoped_result)) {
+    if (base::Value::Dict* unscoped_result = message_dict->FindDict("result")) {
       command_response->result = base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(unscoped_result->Clone()));
-    } else if (message_dict->GetDictionary("error", &unscoped_error)) {
+          base::Value::ToUniquePtrValue(base::Value(unscoped_result->Clone())));
+    } else if (base::Value::Dict* unscoped_error =
+                   message_dict->FindDict("error")) {
       base::JSONWriter::Write(*unscoped_error, &command_response->error);
     } else {
       command_response->result = std::make_unique<base::DictionaryValue>();
@@ -1359,12 +1341,12 @@ bool ParseInspectorMessage(const std::string& message,
 Status ParseInspectorError(const std::string& error_json) {
   std::unique_ptr<base::Value> error =
       base::JSONReader::ReadDeprecated(error_json);
-  base::DictionaryValue* error_dict;
-  if (!error || !error->GetAsDictionary(&error_dict))
+  base::Value::Dict* error_dict = error ? error->GetIfDict() : nullptr;
+  if (!error_dict)
     return Status(kUnknownError, "inspector error with no error message");
 
-  absl::optional<int> maybe_code = error_dict->FindIntKey("code");
-  std::string* maybe_message = error_dict->FindStringKey("message");
+  absl::optional<int> maybe_code = error_dict->FindInt("code");
+  std::string* maybe_message = error_dict->FindString("message");
 
   if (maybe_code.has_value()) {
     if (maybe_code.value() == kCdpMethodNotFoundCode) {
@@ -1394,7 +1376,7 @@ Status ParseInspectorError(const std::string& error_json) {
       // we have to rely on the error message content.
       return Status(kNoSuchFrame, error_message);
     }
-    absl::optional<int> error_code = error_dict->FindIntPath("code");
+    absl::optional<int> error_code = error_dict->FindInt("code");
     if (error_code == kInvalidParamsInspectorCode) {
       if (error_message == kNoTargetWithGivenIdError) {
         return Status(kNoSuchWindow, error_message);

@@ -2473,6 +2473,23 @@ void ServiceWorkerGlobalScope::SetIdleDelay(base::TimeDelta delay) {
   event_queue_->SetIdleDelay(delay);
 }
 
+void ServiceWorkerGlobalScope::AddKeepAlive() {
+  DCHECK(IsContextThread());
+  DCHECK(event_queue_);
+
+  // TODO(richardzh): refactor with RAII pattern, as explained in crbug/1399324
+  event_queue_->ResetIdleTimeout();
+}
+
+void ServiceWorkerGlobalScope::ClearKeepAlive() {
+  DCHECK(IsContextThread());
+  DCHECK(event_queue_);
+
+  // TODO(richardzh): refactor with RAII pattern, as explained in crbug/1399324
+  event_queue_->ResetIdleTimeout();
+  event_queue_->CheckEventQueue();
+}
+
 void ServiceWorkerGlobalScope::AddMessageToConsole(
     mojom::blink::ConsoleMessageLevel level,
     const String& message) {
@@ -2610,8 +2627,7 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
     EventTarget* et = EventTarget::Create(ScriptController()->GetScriptState());
     v8::Local<v8::Value> v =
         To<JSBasedEventListener>(e.Callback())->GetEffectiveFunction(*et);
-    if (!v->IsFunction() ||
-        !v.As<v8::Function>()->Experimental_IsNopFunction()) {
+    if (!v.As<v8::Function>()->Experimental_IsNopFunction()) {
       return mojom::blink::ServiceWorkerFetchHandlerType::kNotSkippable;
     }
   }

@@ -2840,6 +2840,9 @@ AXObjectInclusion AXObject::DefaultObjectInclusion(
   return kDefaultBehavior;
 }
 
+// Note: do not rely on the value of this inside of display:none.
+// In practice, it does not matter because nodes in display:none subtrees are
+// marked ignored either way.
 bool AXObject::IsInert() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_inert_;
@@ -2847,8 +2850,6 @@ bool AXObject::IsInert() const {
 
 bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
                                       IgnoredReasons* ignored_reasons) const {
-  // TODO(szager): This method is n^2 -- it recurses into itself via
-  // ComputeIsInert(), and InertRoot() does as well.
   if (style) {
     if (style->IsInert()) {
       if (ignored_reasons) {
@@ -2884,8 +2885,6 @@ bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
       }
       return true;
     } else if (IsBlockedByAriaModalDialog(ignored_reasons)) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXAriaModalDialog));
       return true;
     } else if (const LocalFrame* frame = GetNode()->GetDocument().GetFrame()) {
       // Inert frames don't expose the inertness to the style of their contents,
@@ -2896,44 +2895,16 @@ bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
         return true;
       }
     }
-    return false;
-  }
-
-  // Either GetNode() is null, or it's locked by content-visibility, or we
-  // failed to obtain a ComputedStyle. Make a guess iterating the ancestors.
-  if (const AXObject* ax_inert_root = InertRoot()) {
-    if (ignored_reasons) {
-      if (ax_inert_root == this) {
-        ignored_reasons->push_back(IgnoredReason(kAXInertElement));
-      } else {
-        ignored_reasons->push_back(
-            IgnoredReason(kAXInertSubtree, ax_inert_root));
-      }
-    }
-    return true;
-  } else if (IsBlockedByAriaModalDialog(ignored_reasons)) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXAriaModalDialog));
-    return true;
-  } else if (GetNode()) {
-    if (const LocalFrame* frame = GetNode()->GetDocument().GetFrame()) {
-      // Inert frames don't expose the inertness to the style of their contents,
-      // but accessibility should consider them inert anyways.
-      if (frame->IsInert()) {
-        if (ignored_reasons)
-          ignored_reasons->push_back(IgnoredReason(kAXInertSubtree));
-        return true;
-      }
+  } else {
+    // Either GetNode() is null, or it's locked by content-visibility, or we
+    // failed to obtain a ComputedStyle. Make a guess iterating the ancestors.
+    AXObject* parent = ParentObject();
+    if (parent && parent->IsInert()) {
+      if (ignored_reasons)
+        parent->ComputeIsInert(ignored_reasons);
+      return true;
     }
   }
-
-  AXObject* parent = ParentObject();
-  if (parent && parent->IsInert()) {
-    if (ignored_reasons)
-      parent->ComputeIsInert(ignored_reasons);
-    return true;
-  }
-
   return false;
 }
 
@@ -3034,8 +3005,6 @@ const AXObject* AXObject::InertRoot() const {
   DCHECK(object);
 
   Node* node = object->GetNode();
-  if (!node)
-    return nullptr;
   auto* element = DynamicTo<Element>(node);
   if (!element)
     element = FlatTreeTraversal::ParentElement(*node);
@@ -3541,6 +3510,10 @@ bool AXObject::ComputeCanSetFocusAttribute() const {
   if (are_cached_attributes_up_to_date ? cached_is_inert_ : ComputeIsInert())
     return false;
 
+  // NOT focusable: disabled child tree owners (no content area).
+  if (IsChildTreeOwner())
+    return !IsDisabled();
+
   // NOT focusable: disabled form controls.
   if (IsDisabledFormControl(elem))
     return false;
@@ -3854,6 +3827,14 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
   if (!node)
     return nullptr;
 
+#if DCHECK_IS_ON()
+  DCHECK(GetDocument());
+  DCHECK(GetDocument()->Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean)
+      << "Unclean document at lifecycle "
+      << GetDocument()->Lifecycle().ToString();
+#endif
+
   // content-visibility:hidden or content-visibility: auto.
   if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(node))
     return nullptr;
@@ -3862,7 +3843,13 @@ const ComputedStyle* AXObject::GetComputedStyle() const {
   if (GetLayoutObject())
     return GetLayoutObject()->Style();
 
-  return node->GetComputedStyle();
+  // No layout object: if possible, use EnsureComputedStyle().
+  // Cannot call EnsureComputedStyle() here because we may be in post lifecycle
+  // steps, and EnsureComputedStyle() can cause a style recalc which is not
+  // allowed at that time (enforced by DCHECK).
+  // TODO(szager) Figure out how to make this code cleaner.
+  return GetDocument()->InPostLifecycleSteps() ? node->GetComputedStyle()
+                                               : node->EnsureComputedStyle();
 }
 
 // There are 4 ways to use CSS to hide something:
@@ -3899,12 +3886,11 @@ bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
 
   // content-visibility:hidden or content-visibility: auto.
   if (DisplayLockUtilities::IsDisplayLockedPreventingPaint(node)) {
-    // Ensure contents of head, style and script are never exposed.
-    // Note: an AXObject is created for <title> to gather the document's name.
+    // Ensure contents of head, style and script are not exposed when
+    // display-locked --the only time they are ever exposed is if author
+    // explicitly makes them visible.
     DCHECK(!Traversal<SVGStyleElement>::FirstAncestorOrSelf(*node)) << node;
-    DCHECK(!Traversal<HTMLHeadElement>::FirstAncestorOrSelf(*node) ||
-           IsA<HTMLTitleElement>(node))
-        << node;
+    DCHECK(!Traversal<HTMLHeadElement>::FirstAncestorOrSelf(*node)) << node;
     DCHECK(!Traversal<HTMLStyleElement>::FirstAncestorOrSelf(*node)) << node;
     DCHECK(!Traversal<HTMLScriptElement>::FirstAncestorOrSelf(*node)) << node;
 
@@ -5962,6 +5948,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kStopDuckingMedia:
     case ax::mojom::blink::Action::kSuspendMedia:
     case ax::mojom::blink::Action::kLongClick:
+    case ax::mojom::blink::Action::kScrollToPositionAtRowColumn:
       return false;
   }
 }
@@ -6270,11 +6257,8 @@ bool AXObject::IsFrame(const Node* node) {
   switch (frame_owner->OwnerType()) {
     case FrameOwnerElementType::kIframe:
     case FrameOwnerElementType::kFrame:
-      return true;
     case FrameOwnerElementType::kFencedframe:
-      // Shadow DOM <fencedframe>s have an <iframe> child, which will be the
-      // child tree owner.
-      return !blink::features::IsFencedFramesShadowDOMBased();
+      return true;
     case FrameOwnerElementType::kObject:
     case FrameOwnerElementType::kEmbed:
     case FrameOwnerElementType::kPortal:
@@ -6656,10 +6640,16 @@ ax::mojom::blink::Role AXObject::ButtonRoleType() const {
   // http://www.w3.org/TR/wai-aria/states_and_properties#aria-pressed
   if (AriaPressedIsPresent())
     return ax::mojom::blink::Role::kToggleButton;
-  if (HasPopup() != ax::mojom::blink::HasPopup::kFalse)
+
+  // If aria-haspopup is present and is not "dialog", expose as a popup button,
+  // which is exposed in MSAA/IA2 with a role of button menu. Note that this is
+  // not done for dialog because screen readers use the button menu role as a
+  // tip to turn off the virtual buffer mode.
+  // Here is the GitHub issue -- ARIA WG is working to update the spec to match.
+  if (HasPopup() != ax::mojom::blink::HasPopup::kFalse &&
+      HasPopup() != ax::mojom::blink::HasPopup::kDialog) {
     return ax::mojom::blink::Role::kPopUpButton;
-  // We don't contemplate RadioButtonRole, as it depends on the input
-  // type.
+  }
 
   return ax::mojom::blink::Role::kButton;
 }
@@ -6804,7 +6794,7 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
       // ax_enum, and a ToString() in ax_enum_utils, as well as move out of
       // String IgnoredReasonName(AXIgnoredReason reason) in
       // inspector_type_builder_helper.cc.
-      if (!cached_values_only) {
+      if (!cached_values_only && !IsDetached()) {
         AXObject::IgnoredReasons reasons;
         ComputeAccessibilityIsIgnored(&reasons);
         string_builder = string_builder + GetIgnoredReasonsDebugString(reasons);

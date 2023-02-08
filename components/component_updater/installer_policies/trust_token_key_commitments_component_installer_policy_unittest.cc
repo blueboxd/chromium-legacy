@@ -44,7 +44,7 @@ class TrustTokenKeyCommitmentsComponentInstallerTest : public ::testing::Test {
 TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest,
        LoadsCommitmentsFromOverriddenPath) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(network::features::kTrustTokens);
+  scoped_list.InitAndEnableFeature(network::features::kPrivateStateTokens);
 
   base::SequenceCheckerImpl checker;
 
@@ -72,7 +72,7 @@ TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest,
   // The |component_install_dir_.GetPath()| should be ignored in favor of the
   // separate path we provide through the switch.
   policy->ComponentReady(base::Version(), component_install_dir_.GetPath(),
-                         base::Value(base::Value::Type::DICTIONARY));
+                         base::Value::Dict());
 
   run_loop.Run();
 
@@ -81,7 +81,7 @@ TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest,
 
 TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest, LoadsCommitments) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(network::features::kTrustTokens);
+  scoped_list.InitAndEnableFeature(network::features::kPrivateStateTokens);
 
   base::SequenceCheckerImpl checker;
 
@@ -102,7 +102,7 @@ TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest, LoadsCommitments) {
       expectation));
 
   policy->ComponentReady(base::Version(), component_install_dir_.GetPath(),
-                         base::Value(base::Value::Type::DICTIONARY));
+                         base::Value::Dict());
 
   run_loop.Run();
 }

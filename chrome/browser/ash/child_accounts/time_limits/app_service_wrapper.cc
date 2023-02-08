@@ -14,17 +14,15 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_utils.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/instance_update.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -100,15 +98,9 @@ void AppServiceWrapper::ResumeApp(const AppId& app_id) {
 }
 
 void AppServiceWrapper::LaunchApp(const std::string& app_service_id) {
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    GetAppProxy()->Launch(
-        app_service_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls,
-        std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
-  } else {
-    GetAppProxy()->Launch(app_service_id, ui::EF_NONE,
-                          apps::mojom::LaunchSource::kFromParentalControls,
-                          apps::MakeWindowInfo(display::kDefaultDisplayId));
-  }
+  GetAppProxy()->Launch(
+      app_service_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls,
+      std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
 }
 
 std::vector<AppId> AppServiceWrapper::GetInstalledApps() const {

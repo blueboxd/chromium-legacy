@@ -58,8 +58,6 @@ class PasswordCheckManager
     std::u16string display_origin;
     std::string package_name;
     std::string change_password_url;
-    bool has_startable_script = false;
-    bool has_auto_change_button = false;
   };
 
   // `observer` must outlive `this`.
@@ -141,7 +139,7 @@ class PasswordCheckManager
 
     // Increments the counts corresponding to `password`. Intended to be called
     // for each credential that is passed to the bulk check.
-    void IncrementCounts(const password_manager::PasswordForm& password);
+    void IncrementCounts(const password_manager::CredentialUIEntry& password);
 
     // Updates the counts after a `credential` has been processed by the bulk
     // check.
@@ -164,9 +162,7 @@ class PasswordCheckManager
   };
 
   // password_manager::SavedPasswordsPresenter::Observer:
-  void OnSavedPasswordsChanged(
-      password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
-      override;
+  void OnSavedPasswordsChanged() override;
 
   // InsecureCredentialsManager::Observer
   void OnInsecureCredentialsChanged() override;
@@ -194,8 +190,8 @@ class PasswordCheckManager
   // in the account if the quota limit was reached.
   bool CanUseAccountCheck() const;
 
-  // Returns true if the password scripts fetching (kPasswordScriptsFetching or
-  // kPasswordDomainCapabilitiesFetching) is enabled. To have precise metrics
+  // Returns true if the password scripts fetching (i.e.
+  // `kPasswordDomainCapabilitiesFetching`) is enabled. To have precise metrics
   // about user actions on credentials with scripts, scripts are fetched only
   // for the users who can start a script, i.e. sync users.
   bool ShouldFetchPasswordScripts() const;

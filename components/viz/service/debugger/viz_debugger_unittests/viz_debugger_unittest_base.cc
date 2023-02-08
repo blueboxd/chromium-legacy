@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/debugger/viz_debugger_unittests/viz_debugger_unittest_base.h"
+
 #include <algorithm>
 #include <string>
+
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #if VIZ_DEBUGGER_IS_ON()
@@ -57,26 +60,26 @@ VisualDebuggerTestBase::VisualDebuggerTestBase() = default;
 VisualDebuggerTestBase::~VisualDebuggerTestBase() = default;
 
 void VisualDebuggerTestBase::SetFilter(std::vector<TestFilter> filters) {
-  base::DictionaryValue filters_json;
-  base::ListValue filters_list;
+  base::Value::Dict filters_json;
+  base::Value::List filters_list;
   for (auto&& each : filters) {
-    base::DictionaryValue full_filter;
-    base::DictionaryValue selector;
+    base::Value::Dict full_filter;
+    base::Value::Dict selector;
     if (!each.file.empty())
-      selector.SetString("file", each.file);
+      selector.Set("file", each.file);
 
     if (!each.func.empty())
-      selector.SetString("func", each.func);
+      selector.Set("func", each.func);
 
-    selector.SetString("anno", each.anno);
+    selector.Set("anno", each.anno);
 
-    full_filter.SetKey("selector", std::move(selector));
-    full_filter.SetBoolean("active", each.active);
-    full_filter.SetBoolean("enabled", each.enabled);
+    full_filter.Set("selector", std::move(selector));
+    full_filter.Set("active", each.active);
+    full_filter.Set("enabled", each.enabled);
     filters_list.Append(std::move(full_filter));
   }
-  filters_json.SetKey("filters", std::move(filters_list));
-  GetInternal()->FilterDebugStream(std::move(filters_json));
+  filters_json.Set("filters", std::move(filters_list));
+  GetInternal()->FilterDebugStream(base::Value(std::move(filters_json)));
   GetInternal()->GetRWLock()->WriteLock();
   GetInternal()->UpdateFilters();
   GetInternal()->GetRWLock()->WriteUnLock();
@@ -213,15 +216,16 @@ void VisualDebuggerTestBase::GetFrameData(bool clear_cache) {
       base::Value* buffer_info = buffer_dict->FindKey("buffer");
       EXPECT_TRUE(buffer_info->is_list());
       VizDebuggerInternal::BufferInfo buff;
-      buff.width = width;
-      buff.height = height;
-      buff.buffer.resize(width * height);
+      buff.bitmap.setInfo(SkImageInfo::Make(
+          width, height, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType));
+      buff.bitmap.allocPixels();
       for (size_t i = 0; i < buffer_info->GetList().size() / 4; i++) {
         uint8_t temp1 = buffer_info->GetList()[i * 4].GetInt();
         uint8_t temp2 = buffer_info->GetList()[i * 4 + 1].GetInt();
         uint8_t temp3 = buffer_info->GetList()[i * 4 + 2].GetInt();
         uint8_t temp4 = buffer_info->GetList()[i * 4 + 3].GetInt();
-        buff.buffer[i] = {temp1, temp2, temp3, temp4};
+        *buff.bitmap.getAddr32(i % width, i / width) =
+            SkColorSetARGB(temp4, temp1, temp2, temp3);
       }
       int id;
       base::StringToInt(itr->first, &id);

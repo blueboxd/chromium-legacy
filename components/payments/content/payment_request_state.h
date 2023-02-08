@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "components/payments/content/initialization_task.h"
 #include "components/payments/content/payment_app_factory.h"
+#include "components/payments/content/payment_app_service.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
@@ -29,7 +30,6 @@
 namespace autofill {
 class AddressNormalizer;
 class AutofillProfile;
-class CreditCard;
 class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
@@ -99,8 +99,8 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
                               const std::string& error_message,
                               AppCreationFailureReason error_reason)>;
 
-  // The `spec` parameter should not be null.
   PaymentRequestState(
+      std::unique_ptr<PaymentAppService> payment_app_service,
       content::RenderFrameHost* initiator_render_frame_host,
       const GURL& top_level_origin,
       const GURL& frame_origin,
@@ -137,18 +137,16 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
       const override;
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
-  const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
-  bool IsRequestedAutofillDataAvailable() override;
   bool IsOffTheRecord() const override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(
       const std::string& error_message,
       AppCreationFailureReason reason =
           AppCreationFailureReason::UNKNOWN) override;
-  bool SkipCreatingNativePaymentApps() const override;
   void OnDoneCreatingPaymentApps() override;
   void SetCanMakePaymentEvenWithoutApps() override;
   base::WeakPtr<CSPChecker> GetCSPChecker() override;
+  void SetOptOutOffered() override;
 
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
@@ -230,11 +228,6 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   const std::vector<std::unique_ptr<PaymentApp>>& available_apps() {
     return available_apps_;
   }
-
-  // Creates and adds an AutofillPaymentApp, which makes a copy of |card|.
-  // |selected| indicates if the newly-created app should be selected, after
-  // which observers will be notified.
-  void AddAutofillPaymentApp(bool selected, const autofill::CreditCard& card);
 
   // Creates and adds an AutofillProfile as a shipping profile, which makes a
   // copy of |profile|. |selected| indicates if the newly-created shipping
@@ -340,6 +333,8 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   bool GetCanMakePaymentValue() const;
   bool GetHasEnrolledInstrumentValue() const;
 
+  const std::unique_ptr<PaymentAppService> payment_app_service_;
+
   content::GlobalRenderFrameHostId frame_routing_id_;
   const GURL top_origin_;
   const GURL frame_origin_;
@@ -350,11 +345,6 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // information) and payment data (either autofill or service worker) are
   // complete, valid, and selected.
   bool is_ready_to_pay_ = false;
-
-  // True when the requested autofill data (shipping address and/or contact
-  // information) is complete and valid, even if not selected. This variable is
-  // not affected by payment apps.
-  bool is_requested_autofill_data_available_ = true;
 
   // Whether getting all available apps is finished.
   bool get_all_apps_finished_ = false;
@@ -409,7 +399,6 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   std::vector<autofill::AutofillProfile*> shipping_profiles_;
   std::vector<autofill::AutofillProfile*> contact_profiles_;
 
-  // Credit cards are directly owned by the apps in this list.
   std::vector<std::unique_ptr<PaymentApp>> available_apps_;
 
   base::WeakPtr<ContentPaymentRequestDelegate> payment_request_delegate_;

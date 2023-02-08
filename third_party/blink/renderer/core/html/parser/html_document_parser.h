@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_DOCUMENT_PARSER_H_
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -35,12 +36,15 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/parser_content_policy.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/html/nesting_level_incrementer.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser_state.h"
 #include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_reentry_permit.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_token_producer.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
@@ -59,7 +63,6 @@ class BackgroundHTMLScanner;
 class Document;
 class DocumentFragment;
 class Element;
-class FetchBatchScope;
 class HTMLDocument;
 class HTMLParserMetrics;
 class HTMLParserScriptRunner;
@@ -83,8 +86,6 @@ size_t CORE_EXPORT GetDiscardedTokenCountForTesting();
 
 class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
                                        private HTMLParserScriptRunnerHost {
-  friend FetchBatchScope;
-
  public:
   HTMLDocumentParser(HTMLDocument&,
                      ParserSynchronizationPolicy,
@@ -160,7 +161,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool HasInsertionPoint() final;
   void PrepareToStopParsing() final;
   void StopParsing() final;
-  bool IsPaused() const;
+  ALWAYS_INLINE bool IsPaused() const {
+    return IsWaitingForScripts() || task_runner_state_->WaitingForStylesheets();
+  }
   bool IsWaitingForScripts() const final;
   bool IsExecutingScript() const final;
   void ExecuteScriptsWaitingForResources() final;
@@ -183,7 +186,23 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // This function may end up running script. If it does,
   // `time_executing_script` is incremented by the amount of time it takes to
   // execute script.
-  NextTokenStatus CanTakeNextToken(base::TimeDelta& time_executing_script);
+  ALWAYS_INLINE NextTokenStatus
+  CanTakeNextToken(base::TimeDelta& time_executing_script) {
+    if (IsStopped())
+      return kNoTokens;
+
+    if (!tree_builder_->HasParserBlockingScript())
+      return IsPaused() ? kNoTokens : kHaveTokens;
+
+    // If we're paused waiting for a script, we try to execute scripts before
+    // continuing.
+    {
+      base::ElapsedTimer timer;
+      RunScriptsForPausedTreeBuilder();
+      time_executing_script += timer.Elapsed();
+    }
+    return (IsStopped() || IsPaused()) ? kNoTokens : kHaveTokensAfterScript;
+  }
   bool PumpTokenizer();
   void PumpTokenizerIfPossible();
   void DeferredPumpTokenizerIfPossible(bool from_finish_append,
@@ -282,20 +301,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   // Set to true if PumpTokenizer() was called at least once.
   bool did_pump_tokenizer_ = false;
-
-  // Handle the ref counting of nested batch fetches. Usually the batching is
-  // handled by a scope-lock for the duration of the batch (and can be nested
-  // within other batches).
-  //
-  // When the parser gets detached from the document, if it happens during a
-  // scope-locked batch operation, the scope-based batching will not be able
-  // to end the batches properly. By keeping track of how deep the request
-  // batching is, the outstanding batches can be cleared outside of the scope
-  // lock at the time that the document is detached from the parser.
-  void StartFetchBatch();
-  void EndFetchBatch();
-  void FlushFetchBatch();
-  uint32_t pending_batch_operations_ = 0u;
 };
 
 }  // namespace blink

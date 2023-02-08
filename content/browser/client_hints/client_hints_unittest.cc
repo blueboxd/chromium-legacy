@@ -4,6 +4,7 @@
 
 #include "content/browser/client_hints/client_hints.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -15,6 +16,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "net/http/http_response_headers.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
@@ -91,7 +93,8 @@ class ClientHintsTest : public RenderViewHostImplTestHarness {
         /*document_token=*/blink::DocumentToken(),
         /*frame_policy=*/blink::FramePolicy(),
         /*frame_owner_properties=*/blink::mojom::FrameOwnerProperties(),
-        /*owner_type=*/blink::FrameOwnerElementType::kIframe);
+        /*owner_type=*/blink::FrameOwnerElementType::kIframe,
+        /*document_ukm_source_id=*/ukm::kInvalidSourceId);
   }
 
   absl::optional<ClientHintsVector> ParseAndPersist(
@@ -282,7 +285,7 @@ TEST_F(ClientHintsTest, IntegrationTestsOnParseLookUp) {
     std::string description;
     absl::optional<std::string> origin_trial_token;
     std::string accept_ch_str;
-    FrameTreeNode* frame_tree_node;
+    raw_ptr<FrameTreeNode> frame_tree_node;
     absl::optional<ClientHintsVector> expect_hints;
     ClientHintsVector expect_commit_hints;
   } tests[] = {

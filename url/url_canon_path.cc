@@ -255,7 +255,7 @@ bool DoPartialPathInternal(const CHAR* spec,
                            const Component& path,
                            size_t path_begin_in_output,
                            CanonOutput* output) {
-  if (!path.is_nonempty())
+  if (path.is_empty())
     return true;
 
   size_t end = static_cast<size_t>(path.end());
@@ -407,7 +407,7 @@ bool DoPath(const CHAR* spec,
             Component* out_path) {
   bool success = true;
   out_path->begin = output->length();
-  if (path.len > 0) {
+  if (path.is_nonempty()) {
     // Write out an initial slash if the input has none. If we just parse a URL
     // and then canonicalize it, it will of course have a slash already. This
     // check is for the replacement and relative URL resolving cases of file

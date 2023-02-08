@@ -11,7 +11,6 @@
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "build/chromeos_buildflags.h"
 #include "components/exo/wayland/server_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/devices/haptic_touchpad_effects.h"
@@ -29,8 +28,7 @@ class WaylandTouchpadHapticsDelegate {
   ~WaylandTouchpadHapticsDelegate() = default;
 
   void UpdateTouchpadHapticsState() {
-    if (!base::FeatureList::IsEnabled(
-            chromeos::features::kExoHapticFeedbackSupport))
+    if (!base::FeatureList::IsEnabled(ash::features::kExoHapticFeedbackSupport))
       return;
 
     ui::InputController* controller =
@@ -76,8 +74,7 @@ void touchpad_haptics_play(wl_client* client,
                            wl_resource* resource,
                            uint32_t effect,
                            int32_t strength) {
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kExoHapticFeedbackSupport))
+  if (!base::FeatureList::IsEnabled(ash::features::kExoHapticFeedbackSupport))
     return;
   GetUserDataAs<WaylandTouchpadHapticsDelegate>(resource)->Play(effect,
                                                                 strength);

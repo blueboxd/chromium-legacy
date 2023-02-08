@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Tillåt webbplatser att använda enhetens rörelsesensorer (rekommenderas)</translation>
 <translation id="5050380848339752099">Data på den här webbplatsen delas med en app utanför inkognitoläget.</translation>
 <translation id="5063480226653192405">Användning</translation>
-<translation id="5082281938627763039">Cookies och annan webbplatsdata för <ph name="FPS_MEMBER" /> och webbplatser i gruppen med webbplatser som tillhör <ph name="FPS_OWNER" /> raderas</translation>
 <translation id="5091013926750941408">Mobil webbplats</translation>
 <translation id="509133520954049755">Begär datorvy</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5301954838959518834">Ok, jag förstår</translation>
-<translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5335288049665977812">Tillåt att JavaScript körs på webbplatser (rekommenderas)</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Delar skärmen</translation>
 <translation id="5922967540311291836">Blockera cookies från tredje part</translation>
 <translation id="5939518447894949180">Återställ</translation>
+<translation id="5968921426641056619">Ange webbadress</translation>
 <translation id="5975083100439434680">Zooma ut</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Styr webbplatsens åtkomst till enheten</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> och <ph name="PERMISSION_2" /> tillåts</translation>
 <translation id="7302486331832100261">Du brukar blockera aviseringar. Tryck på Info om du vill tillåta dem.</translation>
+<translation id="7366415735885268578">Lägg till en webbplats</translation>
 <translation id="7383715096023715447">Inställningar för <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Fråga först</translation>
 <translation id="7423538860840206698">Läsbehörighet till Urklipp har nekats</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8394832520002899662">Återgå till webbplatsen genom att trycka här</translation>
 <translation id="8409345997656833551">Bli meddelad om det finns en förenklad vy av en artikel</translation>
+<translation id="8423565414844018592">Textskalning är inställd på <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8444433999583714703">Om du vill ge <ph name="APP_NAME" /> åtkomst till din plats måste du även aktivera plats i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC är inte aktiverat på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Förhindra att webbplatser visar och ändrar information på NFC-enheter</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blockera cookies för en enskild webbplats.</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Glöm</translation>

@@ -9,11 +9,19 @@
 
 import {InputController} from '../input_controller.js';
 import {LocaleInfo} from '../locale_info.js';
+import {DeletePrevSentMacro} from '../macros/delete_prev_sent_macro.js';
 import {InputTextViewMacro} from '../macros/input_text_view_macro.js';
 import {ListCommandsMacro} from '../macros/list_commands_macro.js';
 import {Macro} from '../macros/macro.js';
 import {MacroName} from '../macros/macro_names.js';
+import {NavNextSentMacro, NavPrevSentMacro} from '../macros/nav_sent_macro.js';
+import {RepeatMacro} from '../macros/repeat_macro.js';
 import * as RepeatableKeyPressMacro from '../macros/repeatable_key_press_macro.js';
+import {SmartDeletePhraseMacro} from '../macros/smart_delete_phrase_macro.js';
+import {SmartInsertBeforeMacro} from '../macros/smart_insert_before_macro.js';
+import {SmartReplacePhraseMacro} from '../macros/smart_replace_phrase_macro.js';
+import {SmartSelectBetweenMacro} from '../macros/smart_select_between_macro.js';
+import {StopListeningMacro} from '../macros/stop_listening_macro.js';
 
 import {ParseStrategy} from './parse_strategy.js';
 import * as PumpkinConstants from './pumpkin/pumpkin_constants.js';
@@ -23,11 +31,6 @@ export class PumpkinParseStrategy extends ParseStrategy {
   /** @param {!InputController} inputController */
   constructor(inputController) {
     super(inputController);
-    /**
-     * Whether or not the feature flag gating this object's logic is enabled.
-     * @private {boolean}
-     */
-    this.featureEnabled_ = false;
     /** @private {?PumpkinConstants.PumpkinData} */
     this.pumpkinData_ = null;
     /** @private {boolean} */
@@ -46,21 +49,16 @@ export class PumpkinParseStrategy extends ParseStrategy {
 
   /** @private */
   init_() {
-    const pumpkinFeature = chrome.accessibilityPrivate.AccessibilityFeature
-                               .DICTATION_PUMPKIN_PARSING;
-    chrome.accessibilityPrivate.isFeatureEnabled(pumpkinFeature, enabled => {
-      this.featureEnabled_ = enabled;
-      this.refreshLocale_();
-      if (!enabled || !this.locale_) {
-        return;
-      }
+    this.refreshLocale_();
+    if (!this.locale_) {
+      return;
+    }
 
-      this.requestedPumpkinInstall_ = true;
-      chrome.accessibilityPrivate.installPumpkinForDictation(data => {
-        // TODO(crbug.comg/1258190): Consider retrying installation at a later
-        // time if it failed.
-        this.onPumpkinInstalled_(data);
-      });
+    this.requestedPumpkinInstall_ = true;
+    chrome.accessibilityPrivate.installPumpkinForDictation(data => {
+      // TODO(crbug.comg/1258190): Consider retrying installation at a later
+      // time if it failed.
+      this.onPumpkinInstalled_(data);
     });
   }
 
@@ -69,10 +67,8 @@ export class PumpkinParseStrategy extends ParseStrategy {
    * @private
    */
   onPumpkinInstalled_(data) {
-    if (!this.featureEnabled_ || !data) {
-      console.warn(
-          'Pumpkin installed, but either data is empty or feature ' +
-          'flag is not enabled');
+    if (!data) {
+      console.warn('Pumpkin installed, but data is empty');
       return;
     }
 
@@ -168,6 +164,8 @@ export class PumpkinParseStrategy extends ParseStrategy {
     let repeat = 1;
     let text = '';
     let tag = '';
+    let beginPhrase = '';
+    let endPhrase = '';
     for (let i = 0; i < numArgs; i++) {
       const argument = hypothesis.actionArgumentList[i];
       // See Variable Argument Placeholders in voiceaccess.patterns_template.
@@ -180,12 +178,17 @@ export class PumpkinParseStrategy extends ParseStrategy {
           argument.name ===
           PumpkinConstants.HypothesisArgumentName.OPEN_ENDED_TEXT) {
         text = argument.value;
+      } else if (
+          argument.name ===
+          PumpkinConstants.HypothesisArgumentName.BEGIN_PHRASE) {
+        beginPhrase = argument.value;
+      } else if (
+          argument.name ===
+          PumpkinConstants.HypothesisArgumentName.END_PHRASE) {
+        endPhrase = argument.value;
       }
     }
 
-    // TODO(crbug.com/1362842) Add all macros under the DictationMoreCommands
-    // to this switch statement.
-    // TODO(crbug.com/1258190): Add support for new macros here.
     switch (tag) {
       case MacroName.INPUT_TEXT_VIEW:
         return new InputTextViewMacro(text, this.getInputController());
@@ -212,9 +215,51 @@ export class PumpkinParseStrategy extends ParseStrategy {
       case MacroName.SELECT_ALL_TEXT:
         return new RepeatableKeyPressMacro.SelectAllTextMacro();
       case MacroName.UNSELECT_TEXT:
-        return new RepeatableKeyPressMacro.UnselectTextMacro();
+        return new RepeatableKeyPressMacro.UnselectTextMacro(
+            this.getInputController());
       case MacroName.LIST_COMMANDS:
         return new ListCommandsMacro();
+      case MacroName.STOP_LISTENING:
+        return new StopListeningMacro();
+      case MacroName.DELETE_PREV_WORD:
+        return new RepeatableKeyPressMacro.DeletePrevWordMacro(repeat);
+      case MacroName.DELETE_PREV_SENT:
+        return new DeletePrevSentMacro(this.getInputController());
+      case MacroName.NAV_NEXT_WORD:
+        return new RepeatableKeyPressMacro.NavNextWordMacro(repeat);
+      case MacroName.NAV_PREV_WORD:
+        return new RepeatableKeyPressMacro.NavPrevWordMacro(repeat);
+      case MacroName.SMART_DELETE_PHRASE:
+        return new SmartDeletePhraseMacro(this.getInputController(), text);
+      case MacroName.SMART_REPLACE_PHRASE:
+        return new SmartReplacePhraseMacro(
+            this.getInputController(), beginPhrase, text);
+      case MacroName.SMART_INSERT_BEFORE:
+        return new SmartInsertBeforeMacro(
+            this.getInputController(), text, endPhrase);
+      case MacroName.SMART_SELECT_BTWN_INCL:
+        return new SmartSelectBetweenMacro(
+            this.getInputController(), beginPhrase, endPhrase);
+      case MacroName.NAV_NEXT_SENT:
+        return new NavNextSentMacro(this.getInputController());
+      case MacroName.NAV_PREV_SENT:
+        return new NavPrevSentMacro(this.getInputController());
+      case MacroName.DELETE_ALL_TEXT:
+        return new RepeatableKeyPressMacro.DeleteAllText();
+      case MacroName.NAV_START_TEXT:
+        return new RepeatableKeyPressMacro.NavStartText();
+      case MacroName.NAV_END_TEXT:
+        return new RepeatableKeyPressMacro.NavEndText();
+      case MacroName.SELECT_PREV_WORD:
+        return new RepeatableKeyPressMacro.SelectPrevWord(repeat);
+      case MacroName.SELECT_NEXT_WORD:
+        return new RepeatableKeyPressMacro.SelectNextWord(repeat);
+      case MacroName.SELECT_NEXT_CHAR:
+        return new RepeatableKeyPressMacro.SelectNextChar(repeat);
+      case MacroName.SELECT_PREV_CHAR:
+        return new RepeatableKeyPressMacro.SelectPrevChar(repeat);
+      case MacroName.REPEAT:
+        return new RepeatMacro();
       default:
         // Every hypothesis is guaranteed to include a semantic tag due to the
         // way Voice Access set up its grammars. Not all tags are supported in
@@ -294,6 +339,6 @@ export class PumpkinParseStrategy extends ParseStrategy {
 
   /** @override */
   isEnabled() {
-    return this.enabled && this.featureEnabled_;
+    return this.enabled;
   }
 }

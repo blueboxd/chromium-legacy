@@ -51,6 +51,7 @@
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -887,6 +888,8 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
     IssueDisplayRenderingStatsEvent();
     DirectRenderer::SwapFrameData swap_frame_data;
     swap_frame_data.latency_info = std::move(frame.latency_info);
+    swap_frame_data.seq =
+        current_surface_id_.local_surface_id().child_sequence_number();
     swap_frame_data.choreographer_vsync_id = params.choreographer_vsync_id;
     if (frame.top_controls_visible_height.has_value()) {
       swap_frame_data.top_controls_visible_height_changed =
@@ -950,13 +953,21 @@ bool Display::DrawAndSwap(const DrawAndSwapParams& params) {
   return true;
 }
 
-void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
-                                       gfx::GpuFenceHandle release_fence) {
+void Display::DidReceiveSwapBuffersAck(
+    const gpu::SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   // Adding to |pending_presentation_group_timings_| must
   // have been done in DrawAndSwap(), and should not be popped until
   // DidReceiveSwapBuffersAck.
   DCHECK(!pending_presentation_group_timings_.empty());
 
+  if (params.swap_response.result ==
+      gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+    aggregator_->SetFullDamageForSurface(current_surface_id_);
+    damage_tracker_->SetRootSurfaceDamaged();
+  }
+
+  const gfx::SwapTimings& timings = params.swap_response.timings;
   ++last_swap_ack_trace_id_;
   TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap", last_swap_ack_trace_id_,
@@ -967,8 +978,9 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings,
 
   if (overlay_processor_)
     overlay_processor_->OverlayPresentationComplete();
-  if (renderer_)
-    renderer_->SwapBuffersComplete(std::move(release_fence));
+  if (renderer_) {
+    renderer_->SwapBuffersComplete(params, std::move(release_fence));
+  }
 
   DCHECK_GT(pending_swaps_, 0);
   pending_swaps_--;
@@ -1101,19 +1113,13 @@ void Display::AddChildWindowToBrowser(gpu::SurfaceHandle child_window) {
   }
 }
 
-void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
-  aggregator_->SetFullDamageForSurface(current_surface_id_);
-  damage_tracker_->SetRootSurfaceDamaged();
-}
-
 void Display::DidFinishFrame(const BeginFrameAck& ack) {
   for (auto& observer : observers_)
     observer.OnDisplayDidFinishFrame(ack);
 
-  // Prevent de-jelly skew or a delegated ink trail from staying on the screen
+  // Prevent a delegated ink trail from staying on the screen
   // for more than one frame by forcing a new frame to be produced.
-  if (aggregator_->last_frame_had_jelly() ||
-      !renderer_->GetDelegatedInkTrailDamageRect().IsEmpty()) {
+  if (!renderer_->GetDelegatedInkTrailDamageRect().IsEmpty()) {
     scheduler_->SetNeedsOneBeginFrame(true);
   }
 

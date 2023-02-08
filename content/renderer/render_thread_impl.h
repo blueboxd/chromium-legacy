@@ -56,7 +56,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
-#include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
@@ -378,9 +377,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
 
   gfx::ColorSpace GetRenderingColorSpace();
-
-  scoped_refptr<base::SingleThreadTaskRunner>
-  CreateVideoFrameCompositorTaskRunner();
 
   // The time the run loop started for this thread.
   base::TimeTicks run_loop_start_time() const { return run_loop_start_time_; }

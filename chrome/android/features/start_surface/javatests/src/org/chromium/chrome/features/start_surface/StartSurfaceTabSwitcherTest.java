@@ -121,7 +121,7 @@ public class StartSurfaceTabSwitcherTest {
         if (isInstantReturn()) {
             // Assume start surface is shown immediately, and the LayoutStateObserver may miss the
             // first onFinishedShowing event.
-            mCurrentlyActiveLayout = LayoutType.TAB_SWITCHER;
+            mCurrentlyActiveLayout = StartSurfaceTestUtils.getStartSurfaceLayoutType();
         }
 
         mLayoutObserver = new LayoutStateProvider.LayoutStateObserver() {
@@ -146,9 +146,10 @@ public class StartSurfaceTabSwitcherTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1395518")
     public void testShow_SingleAsTabSwitcher() {
         if (mImmediateReturn) {
-            StartSurfaceTestUtils.waitForOverviewVisible(mLayoutChangedCallbackHelper,
+            StartSurfaceTestUtils.waitForStartSurfaceVisible(mLayoutChangedCallbackHelper,
                     mCurrentlyActiveLayout, mActivityTestRule.getActivity());
             if (isInstantReturn()) {
                 // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
@@ -157,18 +158,28 @@ public class StartSurfaceTabSwitcherTest {
             }
             // Single surface is shown as homepage. Clicks "more_tabs" button to get into tab
             // switcher.
-            StartSurfaceTestUtils.clickMoreTabs(mActivityTestRule.getActivity());
+            StartSurfaceTestUtils.clickTabSwitcherButton(mActivityTestRule.getActivity());
         } else {
             TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         }
 
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
-        onViewWaiting(
-                allOf(withParent(withId(R.id.tasks_surface_body)), withId(R.id.tab_list_view)))
+        if (!ChromeFeatureList.sStartSurfaceRefactor.isEnabled()) {
+            onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+
+            // Grid tab switcher surface's height shouldn't be wrap_content. See crbug.com/1368437.
+            ViewGroup gtsSurfaceView = cta.findViewById(R.id.secondary_tasks_surface_view);
+            int surfaceHeight = gtsSurfaceView.getMeasuredHeight();
+            int bodyHeight =
+                    gtsSurfaceView.findViewById(R.id.tasks_surface_body).getMeasuredHeight();
+            Assert.assertEquals(surfaceHeight, bodyHeight);
+        }
+
+        onViewWaiting(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
+                              withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-        LayoutTestUtils.waitForLayout(
-                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING);
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
     }
 
     @Test
@@ -181,7 +192,7 @@ public class StartSurfaceTabSwitcherTest {
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         assertEquals(cta.findViewById(R.id.tab_switcher_title).getVisibility(), View.VISIBLE);
@@ -271,7 +282,7 @@ public class StartSurfaceTabSwitcherTest {
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         onViewWaiting(withId(R.id.logo));
         Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
@@ -285,7 +296,7 @@ public class StartSurfaceTabSwitcherTest {
 
         // Returns to the Start surface.
         StartSurfaceTestUtils.pressHomePageButton(cta);
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         waitForView(allOf(withParent(withId(R.id.carousel_tab_switcher_container)),
                 withId(R.id.tab_list_view)));
 
@@ -334,7 +345,7 @@ public class StartSurfaceTabSwitcherTest {
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         CriteriaHelper.pollUiThread(() -> cta.getLayoutManager() != null);
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         StartSurfaceTestUtils.waitForTabModel(cta);
         onViewWaiting(withId(R.id.logo));
         Tab tab1 = cta.getCurrentTabModel().getTabAt(0);
@@ -354,11 +365,12 @@ public class StartSurfaceTabSwitcherTest {
         }
         // Enter the Tab switcher.
         TabUiTestHelper.enterTabSwitcher(cta);
-        waitForView(allOf(
-                withParent(withId(R.id.secondary_tasks_surface_view)), withId(R.id.tab_list_view)));
+        int parentViewId = TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(cta)
+                ? org.chromium.chrome.R.id.compositor_view_holder
+                : R.id.secondary_tasks_surface_view;
+        waitForView(allOf(withParent(withId(parentViewId)), withId(R.id.tab_list_view)));
 
-        ViewGroup secondaryTaskSurface = cta.findViewById(R.id.secondary_tasks_surface_view);
-        RecyclerView recyclerView = secondaryTaskSurface.findViewById(R.id.tab_list_view);
+        RecyclerView recyclerView = cta.findViewById(parentViewId).findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(() -> 2 == recyclerView.getChildCount());
         // Verifies that the tabs are shown in MRU order: the first card in the Tab switcher is the
         // last created Tab by tapping the MV tile; the second card is the Tab created or restored

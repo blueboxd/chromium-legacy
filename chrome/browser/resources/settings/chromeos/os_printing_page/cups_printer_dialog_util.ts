@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotReached} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {PrinterListEntry} from './cups_printer_types.js';
 import {CupsPrinterInfo, PrinterSetupResult, PrintServerResult} from './cups_printers_browser_proxy.js';
@@ -139,7 +139,6 @@ export function getErrorText(result: PrinterSetupResult): string {
       return loadTimeData.getString('printerAddedPpdUnretrievableMessage');
     default:
       assertNotReached();
-      return '';
   }
 }
 
@@ -156,7 +155,6 @@ export function getPrintServerErrorText(result: PrintServerResult): string {
       return loadTimeData.getString('printServerConfigurationErrorMessage');
     default:
       assertNotReached();
-      return '';
   }
 }
 

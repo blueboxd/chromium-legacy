@@ -4,8 +4,10 @@
 
 package org.chromium.chromecast.base;
 
-import org.chromium.base.Consumer;
-import org.chromium.base.Function;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Interface for Observable state.
@@ -116,6 +118,13 @@ public abstract class Observable<T> {
      */
     public final Observable<T> filter(Predicate<? super T> predicate) {
         return flatMap(t -> predicate.test(t) ? just(t) : empty());
+    }
+
+    /**
+     * Returns an Observable with its type mapped to Unit.
+     */
+    public final Observable<Unit> opaque() {
+        return map(x -> Unit.unit());
     }
 
     /**

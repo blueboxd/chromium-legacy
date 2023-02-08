@@ -29,7 +29,9 @@
 #include "content/public/test/browser_test.h"
 
 namespace ash {
+
 namespace {
+
 constexpr char kThemeSelectionId[] = "theme-selection";
 constexpr char kLightThemeButton[] = "lightThemeButton";
 constexpr char kDarkThemeButton[] = "darkThemeButton";
@@ -43,6 +45,7 @@ const test::UIPath kScreenSubtitleClamshellPath = {
     kThemeSelectionId, "theme-selection-subtitle-clamshell"};
 const test::UIPath kScreenSubtitleTabletPath = {
     kThemeSelectionId, "theme-selection-subtitle-tablet"};
+
 }  // namespace
 
 class ThemeSelectionScreenTest
@@ -81,8 +84,8 @@ class ThemeSelectionScreenTest
   }
 
   void setTabletMode(bool enabled) {
-    ash::TabletMode::Waiter waiter(enabled);
-    ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enabled);
+    TabletMode::Waiter waiter(enabled);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(enabled);
     waiter.Wait();
   }
 
@@ -127,12 +130,12 @@ IN_PROC_BROWSER_TEST_P(ThemeSelectionScreenTest, SelectTheme) {
   if (selectedOption == kDarkThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetBoolean(prefs::kDarkModeEnabled), true);
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 0);
-    EXPECT_TRUE(ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
+    EXPECT_TRUE(DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
 
   } else if (selectedOption == kLightThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetBoolean(prefs::kDarkModeEnabled), false);
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 0);
-    EXPECT_FALSE(ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
+    EXPECT_FALSE(DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
 
   } else if (selectedOption == kAutoThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 1);
@@ -170,7 +173,8 @@ class ThemeSelectionScreenResumeTest
       public ::testing::WithParamInterface<test::UIPath> {
  protected:
   DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+      &mixin_host_,
+      DeviceStateMixin::State::OOBE_COMPLETED_PERMANENTLY_UNOWNED};
   FakeGaiaMixin gaia_mixin_{&mixin_host_};
   LoginManagerMixin login_mixin_{&mixin_host_, LoginManagerMixin::UserList(),
                                  &gaia_mixin_};
@@ -196,12 +200,12 @@ IN_PROC_BROWSER_TEST_P(ThemeSelectionScreenResumeTest, PRE_ResumedScreen) {
   if (selectedOption == kDarkThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetBoolean(prefs::kDarkModeEnabled), true);
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 0);
-    EXPECT_TRUE(ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
+    EXPECT_TRUE(DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
 
   } else if (selectedOption == kLightThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetBoolean(prefs::kDarkModeEnabled), false);
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 0);
-    EXPECT_FALSE(ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
+    EXPECT_FALSE(DarkLightModeControllerImpl::Get()->IsDarkModeEnabled());
 
   } else if (selectedOption == kAutoThemeButton) {
     EXPECT_EQ(profile->GetPrefs()->GetInteger(prefs::kDarkModeScheduleType), 1);

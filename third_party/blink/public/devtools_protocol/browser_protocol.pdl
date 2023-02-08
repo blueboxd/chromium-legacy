@@ -482,6 +482,7 @@ experimental domain Audits
       ExcludeInvalidSameParty
       ExcludeSamePartyCrossPartyContext
       ExcludeDomainNonASCII
+      ExcludeThirdPartyCookieBlockedInFirstPartySet
 
   type CookieWarningReason extends string
     enum
@@ -837,14 +838,14 @@ experimental domain Audits
     enum
       ShouldEmbargo
       TooManyRequests
-      ManifestListHttpNotFound
-      ManifestListNoResponse
-      ManifestListInvalidResponse
-      ManifestNotInManifestList
-      ManifestListTooBig
-      ManifestHttpNotFound
-      ManifestNoResponse
-      ManifestInvalidResponse
+      WellKnownHttpNotFound
+      WellKnownNoResponse
+      WellKnownInvalidResponse
+      ConfigNotInWellKnown
+      WellKnownTooBig
+      ConfigHttpNotFound
+      ConfigNoResponse
+      ConfigInvalidResponse
       ClientMetadataHttpNotFound
       ClientMetadataNoResponse
       ClientMetadataInvalidResponse
@@ -1030,6 +1031,8 @@ experimental domain BackgroundService
       string instanceId
       # A list of event-specific information.
       array of EventMetadata eventMetadata
+      # Storage key this event belongs to.
+      string storageKey
 
   # Called with all existing backgroundServiceEvents when enabled, and all new
   # events afterwards if enabled and recording.
@@ -1097,6 +1100,7 @@ domain Browser
     enum
       granted
       denied
+      prompt
 
   # Definition of PermissionDescriptor defined in the Permissions API:
   # https://w3c.github.io/permissions/#dictdef-permissiondescriptor.
@@ -2065,6 +2069,8 @@ experimental domain CacheStorage
       CacheId cacheId
       # Security origin of the cache.
       string securityOrigin
+      # Storage key of the cache.
+      string storageKey
       # The name of the cache.
       string cacheName
 
@@ -2096,8 +2102,11 @@ experimental domain CacheStorage
   # Requests cache names.
   command requestCacheNames
     parameters
+      # At least and at most one of securityOrigin, storageKey must be specified.
       # Security origin.
-      string securityOrigin
+      optional string securityOrigin
+      # Storage key.
+      optional string storageKey
     returns
       # Caches for the security origin.
       array of Cache caches
@@ -3888,7 +3897,6 @@ domain Emulation
   experimental type DisabledImageType extends string
     enum
       avif
-      jxl
       webp
 
   experimental command setDisabledImageTypes
@@ -5477,6 +5485,9 @@ domain Network
       SameSiteNoneInsecure
       # The cookie was not stored due to user preferences.
       UserPreferences
+      # The cookie was blocked by third-party cookie blocking between sites in
+      # the same First-Party Set.
+      ThirdPartyBlockedInFirstPartySet
       # The syntax of the Set-Cookie header of the response was invalid.
       SyntaxError
       # The scheme of the connection is not allowed to store cookies.
@@ -5541,6 +5552,9 @@ domain Network
       SameSiteNoneInsecure
       # The cookie was not sent due to user preferences.
       UserPreferences
+      # The cookie was blocked by third-party cookie blocking between sites in
+      # the same First-Party Set.
+      ThirdPartyBlockedInFirstPartySet
       # An unknown error was encountered when trying to send this cookie.
       UnknownError
       # The cookie had the "SameSite=Strict" attribute but came from a response
@@ -7205,6 +7219,7 @@ domain Page
       serial
       shared-autofill
       shared-storage
+      smart-card
       storage-access
       sync-xhr
       trust-token-redemption
@@ -8112,8 +8127,9 @@ domain Page
     parameters
       enum mode
         none
-        autoaccept
-        autoreject
+        autoAccept
+        autoReject
+        autoOptOut
 
   # Generates a report for testing.
   experimental command generateTestReport
@@ -8408,6 +8424,7 @@ domain Page
       InjectedStyleSheet
       KeepaliveRequest
       Dummy
+      AuthorizationHeader
       # Disabled for RenderFrameHost reasons
       # See content/browser/renderer_host/back_forward_cache_disable.h for explanations.
       ContentSecurityHandler
@@ -8530,7 +8547,6 @@ domain Page
       SameSiteCrossOriginRedirectNotOptIn
       SameSiteCrossOriginNavigationNotOptIn
       ActivationNavigationParameterMismatch
-      EmbedderHostDisallowed
 
   # Fired when a prerender attempt is completed.
   experimental event prerenderAttemptCompleted
@@ -9062,6 +9078,7 @@ experimental domain Storage
       join
       leave
       update
+      loaded
       bid
       win
 
@@ -9253,6 +9270,12 @@ experimental domain Storage
       # Security origin.
       string origin
 
+  # Registers storage key to be notified when an update occurs to its cache storage list.
+  command trackCacheStorageForStorageKey
+    parameters
+      # Storage key.
+      string storageKey
+
   # Registers origin to be notified when an update occurs to its IndexedDB.
   command trackIndexedDBForOrigin
     parameters
@@ -9270,6 +9293,12 @@ experimental domain Storage
     parameters
       # Security origin.
       string origin
+
+  # Unregisters storage key from receiving notifications for cache storage.
+  command untrackCacheStorageForStorageKey
+    parameters
+      # Storage key.
+      string storageKey
 
   # Unregisters origin from receiving notifications for IndexedDB.
   command untrackIndexedDBForOrigin
@@ -9356,6 +9385,8 @@ experimental domain Storage
     parameters
       # Origin to update.
       string origin
+      # Storage key to update.
+      string storageKey
       # Name of cache in origin.
       string cacheName
 
@@ -9364,6 +9395,8 @@ experimental domain Storage
     parameters
       # Origin to update.
       string origin
+      # Storage key to update.
+      string storageKey
 
   # The origin's IndexedDB object store has been modified.
   event indexedDBContentUpdated
@@ -9535,6 +9568,13 @@ experimental domain SystemInfo
       # The command line string used to launch the browser. Will be the empty string if not
       # supported.
       string commandLine
+
+  # Returns information about the feature state.
+  command getFeatureState
+    parameters
+      string featureState
+    returns
+      boolean featureEnabled
 
   # Returns information about all running processes.
   command getProcessInfo
@@ -9981,8 +10021,8 @@ experimental domain Tracing
       # total size.
       optional number value
 
-  # Contains an bucket of collected trace events. When tracing is stopped collected events will be
-  # send as a sequence of dataCollected events followed by tracingComplete event.
+  # Contains a bucket of collected trace events. When tracing is stopped collected events will be
+  # sent as a sequence of dataCollected events followed by tracingComplete event.
   event dataCollected
     parameters
       array of object value
@@ -10597,6 +10637,18 @@ experimental domain WebAuthn
     parameters
       AuthenticatorId authenticatorId
       boolean enabled
+
+  # Triggered when a credential is added to an authenticator.
+  event credentialAdded
+    parameters
+      AuthenticatorId authenticatorId
+      Credential credential
+
+  # Triggered when a credential is used in a webauthn assertion.
+  event credentialAsserted
+    parameters
+      AuthenticatorId authenticatorId
+      Credential credential
 
 # This domain allows detailed inspection of media elements
 experimental domain Media

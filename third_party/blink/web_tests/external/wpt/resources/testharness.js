@@ -91,7 +91,12 @@
         }
 
         on_event(window, 'load', function() {
+          setTimeout(() => {
             this_obj.all_loaded = true;
+            if (tests.all_done()) {
+              tests.complete();
+            }
+          },0);
         });
 
         on_event(window, 'message', function(event) {
@@ -2246,7 +2251,8 @@
                 ReadOnlyError: 0,
                 VersionError: 0,
                 OperationError: 0,
-                NotAllowedError: 0
+                NotAllowedError: 0,
+                OptOutError: 0
             };
 
             var code_name_map = {};

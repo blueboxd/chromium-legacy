@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/base/resource/resource_scale_factor.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "v8/include/v8.h"
 
@@ -458,14 +459,12 @@ void HTMLCanvasElement::configureHighDynamicRange(
     hdr_metadata = gfx::HDRMetadata();
     auto& color_volume_metadata = hdr_metadata->color_volume_metadata;
     const auto* v8_metadata = options->smpteSt2086Metadata();
-    color_volume_metadata.primary_r.set_x(v8_metadata->redPrimaryX());
-    color_volume_metadata.primary_r.set_y(v8_metadata->redPrimaryY());
-    color_volume_metadata.primary_g.set_x(v8_metadata->greenPrimaryX());
-    color_volume_metadata.primary_g.set_y(v8_metadata->greenPrimaryY());
-    color_volume_metadata.primary_b.set_x(v8_metadata->bluePrimaryX());
-    color_volume_metadata.primary_b.set_y(v8_metadata->bluePrimaryY());
-    color_volume_metadata.white_point.set_x(v8_metadata->whitePointX());
-    color_volume_metadata.white_point.set_y(v8_metadata->whitePointY());
+    color_volume_metadata.primaries = {
+        v8_metadata->redPrimaryX(),   v8_metadata->redPrimaryY(),
+        v8_metadata->greenPrimaryX(), v8_metadata->greenPrimaryY(),
+        v8_metadata->bluePrimaryX(),  v8_metadata->bluePrimaryY(),
+        v8_metadata->whitePointX(),   v8_metadata->whitePointY(),
+    };
     color_volume_metadata.luminance_min = v8_metadata->minimumLuminance();
     color_volume_metadata.luminance_max = v8_metadata->maximumLuminance();
   }
@@ -478,9 +477,7 @@ void HTMLCanvasElement::configureHighDynamicRange(
 
   CanvasResourceHost::SetHDRConfiguration(hdr_mode, hdr_metadata);
   if (context_ && (IsWebGL() || IsWebGPU())) {
-    // TODO(https://crbug.com/1274220): Implement HDR support for WebGL and
-    // WebGPU.
-    NOTIMPLEMENTED();
+    context_->SetHDRConfiguration(hdr_mode, hdr_metadata);
   } else if (canvas2d_bridge_) {
     canvas2d_bridge_->SetHDRConfiguration(hdr_mode, hdr_metadata);
   }
@@ -879,7 +876,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
         gfx::Vector2dF(icon_size.width(), icon_size.height());
     // Make the icon more visually prominent on high-DPI displays.
     icon_size.Scale(dpr);
-    context.DrawImage(broken_canvas, Image::kSyncDecode,
+    context.DrawImage(*broken_canvas, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                       gfx::RectF(upper_left, icon_size));
     context.Restore();
@@ -902,7 +899,9 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     DCHECK(GetDocument().Printing());
     scoped_refptr<StaticBitmapImage> image_for_printing =
         OffscreenCanvasFrame()->Bitmap()->MakeUnaccelerated();
-    context.DrawImage(image_for_printing.get(), Image::kSyncDecode,
+    if (!image_for_printing)
+      return;
+    context.DrawImage(*image_for_printing, Image::kSyncDecode,
                       ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                       gfx::RectF(ToPixelSnappedRect(r)));
     return;
@@ -955,7 +954,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
       // GraphicsContext cannot handle gpu resource serialization.
       snapshot = snapshot->MakeUnaccelerated();
       DCHECK(!snapshot->IsTextureBacked());
-      context.DrawImage(snapshot.get(), Image::kSyncDecode,
+      context.DrawImage(*snapshot, Image::kSyncDecode,
                         ImageAutoDarkMode::Disabled(), ImagePaintTimingInfo(),
                         gfx::RectF(ToPixelSnappedRect(r)), &src_rect,
                         composite_operator);
@@ -1155,10 +1154,11 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(kBackBuffer);
   if (image_bitmap) {
+    auto image_unaccelerated = image_bitmap->MakeUnaccelerated();
     auto* options = ImageEncodeOptions::Create();
     options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
-        image_bitmap, options,
+        std::move(image_unaccelerated), options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         GetExecutionContext(),
         IdentifiabilityStudySettings::Get()->ShouldSampleType(

@@ -196,10 +196,6 @@ class PLATFORM_EXPORT ResourceFetcher
   // call this method explicitly on cases such as ResourceNeedsLoad() returning
   // false.
   bool StartLoad(Resource*);
-  bool StartLoad(Resource*,
-                 ResourceRequestBody,
-                 ImageLoadBlockingPolicy,
-                 RenderBlockingBehavior);
 
   void SetAutoLoadImages(bool);
   void SetImagesEnabled(bool);
@@ -279,9 +275,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void LoosenLoadThrottlingPolicy() { scheduler_->LoosenThrottlingPolicy(); }
 
-  void StartBatch() { scheduler_->StartBatch(); }
-  void EndBatch() { scheduler_->EndBatch(); }
-
   // Workaround for https://crbug.com/666214.
   // TODO(hiroshige): Remove this hack.
   void EmulateLoadStartedForInspector(Resource*,
@@ -345,6 +338,11 @@ class PLATFORM_EXPORT ResourceFetcher
     kIncludingKeepaliveLoaders,
   };
 
+  bool StartLoad(Resource*,
+                 ResourceRequestBody,
+                 ImageLoadBlockingPolicy,
+                 RenderBlockingBehavior);
+
   void InitializeRevalidation(ResourceRequest&, Resource*);
   // When |security_origin| of the ResourceLoaderOptions is not a nullptr, it'll
   // be used instead of the associated FetchContext's SecurityOrigin.
@@ -391,14 +389,31 @@ class PLATFORM_EXPORT ResourceFetcher
   void StopFetchingInternal(StopFetchingTarget);
   void StopFetchingIncludingKeepaliveLoaders();
 
-  // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
   enum class RevalidationPolicy {
     kUse,
     kRevalidate,
     kReload,
     kLoad,
-    kMaxValue = kLoad
+    kMaxValue = kLoad,
   };
+  // The Blink.MemoryCache.RevalationPolicy UMA uses the following enum
+  // rather than RevalidationPolicy to record the deferred resources in
+  // the resource fetcher.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class RevalidationPolicyForMetrics {
+    kUse,
+    kRevalidate,
+    kReload,
+    kLoad,
+    kDefer,
+    kPreviouslyDeferredLoad,
+    kMaxValue = kPreviouslyDeferredLoad,
+  };
+
+  // Friends required for accessing RevalidationPolicyForMetrics
+  FRIEND_TEST(ImageResourceCounterTest, RevalidationPolicyMetrics);
+  FRIEND_TEST(FontResourceTest, RevalidationPolicyMetrics);
 
   // A wrapper just for placing a trace_event macro.
   RevalidationPolicy DetermineRevalidationPolicy(
@@ -429,14 +444,24 @@ class PLATFORM_EXPORT ResourceFetcher
                                       bool is_static_data,
                                       RenderBlockingBehavior);
 
-  bool ResourceNeedsLoad(Resource*, const FetchParameters&, RevalidationPolicy);
+  bool ShouldDeferResource(ResourceType, const FetchParameters& params) const;
+
+  bool ResourceNeedsLoad(Resource*,
+                         RevalidationPolicy,
+                         bool should_defer) const;
+
+  static bool ResourceAlreadyLoadStarted(Resource*, RevalidationPolicy);
 
   void ResourceTimingReportTimerFired(TimerBase*);
 
   void ReloadImagesIfNotDeferred();
 
+  static RevalidationPolicyForMetrics MapToPolicyForMetrics(RevalidationPolicy,
+                                                            Resource*,
+                                                            bool should_defer);
+
   void UpdateMemoryCacheStats(Resource*,
-                              RevalidationPolicy,
+                              RevalidationPolicyForMetrics,
                               const FetchParameters&,
                               const ResourceFactory&,
                               bool is_static_data,
@@ -520,6 +545,12 @@ class PLATFORM_EXPORT ResourceFetcher
   static constexpr uint32_t kKeepaliveInflightBytesQuota = 64 * 1024;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
+
+  // The total number of sub resource loads except for ResourceType::kRaw.
+  uint32_t number_of_subresources_loaded_ = 0;
+  // The number of sub resource loads that a service worker fetch handler
+  // called respondWith. i.e. no fallback to network.
+  uint32_t number_of_subresource_loads_handled_by_service_worker_ = 0;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<ResourceFetcher> weak_ptr_factory_{this};

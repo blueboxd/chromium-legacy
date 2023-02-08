@@ -57,7 +57,9 @@ IntroUI::IntroUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   AddStrings(source);
 
-  source->AddResourcePath("product-logo.png", IDR_PRODUCT_LOGO_128);
+  source->AddResourcePath("product-logo.svg", IDR_PRODUCT_LOGO_SVG);
+  source->AddResourcePath("product-logo-animation.svg",
+                          IDR_PRODUCT_LOGO_ANIMATION_SVG);
 
   // Unretained ok: `this` owns the handler.
   web_ui->AddMessageHandler(std::make_unique<IntroHandler>(base::BindRepeating(

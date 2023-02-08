@@ -265,8 +265,7 @@ class MessageBannerMediator implements SwipeHandler {
 
     @Override
     public boolean isSwipeEnabled(@ScrollDirection int direction) {
-        return direction != ScrollDirection.UNKNOWN && mCurrentState == State.IDLE
-                && mSwipeAnimationHandler.isSwipeEnabled();
+        return direction != ScrollDirection.UNKNOWN && mCurrentState == State.IDLE;
     }
 
     // ---------------------------------------------------------------------------------------------

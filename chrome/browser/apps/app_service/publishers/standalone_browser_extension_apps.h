@@ -14,8 +14,8 @@
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -58,7 +58,7 @@ class StandaloneBrowserExtensionApps : public KeyedService,
                                        public apps::PublisherBase,
                                        public AppPublisher,
                                        public crosapi::mojom::AppPublisher,
-                                       public chromeos::LoginState::Observer {
+                                       public ash::LoginState::Observer {
  public:
   StandaloneBrowserExtensionApps(AppServiceProxy* proxy, AppType app_type);
   ~StandaloneBrowserExtensionApps() override;
@@ -117,14 +117,6 @@ class StandaloneBrowserExtensionApps : public KeyedService,
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
-  void Launch(const std::string& app_id,
-              int32_t event_flags,
-              apps::mojom::LaunchSource launch_source,
-              apps::mojom::WindowInfoPtr window_info) override;
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    GetMenuModelCallback callback) override;
   void StopApp(const std::string& app_id) override;
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode) override;
@@ -136,7 +128,7 @@ class StandaloneBrowserExtensionApps : public KeyedService,
       mojo::PendingRemote<crosapi::mojom::AppController> controller) override;
   void OnCapabilityAccesses(std::vector<CapabilityAccessPtr> deltas) override;
 
-  // chromeos::LoginState::Observer
+  // ash::LoginState::Observer
   void LoggedInStateChanged() override;
 
   // Called when the crosapi termination is terminated [e.g. Lacros is closed].
@@ -178,7 +170,7 @@ class StandaloneBrowserExtensionApps : public KeyedService,
 
   std::unique_ptr<crosapi::BrowserManager::ScopedKeepAlive> keep_alive_;
 
-  base::ScopedObservation<chromeos::LoginState, chromeos::LoginState::Observer>
+  base::ScopedObservation<ash::LoginState, ash::LoginState::Observer>
       login_observation_{this};
 
   base::WeakPtrFactory<StandaloneBrowserExtensionApps> weak_factory_{this};

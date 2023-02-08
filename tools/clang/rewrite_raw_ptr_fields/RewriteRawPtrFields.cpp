@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "RawPtrHelpers.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
@@ -52,8 +53,6 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
 #include "llvm/Support/FormatVariadic.h"
-#include "llvm/Support/LineIterator.h"
-#include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Path.h"
 #include "llvm/Support/TargetSelect.h"
 
@@ -260,226 +259,10 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
   clang::Language current_language_ = clang::Language::Unknown;
 };
 
-llvm::StringRef GetFilePath(const clang::SourceManager& source_manager,
-                            const clang::FieldDecl& field_decl) {
-  clang::SourceLocation loc = field_decl.getSourceRange().getBegin();
-  if (loc.isInvalid() || !loc.isFileID())
-    return llvm::StringRef();
-
-  clang::FileID file_id = source_manager.getDecomposedLoc(loc).first;
-  const clang::FileEntry* file_entry =
-      source_manager.getFileEntryForID(file_id);
-  if (!file_entry)
-    return llvm::StringRef();
-
-  return file_entry->getName();
-}
-
-AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
-  llvm::StringRef file_path =
-      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
-
-  // Blink is part of the Chromium git repo, even though it contains
-  // "third_party" in its path.
-  if (file_path.contains("third_party/blink/"))
-    return false;
-
-  // Otherwise, just check if the paths contains the "third_party" substring.
-  // We don't want to rewrite content of such paths even if they are in the main
-  // Chromium git repository.
-  return file_path.contains("third_party");
-}
-
-AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
-  llvm::StringRef file_path =
-      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
-
-  return file_path.startswith("gen/") || file_path.contains("/gen/");
-}
-
-// Represents a filter file specified via cmdline.
-class FilterFile {
- public:
-  explicit FilterFile(const llvm::cl::opt<std::string>& cmdline_param) {
-    ParseInputFile(cmdline_param);
-  }
-
-  FilterFile(const FilterFile&) = delete;
-  FilterFile& operator=(const FilterFile&) = delete;
-
-  // Returns true if any of the filter file lines is exactly equal to |line|.
-  bool ContainsLine(llvm::StringRef line) const {
-    auto it = file_lines_.find(line);
-    return it != file_lines_.end();
-  }
-
-  // Returns true if |string_to_match| matches based on the filter file lines.
-  // Filter file lines can contain both inclusions and exclusions in the filter.
-  // Only returns true if |string_to_match| both matches an inclusion filter and
-  // is *not* matched by an exclusion filter.
-  bool ContainsSubstringOf(llvm::StringRef string_to_match) const {
-    if (!inclusion_substring_regex_.has_value()) {
-      std::vector<std::string> regex_escaped_inclusion_file_lines;
-      std::vector<std::string> regex_escaped_exclusion_file_lines;
-      regex_escaped_inclusion_file_lines.reserve(file_lines_.size());
-      for (const llvm::StringRef& file_line : file_lines_.keys()) {
-        if (file_line.startswith("!")) {
-          regex_escaped_exclusion_file_lines.push_back(
-              llvm::Regex::escape(file_line.substr(1)));
-        } else {
-          regex_escaped_inclusion_file_lines.push_back(
-              llvm::Regex::escape(file_line));
-        }
-      }
-      std::string inclusion_substring_regex_pattern =
-          llvm::join(regex_escaped_inclusion_file_lines.begin(),
-                     regex_escaped_inclusion_file_lines.end(), "|");
-      inclusion_substring_regex_.emplace(inclusion_substring_regex_pattern);
-      std::string exclusion_substring_regex_pattern =
-          llvm::join(regex_escaped_exclusion_file_lines.begin(),
-                     regex_escaped_exclusion_file_lines.end(), "|");
-      exclusion_substring_regex_.emplace(exclusion_substring_regex_pattern);
-    }
-    return inclusion_substring_regex_->match(string_to_match) &&
-           !exclusion_substring_regex_->match(string_to_match);
-  }
-
- private:
-  // Expected file format:
-  // - '#' character starts a comment (which gets ignored).
-  // - Blank or whitespace-only or comment-only lines are ignored.
-  // - Other lines are expected to contain a fully-qualified name of a field
-  //   like:
-  //       autofill::AddressField::address1_ # some comment
-  // - Templates are represented without template arguments, like:
-  //       WTF::HashTable::table_ # some comment
-  void ParseInputFile(const llvm::cl::opt<std::string>& cmdline_param) {
-    std::string filepath = cmdline_param;
-    if (filepath.empty())
-      return;
-
-    llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> file_or_err =
-        llvm::MemoryBuffer::getFile(filepath);
-    if (std::error_code err = file_or_err.getError()) {
-      llvm::errs() << "ERROR: Cannot open the file specified in --"
-                   << cmdline_param.ArgStr << " argument: " << filepath << ": "
-                   << err.message() << "\n";
-      assert(false);
-      return;
-    }
-
-    llvm::line_iterator it(**file_or_err, true /* SkipBlanks */, '#');
-    for (; !it.is_at_eof(); ++it) {
-      llvm::StringRef line = *it;
-
-      // Remove trailing comments.
-      size_t comment_start_pos = line.find('#');
-      if (comment_start_pos != llvm::StringRef::npos)
-        line = line.substr(0, comment_start_pos);
-      line = line.trim();
-
-      if (line.empty())
-        continue;
-
-      file_lines_.insert(line);
-    }
-  }
-
-  // Stores all file lines (after stripping comments and blank lines).
-  llvm::StringSet<> file_lines_;
-
-  // |file_lines_| is partitioned based on whether the line starts with a !
-  // (exclusion line) or not (inclusion line). Inclusion lines specify things to
-  // be matched by the filter. The exclusion lines specify what to force exclude
-  // from the filter. Lazily-constructed regex that matches strings that contain
-  // any of the inclusion lines in |file_lines_|.
-  mutable llvm::Optional<llvm::Regex> inclusion_substring_regex_;
-
-  // Lazily-constructed regex that matches strings that contain any of the
-  // exclusion lines in |file_lines_|.
-  mutable llvm::Optional<llvm::Regex> exclusion_substring_regex_;
-};
-
-AST_MATCHER_P(clang::FieldDecl,
-              isFieldDeclListedInFilterFile,
-              const FilterFile*,
-              Filter) {
-  return Filter->ContainsLine(Node.getQualifiedNameAsString());
-}
-
-AST_MATCHER_P(clang::FieldDecl,
-              isInLocationListedInFilterFile,
-              const FilterFile*,
-              Filter) {
-  llvm::StringRef file_path =
-      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
-  return Filter->ContainsSubstringOf(file_path);
-}
-
-AST_MATCHER(clang::Decl, isInExternCContext) {
-  return Node.getLexicalDeclContext()->isExternCContext();
-}
-
-// Given:
-//   template <typename T, typename T2> class MyTemplate {};  // Node1 and Node4
-//   template <typename T2> class MyTemplate<int, T2> {};     // Node2
-//   template <> class MyTemplate<int, char> {};              // Node3
-//   void foo() {
-//     // This creates implicit template specialization (Node4) out of the
-//     // explicit template definition (Node1).
-//     MyTemplate<bool, double> v;
-//   }
-// with the following AST nodes:
-//   ClassTemplateDecl MyTemplate                                       - Node1
-//   | |-CXXRecordDecl class MyTemplate definition
-//   | `-ClassTemplateSpecializationDecl class MyTemplate definition    - Node4
-//   ClassTemplatePartialSpecializationDecl class MyTemplate definition - Node2
-//   ClassTemplateSpecializationDecl class MyTemplate definition        - Node3
-//
-// Matches AST node 4, but not AST node2 nor node3.
-AST_MATCHER(clang::ClassTemplateSpecializationDecl,
-            isImplicitClassTemplateSpecialization) {
-  return !Node.isExplicitSpecialization();
-}
-
 // Matches CXXRecordDecls that are classified as trivial:
 // https://en.cppreference.com/w/cpp/named_req/TrivialType
 AST_MATCHER(clang::CXXRecordDecl, isTrivial) {
   return Node.isTrivial();
-}
-
-// Given:
-//   template <typename T, typename T2> void foo(T t, T2 t2) {};  // N1 and N4
-//   template <typename T2> void foo<int, T2>(int t, T2 t) {};    // N2
-//   template <> void foo<int, char>(int t, char t2) {};          // N3
-//   void foo() {
-//     // This creates implicit template specialization (N4) out of the
-//     // explicit template definition (N1).
-//     foo<bool, double>(true, 1.23);
-//   }
-// with the following AST nodes:
-//   FunctionTemplateDecl foo
-//   |-FunctionDecl 0x191da68 foo 'void (T, T2)'         // N1
-//   `-FunctionDecl 0x194bf08 foo 'void (bool, double)'  // N4
-//   FunctionTemplateDecl foo
-//   `-FunctionDecl foo 'void (int, T2)'                 // N2
-//   FunctionDecl foo 'void (int, char)'                 // N3
-//
-// Matches AST node N4, but not AST nodes N1, N2 nor N3.
-AST_MATCHER(clang::FunctionDecl, isImplicitFunctionTemplateSpecialization) {
-  switch (Node.getTemplateSpecializationKind()) {
-    case clang::TSK_ImplicitInstantiation:
-      return true;
-    case clang::TSK_Undeclared:
-    case clang::TSK_ExplicitSpecialization:
-    case clang::TSK_ExplicitInstantiationDeclaration:
-    case clang::TSK_ExplicitInstantiationDefinition:
-      return false;
-  }
-}
-
-AST_MATCHER(clang::Type, anyCharType) {
-  return Node.isAnyCharacterType();
 }
 
 AST_POLYMORPHIC_MATCHER(isInMacroLocation,
@@ -487,16 +270,6 @@ AST_POLYMORPHIC_MATCHER(isInMacroLocation,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
   return Node.getBeginLoc().isMacroID();
-}
-
-static bool IsAnnotated(const clang::Decl* decl,
-                        const std::string& expected_annotation) {
-  clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>();
-  return attr && (attr->getAnnotation() == expected_annotation);
-}
-
-AST_MATCHER(clang::Decl, IsExclusionAnnotated) {
-  return IsAnnotated(&Node, "raw_ptr_exclusion");
 }
 
 // If |field_decl| declares a field in an implicit template specialization, then
@@ -1003,7 +776,6 @@ class RawPtrRewriter {
         constexpr_var_initializer_writer(output_helper,
                                          "constexpr-var-initializer"),
         macro_field_decl_writer(output_helper, "macro"),
-        char_ptr_field_decl_writer(output_helper, "const-char"),
         global_scope_rewriter(output_helper, "global-scope"),
         union_field_decl_writer(output_helper, "union"),
         reinterpret_cast_struct_writer(output_helper,
@@ -1012,59 +784,8 @@ class RawPtrRewriter {
         paths_to_exclude(paths_to_exclude) {}
 
   void addMatchers() {
-    // Supported pointer types =========
-    // Given
-    //   struct MyStrict {
-    //     int* int_ptr;
-    //     int i;
-    //     int (*func_ptr)();
-    //     int (MyStruct::* member_func_ptr)(char);
-    //     int (*ptr_to_array_of_ints)[123]
-    //   };
-    // matches |int*|, but not the other types.
-    auto supported_pointer_types_matcher =
-        pointerType(unless(pointee(hasUnqualifiedDesugaredType(
-            anyOf(functionType(), memberPointerType(), arrayType())))));
-
-    // Implicit field declarations =========
-    // Matches field declarations that do not explicitly appear in the source
-    // code:
-    // 1. fields of classes generated by the compiler to back capturing lambdas,
-    // 2. fields within an implicit class or function template specialization
-    //    (e.g. when a template is instantiated by a bit of code and there's no
-    //    explicit specialization for it).
-    auto implicit_class_specialization_matcher =
-        classTemplateSpecializationDecl(
-            isImplicitClassTemplateSpecialization());
-    auto implicit_function_specialization_matcher =
-        functionDecl(isImplicitFunctionTemplateSpecialization());
-    auto implicit_field_decl_matcher = fieldDecl(hasParent(cxxRecordDecl(anyOf(
-        isLambda(), implicit_class_specialization_matcher,
-        hasAncestor(decl(anyOf(implicit_class_specialization_matcher,
-                               implicit_function_specialization_matcher)))))));
-
-    // Field declarations =========
-    // Given
-    //   struct S {
-    //     int* y;
-    //   };
-    // matches |int* y|.  Doesn't match:
-    // - non-pointer types
-    // - fields of lambda-supporting classes
-    // - fields listed in the --exclude-fields cmdline param or located in paths
-    //   matched by --exclude-paths cmdline param
-    // - "implicit" fields (i.e. field decls that are not explicitly present in
-    //   the source code)
     auto field_decl_matcher =
-        fieldDecl(
-            allOf(hasType(supported_pointer_types_matcher),
-                  unless(anyOf(
-                      isExpansionInSystemHeader(), isInExternCContext(),
-                      isInThirdPartyLocation(), isInGeneratedLocation(),
-                      isInLocationListedInFilterFile(&paths_to_exclude),
-                      isFieldDeclListedInFilterFile(&fields_to_exclude),
-                      IsExclusionAnnotated(), implicit_field_decl_matcher))))
-            .bind("affectedFieldDecl");
+        AffectedRawPtrFieldDecl(&paths_to_exclude, &fields_to_exclude);
 
     match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 
@@ -1275,17 +996,6 @@ class RawPtrRewriter {
 
     match_finder.addMatcher(macro_field_decl_matcher, &macro_field_decl_writer);
 
-    // See the doc comment for the anyCharType matcher
-    // and the testcases in tests/gen-char-test.cc.
-    auto char_ptr_field_decl_matcher =
-        fieldDecl(allOf(field_decl_matcher,
-                        hasType(pointerType(pointee(qualType(allOf(
-                            isConstQualified(),
-                            hasUnqualifiedDesugaredType(anyCharType()))))))));
-
-    match_finder.addMatcher(char_ptr_field_decl_matcher,
-                            &char_ptr_field_decl_writer);
-
     // See the testcases in tests/gen-global-scope-test.cc.
     auto global_scope_matcher =
         varDecl(allOf(hasGlobalStorage(),
@@ -1358,7 +1068,6 @@ class RawPtrRewriter {
   FilteredExprWriter constexpr_ctor_field_initializer_writer;
   FilteredExprWriter constexpr_var_initializer_writer;
   FilteredExprWriter macro_field_decl_writer;
-  FilteredExprWriter char_ptr_field_decl_writer;
   FilteredExprWriter global_scope_rewriter;
   FilteredExprWriter union_field_decl_writer;
   FilteredExprWriter reinterpret_cast_struct_writer;
@@ -1373,7 +1082,9 @@ class RawRefRewriter {
                  FilterFile& fields_to_exclude,
                  FilterFile& paths_to_exclude)
       : match_finder(finder),
-        field_decl_rewriter(output_helper, "raw_ref<{0}> ", kRawRefIncludePath),
+        field_decl_rewriter(output_helper,
+                            "const raw_ref<{0}> ",
+                            kRawRefIncludePath),
         affected_expr_operator_rewriter(output_helper,
                                         affectedMemberExprOperatorFct_),
         affected_expr_rewriter(output_helper, affectedMemberExprFct_),
@@ -1391,23 +1102,8 @@ class RawRefRewriter {
         paths_to_exclude(paths_to_exclude) {}
 
   void addMatchers() {
-    // Implicit field declarations =========
-    // Matches field declarations that do not explicitly appear in the source
-    // code:
-    // 1. fields of classes generated by the compiler to back capturing lambdas,
-    // 2. fields within an implicit class or function template specialization
-    //    (e.g. when a template is instantiated by a bit of code and there's no
-    //    explicit specialization for it).
-    auto implicit_class_specialization_matcher =
-        classTemplateSpecializationDecl(
-            isImplicitClassTemplateSpecialization());
-    auto implicit_function_specialization_matcher =
-        functionDecl(isImplicitFunctionTemplateSpecialization());
-    auto implicit_field_decl_matcher = fieldDecl(hasParent(cxxRecordDecl(anyOf(
-        isLambda(), isAnonymousStructOrUnion(),
-        implicit_class_specialization_matcher,
-        hasAncestor(decl(anyOf(implicit_class_specialization_matcher,
-                               implicit_function_specialization_matcher)))))));
+    auto anonymous_struct_field_decl_matcher =
+        fieldDecl(hasParent(cxxRecordDecl(isAnonymousStructOrUnion())));
 
     // Field declarations =========
     // Given
@@ -1421,6 +1117,7 @@ class RawRefRewriter {
     //   matched by --exclude-paths cmdline param
     // - "implicit" fields (i.e. field decls that are not explicitly present in
     //   the source code)
+    // - fields in anonymous structs.
 
     auto field_decl_matcher =
         fieldDecl(allOf(has(referenceTypeLoc().bind("affectedFieldDeclType")),
@@ -1429,7 +1126,8 @@ class RawRefRewriter {
                             isInThirdPartyLocation(), isInGeneratedLocation(),
                             isInLocationListedInFilterFile(&paths_to_exclude),
                             isFieldDeclListedInFilterFile(&fields_to_exclude),
-                            implicit_field_decl_matcher))))
+                            ImplicitFieldDeclaration(),
+                            anonymous_struct_field_decl_matcher))))
             .bind("affectedFieldDecl");
 
     match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -1451,7 +1149,7 @@ class RawRefRewriter {
                             &affected_expr_operator_rewriter);
 
     // Matches expressions that used to have |SomeType&| as return type and
-    // became |raw_ref<SomeType>| after the rewrite.
+    // became |const raw_ref<SomeType>| after the rewrite.
     auto affected_member_expr =
         memberExpr(
             member(fieldDecl(hasExplicitFieldDecl(field_decl_matcher))),
@@ -1572,7 +1270,8 @@ class RawRefRewriter {
 
  private:
   // Rewrites |SomeClass& field| (matched as "affectedFieldDecl") as
-  // |raw_ref<SomeClass> field| and for each file rewritten in such way adds an
+  // |const raw_ref<SomeClass> field| and for each file rewritten in such way
+  // adds an
   // |#include "base/memory/raw_ref.h"|.
   class RawRefFieldDeclRewriter : public FieldDeclRewriter {
    public:
@@ -1607,9 +1306,9 @@ class RawRefRewriter {
   // "affectedMemberExprWithParentheses") as
   // |(*my_struct.ref_field)|.
   // Examples on why this is needed:
-  //  1- std::vector<T>& v; => raw_ref<std::vector<T>> v;
+  //  1- std::vector<T>& v; => const raw_ref<std::vector<T>> v;
   //     v[0] => needs to be rewritten as (*v)[0] after the rewrite.
-  //  2- key_compare& comp_; => raw_ref<key_compare> comp_;
+  //  2- key_compare& comp_; => const raw_ref<key_compare> comp_;
   //     comp_(a, b) => needs to be rewritten as (*comp_)(a,b) after the
   //     rewrite.
   std::function<std::pair<clang::SourceRange, std::string>(
@@ -1696,7 +1395,7 @@ int main(int argc, const char* argv[]) {
 
   llvm::cl::opt<bool> enable_raw_ref_rewrite(
       "enable_raw_ref_rewrite", llvm::cl::init(false),
-      llvm::cl::desc("Rewrite T& into raw_ref<T>"));
+      llvm::cl::desc("Rewrite T& into const raw_ref<T>"));
 
   llvm::cl::opt<bool> enable_raw_ptr_rewrite(
       "enable_raw_ptr_rewrite", llvm::cl::init(false),
@@ -1708,14 +1407,16 @@ int main(int argc, const char* argv[]) {
   clang::tooling::ClangTool tool(options->getCompilations(),
                                  options->getSourcePathList());
 
-  // Rewrite both T& and T* into raw_ref<T> and raw_ptr<T> respectively if no
-  // argument is provided.
+  // Rewrite both T& and T* into const raw_ref<T> and raw_ptr<T> respectively if
+  // no argument is provided.
   bool rewrite_raw_ref_and_ptr =
       !enable_raw_ref_rewrite && !enable_raw_ptr_rewrite;
   MatchFinder match_finder;
   OutputHelper output_helper;
-  FilterFile fields_to_exclude(exclude_fields_param);
-  FilterFile paths_to_exclude(exclude_paths_param);
+  FilterFile fields_to_exclude(exclude_fields_param,
+                               exclude_fields_param.ArgStr.str());
+  FilterFile paths_to_exclude(exclude_paths_param,
+                              exclude_paths_param.ArgStr.str());
 
   RawPtrRewriter raw_ptr_rewriter(&output_helper, match_finder,
                                   fields_to_exclude, paths_to_exclude);

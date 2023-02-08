@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
 #include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
+#include "chrome/browser/ash/login/hid_detection_revamp_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -49,6 +49,7 @@
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/timezone/timezone_resolver.h"
 #include "chromeos/components/disks/disks_prefs.h"
@@ -157,6 +158,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
 
   RegisterLocalStatePrefs(registry);
   ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
+  ash::hid_detection_revamp_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static
@@ -267,6 +269,11 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(drive::prefs::kDriveFsEnableMirrorSync, false);
   registry->RegisterStringPref(drive::prefs::kDriveFsMirrorSyncMachineRootId,
                                "");
+  // Do not sync kDriveFsBulkPinningEnabled as this maintains files that are
+  // locally pinned to this device and should not sync the state across multiple
+  // devices.
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningEnabled,
+                                false);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(::prefs::kLanguageCurrentInputMethod, "");

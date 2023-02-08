@@ -21,9 +21,6 @@ ci.defaults.set(
     pool = ci.DEFAULT_POOL,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.FUCHSIA,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -75,9 +72,6 @@ ci.builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
         run_tests_serially = True,
     ),
@@ -115,9 +109,6 @@ ci.builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
         run_tests_serially = True,
     ),
@@ -153,9 +144,6 @@ ci.builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
 )
@@ -189,9 +177,6 @@ ci.builder(
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
@@ -228,9 +213,6 @@ ci.builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
         ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
         build_gs_bucket = "chromium-fyi-archive",
         run_tests_serially = True,
     ),
@@ -265,9 +247,6 @@ ci.builder(
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
             target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
         ),
         build_gs_bucket = "chromium-fyi-archive",
         run_tests_serially = True,

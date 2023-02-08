@@ -8,9 +8,9 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -45,7 +45,7 @@ namespace {
 void WaitForCondition(base::RepeatingCallback<bool()> condition) {
   while (!condition.Run()) {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest, UsernameChanged) {
   std::string submit =
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(WebContents(), submit));
-  navigation_observer.Wait();
+  ASSERT_TRUE(navigation_observer.Wait());
   EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
   prompt_observer.AcceptSavePrompt();
 
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   FillElementWithValue("password_field", "1234");
   PasswordsNavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_xhr()"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   FillElementWithValue("confirmation_password_field", "1234");
   PasswordsNavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_xhr()"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
@@ -251,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
 
   PasswordsNavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_fetch()"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   FillElementWithValue("confirmation_password_field", "1234");
   PasswordsNavigationObserver observer(WebContents());
   ASSERT_TRUE(content::ExecuteScript(WebContents(), "send_fetch()"));
-  observer.Wait();
+  ASSERT_TRUE(observer.Wait());
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
@@ -324,10 +324,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                        DeleteCredentialsUpdateDropdown) {
-  // With this feature enabled, the separator line is an actual element.
-  bool separator_line_as_element = base::FeatureList::IsEnabled(
-      autofill::features::kAutofillVisualImprovementsForSuggestionUi);
-
   password_manager::PasswordStoreInterface* password_store =
       PasswordStoreFactory::GetForProfile(browser()->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS)
@@ -369,9 +365,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   autofill::AutofillPopupController* controller =
       autofill_client->popup_controller_for_testing().get();
   ASSERT_TRUE(controller);
-  // Two credentials and "Manage passwords" should be displayed.
-  EXPECT_EQ(3 + (separator_line_as_element ? 1 : 0),
-            controller->GetLineCount());
+  // Two credentials, a separator line and "Manage passwords" should be
+  // displayed.
+  EXPECT_EQ(4, controller->GetLineCount());
 
   // Trigger user gesture so that autofill happens.
   ASSERT_TRUE(content::ExecuteScript(
@@ -390,8 +386,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
                                   0, element_bounds);
   controller = autofill_client->popup_controller_for_testing().get();
   ASSERT_TRUE(controller);
-  EXPECT_EQ(2 + (separator_line_as_element ? 1 : 0),
-            controller->GetLineCount());
+  EXPECT_EQ(3, controller->GetLineCount());
   EXPECT_EQ(u"user", controller->GetSuggestionMainTextAt(0));
   EXPECT_NE(u"admin", controller->GetSuggestionMainTextAt(1));
 
@@ -670,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTestWithSigninInterception,
   // Complete the navigation. The stored password "pw" was overridden with
   // "pwnew", so update prompt is expected.
   BubbleObserver prompt_observer(WebContents());
-  navigation_observer.Wait();
+  ASSERT_TRUE(navigation_observer.Wait());
   EXPECT_TRUE(prompt_observer.IsUpdatePromptShownAutomatically());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

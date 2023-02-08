@@ -114,7 +114,7 @@ bool ParseOrganizationBoundName(net::der::Input dn_without_sequence,
 // |org_cert|.
 bool AreCertsSameOrganization(const net::RDNSequence& leaf_rdn_sequence,
                               CRYPTO_BUFFER* org_cert) {
-  scoped_refptr<net::ParsedCertificate> parsed_org =
+  std::shared_ptr<const net::ParsedCertificate> parsed_org =
       net::ParsedCertificate::Create(bssl::UpRef(org_cert),
                                      net::ParseCertificateOptions(), nullptr);
   if (!parsed_org)
@@ -313,7 +313,7 @@ bool ChromeRequireCTDelegate::MatchSPKI(const net::X509Certificate* chain,
   if (candidates.empty())
     return false;
 
-  scoped_refptr<net::ParsedCertificate> parsed_leaf =
+  std::shared_ptr<const net::ParsedCertificate> parsed_leaf =
       net::ParsedCertificate::Create(bssl::UpRef(leaf_cert),
                                      net::ParseCertificateOptions(), nullptr);
   if (!parsed_leaf)
@@ -347,7 +347,7 @@ void ChromeRequireCTDelegate::AddFilters(
     // the URL.
     url::Parsed parsed;
     std::string ignored_scheme = url_formatter::SegmentURL(pattern, &parsed);
-    if (!parsed.host.is_nonempty())
+    if (parsed.host.is_empty())
       continue;  // If there is no host to match, can't apply the filter.
 
     std::string lc_host = base::ToLowerASCII(

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
@@ -141,6 +142,7 @@ class MockAutofillPopupView : public AutofillPopupView {
               (override));
   MOCK_METHOD(void, OnSuggestionsChanged, (), (override));
   MOCK_METHOD(absl::optional<int32_t>, GetAxUniqueId, (), (override));
+  MOCK_METHOD(void, AxAnnounce, (const std::u16string&), (override));
 };
 
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
@@ -309,6 +311,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  autofill::test::AutofillEnvironment autofill_environment_;
   std::unique_ptr<MockAutofillClient> autofill_client_;
   std::unique_ptr<ContentAutofillRouter> autofill_router_;
   std::unique_ptr<NiceMock<MockAutofillDriver>> autofill_driver_;

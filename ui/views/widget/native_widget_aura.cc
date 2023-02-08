@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -634,11 +633,9 @@ void NativeWidgetAura::Close() {
     window_->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
   }
 
-  if (!close_widget_factory_.HasWeakPtrs()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&NativeWidgetAura::CloseNow,
-                                  close_widget_factory_.GetWeakPtr()));
-  }
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&NativeWidgetAura::CloseNow, weak_factory.GetWeakPtr()));
 }
 
 void NativeWidgetAura::CloseNow() {

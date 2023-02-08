@@ -100,7 +100,7 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
   jint GetLifecycleState(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>&) const;
 
-  void ForceRedrawAndWaitForPresentation(
+  void InsertVisualStateCallback(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcallback);
 

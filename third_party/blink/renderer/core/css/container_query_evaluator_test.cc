@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -31,11 +32,9 @@
 namespace blink {
 
 class ContainerQueryEvaluatorTest : public PageTestBase,
-                                    private ScopedCSSContainerQueriesForTest,
                                     private ScopedLayoutNGForTest {
  public:
-  ContainerQueryEvaluatorTest()
-      : ScopedCSSContainerQueriesForTest(true), ScopedLayoutNGForTest(true) {}
+  ContainerQueryEvaluatorTest() : ScopedLayoutNGForTest(true) {}
 
   void SetUp() override {
     PageTestBase::SetUp();
@@ -91,11 +90,11 @@ class ContainerQueryEvaluatorTest : public PageTestBase,
                                                  *context);
     DCHECK(value);
 
-    scoped_refptr<ComputedStyle> style =
-        GetDocument().GetStyleResolver().InitialStyleForElement();
-    style->SetVariableData(AtomicString(custom_property_name), &value->Value(),
-                           false);
-    ContainerElement().SetComputedStyle(style);
+    ComputedStyleBuilder builder =
+        GetDocument().GetStyleResolver().InitialStyleBuilderForElement();
+    builder.SetVariableData(AtomicString(custom_property_name), &value->Value(),
+                            false);
+    ContainerElement().SetComputedStyle(builder.TakeStyle());
 
     auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
     evaluator->SizeContainerChanged(
@@ -288,7 +287,7 @@ TEST_F(ContainerQueryEvaluatorTest, StyleContainerChanged) {
   ComputedStyleBuilder builder(
       *GetDocument().GetStyleResolver().InitialStyleForElement());
   builder.SetContainerType(type_inline_size);
-  scoped_refptr<ComputedStyle> style = builder.TakeStyle();
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
   container_element.SetComputedStyle(style);
 
   auto* evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
@@ -322,21 +321,30 @@ TEST_F(ContainerQueryEvaluatorTest, StyleContainerChanged) {
 
   // Set --no: match. Should not cause change because size query part does not
   // match.
-  style->SetVariableData("--no", css_test_helpers::CreateVariableData("match"),
-                         inherited);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--no", css_test_helpers::CreateVariableData("match"),
+                          inherited);
+  style = builder.TakeStyle();
+  container_element.SetComputedStyle(style);
   EXPECT_EQ(Change::kNone, evaluator->StyleContainerChanged());
   EXPECT_EQ(3u, GetResults(evaluator).size());
 
   // Set --foo: bar. Should trigger change.
-  style->SetVariableData("--foo", css_test_helpers::CreateVariableData("bar"),
-                         inherited);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--foo", css_test_helpers::CreateVariableData("bar"),
+                          inherited);
+  style = builder.TakeStyle();
+  container_element.SetComputedStyle(style);
   EXPECT_EQ(Change::kNearestContainer, evaluator->StyleContainerChanged());
   EXPECT_EQ(0u, GetResults(evaluator).size());
 
   // Set --bar: foo. Should trigger change because size part also matches.
   eval_and_add_all();
-  style->SetVariableData("--bar", css_test_helpers::CreateVariableData("foo"),
-                         inherited);
+  builder = ComputedStyleBuilder(*style);
+  builder.SetVariableData("--bar", css_test_helpers::CreateVariableData("foo"),
+                          inherited);
+  style = builder.TakeStyle();
+  container_element.SetComputedStyle(style);
   EXPECT_EQ(Change::kNearestContainer, evaluator->StyleContainerChanged());
   EXPECT_EQ(0u, GetResults(evaluator).size());
 }
@@ -666,6 +674,7 @@ TEST_F(ContainerQueryEvaluatorTest, LegacyPrinting) {
 TEST_F(ContainerQueryEvaluatorTest, Printing) {
   ScopedLayoutNGForTest ng_scope(true);
   ScopedLayoutNGPrintingForTest ng_printing_scope(true);
+  ScopedLayoutNGBlockFragmentationForTest ng_block_fragmentation_scope(true);
 
   SetBodyInnerHTML(R"HTML(
     <style>

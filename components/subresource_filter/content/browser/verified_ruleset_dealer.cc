@@ -13,8 +13,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/task/task_runner_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
@@ -35,7 +34,8 @@ RulesetFilePtr VerifiedRulesetDealer::OpenAndSetRulesetFile(
   RulesetFilePtr file(
       new base::File(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                     base::File::FLAG_WIN_SHARE_DELETE),
-      base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+      base::OnTaskRunnerDeleter(
+          base::SequencedTaskRunner::GetCurrentDefault()));
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
                "VerifiedRulesetDealer::OpenAndSetRulesetFile", "file_valid",
                file->IsValid());
@@ -118,8 +118,8 @@ void VerifiedRulesetDealer::Handle::TryOpenAndSetRulesetFile(
   // |base::Unretained| is safe here because the |OpenAndSetRulesetFile| task
   // will be posted before a task to delete the pointer upon destruction of
   // |this| Handler.
-  base::PostTaskAndReplyWithResult(
-      task_runner_, FROM_HERE,
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&VerifiedRulesetDealer::OpenAndSetRulesetFile,
                      base::Unretained(dealer_.get()), expected_checksum, path),
       std::move(callback));

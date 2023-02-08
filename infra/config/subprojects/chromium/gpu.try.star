@@ -60,6 +60,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm64 Builder",
         "ci/Android FYI Release (Nexus 5X)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -69,6 +70,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (NVIDIA Shield TV)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -78,6 +80,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (Pixel 2)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -87,6 +90,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm Builder",
         "ci/Android FYI Release (Pixel 4)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -96,6 +100,7 @@ gpu_android_builder(
         "ci/GPU FYI Android arm64 Builder",
         "ci/Android FYI Release (Pixel 6)",
     ],
+    goma_backend = None,
 )
 
 gpu_android_builder(
@@ -122,6 +127,7 @@ gpu_chromeos_builder(
     mirrors = [
         "ci/ChromeOS FYI Release (amd64-generic)",
     ],
+    goma_backend = None,
 )
 
 gpu_chromeos_builder(
@@ -130,6 +136,7 @@ gpu_chromeos_builder(
     mirrors = [
         "ci/gpu-fyi-chromeos-jacuzzi-exp",
     ],
+    goma_backend = None,
 )
 
 gpu_chromeos_builder(
@@ -138,6 +145,7 @@ gpu_chromeos_builder(
     mirrors = [
         "ci/ChromeOS FYI Release (kevin)",
     ],
+    goma_backend = None,
 )
 
 gpu_chromeos_builder(
@@ -146,12 +154,14 @@ gpu_chromeos_builder(
     mirrors = [
         "ci/gpu-fyi-chromeos-octopus-exp",
     ],
+    goma_backend = None,
 )
 
 gpu_chromeos_builder(
     name = "gpu-fyi-try-chromeos-zork-exp",
     mirrors = ["ci/gpu-fyi-chromeos-zork-exp"],
     pool = "luci.chromium.gpu.chromeos.zork.try",
+    goma_backend = None,
 )
 
 def gpu_linux_builder(*, name, **kwargs):
@@ -171,6 +181,7 @@ gpu_linux_builder(
         "ci/GPU FYI Lacros x64 Builder",
         "ci/Lacros FYI x64 Release (AMD)",
     ],
+    goma_backend = None,
 )
 
 gpu_linux_builder(
@@ -180,6 +191,7 @@ gpu_linux_builder(
         "ci/GPU FYI Lacros x64 Builder",
         "ci/Lacros FYI x64 Release (Intel)",
     ],
+    goma_backend = None,
 )
 
 gpu_linux_builder(
@@ -437,6 +449,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Release (AMD RX 5500 XT)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -446,6 +459,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Exp Release (Intel HD 630)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -455,6 +469,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Release (Intel HD 630)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -464,6 +479,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder (dbg)",
         "ci/Win10 FYI x64 Debug (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -473,6 +489,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 DX12 Vulkan Builder (dbg)",
         "ci/Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -482,6 +499,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 DX12 Vulkan Builder",
         "ci/Win10 FYI x64 DX12 Vulkan Release (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -491,6 +509,7 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Exp Release (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -500,6 +519,7 @@ gpu_win_builder(
         "ci/GPU FYI Win Builder",
         "ci/Win10 FYI x86 Release (NVIDIA)",
     ],
+    goma_backend = None,
 )
 
 gpu_win_builder(
@@ -509,4 +529,5 @@ gpu_win_builder(
         "ci/GPU FYI Win x64 Builder",
         "ci/Win10 FYI x64 Release (NVIDIA)",
     ],
+    goma_backend = None,
 )

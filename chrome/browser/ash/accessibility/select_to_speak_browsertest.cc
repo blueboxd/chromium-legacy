@@ -101,7 +101,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     // Pretend that enhanced network voices dialog has been accepted so that the
     // dialog does not block.
     browser()->profile()->GetPrefs()->SetBoolean(
-        ash::prefs::kAccessibilitySelectToSpeakEnhancedVoicesDialogShown, true);
+        prefs::kAccessibilitySelectToSpeakEnhancedVoicesDialogShown, true);
   }
 
   test::SpeechMonitor sm_;
@@ -129,8 +129,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
 
   void LoadURLAndSelectToSpeak(std::string url) {
     content::AccessibilityNotificationWaiter waiter(
-        GetWebContents(), ui::kAXModeComplete,
-        ax::mojom::Event::kLayoutComplete);
+        GetWebContents(), ui::kAXModeComplete, ax::mojom::Event::kLoadComplete);
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(url)));
     std::ignore = waiter.WaitForNotification();
 
@@ -221,6 +220,9 @@ class SelectToSpeakTest : public InProcessBrowserTest {
         module.selectToSpeak.setOnLoadDesktopCallbackForTest(() => {
             window.domAutomationController.send('ready');
           });
+        // Set enhanced network voices dialog as shown, because the pref
+        // change takes some time to propagate.
+        module.selectToSpeak.prefsManager_.enhancedVoicesDialogShown_ = true;
       })();
     )JS");
     std::string result =
@@ -330,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
   // and bring back the console observer.
   console_observer_.reset();
 
-  ash::ShellTestApi shell_test_api;
+  ShellTestApi shell_test_api;
   display::test::DisplayManagerTestApi(shell_test_api.display_manager())
       .UpdateDisplay("1+0-800x800,801+1-800x800");
   ASSERT_EQ(2u, shell_test_api.display_manager()->GetNumDisplays());

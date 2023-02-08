@@ -68,8 +68,6 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
     virtual void OnShippingOptionSectionOpened() = 0;
 
-    virtual void OnCreditCardEditorOpened() = 0;
-
     virtual void OnShippingAddressEditorOpened() = 0;
 
     virtual void OnContactInfoEditorOpened() = 0;
@@ -84,13 +82,13 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
 
     virtual void OnSpecDoneUpdating() = 0;
 
-    virtual void OnCvcPromptShown() = 0;
-
     virtual void OnProcessingSpinnerShown() = 0;
 
     virtual void OnProcessingSpinnerHidden() = 0;
 
     virtual void OnPaymentHandlerWindowOpened() = 0;
+
+    virtual void OnPaymentHandlerTitleSet() = 0;
   };
 
   PaymentRequestDialogView(const PaymentRequestDialogView&) = delete;
@@ -176,6 +174,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // Calculates the dialog width depending on whether or not the large payment
   // handler window is currently showing.
   int GetActualDialogWidth() const;
+
+  // Called when a PaymentHandler dialog detects a title being set from the
+  // underlying WebContents.
+  void OnPaymentHandlerTitleSet();
 
   ViewStack* view_stack_for_testing() { return view_stack_; }
   ControllerMap* controller_map_for_testing() { return &controller_map_; }

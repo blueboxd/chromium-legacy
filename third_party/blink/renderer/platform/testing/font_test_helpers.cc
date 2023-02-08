@@ -58,7 +58,7 @@ class TestFontSelector : public FontSelector {
             font_description.SyntheticItalicAllowed(),
         font_description.GetFontSelectionRequest(), normal_capabilities,
         font_description.FontOpticalSizing(), font_description.TextRendering(),
-        font_description.Orientation());
+        {}, font_description.Orientation());
     return SimpleFontData::Create(platform_data, CustomFontData::Create());
   }
 
@@ -98,7 +98,6 @@ class TestFontSelector : public FontSelector {
   void ReportEmojiSegmentGlyphCoverage(unsigned, unsigned) override {}
   ExecutionContext* GetExecutionContext() const override { return nullptr; }
   FontFaceCache* GetFontFaceCache() override { return nullptr; }
-  bool IsContextThread() const override { return true; }
 
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}

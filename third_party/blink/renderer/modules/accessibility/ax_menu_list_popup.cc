@@ -94,7 +94,7 @@ bool AXMenuListPopup::OnNativeClickAction() {
 }
 
 void AXMenuListPopup::AddChildren() {
-#if DCHECK_IS_ON()
+#if defined(AX_FAIL_FAST_BUILD)
   DCHECK(!IsDetached());
   DCHECK(!is_adding_children_) << " Reentering method on " << GetNode();
   base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
@@ -168,8 +168,8 @@ void AXMenuListPopup::DidHide() {
   AXObjectCacheImpl& cache = AXObjectCache();
   AXObject* descendant = ActiveDescendant();
   cache.PostNotification(this, ax::mojom::Event::kHide);
-  if (descendant)
-    cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
+  if (descendant)  // TODO(accessibility) Try removing. Line below is enough.
+    cache.MarkAXObjectDirtyWithCleanLayout(this);
   cache.MarkAXSubtreeDirtyWithCleanLayout(ParentObject());
 }
 

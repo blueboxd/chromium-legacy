@@ -8,8 +8,8 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
@@ -307,9 +307,34 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
 void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"internetApnPageTitle", IDS_SETTINGS_ACCESS_POINT_NAME_APN},
+      {"apn", IDS_SETTINGS_APN_INPUT_LABEL},
       {"apnPageAddNewApn", IDS_SETTINGS_ADD_NEW_APN},
+      {"apnSettingsDescriptionNoLink", IDS_SETTINGS_APN_DESCRIPTION_NO_LINK},
       {"apnSettingsDescriptionWithLink",
        IDS_SETTINGS_APN_DESCRIPTION_WITH_LEARN_MORE_LINK},
+      {"apnMenuDetails", IDS_SETTINGS_APN_MENU_DETAILS},
+      {"apnMenuDisable", IDS_SETTINGS_APN_MENU_DISABLE},
+      {"apnMenuEnable", IDS_SETTINGS_APN_MENU_ENABLE},
+      {"apnMenuRemove", IDS_SETTINGS_APN_MENU_REMOVE},
+      {"apnMoreActionsTitle", IDS_SETTINGS_APN_MORE_ACTIONS_TITLE},
+      {"apnDetailAddApnDialogTitle", IDS_SETTINGS_ADD_APN_DIALOG_TITLE},
+      {"apnDetailViewApnDialogTitle", IDS_SETTINGS_VIEW_APN_DIALOG_TITLE},
+      {"apnDetailEditApnDialogTitle", IDS_SETTINGS_EDIT_APN_DIALOG_TITLE},
+      {"apnDetailAdvancedSettings", IDS_SETTINGS_APN_DIALOG_ADVANCED_SETTING},
+      {"apnDetailApnTypes", IDS_SETTINGS_APN_DIALOG_APN_TYPES},
+      {"apnDetailApnTypeDefault",
+       IDS_SETTINGS_APN_DIALOG_APN_TYPE_DEFAULT_CHECKBOX},
+      {"apnDetailApnTypeAttach",
+       IDS_SETTINGS_APN_DIALOG_APN_TYPE_ATTACH_CHECKBOX},
+      {"apnDetailIpType", IDS_SETTINGS_APN_DIALOG_IP_TYPE_LABEL},
+      {"apnDetailAuthType", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_LABEL},
+      {"apnDetailTypeAuto", IDS_SETTINGS_APN_DIALOG_AUTO},
+      {"apnDetailAuthTypePAP", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_PAP},
+      {"apnDetailAuthTypeCHAP", IDS_SETTINGS_APN_DIALOG_AUTH_TYPE_CHAP},
+      {"apnDetailIpTypeIpv4", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4},
+      {"apnDetailIpTypeIpv6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV6},
+      {"apnDetailIpTypeIpv4_Ipv6", IDS_SETTINGS_APN_DIALOG_IP_TYPE_IPV4_IPV6},
+      {"apnAutoDetected", IDS_SETTINGS_APN_AUTO_DETECTED},
       {"hidePassword", IDS_SETTINGS_PASSWORD_HIDE},
       {"showPassword", IDS_SETTINGS_PASSWORD_SHOW},
       {"networkProxy", IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY},
@@ -446,7 +471,7 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   html_source->AddBoolean("isSimLockPolicyEnabled",
-                          chromeos::features::IsSimLockPolicyEnabled());
+                          ash::features::IsSimLockPolicyEnabled());
   html_source->AddBoolean("isApnRevampEnabled",
                           ash::features::IsApnRevampEnabled());
 }

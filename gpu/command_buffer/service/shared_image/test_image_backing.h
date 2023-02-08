@@ -37,11 +37,19 @@ class TestImageBacking : public SharedImageBacking {
 
   bool GetUploadFromMemoryCalledAndReset();
   bool GetReadbackToMemoryCalledAndReset();
+  using PurgeableCallback = base::RepeatingCallback<void(const gpu::Mailbox&)>;
+  void SetPurgeableCallbacks(
+      const PurgeableCallback& set_purgeable_callback,
+      const PurgeableCallback& set_not_purgeable_callback) {
+    set_purgeable_callback_ = set_purgeable_callback;
+    set_not_purgeable_callback_ = set_not_purgeable_callback;
+  }
 
   // SharedImageBacking implementation.
   SharedImageBackingType GetType() const override;
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;
+  void SetPurgeable(bool purgeable) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override {}
   bool UploadFromMemory(const SkPixmap& pixmap) override;
   bool ReadbackToMemory(SkPixmap& pixmap) override;
@@ -71,7 +79,8 @@ class TestImageBacking : public SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
-      WGPUBackendType backend_type) override;
+      WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats) override;
   std::unique_ptr<OverlayImageRepresentation> ProduceOverlay(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
@@ -84,6 +93,8 @@ class TestImageBacking : public SharedImageBacking {
 
   bool upload_from_memory_called_ = false;
   bool readback_to_memory_called_ = true;
+  PurgeableCallback set_purgeable_callback_;
+  PurgeableCallback set_not_purgeable_callback_;
 };
 
 }  // namespace gpu

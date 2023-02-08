@@ -44,7 +44,6 @@ namespace content {
 
 class BrowserContext;
 class PageDelegate;
-class PageImpl;
 class RenderFrameHostDelegate;
 class RenderViewHostDelegate;
 class RenderViewHostImpl;
@@ -163,9 +162,6 @@ class CONTENT_EXPORT FrameTree {
     // Returns true when the active RenderWidgetHostView should be hidden.
     virtual bool IsHidden() = 0;
 
-    // Called when current Page of this frame tree changes to `page`.
-    virtual void NotifyPageChanged(PageImpl& page) = 0;
-
     // If the FrameTree using this delegate is an inner/nested FrameTree, then
     // there may be a FrameTreeNode in the outer FrameTree that is considered
     // our outer delegate FrameTreeNode. This method returns the outer delegate
@@ -176,6 +172,11 @@ class CONTENT_EXPORT FrameTree {
 
     // Returns if this FrameTree represents a portal.
     virtual bool IsPortal() = 0;
+
+    // Set the `node` frame as focused in its own FrameTree as well as possibly
+    // changing the focused frame tree in the case of inner/outer FrameTrees.
+    virtual void SetFocusedFrame(FrameTreeNode* node,
+                                 SiteInstanceGroup* source) = 0;
   };
 
   // Type of FrameTree instance.
@@ -205,8 +206,6 @@ class CONTENT_EXPORT FrameTree {
 
   // A set of delegates are remembered here so that we can create
   // RenderFrameHostManagers.
-  // `dev_tools_frame_token` is the devtools token for the root `FrameTreeNode`
-  // of this new `FrameTree`.
   FrameTree(BrowserContext* browser_context,
             Delegate* delegate,
             NavigationControllerDelegate* navigation_controller_delegate,
@@ -216,8 +215,7 @@ class CONTENT_EXPORT FrameTree {
             RenderWidgetHostDelegate* render_widget_delegate,
             RenderFrameHostManager::Delegate* manager_delegate,
             PageDelegate* page_delegate,
-            Type type,
-            const base::UnguessableToken& devtools_frame_token);
+            Type type);
 
   FrameTree(const FrameTree&) = delete;
   FrameTree& operator=(const FrameTree&) = delete;
@@ -226,18 +224,19 @@ class CONTENT_EXPORT FrameTree {
 
   // Initializes the main frame for this FrameTree. That is it creates the
   // initial RenderFrameHost in the root node's RenderFrameHostManager, and also
-  // creates an initial NavigationEntry (if the InitialNavigationEntry feature
-  // is enabled) that potentially inherits `opener_for_origin`'s origin in its
-  // NavigationController. This method will call back into the delegates so it
-  // should only be called once they have completed their initialization. Pass
-  // in frame_policy so that it can be set in the root node's replication_state.
+  // creates an initial NavigationEntry that potentially inherits
+  // `opener_for_origin`'s origin in its NavigationController. This method will
+  // call back into the delegates so it should only be called once they have
+  // completed their initialization. Pass in frame_policy so that it can be set
+  // in the root node's replication_state.
   // TODO(carlscab): It would be great if initialization could happened in the
   // constructor so we do not leave objects in a half initialized state.
   void Init(SiteInstance* main_frame_site_instance,
             bool renderer_initiated_creation,
             const std::string& main_frame_name,
             RenderFrameHostImpl* opener_for_origin,
-            const blink::FramePolicy& frame_policy);
+            const blink::FramePolicy& frame_policy,
+            const base::UnguessableToken& devtools_frame_token);
 
   Type type() const { return type_; }
 
@@ -512,22 +511,6 @@ class CONTENT_EXPORT FrameTree {
   // each inner FrameTree is attached.
   void FocusOuterFrameTrees();
 
-  absl::optional<blink::features::FencedFramesImplementationType>
-  FencedFramesImplementationType() const {
-    return fenced_frames_impl_;
-  }
-
-  bool IsFencedFramesMPArchBased() const {
-    return fenced_frames_impl_.has_value() &&
-           fenced_frames_impl_.value() ==
-               blink::features::FencedFramesImplementationType::kMPArch;
-  }
-  bool IsFencedFramesShadowDOMBased() const {
-    return fenced_frames_impl_.has_value() &&
-           fenced_frames_impl_.value() ==
-               blink::features::FencedFramesImplementationType::kShadowDOM;
-  }
-
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
@@ -579,9 +562,6 @@ class CONTENT_EXPORT FrameTree {
 
   // Overall load progress.
   double load_progress_;
-
-  absl::optional<blink::features::FencedFramesImplementationType>
-      fenced_frames_impl_;
 
   // Whether the initial empty page has been accessed by another page, making it
   // unsafe to show the pending URL. Usually false unless another window tries

@@ -22,7 +22,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_io.h"
@@ -190,7 +189,7 @@ InputController::InputController(
     const media::AudioParameters& output_params,
     const media::AudioParameters& device_params,
     StreamType type)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
       event_handler_(event_handler),
       stream_(nullptr),
       sync_writer_(sync_writer),
@@ -259,7 +258,10 @@ void InputController::MaybeSetUpAudioProcessing(
   if (!processing_config->settings.NeedPlayoutReference())
     return;
 
-  int fifo_size = media::kChromeWideEchoCancellationProcessingFifoSize.Get();
+  int fifo_size =
+      base::FeatureList::IsEnabled(media::kChromeWideEchoCancellation)
+          ? media::kChromeWideEchoCancellationProcessingFifoSize.Get()
+          : 0;
 
   // Only use the FIFO/new thread if its size is explicitly set.
   if (fifo_size) {
@@ -445,9 +447,8 @@ void InputController::Close() {
   sync_writer_->Close();
 
 #if defined(AUDIO_POWER_MONITORING)
-  // Send UMA stats if enabled.
+  // Send stats if enabled.
   if (power_measurement_is_enabled_) {
-    LogSilenceState(silence_state_);
     log_string = base::StringPrintf("%s(silence_state=%s)", kLogStringPrefix,
                                     SilenceStateToString(silence_state_));
     event_handler_->OnLog(log_string);
@@ -647,49 +648,21 @@ void InputController::UpdateSilenceState(bool silence) {
   }
 }
 
-void InputController::LogSilenceState(SilenceState value) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioInputControllerSessionSilenceReport",
-                            value, SILENCE_STATE_MAX + 1);
-}
 #endif
 
 void InputController::LogCaptureStartupResult(CaptureStartupResult result) {
-  switch (type_) {
-    case LOW_LATENCY:
-      UMA_HISTOGRAM_ENUMERATION("Media.LowLatencyAudioCaptureStartupSuccess",
-                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
-      break;
-    case HIGH_LATENCY:
-      UMA_HISTOGRAM_ENUMERATION("Media.HighLatencyAudioCaptureStartupSuccess",
-                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
-      break;
-    case VIRTUAL:
-      UMA_HISTOGRAM_ENUMERATION("Media.VirtualAudioCaptureStartupSuccess",
-                                result, CAPTURE_STARTUP_RESULT_MAX + 1);
-      break;
-    default:
-      break;
-  }
+  if (type_ != LOW_LATENCY)
+    return;
+  UMA_HISTOGRAM_ENUMERATION("Media.LowLatencyAudioCaptureStartupSuccess",
+                            result, CAPTURE_STARTUP_RESULT_MAX + 1);
 }
 
 void InputController::LogCallbackError() {
-  bool error_during_callback = audio_callback_->error_during_callback();
-  switch (type_) {
-    case LOW_LATENCY:
-      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.LowLatencyCallbackError",
-                            error_during_callback);
-      break;
-    case HIGH_LATENCY:
-      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.HighLatencyCallbackError",
-                            error_during_callback);
-      break;
-    case VIRTUAL:
-      UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.VirtualCallbackError",
-                            error_during_callback);
-      break;
-    default:
-      break;
-  }
+  if (type_ != LOW_LATENCY)
+    return;
+
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Capture.LowLatencyCallbackError",
+                        audio_callback_->error_during_callback());
 }
 
 void InputController::LogMessage(const std::string& message) {

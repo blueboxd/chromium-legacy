@@ -37,6 +37,7 @@
 #include "cc/trees/target_property.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -209,8 +210,7 @@ LinkHighlightImpl::LinkHighlightFragment::PaintContentsToDisplayList() {
 
   PaintRecorder recorder;
   gfx::Rect record_bounds = PaintableRegion();
-  cc::PaintCanvas* canvas =
-      recorder.beginRecording(record_bounds.width(), record_bounds.height());
+  cc::PaintCanvas* canvas = recorder.beginRecording();
 
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);

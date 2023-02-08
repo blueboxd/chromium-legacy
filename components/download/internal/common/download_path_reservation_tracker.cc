@@ -5,6 +5,7 @@
 #include "components/download/public/common/download_path_reservation_tracker.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <map>
 #include <string>
@@ -21,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -39,7 +39,10 @@ namespace download {
 
 namespace {
 
-typedef DownloadItem* ReservationKey;
+// Identifier for a `DownloadItem` to scope the lifetime for references.
+// `ReservationKey` is derived from `DownloadItem*`, used in comparison only,
+// and are never deferenced.
+using ReservationKey = std::uintptr_t;
 typedef std::map<ReservationKey, base::FilePath> ReservationMap;
 
 // The length of the suffix string we append for an intermediate file name.
@@ -92,7 +95,7 @@ class DownloadItemObserver : public DownloadItem::Observer,
 // Returns true if the given path is in use by a path reservation,
 // and has a different key than |item| if it is not null. Called on the task
 // runner returned by DownloadPathReservationTracker::GetTaskRunner().
-bool IsPathReservedInternal(const base::FilePath& path, DownloadItem* item) {
+bool IsPathReservedInternal(const base::FilePath& path, ReservationKey item) {
   // No reservation map => no reservations.
   if (!g_reservation_map)
     return false;
@@ -110,7 +113,7 @@ bool IsPathReservedInternal(const base::FilePath& path, DownloadItem* item) {
 // Returns true if the given path is in use by a path reservation,
 // and has a different key than |item|. Called on the task
 // runner returned by DownloadPathReservationTracker::GetTaskRunner().
-bool IsAdditionalPathReserved(const base::FilePath& path, DownloadItem* item) {
+bool IsAdditionalPathReserved(const base::FilePath& path, ReservationKey item) {
 #if BUILDFLAG(IS_ANDROID)
   // If download collection is used, only file name needs to be
   // unique.
@@ -123,7 +126,7 @@ bool IsAdditionalPathReserved(const base::FilePath& path, DownloadItem* item) {
 
 // Returns true if the given path is in use by a path reservation.
 bool IsPathReserved(const base::FilePath& path) {
-  return IsAdditionalPathReserved(path, nullptr);
+  return IsAdditionalPathReserved(path, /*item=*/0);
 }
 
 // Returns true if the given path is in use by any path reservation or the
@@ -446,7 +449,9 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       if (new_target_path != last_target_path_) {
         DownloadPathReservationTracker::GetTaskRunner()->PostTask(
             FROM_HERE,
-            base::BindOnce(&UpdateReservation, download, new_target_path));
+            base::BindOnce(&UpdateReservation,
+                           reinterpret_cast<ReservationKey>(download),
+                           new_target_path));
         last_target_path_ = new_target_path;
       }
       break;
@@ -465,8 +470,9 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // restarted. Holding on to the reservation now would prevent the name
       // from being used for a subsequent retry attempt.
       DownloadPathReservationTracker::GetTaskRunner()->PostTask(
-          FROM_HERE, base::BindOnce(&RevokeReservation,
-                                    base::UnsafeDanglingUntriaged(download)));
+          FROM_HERE,
+          base::BindOnce(&RevokeReservation,
+                         reinterpret_cast<ReservationKey>(download)));
       download->RemoveObserver(this);
       download->RemoveUserData(&kUserDataKey);
       break;
@@ -482,7 +488,7 @@ void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
   NOTREACHED();
   DownloadPathReservationTracker::GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&RevokeReservation,
-                                base::UnsafeDanglingUntriaged(download)));
+                                reinterpret_cast<ReservationKey>(download)));
 }
 
 // static
@@ -508,7 +514,7 @@ void DownloadPathReservationTracker::GetReservedPath(
   base::FilePath source_path;
   if (download_item->GetURL().SchemeIsFile())
     net::FileURLToFilePath(download_item->GetURL(), &source_path);
-  CreateReservationInfo info = {static_cast<ReservationKey>(download_item),
+  CreateReservationInfo info = {reinterpret_cast<ReservationKey>(download_item),
                                 source_path,
                                 target_path,
                                 default_path,
@@ -518,9 +524,8 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 download_item->GetStartTime(),
                                 conflict_action};
 
-  base::PostTaskAndReplyWithResult(
-      GetTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&CreateReservation, info, reserved_path),
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&CreateReservation, info, reserved_path),
       base::BindOnce(&RunGetReservedPathCallback, std::move(callback),
                      base::Owned(reserved_path)));
 }
@@ -542,9 +547,10 @@ void DownloadPathReservationTracker::CheckDownloadPathForExistingDownload(
     const base::FilePath& target_path,
     DownloadItem* download_item,
     CheckDownloadPathCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      GetTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&IsAdditionalPathReserved, target_path, download_item),
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&IsAdditionalPathReserved, target_path,
+                     reinterpret_cast<ReservationKey>(download_item)),
       std::move(callback));
 }
 

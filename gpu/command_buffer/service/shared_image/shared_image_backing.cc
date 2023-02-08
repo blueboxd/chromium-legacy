@@ -97,7 +97,7 @@ void SharedImageBacking::OnContextLost() {
 
 SkImageInfo SharedImageBacking::AsSkImageInfo() const {
   return SkImageInfo::Make(size_.width(), size_.height(),
-                           viz::ResourceFormatToClosestSkColorType(
+                           viz::ToClosestSkColorType(
                                /*gpu_compositing=*/true, format()),
                            alpha_type_, color_space_.ToSkColorSpace());
 }
@@ -131,7 +131,7 @@ void SharedImageBacking::OnMemoryDump(
       pmd->CreateAllocatorDump(dump_name);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  EstimatedSizeForMemTracking());
+                  GetEstimatedSizeForMemoryDump());
 
   dump->AddString("type", "", GetName());
   dump->AddString("dimensions", "", size().ToString());
@@ -167,7 +167,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   return nullptr;
 }
 
@@ -203,6 +204,23 @@ SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
   return nullptr;
 }
 #endif
+
+void SharedImageBacking::UpdateEstimatedSize(size_t estimated_size_bytes) {
+  if (estimated_size_bytes == estimated_size_)
+    return;
+
+  if (!refs_.empty()) {
+    // Propagate the estimated size the memory tracker.
+    auto* memory_tracker = refs_[0]->tracker();
+    if (estimated_size_ < estimated_size_bytes) {
+      memory_tracker->TrackMemAlloc(estimated_size_bytes - estimated_size_);
+    } else {
+      memory_tracker->TrackMemFree(estimated_size_ - estimated_size_bytes);
+    }
+  }
+
+  estimated_size_ = estimated_size_bytes;
+}
 
 void SharedImageBacking::SetNotRefCounted() {
   DCHECK(!HasAnyRefs());
@@ -289,7 +307,13 @@ void SharedImageBacking::OnWriteSucceeded() {
   scoped_write_uma_.emplace();
 }
 
-size_t SharedImageBacking::EstimatedSizeForMemTracking() const {
+size_t SharedImageBacking::GetEstimatedSize() const {
+  AutoLock auto_lock(this);
+  return estimated_size_;
+}
+
+size_t SharedImageBacking::GetEstimatedSizeForMemoryDump() const {
+  AutoLock auto_lock(this);
   return estimated_size_;
 }
 

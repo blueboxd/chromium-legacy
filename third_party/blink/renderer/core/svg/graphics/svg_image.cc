@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread_scheduler.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
@@ -320,6 +321,21 @@ bool SVGImage::GetIntrinsicSizingInfo(
   if (!layout_root)
     return false;
   layout_root->UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
+
+  if (!intrinsic_sizing_info.has_width || !intrinsic_sizing_info.has_height) {
+    // We're not using an intrinsic aspect ratio to resolve a missing
+    // intrinsic width or height when preserveAspectRatio is none.
+    // (Ref: crbug.com/584172)
+    SVGSVGElement* svg = RootElement();
+    if (svg->preserveAspectRatio()->CurrentValue()->Align() ==
+        SVGPreserveAspectRatio::kSvgPreserveaspectratioNone) {
+      // Clear all the fields so that the concrete object size will equal the
+      // default object size.
+      intrinsic_sizing_info = IntrinsicSizingInfo();
+      intrinsic_sizing_info.has_width = false;
+      intrinsic_sizing_info.has_height = false;
+    }
+  }
   return true;
 }
 
@@ -332,14 +348,6 @@ gfx::SizeF SVGImage::ConcreteObjectSize(
   // https://www.w3.org/TR/css3-images/#default-sizing
   if (intrinsic_sizing_info.has_width && intrinsic_sizing_info.has_height)
     return intrinsic_sizing_info.size;
-
-  // We're not using an intrinsic aspect ratio to resolve a missing
-  // intrinsic width or height when preserveAspectRatio is none.
-  // (Ref: crbug.com/584172)
-  SVGSVGElement* svg = RootElement();
-  if (svg->preserveAspectRatio()->CurrentValue()->Align() ==
-      SVGPreserveAspectRatio::kSvgPreserveaspectratioNone)
-    return default_object_size;
 
   if (intrinsic_sizing_info.has_width) {
     if (intrinsic_sizing_info.aspect_ratio.IsEmpty()) {
@@ -481,8 +489,7 @@ void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
   const gfx::SizeF size =
       gfx::ScaleSize(draw_info.ContainerSize(), draw_info.Zoom());
   const gfx::Rect dest_rect(gfx::ToRoundedSize(size));
-  cc::PaintCanvas* canvas =
-      recorder.beginRecording(gfx::RectToSkRect(dest_rect));
+  cc::PaintCanvas* canvas = recorder.beginRecording();
   DrawForContainer(draw_info, canvas, cc::PaintFlags(), gfx::RectF(dest_rect),
                    gfx::RectF(size));
   builder.set_paint_record(recorder.finishRecordingAsPicture(), dest_rect,
@@ -868,7 +875,8 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
         nullptr);
     frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
     frame->Init(/*opener=*/nullptr, DocumentToken(),
-                /*policy_container=*/nullptr, StorageKey());
+                /*policy_container=*/nullptr, StorageKey(),
+                /*document_ukm_source_id=*/ukm::kInvalidSourceId);
   }
 
   // SVG Images will always synthesize a viewBox, if it's not available, and
@@ -922,6 +930,11 @@ bool SVGImage::IsSizeAvailable() {
 
 String SVGImage::FilenameExtension() const {
   return "svg";
+}
+
+const AtomicString& SVGImage::MimeType() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, svg_mime_type, ("image/svg+xml"));
+  return svg_mime_type;
 }
 
 }  // namespace blink

@@ -73,8 +73,8 @@ class SendMouseEventsDisabledFormControlsPolicyTest
 };
 
 IN_PROC_BROWSER_TEST_P(SendMouseEventsDisabledFormControlsPolicyTest, Test) {
-  bool expected_enabled = GetParam() ==
-    SendMouseEventsDisabledFormControlsPolicyValue::kEnabled;
+  bool expected_enabled =
+      GetParam() == SendMouseEventsDisabledFormControlsPolicyValue::kEnabled;
   AssertSendMouseEventsDisabledFormControlsEnabled(expected_enabled);
 }
 

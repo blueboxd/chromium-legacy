@@ -117,6 +117,9 @@ class FakeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   void NotifyFeedbackDelayed() const override;
   feedback::FeedbackUploader* GetFeedbackUploaderForContext(
       content::BrowserContext* context) const override;
+  void OpenFeedback(
+      content::BrowserContext* context,
+      extensions::api::feedback_private::FeedbackSource source) const override;
 
  private:
   base::RepeatingCallback<void(bool)> on_fetch_completed_;
@@ -173,6 +176,10 @@ std::string FakeFeedbackPrivateDelegate::GetSignedInUserEmail(
 }
 
 void FakeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {}
+
+void FakeFeedbackPrivateDelegate::OpenFeedback(
+    content::BrowserContext* context,
+    extensions::api::feedback_private::FeedbackSource source) const {}
 
 feedback::FeedbackUploader*
 FakeFeedbackPrivateDelegate::GetFeedbackUploaderForContext(
@@ -338,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest, GetPerformanceTraceId) {
 // Test that feedback params and data are populated with correct data before
 // passed to SendFeedback method of the feedback service.
 // - System logs and histograms are included.
-// - Screenshot is included.
+// - Screenshot is included so tab titles will be sent too.
 // - Consent granted.
 // - Non-empty extra_diagnostics provided.
 // - sentBluetoothLog flag is set true.
@@ -364,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
   report->feedback_context->assistant_debug_info_allowed = true;
   const FeedbackParams expected_params{/*is_internal_email=*/true,
                                        /*load_system_info=*/true,
-                                       /*send_tab_titles=*/false,
+                                       /*send_tab_titles=*/true,
                                        /*send_histograms=*/true,
                                        /*send_bluetooth_logs=*/true};
 
@@ -396,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOsFeedbackDelegateTest,
 // Test that feedback params and data are populated with correct data before
 // passed to SendFeedback method of the feedback service.
 // - System logs and histograms are included.
-// - Screenshot is included.
+// - Screenshot is included so tab titles will be sent too.
 // - Consent granted.
 // - Non-empty extra_diagnostics provided.
 // - sentBluetoothLog flag is set false.
@@ -423,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(
   report->feedback_context->assistant_debug_info_allowed = true;
   const FeedbackParams expected_params{/*is_internal_email=*/true,
                                        /*load_system_info=*/true,
-                                       /*send_tab_titles=*/false,
+                                       /*send_tab_titles=*/true,
                                        /*send_histograms=*/true,
                                        /*send_bluetooth_logs=*/false};
 

@@ -37,7 +37,6 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPR
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_TO_GTS_ANIMATION;
 
 import android.content.Intent;
-import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,6 +48,7 @@ import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -65,12 +65,14 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
+import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
@@ -83,10 +85,13 @@ import org.chromium.chrome.browser.tasks.tab_management.TabListRecyclerView.Recy
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ButtonType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.IconPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ShowMode;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
+import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -153,12 +158,15 @@ public class TabSelectionEditorTest {
     private WeakReference<TabSelectionEditorLayout> mRef;
 
     private ViewGroup mParentView;
+    private SnackbarManager mSnackbarManager;
+    private BookmarkModel mBookmarkModel;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mTabModelSelector = sActivityTestRule.getActivity().getTabModelSelector();
         mParentView = (ViewGroup) sActivityTestRule.getActivity().findViewById(R.id.coordinator);
+        mSnackbarManager = sActivityTestRule.getActivity().getSnackbarManager();
         final boolean displayGroups =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SELECTION_EDITOR_V2);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -167,17 +175,19 @@ public class TabSelectionEditorTest {
                     sActivityTestRule.getActivity().getTabContentManager(),
                     mSetRecyclerViewPosition, getMode(),
                     sActivityTestRule.getActivity().getCompositorViewHolderForTesting(),
-                    displayGroups);
+                    displayGroups, mSnackbarManager);
 
             mTabSelectionEditorController = mTabSelectionEditorCoordinator.getController();
             mTabSelectionEditorLayout =
                     mTabSelectionEditorCoordinator.getTabSelectionEditorLayoutForTesting();
             mRef = new WeakReference<>(mTabSelectionEditorLayout);
+            mBookmarkModel = sActivityTestRule.getActivity().getBookmarkModelForTesting();
         });
     }
 
     @After
     public void tearDown() {
+        TabSelectionEditorShareAction.setIntentCallbackForTesting(null);
         if (mTabSelectionEditorCoordinator != null) {
             if (sActivityTestRule.getActivity().findViewById(R.id.app_menu_list) != null) {
                 Espresso.pressBack();
@@ -351,7 +361,6 @@ public class TabSelectionEditorTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1237368")
     public void testToolbarGroupButton() {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
@@ -576,6 +585,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "https://crbug.com/1396326")
     @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
     public void testToolbarMenuItem_GroupActionAndUndo() throws Exception {
         prepareBlankTab(2, false);
@@ -861,6 +871,148 @@ public class TabSelectionEditorTest {
         mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(1);
         mRobot.resultRobot.verifyToolbarActionViewDisabled(shareId).verifyToolbarSelectionText(
                 "2 tabs");
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    public void testToolbarMenuItem_BookmarkActionSingleTab() throws Exception {
+        prepareBlankTab(1, false);
+
+        final String httpsCanonicalUrl =
+                sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
+        sActivityTestRule.loadUrl(httpsCanonicalUrl);
+
+        List<Tab> tabs = getTabsInCurrentTabModel();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(
+                    TabSelectionEditorBookmarkAction.createAction(sActivityTestRule.getActivity(),
+                            ShowMode.IF_ROOM, ButtonType.ICON_AND_TEXT, IconPosition.END));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+        });
+        showSelectionEditor(tabs);
+
+        final int bookmarkId = R.id.tab_selection_editor_bookmark_menu_item;
+        mRobot.actionRobot.clickItemAtAdapterPosition(0);
+        mRobot.actionRobot.clickToolbarActionView(bookmarkId);
+
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(mBookmarkModel.doesBookmarkExist(
+                    mBookmarkModel.getUserBookmarkIdForTab(tabs.get(0))));
+
+            Snackbar currentSnackbar = mSnackbarManager.getCurrentSnackbarForTesting();
+            Assert.assertEquals(
+                    Snackbar.UMA_BOOKMARK_ADDED, currentSnackbar.getIdentifierForTesting());
+            Assert.assertEquals("Bookmarked", currentSnackbar.getTextForTesting());
+            currentSnackbar.getController().onAction(null);
+        });
+        BookmarkEditActivity activity = BookmarkTestUtil.waitForEditActivity();
+        activity.finish();
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    public void testToolbarMenuItem_BookmarkActionGroupsOnly() throws Exception {
+        prepareBlankTabGroup(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModelFilter();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(
+                    TabSelectionEditorBookmarkAction.createAction(sActivityTestRule.getActivity(),
+                            ShowMode.IF_ROOM, ButtonType.ICON_AND_TEXT, IconPosition.END));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+        });
+        showSelectionEditor(tabs);
+
+        final int bookmarkId = R.id.tab_selection_editor_bookmark_menu_item;
+        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(1);
+        mRobot.actionRobot.clickToolbarActionView(bookmarkId);
+
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (Tab tab : tabs) {
+                Assert.assertTrue(mBookmarkModel.doesBookmarkExist(
+                        mBookmarkModel.getUserBookmarkIdForTab(tab)));
+            }
+            Snackbar currentSnackbar = mSnackbarManager.getCurrentSnackbarForTesting();
+            Assert.assertEquals(
+                    Snackbar.UMA_BOOKMARK_ADDED, currentSnackbar.getIdentifierForTesting());
+            Assert.assertEquals("Bookmarked", currentSnackbar.getTextForTesting());
+        });
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+        TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mTabSelectionEditorController.handleBackPressed());
+        mRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        Snackbar currentSnackbar = mSnackbarManager.getCurrentSnackbarForTesting();
+        Assert.assertEquals("Bookmarked", currentSnackbar.getTextForTesting());
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mSnackbarManager.dismissSnackbars(
+                                mSnackbarManager.getCurrentSnackbarForTesting().getController()));
+    }
+
+    @Test
+    @MediumTest
+    @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
+    public void testToolbarMenuItem_BookmarkActionTabsWithGroups() throws Exception {
+        final String httpsCanonicalUrl =
+                sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTPS_CANONICAL_URL);
+        sActivityTestRule.loadUrl(httpsCanonicalUrl);
+
+        ArrayList<String> urls = new ArrayList<String>();
+        urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_HTTP_CANONICAL_URL));
+        urls.add(sActivityTestRule.getTestServer().getURL(PAGE_WITH_NO_CANONICAL_URL));
+
+        prepareTabGroupWithUrls(urls, false);
+        List<Tab> tabs = getTabsInCurrentTabModelFilter();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<TabSelectionEditorAction> actions = new ArrayList<>();
+            actions.add(
+                    TabSelectionEditorBookmarkAction.createAction(sActivityTestRule.getActivity(),
+                            ShowMode.IF_ROOM, ButtonType.ICON_AND_TEXT, IconPosition.END));
+
+            mTabSelectionEditorController.configureToolbarWithMenuItems(actions, null);
+        });
+        showSelectionEditor(tabs);
+
+        final int bookmarkId = R.id.tab_selection_editor_bookmark_menu_item;
+        mRobot.resultRobot.verifyToolbarActionViewWithText(bookmarkId, "Bookmark tabs");
+        mRobot.resultRobot.verifyToolbarActionViewDisabled(bookmarkId);
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0).clickItemAtAdapterPosition(1);
+
+        mRobot.resultRobot.verifyToolbarActionViewEnabled(bookmarkId)
+                .verifyToolbarSelectionText("3 tabs");
+
+        View bookmark = mTabSelectionEditorLayout.getToolbar().findViewById(bookmarkId);
+        assertEquals("Bookmark 3 selected tabs", bookmark.getContentDescription());
+
+        mRobot.actionRobot.clickToolbarActionView(bookmarkId);
+
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Snackbar currentSnackbar = mSnackbarManager.getCurrentSnackbarForTesting();
+            Assert.assertEquals(
+                    Snackbar.UMA_BOOKMARK_ADDED, currentSnackbar.getIdentifierForTesting());
+            Assert.assertEquals("Bookmarked", currentSnackbar.getTextForTesting());
+            currentSnackbar.getController().onAction(null);
+        });
+
+        BookmarkAddEditFolderActivity activity = BookmarkTestUtil.waitForAddEditFolderActivity();
+        activity.finish();
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
     }
 
     @Test
@@ -1234,7 +1386,6 @@ public class TabSelectionEditorTest {
     @MediumTest
     @EnableFeatures({ChromeFeatureList.TAB_SELECTION_EDITOR_V2})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.N, message = "crbug/1374370")
     public void testToolbarMenuItem_SelectAllMenu() {
         prepareBlankTab(2, false);
         List<Tab> tabs = getTabsInCurrentTabModel();
@@ -1415,6 +1566,9 @@ public class TabSelectionEditorTest {
         }
     }
 
+    /**
+     * Retrieves all tabs from the current tab model
+     */
     private List<Tab> getTabsInCurrentTabModel() {
         List<Tab> tabs = new ArrayList<>();
 
@@ -1426,6 +1580,10 @@ public class TabSelectionEditorTest {
         return tabs;
     }
 
+    /**
+     * Retrieves all non-grouped tabs and the last focused tab in each tab group from the current
+     * tab model
+     */
     private List<Tab> getTabsInCurrentTabModelFilter() {
         List<Tab> tabs = new ArrayList<>();
 

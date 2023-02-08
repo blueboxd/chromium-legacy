@@ -128,10 +128,7 @@ source_set("static_main_function_params") {
   ]
   public_deps = [ "//base" ]
 
-  public_configs = [
-    ":static_switches_defines",
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-  ]
+  public_configs = [ ":static_switches_defines" ]
 }
 
 # Target for depending on main_function_params.h. This can be included without
@@ -240,17 +237,13 @@ source_set("common_sources") {
     "//content:content_implementation",
   ]
 
-  public_configs = [
-    "//v8:external_startup_data",
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
-  ]
+  public_configs = [ "//v8:external_startup_data" ]
 
   public_deps = [
     ":interfaces",
     ":main_function_params",
     ":renderer_type",
     ":switches",
-    ":trust_tokens_mojo_bindings",
 
     # TODO(crbug.com/977637): Remove when
     # content::LaunchUtilityProcessServiceDeprecated() gets removed.
@@ -439,19 +432,6 @@ mojom("interfaces") {
       ]
       traits_deps = [ "//ipc" ]
     },
-  ]
-}
-
-mojom("trust_tokens_mojo_bindings") {
-  generate_java = true
-  sources = [ "trust_tokens.mojom" ]
-  public_deps = [
-    "//services/network/public/mojom",
-
-    # Generating Java code requires that we depend directly, not transitively,
-    # on this target, because it contains symbols needed by the generated Java
-    # classes.
-    "//services/network/public/mojom:url_loader_base",
   ]
 }
 

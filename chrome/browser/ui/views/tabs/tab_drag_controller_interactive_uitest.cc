@@ -26,7 +26,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -580,7 +579,7 @@ class DetachToBrowserTabDragControllerTest
     // causes odd behavior [e.g. on macOS 10.10, the mouse-up will reactivate
     // the first window].
     if (browser_list->size() != 2u) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&DetachToBrowserTabDragControllerTest::
                              ReleaseInputAfterWindowDetached,
@@ -1676,7 +1675,7 @@ class MaximizedBrowserWindowWaiter {
  private:
   bool CheckMaximized() {
     if (!window_->IsMaximized()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               base::IgnoreResult(&MaximizedBrowserWindowWaiter::CheckMaximized),
@@ -1721,17 +1720,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
 
-  bool check_new_window_active = true;
-#if defined(OS_MAC)
-  // AppKit 10.10 asynchronously reactivates the first
-  // window. This behavior is non-deterministic, and appears to be a test-only
-  // issue. Thus, we just skip the test check. https://crbug.com/862859.
-  if (base::mac::IsOS10_10())
-    check_new_window_active = false;
-#endif
-  if (check_new_window_active) {
-    EXPECT_TRUE(new_browser->window()->IsActive());
-  }
+  EXPECT_TRUE(new_browser->window()->IsActive());
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   EXPECT_FALSE(tab_strip2->GetDragContext()->IsDragSessionActive());
 

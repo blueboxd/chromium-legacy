@@ -8,12 +8,14 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "cc/paint/paint_op.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ignore_paint_timing_scope.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_under_invalidation_checker.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace blink {
 
@@ -120,13 +122,13 @@ void PaintController::RecordSelection(
 
 bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
                                               DisplayItem::Type type) {
+  last_matching_item_ = kNotFound;
+  last_matching_client_invalidation_reason_ = PaintInvalidationReason::kNone;
+
   if (usage_ == kTransient)
     return false;
 
   if (benchmark_mode_ == PaintBenchmarkMode::kCachingDisabled)
-    return false;
-
-  if (!ClientCacheIsValid(client))
     return false;
 
   if (IsCheckingUnderInvalidation()) {
@@ -135,19 +137,35 @@ bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
     return false;
   }
 
-  auto cached_item = FindCachedItem(
-      client, DisplayItem::Id(client.Id(), type, current_fragment_));
+  DisplayItem::Id id(client.Id(), type, current_fragment_);
+#if DCHECK_IS_ON()
+  last_checked_cached_item_id_ = id.AsHashKey();
+#endif
+
+  if (client.IsJustCreated() || !client.IsCacheable()) {
+    return false;
+  }
+
+  auto cached_item = FindCachedItem(client, id);
   if (cached_item == kNotFound) {
     // See FindOutOfOrderCachedItemForward() for explanation of the situation.
     return false;
   }
 
-  ++num_cached_new_items_;
   next_item_to_match_ = cached_item + 1;
-  // Items before |next_item_to_match_| have been copied so we don't need to
+  // Items before |next_item_to_match_| have been matched so we don't need to
   // index them.
   if (next_item_to_match_ > next_item_to_index_)
     next_item_to_index_ = next_item_to_match_;
+
+  if (!ClientCacheIsValid(client)) {
+    last_matching_item_ = cached_item;
+    last_matching_client_invalidation_reason_ =
+        client.GetPaintInvalidationReason();
+    return false;
+  }
+
+  ++num_cached_new_items_;
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     EnsureUnderInvalidationChecker().WouldUseCachedItem(cached_item);
@@ -165,6 +183,51 @@ bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
   return true;
 }
 
+#if DCHECK_IS_ON()
+void PaintController::AssertLastCheckedCachedItem(
+    const DisplayItemClient& client,
+    DisplayItem::Type type) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
+      ShouldForcePaintForBenchmark() || usage_ == PaintController::kTransient) {
+    return;
+  }
+
+  DCHECK(last_checked_cached_item_id_ ==
+         DisplayItem::Id(client.Id(), type, current_fragment_).AsHashKey());
+}
+#endif
+
+sk_sp<SkTextBlob> PaintController::CachedTextBlob() const {
+  if (!IsNonLayoutFullPaintInvalidationReason(
+          last_matching_client_invalidation_reason_)) {
+    return nullptr;
+  }
+  const auto* cached_item =
+      DynamicTo<DrawingDisplayItem>(MatchingCachedItemToBeRepainted());
+  if (!cached_item) {
+    return nullptr;
+  }
+  const PaintRecord* record = cached_item->GetPaintRecord().get();
+  if (!record || record->size() != 1) {
+    return nullptr;
+  }
+  const cc::PaintOp& op = record->GetFirstOp();
+  if (op.GetType() != cc::PaintOpType::DrawTextBlob) {
+    return nullptr;
+  }
+  return static_cast<const cc::DrawTextBlobOp&>(op).blob;
+}
+
+const DisplayItem* PaintController::MatchingCachedItemToBeRepainted() const {
+  if (last_matching_item_ == kNotFound) {
+    return nullptr;
+  }
+  DisplayItem& item =
+      current_paint_artifact_->GetDisplayItemList()[last_matching_item_];
+  DCHECK(!item.IsTombstone());
+  return &item;
+}
+
 bool PaintController::UseCachedSubsequenceIfPossible(
     const DisplayItemClient& client) {
   if (usage_ == kTransient)
@@ -175,15 +238,16 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  if (!ClientCacheIsValid(client))
-    return false;
-
   if (IsCheckingUnderInvalidation()) {
     // We are checking under-invalidation of an ancestor subsequence enclosing
     // this one. The ancestor subsequence is supposed to have already "copied",
     // so we should let the client continue to actually paint the descendant
     // subsequences without "copying".
     ++num_cached_new_subsequences_;
+    return false;
+  }
+
+  if (client.IsJustCreated() || !client.IsCacheable()) {
     return false;
   }
 
@@ -202,7 +266,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
   if (end_item_index > start_item_index &&
       current_paint_artifact_->GetDisplayItemList()[start_item_index]
           .IsTombstone()) {
-    // The subsequence has already been copied, indicating that the same client
+    // The subsequence has already been matched, indicating that the same client
     // created multiple subsequences. If DCHECK_IS_ON(), then we should have
     // encountered the DCHECK at the end of EndSubsequence() during the previous
     // paint.
@@ -214,11 +278,14 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     // We are matching new and cached display items sequentially. Skip the
     // subsequence for later sequential matching of individual display items.
     next_item_to_match_ = end_item_index;
-    // Items before |next_item_to_match_| have been copied so we don't need to
+    // Items before |next_item_to_match_| have been matched so we don't need to
     // index them.
     if (next_item_to_match_ > next_item_to_index_)
       next_item_to_index_ = next_item_to_match_;
   }
+
+  if (!ClientCacheIsValid(client))
+    return false;
 
   num_cached_new_items_ += end_item_index - start_item_index;
   ++num_cached_new_subsequences_;
@@ -230,7 +297,7 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  // This subsequence was copied from the cache, so client must already be
+  // This subsequence was moved from the cache, so client must already be
   // valid, hence we don't call MarkClientForValidation(client).
   AppendSubsequenceByMoving(client, subsequence_index,
                             markers.start_chunk_index, markers.end_chunk_index);
@@ -469,10 +536,9 @@ wtf_size_t PaintController::FindCachedItem(const DisplayItemClient& client,
     // new item.
     const DisplayItem& item =
         current_paint_artifact_->GetDisplayItemList()[next_item_to_match_];
-    // We encounter an item that has already been copied which indicates we
+    // We encounter an item that has already been moved which indicates we
     // can't do sequential matching.
     if (!item.IsTombstone() && id == item.GetId()) {
-      DCHECK(item.IsCacheable());
 #if DCHECK_IS_ON()
       ++num_sequential_matches_;
 #endif
@@ -523,7 +589,8 @@ wtf_size_t PaintController::FindOutOfOrderCachedItemForward(
   // rendering, but causes AddItemToIndexIfNeeded() for all remaining display
   // item, which is not the best for performance. In this case, the caller
   // should fall back to repaint the display item.
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      ClientCacheIsValid(client)) {
     // Ensure our paint invalidation tests don't trigger the less performant
     // situation which should be rare.
     RecordDebugInfo(client);
@@ -643,6 +710,7 @@ void PaintController::CommitNewDisplayItems() {
 #if DCHECK_IS_ON()
   new_display_item_id_index_map_.clear();
   new_paint_chunk_id_index_map_.clear();
+  last_checked_cached_item_id_ = DisplayItem::Id::HashKey();
 #endif
 
   cache_is_all_invalid_ = false;
@@ -666,6 +734,8 @@ void PaintController::CommitNewDisplayItems() {
 
   next_item_to_match_ = 0;
   next_item_to_index_ = 0;
+  last_matching_item_ = kNotFound;
+  last_matching_client_invalidation_reason_ = PaintInvalidationReason::kNone;
   out_of_order_item_id_index_map_.clear();
 
 #if DCHECK_IS_ON()
@@ -753,6 +823,10 @@ PaintController::EnsureUnderInvalidationChecker() {
         std::make_unique<PaintUnderInvalidationChecker>(*this);
   }
   return *under_invalidation_checker_;
+}
+
+bool PaintController::IsCheckingUnderInvalidationForTesting() const {
+  return IsCheckingUnderInvalidation();
 }
 
 bool PaintController::IsCheckingUnderInvalidation() const {

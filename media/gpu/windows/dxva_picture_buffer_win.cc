@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
+#include "media/gpu/windows/gl_image_pbuffer.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gl/gl_bindings.h"
@@ -18,63 +19,6 @@
 #include "ui/gl/scoped_binders.h"
 
 namespace media {
-
-namespace {
-
-// These GLImage subclasses are just used to hold references to the underlying
-// image content so it can be destroyed when the textures are.
-class DummyGLImage : public gl::GLImage {
- public:
-  DummyGLImage(const gfx::Size& size) : size_(size) {}
-
-  // gl::GLImage implementation.
-  gfx::Size GetSize() override { return size_; }
-  unsigned GetInternalFormat() override { return GL_BGRA_EXT; }
-  unsigned GetDataType() override { return GL_UNSIGNED_BYTE; }
-  BindOrCopy ShouldBindOrCopy() override { return BIND; }
-  // PbufferPictureBuffer::CopySurfaceComplete does the actual binding, so
-  // this doesn't do anything and always succeeds.
-  bool BindTexImage(unsigned target) override { return true; }
-  void ReleaseTexImage(unsigned target) override {}
-  bool CopyTexImage(unsigned target) override {
-    NOTREACHED();
-    return false;
-  }
-  bool CopyTexSubImage(unsigned target,
-                       const gfx::Point& offset,
-                       const gfx::Rect& rect) override {
-    return false;
-  }
-  void SetColorSpace(const gfx::ColorSpace& color_space) override {}
-  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t process_tracing_id,
-                    const std::string& dump_name) override {}
-
- protected:
-  ~DummyGLImage() override {}
-
- private:
-  gfx::Size size_;
-};
-
-class GLImagePbuffer : public DummyGLImage {
- public:
-  GLImagePbuffer(const gfx::Size& size, EGLSurface surface)
-      : DummyGLImage(size), surface_(surface) {}
-
- private:
-  ~GLImagePbuffer() override {
-    EGLDisplay egl_display = gl::GLSurfaceEGL::GetGLDisplayEGL()->GetDisplay();
-
-    eglReleaseTexImage(egl_display, surface_, EGL_BACK_BUFFER);
-
-    eglDestroySurface(egl_display, surface_);
-  }
-
-  EGLSurface surface_;
-};
-
-}  // namespace
 
 enum {
   // The keyed mutex should always be released before the other thread

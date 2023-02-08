@@ -15,11 +15,11 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_internals.h"
@@ -62,7 +62,7 @@ class VideoCaptureManager::CaptureDeviceStartRequest {
   media::VideoCaptureParams params() const { return params_; }
 
  private:
-  VideoCaptureController* const controller_;
+  const raw_ptr<VideoCaptureController> controller_;
   const base::UnguessableToken session_id_;
   const media::VideoCaptureParams params_;
 };
@@ -159,7 +159,7 @@ base::UnguessableToken VideoCaptureManager::Open(
   // Notify our listener asynchronously; this ensures that we return
   // |capture_session_id| to the caller of this function before using that
   // same id in a listener event.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureManager::OnOpened, this,
                                 device.type, capture_session_id));
   return capture_session_id;
@@ -195,7 +195,7 @@ void VideoCaptureManager::Close(
   }
 
   // Notify listeners asynchronously, and forget the session.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&VideoCaptureManager::OnClosed, this,
                                 session_it->second.type, capture_session_id));
 
@@ -741,6 +741,7 @@ void VideoCaptureManager::OnClosed(
 void VideoCaptureManager::OnDeviceInfosReceived(
     base::ElapsedTimer timer,
     EnumerationCallback client_callback,
+    media::mojom::DeviceEnumerationResult error_code,
     const std::vector<media::VideoCaptureDeviceInfo>& device_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
@@ -749,6 +750,17 @@ void VideoCaptureManager::OnDeviceInfosReceived(
   base::UmaHistogramTimes(
       "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime",
       timer.Elapsed());
+
+  if (error_code != media::mojom::DeviceEnumerationResult::kSuccess) {
+    EmitLogMessage(
+        base::StringPrintf("VideoCaptureManager::OnDeviceInfosReceived: Failed "
+                           "to list device infos with error_code %d",
+                           error_code),
+        0);
+    std::move(client_callback).Run(error_code, {});
+    return;
+  }
+
   devices_info_cache_ = device_infos;
 
   std::ostringstream string_stream;
@@ -774,7 +786,7 @@ void VideoCaptureManager::OnDeviceInfosReceived(
         descriptors_and_formats);
   }
 
-  std::move(client_callback).Run(devices);
+  std::move(client_callback).Run(error_code, devices);
 }
 
 void VideoCaptureManager::DestroyControllerIfNoClients(

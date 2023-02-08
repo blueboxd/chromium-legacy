@@ -47,6 +47,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/crosapi/browser_action.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
@@ -75,6 +76,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/logging_chrome.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom-shared.h"
@@ -156,10 +158,6 @@ base::FilePath LacrosLogPath() {
   return LacrosLogDirectory().Append("lacros.log");
 }
 
-base::FilePath LacrosPreviousLogPath() {
-  return LacrosLogDirectory().Append("lacros.log.PREVIOUS");
-}
-
 base::FilePath LacrosPostLoginLogPath() {
   return browser_util::GetUserDataDir().Append("lacros.log");
 }
@@ -168,28 +166,84 @@ base::FilePath LacrosCrashDumpDirectory() {
   return LacrosLogDirectory().Append("Crash Reports");
 }
 
-// Moves any existing lacros log file to lacros.log.PREVIOUS. Returns true if a
-// log file existed before being moved, and false if no log file was found.
+// Rotate existing Lacros's log file. Returns true if a log file existed before
+// being moved, and false if no log file was found.
 bool RotateLacrosLogs() {
-  // Remove lacros.log.PREVIOUS log entry if present.
-  base::FilePath previous_log_path = LacrosPreviousLogPath();
-  unlink(previous_log_path.value().c_str());
-
   base::FilePath log_path = LacrosLogPath();
-  // Handle edge case where previous code created a symbolic link that could not
-  // correctly resolve by deleting that symbolic link.
-  if (base::IsLink(log_path)) {
-    unlink(log_path.value().c_str());
-    return true;
+  if (!base::PathExists(log_path))
+    return false;
+
+  if (!logging::RotateLogFile(log_path)) {
+    PLOG(ERROR) << "Failed to rotate the log file: " << log_path.value()
+                << ". Keeping using the same log file without rotating.";
+  }
+  return true;
+}
+
+void PreloadFile(base::FilePath file_path) {
+  DLOG(WARNING) << "Preloading " << file_path;
+
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  DPCHECK(file.IsValid());
+  if (!file.IsValid()) {
+    PLOG(WARNING) << "Failed opening " << file_path << " while preloading";
+    return;
   }
 
-  // If there is an existing log entry rename it to lacros.log.PREVIOUS.
-  if (base::PathExists(log_path)) {
-    base::Move(log_path, previous_log_path);
-    return true;
+  int64_t file_size = file.GetLength();
+  if (file_size < 0) {
+    PLOG(WARNING) << "Failed getting size of " << file_path
+                  << "while preloading";
+    return;
   }
 
-  return false;
+  if (readahead(file.GetPlatformFile(), 0, file_size) < 0) {
+    PLOG(WARNING) << "Failed preloading " << file_path;
+    return;
+  }
+
+  DLOG(WARNING) << "Preloaded " << file_path;
+}
+
+void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
+  // These files are the Lacros equivalent of Ash's files preloaded at boot by
+  // ureadahead.
+  static constexpr const char* kPreloadFiles[] = {
+      "WidevineCdm/manifest.json",
+      "chrome",
+      "chrome_100_percent.pak",
+      "chrome_200_percent.pak",
+      "chrome_crashpad_handler",
+      "icudtl.dat",
+      "icudtl.dat.hash",
+      "nacl_helper",
+      "resources.pak",
+      "snapshot_blob.bin",
+  };
+
+  // Preload common files.
+  for (const char* file_name : kPreloadFiles) {
+    base::FilePath file_path = lacros_dir.Append(base::FilePath(file_name));
+    PreloadFile(file_path);
+  }
+
+  // Preload localization pack.
+  std::string locale = g_browser_process->GetApplicationLocale();
+  base::FilePath locale_path =
+      lacros_dir.Append(base::StringPrintf("locales/%s.pak", locale.c_str()));
+  PreloadFile(locale_path);
+  base::FilePath locale_info_path = locale_path.AddExtension(".info");
+  PreloadFile(locale_info_path);
+
+  // Preload Widevine for the right architecture.
+#if defined(ARCH_CPU_ARM_FAMILY)
+  base::FilePath libwidevine_path = lacros_dir.Append(
+      "WidevineCdm/_platform_specific/cros_arm/libwidevinecdm.so");
+#else
+  base::FilePath libwidevine_path = lacros_dir.Append(
+      "WidevineCdm/_platform_specific/cros_x64/libwidevinecdm.so");
+#endif
+  PreloadFile(libwidevine_path);
 }
 
 ResourcesFileSharingMode ClearOrMoveSharedResourceFileInternal(
@@ -256,7 +310,8 @@ ResourcesFileSharingMode ClearOrMoveSharedResourceFile(
 // The returns struct is used by the main thread as parameters to launch Lacros.
 LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
     base::FilePath lacros_dir,
-    bool clear_shared_resource_file) {
+    bool clear_shared_resource_file,
+    bool launching_at_login_screen) {
   LaunchParamsFromBackground params;
 
   if (!RotateLacrosLogs()) {
@@ -314,6 +369,13 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
     }
   }
 
+  // When launching at login screen, we can take advantage of the time before
+  // the user inputs the password and logs in to preload Lacros-related files.
+  // This speeds up the perceived startup time, as they will be loaded anyway
+  // in the later stages of Lacros's lifetime.
+  if (launching_at_login_screen)
+    PreloadLacrosFiles(lacros_dir);
+
   return params;
 }
 
@@ -365,24 +427,21 @@ bool IsLoginLacrosOpeningDisabledForTesting() {
 
 void WarnThatLacrosNotAllowedToLaunch() {
   LOG(WARNING) << "Lacros enabled but not allowed to launch";
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kLacrosCannotLaunchNotificationID,
-          /*title=*/std::u16string(),
-          l10n_util::GetStringUTF16(
-              IDS_LACROS_CANNOT_LAUNCH_MULTI_SIGNIN_MESSAGE),
-          /* display_source= */ std::u16string(), GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kLacrosLauncherNotifierID,
-              ash::NotificationCatalogName::kLacrosCannotLaunch),
-          message_center::RichNotificationData(),
-          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-              base::RepeatingClosure()),
-          gfx::kNoneIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  SystemNotificationHelper::GetInstance()->Display(*notification);
+  message_center::Notification notification = ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kLacrosCannotLaunchNotificationID,
+      /*title=*/std::u16string(),
+      l10n_util::GetStringUTF16(IDS_LACROS_CANNOT_LAUNCH_MULTI_SIGNIN_MESSAGE),
+      /* display_source= */ std::u16string(), GURL(),
+      message_center::NotifierId(
+          message_center::NotifierType::SYSTEM_COMPONENT,
+          kLacrosLauncherNotifierID,
+          ash::NotificationCatalogName::kLacrosCannotLaunch),
+      message_center::RichNotificationData(),
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::RepeatingClosure()),
+      gfx::kNoneIcon, message_center::SystemNotificationWarningLevel::NORMAL);
+  SystemNotificationHelper::GetInstance()->Display(notification);
 }
 
 void RecordDataVerForPrimaryUser() {
@@ -392,6 +451,75 @@ void RecordDataVerForPrimaryUser() {
                                        user_id_hash,
                                        version_info::GetVersion());
 }
+
+// The delegate keeps track of the most recent lacros-chrome binary version
+// loaded by the BrowserLoader.
+// It is the single source of truth for what is the most up-to-date launchable
+// version of lacros-chrome. It should be queried when determining if loading a
+// more recent lacros-chrome binary should be attempted.
+class BrowserVersionServiceDelegate : public BrowserVersionServiceAsh::Delegate,
+                                      public BrowserManagerObserver {
+ public:
+  BrowserVersionServiceDelegate(
+      const ComponentUpdateService* component_update_service,
+      BrowserManager* browser_manager)
+      : component_update_service_(component_update_service) {
+    observation_.Observe(browser_manager);
+  }
+  BrowserVersionServiceDelegate(const BrowserVersionServiceDelegate&) = delete;
+  BrowserVersionServiceDelegate& operator=(
+      const BrowserVersionServiceDelegate&) = delete;
+  ~BrowserVersionServiceDelegate() override = default;
+
+  // BrowserVersionServiceAsh::Delegate:
+  base::Version GetLatestLaunchableBrowserVersion() const override {
+    // If there is a newer browser available return the version of lacros-chrome
+    // maintained by the component manager. Otherwise return the current version
+    // loaded by the manager.
+    const auto component_version_number =
+        browser_util::GetInstalledLacrosComponentVersion(
+            component_update_service_);
+    return IsNewerBrowserAvailable() && component_version_number.IsValid()
+               ? component_version_number
+               : browser_version_loaded_;
+  }
+
+  bool IsNewerBrowserAvailable() const override {
+    // If the browser loader is not able to load newer stateful component builds
+    // signal there is no update available.
+    if (!BrowserLoader::WillLoadStatefulComponentBuilds())
+      return false;
+
+    const auto component_version_number =
+        browser_util::GetInstalledLacrosComponentVersion(
+            component_update_service_);
+    return (!browser_version_loaded_.IsValid() &&
+            component_version_number.IsValid()) ||
+           (browser_version_loaded_.IsValid() &&
+            component_version_number.IsValid() &&
+            browser_version_loaded_ < component_version_number);
+  }
+
+  // crosapi::BrowserManagerObserver:
+  void OnLoadComplete(bool success, const base::Version& version) override {
+    browser_version_loaded_ = version;
+  }
+
+ private:
+  // Version number of the most recently loaded lacros-chrome browser. This
+  // can be used for version checking and version comparisons. It is in the
+  // format of:
+  // <major_version>.<minor_version>.<build>.<patch>
+  // For example, "86.0.4240.38".
+  // Set immediately after lacros has loaded. May be invalid if BrowserLoader
+  // fails to successfully load a lacros binary.
+  base::Version browser_version_loaded_;
+
+  const raw_ptr<const ComponentUpdateService> component_update_service_;
+
+  base::ScopedObservation<BrowserManager, BrowserManagerObserver> observation_{
+      this};
+};
 
 }  // namespace
 
@@ -431,6 +559,8 @@ BrowserManager::BrowserManager(
       disabled_for_testing_(g_disabled_for_testing) {
   DCHECK(!g_instance);
   g_instance = this;
+  version_service_delegate_ =
+      std::make_unique<BrowserVersionServiceDelegate>(update_service, this);
 
   // Wait to query the flag until the user has entered the session. Enterprise
   // devices restart Chrome during login to apply flags. We don't want to run
@@ -599,7 +729,6 @@ void BrowserManager::InitializeAndStartIfNeeded() {
            !IsLoginLacrosOpeningDisabledForTesting())) {
         pending_actions_.Push(BrowserAction::GetActionForSessionStart());
       }
-      component_update_observation_.Observe(component_update_service_);
       SetState(State::MOUNTING);
       browser_loader_->Load(base::BindOnce(
           &BrowserManager::OnLoadComplete, weak_factory_.GetWeakPtr(),
@@ -631,11 +760,7 @@ void BrowserManager::PrelaunchAtLoginScreen() {
             session_manager::SessionState::LOGIN_PRIMARY);
   DCHECK(!user_manager::UserManager::Get()->IsUserLoggedIn());
 
-  // Ensure this isn't run multiple times.
-  session_manager::SessionManager::Get()->RemoveObserver(this);
-
   // Load and start Lacros.
-  component_update_observation_.Observe(component_update_service_);
   SetState(State::MOUNTING);
   browser_loader_->Load(base::BindOnce(&BrowserManager::OnLoadComplete,
                                        weak_factory_.GetWeakPtr(),
@@ -677,13 +802,13 @@ void BrowserManager::GetActiveTabUrl(GetActiveTabUrlCallback callback) {
   browser_service_->service->GetActiveTabUrl(std::move(callback));
 }
 
-void BrowserManager::GetTabStripModelUrls(
+void BrowserManager::GetBrowserInformation(
     const std::string& window_unique_id,
-    GetTabStripModelUrlsCallback callback) {
+    GetBrowserInformationCallback callback) {
   crosapi::CrosapiManager::Get()
       ->crosapi_ash()
       ->desk_template_ash()
-      ->GetTabStripModelUrls(window_unique_id, std::move(callback));
+      ->GetBrowserInformation(window_unique_id, std::move(callback));
 }
 
 void BrowserManager::AddObserver(BrowserManagerObserver* observer) {
@@ -779,17 +904,19 @@ void BrowserManager::Start(bool launching_at_login_screen) {
     DCHECK(browser_util::IsLacrosAllowedToLaunch());
   }
 
-  if (update_available_) {
-    update_available_ = false;
+  if (version_service_delegate_->IsNewerBrowserAvailable() &&
+      should_attempt_update_) {
     SetState(State::MOUNTING);
     lacros_path_ = base::FilePath();
     lacros_selection_ = absl::nullopt;
+    should_attempt_update_ = false;
     // OnLoadComplete will call Start again.
     browser_loader_->Load(base::BindOnce(&BrowserManager::OnLoadComplete,
                                          weak_factory_.GetWeakPtr(),
                                          launching_at_login_screen));
     return;
   }
+  should_attempt_update_ = true;
 
   // Always reset the |relaunch_requested_| flag when launching Lacros.
   relaunch_requested_ = false;
@@ -799,7 +926,8 @@ void BrowserManager::Start(bool launching_at_login_screen) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&DoLacrosBackgroundWorkPreLaunch, lacros_path_,
-                     is_initial_lacros_launch_after_reboot_),
+                     is_initial_lacros_launch_after_reboot_,
+                     launching_at_login_screen),
       base::BindOnce(&BrowserManager::StartWithLogFile,
                      weak_factory_.GetWeakPtr()));
 
@@ -1246,18 +1374,10 @@ void BrowserManager::OnRefreshSchedulerDestruction(
   scheduler->RemoveObserver(this);
 }
 
-void BrowserManager::OnEvent(Events event, const std::string& id) {
-  // Track whether an update has been installed and should be loaded next time
-  // the browser is started.
-  if (event == Events::COMPONENT_UPDATED &&
-      id == browser_util::GetLacrosComponentInfo().crx_id) {
-    update_available_ = true;
-  }
-}
-
 void BrowserManager::OnLoadComplete(bool launching_at_login_screen,
                                     const base::FilePath& path,
-                                    LacrosSelection selection) {
+                                    LacrosSelection selection,
+                                    base::Version version) {
   if (shutdown_requested_) {
     LOG(ERROR) << "Load completed after Shutdown() called.";
     return;
@@ -1270,9 +1390,8 @@ void BrowserManager::OnLoadComplete(bool launching_at_login_screen,
   SetState(success ? State::STOPPED : State::UNAVAILABLE);
   // TODO(crbug.com/1266010): In the event the load operation failed, we should
   // launch the last successfully loaded image.
-  for (auto& observer : observers_) {
-    observer.OnLoadComplete(success);
-  }
+  for (auto& observer : observers_)
+    observer.OnLoadComplete(success, version);
 
   StartIfNeeded(launching_at_login_screen);
 }
@@ -1599,6 +1718,21 @@ void BrowserManager::DisableForTesting() {
 void BrowserManager::EnableForTesting() {
   CHECK_IS_TEST();
   g_disabled_for_testing = false;
+}
+
+BrowserManager::ScopedUnsetAllKeepAliveForTesting::
+    ScopedUnsetAllKeepAliveForTesting(BrowserManager* manager)
+    : manager_(manager) {
+  previous_keep_alive_features_ = std::move(manager_->keep_alive_features_);
+  manager_->keep_alive_features_.clear();
+  manager_->UpdateKeepAliveInBrowserIfNecessary(false);
+}
+
+BrowserManager::ScopedUnsetAllKeepAliveForTesting::
+    ~ScopedUnsetAllKeepAliveForTesting() {
+  manager_->keep_alive_features_ = std::move(previous_keep_alive_features_);
+  manager_->UpdateKeepAliveInBrowserIfNecessary(
+      !manager_->keep_alive_features_.empty());
 }
 
 }  // namespace crosapi

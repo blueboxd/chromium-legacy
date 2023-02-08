@@ -24,10 +24,20 @@ namespace floss {
 const char kNoCallbackRegistered[] =
     "org.chromium.bluetooth.Error.NoCallbackRegistered";
 
+ScanFilterPattern::ScanFilterPattern() = default;
+ScanFilterPattern::ScanFilterPattern(const ScanFilterPattern&) = default;
+ScanFilterPattern::~ScanFilterPattern() = default;
+
+ScanFilterCondition::ScanFilterCondition() = default;
+ScanFilterCondition::ScanFilterCondition(const ScanFilterCondition&) = default;
+ScanFilterCondition::~ScanFilterCondition() = default;
+
+ScanFilter::ScanFilter() = default;
+ScanFilter::ScanFilter(const ScanFilter&) = default;
+ScanFilter::~ScanFilter() = default;
+
 ScanResult::ScanResult() = default;
-
 ScanResult::ScanResult(const ScanResult&) = default;
-
 ScanResult::~ScanResult() = default;
 
 std::unique_ptr<FlossLEScanClient> FlossLEScanClient::Create() {
@@ -133,7 +143,7 @@ void FlossLEScanClient::UnregisterScanner(ResponseCallback<bool> callback,
 void FlossLEScanClient::StartScan(ResponseCallback<BtifStatus> callback,
                                   uint8_t scanner_id,
                                   const ScanSettings& scan_settings,
-                                  const ScanFilter& filter) {
+                                  const absl::optional<ScanFilter>& filter) {
   CallLEScanMethod<>(std::move(callback), adapter::kStartScan, scanner_id,
                      scan_settings, filter);
 }
@@ -173,12 +183,24 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
 
 template <>
 void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                     const ScanFilterPattern& data) {
+  dbus::MessageWriter array_writer(nullptr);
+  writer->OpenArray("{sv}", &array_writer);
+
+  WriteDictEntry(&array_writer, "start_position", data.start_position);
+  WriteDictEntry(&array_writer, "ad_type", data.ad_type);
+  WriteDictEntry(&array_writer, "content", data.content);
+
+  writer->CloseContainer(&array_writer);
+}
+
+template <>
+void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
                                      const ScanFilterCondition& data) {
   dbus::MessageWriter array_writer(nullptr);
   writer->OpenArray("{sv}", &array_writer);
 
-  // TODO(b/217274013): Update fields here.
-  WriteDictEntry(&array_writer, "patterns", std::vector<uint8_t>());
+  WriteDictEntry(&array_writer, "patterns", data.patterns);
 
   writer->CloseContainer(&array_writer);
 }
@@ -189,13 +211,15 @@ void FlossDBusClient::WriteDBusParam(dbus::MessageWriter* writer,
   dbus::MessageWriter array_writer(nullptr);
   writer->OpenArray("{sv}", &array_writer);
 
-  // TODO(b/217274013): Update fields here.
-  WriteDictEntry(&array_writer, "rssi_high_threshold", static_cast<int16_t>(3));
-  WriteDictEntry(&array_writer, "rssi_low_threshold", static_cast<int16_t>(3));
-  WriteDictEntry(&array_writer, "rssi_low_timeout", static_cast<uint16_t>(3));
+  WriteDictEntry(&array_writer, "rssi_high_threshold",
+                 static_cast<uint8_t>(data.rssi_high_threshold));
+  WriteDictEntry(&array_writer, "rssi_low_threshold",
+                 static_cast<uint8_t>(data.rssi_low_threshold));
+  WriteDictEntry(&array_writer, "rssi_low_timeout",
+                 static_cast<uint8_t>(data.rssi_low_timeout));
   WriteDictEntry(&array_writer, "rssi_sampling_period",
-                 static_cast<uint16_t>(3));
-  WriteDictEntry(&array_writer, "condition", ScanFilterCondition{});
+                 static_cast<uint8_t>(data.rssi_sampling_period));
+  WriteDictEntry(&array_writer, "condition", data.condition);
 
   writer->CloseContainer(&array_writer);
 }

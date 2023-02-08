@@ -42,6 +42,8 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
+#include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -124,11 +126,20 @@
 #include "components/sync/trusted_vault/standalone_trusted_vault_client.h"  // nogncheck
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "chrome/browser/ash/app_list/arc/arc_package_sync_model_type_controller.h"
+#include "chrome/browser/ash/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/printing/oauth2/authorization_zones_manager.h"
@@ -143,8 +154,6 @@
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
-#include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chromeos/ash/components/sync_wifi/wifi_configuration_sync_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -200,18 +209,13 @@ syncer::ModelTypeSet GetDisabledCommonDataTypes() {
   return {};
 }
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// Denotes whether app sync may occur on profiles other than the main profile.
-// This may be modified by ChromeSyncClient::SkipMainProfileCheckForTesting().
-bool g_skip_main_profile_check_for_testing = false;
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // App sync is enabled by default, with the exception of Lacros secondary
 // profiles.
 bool IsAppSyncEnabled(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!profile->IsMainProfile() && !g_skip_main_profile_check_for_testing) {
+  if (!profile->IsMainProfile() &&
+      !web_app::IsMainProfileCheckSkippedForTesting()) {
     return false;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -443,6 +447,18 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
             GetSyncableServiceForType(syncer::SEARCH_ENGINES), dump_stack));
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+    if (features::kTabGroupsSaveSyncIntegration.Get()) {
+      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+          syncer::SAVED_TAB_GROUP,
+          std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+              GetControllerDelegateForModelType(syncer::SAVED_TAB_GROUP)
+                  .get())));
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_WIN)
+
 // Chrome prefers OS provided spell checkers where they exist. So only sync the
 // custom dictionary on platforms that typically don't provide one.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
@@ -508,7 +524,7 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
       std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
           workspace_desk_delegate)));
 
-  if (chromeos::features::IsOAuthIppEnabled()) {
+  if (ash::features::IsOAuthIppEnabled()) {
     syncer::ModelTypeControllerDelegate*
         printers_authorization_servers_delegate =
             GetControllerDelegateForModelType(
@@ -610,6 +626,17 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->change_processor()
           ->GetControllerDelegate();
     }
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || \
+    BUILDFLAG(IS_WIN)
+    case syncer::SAVED_TAB_GROUP: {
+      DCHECK(features::kTabGroupsSaveSyncIntegration.Get());
+      return SavedTabGroupServiceFactory::GetForProfile(profile_)
+          ->bridge()
+          ->change_processor()
+          ->GetControllerDelegate();
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
+        // BUILDFLAG(IS_WIN)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::PRINTERS:
       return ash::SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
@@ -690,13 +717,6 @@ syncer::SyncTypePreferenceProvider* ChromeSyncClient::GetPreferenceProvider() {
 void ChromeSyncClient::OnLocalSyncTransportDataCleared() {
   metrics::ClearDemographicsPrefs(profile_->GetPrefs());
 }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// static
-void ChromeSyncClient::SkipMainProfileCheckForTesting() {
-  g_skip_main_profile_check_for_testing = true;
-}
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 std::unique_ptr<syncer::ModelTypeController>

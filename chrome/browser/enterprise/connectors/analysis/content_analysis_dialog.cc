@@ -244,8 +244,6 @@ ContentAnalysisDialog::ContentAnalysisDialog(
 
   SetupButtons();
 
-  first_shown_timestamp_ = base::TimeTicks::Now();
-
   if (download_item_)
     download_item_->AddObserver(this);
 
@@ -272,17 +270,17 @@ ContentAnalysisDialog::ContentAnalysisDialog(
         bypass_justification_text_length_->GetColorProvider()->GetColor(
             ui::kColorAlertHighSeverity));
   }
-
-  if (observer_for_testing)
-    observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
 }
 
 void ContentAnalysisDialog::ShowDialogNow() {
-  // If the contents is valid and dialog is not already either accepted or
-  // cancelled, show it now.  The dialog could already be either if the
-  // verdict was returned before the delay timeout.
-  if (web_contents_ && !accepted_or_cancelled_)
+  // If the web contents is still valid when the delay timer goes off and the
+  // dialog has not yet been shown, show it now.
+  if (web_contents_ && !contents_view_) {
+    first_shown_timestamp_ = base::TimeTicks::Now();
     constrained_window::ShowWebModalDialogViews(this, web_contents_);
+    if (observer_for_testing)
+      observer_for_testing->ViewsFirstShown(this, first_shown_timestamp_);
+  }
 }
 
 std::u16string ContentAnalysisDialog::GetWindowTitle() const {
@@ -530,7 +528,22 @@ void ContentAnalysisDialog::UpdateViews() {
 }
 
 void ContentAnalysisDialog::UpdateDialog() {
-  DCHECK(contents_view_);
+  if (!contents_view_) {
+    // If the dialog is no longer pending, a final verdict was received before
+    // the dalog was displayed.  If the verdict is success and this is not a
+    // cloud analysis, don't bother the user at all and close the dialog.
+    // Otherwise make sure it show right away with the verdict.
+    if (!is_pending()) {
+      if (is_success() || !is_cloud_) {
+        CancelDialogAndDelete();
+      } else {
+        ShowDialogNow();
+      }
+
+      return;
+    }
+  }
+
   DCHECK(is_result());
 
   int height_before = contents_view_->GetPreferredSize().height();
@@ -689,11 +702,6 @@ std::u16string ContentAnalysisDialog::GetBypassWarningButtonText() const {
 }
 
 std::unique_ptr<views::View> ContentAnalysisDialog::CreateSideIcon() {
-  // The side icon is created either:
-  // - When the pending dialog is shown
-  // - When the response was fast enough that the failure dialog is shown first
-  DCHECK(!is_success());
-
   // The icon left of the text has the appearance of a blue "Enterprise" logo
   // with a spinner when the scan is pending.
   auto icon = std::make_unique<views::View>();
@@ -848,7 +856,15 @@ void ContentAnalysisDialog::AddLearnMoreLinkToDialog() {
   contents_layout_->AddRows(1, views::TableLayout::kFixedSize);
   contents_layout_->AddChildView(std::make_unique<views::View>());
 
-  learn_more_link_ = contents_layout_->AddChildView(
+  // Since `learn_more_link_` is not as wide as the column it's a part of,
+  // instead of being added directly to it, it has a parent with a BoxLayout so
+  // that its width corresponds to its own text size instead of the full column
+  // width.
+  views::View* learn_more_column =
+      contents_layout_->AddChildView(std::make_unique<views::View>());
+  learn_more_column->SetLayoutManager(std::make_unique<views::BoxLayout>());
+
+  learn_more_link_ = learn_more_column->AddChildView(
       std::make_unique<views::Link>(l10n_util::GetStringUTF16(
           IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE_LEARN_MORE_LINK)));
   learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -18,66 +18,9 @@ using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
 using NotRestoredReasons =
     BackForwardCacheCanStoreDocumentResult::NotRestoredReasons;
 
+// Exists to group the tests and for test history.
 class BackForwardCacheBrowserTestWithNotRestoredReasons
-    : public BackForwardCacheBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    EnableFeatureAndSetParams(
-        blink::features::kBackForwardCacheSendNotRestoredReasons, "", "");
-    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
-  }
-};
-
-using ReasonsMatcher = testing::Matcher<
-    const blink::mojom::BackForwardCacheNotRestoredReasonsPtr&>;
-using SameOriginMatcher = testing::Matcher<
-    const blink::mojom::SameOriginBfcacheNotRestoredDetailsPtr&>;
-ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
-    const testing::Matcher<blink::mojom::BFCacheBlocked>& blocked,
-    const SameOriginMatcher* same_origin_details) {
-  return testing::Pointee(testing::AllOf(
-      testing::Field("blocked",
-                     &blink::mojom::BackForwardCacheNotRestoredReasons::blocked,
-                     blocked),
-      testing::Field(
-          "same_origin_details",
-          &blink::mojom::BackForwardCacheNotRestoredReasons::
-              same_origin_details,
-          same_origin_details
-              ? *same_origin_details
-              : testing::Property(
-                    "is_null",
-                    &blink::mojom::SameOriginBfcacheNotRestoredDetailsPtr::
-                        is_null,
-                    true))));
-}
-
-SameOriginMatcher BackForwardCacheBrowserTest::MatchesSameOriginDetails(
-    const testing::Matcher<std::string>& id,
-    const testing::Matcher<std::string>& name,
-    const testing::Matcher<std::string>& src,
-    const testing::Matcher<std::string>& url,
-    const std::vector<testing::Matcher<std::string>>& reasons,
-    const std::vector<ReasonsMatcher>& children) {
-  return testing::Pointee(testing::AllOf(
-      testing::Field(
-          "id", &blink::mojom::SameOriginBfcacheNotRestoredDetails::id, id),
-      testing::Field("name",
-                     &blink::mojom::SameOriginBfcacheNotRestoredDetails::name,
-                     name),
-      testing::Field(
-          "src", &blink::mojom::SameOriginBfcacheNotRestoredDetails::src, src),
-      testing::Field(
-          "url", &blink::mojom::SameOriginBfcacheNotRestoredDetails::url, url),
-      testing::Field(
-          "reasons",
-          &blink::mojom::SameOriginBfcacheNotRestoredDetails::reasons,
-          testing::UnorderedElementsAreArray(reasons)),
-      testing::Field(
-          "children",
-          &blink::mojom::SameOriginBfcacheNotRestoredDetails::children,
-          testing::ElementsAreArray(children))));
-}
+    : public BackForwardCacheBrowserTest {};
 
 // NotRestoredReasons are not reported when the page is successfully restored
 // from back/forward cache.
@@ -122,11 +65,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNotRestoredReasons,
                     {blink::scheduler::WebSchedulerTrackedFeature::kDummy}, {},
                     {}, {}, FROM_HERE);
   // Expect that NotRestoredReasons are reported.
-  auto rfh_a_details = MatchesSameOriginDetails(
-      /*id=*/"", /*name=*/"", /*src=*/"",
-      /*url=*/rfh_a_url, /*reasons=*/{"Dummy"}, /*children=*/{});
   auto rfh_a_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_details);
+      blink::mojom::BFCacheBlocked::kYes,
+      MatchesSameOriginDetails(
+          /*id=*/"", /*name=*/"", /*src=*/"",
+          /*url=*/rfh_a_url, /*reasons=*/{"Dummy"}, /*children=*/{}));
   EXPECT_THAT(current_frame_host()->NotRestoredReasonsForTesting(),
               rfh_a_result);
   EXPECT_TRUE(rfh_b->IsInBackForwardCache());
@@ -180,19 +123,20 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNotRestoredReasons,
 
   // Expect that id and name are masked for |rfh_b|, but reported for |rfh_a_2|.
   // Note that |rfh_a_3| is masked because it's a child of |rfh_b|.
-  auto rfh_a_2_details = MatchesSameOriginDetails(
-      /*id=*/"rfh_a_2_id", /*name=*/"rfh_a_2_name", /*src=*/rfh_a_2_url,
-      /*url=*/rfh_a_2_url, /*reasons=*/{}, /*children=*/{});
   auto rfh_b_result =
-      MatchesNotRestoredReasons(blink::mojom::BFCacheBlocked::kYes, nullptr);
+      MatchesNotRestoredReasons(blink::mojom::BFCacheBlocked::kYes,
+                                /*same_origin_details=*/absl::nullopt);
   auto rfh_a_2_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kNo, &rfh_a_2_details);
-  auto rfh_a_1_details = MatchesSameOriginDetails(
-      /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_1_url,
-      /*reasons=*/{},
-      /*children=*/{rfh_a_2_result, rfh_b_result});
+      blink::mojom::BFCacheBlocked::kNo,
+      MatchesSameOriginDetails(
+          /*id=*/"rfh_a_2_id", /*name=*/"rfh_a_2_name", /*src=*/rfh_a_2_url,
+          /*url=*/rfh_a_2_url, /*reasons=*/{}, /*children=*/{}));
   auto rfh_a_1_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kNo, &rfh_a_1_details);
+      blink::mojom::BFCacheBlocked::kNo,
+      MatchesSameOriginDetails(
+          /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_1_url,
+          /*reasons=*/{},
+          /*children=*/{rfh_a_2_result, rfh_b_result}));
 
   EXPECT_THAT(current_frame_host()->NotRestoredReasonsForTesting(),
               rfh_a_1_result);
@@ -234,30 +178,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNotRestoredReasons,
                     {blink::scheduler::WebSchedulerTrackedFeature::kDummy}, {},
                     {}, {}, FROM_HERE);
 
-  auto rfh_a_2_details = MatchesSameOriginDetails(
-      /*id=*/"child-0", /*name=*/"", /*src=*/rfh_a_2_url, /*url=*/rfh_a_2_url,
-      /*reasons=*/{"Dummy"},
-      /*children=*/{});
-  auto rfh_a_2_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_2_details);
-  auto rfh_a_4_details = MatchesSameOriginDetails(
-      /*id=*/"child-0", /*name=*/"", /*src=*/rfh_a_4_url, /*url=*/rfh_a_4_url,
-      /*reasons=*/{"Dummy"},
-      /*children=*/{});
-  auto rfh_a_4_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_4_details);
-  auto rfh_a_3_details = MatchesSameOriginDetails(
-      /*id=*/"child-1", /*name=*/"", /*src=*/rfh_a_3_url, /*url=*/rfh_a_3_url,
-      /*reasons=*/{}, /*children=*/
-      {rfh_a_4_result});
-  auto rfh_a_3_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kNo, &rfh_a_3_details);
-  auto rfh_a_1_details = MatchesSameOriginDetails(
-      /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_1_url,
-      /*reasons=*/{"Dummy"},
-      /*children=*/{rfh_a_2_result, rfh_a_3_result});
+  auto rfh_a_2_result =
+      MatchesNotRestoredReasons(blink::mojom::BFCacheBlocked::kYes,
+                                MatchesSameOriginDetails(
+                                    /*id=*/"child-0", /*name=*/"",
+                                    /*src=*/rfh_a_2_url, /*url=*/rfh_a_2_url,
+                                    /*reasons=*/{"Dummy"},
+                                    /*children=*/{}));
+  auto rfh_a_4_result =
+      MatchesNotRestoredReasons(blink::mojom::BFCacheBlocked::kYes,
+                                MatchesSameOriginDetails(
+                                    /*id=*/"child-0", /*name=*/"",
+                                    /*src=*/rfh_a_4_url, /*url=*/rfh_a_4_url,
+                                    /*reasons=*/{"Dummy"},
+                                    /*children=*/{}));
+  auto rfh_a_3_result =
+      MatchesNotRestoredReasons(blink::mojom::BFCacheBlocked::kNo,
+                                MatchesSameOriginDetails(
+                                    /*id=*/"child-1", /*name=*/"",
+                                    /*src=*/rfh_a_3_url, /*url=*/rfh_a_3_url,
+                                    /*reasons=*/{}, /*children=*/
+                                    {rfh_a_4_result}));
   auto rfh_a_1_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_1_details);
+      blink::mojom::BFCacheBlocked::kYes,
+      MatchesSameOriginDetails(
+          /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_1_url,
+          /*reasons=*/{"Dummy"},
+          /*children=*/{rfh_a_2_result, rfh_a_3_result}));
   EXPECT_THAT(current_frame_host()->NotRestoredReasonsForTesting(),
               rfh_a_1_result);
 }
@@ -355,12 +302,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNotRestoredReasons,
 
   // Both reasons are recorded and sent to the renderer.
   // BrowsingInstanceNotSwapped is masked as internal error.
-  auto rfh_a_details = MatchesSameOriginDetails(
-      /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_url,
-      /*reasons=*/{"Related active contents", "Internal error"},
-      /*children=*/{});
   auto rfh_a_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_details);
+      blink::mojom::BFCacheBlocked::kYes,
+      MatchesSameOriginDetails(
+          /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/rfh_a_url,
+          /*reasons=*/{"Related active contents", "Internal error"},
+          /*children=*/{}));
   EXPECT_THAT(current_frame_host()->NotRestoredReasonsForTesting(),
               rfh_a_result);
 }
@@ -404,13 +351,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithNotRestoredReasons,
       NavigationRequest::From(navigation_manager.GetNavigationHandle());
   auto reasons =
       navigation_request->commit_params().not_restored_reasons.Clone();
-  auto rfh_a_details = MatchesSameOriginDetails(
-          /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/url_a_redirect.spec(),
-          /*reasons=*/{"JavaScript execution"},
-          /*children=*/{});
   // The reasons have not been reset yet.
   auto rfh_a_result = MatchesNotRestoredReasons(
-      blink::mojom::BFCacheBlocked::kYes, &rfh_a_details);
+      blink::mojom::BFCacheBlocked::kYes,
+      MatchesSameOriginDetails(
+          /*id=*/"", /*name=*/"", /*src=*/"", /*url=*/url_a_redirect.spec(),
+          /*reasons=*/{"JavaScript execution"},
+          /*children=*/{}));
   EXPECT_THAT(reasons, rfh_a_result);
 
   // Redirect happens, and now the reasons are reset.

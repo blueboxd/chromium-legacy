@@ -12,8 +12,6 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -70,49 +68,54 @@ class UpdateFileHandlerCommandTest : public WebAppTest {
  private:
   raw_ptr<FakeWebAppProvider> provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  ScopedTestingLocalState local_state_{TestingBrowserProcess::GetGlobal()};
 };
 
 TEST_F(UpdateFileHandlerCommandTest, UserChoiceAllowPersisted) {
   const AppId app_id =
       test::InstallDummyWebApp(profile(), kTestAppName, kTestAppUrl);
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kRequiresPrompt);
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kRequiresPrompt);
 
   base::RunLoop run_loop;
   provider()->scheduler().PersistFileHandlersUserChoice(
       app_id, /*allowed=*/true, run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kAllowed);
-  EXPECT_TRUE(provider()->registrar().ExpectThatFileHandlersAreRegisteredWithOs(
-      app_id));
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kAllowed);
+  EXPECT_TRUE(
+      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
+          app_id));
 }
 
 TEST_F(UpdateFileHandlerCommandTest, UserChoiceDisallowPersisted) {
   const AppId app_id =
       test::InstallDummyWebApp(profile(), kTestAppName, kTestAppUrl);
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kRequiresPrompt);
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kRequiresPrompt);
 
   base::RunLoop run_loop;
   provider()->scheduler().PersistFileHandlersUserChoice(
       app_id, /*allowed=*/false, run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kDisallowed);
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kDisallowed);
   EXPECT_FALSE(
-      provider()->registrar().ExpectThatFileHandlersAreRegisteredWithOs(
+      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
           app_id));
 }
 
 TEST_F(UpdateFileHandlerCommandTest, UpdateFileHandler) {
   const AppId app_id =
       test::InstallDummyWebApp(profile(), kTestAppName, kTestAppUrl);
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kRequiresPrompt);
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kRequiresPrompt);
 
   DisableFileHandlingAPI();
 
@@ -121,10 +124,11 @@ TEST_F(UpdateFileHandlerCommandTest, UpdateFileHandler) {
       app_id, run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_EQ(provider()->registrar().GetAppFileHandlerApprovalState(app_id),
-            ApiApprovalState::kRequiresPrompt);
+  EXPECT_EQ(
+      provider()->registrar_unsafe().GetAppFileHandlerApprovalState(app_id),
+      ApiApprovalState::kRequiresPrompt);
   EXPECT_FALSE(
-      provider()->registrar().ExpectThatFileHandlersAreRegisteredWithOs(
+      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
           app_id));
 
   EnableFileHandlingAPI();
@@ -133,8 +137,9 @@ TEST_F(UpdateFileHandlerCommandTest, UpdateFileHandler) {
   provider()->scheduler().UpdateFileHandlerOsIntegration(
       app_id, run_loop_2.QuitClosure());
   run_loop_2.Run();
-  EXPECT_TRUE(provider()->registrar().ExpectThatFileHandlersAreRegisteredWithOs(
-      app_id));
+  EXPECT_TRUE(
+      provider()->registrar_unsafe().ExpectThatFileHandlersAreRegisteredWithOs(
+          app_id));
 }
 
 }  // namespace

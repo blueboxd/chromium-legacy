@@ -101,7 +101,7 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaSessionNotificationItem
   media_message_center::SourceType SourceType() override;
   void SetVolume(float volume) override {}
   void SetMute(bool mute) override;
-  void RequestMediaRemoting() override;
+  bool RequestMediaRemoting() override;
 
   // Stops the media session.
   void Stop();
@@ -132,7 +132,14 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaSessionNotificationItem
   void FlushForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaSessionNotificationItemTest,
+                           GetSessionMetadata);
+  FRIEND_TEST_ALL_PREFIXES(MediaSessionNotificationItemTest,
+                           GetMediaSessionActions);
+
   media_session::MediaMetadata GetSessionMetadata() const;
+  base::flat_set<media_session::mojom::MediaSessionAction>
+  GetMediaSessionActions() const;
 
   bool ShouldShowNotification() const;
 
@@ -149,6 +156,8 @@ class COMPONENT_EXPORT(GLOBAL_MEDIA_CONTROLS) MediaSessionNotificationItem
   void OnFreezeTimerFired();
 
   void MaybeHideOrShowNotification();
+
+  void UpdateViewCommon();
 
   const raw_ptr<Delegate> delegate_;
 

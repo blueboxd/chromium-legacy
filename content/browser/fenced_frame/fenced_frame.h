@@ -36,8 +36,7 @@ class CONTENT_EXPORT FencedFrame : public blink::mojom::FencedFrameOwnerHost,
  public:
   explicit FencedFrame(
       base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
-      blink::mojom::FencedFrameMode mode,
-      const base::UnguessableToken& devtools_frame_token);
+      blink::mojom::FencedFrameMode mode);
   ~FencedFrame() override;
 
   void Bind(mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
@@ -52,21 +51,23 @@ class CONTENT_EXPORT FencedFrame : public blink::mojom::FencedFrameOwnerHost,
   RenderFrameProxyHost* InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
       blink::mojom::RemoteFrameInterfacesFromRendererPtr
           remote_frame_interfaces,
-      const blink::RemoteFrameToken& frame_token);
+      const blink::RemoteFrameToken& frame_token,
+      const base::UnguessableToken& devtools_frame_token);
 
   // blink::mojom::FencedFrameOwnerHost implementation.
   void Navigate(const GURL& url,
                 base::TimeTicks navigation_start_time) override;
+  void DidChangeFramePolicy(const blink::FramePolicy& frame_policy) override;
 
   // FrameTree::Delegate.
   void DidStartLoading(FrameTreeNode* frame_tree_node,
                        bool should_show_loading_ui) override {}
   void DidStopLoading() override {}
   bool IsHidden() override;
-  void NotifyPageChanged(PageImpl& page) override {}
   int GetOuterDelegateFrameTreeNodeId() override;
   bool IsPortal() override;
   FrameTree* LoadingTree() override;
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
 
   // Returns the devtools frame token of the fenced frame's inner FrameTree's
   // main frame.

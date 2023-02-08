@@ -58,7 +58,27 @@ const UkmMemberFn kSegmentationUkmInputMethods[] = {
     &Segmentation_ModelExecution::SetInput26,
     &Segmentation_ModelExecution::SetInput27,
     &Segmentation_ModelExecution::SetInput28,
-    &Segmentation_ModelExecution::SetInput29};
+    &Segmentation_ModelExecution::SetInput29,
+    &Segmentation_ModelExecution::SetInput30,
+    &Segmentation_ModelExecution::SetInput31,
+    &Segmentation_ModelExecution::SetInput32,
+    &Segmentation_ModelExecution::SetInput33,
+    &Segmentation_ModelExecution::SetInput34,
+    &Segmentation_ModelExecution::SetInput35,
+    &Segmentation_ModelExecution::SetInput36,
+    &Segmentation_ModelExecution::SetInput37,
+    &Segmentation_ModelExecution::SetInput38,
+    &Segmentation_ModelExecution::SetInput39,
+    &Segmentation_ModelExecution::SetInput40,
+    &Segmentation_ModelExecution::SetInput41,
+    &Segmentation_ModelExecution::SetInput42,
+    &Segmentation_ModelExecution::SetInput43,
+    &Segmentation_ModelExecution::SetInput44,
+    &Segmentation_ModelExecution::SetInput45,
+    &Segmentation_ModelExecution::SetInput46,
+    &Segmentation_ModelExecution::SetInput47,
+    &Segmentation_ModelExecution::SetInput48,
+    &Segmentation_ModelExecution::SetInput49};
 
 const UkmMemberFn kSegmentationUkmOutputMethods[] = {
     &Segmentation_ModelExecution::SetActualResult,
@@ -108,7 +128,7 @@ SegmentationUkmHelper* SegmentationUkmHelper::GetInstance() {
 ukm::SourceId SegmentationUkmHelper::RecordModelExecutionResult(
     SegmentId segment_id,
     int64_t model_version,
-    const std::vector<float>& input_tensor,
+    const ModelProvider::Request& input_tensor,
     float result) {
   ukm::SourceId source_id = ukm::NoURLSourceId();
   ukm::builders::Segmentation_ModelExecution execution_result(source_id);
@@ -128,8 +148,8 @@ ukm::SourceId SegmentationUkmHelper::RecordModelExecutionResult(
 ukm::SourceId SegmentationUkmHelper::RecordTrainingData(
     SegmentId segment_id,
     int64_t model_version,
-    const std::vector<float>& input_tensor,
-    const std::vector<float>& outputs,
+    const ModelProvider::Request& input_tensor,
+    const ModelProvider::Response& outputs,
     const std::vector<int>& output_indexes,
     absl::optional<proto::PredictionResult> prediction_result,
     absl::optional<SelectedSegment> selected_segment) {
@@ -163,7 +183,7 @@ bool SegmentationUkmHelper::AddInputsToUkm(
     ukm::builders::Segmentation_ModelExecution* ukm_builder,
     SegmentId segment_id,
     int64_t model_version,
-    const std::vector<float>& input_tensor) {
+    const ModelProvider::Request& input_tensor) {
   if (input_tensor.size() > ARRAY_SIZE(kSegmentationUkmInputMethods)) {
     // Don't record UKM if there are too many tensors.
     stats::RecordTooManyInputTensors(input_tensor.size());
@@ -180,7 +200,7 @@ bool SegmentationUkmHelper::AddInputsToUkm(
 
 bool SegmentationUkmHelper::AddOutputsToUkm(
     ukm::builders::Segmentation_ModelExecution* ukm_builder,
-    const std::vector<float>& outputs,
+    const ModelProvider::Response& outputs,
     const std::vector<int>& output_indexes) {
   DCHECK(!outputs.empty());
   if (outputs.size() != output_indexes.size())

@@ -5,9 +5,14 @@
 #include "chrome/browser/ui/ash/app_access_notifier.h"
 
 #include <string>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
+#include "ash/shell.h"
 #include "ash/system/privacy/privacy_indicators_controller.h"
+#include "ash/system/privacy_hub/camera_privacy_switch_controller.h"
+#include "ash/system/privacy_hub/privacy_hub_controller.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
@@ -38,12 +43,22 @@ apps::AppCapabilityAccessCache* GetAppCapabilityAccessCache(
 absl::optional<std::u16string> MapAppIdToShortName(
     std::string app_id,
     apps::AppCapabilityAccessCache* capability_cache,
-    apps::AppRegistryCache* registry_cache) {
+    apps::AppRegistryCache* registry_cache,
+    ash::SensorDisabledNotificationDelegate::Sensor sensor) {
   DCHECK(capability_cache);
   DCHECK(registry_cache);
 
-  for (const std::string& app :
-       capability_cache->GetAppsAccessingMicrophone()) {
+  std::set<std::string> apps_accessing_sensor;
+  switch (sensor) {
+    case ash::SensorDisabledNotificationDelegate::Sensor::kCamera:
+      apps_accessing_sensor = capability_cache->GetAppsAccessingCamera();
+      break;
+    case ash::SensorDisabledNotificationDelegate::Sensor::kMicrophone:
+      apps_accessing_sensor = capability_cache->GetAppsAccessingMicrophone();
+      break;
+  }
+
+  for (const std::string& app : apps_accessing_sensor) {
     absl::optional<std::u16string> name;
     registry_cache->ForOneApp(app,
                               [&app_id, &name](const apps::AppUpdate& update) {
@@ -61,6 +76,20 @@ void LaunchApp(const std::string& app_id) {
   // TODO(crbug/1351250): Finish this function.
 }
 
+// A helper to send `ash::CameraPrivacySwitchController` a notification when an
+// application starts or stops using the camera. `application_added` is true
+// when the application starts using the camera and false when the application
+// stops using the camera.
+void SendActiveApplicationsChangedNotification(bool application_added) {
+  if (ash::features::IsCrosPrivacyHubEnabled()) {
+    ash::PrivacyHubController* privacy_hub_controller =
+        ash::Shell::Get()->privacy_hub_controller();
+    DCHECK(privacy_hub_controller);
+    privacy_hub_controller->camera_controller().ActiveApplicationsChanged(
+        application_added);
+  }
+}
+
 }  // namespace
 
 AppAccessNotifier::AppAccessNotifier() {
@@ -74,36 +103,87 @@ AppAccessNotifier::AppAccessNotifier() {
   if (um) {
     user_session_state_observation_.Observe(um);
   }
+
+  CheckActiveUserChanged();
 }
 
 AppAccessNotifier::~AppAccessNotifier() = default;
 
-absl::optional<std::u16string> AppAccessNotifier::GetAppAccessingMicrophone() {
+std::vector<std::u16string> AppAccessNotifier::GetAppsAccessingSensor(
+    ash::SensorDisabledNotificationDelegate::Sensor sensor) {
   apps::AppRegistryCache* reg_cache = GetActiveUserAppRegistryCache();
+
   apps::AppCapabilityAccessCache* cap_cache =
       GetActiveUserAppCapabilityAccessCache();
-  // A reg_cache and/or cap_cache of value nullptr is possible if we have
-  // no active user, e.g. the login screen, so we test and return nullopt
-  // in that case instead of using DCHECK().
-  if (!reg_cache || !cap_cache ||
-      mic_using_app_ids[active_user_account_id_].empty()) {
-    return absl::nullopt;
+
+  MruAppIdList* app_id_list;
+  switch (sensor) {
+    case ash::SensorDisabledNotificationDelegate::Sensor::kCamera:
+      app_id_list = &camera_using_app_ids_[active_user_account_id_];
+      break;
+    case ash::SensorDisabledNotificationDelegate::Sensor::kMicrophone:
+      app_id_list = &mic_using_app_ids_[active_user_account_id_];
+      break;
   }
 
-  return MapAppIdToShortName(mic_using_app_ids[active_user_account_id_].front(),
-                             cap_cache, reg_cache);
+  // A reg_cache and/or cap_cache of value nullptr is possible if we have no
+  // active user, e.g. the login screen, so we test and return  empty list in
+  // that case instead of using DCHECK().
+  if (!reg_cache || !cap_cache || app_id_list->empty()) {
+    return {};
+  }
+
+  std::vector<std::u16string> app_names;
+  for (const auto& app_id : *app_id_list) {
+    absl::optional<std::u16string> app_name =
+        MapAppIdToShortName(app_id, cap_cache, reg_cache, sensor);
+    if (app_name.has_value())
+      app_names.push_back(app_name.value());
+  }
+  return app_names;
+}
+
+bool AppAccessNotifier::MapContainsAppId(const MruAppIdMap& id_map,
+                                         const std::string& app_id) {
+  auto it = id_map.find(active_user_account_id_);
+  if (it == id_map.end()) {
+    return false;
+  }
+  return base::Contains(it->second, app_id);
 }
 
 void AppAccessNotifier::OnCapabilityAccessUpdate(
     const apps::CapabilityAccessUpdate& update) {
-  base::Erase(mic_using_app_ids[active_user_account_id_], update.AppId());
+  auto app_id = update.AppId();
 
-  bool is_microphone_used = update.Microphone().value_or(false);
-  bool is_camera_used = update.Camera().value_or(false);
+  const bool is_camera_used = update.Camera().value_or(false);
+  const bool is_microphone_used = update.Microphone().value_or(false);
+
+  // TODO(b/261444378): Avoid calculating the booleans and use update.*Changed()
+  const bool was_using_camera_already =
+      MapContainsAppId(camera_using_app_ids_, app_id);
+  const bool was_using_microphone_already =
+      MapContainsAppId(mic_using_app_ids_, app_id);
+
+  if (is_camera_used && !was_using_camera_already) {
+    // App with id `app_id` started using camera.
+    camera_using_app_ids_[active_user_account_id_].push_front(update.AppId());
+    SendActiveApplicationsChangedNotification(/*application_added=*/true);
+  } else if (!is_camera_used && was_using_camera_already) {
+    // App with id `app_id` stopped using camera.
+    base::Erase(camera_using_app_ids_[active_user_account_id_], update.AppId());
+    SendActiveApplicationsChangedNotification(/*application_added=*/false);
+  }
+
+  if (is_microphone_used && !was_using_microphone_already) {
+    // App with id `app_id` started using microphone.
+    mic_using_app_ids_[active_user_account_id_].push_front(update.AppId());
+  } else if (!is_microphone_used && was_using_microphone_already) {
+    // App with id `app_id` stopped using microphone.
+    base::Erase(mic_using_app_ids_[active_user_account_id_], update.AppId());
+  }
 
   if (ash::features::IsPrivacyIndicatorsEnabled()) {
-    auto app_id = update.AppId();
-
     auto launch_app = base::BindRepeating(&LaunchApp, app_id);
     auto launch_settings =
         base::BindRepeating(&AppAccessNotifier::LaunchAppSettings, app_id);
@@ -122,10 +202,6 @@ void AppAccessNotifier::OnCapabilityAccessUpdate(
           "Ash.PrivacyIndicators.AppAccessUpdate.Type",
           registry_cache->GetAppType(app_id));
     }
-  }
-
-  if (is_microphone_used) {
-    mic_using_app_ids[active_user_account_id_].push_front(update.AppId());
   }
 }
 

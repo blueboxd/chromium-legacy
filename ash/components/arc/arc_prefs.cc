@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/components/arc/session/arc_management_transition.h"
 
 #include <string>
 
+#include "ash/components/arc/metrics/arc_daily_metrics_prefs.h"
+#include "ash/components/arc/session/arc_management_transition.h"
+#include "ash/components/arc/session/arc_vm_data_migration_status.h"
 #include "components/guest_os/guest_os_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 
@@ -31,6 +33,10 @@ const char kArcActiveDirectoryPlayUserId[] =
 const char kArcApps[] = "arc.apps";
 // A preference to store backup and restore state for Android apps.
 const char kArcBackupRestoreEnabled[] = "arc.backup_restore.enabled";
+// Cumulative daily counts of app kills by priority and with other VM context.
+const char kArcDailyMetricsKills[] = "arc.dialy_metrics_kills";
+//  Timestamp of the last time daily metrics have been reported.
+const char kArcDailyMetricsSample[] = "arc.daily_metrics_sample";
 // A preference to indicate that Android's data directory should be removed.
 const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // A preference representing whether a user has opted in to use Google Play
@@ -71,6 +77,8 @@ const char kArcTermsShownInOobe[] = "arc.terms.shown_in_oobe";
 const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 // A preference to keep list of Android packages and their infomation.
 const char kArcPackages[] = "arc.packages";
+// A preference that indicates that arc.packages is up to date.
+const char kArcPackagesIsUpToDate[] = "arc.packages_is_up_to_date";
 // A preference that indicates that Play Auto Install flow was already started.
 const char kArcPaiStarted[] = "arc.pai.started";
 // A preference that indicates that provisioning was initiated from OOBE. This
@@ -119,6 +127,9 @@ const char kArcShowResizeLockSplashScreenLimits[] =
 const char kArcPlayStoreLaunchMetricCanBeRecorded[] =
     "arc.playstore_launched_by_user";
 
+// An integer preference to indicate the status of ARCVM /data migration.
+const char kArcVmDataMigrationStatus[] = "arc.vm_data_migration_status";
+
 // ======== LOCAL STATE PREFS ========
 // ANR count which is currently pending, not flashed to UMA.
 const char kAnrPendingCount[] = "arc.anr_pending_count";
@@ -148,6 +159,7 @@ const char kWebViewProcessStarted[] = "arc.webview.started";
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // Sorted in lexicographical order.
+  RegisterDailyMetricsPrefs(registry);
   registry->RegisterStringPref(kArcSerialNumberSalt, std::string());
   registry->RegisterDictionaryPref(kArcSnapshotHours);
   registry->RegisterDictionaryPref(kArcSnapshotInfo);
@@ -199,6 +211,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterListPref(kArcVisibleExternalStorages);
+  registry->RegisterIntegerPref(
+      kArcVmDataMigrationStatus,
+      static_cast<int>(ArcVmDataMigrationStatus::kUnnotified));
 }
 
 }  // namespace prefs

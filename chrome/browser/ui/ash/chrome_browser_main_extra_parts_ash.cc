@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/shell.h"
+#include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "base/command_line.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ash/policy/display/display_settings_handler.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/sync/sync_error_notifier_factory.h"
+#include "chrome/browser/ash/video_conference/video_conference_tray_controller_impl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/tablet_mode/tablet_mode_page_behavior.h"
@@ -62,6 +64,7 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "chrome/browser/ui/views/tabs/tab_scrubber_chromeos.h"
+#include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/network/network_connect.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/services/bluetooth_config/fast_pair_delegate.h"
@@ -147,8 +150,25 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<CastConfigControllerMediaRouter>();
 
   // Needed by AmbientController in ash.
-  if (chromeos::features::IsAmbientModeEnabled())
+  if (ash::features::IsAmbientModeEnabled())
     ambient_client_ = std::make_unique<AmbientClientImpl>();
+
+  // This controller MUST be initialized before the UI (AshShellInit) is
+  // constructed. The video conferencing views will observe and have their own
+  // reference to this controller, and will assume it exists for as long as they
+  // themselves exist.
+  if (ash::features::IsVcControlsUiEnabled()) {
+    // `VideoConferenceTrayController` relies on audio and camera services to
+    // function properly, so we will use the fake version when system bus is not
+    // available so that this works on linux-chromeos and unit tests.
+    if (ash::DBusThreadManager::Get()->GetSystemBus()) {
+      video_conference_tray_controller_ =
+          std::make_unique<ash::VideoConferenceTrayControllerImpl>();
+    } else {
+      video_conference_tray_controller_ =
+          std::make_unique<ash::FakeVideoConferenceTrayController>();
+    }
+  }
 
   ash_shell_init_ = std::make_unique<AshShellInit>();
 
@@ -230,12 +250,8 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   night_light_client_->Start();
 
   if (ash::features::IsProjectorEnabled()) {
-    projector_client_ = std::make_unique<ProjectorClientImpl>();
-
-    // ProjectorAppClient may trigger function that eventually use the
-    // ProjectorClient. Therefore, create the ProjectorAppClient after the
-    // ProjectorClient.
     projector_app_client_ = std::make_unique<ProjectorAppClientImpl>();
+    projector_client_ = std::make_unique<ProjectorClientImpl>();
   }
 
   desks_client_ = std::make_unique<DesksClient>();
@@ -326,8 +342,8 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   chrome_shelf_controller_initializer_.reset();
   desks_client_.reset();
 
-  projector_app_client_.reset();
   projector_client_.reset();
+  projector_app_client_.reset();
 
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();
@@ -359,6 +375,10 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
+
+  // This instance must be destructed after `ash_shell_init_`.
+  video_conference_tray_controller_.reset();
+
   ambient_client_.reset();
 
   cast_config_controller_media_router_.reset();

@@ -20,9 +20,7 @@ PageLoadMetricsObserverContentTestHarness::
     PageLoadMetricsObserverContentTestHarness() {
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {
-          {blink::features::kPrerender2, {}},
           {blink::features::kFencedFrames, {{"implementation_type", "mparch"}}},
-          {blink::features::kInitialNavigationEntry, {}},
       },
       {
           // Disable the memory requirement of Prerender2

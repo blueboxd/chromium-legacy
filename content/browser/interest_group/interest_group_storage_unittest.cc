@@ -74,6 +74,7 @@ class InterestGroupStorageTest : public testing::Test {
     InterestGroup result;
     result.owner = owner;
     result.name = name;
+    result.bidding_url = owner.GetURL().Resolve("/bidding_script.js");
     result.expiry = base::Time::Now() + base::Days(30);
     result.execution_mode =
         blink::InterestGroup::ExecutionMode::kCompatibilityMode;
@@ -415,171 +416,6 @@ TEST_F(InterestGroupStorageTest, RecordsWins) {
   EXPECT_EQ(0u, origins.size());
 }
 
-// Test updating k-anonymity data for interest group names. Uses two Interest
-// Groups with similar names, which should not share k-anonymity data, to
-// verify database key creation works correctly.
-TEST_F(InterestGroupStorageTest, UpdatesInterestGroupNameKAnonymity) {
-  const url::Origin test_origin =
-      url::Origin::Create(GURL("https://owner.example.com"));
-  const std::string name = "name with space";
-  const std::string name2 = "name%20with%20space";
-
-  const std::string key = test_origin.GetURL().spec() + '\n' + name;
-  const std::string key2 = test_origin.GetURL().spec() + '\n' + name2;
-
-  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
-
-  std::vector<StorageInterestGroup> groups =
-      storage->GetInterestGroupsForOwner(test_origin);
-
-  EXPECT_EQ(0u, groups.size());
-
-  storage->JoinInterestGroup(NewInterestGroup(test_origin, name),
-                             GURL("https://owner.example.com/join"));
-  // Add a little delay so groups are returned in a deterministic order.
-  // Interest groups are returned in descending order based on expiration time.
-  task_environment().FastForwardBy(base::Microseconds(1));
-  storage->JoinInterestGroup(NewInterestGroup(test_origin, name2),
-                             GURL("https://owner.example.com/join"));
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ(name, groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].name_kanon);
-  EXPECT_EQ(key, groups[1].name_kanon->key);
-  EXPECT_EQ(false, groups[1].name_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[1].name_kanon->last_updated);
-
-  EXPECT_EQ(name2, groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(key2, groups[0].name_kanon->key);
-  EXPECT_EQ(false, groups[0].name_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[0].name_kanon->last_updated);
-
-  base::Time update_time = base::Time::Now();
-  StorageInterestGroup::KAnonymityData kanon{key, true, update_time};
-  storage->UpdateKAnonymity(kanon);
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ(name, groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].name_kanon);
-  EXPECT_EQ(key, groups[1].name_kanon->key);
-  EXPECT_EQ(true, groups[1].name_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[1].name_kanon->last_updated);
-
-  EXPECT_EQ(name2, groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(key2, groups[0].name_kanon->key);
-  EXPECT_EQ(false, groups[0].name_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[0].name_kanon->last_updated);
-
-  task_environment().FastForwardBy(base::Seconds(1));
-
-  update_time = base::Time::Now();
-  kanon = StorageInterestGroup::KAnonymityData{key, true, update_time};
-  storage->UpdateKAnonymity(kanon);
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ(name, groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].name_kanon);
-  EXPECT_EQ(key, groups[1].name_kanon->key);
-  EXPECT_EQ(true, groups[1].name_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[1].name_kanon->last_updated);
-
-  EXPECT_EQ(name2, groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(key2, groups[0].name_kanon->key);
-  EXPECT_EQ(false, groups[0].name_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[0].name_kanon->last_updated);
-}
-
-// Tests updating the Interest Group Update URL k-anonymity data works and
-// is shared for both interest groups if they share the same update URL.
-TEST_F(InterestGroupStorageTest, UpdatesInterestGroupUpdateURLKAnonymity) {
-  GURL daily_update_url("https://owner.example.com/group1Update");
-  url::Origin test_origin = url::Origin::Create(daily_update_url);
-
-  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
-  std::vector<StorageInterestGroup> groups =
-      storage->GetInterestGroupsForOwner(test_origin);
-
-  EXPECT_EQ(0u, groups.size());
-
-  InterestGroup g = NewInterestGroup(test_origin, "name");
-  g.daily_update_url = daily_update_url;
-  storage->JoinInterestGroup(g, GURL("https://owner.example.com/join"));
-
-  // Add a little delay so groups are returned in a deterministic order.
-  // Interest groups are returned in descending order based on expiration time.
-  task_environment().FastForwardBy(base::Microseconds(1));
-
-  InterestGroup g2 = NewInterestGroup(test_origin, "name2");
-  g2.daily_update_url = daily_update_url;
-  storage->JoinInterestGroup(g2, GURL("https://owner.example.com/join2"));
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ("name2", groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[0].daily_update_url_kanon->key);
-  EXPECT_EQ(false, groups[0].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[0].daily_update_url_kanon->last_updated);
-
-  EXPECT_EQ("name", groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[1].daily_update_url_kanon->key);
-  EXPECT_EQ(false, groups[1].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(base::Time::Min(), groups[1].daily_update_url_kanon->last_updated);
-
-  base::Time update_time = base::Time::Now();
-  StorageInterestGroup::KAnonymityData kanon{daily_update_url.spec(), true,
-                                             update_time};
-  storage->UpdateKAnonymity(kanon);
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ("name2", groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[0].daily_update_url_kanon->key);
-  EXPECT_EQ(true, groups[0].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[0].daily_update_url_kanon->last_updated);
-
-  EXPECT_EQ("name", groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[1].daily_update_url_kanon->key);
-  EXPECT_EQ(true, groups[1].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[1].daily_update_url_kanon->last_updated);
-
-  task_environment().FastForwardBy(base::Seconds(1));
-
-  update_time = base::Time::Now();
-  kanon = StorageInterestGroup::KAnonymityData{daily_update_url.spec(), true,
-                                               update_time};
-  storage->UpdateKAnonymity(kanon);
-
-  groups = storage->GetInterestGroupsForOwner(test_origin);
-
-  ASSERT_EQ(2u, groups.size());
-  EXPECT_EQ("name2", groups[0].interest_group.name);
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[0].daily_update_url_kanon->key);
-  EXPECT_EQ(true, groups[0].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[0].daily_update_url_kanon->last_updated);
-
-  EXPECT_EQ("name", groups[1].interest_group.name);
-  ASSERT_TRUE(groups[1].daily_update_url_kanon);
-  EXPECT_EQ(daily_update_url, groups[1].daily_update_url_kanon->key);
-  EXPECT_EQ(true, groups[1].daily_update_url_kanon->is_k_anonymous);
-  EXPECT_EQ(update_time, groups[1].daily_update_url_kanon->last_updated);
-}
-
 TEST_F(InterestGroupStorageTest, UpdatesAdKAnonymity) {
   url::Origin test_origin =
       url::Origin::Create(GURL("https://owner.example.com"));
@@ -607,42 +443,65 @@ TEST_F(InterestGroupStorageTest, UpdatesAdKAnonymity) {
 
   groups = storage->GetInterestGroupsForOwner(test_origin);
 
-  std::vector<StorageInterestGroup::KAnonymityData> expected_output = {
-      {ad1_url.spec(), false, base::Time::Min()},
-      {ad2_url.spec(), false, base::Time::Min()},
-      {ad1_url.spec(), false, base::Time::Min()},
-      {ad3_url.spec(), false, base::Time::Min()},
+  std::vector<StorageInterestGroup::KAnonymityData> expected_bidding = {
+      {KAnonKeyForAdBid(g, g.ads.value()[0]), false, base::Time::Min()},
+      {KAnonKeyForAdBid(g, g.ads.value()[1]), false, base::Time::Min()},
+      {KAnonKeyForAdBid(g, g.ad_components.value()[0]), false,
+       base::Time::Min()},
+      {KAnonKeyForAdBid(g, g.ad_components.value()[1]), false,
+       base::Time::Min()},
+  };
+  std::vector<StorageInterestGroup::KAnonymityData> expected_reporting = {
+      {KAnonKeyForAdNameReporting(g, g.ads.value()[0]), false,
+       base::Time::Min()},
+      {KAnonKeyForAdNameReporting(g, g.ads.value()[1]), false,
+       base::Time::Min()},
   };
 
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_bidding));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_reporting));
 
   base::Time update_time = base::Time::Now();
-  StorageInterestGroup::KAnonymityData kanon{ad1_url.spec(), true, update_time};
-  storage->UpdateKAnonymity(kanon);
-  expected_output[0] = kanon;
-  expected_output[2] = kanon;
+  StorageInterestGroup::KAnonymityData kanon_bid{
+      KAnonKeyForAdBid(g, g.ads.value()[0]), true, update_time};
+  StorageInterestGroup::KAnonymityData kanon_report{
+      KAnonKeyForAdNameReporting(g, g.ads.value()[0]), true, update_time};
+  storage->UpdateKAnonymity(kanon_bid);
+  storage->UpdateKAnonymity(kanon_report);
+  expected_bidding[0] = kanon_bid;
+  expected_bidding[2] = kanon_bid;
+  expected_reporting[0] = kanon_report;
 
   groups = storage->GetInterestGroupsForOwner(test_origin);
 
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_bidding));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_reporting));
 
   task_environment().FastForwardBy(base::Seconds(1));
 
   update_time = base::Time::Now();
-  kanon =
-      StorageInterestGroup::KAnonymityData{ad2_url.spec(), true, update_time};
-  storage->UpdateKAnonymity(kanon);
-  expected_output[1] = kanon;
+  kanon_bid = StorageInterestGroup::KAnonymityData{
+      KAnonKeyForAdBid(g, g.ads.value()[1]), true, update_time};
+  kanon_report = StorageInterestGroup::KAnonymityData{
+      KAnonKeyForAdNameReporting(g, g.ads.value()[1]), true, update_time};
+  storage->UpdateKAnonymity(kanon_bid);
+  storage->UpdateKAnonymity(kanon_report);
+  expected_bidding[1] = kanon_bid;
+  expected_reporting[1] = kanon_report;
 
   groups = storage->GetInterestGroupsForOwner(test_origin);
 
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_bidding));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAreArray(expected_reporting));
 }
 
 TEST_F(InterestGroupStorageTest, KAnonDataExpires) {
@@ -670,30 +529,24 @@ TEST_F(InterestGroupStorageTest, KAnonDataExpires) {
 
   // Update the k-anonymity data.
   base::Time update_kanon_time = base::Time::Now();
-  StorageInterestGroup::KAnonymityData ad1_kanon{ad1_url.spec(), true,
-                                                 update_kanon_time};
-  StorageInterestGroup::KAnonymityData ad2_kanon{ad2_url.spec(), true,
-                                                 update_kanon_time};
-  StorageInterestGroup::KAnonymityData update_kanon{daily_update_url.spec(),
-                                                    true, update_kanon_time};
-  StorageInterestGroup::KAnonymityData name_kanon{key, true, update_kanon_time};
-  storage->UpdateKAnonymity(ad1_kanon);
-  storage->UpdateKAnonymity(ad2_kanon);
-  storage->UpdateKAnonymity(update_kanon);
-  storage->UpdateKAnonymity(name_kanon);
+  StorageInterestGroup::KAnonymityData ad1_bid_kanon{
+      KAnonKeyForAdBid(g, g.ads.value()[0]), true, update_kanon_time};
+  StorageInterestGroup::KAnonymityData ad1_report_kanon{
+      KAnonKeyForAdNameReporting(g, g.ads.value()[0]), true, update_kanon_time};
+  StorageInterestGroup::KAnonymityData ad2_bid_kanon{
+      KAnonKeyForAdBid(g, g.ad_components.value()[0]), true, update_kanon_time};
+  storage->UpdateKAnonymity(ad1_bid_kanon);
+  storage->UpdateKAnonymity(ad1_report_kanon);
+  storage->UpdateKAnonymity(ad2_bid_kanon);
 
   // Check k-anonymity data was correctly set.
-  std::vector<StorageInterestGroup::KAnonymityData> expected_output = {
-      ad1_kanon, ad2_kanon};
   std::vector<StorageInterestGroup> groups =
       storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(update_kanon, groups[0].daily_update_url_kanon.value());
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(name_kanon, groups[0].name_kanon.value());
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAre(ad1_bid_kanon, ad2_bid_kanon));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAre(ad1_report_kanon));
 
   // Fast-forward past interest group expiration.
   task_environment().FastForwardBy(base::Days(2));
@@ -709,12 +562,10 @@ TEST_F(InterestGroupStorageTest, KAnonDataExpires) {
   // K-anon data should still be the same.
   groups = storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(update_kanon, groups[0].daily_update_url_kanon.value());
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(name_kanon, groups[0].name_kanon.value());
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAre(ad1_bid_kanon, ad2_bid_kanon));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAre(ad1_report_kanon));
 
   // Fast-forward past interest group and kanon value expiration.
   task_environment().FastForwardBy(InterestGroupStorage::kHistoryLength);
@@ -723,25 +574,27 @@ TEST_F(InterestGroupStorageTest, KAnonDataExpires) {
   groups = storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(0u, groups.size());
 
+  // Allow enough idle time to trigger maintenance.
+  task_environment().FastForwardBy(InterestGroupStorage::kIdlePeriod +
+                                   base::Seconds(1));
+
   // Join again and expect the default kanon values.
   g.expiry = base::Time::Now() + base::Days(1);
   storage->JoinInterestGroup(g, GURL("https://owner.example.com/join3"));
 
   // K-anon data should be the default.
-  ad1_kanon = {ad1_url.spec(), /*is_k_anonymous=*/false, base::Time::Min()};
-  ad2_kanon = {ad2_url.spec(), /*is_k_anonymous=*/false, base::Time::Min()};
-  update_kanon = {daily_update_url.spec(), /*is_k_anonymous=*/false,
-                  base::Time::Min()};
-  name_kanon = {key, /*is_k_anonymous=*/false, base::Time::Min()};
-  expected_output = {ad1_kanon, ad2_kanon};
+  ad1_bid_kanon = {KAnonKeyForAdBid(g, g.ads.value()[0]),
+                   /*is_k_anonymous=*/false, base::Time::Min()};
+  ad1_report_kanon = {KAnonKeyForAdNameReporting(g, g.ads.value()[0]),
+                      /*is_k_anonymous=*/false, base::Time::Min()};
+  ad2_bid_kanon = {KAnonKeyForAdBid(g, g.ad_components.value()[0]),
+                   /*is_k_anonymous=*/false, base::Time::Min()};
   groups = storage->GetInterestGroupsForOwner(test_origin);
   ASSERT_EQ(1u, groups.size());
-  EXPECT_THAT(groups[0].ads_kanon,
-              testing::UnorderedElementsAreArray(expected_output));
-  ASSERT_TRUE(groups[0].daily_update_url_kanon);
-  EXPECT_EQ(update_kanon, groups[0].daily_update_url_kanon.value());
-  ASSERT_TRUE(groups[0].name_kanon);
-  EXPECT_EQ(name_kanon, groups[0].name_kanon.value());
+  EXPECT_THAT(groups[0].bidding_ads_kanon,
+              testing::UnorderedElementsAre(ad1_bid_kanon, ad2_bid_kanon));
+  EXPECT_THAT(groups[0].reporting_ads_kanon,
+              testing::UnorderedElementsAre(ad1_report_kanon));
 }
 
 TEST_F(InterestGroupStorageTest, StoresAllFields) {
@@ -756,6 +609,10 @@ TEST_F(InterestGroupStorageTest, StoresAllFields) {
       /*enable_bidding_signals_prioritization=*/true,
       /*priority_vector=*/{{{"a", 2}, {"b", -2.2}}},
       /*priority_signals_overrides=*/{{{"a", -2}, {"c", 10}, {"d", 1.2}}},
+      // TODO(crbug.com/1385549): Update once storage support added.
+      /*seller_capabilities=*/absl::nullopt,
+      /*all_sellers_capabilities=*/
+      blink::InterestGroup::SellerCapabilitiesType(),
       /*execution_mode=*/InterestGroup::ExecutionMode::kCompatibilityMode,
       /*bidding_url=*/GURL("https://full.example.com/bid"),
       /*bidding_wasm_helper_url=*/GURL("https://full.example.com/bid_wasm"),
@@ -849,15 +706,24 @@ TEST_F(InterestGroupStorageTest, DeleteOriginDeleteAll) {
       url::Origin::Create(GURL("https://joinerA.example.com"));
   const url::Origin joining_originB =
       url::Origin::Create(GURL("https://joinerB.example.com"));
+
+  GURL ad1_url = GURL("https://owner.example.com/ad1");
+
+  InterestGroup g1 = NewInterestGroup(owner_originA, "example");
+  g1.ads.emplace();
+  g1.ads->push_back(blink::InterestGroup::Ad(ad1_url, "metadata1"));
+
+  std::string k_anon_key = KAnonKeyForAdBid(g1, g1.ads.value()[0]);
+
   std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
-  storage->JoinInterestGroup(NewInterestGroup(owner_originA, "example"),
-                             joining_originA.GetURL());
+  storage->JoinInterestGroup(g1, joining_originA.GetURL());
   storage->JoinInterestGroup(NewInterestGroup(owner_originB, "example"),
                              joining_originA.GetURL());
   storage->JoinInterestGroup(NewInterestGroup(owner_originC, "example"),
                              joining_originA.GetURL());
   storage->JoinInterestGroup(NewInterestGroup(owner_originB, "exampleB"),
                              joining_originB.GetURL());
+  storage->UpdateLastKAnonymityReported(k_anon_key);
 
   std::vector<url::Origin> origins = storage->GetAllInterestGroupOwners();
   EXPECT_THAT(origins, UnorderedElementsAre(owner_originA, owner_originB,
@@ -896,13 +762,63 @@ TEST_F(InterestGroupStorageTest, DeleteOriginDeleteAll) {
   EXPECT_EQ(0u, origins.size());
 
   // DeleteInterestGroupData shouldn't have deleted kanon data.
-  EXPECT_TRUE(storage->GetLastKAnonymityReported(
-      KAnonKeyFor(owner_originA, "example")));
+  EXPECT_NE(base::Time::Min(), storage->GetLastKAnonymityReported(k_anon_key));
 
   storage->DeleteAllInterestGroupData();
   // DeleteAllInterestGroupData should have deleted *everything*.
-  EXPECT_FALSE(storage->GetLastKAnonymityReported(
-      KAnonKeyFor(owner_originA, "example")));
+  EXPECT_EQ(base::Time::Min(), storage->GetLastKAnonymityReported(k_anon_key));
+}
+
+TEST_F(InterestGroupStorageTest, DeleteOwnerJoinerPair) {
+  // Set up owner origin, joining origin pairs.
+  const url::Origin owner_originA =
+      url::Origin::Create(GURL("https://ownerA.example.com"));
+  const url::Origin owner_originB =
+      url::Origin::Create(GURL("https://ownerB.example.com"));
+  const url::Origin owner_originC =
+      url::Origin::Create(GURL("https://ownerC.example.com"));
+  const url::Origin joining_originA =
+      url::Origin::Create(GURL("https://joinerA.example.com"));
+  const url::Origin joining_originB =
+      url::Origin::Create(GURL("https://joinerB.example.com"));
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+  storage->JoinInterestGroup(NewInterestGroup(owner_originA, "groupA"),
+                             joining_originA.GetURL());
+  storage->JoinInterestGroup(NewInterestGroup(owner_originB, "groupB"),
+                             joining_originA.GetURL());
+  storage->JoinInterestGroup(NewInterestGroup(owner_originC, "groupC"),
+                             joining_originA.GetURL());
+  storage->JoinInterestGroup(NewInterestGroup(owner_originB, "groupB2"),
+                             joining_originB.GetURL());
+
+  // Validate that pairs are retrieved correctly.
+  {
+    std::vector<std::pair<url::Origin, url::Origin>>
+        expected_owner_joiner_pairs = {{owner_originA, joining_originA},
+                                       {owner_originB, joining_originA},
+                                       {owner_originC, joining_originA},
+                                       {owner_originB, joining_originB}};
+    std::vector<std::pair<url::Origin, url::Origin>> owner_joiner_pairs =
+        storage->GetAllInterestGroupOwnerJoinerPairs();
+    EXPECT_THAT(owner_joiner_pairs,
+                UnorderedElementsAreArray(expected_owner_joiner_pairs));
+  }
+
+  // Remove an interest group with specified owner origin and joining origin.
+  storage->RemoveInterestGroupsMatchingOwnerAndJoiner(owner_originB,
+                                                      joining_originA);
+
+  // Validate that only the specified interest group is removed.
+  {
+    std::vector<std::pair<url::Origin, url::Origin>>
+        expected_owner_joiner_pairs = {{owner_originA, joining_originA},
+                                       {owner_originC, joining_originA},
+                                       {owner_originB, joining_originB}};
+    std::vector<std::pair<url::Origin, url::Origin>> owner_joiner_pairs =
+        storage->GetAllInterestGroupOwnerJoinerPairs();
+    EXPECT_THAT(owner_joiner_pairs,
+                UnorderedElementsAreArray(expected_owner_joiner_pairs));
+  }
 }
 
 // Maintenance should prune the number of interest groups and interest group
@@ -1193,20 +1109,22 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "bid_count",
                       &auction_worklet::mojom::BiddingBrowserSignals::bid_count,
                       4)))),
-          Field("name_kanon", &StorageInterestGroup::name_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/\ngroup1", false,
-                    base::Time::Min()}),
-          Field("daily_update_url_kanon",
-                &StorageInterestGroup::daily_update_url_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/update", false,
-                    base::Time::Min()}),
-          Field(
-              "ads_kanon", &StorageInterestGroup::ads_kanon,
-              testing::UnorderedElementsAre(
-                  StorageInterestGroup::KAnonymityData{
-                      "https://ads.example.com/1", false, base::Time::Min()})),
+          Field("bidding_ads_kanon", &StorageInterestGroup::bidding_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1",
+                        false, base::Time::Min()})),
+          Field("reporting_ads_kanon",
+                &StorageInterestGroup::reporting_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1\n"
+                        "group1",
+                        false, base::Time::Min()})),
           Field("joining_origin", &StorageInterestGroup::joining_origin,
                 url::Origin::Create(GURL("https://publisher.example.com"))),
           Field("join_time", &StorageInterestGroup::join_time,
@@ -1274,20 +1192,22 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "bid_count",
                       &auction_worklet::mojom::BiddingBrowserSignals::bid_count,
                       3)))),
-          Field("name_kanon", &StorageInterestGroup::name_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/\ngroup2", false,
-                    base::Time::Min()}),
-          Field("daily_update_url_kanon",
-                &StorageInterestGroup::daily_update_url_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/update", false,
-                    base::Time::Min()}),
-          Field(
-              "ads_kanon", &StorageInterestGroup::ads_kanon,
-              testing::UnorderedElementsAre(
-                  StorageInterestGroup::KAnonymityData{
-                      "https://ads.example.com/1", false, base::Time::Min()})),
+          Field("bidding_ads_kanon", &StorageInterestGroup::bidding_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1",
+                        false, base::Time::Min()})),
+          Field("reporting_ads_kanon",
+                &StorageInterestGroup::reporting_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1\n"
+                        "group2",
+                        false, base::Time::Min()})),
           Field("joining_origin", &StorageInterestGroup::joining_origin,
                 url::Origin::Create(GURL("https://publisher.example.com"))),
           Field("join_time", &StorageInterestGroup::join_time,
@@ -1355,20 +1275,22 @@ TEST_F(InterestGroupStorageTest, UpgradeFromV6) {
                       "bid_count",
                       &auction_worklet::mojom::BiddingBrowserSignals::bid_count,
                       4)))),
-          Field("name_kanon", &StorageInterestGroup::name_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/\ngroup3", false,
-                    base::Time::Min()}),
-          Field("daily_update_url_kanon",
-                &StorageInterestGroup::daily_update_url_kanon,
-                StorageInterestGroup::KAnonymityData{
-                    "https://owner.example.com/update", false,
-                    base::Time::Min()}),
-          Field(
-              "ads_kanon", &StorageInterestGroup::ads_kanon,
-              testing::UnorderedElementsAre(
-                  StorageInterestGroup::KAnonymityData{
-                      "https://ads.example.com/1", false, base::Time::Min()})),
+          Field("bidding_ads_kanon", &StorageInterestGroup::bidding_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1",
+                        false, base::Time::Min()})),
+          Field("reporting_ads_kanon",
+                &StorageInterestGroup::reporting_ads_kanon,
+                testing::UnorderedElementsAre(
+                    StorageInterestGroup::KAnonymityData{
+                        "https://owner.example.com/\n"
+                        "https://owner.example.com/bidder.js\n"
+                        "https://ads.example.com/1\n"
+                        "group3",
+                        false, base::Time::Min()})),
           Field("joining_origin", &StorageInterestGroup::joining_origin,
                 url::Origin::Create(GURL("https://publisher.example.com"))),
           Field("join_time", &StorageInterestGroup::join_time,
@@ -1614,7 +1536,7 @@ TEST_F(InterestGroupStorageTest, SetGetLastKAnonReported) {
 
   absl::optional<base::Time> last_report =
       storage->GetLastKAnonymityReported(ad1_url.spec());
-  EXPECT_FALSE(last_report);  // Not in the database.
+  EXPECT_EQ(base::Time::Min(), last_report);  // Not in the database.
 
   storage->JoinInterestGroup(g, GURL("https://owner.example.com/join"));
 
@@ -1761,6 +1683,47 @@ TEST_F(InterestGroupStorageTest, UpdatePrioritySignalsOverrides) {
       (base::flat_map<std::string, double>{
           {"key2", 6}, {"key3", 0}, {"key4", 5}}),
       storage_interest_groups[0].interest_group.priority_signals_overrides);
+}
+
+TEST_F(InterestGroupStorageTest, OnlyDeletesExpiredKAnon) {
+  url::Origin test_origin =
+      url::Origin::Create(GURL("https://owner.example.com"));
+  GURL ad1_url = GURL("https://owner.example.com/ad1");
+  GURL ad2_url = GURL("https://owner.example.com/ad2");
+
+  InterestGroup g = NewInterestGroup(test_origin, "name");
+  g.ads.emplace();
+  g.ads->push_back(blink::InterestGroup::Ad(ad1_url, "metadata1"));
+  g.ads->push_back(blink::InterestGroup::Ad(ad2_url, "metadata2"));
+  std::unique_ptr<InterestGroupStorage> storage = CreateStorage();
+
+  storage->JoinInterestGroup(g, GURL("https://owner.example.com/join"));
+
+  std::vector<StorageInterestGroup> groups =
+      storage->GetInterestGroupsForOwner(test_origin);
+
+  storage->UpdateLastKAnonymityReported(ad1_url.spec());
+  storage->UpdateLastKAnonymityReported(ad2_url.spec());
+
+  EXPECT_NE(base::Time::Min(),
+            storage->GetLastKAnonymityReported(ad1_url.spec()));
+  EXPECT_NE(base::Time::Min(),
+            storage->GetLastKAnonymityReported(ad2_url.spec()));
+
+  task_environment().FastForwardBy(base::Days(1));
+
+  // fast-forward 30 days.
+  for (int i = 0; i < InterestGroupStorage::kHistoryLength / base::Days(1);
+       i++) {
+    storage->JoinInterestGroup(g, GURL("https://owner.example.com/join"));
+    storage->UpdateLastKAnonymityReported(ad1_url.spec());
+    task_environment().FastForwardBy(base::Days(1));
+  }
+
+  EXPECT_NE(base::Time::Min(),
+            storage->GetLastKAnonymityReported(ad1_url.spec()));
+  EXPECT_EQ(base::Time::Min(),
+            storage->GetLastKAnonymityReported(ad2_url.spec()));
 }
 
 }  // namespace content

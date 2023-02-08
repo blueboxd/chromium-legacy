@@ -8,7 +8,6 @@
 
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -78,7 +77,7 @@ SkiaVkAndroidImageRepresentation::BeginWriteAccess(
 
   if (!surface_ || final_msaa_count != surface_msaa_count_ ||
       surface_props != surface_->props()) {
-    SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+    SkColorType sk_color_type = viz::ToClosestSkColorType(
         /*gpu_compositing=*/true, format());
     surface_ = SkSurface::MakeFromBackendTexture(
         gr_context, promise_texture_->backendTexture(), surface_origin(),

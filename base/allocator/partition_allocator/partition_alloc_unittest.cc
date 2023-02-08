@@ -336,6 +336,7 @@ class PartitionAllocTest
         partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
         partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
+        partition_alloc::PartitionOptions::AddDummyRefCount::kDisabled,
         pkey_ != kInvalidPkey ? pkey_ : kDefaultPkey,
     });
     if (UsePkeyPool() && pkey_ != kInvalidPkey) {
@@ -347,6 +348,7 @@ class PartitionAllocTest
           partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
           partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
           partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
+          partition_alloc::PartitionOptions::AddDummyRefCount::kDisabled,
           pkey_,
       });
       return;
@@ -1398,33 +1400,62 @@ TEST_P(PartitionAllocTest, IsValidPtrDelta) {
       }
 
       uintptr_t address = UntagPtr(ptr);
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address, -kFarFarAwayDelta));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address, -kSuperPageSize));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address, -1));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address, 0));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address, requested_size / 2));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address, requested_size));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address, requested_size + 1));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(
-          address, requested_size + kSuperPageSize));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(
-          address, requested_size + kFarFarAwayDelta));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                                 kFarFarAwayDelta));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                                 kSuperPageSize));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address + requested_size, 1));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address + requested_size, 0));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                                -(requested_size / 2)));
-      EXPECT_TRUE(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                                -requested_size));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                                 -requested_size - 1));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(
-          address + requested_size, -requested_size - kSuperPageSize));
-      EXPECT_FALSE(PartitionAllocIsValidPtrDelta(
-          address + requested_size, -requested_size - kFarFarAwayDelta));
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, -kFarFarAwayDelta),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, -kSuperPageSize),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, -1),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, 0),
+                PtrPosWithinAlloc::kInBounds);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, requested_size / 2),
+                PtrPosWithinAlloc::kInBounds);
+#if defined(PA_USE_OOB_POISON)
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, requested_size),
+                PtrPosWithinAlloc::kAllocEnd);
+#else
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, requested_size),
+                PtrPosWithinAlloc::kInBounds);
+#endif
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, requested_size + 1),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
+                                              requested_size + kSuperPageSize),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(
+                    address, requested_size + kFarFarAwayDelta),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              kFarFarAwayDelta),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              kSuperPageSize),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size, 1),
+                PtrPosWithinAlloc::kFarOOB);
+#if defined(PA_USE_OOB_POISON)
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size, 0),
+                PtrPosWithinAlloc::kAllocEnd);
+#else
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size, 0),
+                PtrPosWithinAlloc::kInBounds);
+#endif
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              -(requested_size / 2)),
+                PtrPosWithinAlloc::kInBounds);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              -requested_size),
+                PtrPosWithinAlloc::kInBounds);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              -requested_size - 1),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
+                                              -requested_size - kSuperPageSize),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(
+          PartitionAllocIsValidPtrDelta(address + requested_size,
+                                        -requested_size - kFarFarAwayDelta),
+          PtrPosWithinAlloc::kFarOOB);
     }
 
     for (void* ptr : ptrs)
@@ -4079,6 +4110,9 @@ TEST_P(UnretainedDanglingRawPtrTest, UnretainedDanglingPtrShouldReport) {
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
 TEST_P(PartitionAllocTest, BackupRefPtrGuardRegion) {
+  if (!UseBRPPool())
+    return;
+
   size_t alignment = internal::PageAllocationGranularity();
 
   uintptr_t requested_address;
@@ -4105,6 +4139,9 @@ TEST_P(PartitionAllocTest, BackupRefPtrGuardRegion) {
 // Allocate memory, and reference it from 3 raw_ptr. Among them 2 will be
 // dangling.
 TEST_P(PartitionAllocTest, DanglingPtr) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   // Allocate memory, and reference it from 3 raw_ptr.
@@ -4161,6 +4198,9 @@ TEST_P(PartitionAllocTest, DanglingPtr) {
 // raw_ptr<T, DisableDanglingPtrDetection>. Among them 2 will be dangling. This
 // doesn't trigger any dangling raw_ptr checks.
 TEST_P(PartitionAllocTest, DanglingDanglingPtr) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   // Allocate memory, and reference it from 3 raw_ptr.
@@ -4200,6 +4240,9 @@ TEST_P(PartitionAllocTest, DanglingDanglingPtr) {
 // When 'free' is called, it remain one raw_ptr<> and one
 // raw_ptr<T, DisableDanglingPtrDetection>. The raw_ptr<> is released first.
 TEST_P(PartitionAllocTest, DanglingMixedReleaseRawPtrFirst) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   uint64_t* ptr = static_cast<uint64_t*>(
@@ -4250,6 +4293,9 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseRawPtrFirst) {
 // The raw_ptr<T, DisableDanglingPtrDetection> is released first. This
 // triggers the dangling raw_ptr<> checks.
 TEST_P(PartitionAllocTest, DanglingMixedReleaseDanglingPtrFirst) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   void* ptr =
@@ -4299,6 +4345,9 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseDanglingPtrFirst) {
 // raw_ptr<T, DisableDanglingPtrDetection>, then it is used to acquire one
 // dangling raw_ptr<>. Release the raw_ptr<> first.
 TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtr) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   void* ptr =
@@ -4334,6 +4383,9 @@ TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtr) {
 // Same as 'DanglingPtrUsedToAcquireNewRawPtr', but release the
 // raw_ptr<T, DisableDanglingPtrDetection> before the raw_ptr<>.
 TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtrVariant) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   void* ptr =
@@ -4370,6 +4422,9 @@ TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtrVariant) {
 // background, there is one raw_ptr<T, DisableDanglingPtrDetection>. This
 // doesn't trigger any dangling raw_ptr<T> checks.
 TEST_P(PartitionAllocTest, RawPtrReleasedBeforeFree) {
+  if (!UseBRPPool())
+    return;
+
   CountDanglingRawPtr dangling_checks;
 
   void* ptr =
@@ -4405,6 +4460,9 @@ TEST_P(PartitionAllocTest, RawPtrReleasedBeforeFree) {
 
 // Acquire() once, Release() twice => CRASH
 TEST_P(PartitionAllocDeathTest, ReleaseUnderflowRawPtr) {
+  if (!UseBRPPool())
+    return;
+
   void* ptr =
       allocator.root()->Alloc(64 - ExtraAllocSize(allocator), type_name);
   auto* ref_count =
@@ -4417,6 +4475,9 @@ TEST_P(PartitionAllocDeathTest, ReleaseUnderflowRawPtr) {
 
 // AcquireFromUnprotectedPtr() once, ReleaseFromUnprotectedPtr() twice => CRASH
 TEST_P(PartitionAllocDeathTest, ReleaseUnderflowDanglingPtr) {
+  if (!UseBRPPool())
+    return;
+
   void* ptr =
       allocator.root()->Alloc(64 - ExtraAllocSize(allocator), type_name);
   auto* ref_count =
@@ -5204,13 +5265,9 @@ class ScopedOpenCLNoOpKernel {
 
 // On macOS 10.11, allocations are made with PartitionAlloc, but the pointer
 // is incorrectly passed by CoreFoundation to the previous default zone,
-// causing crashes. This is intended to detect these issues coming back.
+// causing crashes. This is intended to detect these issues regressing in future
+// versions of macOS.
 TEST_P(PartitionAllocTest, OpenCL) {
-  // Skip on 10.11, as it fails there.
-  // TODO(crbug.com/1268776): Make it pass on macOS 10.11.
-  if (base::mac::IsOS10_11())
-    return;
-
   ScopedOpenCLNoOpKernel kernel;
   kernel.SetUp();
 #if !defined(ARCH_CPU_ARM64)

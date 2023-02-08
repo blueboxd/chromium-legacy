@@ -20,6 +20,17 @@ URLID TestHistoryBackendForSync::AddURL(URLRow row) {
   return id;
 }
 
+bool TestHistoryBackendForSync::UpdateURL(URLRow row) {
+  DCHECK_NE(row.id(), 0);
+  for (URLRow& url : urls_) {
+    if (url.id() == row.id()) {
+      url = row;
+      return true;
+    }
+  }
+  return false;
+}
+
 VisitID TestHistoryBackendForSync::AddVisit(VisitRow row) {
   DCHECK_EQ(row.visit_id, 0);
   VisitID id = next_visit_id_++;
@@ -69,6 +80,10 @@ const URLRow* TestHistoryBackendForSync::FindURLRow(const GURL& url) const {
   return nullptr;
 }
 
+bool TestHistoryBackendForSync::CanAddURL(const GURL& url) const {
+  return true;
+}
+
 bool TestHistoryBackendForSync::IsExpiredVisitTime(
     const base::Time& time) const {
   return time < base::Time::Now() - kExpiryThreshold;
@@ -93,6 +108,20 @@ bool TestHistoryBackendForSync::GetVisitByID(VisitID visit_id,
     }
   }
   return false;
+}
+
+bool TestHistoryBackendForSync::GetMostRecentVisitForURL(URLID id,
+                                                         VisitRow* visit_row) {
+  *visit_row = VisitRow();
+  for (const VisitRow& candidate : visits_) {
+    if (candidate.url_id == id &&
+        (candidate.visit_time > visit_row->visit_time ||
+         (candidate.visit_time == visit_row->visit_time &&
+          candidate.visit_id > visit_row->visit_id))) {
+      *visit_row = candidate;
+    }
+  }
+  return visit_row->visit_id != 0;
 }
 
 bool TestHistoryBackendForSync::GetLastVisitByTime(base::Time visit_time,
@@ -184,9 +213,19 @@ VisitID TestHistoryBackendForSync::AddSyncedVisit(
 }
 
 VisitID TestHistoryBackendForSync::UpdateSyncedVisit(
+    const GURL& url,
+    const std::u16string& title,
+    bool hidden,
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
+  for (URLRow& existing_url : urls_) {
+    if (existing_url.url() == url) {
+      existing_url.set_title(title);
+      existing_url.set_hidden(hidden);
+    }
+  }
+
   for (VisitRow& existing_visit : visits_) {
     if (existing_visit.originator_cache_guid == visit.originator_cache_guid &&
         existing_visit.originator_visit_id == visit.originator_visit_id) {
@@ -248,6 +287,28 @@ std::vector<GURL> TestHistoryBackendForSync::GetFaviconURLsForURL(
     const GURL& page_url) {
   // For the unit tests based on this class, favicon URLs aren't required.
   return {};
+}
+
+bool TestHistoryBackendForSync::DeleteAllForeignVisits() {
+  ++delete_all_foreign_visits_call_count_;
+
+  for (auto it = visits_.begin(); it != visits_.end();) {
+    const VisitRow& visit = *it;
+    if (visit.originator_cache_guid.empty()) {
+      // Local visit, leave it.
+      ++it;
+      continue;
+    } else {
+      // Foreign visit, erase it along with any annotations.
+      context_annotations_.erase(visit.visit_id);
+      content_annotations_.erase(visit.visit_id);
+      it = visits_.erase(it);
+      // Note: The real backend would also erase the corresponding URL, if this
+      // was the last remaining visit to it. That could be implemented here too,
+      // but currently isn't necessary for the unit tests that use this class.
+    }
+  }
+  return true;
 }
 
 void TestHistoryBackendForSync::AddObserver(HistoryBackendObserver* observer) {

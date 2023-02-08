@@ -20,7 +20,7 @@ The tables in this file are parsed as action templates for critical user journey
 
 TODO(dmurph): Possibly this table up into markdown-header section.
 
-| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 135) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
+| # Action base name | Argument Types | Output Actions | Unique Identifier (next: 138) | Status (WIP, Implemented, Not Implemented, Parameterized) | Description | Metadata, implementation bug, etc |
 | --- | --- | --- | --- | --- | --- | --- |
 | # Badging |
 | check_app_badge_empty | Site |  | 2 | Not Implemented | Check that the 'badge' on the app icon is empty |  |
@@ -57,6 +57,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | install_no_shortcut | Site | install_policy_app($1, NoShortcut, WindowOptions::All, WebApp) | 56 | Parameterized |  |  |
 | install_tabbed_no_shortcut | Site | install_policy_app($1, NoShortcut, Browser, WebApp) | 129 | Parameterized | All installation methods that result in a tabbed webapp without shortcut. |  |
 | install_windowed_no_shortcut | Site | install_policy_app($1, NoShortcut, Windowed, WebApp) | 131 | Parameterized | All installation methods that result in a windowed webapp without shortcut. |  |
+| install_by_user_windowed | InstallableSite | install_omnibox_icon($1) & install_menu_option($1) | 137 | Parameterized | All user installation methods that result in a windowed webapp without shortcut. |  |
 | # Install & Create Shortcut Parameterized |
 | install_or_shortcut | Site | create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, WindowOptions::All, WebApp) & install_menu_option($1) | 52 | Parameterized |  |  |
 | install_or_shortcut_by_user | Site | create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_menu_option($1) | 53 | Parameterized |  |  |
@@ -66,6 +67,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | install_or_shortcut_tabbed_with_shortcut | Site | create_shortcut($1, Browser) & install_policy_app($1, WithShortcut, Browser) | 128 | Parameterized | All installation methods that result in a tabbed webapp with shortcut created. |  |
 | install_or_shortcut_windowed | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) & install_policy_app($1, ShortcutOptions::All, Windowed, WebApp) & install_menu_option($1) | 62 | Parameterized | All installation methods that result in a windowed webapp. |  |
 | install_or_shortcut_windowed_with_shortcut | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) &  install_policy_app($1, WithShortcut, Windowed, WebApp) & install_menu_option($1) | 130 | Parameterized | All installation methods that result in a windowed webapp with shortcut created. |  |
+| install_or_shortcut_by_user_windowed_with_shortcut | Site | create_shortcut($1, Windowed) & install_omnibox_icon($1) & install_menu_option($1) | 136 | Parameterized | All user initiated installation methods that result in a windowed webapp with shortcut created. |  |
 | install_or_shortcut_with_shortcut | Site | install_policy_app($1, WithShortcut, WindowOptions::All, WebApp) & create_shortcut($1, WindowOptions::All) & install_omnibox_icon($1) & install_menu_option($1) | 63 | Parameterized |  |  |
 | |
 | # Uninstall |
@@ -108,7 +110,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_user_cannot_set_run_on_os_login | Site |  | 111 | Implemented | Check user can't change the app's  run_on_os_login state.  |  |
 | check_window_closed |  |  | 23 | Implemented | The window was closed |  |
 | check_window_created |  |  | 24 | Implemented | A window was created. |  |
-| check_window_not_created |  |  | 127 | Not Implemented | A window was created. | P2 |
+| check_window_not_created |  |  | 127 | Implemented | A window was not created. | P2 |
 | check_pwa_window_created | Site, Number |  | 123 | Implemented | A given number of windows were created for the given pwa. |  |
 | check_window_display_minimal |  |  | 25 | Implemented | Check that the window is a PWA window, and has minimal browser controls. |  |
 | check_window_display_standalone |  |  | 26 | Implemented | Check that the window is a PWA window, and has no browser controls. |  |
@@ -131,6 +133,7 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | launch_from_menu_option | Site |  | 69 | Implemented | Launch the web app by navigating the browser to the web app, and selecting the "Launch _" menu option in the 3-dot menu. | cliffordcheng@, P1 |
 | launch_from_platform_shortcut | Site |  | 1 | Implemented | Launch an app from a platform shortcut on the user's desktop or start menu. | cliffordcheng@, P0 |
 | launch | Site | launch_from_menu_option($1) & launch_from_launch_icon($1) & launch_from_chrome_apps($1) & launch_from_platform_shortcut($1) | 64 | Parameterized |  |  |
+| launch_not_from_platform_shortcut | Site | launch_from_menu_option($1) & launch_from_launch_icon($1) & launch_from_chrome_apps($1) | 135 | Parameterized |  |   |
 | launch_from_browser | Site | launch_from_menu_option($1) & launch_from_launch_icon($1) & launch_from_chrome_apps($1) | 65 | Parameterized |  |  |
 | launch_from_shortcut_or_list | Site | launch_from_chrome_apps($1) & launch_from_platform_shortcut($1) | 66 | Parameterized | All ways to launch an app that are still available for 'browser' apps. |  |
 | # Navigation |
@@ -148,8 +151,8 @@ TODO(dmurph): Possibly this table up into markdown-header section.
 | check_site_handles_file | Site, FileExtension |  | 118 | Implemented |  |  |
 | check_site_not_handles_file | Site, FileExtension |  | 122 | Implemented |  |  |
 | check_file_handling_dialog | IsShown |  | 119 | Not Implemented |  |  |
-| launch_file | FilesOptions |  | 120 | Not Implemented |  |  |
-| file_handling_dialog | AllowDenyOptions, AskAgainOptions |  | 121 | Not Implemented |  |  |
+| launch_file_expect_dialog | Site, FilesOptions, AllowDenyOptions, AskAgainOptions |  | 120 | Implemented |  |  |
+| launch_file_expect_no_dialog | Site, FilesOptions |  | 121 | Implemented |  |  |
 | check_files_loaded_in_site | Site, FilesOptions |  | 126 | Not Implemented | Check that the appropriate file contents have loaded in in PWA windows. |  |
 | add_file_handling_policy_approval | Site |  | 124 | Not Implemented |  |  |
 | remove_file_handling_policy_approval | Site |  | 125 | Not Implemented |  |  |

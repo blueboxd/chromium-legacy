@@ -65,9 +65,7 @@ void AddressProfileSaveManager::ImportProfileFromForm(
   // behavior and directly import the observed profile without recording any
   // additional metrics. However, if only silent updates are allowed, proceed
   // with the profile import process.
-  if ((!base::FeatureList::IsEnabled(
-           features::kAutofillAddressProfileSavePrompt) ||
-       personal_data_manager_->auto_accept_address_imports_for_testing()) &&
+  if (personal_data_manager_->auto_accept_address_imports_for_testing() &&
       !allow_only_silent_updates) {
     personal_data_manager_->SaveImportedProfile(observed_profile);
     AddMultiStepComplementCandidate(client_->GetFormDataImporter(),
@@ -159,7 +157,7 @@ void AddressProfileSaveManager::FinalizeProfileImport(
   if (import_process->ProfilesChanged()) {
     std::vector<AutofillProfile> resulting_profiles =
         import_process->GetResultingProfiles();
-    personal_data_manager_->SetProfiles(&resulting_profiles);
+    personal_data_manager_->SetProfilesForAllSources(&resulting_profiles);
   }
 
   AutofillProfileImportType import_type = import_process->import_type();

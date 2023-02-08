@@ -10,14 +10,15 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/reporting/device_reporting_settings_lacros.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
 #include "components/policy/policy_constants.h"
+#include "components/reporting/metrics/collector_base.h"
 #include "components/reporting/metrics/fakes/fake_metric_report_queue.h"
-#include "components/reporting/metrics/metric_data_collector.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,10 @@ class FakeCollector : public CollectorBase {
   ~FakeCollector() override { --(*collector_count_); }
 
  protected:
-  void OnMetricDataCollected(absl::optional<MetricData>) override {}
+  // CollectorBase:
+  void OnMetricDataCollected(bool is_event_driven,
+                             absl::optional<MetricData> metric_data) override {}
+  bool CanCollect() const override { return true; }
 
  private:
   raw_ptr<int> collector_count_;
@@ -88,7 +92,8 @@ class MockDelegate : public metrics::MetricReportingManagerLacros::Delegate {
                bool setting_enabled_default_value,
                const std::string& rate_setting_path,
                base::TimeDelta default_rate,
-               int rate_unit_to_ms),
+               int rate_unit_to_ms,
+               base::TimeDelta init_delay),
               (override));
 
   MOCK_METHOD(std::unique_ptr<MetricReportQueue>,
@@ -212,7 +217,7 @@ TEST_P(MetricReportingManagerLacrosTelemetryTest, Default) {
                           test_case.setting_data.enable_setting_path,
                           test_case.setting_data.setting_enabled_default_value,
                           test_case.setting_data.rate_setting_path, _,
-                          test_case.setting_data.rate_unit_to_ms))
+                          test_case.setting_data.rate_unit_to_ms, _))
       .WillByDefault([&periodic_collector_count]() {
         return std::make_unique<FakeCollector>(&periodic_collector_count);
       });

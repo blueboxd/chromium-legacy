@@ -28,6 +28,7 @@ scoped_refptr<TabHandleLayer> TabHandleLayer::Create(
 void TabHandleLayer::SetProperties(
     int id,
     ui::Resource* close_button_resource,
+    ui::Resource* divider_resource,
     ui::NinePatchResource* tab_handle_resource,
     ui::NinePatchResource* tab_handle_outline_resource,
     bool foreground,
@@ -38,7 +39,10 @@ void TabHandleLayer::SetProperties(
     float width,
     float height,
     float content_offset_x,
+    float divider_offset_x,
+    float bottom_offset_y,
     float close_button_alpha,
+    float divider_alpha,
     bool is_loading,
     float spinner_rotation,
     float brightness,
@@ -48,10 +52,22 @@ void TabHandleLayer::SetProperties(
     brightness_ = brightness;
     foreground_ = foreground;
     opacity_ = opacity;
-    cc::FilterOperations filters;
-    if (brightness_ != 1.0f && !foreground_)
-      filters.Append(cc::FilterOperation::CreateBrightnessFilter(brightness_));
-    layer_->SetFilters(filters);
+
+    // With the Tab Strip Redesign (TSR), inactive tabs no longer have a visible
+    // container. To achieve the same dimming effect, we need to set the opacity
+    // rather than adding a brightness filter. We can't swap to simply setting
+    // the opacity when TSR is disabled, because then, the tab containers can
+    // be seen overlapping. (See https://crbug.com/1373632).
+    if (base::FeatureList::IsEnabled(chrome::android::kTabStripRedesign)) {
+      tab_->SetOpacity(brightness_);
+    } else {
+      cc::FilterOperations filters;
+      if (brightness_ != 1.0f) {
+        filters.Append(
+            cc::FilterOperation::CreateBrightnessFilter(brightness_));
+      }
+      layer_->SetFilters(filters);
+    }
   }
 
   float original_x = x;
@@ -82,7 +98,7 @@ void TabHandleLayer::SetProperties(
     y = y - (margin_height - height);
     height = margin_height;
   }
-  gfx::Size tab_bounds(width, height);
+  gfx::Size tab_bounds(width, height - bottom_offset_y);
 
   layer_->SetPosition(gfx::PointF(x, y));
   DecorationTitle* title_layer = nullptr;
@@ -93,12 +109,12 @@ void TabHandleLayer::SetProperties(
     title_layer->setOpacity(1.0f);
     unsigned expected_children = 4;
     title_layer_ = title_layer->layer();
-    if (layer_->children().size() < expected_children) {
-      layer_->AddChild(title_layer_);
-    } else if (layer_->children()[expected_children - 1]->id() !=
+    if (tab_->children().size() < expected_children) {
+      tab_->AddChild(title_layer_);
+    } else if (tab_->children()[expected_children - 1]->id() !=
                title_layer_->id()) {
-      layer_->ReplaceChild((layer_->children()[expected_children - 1]).get(),
-                           title_layer_);
+      tab_->ReplaceChild((tab_->children()[expected_children - 1]).get(),
+                         title_layer_);
     }
     title_layer->SetUIResourceIds();
   } else if (title_layer_.get()) {
@@ -143,6 +159,19 @@ void TabHandleLayer::SetProperties(
     if (close_button_alpha == 0.f) {
       close_width = 0.f;
     }
+  }
+
+  if (divider_alpha == 0.f) {
+    divider_->SetIsDrawable(false);
+  } else {
+    divider_->SetIsDrawable(true);
+    divider_->SetUIResourceId(divider_resource->ui_resource()->id());
+    divider_->SetBounds(divider_resource->size());
+    int divider_y = (tab_handle_resource->padding().y() + height) / 2 -
+                    divider_->bounds().height() / 2;
+    int divider_x = is_rtl ? width - divider_offset_x : divider_offset_x;
+    divider_->SetPosition(gfx::PointF(divider_x, divider_y));
+    divider_->SetOpacity(divider_alpha);
   }
 
   if (title_layer) {
@@ -192,7 +221,9 @@ scoped_refptr<cc::Layer> TabHandleLayer::layer() {
 TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
     : layer_title_cache_(layer_title_cache),
       layer_(cc::Layer::Create()),
+      tab_(cc::Layer::Create()),
       close_button_(cc::UIResourceLayer::Create()),
+      divider_(cc::UIResourceLayer::Create()),
       decoration_tab_(cc::NinePatchLayer::Create()),
       tab_outline_(cc::NinePatchLayer::Create()),
       brightness_(1.0f),
@@ -202,9 +233,15 @@ TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
   if (!base::FeatureList::IsEnabled(chrome::android::kTabStripRedesign)) {
     tab_outline_->SetIsDrawable(true);
   }
-  layer_->AddChild(decoration_tab_);
-  layer_->AddChild(tab_outline_);
-  layer_->AddChild(close_button_);
+
+  tab_->AddChild(decoration_tab_);
+  tab_->AddChild(tab_outline_);
+  tab_->AddChild(close_button_);
+
+  // The divider is added as a separate child so its opacity can be controlled
+  // separately from the other tab items.
+  layer_->AddChild(tab_);
+  layer_->AddChild(divider_);
 }
 
 TabHandleLayer::~TabHandleLayer() {

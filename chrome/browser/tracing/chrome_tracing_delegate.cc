@@ -253,11 +253,10 @@ bool ChromeTracingDelegate::IsSystemWideTracingEnabled() {
   // In non-dev images, honor the pref for system-wide tracing.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
-  return local_state->GetBoolean(
-      chromeos::prefs::kDeviceSystemWideTracingEnabled);
+  return local_state->GetBoolean(ash::prefs::kDeviceSystemWideTracingEnabled);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   // This is a temporary solution that observes the ash pref
-  // chromeos::prefs::kDeviceSystemWideTracingEnabled via mojo IPC provided by
+  // ash::prefs::kDeviceSystemWideTracingEnabled via mojo IPC provided by
   // CrosapiPrefObserver.
   // crbug.com/1201582 is a long term solution for this which assumes that
   // device flags will be available to Lacros.
@@ -267,8 +266,7 @@ bool ChromeTracingDelegate::IsSystemWideTracingEnabled() {
 #endif
 }
 
-absl::optional<base::Value::Dict>
-ChromeTracingDelegate::GenerateMetadataDict() {
+absl::optional<base::Value> ChromeTracingDelegate::GenerateMetadataDict() {
   base::Value::Dict metadata_dict;
   std::vector<std::string> variations;
   variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
@@ -280,5 +278,5 @@ ChromeTracingDelegate::GenerateMetadataDict() {
 
   metadata_dict.Set("field-trials", std::move(variations_list));
   metadata_dict.Set("revision", version_info::GetLastChange());
-  return metadata_dict;
+  return base::Value(std::move(metadata_dict));
 }

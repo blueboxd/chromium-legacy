@@ -6,13 +6,14 @@
 
 #include <string>
 
-#include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/fake_feature_status_provider.h"
 #include "ash/webui/eche_app_ui/fake_launch_app_helper.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "base/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -63,7 +64,8 @@ class EcheNotificationClickHandlerTest : public testing::Test {
                                  const std::string& package_name,
                                  const std::u16string& visible_name,
                                  const absl::optional<int64_t>& user_id,
-                                 const gfx::Image& icon) {
+                                 const gfx::Image& icon,
+                                 const std::u16string& phone_name) {
     num_app_launch_++;
   }
 
@@ -149,6 +151,7 @@ TEST_F(EcheNotificationClickHandlerTest, HandleNotificationClick) {
   const char16_t app_name[] = u"Test App";
   const char package_name[] = "com.google.testapp";
   const int64_t user_id = 0;
+  base::HistogramTester histogram_tester;
   phonehub::Notification::AppMetadata app_meta_data =
       phonehub::Notification::AppMetadata(app_name, package_name,
                                           /*icon=*/gfx::Image(),
@@ -164,6 +167,9 @@ TEST_F(EcheNotificationClickHandlerTest, HandleNotificationClick) {
   HandleNotificationClick(notification_id, app_meta_data);
   EXPECT_EQ(num_app_launch(), 0u);
   EXPECT_EQ(num_notifications_shown(), 1u);
+  histogram_tester.ExpectUniqueSample(
+      "Eche.AppStream.LaunchAttempt",
+      mojom::AppStreamLaunchEntryPoint::NOTIFICATION, 1);
 }
 
 }  // namespace eche_app

@@ -14,6 +14,7 @@ export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggl
 export {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 export {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 export {PluralStringProxyImpl as SettingsPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
+export {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 export {SettingsAboutPageElement} from './about_page/about_page.js';
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.js';
 // <if expr="_google_chrome and is_macosx">
@@ -74,7 +75,7 @@ export {RelaunchMixin, RestartType} from './relaunch_mixin.js';
 export {ResetBrowserProxy, ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';
 export {SettingsResetProfileBannerElement} from './reset_page/reset_profile_banner.js';
 export {buildRouter, routes} from './route.js';
-export {MinimumRoutes, Route, Router} from './router.js';
+export {SettingsRoutes, Route, Router} from './router.js';
 export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
 export {SafetyCheckIconStatus, SettingsSafetyCheckChildElement} from './safety_check_page/safety_check_child.js';
 // <if expr="_google_chrome and is_win">

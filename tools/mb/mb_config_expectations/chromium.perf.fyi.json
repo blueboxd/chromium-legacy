@@ -57,13 +57,13 @@
       "target_cpu": "arm64",
       "target_os": "fuchsia",
       "test_isolate_uses_emulator": false,
-      "use_cfv2_script": true,
       "use_goma": true
     }
   },
   "fuchsia-builder-perf-x64": {
     "gn_args": {
       "ffmpeg_branding": "Chrome",
+      "fuchsia_browser_type": "chrome",
       "is_chrome_branded": true,
       "is_official_build": true,
       "proprietary_codecs": true,
@@ -71,7 +71,6 @@
       "target_cpu": "x64",
       "target_os": "fuchsia",
       "test_isolate_uses_emulator": false,
-      "use_cfv2_script": true,
       "use_goma": true
     }
   }

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/parser/font_variant_alternates_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_east_asian_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_ligatures_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_numeric_parser.h"
@@ -172,7 +173,8 @@ const CSSValue* AnchorScroll::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (CSSValue* value =
-          css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range)) {
+          css_parsing_utils::ConsumeIdent<CSSValueID::kNone,
+                                          CSSValueID::kImplicit>(range)) {
     return value;
   }
   return css_parsing_utils::ConsumeDashedIdent(range, context);
@@ -183,8 +185,11 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.AnchorScroll())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
+  if (style.AnchorScroll()->IsImplicit()) {
+    return CSSIdentifierValue::Create(CSSValueID::kImplicit);
+  }
   return MakeGarbageCollected<CSSCustomIdentValue>(
-      style.AnchorScroll()->GetName());
+      style.AnchorScroll()->GetName().GetName());
 }
 
 const CSSValue* AnimationDelay::ParseSingleValue(
@@ -200,14 +205,18 @@ const CSSValue* AnimationDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelay(style.Animations());
+  // When CSSScrollTimeline is enabled, animation-delay is a shorthand
+  // which expands to animation-delay-start/end, therefore this should not
+  // be reachable without that feature.
+  DCHECK(!RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return ComputedStyleUtils::ValueForAnimationDelayStartList(
+      style.Animations());
 }
 
 const CSSValue* AnimationDelay::InitialValue() const {
-  DEFINE_STATIC_LOCAL(
-      const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
-                                      CSSPrimitiveValue::UnitType::kSeconds)));
+  DEFINE_STATIC_LOCAL(const Persistent<CSSValue>, value,
+                      (ComputedStyleUtils::ValueForAnimationDelayStart(
+                          CSSTimingData::InitialDelayStart())));
   return value;
 }
 
@@ -224,7 +233,13 @@ const CSSValue* AnimationDelayStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelayStart(style.Animations());
+  return ComputedStyleUtils::ValueForAnimationDelayStartList(
+      style.Animations());
+}
+
+const CSSValue* AnimationDelayStart::InitialValue() const {
+  return ComputedStyleUtils::ValueForAnimationDelayStart(
+      CSSTimingData::InitialDelayStart());
 }
 
 const CSSValue* AnimationDelayEnd::ParseSingleValue(
@@ -240,7 +255,12 @@ const CSSValue* AnimationDelayEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelayEnd(style.Animations());
+  return ComputedStyleUtils::ValueForAnimationDelayEndList(style.Animations());
+}
+
+const CSSValue* AnimationDelayEnd::InitialValue() const {
+  return ComputedStyleUtils::ValueForAnimationDelayEnd(
+      CSSTimingData::InitialDelayEnd());
 }
 
 const CSSValue* AnimationDirection::ParseSingleValue(
@@ -258,17 +278,7 @@ const CSSValue* AnimationDirection::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  const CSSAnimationData* animation_data = style.Animations();
-  if (animation_data) {
-    for (wtf_size_t i = 0; i < animation_data->DirectionList().size(); ++i) {
-      list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
-          animation_data->DirectionList()[i]));
-    }
-  } else {
-    list->Append(*InitialValue());
-  }
-  return list;
+  return ComputedStyleUtils::ValueForAnimationDirectionList(style.Animations());
 }
 
 const CSSValue* AnimationDirection::InitialValue() const {
@@ -280,21 +290,20 @@ const CSSValue* AnimationDuration::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumeTime, range, context,
-      CSSPrimitiveValue::ValueRange::kNonNegative);
+      css_parsing_utils::ConsumeAnimationDuration, range, context);
 }
 
 const CSSValue* AnimationDuration::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDuration(style.Animations());
+  return ComputedStyleUtils::ValueForAnimationDurationList(style.Animations());
 }
 
 const CSSValue* AnimationDuration::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration(),
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration().value(),
                                       CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
@@ -314,17 +323,7 @@ const CSSValue* AnimationFillMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  const CSSAnimationData* animation_data = style.Animations();
-  if (animation_data) {
-    for (wtf_size_t i = 0; i < animation_data->FillModeList().size(); ++i) {
-      list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
-          animation_data->FillModeList()[i]));
-    }
-  } else {
-    list->Append(*InitialValue());
-  }
-  return list;
+  return ComputedStyleUtils::ValueForAnimationFillModeList(style.Animations());
 }
 
 const CSSValue* AnimationFillMode::InitialValue() const {
@@ -343,18 +342,8 @@ const CSSValue* AnimationIterationCount::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  const CSSAnimationData* animation_data = style.Animations();
-  if (animation_data) {
-    for (wtf_size_t i = 0; i < animation_data->IterationCountList().size();
-         ++i) {
-      list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
-          animation_data->IterationCountList()[i]));
-    }
-  } else {
-    list->Append(*InitialValue());
-  }
-  return list;
+  return ComputedStyleUtils::ValueForAnimationIterationCountList(
+      style.Animations());
 }
 
 const CSSValue* AnimationIterationCount::InitialValue() const {
@@ -410,17 +399,7 @@ const CSSValue* AnimationPlayState::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  const CSSAnimationData* animation_data = style.Animations();
-  if (animation_data) {
-    for (wtf_size_t i = 0; i < animation_data->PlayStateList().size(); ++i) {
-      list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
-          animation_data->PlayStateList()[i]));
-    }
-  } else {
-    list->Append(*InitialValue());
-  }
-  return list;
+  return ComputedStyleUtils::ValueForAnimationPlayStateList(style.Animations());
 }
 
 const CSSValue* AnimationPlayState::InitialValue() const {
@@ -439,15 +418,7 @@ const CSSValue* AnimationTimeline::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  const CSSAnimationData* animation_data = style.Animations();
-  if (animation_data) {
-    for (const auto& timeline : animation_data->TimelineList())
-      list->Append(*ComputedStyleUtils::ValueForAnimationTimeline(timeline));
-  } else {
-    list->Append(*InitialValue());
-  }
-  return list;
+  return ComputedStyleUtils::ValueForAnimationTimelineList(style.Animations());
 }
 
 const CSSValue* AnimationTimeline::InitialValue() const {
@@ -466,7 +437,7 @@ const CSSValue* AnimationTimingFunction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationTimingFunction(
+  return ComputedStyleUtils::ValueForAnimationTimingFunctionList(
       style.Animations());
 }
 
@@ -631,13 +602,21 @@ const blink::Color BackgroundColor::ColorIncludingFallback(
     const ComputedStyle& style,
     bool* is_current_color) const {
   DCHECK(!visited_link);
-  StyleColor background_color = style.BackgroundColor();
-  if (style.ShouldForceColor(background_color)) {
-    return To<Longhand>(GetCSSPropertyInternalForcedBackgroundColor())
-        .ColorIncludingFallback(false, style, is_current_color);
+  const StyleColor& background_color = style.BackgroundColor();
+  if (!style.InForcedColorsMode() && !background_color.HasColorKeyword()) {
+    // Fast path.
+    if (is_current_color) {
+      *is_current_color = false;
+    }
+    return background_color.GetColor();
+  } else {
+    if (style.ShouldForceColor(background_color)) {
+      return To<Longhand>(GetCSSPropertyInternalForcedBackgroundColor())
+          .ColorIncludingFallback(false, style, is_current_color);
+    }
+    return background_color.Resolve(style.GetCurrentColor(),
+                                    style.UsedColorScheme(), is_current_color);
   }
-  return background_color.Resolve(style.GetCurrentColor(),
-                                  style.UsedColorScheme(), is_current_color);
 }
 
 const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
@@ -1594,7 +1573,7 @@ const blink::Color Color::ColorIncludingFallback(bool visited_link,
                                                  const ComputedStyle& style,
                                                  bool* is_current_color) const {
   DCHECK(!visited_link);
-  if (style.ShouldForceColor(style.GetColor())) {
+  if (style.ShouldForceColor(style.Color())) {
     return To<Longhand>(GetCSSPropertyInternalForcedColor())
         .ColorIncludingFallback(false, style, is_current_color);
   }
@@ -1605,7 +1584,7 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.ShouldForceColor(style.GetColor())) {
+  if (style.ShouldForceColor(style.Color())) {
     return GetCSSPropertyInternalForcedColor().CSSValueFromComputedStyle(
         style, nullptr, allow_visited_style);
   }
@@ -1627,7 +1606,7 @@ void Color::ApplyInherit(StyleResolverState& state) const {
     builder.SetColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    builder.SetColor(state.ParentStyle()->GetColor());
+    builder.SetColor(state.ParentStyle()->Color());
   }
   builder.SetColorIsInherited(true);
   builder.SetColorIsCurrentColor(state.ParentStyle()->ColorIsCurrentColor());
@@ -1643,7 +1622,7 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     builder.SetColorIsCurrentColor(true);
     if (state.UsesHighlightPseudoInheritance() &&
         state.OriginatingElementStyle())
-      builder.SetColor(state.OriginatingElementStyle()->GetColor());
+      builder.SetColor(state.OriginatingElementStyle()->Color());
     return;
   }
   if (value.IsInitialColorValue()) {
@@ -1933,8 +1912,8 @@ const CSSValue* Contain::ParseSingleValue(CSSParserTokenRange& range,
   while (true) {
     id = range.Peek().Id();
     if ((id == CSSValueID::kSize ||
-         (RuntimeEnabledFeatures::CSSContainSize1DEnabled() &&
-          (id == CSSValueID::kInlineSize))) &&
+
+         id == CSSValueID::kInlineSize) &&
         !size) {
       size = css_parsing_utils::ConsumeIdent(range);
     } else if (id == CSSValueID::kLayout && !layout) {
@@ -2046,14 +2025,15 @@ const CSSValue* ContainerName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  if (style.ContainerName().empty())
+  if (!style.ContainerName())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  for (const AtomicString& ident : style.ContainerName())
-    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(ident));
-
+  for (const Member<const ScopedCSSName>& name :
+       style.ContainerName()->GetNames()) {
+    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name.Get()));
+  }
   return list;
 }
 
@@ -2966,8 +2946,6 @@ const CSSValue* FontPalette::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  DCHECK(RuntimeEnabledFeatures::FontPaletteEnabled());
-
   blink::FontPalette* palette = style.GetFontDescription().GetFontPalette();
 
   if (!palette)
@@ -2993,7 +2971,6 @@ const CSSValue* FontPalette::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  DCHECK(RuntimeEnabledFeatures::FontPaletteEnabled());
   if (range.Peek().Id() == CSSValueID::kNormal ||
       range.Peek().Id() == CSSValueID::kLight ||
       range.Peek().Id() == CSSValueID::kDark) {
@@ -3157,6 +3134,33 @@ const CSSValue* FontVariantNumeric::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFontVariantNumeric(style);
 }
 
+const CSSValue* FontVariantAlternates::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::FontVariantAlternatesEnabled());
+
+  if (range.Peek().Id() == CSSValueID::kNormal)
+    return css_parsing_utils::ConsumeIdent(range);
+
+  FontVariantAlternatesParser alternates_parser;
+  do {
+    if (alternates_parser.ConsumeAlternates(range, context) !=
+        FontVariantAlternatesParser::ParseResult::kConsumedValue) {
+      return nullptr;
+    }
+  } while (!range.AtEnd());
+
+  return alternates_parser.FinalizeValue();
+}
+
+const CSSValue* FontVariantAlternates::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForFontVariantAlternates(style);
+}
+
 namespace {
 
 cssvalue::CSSFontVariationValue* ConsumeFontVariationTag(
@@ -3263,6 +3267,14 @@ const CSSValue* FontSynthesisSmallCaps::CSSValueFromComputedStyleInternal(
       style.GetFontDescription().GetFontSynthesisSmallCaps());
 }
 
+const CSSValue* FontVariantPosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  DCHECK(RuntimeEnabledFeatures::FontVariantPositionEnabled());
+  return ComputedStyleUtils::ValueForFontVariantPosition(style);
+}
+
 const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
@@ -3282,7 +3294,7 @@ void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
     builder.SetInternalVisitedColor(StyleColor(
         state.ParentStyle()->VisitedDependentColor(GetCSSPropertyColor())));
   } else {
-    builder.SetInternalVisitedColor(state.ParentStyle()->GetColor());
+    builder.SetInternalVisitedColor(state.ParentStyle()->Color());
   }
   builder.SetInternalVisitedColorIsCurrentColor(
       state.ParentStyle()->InternalVisitedColorIsCurrentColor());
@@ -4556,21 +4568,6 @@ const CSSValue* LineHeight::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForLineHeight(style);
-}
-
-const CSSValue* LineHeightStep::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeLength(
-      range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
-}
-
-const CSSValue* LineHeightStep::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  return ZoomAdjustedPixelValue(style.LineHeightStep(), style);
 }
 
 const CSSValue* ListStyleImage::ParseSingleValue(
@@ -5952,15 +5949,26 @@ const CSSValue* PositionFallback::ParseSingleValue(
           css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range)) {
     return value;
   }
-  return css_parsing_utils::ConsumeDashedIdent(range, context);
+  if (CSSValue* value = css_parsing_utils::ConsumeDashedIdent(range, context)) {
+    return value;
+  }
+  if (context.Mode() == kUASheetMode) {
+    CSSCustomIdentValue* value =
+        css_parsing_utils::ConsumeCustomIdent(range, context);
+    if (value && value->Value().StartsWith("-internal-")) {
+      return value;
+    }
+  }
+  return nullptr;
 }
 const CSSValue* PositionFallback::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.PositionFallback().empty())
+  if (!style.PositionFallback())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(style.PositionFallback());
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.PositionFallback()->GetName());
 }
 
 const CSSValue* Quotes::ParseSingleValue(CSSParserTokenRange& range,
@@ -6630,10 +6638,8 @@ const CSSValue* ScrollTimelineName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const AtomicString& ident = style.ScrollTimelineName();
-  if (ident.empty())
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-  return MakeGarbageCollected<CSSCustomIdentValue>(ident);
+  return ComputedStyleUtils::ValueForCustomIdentOrNone(
+      style.ScrollTimelineName().Get());
 }
 
 const CSSValue* ScrollTimelineName::InitialValue() const {
@@ -7629,14 +7635,14 @@ const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDelay(style.Transitions());
+  return ComputedStyleUtils::ValueForAnimationDelayStartList(
+      style.Transitions());
 }
 
 const CSSValue* TransitionDelay::InitialValue() const {
-  DEFINE_STATIC_LOCAL(
-      const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDelay(),
-                                      CSSPrimitiveValue::UnitType::kSeconds)));
+  DEFINE_STATIC_LOCAL(const Persistent<CSSValue>, value,
+                      (ComputedStyleUtils::ValueForAnimationDelayStart(
+                          CSSTimingData::InitialDelayStart())));
   return value;
 }
 
@@ -7653,13 +7659,13 @@ const CSSValue* TransitionDuration::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationDuration(style.Transitions());
+  return ComputedStyleUtils::ValueForAnimationDurationList(style.Transitions());
 }
 
 const CSSValue* TransitionDuration::InitialValue() const {
   DEFINE_STATIC_LOCAL(
       const Persistent<CSSValue>, value,
-      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration(),
+      (CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration().value(),
                                       CSSPrimitiveValue::UnitType::kSeconds)));
   return value;
 }
@@ -7698,7 +7704,7 @@ const CSSValue* TransitionTimingFunction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForAnimationTimingFunction(
+  return ComputedStyleUtils::ValueForAnimationTimingFunctionList(
       style.Transitions());
 }
 
@@ -7932,12 +7938,12 @@ const CSSValue* ViewTimelineName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Vector<AtomicString>& vector = style.ViewTimelineName();
-  if (vector.empty())
+  if (!style.ViewTimelineName())
     return InitialValue();
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const AtomicString& name : vector) {
-    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name));
+  for (const Member<const ScopedCSSName>& name :
+       style.ViewTimelineName()->GetNames()) {
+    list->Append(*ComputedStyleUtils::ValueForCustomIdentOrNone(name.Get()));
   }
   return list;
 }

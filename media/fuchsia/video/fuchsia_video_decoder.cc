@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -33,7 +33,7 @@
 #include "media/fuchsia/common/decrypting_sysmem_buffer_stream.h"
 #include "media/fuchsia/common/passthrough_sysmem_buffer_stream.h"
 #include "media/fuchsia/common/stream_processor_helper.h"
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
@@ -224,11 +224,11 @@ class FuchsiaVideoDecoder::OutputMailbox {
 
 FuchsiaVideoDecoder::FuchsiaVideoDecoder(
     scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-    const mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>&
-        media_resource_provider,
+    const mojo::SharedRemote<media::mojom::FuchsiaMediaCodecProvider>&
+        media_codec_provider,
     bool allow_overlays)
     : raster_context_provider_(raster_context_provider),
-      media_resource_provider_(media_resource_provider),
+      media_codec_provider_(media_codec_provider),
       use_overlays_for_video_(allow_overlays &&
                               base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kUseOverlaysForVideo)),
@@ -322,8 +322,8 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   ReleaseOutputBuffers();
 
   fuchsia::media::StreamProcessorPtr decoder;
-  media_resource_provider_->CreateVideoDecoder(config.codec(), secure_mode,
-                                               decoder.NewRequest());
+  media_codec_provider_->CreateVideoDecoder(config.codec(), secure_mode,
+                                            decoder.NewRequest());
   decoder_ = std::make_unique<StreamProcessorHelper>(std::move(decoder), this);
 
   current_config_ = config;
@@ -345,7 +345,7 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   if (!decoder_) {
     // Post the callback to the current sequence as DecoderStream doesn't expect
     // Decode() to complete synchronously.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(decode_cb), DecoderStatus::Codes::kFailed));
     return;
@@ -360,8 +360,8 @@ void FuchsiaVideoDecoder::Reset(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DropInputQueue(DecoderStatus::Codes::kAborted);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(closure));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           std::move(closure));
 }
 
 bool FuchsiaVideoDecoder::NeedsBitstreamConversion() const {

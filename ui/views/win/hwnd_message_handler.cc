@@ -24,7 +24,6 @@
 #include "base/strings/string_util_win.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/dark_mode_support.h"
@@ -106,7 +105,7 @@ class MoveLoopMouseWatcher {
   void Unhook();
 
   // HWNDMessageHandler that created us.
-  raw_ptr<HWNDMessageHandler> host_;
+  raw_ptr<HWNDMessageHandler, DanglingUntriaged> host_;
 
   // Should the window be hidden when escape is pressed?
   const bool hide_on_escape_;
@@ -519,7 +518,7 @@ void HWNDMessageHandler::Close() {
     // may delete ourselves on destroy and the ATL callback would still
     // dereference us when the callback returns).
     waiting_for_close_now_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&HWNDMessageHandler::CloseNow,
                                   msg_handler_weak_factory_.GetWeakPtr()));
   }
@@ -626,7 +625,7 @@ void HWNDMessageHandler::SetDwmFrameExtension(DwmFrameState state) {
   if (!delegate_->HasFrame() && ui::win::IsAeroGlassEnabled() &&
       !is_translucent_) {
     MARGINS m = {0, 0, 0, 0};
-    if (state == DwmFrameState::kOn)
+    if (state == DwmFrameState::kOn && !IsMaximized())
       m = {0, 0, 1, 0};
     DwmExtendFrameIntoClientArea(hwnd(), &m);
   }
@@ -862,7 +861,7 @@ bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
   MoveLoopMouseWatcher watcher(this, hide_on_escape);
   // In Aura, we handle touch events asynchronously. So we need to allow nested
   // tasks while in windows move loop.
-  base::CurrentThread::ScopedNestableTaskAllower allow_nested;
+  base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
 
   SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002,
               static_cast<LPARAM>(GetMessagePos()));
@@ -902,13 +901,21 @@ void HWNDMessageHandler::ClearNativeFocus() {
 }
 
 void HWNDMessageHandler::SetCapture() {
-  DCHECK(!HasCapture());
+  // We may need to change this to !HasCapture() || release_capture_errno_ to
+  // avoid checking when the call to `::ReleaseCapture` below fails.
+  // Logging release_capture_errno_ will tell us if the DCHECK below is caused
+  // by ::ReleaseCapture failing.
+  DCHECK(!HasCapture()) << " release capture error = "
+                        << logging::SystemErrorCodeToString(
+                               release_capture_errno_);
   ::SetCapture(hwnd());
 }
 
 void HWNDMessageHandler::ReleaseCapture() {
-  if (HasCapture())
-    ::ReleaseCapture();
+  if (HasCapture() && !::ReleaseCapture())
+    release_capture_errno_ = ::GetLastError();
+  else
+    release_capture_errno_ = 0;
 }
 
 bool HWNDMessageHandler::HasCapture() const {
@@ -1634,7 +1641,7 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
     // unavailable.
     if (--attempts <= 0)
       return;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::ForceRedrawWindow,
                        msg_handler_weak_factory_.GetWeakPtr(), attempts),
@@ -1845,6 +1852,12 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
   }
 
   dpi_ = dpi;
+  // Make sure the displays have up to date scale factors before updating the
+  // window's scale factor. Otherwise, we can be in an inconsistent state,
+  // in which the display a window is on has a different scale factor than the
+  // window, when the window handles the scale factor change.
+  // See https://crbug.com/1368455 for more info.
+  display::win::ScreenWin::UpdateDisplayInfos();
   SetBoundsInternal(gfx::Rect(*reinterpret_cast<RECT*>(l_param)), false);
   delegate_->HandleWindowScaleFactorChanged(scaling_factor);
   return 0;
@@ -2836,7 +2849,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         ui::ComputeEventLatencyOSFromTOUCHINPUT(ui::ET_TOUCH_PRESSED, input[i],
                                                 event_time);
         touch_down_contexts_++;
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
                            msg_handler_weak_factory_.GetWeakPtr()),
@@ -2876,7 +2889,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
     // Handle the touch events asynchronously. We need this because touch
     // events on windows don't fire if we enter a modal loop in the context of
     // a touch event.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::HandleTouchEvents,
                        msg_handler_weak_factory_.GetWeakPtr(), touch_events));
@@ -2989,7 +3002,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
         // likes to (incorrectly) recalculate what our position/size should be
         // and send us further updates.
         ignore_window_pos_changes_ = true;
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE,
             base::BindOnce(&HWNDMessageHandler::StopIgnoringPosChanges,
                            msg_handler_weak_factory_.GetWeakPtr()));
@@ -3334,7 +3347,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
   // is used to debounce the WM_MOUSEACTIVATE events.
   if (message == WM_POINTERDOWN || message == WM_NCPOINTERDOWN) {
     touch_down_contexts_++;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
                        msg_handler_weak_factory_.GetWeakPtr()),

@@ -41,6 +41,7 @@
 #include "media/base/audio_processing.h"
 #include "media/base/speech_recognition_client.h"
 #include "media/mojo/mojom/audio_processing.mojom-shared.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -239,6 +240,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   //
   // `complete_creation` takes the newly-created `WebLocalFrame` and the
   // `DocumentToken` to use for its initial empty document as arguments.
+  //
+  // `document_ukm_source_id` is the UKM source id to be used for the new
+  // document in the frame. If `ukm::kInvalidSourceId` is passed, a new UKM
+  // source id will be generated.
   using FinishChildFrameCreationFn =
       base::FunctionRef<void(WebLocalFrame*, const DocumentToken&)>;
   virtual WebLocalFrame* CreateChildFrame(
@@ -249,6 +254,7 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebFrameOwnerProperties&,
       FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params,
+      ukm::SourceId document_ukm_source_id,
       FinishChildFrameCreationFn complete_creation) {
     return nullptr;
   }
@@ -552,6 +558,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // use for segregated histograms.
   virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}
 
+  // A subresource load is observed.
+  // It is called when there is a subresouce load. The reported values via
+  // arguments are cumulative. They are NOT a difference from the previous call.
+  virtual void DidObserveSubresourceLoad(
+      uint32_t number_of_subresources_loaded,
+      uint32_t number_of_subresource_loads_handled_by_service_worker) {}
+
   // Blink hits the code path for a certain UseCounterFeature for the first time
   // on this frame. As a performance optimization, features already hit on other
   // frames associated with the same page in the renderer are not currently
@@ -626,6 +639,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notifies tests that a WebAXObject is dirty and its state needs
   // to be serialized again.
   virtual void NotifyWebAXObjectMarkedDirty(const WebAXObject&) {}
+
+  // Called when accessibility is ready to serialize.
+  virtual void AXReadyCallback() {}
 
   // Audio Output Devices API --------------------------------------------
 

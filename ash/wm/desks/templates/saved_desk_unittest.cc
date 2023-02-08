@@ -25,6 +25,7 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
@@ -202,13 +203,6 @@ class SavedDeskTest : public OverviewTestBase {
     if (auto* desks_bar_view = GetDesksBarViewForRoot(root_window))
       return desks_bar_view->expanded_state_desks_templates_button();
     return nullptr;
-  }
-
-  OverviewGrid* GetOverviewGridForRoot(aura::Window* root_window) {
-    auto* overview_session = GetOverviewSession();
-    return overview_session
-               ? overview_session->GetGridWithRootWindow(root_window)
-               : nullptr;
   }
 
   SavedDeskSaveDeskButton* GetSaveDeskAsTemplateButtonForRoot(
@@ -3193,6 +3187,42 @@ TEST_F(SavedDeskTest, UserTemplateCountRecordsMetricCorrectly) {
   histogram_tester.ExpectBucketCount(kUserTemplateCountHistogramName, 3, 1);
 }
 
+// Test that things don't crash when exiting overview immediately after
+// triggering the replace dialog. Regression test for http://b/258306298.
+TEST_F(SavedDeskTest, ReplaceTemplateAndExitOverview) {
+  UpdateDisplay("800x600");
+
+  AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now(),
+           DeskTemplateType::kTemplate);
+  AddEntry(base::GUID::GenerateRandomV4(), "template_2", base::Time::Now(),
+           DeskTemplateType::kTemplate);
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  SavedDeskNameView* name_view = GetItemViewFromTemplatesGrid(1)->name_view();
+  // Ensure that we have the right item.
+  EXPECT_EQ(name_view->GetText(), u"template_2");
+
+  ClickOnView(name_view);
+  EXPECT_TRUE(name_view->HasFocus());
+
+  // Change the name of "template_2" to "template_1", which will trigger the
+  // replace dialog to be shown.
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_BACK);
+  SendKey(ui::VKEY_1);
+  SendKey(ui::VKEY_RETURN);
+
+  // Immediately exit overview. It is important that this is done with a
+  // non-zero duration. This will cause saved desk UI items to live on for
+  // slightly longer as they will be briefly owned by an animation.
+  ui::ScopedAnimationDurationScaleMode animation(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ToggleOverview();
+  WaitForOverviewExitAnimation();
+}
+
 // Tests record metrics when current template being replaced.
 TEST_F(SavedDeskTest, ReplaceTemplateMetric) {
   base::HistogramTester histogram_tester;
@@ -3438,9 +3468,12 @@ TEST_F(SavedDeskTest, TimeStrFormat) {
   };
   // The expected time string for each template.
   const std::vector<std::u16string> expected_timestr = {
-      u"Jan 1, 2022, 10:30 AM",
-      u"Today 10:30 AM",
-      u"Yesterday 10:30 AM",
+      u"Jan 1, 2022, 10:30\u202f"
+      "AM",
+      u"Today 10:30\u202f"
+      "AM",
+      u"Yesterday 10:30\u202f"
+      "AM",
   };
   std::vector<base::Time> time = {
       time_long_ago,
@@ -4237,6 +4270,48 @@ TEST_F(DeskSaveAndRecallTest, SaveDeskForLaterWithSingleDesk) {
   // different from before).
   EXPECT_EQ(1ul, desks_controller->desks().size());
   EXPECT_NE(kDeskName, desks_controller->active_desk()->name());
+}
+
+// Tests that all desk window is not closed nor saved by clicking save desk for
+// later button.
+TEST_F(DeskSaveAndRecallTest, SaveDeskForLaterWithAllDeskWindow) {
+  DesksController* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+
+  // Create an all desk window.
+  auto all_desk_window = CreateAppWindow(gfx::Rect(300, 300));
+  auto* all_desk_widget =
+      views::Widget::GetWidgetForNativeWindow(all_desk_window.get());
+  all_desk_widget->SetVisibleOnAllWorkspaces(true);
+  ASSERT_TRUE(
+      desks_util::IsWindowVisibleOnAllWorkspaces(all_desk_window.get()));
+
+  // Create two test windows.
+  auto test_window1 = CreateAppWindow(gfx::Rect(400, 400));
+  auto test_window2 = CreateAppWindow(gfx::Rect(500, 500));
+
+  // When saving the desk, the windows will be closed automatically. To verify
+  // that this happens we create a WindowTracker. The unique_ptrs have to be
+  // released since they would otherwise end up with dangling pointers.
+  aura::WindowTracker tracker({all_desk_window.release(),
+                               test_window1.release(), test_window2.release()});
+
+  // Open overview and save the desk.
+  OpenOverviewAndSaveDeskForLater(Shell::Get()->GetPrimaryRootWindow());
+  std::vector<const DeskTemplate*> entries = GetAllEntries();
+  ASSERT_EQ(1u, entries.size());
+
+  // Verify that saving the desk has closed the two test windows but not all
+  // desk window.
+  ASSERT_EQ(1u, tracker.windows().size());
+  EXPECT_TRUE(
+      desks_util::IsWindowVisibleOnAllWorkspaces(tracker.windows().front()));
+
+  // Verify the overview item window for all desk window is not visible since
+  // it's still in the library view.
+  OverviewItem* all_desk_window_overview_item =
+      GetOverviewItemForWindow(tracker.windows().front());
+  EXPECT_FALSE(all_desk_window_overview_item->item_widget()->IsVisible());
 }
 
 TEST_F(DeskSaveAndRecallTest, RecallSavedDesk) {

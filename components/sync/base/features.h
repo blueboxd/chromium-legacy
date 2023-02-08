@@ -104,11 +104,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
         "kSyncTrustedVaultShortPeriodDegradedRecoverabilityPolling",
         base::Hours(1)};
 
-#if BUILDFLAG(IS_IOS)
-// Whether RPC is enabled.
-BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphraseiOSRPC);
-#endif  // BUILDFLAG(IS_IOS)
-
 // Whether the entry point to opt in to trusted vault in settings should be
 // shown.
 BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphrasePromo);
@@ -163,12 +158,11 @@ BASE_DECLARE_FEATURE(kUseSyncInvalidationsForWalletAndOffer);
 // DeviceInfo has been updated.
 BASE_DECLARE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated);
 
-#if BUILDFLAG(IS_IOS)
-// Returns whether RPC is enabled.
-bool IsSyncTrustedVaultPassphraseiOSRPCEnabled();
-#endif  // BUILDFLAG(IS_IOS)
-
+// If enabled, the HISTORY data type replaces TYPED_URLS.
 BASE_DECLARE_FEATURE(kSyncEnableHistoryDataType);
+inline constexpr base::FeatureParam<int>
+    kSyncHistoryForeignVisitsToDeletePerBatch{
+        &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
 
@@ -176,6 +170,10 @@ BASE_DECLARE_FEATURE(kSyncPauseUponAnyPersistentAuthError);
 
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
+
+// If enabled, Sync will not use a primary account that doesn't have a refresh
+// token. (This state should only ever occur temporarily during signout.)
+BASE_DECLARE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken);
 
 }  // namespace syncer
 

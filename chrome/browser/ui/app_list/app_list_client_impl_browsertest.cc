@@ -27,6 +27,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "chrome/browser/ash/app_list/search/search_controller.h"
+#include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -45,8 +47,6 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
 
   // Bring up the app list.
   EXPECT_FALSE(client->GetAppListWindow());
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   ash::AppListTestApi().WaitForBubbleWindow(
       /*wait_for_opening_animation=*/false);
   EXPECT_TRUE(client->GetAppListWindow());
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
 
   // Bring up the app list.
   EXPECT_FALSE(client->GetAppListWindow());
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   EXPECT_TRUE(client->GetAppListWindow());
   EXPECT_TRUE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
 
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
   base::HistogramTester histogram_tester;
 
   // Verify that app activation is recorded.
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   ChromeAppListItem* item = model_updater->FindItem(app_id);
   ASSERT_TRUE(item);
   client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0,
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(client);
 
   // Show the app list to ensure it has loaded a profile.
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   AppListModelUpdater* model_updater = test::GetModelUpdater(client);
   EXPECT_TRUE(model_updater);
 
@@ -371,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   client->UpdateProfile();
 
   // Show the launcher.
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   ash::AppListTestApi().WaitForBubbleWindow(
       /*wait_for_opening_animation=*/false);
 
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
 
   // Minimize the browser. Then show the app list and open the app result.
   browser()->window()->Minimize();
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   client->OpenSearchResult(model_updater->model_id(), app_result_id,
                            ui::EF_NONE,
                            ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientSearchResultsBrowserTest,
   const std::string title = extension->name();
 
   // Show the app list first, otherwise we won't have a search box to update.
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   ash::AppListTestApi().WaitForBubbleWindow(
       /*wait_for_opening_animation=*/false);
 
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(AppListClientGuestModeBrowserTest, Incognito) {
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   EXPECT_TRUE(client->GetCurrentAppListProfile());
 
-  client->ShowAppList();
+  client->ShowAppList(ash::AppListShowSource::kSearchKey);
   EXPECT_EQ(browser()->profile(), client->GetCurrentAppListProfile());
 }
 
@@ -705,7 +705,7 @@ class DurationBetweenSeesionActivationAndFirstLauncherShowingBrowserTest
  protected:
   void ShowAppListAndVerify() {
     auto* client = AppListClientImpl::GetInstance();
-    client->ShowAppList();
+    client->ShowAppList(ash::AppListShowSource::kSearchKey);
     ash::AppListTestApi().WaitForBubbleWindow(
         /*wait_for_opening_animation=*/false);
     ASSERT_TRUE(client->app_list_visible());

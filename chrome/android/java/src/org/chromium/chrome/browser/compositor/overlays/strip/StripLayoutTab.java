@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.RectF;
 import android.util.FloatProperty;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -30,7 +31,10 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.AndroidResourceType;
 import org.chromium.ui.resources.LayoutResource;
@@ -126,6 +130,20 @@ public class StripLayoutTab implements VirtualView {
                 }
             };
 
+    /** A property for animations to use for changing the drawX of the tab. */
+    public static final FloatProperty<StripLayoutTab> BOTTOM_MARGIN =
+            new FloatProperty<StripLayoutTab>("bottomMargin") {
+                @Override
+                public void setValue(StripLayoutTab object, float value) {
+                    object.setBottomMargin(value);
+                }
+
+                @Override
+                public Float get(StripLayoutTab object) {
+                    return object.getBottomMargin();
+                }
+            };
+
     /** A property for animations to use for changing the trailingMargin of the tab. */
     public static final FloatProperty<StripLayoutTab> TRAILING_MARGIN =
             new FloatProperty<StripLayoutTab>("trailingMargin") {
@@ -164,6 +182,12 @@ public class StripLayoutTab implements VirtualView {
     private static final int CLOSE_BUTTON_WIDTH_DP = 36;
     private static final int CLOSE_BUTTON_WIDTH_SCROLLING_STRIP_DP = 48;
 
+    // Divider Constants
+    // TODO(crbug.com/1373632): Temp value until the 9-patches are updated.
+    private static final int DIVIDER_OFFSET_X = 9;
+    @VisibleForTesting
+    static final float DIVIDER_FOLIO_LIGHT_OPACITY = 0.2f;
+
     private int mId = Tab.INVALID_TAB_ID;
 
     private final Context mContext;
@@ -176,8 +200,11 @@ public class StripLayoutTab implements VirtualView {
     private boolean mVisible = true;
     private boolean mIsDying;
     private boolean mCanShowCloseButton = true;
+    private boolean mFolioAttached = true;
     private final boolean mIncognito;
+    private float mBottomMargin;
     private float mContentOffsetX;
+    private float mDividerOpacity;
     private float mVisiblePercentage = 1.f;
     private String mAccessibilityDescription;
 
@@ -302,6 +329,14 @@ public class StripLayoutTab implements VirtualView {
     }
 
     /**
+     * Marks if tab container is attached to the toolbar for the Tab Strip Redesign folio treatment.
+     * @param folioAttached Whether the tab should be attached or not.
+     */
+    public void setFolioAttached(boolean folioAttached) {
+        mFolioAttached = folioAttached;
+    }
+
+    /**
      * @return The id of the {@link Tab} this {@link StripLayoutTab} represents.
      */
     public int getId() {
@@ -312,6 +347,12 @@ public class StripLayoutTab implements VirtualView {
      * @return The Android resource that represents the tab background.
      */
     public int getResourceId() {
+        if (TabUiFeatureUtilities.isTabStripDetachedEnabled() || !mFolioAttached) {
+            return R.drawable.bg_tabstrip_tab_detached;
+        } else if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+            return R.drawable.bg_tabstrip_tab_folio;
+        }
+
         return R.drawable.bg_tabstrip_tab;
     }
 
@@ -323,10 +364,28 @@ public class StripLayoutTab implements VirtualView {
     }
 
     /**
+     * @return The Android resource that represents the tab divider.
+     */
+    public int getDividerResourceId() {
+        return R.drawable.bg_tabstrip_tab_divider;
+    }
+
+    /**
      * @param foreground Whether or not this tab is a foreground tab.
      * @return The tint color resource that represents the tab background.
      */
     public int getTint(boolean foreground) {
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Inactive tabs have no container in TSR. Return arbitrary color to avoid calculation.
+            if (!foreground) return Color.TRANSPARENT;
+
+            if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+                return ChromeColors.getDefaultThemeColor(mContext, mIncognito);
+            } else if (TabUiFeatureUtilities.isTabStripDetachedEnabled()) {
+                return TabUiThemeProvider.getTabStripDetachedTabColor(mContext, mIncognito);
+            }
+        }
+
         if (foreground) {
             return ChromeColors.getDefaultThemeColor(mContext, mIncognito);
         }
@@ -348,6 +407,11 @@ public class StripLayoutTab implements VirtualView {
      * @return The tint color resource that represents the tab outline.
      */
     public int getOutlineTint(boolean foreground) {
+        if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Tabs have no outline in TSR. Return arbitrary color to avoid calculation.
+            return Color.TRANSPARENT;
+        }
+
         if (foreground) {
             return getTint(true);
         }
@@ -362,6 +426,48 @@ public class StripLayoutTab implements VirtualView {
         final float overlayAlpha = ResourcesCompat.getFloat(
                 mContext.getResources(), R.dimen.compositor_background_tab_outline_alpha);
         return ColorUtils.getColorWithOverlay(baseColor, overlayColor, overlayAlpha);
+    }
+
+    /**
+     * @return The tint color resource for the tab divider.
+     */
+    public @ColorInt int getDividerTint() {
+        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()) {
+            // Dividers are only present in TSR. Return arbitrary color to avoid calculation.
+            return Color.TRANSPARENT;
+        }
+
+        if (mIncognito) {
+            return mContext.getColor(R.color.divider_line_bg_color_light);
+        }
+
+        if (TabUiFeatureUtilities.isTabStripFolioEnabled() && !ColorUtils.inNightMode(mContext)
+                && !mIncognito) {
+            // This color will not be used at full opacity. We can't set this using the alpha
+            // component of the {@code @ColorInt}, since it is ignored when loading resources
+            // with a specified tint in the CC layer (instead retaining the alpha of the original
+            // image). Instead, this is reflected by setting the opacity of the divider itself.
+            // See https://crbug.com/1373634.
+            return androidx.core.graphics.ColorUtils.setAlphaComponent(
+                    SemanticColorUtils.getDefaultIconColorAccent1(mContext),
+                    (int) (DIVIDER_FOLIO_LIGHT_OPACITY * 255));
+        }
+
+        return SemanticColorUtils.getDividerLineBgColor(mContext);
+    }
+
+    /**
+     * @param dividerOpacity The new opacity for the tab divider.
+     */
+    public void setDividerOpacity(float dividerOpacity) {
+        mDividerOpacity = dividerOpacity;
+    }
+
+    /**
+     * @return The opacity of the tab divider.
+     */
+    public float getDividerOpacity() {
+        return mDividerOpacity;
     }
 
     /**
@@ -491,6 +597,27 @@ public class StripLayoutTab implements VirtualView {
      */
     public float getContentOffsetX() {
         return mContentOffsetX;
+    }
+
+    /**
+     * @return The trailing offset for the tab divider.
+     */
+    public float getDividerOffsetX() {
+        return DIVIDER_OFFSET_X;
+    }
+
+    /**
+     * @param bottomMargin How far to offset the bottom of the tab container from the toolbar.
+     */
+    public void setBottomMargin(float bottomMargin) {
+        mBottomMargin = bottomMargin;
+    }
+
+    /**
+     * @return How far to offset the bottom of the tab container from the toolbar.
+     */
+    public float getBottomMargin() {
+        return mBottomMargin;
     }
 
     /**

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/config/chrome_build.gni")  # For branding_file_path.
+import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/util/process_version.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
@@ -51,6 +51,7 @@ buildflag_header("buildflags") {
     "ENABLE_WEBUI_CERTIFICATE_VIEWER=$enable_webui_certificate_viewer",
     "ENABLE_WEBUI_TAB_STRIP=$enable_webui_tab_strip",
     "OPTIMIZE_WEBUI=$optimize_webui",
+    "ENABLE_BOUND_SESSION_CREDENTIALS=$enable_bound_session_credentials",
   ]
 }
 
@@ -263,6 +264,7 @@ static_library("common_lib") {
     "//components/no_state_prefetch/common",
     "//components/no_state_prefetch/common:mojo_bindings",
     "//components/page_load_metrics/common:common",
+    "//components/password_manager/content/common",
   ]
 
   if (enable_pdf) {
@@ -526,6 +528,7 @@ static_library("non_code_constants") {
 
   public_deps = [
     "//build:branding_buildflags",
+    "//chrome/browser/chrome_for_testing:buildflags",
     "//printing/buildflags",
     "//ui/base:buildflags",
   ]
@@ -684,8 +687,11 @@ if (is_mac) {
 
     deps = [
       ":constants",
-      "//base",
+      "//components/version_info",
+      "//mojo/core/embedder",
     ]
+
+    public_deps = [ "//base" ]
   }
 }
 

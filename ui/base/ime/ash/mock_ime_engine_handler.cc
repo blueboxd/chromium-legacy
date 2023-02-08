@@ -13,11 +13,7 @@ MockIMEEngineHandler::MockIMEEngineHandler()
       set_surrounding_text_call_count_(0),
       process_key_event_call_count_(0),
       reset_call_count_(0),
-      last_text_input_context_(ui::TEXT_INPUT_TYPE_NONE,
-                               ui::TEXT_INPUT_MODE_DEFAULT,
-                               ui::TEXT_INPUT_FLAG_NONE,
-                               ui::TextInputClient::FOCUS_REASON_NONE,
-                               ui::PersonalizationMode::kDisabled),
+      last_text_input_context_(ui::TEXT_INPUT_TYPE_NONE),
       last_set_surrounding_cursor_pos_(0),
       last_set_surrounding_anchor_pos_(0) {}
 
@@ -83,10 +79,6 @@ void MockIMEEngineHandler::SetSurroundingText(const std::u16string& text,
   last_set_surrounding_cursor_pos_ = cursor_pos;
   last_set_surrounding_anchor_pos_ = anchor_pos;
 }
-
-void MockIMEEngineHandler::SetMirroringEnabled(bool mirroring_enabled) {}
-
-void MockIMEEngineHandler::SetCastingEnabled(bool casting_enabled) {}
 
 bool MockIMEEngineHandler::IsReadyForTesting() {
   return true;

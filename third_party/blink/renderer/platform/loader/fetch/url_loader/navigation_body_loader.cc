@@ -12,12 +12,13 @@
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/referrer_utils.h"
-#include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
+#include "third_party/blink/public/mojom/loader/code_cache.mojom-blink.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
@@ -376,6 +377,8 @@ void NavigationBodyLoader::OnUploadProgress(int64_t current_position,
 }
 
 void NavigationBodyLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kNavigationBodyLoader);
   resource_load_info_notifier_wrapper_->NotifyResourceTransferSizeUpdated(
       transfer_size_diff);
 }
@@ -541,10 +544,8 @@ void NavigationBodyLoader::NotifyCompletionIfAppropriate() {
 
 void NavigationBodyLoader::
     BindURLLoaderAndStartLoadingResponseBodyIfPossible() {
-  if (!response_body_ && !off_thread_body_reader_) {
-    DCHECK(base::FeatureList::IsEnabled(features::kEarlyBodyLoad));
+  if (!response_body_ && !off_thread_body_reader_)
     return;
-  }
   // Bind the mojo::URLLoaderClient interface in advance, because we will start
   // to read from the data pipe immediately which may potentially postpone the
   // method calls from the remote. That causes the flakiness of some layout

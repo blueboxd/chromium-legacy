@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/property_bitsets.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -143,7 +144,14 @@ CSSPropertyID CssPropertyInfo(const ExecutionContext* execution_context,
       ParseCSSPropertyID(execution_context, name);
   if (unresolved_property == CSSPropertyID::kVariable)
     unresolved_property = CSSPropertyID::kInvalid;
-  map.insert(name, unresolved_property);
+  // Only cache known-exposed properties (i.e. properties without any
+  // associated runtime flag). This is because the web-exposure of properties
+  // that are not known-exposed can change dynamically, for example when
+  // different ExecutionContexts are provided with different origin trial
+  // settings.
+  if (kKnownExposedProperties.Has(unresolved_property)) {
+    map.insert(name, unresolved_property);
+  }
   DCHECK(!IsValidCSSPropertyID(unresolved_property) ||
          CSSProperty::Get(ResolveCSSPropertyID(unresolved_property))
              .IsWebExposed(execution_context));
@@ -185,7 +193,7 @@ String CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name) {
 NamedPropertySetterResult CSSStyleDeclaration::AnonymousNamedSetter(
     ScriptState* script_state,
     const AtomicString& name,
-    const ScriptValue& value) {
+    v8::Local<v8::Value> value) {
   const ExecutionContext* execution_context =
       ExecutionContext::From(script_state);
   if (!execution_context)
@@ -207,7 +215,7 @@ NamedPropertySetterResult CSSStyleDeclaration::AnonymousNamedSetter(
   // the property name is a valid CSS attribute name (see bug 1310062).
   auto&& string_value =
       NativeValueTraits<IDLStringTreatNullAsEmptyString>::NativeValue(
-          script_state->GetIsolate(), value.V8Value(), exception_state);
+          script_state->GetIsolate(), value, exception_state);
   if (UNLIKELY(exception_state.HadException()))
     return NamedPropertySetterResult::kIntercepted;
   SetPropertyInternal(unresolved_property, String(), string_value, false,

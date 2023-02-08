@@ -18,7 +18,7 @@ WebAppIconDiagnostic::WebAppIconDiagnostic(Profile* profile, AppId app_id)
     : profile_(profile),
       app_id_(std::move(app_id)),
       provider_(WebAppProvider::GetForLocalAppsUnchecked(profile_.get())),
-      app_(provider_->registrar().GetAppById(app_id_)) {}
+      app_(provider_->registrar_unsafe().GetAppById(app_id_)) {}
 
 WebAppIconDiagnostic::~WebAppIconDiagnostic() = default;
 
@@ -116,6 +116,22 @@ void WebAppIconDiagnostic::DiagnoseEmptyOrMissingIconFiles(
   result_->has_empty_icon_file = icon_files_check.empty > 0;
   result_->has_missing_icon_file = icon_files_check.missing > 0;
   std::move(done_callback).Run();
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const WebAppIconDiagnostic::Result result) {
+  os << "has_empty_downloaded_icon_sizes: "
+     << result.has_empty_downloaded_icon_sizes << std::endl;
+  os << "has_generated_icon_flag: " << result.has_generated_icon_flag
+     << std::endl;
+  os << "has_generated_icon_flag_false_negative: "
+     << result.has_generated_icon_flag_false_negative << std::endl;
+  os << "has_generated_icon_bitmap: " << result.has_generated_icon_bitmap
+     << std::endl;
+  os << "has_empty_icon_bitmap: " << result.has_empty_icon_bitmap << std::endl;
+  os << "has_empty_icon_file: " << result.has_empty_icon_file << std::endl;
+  os << "has_missing_icon_file: " << result.has_missing_icon_file << std::endl;
+  return os;
 }
 
 }  // namespace web_app

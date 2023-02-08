@@ -100,5 +100,5 @@ public class MockRenderFrameHost implements RenderFrameHost {
     }
 
     @Override
-    public void forceRedrawAndWaitForPresentation(Runnable callback) {}
+    public void insertVisualStateCallback(Callback<Boolean> callback) {}
 }

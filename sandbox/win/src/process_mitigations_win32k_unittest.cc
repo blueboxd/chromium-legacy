@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/process_mitigations_win32k_policy.h"
 #include "sandbox/win/tests/common/controller.h"
@@ -24,9 +23,6 @@ namespace sandbox {
 // the target process causes the launch to fail in process initialization.
 // The test process itself links against user32/gdi32.
 TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
-  if (base::win::GetVersion() < base::win::Version::WIN8)
-    return;
-
   std::wstring test_policy_command = L"CheckPolicy ";
   test_policy_command += std::to_wstring(TESTPOLICY_WIN32K);
 
@@ -44,9 +40,6 @@ TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownFailure) {
 // The test process itself links against user32/gdi32.
 
 TEST(ProcessMitigationsWin32kTest, CheckWin8LockDownSuccess) {
-  if (base::win::GetVersion() < base::win::Version::WIN8)
-    return;
-
   std::wstring test_policy_command = L"CheckPolicy ";
   test_policy_command += std::to_wstring(TESTPOLICY_WIN32K);
 

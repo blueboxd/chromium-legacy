@@ -47,8 +47,7 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, SimpleInstall) {
                       96)});
   provider->command_manager().ScheduleCommand(
       std::make_unique<InstallFromSyncCommand>(
-          url_loader.get(), profile(), &provider->install_finalizer(),
-          &provider->registrar(), std::make_unique<WebAppDataRetriever>(),
+          url_loader.get(), profile(), std::make_unique<WebAppDataRetriever>(),
           params,
           base::BindLambdaForTesting(
               [&](const AppId& app_id, webapps::InstallResultCode code) {
@@ -57,9 +56,9 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, SimpleInstall) {
                 loop.Quit();
               })));
   loop.Run();
-  EXPECT_TRUE(provider->registrar().IsInstalled(id));
+  EXPECT_TRUE(provider->registrar_unsafe().IsInstalled(id));
   EXPECT_EQ(AreAppsLocallyInstalledBySync(),
-            provider->registrar().IsLocallyInstalled(id));
+            provider->registrar_unsafe().IsLocallyInstalled(id));
 
   SkColor icon_color =
       IconManagerReadAppIconPixel(provider->icon_manager(), id, 96);
@@ -88,9 +87,8 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, TwoInstalls) {
                         96)});
     provider->command_manager().ScheduleCommand(
         std::make_unique<InstallFromSyncCommand>(
-            url_loader.get(), profile(), &provider->install_finalizer(),
-            &provider->registrar(), std::make_unique<WebAppDataRetriever>(),
-            params,
+            url_loader.get(), profile(),
+            std::make_unique<WebAppDataRetriever>(), params,
             base::BindLambdaForTesting([&](const AppId& app_id,
                                            webapps::InstallResultCode code) {
               EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
@@ -106,9 +104,8 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, TwoInstalls) {
                         96)});
     provider->command_manager().ScheduleCommand(
         std::make_unique<InstallFromSyncCommand>(
-            url_loader.get(), profile(), &provider->install_finalizer(),
-            &provider->registrar(), std::make_unique<WebAppDataRetriever>(),
-            params,
+            url_loader.get(), profile(),
+            std::make_unique<WebAppDataRetriever>(), params,
             base::BindLambdaForTesting([&](const AppId& app_id,
                                            webapps::InstallResultCode code) {
               EXPECT_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
@@ -119,9 +116,9 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, TwoInstalls) {
   loop.Run();
   // Check first install.
   {
-    EXPECT_TRUE(provider->registrar().IsInstalled(id));
+    EXPECT_TRUE(provider->registrar_unsafe().IsInstalled(id));
     EXPECT_EQ(AreAppsLocallyInstalledBySync(),
-              provider->registrar().IsLocallyInstalled(id));
+              provider->registrar_unsafe().IsLocallyInstalled(id));
 
     SkColor icon_color =
         IconManagerReadAppIconPixel(provider->icon_manager(), id, 96);
@@ -129,9 +126,9 @@ IN_PROC_BROWSER_TEST_F(InstallFromSyncCommandTest, TwoInstalls) {
   }
   // Check second install.
   {
-    EXPECT_TRUE(provider->registrar().IsInstalled(other_id));
+    EXPECT_TRUE(provider->registrar_unsafe().IsInstalled(other_id));
     EXPECT_EQ(AreAppsLocallyInstalledBySync(),
-              provider->registrar().IsLocallyInstalled(other_id));
+              provider->registrar_unsafe().IsLocallyInstalled(other_id));
 
     SkColor icon_color =
         IconManagerReadAppIconPixel(provider->icon_manager(), other_id, 96);

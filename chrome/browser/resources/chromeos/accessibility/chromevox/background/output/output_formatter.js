@@ -5,12 +5,21 @@
 /**
  * @fileoverview Class that formats the parsed output tree.
  */
+import {AutomationPredicate} from '../../../common/automation_predicate.js';
+import {AutomationUtil} from '../../../common/automation_util.js';
+import {constants} from '../../../common/constants.js';
+import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
+import {CursorRange} from '../../../common/cursors/range.js';
+import {LocalStorage} from '../../../common/local_storage.js';
 import {Msgs} from '../../common/msgs.js';
 
 import {OutputFormatParserObserver} from './output_format_parser.js';
+import {OutputFormatTree} from './output_format_tree.js';
 import {OutputInterface} from './output_interface.js';
+import {OutputRoleInfo} from './output_role_info.js';
 import * as outputTypes from './output_types.js';
 
+const Dir = constants.Dir;
 const NameFromType = chrome.automation.NameFromType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
@@ -57,23 +66,23 @@ export class OutputFormatter {
       // children.
       this.formatNameOrDescendants_(this.params_, token, options);
     } else if (token === 'indexInParent') {
-      this.output_.formatIndexInParent_(this.params_, token, tree, options);
+      this.formatIndexInParent_(this.params_, token, tree, options);
     } else if (token === 'restriction') {
-      this.output_.formatRestriction_(this.params_, token);
+      this.formatRestriction_(this.params_, token);
     } else if (token === 'checked') {
-      this.output_.formatChecked_(this.params_, token);
+      this.formatChecked_(this.params_, token);
     } else if (token === 'pressed') {
-      this.output_.formatPressed_(this.params_, token);
+      this.formatPressed_(this.params_, token);
     } else if (token === 'state') {
-      this.output_.formatState_(this.params_, token);
+      this.formatState_(this.params_, token);
     } else if (token === 'find') {
-      this.output_.formatFind_(this.params_, token, tree);
+      this.formatFind_(this.params_, token, tree);
     } else if (token === 'descendants') {
-      this.output_.formatDescendants_(this.params_, token);
+      this.formatDescendants_(this.params_, token);
     } else if (token === 'joinedDescendants') {
-      this.output_.formatJoinedDescendants_(this.params_, token, options);
+      this.formatJoinedDescendants_(this.params_, token, options);
     } else if (token === 'role') {
-      if (localStorage['useVerboseMode'] === String(false)) {
+      if (LocalStorage.get('useVerboseMode') === false) {
         return true;
       }
       if (this.output_.useAuralStyle) {
@@ -81,12 +90,12 @@ export class OutputFormatter {
         this.speechProps_.properties['relativePitch'] = -0.3;
       }
 
-      this.output_.formatRole_(this.params_, token, options);
+      this.formatRole_(this.params_, token, options);
     } else if (token === 'inputType') {
-      this.output_.formatInputType_(this.params_, token, options);
+      this.formatInputType_(this.params_, token, options);
     } else if (
         token === 'tableCellRowIndex' || token === 'tableCellColumnIndex') {
-      this.output_.formatTableCellIndex_(this.params_, token, options);
+      this.formatTableCellIndex_(this.params_, token, options);
     } else if (token === 'cellIndexText') {
       this.output_.formatCellIndexText_(this.params_, token, options);
     } else if (token === 'node') {
@@ -159,6 +168,92 @@ export class OutputFormatter {
   }
 
   /**
+   * @param {!OutputFormatTree} tree
+   * @return {!Set}
+   * @private
+   */
+  createRoles_(tree) {
+    const roles = new Set();
+    for (let currentNode = tree.firstChild; currentNode;
+         currentNode = currentNode.nextSibling) {
+      roles.add(currentNode.value);
+    }
+    return roles;
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatChecked_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    const msg = outputTypes.OutputPropertyMap.CHECKED[node.checked];
+    if (msg) {
+      formatLog.writeToken(token);
+      this.output_.format_({
+        node,
+        outputFormat: '@' + msg,
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatDescendants_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (!node) {
+      return;
+    }
+
+    let leftmost = node;
+    let rightmost = node;
+    if (AutomationPredicate.leafOrStaticText(node)) {
+      // Find any deeper leaves, if any, by starting from one level
+      // down.
+      leftmost = node.firstChild;
+      rightmost = node.lastChild;
+      if (!leftmost || !rightmost) {
+        return;
+      }
+    }
+
+    // Construct a range to the leftmost and rightmost leaves. This
+    // range gets rendered below which results in output that is the
+    // same as if a user navigated through the entire subtree of |node|.
+    leftmost = AutomationUtil.findNodePre(
+        leftmost, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
+    rightmost = AutomationUtil.findNodePre(
+        rightmost, Dir.BACKWARD, AutomationPredicate.leafOrStaticText);
+    if (!leftmost || !rightmost) {
+      return;
+    }
+
+    const subrange = new CursorRange(
+        new Cursor(leftmost, CURSOR_NODE_INDEX),
+        new Cursor(rightmost, CURSOR_NODE_INDEX));
+    let prev = null;
+    if (node) {
+      prev = CursorRange.fromNode(node);
+    }
+    formatLog.writeToken(token);
+    this.output_.render_(
+        subrange, prev, outputTypes.OutputCustomEvent.NAVIGATE, buff, formatLog,
+        {suppressStartEndAncestry: true});
+  }
+
+  /**
    * @param {!outputTypes.OutputFormattingData} data
    * @param {string} token
    * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
@@ -176,6 +271,119 @@ export class OutputFormatter {
     options.annotation.push(token);
     this.output_.append_(buff, node.description || '', options);
     formatLog.writeTokenWithValue(token, node.description);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!OutputFormatTree} tree
+   * @private
+   */
+  formatFind_(data, token, tree) {
+    const buff = data.outputBuffer;
+    const formatLog = data.outputFormatLogger;
+    let node = data.node;
+
+    // Find takes two arguments: JSON query string and format string.
+    if (tree.firstChild) {
+      const jsonQuery = tree.firstChild.value;
+      node = node.find(
+          /** @type {chrome.automation.FindParams}*/ (JSON.parse(jsonQuery)));
+      const formatString = tree.firstChild.nextSibling || '';
+      if (node) {
+        formatLog.writeToken(token);
+        this.output_.format_({
+          node,
+          outputFormat: formatString,
+          outputBuffer: buff,
+          outputFormatLogger: formatLog,
+        });
+      }
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!OutputFormatTree} tree
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatIndexInParent_(data, token, tree, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (node.parent) {
+      options.annotation.push(token);
+      let roles;
+      if (tree.firstChild) {
+        roles = this.createRoles_(tree);
+      } else {
+        roles = new Set();
+        roles.add(node.role);
+      }
+
+      let count = 0;
+      for (let i = 0, child; child = node.parent.children[i]; i++) {
+        if (roles.has(child.role)) {
+          count++;
+        }
+        if (node === child) {
+          break;
+        }
+      }
+      this.output_.append_(buff, String(count));
+      formatLog.writeTokenWithValue(token, String(count));
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatInputType_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (!node.inputType) {
+      return;
+    }
+    options.annotation.push(token);
+    let msgId =
+        outputTypes.INPUT_TYPE_MESSAGE_IDS[node.inputType] || 'input_type_text';
+    if (this.output_.formatAsBraille) {
+      msgId = msgId + '_brl';
+    }
+    this.output_.append_(buff, Msgs.getMsg(msgId), options);
+    formatLog.writeTokenWithValue(token, Msgs.getMsg(msgId));
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatJoinedDescendants_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    const unjoined = [];
+    formatLog.write('joinedDescendants {');
+    this.output_.format_({
+      node,
+      outputFormat: '$descendants',
+      outputBuffer: unjoined,
+      outputFormatLogger: formatLog,
+    });
+    this.output_.append_(buff, unjoined.join(' '), options);
+    formatLog.write(
+        '}: ' + (unjoined.length ? unjoined.join(' ') : 'EMPTY') + '\n');
   }
 
   /**
@@ -202,7 +410,7 @@ export class OutputFormatter {
       options.annotation.push(new outputTypes.OutputSelectionSpan(0, 0));
     }
 
-    if (localStorage['languageSwitching'] === 'true') {
+    if (LocalStorage.get('languageSwitching')) {
       this.output_.assignLocaleAndAppend_(node.name || '', node, buff, options);
     } else {
       this.output_.append_(buff, node.name || '', options);
@@ -257,6 +465,128 @@ export class OutputFormatter {
         outputFormatLogger: formatLog,
       });
     }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatPressed_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    const msg = outputTypes.OutputPropertyMap.PRESSED[node.checked];
+    if (msg) {
+      formatLog.writeToken(token);
+      this.output_.format_({
+        node,
+        outputFormat: '@' + msg,
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatRestriction_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    const msg = outputTypes.OutputPropertyMap.RESTRICTION[node.restriction];
+    if (msg) {
+      formatLog.writeToken(token);
+      this.output_.format_({
+        node,
+        outputFormat: '@' + msg,
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatRole_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    options.annotation.push(token);
+    let msg = node.role;
+    const info = OutputRoleInfo[node.role];
+    if (node.roleDescription) {
+      msg = node.roleDescription;
+    } else if (info) {
+      if (this.output_.formatAsBraille) {
+        msg = Msgs.getMsg(info.msgId + '_brl');
+      } else if (info.msgId) {
+        msg = Msgs.getMsg(info.msgId);
+      }
+    } else {
+      // We can safely ignore this role. ChromeVox output tests cover
+      // message id validity.
+      return;
+    }
+    this.output_.append_(buff, msg || '', options);
+    formatLog.writeTokenWithValue(token, msg);
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @private
+   */
+  formatState_(data, token) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    if (node.state) {
+      Object.getOwnPropertyNames(node.state).forEach(state => {
+        const stateInfo = outputTypes.OUTPUT_STATE_INFO[state];
+        if (stateInfo && !stateInfo.isRoleSpecific && stateInfo.on) {
+          formatLog.writeToken(token);
+          this.output_.format_({
+            node,
+            outputFormat: '$' + state,
+            outputBuffer: buff,
+            outputFormatLogger: formatLog,
+          });
+        }
+      });
+    }
+  }
+
+  /**
+   * @param {!outputTypes.OutputFormattingData} data
+   * @param {string} token
+   * @param {!{annotation: Array<*>, isUnique: (boolean|undefined)}} options
+   * @private
+   */
+  formatTableCellIndex_(data, token, options) {
+    const buff = data.outputBuffer;
+    const node = data.node;
+    const formatLog = data.outputFormatLogger;
+
+    let value = node[token];
+    if (value === undefined) {
+      return;
+    }
+    value = String(value + 1);
+    options.annotation.push(token);
+    this.output_.append_(buff, value, options);
+    formatLog.writeTokenWithValue(token, value);
   }
 
   /**

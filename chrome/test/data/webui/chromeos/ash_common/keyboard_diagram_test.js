@@ -7,7 +7,7 @@ import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertEquals, assertNotEquals, assertThrows, assertTrue} from '../../chai_assert.js';
+import {assertEquals, assertNotEquals, assertThrows, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 
 export function keyboardDiagramTestSuite() {
   /** @type {?KeyboardDiagramElement} */
@@ -296,6 +296,31 @@ export function keyboardDiagramTestSuite() {
     const pressedKeys = diagramElement.root.querySelectorAll(
         `keyboard-key[state="${KeyboardKeyState.PRESSED}"]`);
     assertEquals(0, pressedKeys.length);
+  });
+
+  test('resetAllKeys', async () => {
+    diagramElement.mechanicalLayout = MechanicalLayout.ISO;
+    diagramElement.topRowKeys = [
+      TopRowKey.kBack,
+      TopRowKey.kRefresh,
+      TopRowKey.kOverview,
+    ];
+    await flushTasks();
+
+    diagramElement.setKeyState(28 /* KEY_ENTER */, KeyboardKeyState.PRESSED);
+    diagramElement.setKeyState(56 /* KEY_LEFTALT */, KeyboardKeyState.PRESSED);
+    diagramElement.setKeyState(15 /* KEY_TAB */, KeyboardKeyState.TESTED);
+    diagramElement.setTopRowKeyState(2, KeyboardKeyState.TESTED);
+    diagramElement.resetAllKeys();
+    await flushTasks();
+
+    const pressedKeys = diagramElement.root.querySelectorAll(
+        `keyboard-key[state="${KeyboardKeyState.PRESSED}"]`);
+    assertEquals(0, pressedKeys.length);
+
+    const testedKeys = diagramElement.root.querySelectorAll(
+        `keyboard-key[state="${KeyboardKeyState.TESTED}"]`);
+    assertEquals(0, testedKeys.length);
   });
 
   test('visualLayout_mainGlyph', async () => {

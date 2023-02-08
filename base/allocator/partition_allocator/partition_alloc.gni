@@ -23,10 +23,13 @@ declare_args() {
   # etc.). There is nothing stopping a lazy embedder from ignoring this
   # and unconditionally using PA, but such a setup is inadvisable.
   #
-  # This flag is currently set to false only on Cronet bots, because Cronet
-  # doesn't use PartitionAlloc at all, and doesn't wish to incur the library
-  # size increase (crbug.com/674570).
-  use_partition_alloc = true
+  # In Chromium, this is set true, except:
+  #
+  # 1.  On Cronet bots, because Cronet doesn't use PartitionAlloc at all,
+  #     and doesn't wish to incur the library size increase (crbug.com/674570).
+  # 2.  On NaCl (through this declaration), where PartitionAlloc doesn't
+  #     build at all.
+  use_partition_alloc = !is_nacl
 }
 
 declare_args() {
@@ -35,27 +38,33 @@ declare_args() {
       use_partition_alloc && use_partition_alloc_as_malloc_default
 }
 
-if (!use_partition_alloc) {
-  assert(
-      !use_partition_alloc_as_malloc,
-      "Can't use PartitionAlloc-Everywhere when PartitionAlloc is wholly disabled")
-}
-
 declare_args() {
   use_freeslot_bitmap = false
 
   # Puts the regular and BRP pools right next to each other, so that we can
   # check "belongs to one of the two pools" with a single bitmask operation.
   glue_core_pools = false
+
+  # Introduces pointer compression support in PA.
+  #
+  # This is effective only for memory allocated from PartitionAlloc, so it is
+  # recommended to enable PA-E above, but isn't strictly necessary. Embedders
+  # can create and use PA partitions explicitly.
+  enable_pointer_compression_support = false
 }
 
 declare_args() {
   # Build support for Use-after-Free protection via BackupRefPtr (BRP) or
-  # MTECheckedPtr. To be effective, these need to be paired with raw_ptr<>.
+  # MTECheckedPtr, and switch the raw_ptr<T> implementation to BackupRefPtrImpl
+  # and MTECheckedPtrImp, respectively. They're mutually exclusive.
   #
   # These are effective only for memory allocated from PartitionAlloc, so it is
   # recommended to enable PA-E above, but isn't strictly necessary. Embedders
   # can create and use PA partitions explicitly.
+  #
+  # Note that |enable_backup_ref_ptr_support = true| doesn't necessarily enable
+  # BRP protection. It'll be enabled only for partition created with
+  # partition_alloc::PartitionOptions::BackupRefPtr::kEnabled.
   enable_backup_ref_ptr_support =
       use_partition_alloc && enable_backup_ref_ptr_support_default
   enable_mte_checked_ptr_support =
@@ -65,6 +74,31 @@ declare_args() {
 assert(!(enable_backup_ref_ptr_support && enable_mte_checked_ptr_support),
        "MTECheckedPtrSupport conflicts with BRPSupport.")
 
+assert(!enable_pointer_compression_support || glue_core_pools,
+       "Pointer compression relies on core pools being contiguous.")
+
+declare_args() {
+  # The supported platforms are supposed to match `_is_brp_supported`, but we
+  # enable the feature on Linux early because it's most widely used for security
+  # research. ASAN BRP is not supported in Chromium-external builds.
+  use_asan_backup_ref_ptr =
+      build_with_chromium && is_asan && (is_win || is_android || is_linux)
+}
+
+# AsanBackupRefPtr is not supported outside Chromium. The implementation is
+# entangled with `//base`. The code is only physically located with the
+# rest of `raw_ptr` to keep it together.
+assert(build_with_chromium || !use_asan_backup_ref_ptr,
+       "AsanBackupRefPtr is not supported outside Chromium")
+
+# BackupRefPtr and AsanBackupRefPtr are mutually exclusive variants of raw_ptr.
+assert(
+    !enable_backup_ref_ptr_support || !use_asan_backup_ref_ptr,
+    "Both BackupRefPtr and AsanBackupRefPtr can't be enabled at the same time")
+
+assert(!use_asan_backup_ref_ptr || is_asan,
+       "AsanBackupRefPtr requires AddressSanitizer")
+
 declare_args() {
   # - put_ref_count_in_previous_slot: place the ref-count at the end of the
   #   previous slot (or in metadata if a slot starts on the page boundary), as
@@ -73,6 +107,9 @@ declare_args() {
   #   are too expensive to have on by default.
   # - enable_dangling_raw_ptr_checks: enable checking raw_ptr do not become
   #   dangling during their lifetime.
+  # - backup_ref_ptr_poison_oob_ptr: poison out-of-bounds (OOB) pointers to
+  #   generate an exception in the event that an OOB pointer is dereferenced.
+  #   TODO(mdlemay): Does not yet work on Windows.
   put_ref_count_in_previous_slot =
       put_ref_count_in_previous_slot_default && enable_backup_ref_ptr_support
 
@@ -91,10 +128,34 @@ declare_args() {
   # This flag is temporary, and isn't used by PA embedders, so it doesn't need
   # to go through build_overrides
   enable_dangling_raw_ptr_perf_experiment = false
+
+  backup_ref_ptr_poison_oob_ptr = false
 }
 
 declare_args() {
+  # Shadow metadata is still under development and only supports Linux
+  # for now.
   enable_shadow_metadata = false
+}
+
+# We want to provide assertions that guard against inconsistent build
+# args, but there is no point in having them fire if we're not building
+# PartitionAlloc at all. If `use_partition_alloc` is false, we jam all
+# related args to `false`. The prime example is NaCl, where
+# PartitionAlloc doesn't build at all.
+if (is_nacl) {
+  assert(!use_partition_alloc, "PartitionAlloc doesn't build on NaCl")
+}
+if (!use_partition_alloc) {
+  use_partition_alloc_as_malloc = false
+  enable_backup_ref_ptr_support = false
+  enable_mte_checked_ptr_support = false
+  use_asan_backup_ref_ptr = false
+  put_ref_count_in_previous_slot = false
+  enable_backup_ref_ptr_slow_checks = false
+  enable_dangling_raw_ptr_checks = false
+  enable_dangling_raw_ptr_perf_experiment = false
+  backup_ref_ptr_poison_oob_ptr = false
 }
 
 # put_ref_count_in_previous_slot can only be used if
@@ -119,6 +180,12 @@ assert(
 assert(
     enable_dangling_raw_ptr_checks || !enable_dangling_raw_ptr_perf_experiment,
     "Missing dangling pointer checks feature for its performance experiment")
+
+# To poison OOB pointers for BackupRefPtr, the underlying feature must
+# be enabled, too.
+assert(
+    enable_backup_ref_ptr_support || !backup_ref_ptr_poison_oob_ptr,
+    "Can't enable poisoning for OOB pointers if BackupRefPtr isn't enabled at all")
 
 declare_args() {
   enable_pkeys = is_linux && target_cpu == "x64"

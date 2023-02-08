@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -56,7 +57,7 @@ void ReportURLChange(LocalDOMWindow* window,
                      const String& url) {
   DCHECK(window);
   DCHECK(window->GetFrame());
-  if (window->GetFrame()->IsMainFrame()) {
+  if (window->GetFrame()->IsMainFrame() && window->Url() != url) {
     SoftNavigationHeuristics* heuristics =
         SoftNavigationHeuristics::From(*window);
     heuristics->SawURLChange(script_state, url);
@@ -226,8 +227,15 @@ void History::go(ScriptState* script_state,
     // navigation is committed.
     ReportURLChange(window, script_state,
                     /*url=*/String(""));
+    // Pass the current task ID so it'd be set as the parent task for the future
+    // popstate event.
+    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+    absl::optional<scheduler::TaskAttributionId> task_id;
+    if (tracker && script_state->World().IsMainWorld()) {
+      task_id = tracker->RunningTaskAttributionId(script_state);
+    }
     DCHECK(frame->Client());
-    if (frame->Client()->NavigateBackForward(delta)) {
+    if (frame->Client()->NavigateBackForward(delta, task_id)) {
       if (Page* page = frame->GetPage())
         page->HistoryNavigationVirtualTimePauser().PauseVirtualTime();
     }
@@ -354,14 +362,12 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     return;
   }
 
-  if (auto* navigation_api = NavigationApi::navigation(*window)) {
-    auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
-        full_url, NavigateEventType::kHistoryApi, type);
-    params->state_object = data.get();
-    if (navigation_api->DispatchNavigateEvent(params) !=
-        NavigationApi::DispatchResult::kContinue) {
-      return;
-    }
+  auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
+      full_url, NavigateEventType::kHistoryApi, type);
+  params->state_object = data.get();
+  if (window->navigation()->DispatchNavigateEvent(params) !=
+      NavigationApi::DispatchResult::kContinue) {
+    return;
   }
 
   window->document()->Loader()->RunURLAndHistoryUpdateSteps(

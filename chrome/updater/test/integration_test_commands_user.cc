@@ -18,7 +18,7 @@
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -149,6 +149,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void RunWake(int exit_code) const override {
     updater::test::RunWake(updater_scope_, exit_code);
+  }
+
+  void RunWakeAll() const override {
+    updater::test::RunWakeAll(updater_scope_);
   }
 
   void RunWakeActive(int exit_code) const override {

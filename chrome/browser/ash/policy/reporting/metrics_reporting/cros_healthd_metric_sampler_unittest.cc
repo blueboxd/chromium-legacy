@@ -8,6 +8,14 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_info_metric_sampler_test_utils.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_audio_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_boot_performance_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_bus_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_cpu_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_display_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_input_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_memory_sampler_handler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_sampler_handler.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,66 +83,6 @@ cros_healthd::TelemetryInfoPtr CreateBootPerformanceResult(
   return telemetry_info;
 }
 
-cros_healthd::EmbeddedDisplayInfoPtr CreateEmbeddedDisplay(
-    bool privacy_screen_supported,
-    int display_width,
-    int display_height,
-    int resolution_horizontal,
-    int resolution_vertical,
-    double refresh_rate,
-    std::string manufacturer,
-    int model_id,
-    int manufacture_year,
-    std::string display_name) {
-  return cros_healthd::EmbeddedDisplayInfo::New(
-      privacy_screen_supported, /*privacy_screen_enabled*/ false,
-      cros_healthd::NullableUint32::New(display_width),
-      cros_healthd::NullableUint32::New(display_height),
-      cros_healthd::NullableUint32::New(resolution_horizontal),
-      cros_healthd::NullableUint32::New(resolution_vertical),
-      cros_healthd::NullableDouble::New(refresh_rate), manufacturer,
-      cros_healthd::NullableUint16::New(model_id),
-      /*serial_number*/ cros_healthd::NullableUint32::New(12345),
-      /*manufacture_week*/ cros_healthd::NullableUint8::New(10),
-      cros_healthd::NullableUint16::New(manufacture_year),
-      /*edid_version*/ "V2.0",
-      /*input_type*/ cros_healthd::DisplayInputType::kDigital, display_name);
-}
-
-cros_healthd::ExternalDisplayInfoPtr CreateExternalDisplay(
-    int display_width,
-    int display_height,
-    int resolution_horizontal,
-    int resolution_vertical,
-    double refresh_rate,
-    std::string manufacturer,
-    int model_id,
-    int manufacture_year,
-    std::string display_name) {
-  return cros_healthd::ExternalDisplayInfo ::New(
-      cros_healthd::NullableUint32::New(display_width),
-      cros_healthd::NullableUint32::New(display_height),
-      cros_healthd::NullableUint32::New(resolution_horizontal),
-      cros_healthd::NullableUint32::New(resolution_vertical),
-      cros_healthd::NullableDouble::New(refresh_rate), manufacturer,
-      cros_healthd::NullableUint16::New(model_id),
-      /*serial_number*/ cros_healthd::NullableUint32::New(12345),
-      /*manufacture_week*/ cros_healthd::NullableUint8::New(10),
-      cros_healthd::NullableUint16::New(manufacture_year),
-      /*edid_version*/ "V2.0",
-      /*input_type*/ cros_healthd::DisplayInputType::kDigital, display_name);
-}
-
-cros_healthd::TelemetryInfoPtr CreateDisplayResult(
-    cros_healthd::EmbeddedDisplayInfoPtr embedded_display,
-    std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays) {
-  auto telemetry_info = cros_healthd::TelemetryInfo::New();
-  telemetry_info->display_result = cros_healthd::DisplayResult::NewDisplayInfo(
-      cros_healthd::DisplayInfo::New(std::move(embedded_display),
-                                     std::move(external_displays)));
-  return telemetry_info;
-}
-
 cros_healthd::TelemetryInfoPtr CreatePrivacyScreenResult(bool supported) {
   auto telemetry_info = cros_healthd::TelemetryInfo::New();
   telemetry_info->display_result = cros_healthd::DisplayResult::NewDisplayInfo(
@@ -144,12 +92,13 @@ cros_healthd::TelemetryInfoPtr CreatePrivacyScreenResult(bool supported) {
 }
 
 absl::optional<MetricData> CollectData(
+    std::unique_ptr<CrosHealthdSamplerHandler> info_handler,
     cros_healthd::TelemetryInfoPtr telemetry_info,
     cros_healthd::ProbeCategoryEnum probe_category,
-    CrosHealthdMetricSampler::MetricType metric_type) {
+    CrosHealthdSamplerHandler::MetricType metric_type) {
   ash::cros_healthd::FakeCrosHealthd::Get()
       ->SetProbeTelemetryInfoResponseForTesting(telemetry_info);
-  CrosHealthdMetricSampler sampler(probe_category, metric_type);
+  CrosHealthdMetricSampler sampler(std::move(info_handler), probe_category);
   test::TestEvent<absl::optional<MetricData>> metric_collect_event;
 
   sampler.MaybeCollect(metric_collect_event.cb());
@@ -226,9 +175,11 @@ TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetryMultipleEntries) {
   usb_devices.push_back(std::move(usb_device_second));
 
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateUsbBusResult(std::move(usb_devices)),
+      CollectData(std::make_unique<CrosHealthdBusSamplerHandler>(
+                      CrosHealthdSamplerHandler::MetricType::kTelemetry),
+                  CreateUsbBusResult(std::move(usb_devices)),
                   cros_healthd::ProbeCategoryEnum::kBus,
-                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+                  CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -294,9 +245,11 @@ TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetry) {
   usb_devices.push_back(std::move(usb_device));
 
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateUsbBusResult(std::move(usb_devices)),
+      CollectData(std::make_unique<CrosHealthdBusSamplerHandler>(
+                      CrosHealthdSamplerHandler::MetricType::kTelemetry),
+                  CreateUsbBusResult(std::move(usb_devices)),
                   cros_healthd::ProbeCategoryEnum::kBus,
-                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+                  CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -322,11 +275,12 @@ TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetry) {
 TEST_P(CrosHealthdMetricSamplerMemoryInfoTest, TestMemoryInfoeporting) {
   const auto& test_case = GetParam();
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdMemorySamplerHandler>(),
       CreateMemoryResult(CreateMemoryEncryptionInfo(
           test_case.healthd_encryption_state, test_case.max_keys,
           test_case.key_length, test_case.healthd_encryption_algorithm)),
       cros_healthd::ProbeCategoryEnum::kMemory,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -336,9 +290,11 @@ TEST_P(CrosHealthdMetricSamplerMemoryInfoTest, TestMemoryInfoeporting) {
 TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
   const TbtTestCase& test_case = GetParam();
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateThunderboltBusResult(test_case.healthd_security_levels),
+      CollectData(std::make_unique<CrosHealthdBusSamplerHandler>(
+                      CrosHealthdSamplerHandler::MetricType::kInfo),
+                  CreateThunderboltBusResult(test_case.healthd_security_levels),
                   cros_healthd::ProbeCategoryEnum::kBus,
-                  CrosHealthdMetricSampler::MetricType::kInfo);
+                  CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -358,9 +314,10 @@ TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateCpuResult(CreateKeylockerInfo(true)),
+      CollectData(std::make_unique<CrosHealthdCpuSamplerHandler>(),
+                  CreateCpuResult(CreateKeylockerInfo(true)),
                   cros_healthd::ProbeCategoryEnum::kCpu,
-                  CrosHealthdMetricSampler::MetricType::kInfo);
+                  CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -374,9 +331,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateCpuResult(CreateKeylockerInfo(false)),
+      CollectData(std::make_unique<CrosHealthdCpuSamplerHandler>(),
+                  CreateCpuResult(CreateKeylockerInfo(false)),
                   cros_healthd::ProbeCategoryEnum::kCpu,
-                  CrosHealthdMetricSampler::MetricType::kInfo);
+                  CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -390,8 +348,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnsupported) {
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdCpuSamplerHandler>(),
       CreateCpuResult(nullptr), cros_healthd::ProbeCategoryEnum::kCpu,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -409,8 +368,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::CpuResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> cpu_data = CollectData(
+      std::make_unique<CrosHealthdCpuSamplerHandler>(),
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kCpu,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
   EXPECT_FALSE(cpu_data.has_value());
 
   telemetry_info = cros_healthd::TelemetryInfo::New();
@@ -418,8 +378,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::BusResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> bus_data = CollectData(
-      std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kCpu,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      std::make_unique<CrosHealthdBusSamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kInfo),
+      std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kBus,
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   EXPECT_FALSE(bus_data.has_value());
 
@@ -428,8 +390,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::AudioResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> audio_data = CollectData(
+      std::make_unique<CrosHealthdAudioSamplerHandler>(),
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
   EXPECT_FALSE(audio_data.has_value());
 
   telemetry_info = cros_healthd::TelemetryInfo::New();
@@ -438,9 +401,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
           cros_healthd::ProbeError::New(cros_healthd::ErrorType::kFileReadError,
                                         ""));
   const absl::optional<MetricData> boot_performance_data =
-      CollectData(std::move(telemetry_info),
+      CollectData(std::make_unique<CrosHealthdBootPerformanceSamplerHandler>(),
+                  std::move(telemetry_info),
                   cros_healthd::ProbeCategoryEnum::kBootPerformance,
-                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+                  CrosHealthdSamplerHandler::MetricType::kTelemetry);
   EXPECT_FALSE(boot_performance_data.has_value());
 
   telemetry_info = cros_healthd::TelemetryInfo::New();
@@ -448,8 +412,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::InputResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> input_data = CollectData(
+      std::make_unique<CrosHealthdInputSamplerHandler>(),
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kInput,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
   EXPECT_FALSE(input_data.has_value());
 
   telemetry_info = cros_healthd::TelemetryInfo::New();
@@ -457,8 +422,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::DisplayResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> display_info_data = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kInfo),
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
   EXPECT_FALSE(display_info_data.has_value());
 
   telemetry_info = cros_healthd::TelemetryInfo::New();
@@ -466,13 +433,16 @@ TEST_F(CrosHealthdMetricSamplerTest, TestMojomError) {
       cros_healthd::DisplayResult::NewError(cros_healthd::ProbeError::New(
           cros_healthd::ErrorType::kFileReadError, ""));
   const absl::optional<MetricData> display_telemetry_data = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kTelemetry),
       std::move(telemetry_info), cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
   EXPECT_FALSE(display_telemetry_data.has_value());
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdAudioSamplerHandler>(),
       CreateAudioResult(CreateAudioInfo(
           /*output_mute=*/true,
           /*input_mute=*/true, /*output_volume=*/25,
@@ -480,7 +450,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
           /*input_gain=*/50, /*input_device_name=*/"airpods", /*underruns=*/2,
           /*severe_underruns=*/2)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -494,6 +464,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
 
 TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdAudioSamplerHandler>(),
       CreateAudioResult(CreateAudioInfo(
           /*output_mute=*/false,
           /*input_mute=*/false, /*output_volume=*/0,
@@ -501,7 +472,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
           /*input_gain=*/0, /*input_device_name=*/"", /*underruns=*/0,
           /*severe_underruns=*/0)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -515,11 +486,12 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
 
 TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceCommonBehavior) {
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateBootPerformanceResult(
+      CollectData(std::make_unique<CrosHealthdBootPerformanceSamplerHandler>(),
+                  CreateBootPerformanceResult(
                       kBootUpSeconds, kBootUpTimestampSeconds, kShutdownSeconds,
                       kShutdownTimestampSeconds, kShutdownReason),
                   cros_healthd::ProbeCategoryEnum::kBootPerformance,
-                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+                  CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -547,11 +519,12 @@ TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceCommonBehavior) {
 
 TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceShutdownReasonNA) {
   const absl::optional<MetricData> optional_result =
-      CollectData(CreateBootPerformanceResult(
+      CollectData(std::make_unique<CrosHealthdBootPerformanceSamplerHandler>(),
+                  CreateBootPerformanceResult(
                       kBootUpSeconds, kBootUpTimestampSeconds, kShutdownSeconds,
                       kShutdownTimestampSeconds, kShutdownReasonNotApplicable),
                   cros_healthd::ProbeCategoryEnum::kBootPerformance,
-                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+                  CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -592,9 +565,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalSingle) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdInputSamplerHandler>(),
       CreateInputResult(kSampleLibrary, std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -648,9 +622,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoInternalMultiple) {
   touchscreen_devices.push_back(std::move(input_device_second));
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdInputSamplerHandler>(),
       CreateInputResult(kSampleLibrary, std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -705,9 +680,10 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoExternal) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdInputSamplerHandler>(),
       CreateInputResult("SampleLibrary", std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_FALSE(optional_result.has_value());
 }
@@ -724,18 +700,21 @@ TEST_F(CrosHealthdMetricSamplerTest, TestTouchScreenInfoDisabled) {
   touchscreen_devices.push_back(std::move(input_device));
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdInputSamplerHandler>(),
       CreateInputResult("SampleLibrary", std::move(touchscreen_devices)),
       cros_healthd::ProbeCategoryEnum::kInput,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_FALSE(optional_result.has_value());
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestPrivacyScreenNormalTest) {
   const absl::optional<MetricData> optional_result =
-      CollectData(CreatePrivacyScreenResult(/*privacy_screen_supported*/ true),
+      CollectData(std::make_unique<CrosHealthdDisplaySamplerHandler>(
+                      CrosHealthdSamplerHandler::MetricType::kInfo),
+                  CreatePrivacyScreenResult(/*privacy_screen_supported*/ true),
                   cros_healthd::ProbeCategoryEnum::kDisplay,
-                  CrosHealthdMetricSampler::MetricType::kInfo);
+                  CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -746,15 +725,17 @@ TEST_F(CrosHealthdMetricSamplerTest, TestPrivacyScreenNormalTest) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoOnlyInternalDisplay) {
-  bool kPrivacyScreenSupported = true;
-  auto kDisplayWidth = 1080;
-  auto kDisplayHeight = 27282;
-  constexpr char kDisplayManufacture[] = "Samsung";
-  auto kDisplayManufactureYear = 2020;
-  auto kDisplayModelId = 54321;
-  constexpr char kDisplayName[] = "Internal display";
+  static constexpr bool kPrivacyScreenSupported = true;
+  static constexpr int kDisplayWidth = 1080;
+  static constexpr int kDisplayHeight = 27282;
+  static constexpr char kDisplayManufacture[] = "Samsung";
+  static constexpr int kDisplayManufactureYear = 2020;
+  static constexpr int kDisplayModelId = 54321;
+  static constexpr char kDisplayName[] = "Internal display";
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kInfo),
       CreateDisplayResult(CreateEmbeddedDisplay(
                               kPrivacyScreenSupported, kDisplayWidth,
                               kDisplayHeight, /*resolution_horizontal*/ 1000,
@@ -763,7 +744,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoOnlyInternalDisplay) {
                               kDisplayManufactureYear, kDisplayName),
                           std::vector<cros_healthd::ExternalDisplayInfoPtr>()),
       cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -785,35 +766,39 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoOnlyInternalDisplay) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoMultipleDisplays) {
-  bool kPrivacyScreenSupported = false;
-  auto kDisplayWidth = 1080;
-  auto kDisplayHeight = 27282;
-  constexpr char kDisplayManufacture[] = "Samsung";
-  auto kDisplayManufactureYear = 2020;
-  auto kDisplayModelId = 54321;
-  constexpr char kDisplayName[] = "Internal display";
+  static constexpr bool kPrivacyScreenSupported = false;
+  static constexpr int kDisplayWidth = 1080;
+  static constexpr int kDisplayHeight = 27282;
+  static constexpr char kDisplayManufacture[] = "Samsung";
+  static constexpr int kDisplayManufactureYear = 2020;
+  static constexpr int kDisplayModelId = 54321;
+  static constexpr char kExternalDisplayName[] = "External display";
+  static constexpr char kInternalDisplayName[] = "Internal display";
 
+  // Create display results
   std::vector<cros_healthd::ExternalDisplayInfoPtr> external_displays;
   external_displays.push_back(CreateExternalDisplay(
       kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
       /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
-      kDisplayModelId, kDisplayManufactureYear, kDisplayName));
+      kDisplayModelId, kDisplayManufactureYear, kExternalDisplayName));
   external_displays.push_back(CreateExternalDisplay(
       kDisplayWidth, kDisplayHeight, /*resolution_horizontal*/ 1000,
       /*resolution_vertical*/ 500, /*refresh_rate*/ 100, kDisplayManufacture,
-      kDisplayModelId, kDisplayManufactureYear, kDisplayName));
-
+      kDisplayModelId, kDisplayManufactureYear, kExternalDisplayName));
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kInfo),
       CreateDisplayResult(CreateEmbeddedDisplay(
                               kPrivacyScreenSupported, kDisplayWidth,
                               kDisplayHeight, /*resolution_horizontal*/ 1000,
                               /*resolution_vertical*/ 500, /*refresh_rate*/ 100,
                               kDisplayManufacture, kDisplayModelId,
-                              kDisplayManufactureYear, kDisplayName),
+                              kDisplayManufactureYear, kInternalDisplayName),
                           std::move(external_displays)),
       cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kInfo);
+      CrosHealthdSamplerHandler::MetricType::kInfo);
 
+  // assertions
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
 
@@ -825,7 +810,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoMultipleDisplays) {
   ASSERT_FALSE(result.info_data().privacy_screen_info().supported());
 
   auto internal_display = result.info_data().display_info().display_device(0);
-  EXPECT_EQ(internal_display.display_name(), kDisplayName);
+  EXPECT_EQ(internal_display.display_name(), kInternalDisplayName);
   EXPECT_EQ(internal_display.manufacturer(), kDisplayManufacture);
   EXPECT_EQ(internal_display.display_width(), kDisplayWidth);
   EXPECT_EQ(internal_display.display_height(), kDisplayHeight);
@@ -833,7 +818,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoMultipleDisplays) {
   EXPECT_EQ(internal_display.manufacture_year(), kDisplayManufactureYear);
 
   auto external_display_1 = result.info_data().display_info().display_device(1);
-  EXPECT_EQ(external_display_1.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_1.display_name(), kExternalDisplayName);
   EXPECT_EQ(external_display_1.manufacturer(), kDisplayManufacture);
   EXPECT_EQ(external_display_1.display_width(), kDisplayWidth);
   EXPECT_EQ(external_display_1.display_height(), kDisplayHeight);
@@ -841,7 +826,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayInfoMultipleDisplays) {
   EXPECT_EQ(external_display_1.manufacture_year(), kDisplayManufactureYear);
 
   auto external_display_2 = result.info_data().display_info().display_device(2);
-  EXPECT_EQ(external_display_2.display_name(), kDisplayName);
+  EXPECT_EQ(external_display_2.display_name(), kExternalDisplayName);
   EXPECT_EQ(external_display_2.manufacturer(), kDisplayManufacture);
   EXPECT_EQ(external_display_2.display_width(), kDisplayWidth);
   EXPECT_EQ(external_display_2.display_height(), kDisplayHeight);
@@ -856,6 +841,8 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryOnlyInternalDisplay) {
   constexpr char kDisplayName[] = "Internal display";
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kTelemetry),
       CreateDisplayResult(CreateEmbeddedDisplay(
                               /*privacy_screen_supported*/ false,
                               /*display_width*/ 1000,
@@ -866,7 +853,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryOnlyInternalDisplay) {
                               /*manufacture_year*/ 2020, kDisplayName),
                           std::vector<cros_healthd::ExternalDisplayInfoPtr>()),
       cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();
@@ -908,6 +895,8 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryMultipleDisplays) {
       /*manufacture_year*/ 2020, kDisplayName));
 
   const absl::optional<MetricData> optional_result = CollectData(
+      std::make_unique<CrosHealthdDisplaySamplerHandler>(
+          CrosHealthdSamplerHandler::MetricType::kTelemetry),
       CreateDisplayResult(CreateEmbeddedDisplay(
                               /*privacy_screen_supported*/ false,
                               /*display_width*/ 1000,
@@ -918,7 +907,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestDisplayTelemetryMultipleDisplays) {
                               /*manufacture_year*/ 2020, kDisplayName),
                           std::move(external_displays)),
       cros_healthd::ProbeCategoryEnum::kDisplay,
-      CrosHealthdMetricSampler::MetricType::kTelemetry);
+      CrosHealthdSamplerHandler::MetricType::kTelemetry);
 
   ASSERT_TRUE(optional_result.has_value());
   const MetricData& result = optional_result.value();

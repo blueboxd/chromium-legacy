@@ -380,9 +380,10 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
 
     @Override
     public int getVirtualKeyboardHeight() {
-        return mCompositorViewHolderSupplier.hasValue()
-                ? mCompositorViewHolderSupplier.get().getVirtualKeyboardHeight()
-                : 0;
+        if (mActivity == null) return 0;
+
+        View rootView = mActivity.getWindow().getDecorView().getRootView();
+        return mTab.getWindowAndroid().getKeyboardDelegate().calculateTotalKeyboardHeight(rootView);
     }
 
     @Override

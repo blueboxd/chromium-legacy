@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">ਸਾਈਟਾਂ ਨੂੰ ਗਤੀਸ਼ੀਲਤਾ ਸੈਂਸਰਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="5050380848339752099">ਇਹ ਸਾਈਟ ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਤੋਂ ਬਾਹਰ ਕਿਸੇ ਐਪ ਦੇ ਨਾਲ ਜਾਣਕਾਰੀ ਸਾਂਝੀ ਕਰਨ ਲੱਗੀ ਹੈ।</translation>
 <translation id="5063480226653192405">ਵਰਤੋਂ</translation>
-<translation id="5082281938627763039">ਇਹ <ph name="FPS_MEMBER" /> ਅਤੇ <ph name="FPS_OWNER" /> ਦੇ ਸਾਈਟਾਂ ਦੇ ਗਰੁੱਪ ਵਿਚਲੀਆਂ ਸਾਈਟਾਂ ਲਈ ਹੋਰ ਸਾਈਟ ਡਾਟਾ ਅਤੇ ਕੁਕੀਜ਼ ਨੂੰ ਮਿਟਾਉਂਦਾ ਹੈ।</translation>
 <translation id="5091013926750941408">ਮੋਬਾਈਲ ਸਾਈਟ</translation>
 <translation id="509133520954049755">ਡੈਸਕਟਾਪ ਦ੍ਰਿਸ਼ ਦੀ ਬੇਨਤੀ ਕਰੋ</translation>
 <translation id="5100237604440890931">ਸਮੇਟਿਆ ਗਿਆ - ਵਿਸਤਾਰ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ।</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">ਉੱਪਰ ਤੋਂ ਘਸੀਟੋ ਅਤੇ ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਣ ਲਈ ਪਿੱਛੇ ਜਾਓ ਬਟਨ ਨੂੰ ਸਪਰਸ਼ ਕਰੋ।</translation>
 <translation id="5300589172476337783">ਦਿਖਾਓ</translation>
 <translation id="5301954838959518834">ਠੀਕ, ਸਮਝ ਲਿਆ</translation>
-<translation id="5313967007315987356">ਸਾਈਟ ਜੋੜੋ</translation>
 <translation id="5317780077021120954">ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="5335288049665977812">ਸਾਈਟਾਂ ਨੂੰ JavaScript ਚਲਾਉਣ ਦੀ ਆਗਿਆ ਦਿਓ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="534295439873310000">NFC ਡੀਵਾਈਸਾਂ</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="5922967540311291836">ਤੀਜੀ-ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ:</translation>
 <translation id="5939518447894949180">ਰੀਸੈਟ ਕਰੋ</translation>
+<translation id="5968921426641056619">ਵੈੱਬ ਪਤਾ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="5975083100439434680">ਜ਼ੂਮ ਘਟਾਓ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ਆਪਣੇ ਡੀਵਾਈਸ ਤੱਕ ਇਸ ਸਾਈਟ ਦੀ ਪਹੁੰਚ ਨੂੰ ਕੰਟਰੋਲ ਕਰੋ</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ਨੂੰ ਚੁਣਿਆ ਗਿਆ</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ਅਤੇ <ph name="PERMISSION_2" /> ਦੀ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਗਈ</translation>
 <translation id="7302486331832100261">ਆਮ ਤੌਰ 'ਤੇ ਤੁਸੀਂ ਸੂਚਨਾਵਾਂ ਨੂੰ ਬਲਾਕ ਕਰਦੇ ਹੋ। ਇਜਾਜ਼ਤ ਦੇਣ ਲਈ, ਵੇਰਵਿਆਂ 'ਤੇ ਟੈਪ ਕਰੋ।</translation>
+<translation id="7366415735885268578">ਕੋਈ ਸਾਈਟ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="7383715096023715447"><ph name="DOMAIN" /> ਲਈ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="7423098979219808738">ਪਹਿਲਾਂ ਪੁੱਛੋ</translation>
 <translation id="7423538860840206698">ਕਲਿੱਪਬੋਰਡ ਪੜ੍ਹਨ ਤੋਂ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">ਇਹ ਸਾਈਟ ਦਖਲਅੰਦਾਜ਼ੀ ਜਾਂ ਗੁਮਰਾਹ ਕਰਨ ਵਾਲੇ ਵਿਗਿਆਪਨ ਦਿਖਾਉਂਦੀ ਹੈ</translation>
 <translation id="8394832520002899662">ਸਾਈਟ 'ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="8409345997656833551">ਕਿਸੇ ਲੇਖ ਲਈ ਸਰਲੀਕਿਰਤ ਦ੍ਰਿਸ਼ ਦੀ ਸੁਵਿਧਾ ਉਪਲਬਧ ਹੋਣ 'ਤੇ ਸੂਚਨਾ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
+<translation id="8423565414844018592">ਲਿਖਤ ਸਕੇਲਿੰਗ ਨੂੰ <ph name="TEXT_SCALING" /> 'ਤੇ ਸੈੱਟ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8428213095426709021">ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8441146129660941386">ਪਿੱਛੇ ਵੱਲ ਨੂੰ ਲੈ ਜਾਓ</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> ਨੂੰ ਆਪਣੇ ਟਿਕਾਣੇ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਦੇਣ ਲਈ, <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਟਿਕਾਣਾ ਵੀ ਚਾਲੂ ਕਰੋ।</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">ਇਸ ਡੀਵਾਈਸ ਲਈ NFC ਬੰਦ ਹੈ। ਇਸਨੂੰ <ph name="BEGIN_LINK" />Android ਸੈਟਿੰਗਾਂ<ph name="END_LINK" /> ਵਿੱਚ ਚਾਲੂ ਕਰੋ।</translation>
 <translation id="8928445016601307354">ਸਾਈਟਾਂ ਨੂੰ NFC ਡੀਵਾਈਸਾਂ 'ਤੇ ਜਾਣਕਾਰੀ ਦੇਖਣ ਅਤੇ ਬਦਲਣ ਤੋਂ ਬਲਾਕ ਕਰੋ</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">ਕਿਸੇ ਖਾਸ ਸਾਈਟ ਲਈ ਕੁਕੀਜ਼ ਬਲਾਕ ਕਰੋ।</translation>
 <translation id="8959122750345127698">ਨੈਵੀਗੇਸ਼ਨ ਨਾਪਹੁੰਚਯੋਗ ਹੈ: <ph name="URL" /></translation>
 <translation id="8986362086234534611">ਭੁੱਲਣਾ</translation>

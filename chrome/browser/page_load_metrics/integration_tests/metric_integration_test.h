@@ -93,10 +93,25 @@ class MetricIntegrationTest : public InProcessBrowserTest {
   // metric name and value.
   void ExpectUKMPageLoadMetric(base::StringPiece metric_name,
                                int64_t expected_value);
+  void ExpectUKMPageLoadMetricGreaterThan(base::StringPiece metric_name,
+                                          int64_t expected_value);
+  void ExpectUKMPageLoadMetricLowerThan(base::StringPiece metric_name,
+                                        int64_t expected_value);
 
+  int64_t GetUKMPageLoadMetricFlagSet(base::StringPiece metric_name);
+
+  // The expected being true means ALL the bits present in the expected
+  // flag_set should also be present in the flag_set retrieved from the ukm
+  // metrics.
+  // The expected being false means NONE of the bits present in the expected
+  // flag_set should be present in the flag_set retrieved from the ukm
+  // metrics.
   void ExpectUKMPageLoadMetricFlagSet(base::StringPiece metric_name,
                                       uint32_t flag_set,
                                       bool expected);
+
+  void ExpectUKMPageLoadMetricFlagSetExactMatch(base::StringPiece metric_name,
+                                                uint32_t flag_set);
 
   void ExpectUKMPageLoadMetricNear(base::StringPiece metric_name,
                                    double expected_value,
@@ -113,6 +128,11 @@ class MetricIntegrationTest : public InProcessBrowserTest {
                                   double expected_value,
                                   double below,
                                   double above);
+
+  // Checks that the UMA bucket count precisely matches the provided value.
+  void ExpectUniqueUMABucketCount(base::StringPiece metric_name,
+                                  base::Histogram::Sample sample,
+                                  base::Histogram::Count count);
 
   // Checks that we have a single UMA entry.
   void ExpectUniqueUMA(base::StringPiece metric_name);
@@ -132,6 +152,8 @@ class MetricIntegrationTest : public InProcessBrowserTest {
       const std::string& content,
       base::TimeDelta delay,
       const net::test_server::HttpRequest& request);
+
+  const ukm::mojom::UkmEntryPtr GetEntry();
 
   absl::optional<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
   absl::optional<base::HistogramTester> histogram_tester_;

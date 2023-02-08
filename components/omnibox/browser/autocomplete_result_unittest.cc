@@ -139,7 +139,10 @@ class AutocompleteResultTest : public testing::Test {
     template_url_service_->Load();
   }
 
-  void TearDown() override { task_environment_.RunUntilIdle(); }
+  void TearDown() override {
+    task_environment_.RunUntilIdle();
+    AutocompleteResult::ClearDontCopyDoneProvidersForTesting();
+  }
 
   // Configures |match| from |data|.
   void PopulateAutocompleteMatch(const TestData& data,
@@ -657,23 +660,14 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesSkipsSpecializedSuggestions) {
                                                     result, std::size(result)));
 }
 
-// Enables `kAutocompleteStabilityDontCopyDoneProviders`. Can't be done locally
-// within the test, as the param value is cached by a static local variable.
-class AutocompleteResultTest_DontCopyDoneProviders
-    : public AutocompleteResultTest {
- public:
-  AutocompleteResultTest_DontCopyDoneProviders() {
-    feature_list.InitAndEnableFeatureWithParameters(
-        omnibox::kAutocompleteStability,
-        {{OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.name,
-          "true"}});
-  }
-  base::test::ScopedFeatureList feature_list;
-};
-
 // Tests that transferred matches do not include the specialized match types.
-TEST_F(AutocompleteResultTest_DontCopyDoneProviders,
-       TransferOldMatchesSkipDoneProviders) {
+TEST_F(AutocompleteResultTest, TransferOldMatchesSkipDoneProviders) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kAutocompleteStability,
+      {{OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.name,
+        "true"}});
+
   TestData last[] = {
       {0, 1, 500},  // Suggestion from done provider
       {1, 2, 400},  // Suggestion for not-done provider
@@ -2326,76 +2320,6 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     };
     for (size_t i = 0; i < result.size(); ++i)
       EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
-  }
-}
-
-namespace {
-
-bool EqualClassifications(const std::vector<ACMatchClassification>& lhs,
-                          const std::vector<ACMatchClassification>& rhs) {
-  if (lhs.size() != rhs.size())
-    return false;
-  for (size_t n = 0; n < lhs.size(); ++n)
-    if (lhs[n].style != rhs[n].style || lhs[n].offset != rhs[n].offset)
-      return false;
-  return true;
-}
-
-}  // namespace
-
-TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
-  struct TestData {
-    AutocompleteMatchType::Type type;
-    std::string before_contents, after_contents;
-    std::vector<ACMatchClassification> before_contents_class;
-    std::vector<ACMatchClassification> after_contents_class;
-  } cases[] = {
-      // It should not touch this, since it's not a tail suggestion.
-      {
-          AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-          "this is a test",
-          "this is a test",
-          {{0, ACMatchClassification::NONE}, {9, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::NONE}, {9, ACMatchClassification::MATCH}},
-      },
-      // Make sure it finds this tail suggestion, and prepends appropriately.
-      {
-          AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
-          "a recording",
-          "... a recording",
-          {{0, ACMatchClassification::MATCH}},
-          {{0, ACMatchClassification::NONE}, {4, ACMatchClassification::MATCH}},
-      },
-  };
-  ACMatches matches;
-  for (const auto& test_case : cases) {
-    AutocompleteMatch match;
-    match.type = test_case.type;
-    match.contents = base::UTF8ToUTF16(test_case.before_contents);
-    for (const auto& classification : test_case.before_contents_class)
-      match.contents_class.push_back(classification);
-    matches.push_back(match);
-  }
-  // Tail suggestion needs one-off initialization.
-  matches[1].RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "9");
-  matches[1].RecordAdditionalInfo(kACMatchPropertySuggestionText,
-                                  "this is a test");
-  AutocompleteResult result;
-  result.AppendMatches(matches);
-  result.SetTailSuggestContentPrefixes();
-  for (size_t i = 0; i < std::size(cases); ++i) {
-    EXPECT_EQ(result.match_at(i)->contents,
-              base::UTF8ToUTF16(cases[i].after_contents));
-    EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,
-                                     cases[i].after_contents_class));
-  }
-  // Run twice and make sure that it doesn't re-prepend ellipsis.
-  result.SetTailSuggestContentPrefixes();
-  for (size_t i = 0; i < std::size(cases); ++i) {
-    EXPECT_EQ(result.match_at(i)->contents,
-              base::UTF8ToUTF16(cases[i].after_contents));
-    EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,
-                                     cases[i].after_contents_class));
   }
 }
 

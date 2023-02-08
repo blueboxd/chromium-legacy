@@ -34,8 +34,7 @@ renderer processes require almost no DEX.
 Chrome's splits look like:
 
 ```
-base.apk <-- chrome.apk <-- autofill_assistant.apk
-                        <-- image_editor.apk
+base.apk <-- chrome.apk <-- image_editor.apk
                         <-- feedv2.apk
                         <-- ...
 ```
@@ -141,6 +140,18 @@ System.load(BundleUtils.getNativeLibraryPath("foo", "mysplitsname"));
 ```
 
 [b/171269960]: https://issuetracker.google.com/171269960
+
+### System.loadLibrary() Unusable from Split if Library depends on Another Loaded by Base Split
+
+Also tracked by [b/171269960], maybe related to linker namespaces. If a split
+tries to load `libfeature.so`, and `libfeature.so` has a `DT_NEEDED` entry for
+`libbase.so`, and `libbase.so` is loaded by the base split, then the load will
+fail.
+
+**Work-around:**
+
+Have base split load libraries from within splits. Proxy all JNI calls through
+a class that exists in the base split.
 
 ### System.loadLibrary() Broken for Libraries in Splits on System Image
 
@@ -281,8 +292,12 @@ for classes that do not exist in the application's ClassLoader. The custom
 ClassLoader is passed to `Bundle` instances in
 `ChromeBaseAppCompatActivity.onRestoreInstanceState()`.
 
+Having Android Framework call `Bundle.setClassLoader()` is tracked in
+[b/260574161].
+
 [`onSaveInstanceState`]: https://source.chromium.org/search?q=symbol:ChromeBaseAppCompatActivity.onSaveInstanceState&ss=chromium
 [a custom ClassLoader]: https://source.chromium.org/search?q=symbol:ChromeBaseAppCompatActivity.getClassLoader&ss=chromium
+[b/260574161]: https://issuetracker.google.com/260574161
 
 ### Calling Methods Across a Split Boundary
 

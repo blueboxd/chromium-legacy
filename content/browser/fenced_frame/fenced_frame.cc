@@ -12,6 +12,7 @@
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -43,8 +44,7 @@ FrameTreeNode* CreateDelegateFrameTreeNode(
 
 FencedFrame::FencedFrame(
     base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
-    blink::mojom::FencedFrameMode mode,
-    const base::UnguessableToken& devtools_frame_token)
+    blink::mojom::FencedFrameMode mode)
     : web_contents_(static_cast<WebContentsImpl*>(
           WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
@@ -60,8 +60,7 @@ FencedFrame::FencedFrame(
                                       /*render_widget_delegate=*/web_contents_,
                                       /*manager_delegate=*/web_contents_,
                                       /*page_delegate=*/web_contents_,
-                                      FrameTree::Type::kFencedFrame,
-                                      devtools_frame_token)),
+                                      FrameTree::Type::kFencedFrame)),
       mode_(mode) {}
 
 FencedFrame::~FencedFrame() {
@@ -110,6 +109,14 @@ void FencedFrame::Navigate(const GURL& url,
   // need to provide a `source_site_instance`.
   url::Origin initiator_origin;
 
+  // TODO(yaoxia): implement this. This information will be propagated to the
+  // `NavigationHandle`. Skip propagating here is fine for now, because we are
+  // currently only interested navigation that occurs in the outermost RFH.
+  blink::mojom::NavigationInitiatorActivationAndAdStatus
+      initiator_activation_and_ad_status =
+          blink::mojom::NavigationInitiatorActivationAndAdStatus::
+              kDidNotStartWithTransientActivation;
+
   inner_root->navigator().NavigateFromFrameProxy(
       inner_root->current_frame_host(), validated_url,
       /*initiator_frame_token=*/nullptr,
@@ -121,7 +128,8 @@ void FencedFrame::Navigate(const GURL& url,
       /*blob_url_loader_factory=*/nullptr,
       network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
       /*is_form_submission=*/false,
-      /*impression=*/absl::nullopt, navigation_start_time,
+      /*impression=*/absl::nullopt, initiator_activation_and_ad_status,
+      navigation_start_time,
       /*is_embedder_initiated_fenced_frame_navigation=*/true);
 }
 
@@ -144,10 +152,16 @@ FrameTree* FencedFrame::LoadingTree() {
   return web_contents_->LoadingTree();
 }
 
+void FencedFrame::SetFocusedFrame(FrameTreeNode* node,
+                                  SiteInstanceGroup* source) {
+  web_contents_->SetFocusedFrame(node, source);
+}
+
 RenderFrameProxyHost*
 FencedFrame::InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
     blink::mojom::RemoteFrameInterfacesFromRendererPtr remote_frame_interfaces,
-    const blink::RemoteFrameToken& frame_token) {
+    const blink::RemoteFrameToken& frame_token,
+    const base::UnguessableToken& devtools_frame_token) {
   DCHECK(remote_frame_interfaces);
   DCHECK(outer_delegate_frame_tree_node_);
 
@@ -167,9 +181,11 @@ FencedFrame::InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
   // via the mojom.LocalMainFrameHost.ShowCreatedWindow(). This flow does not
   // apply for fenced frames, portals, and prerendered nested FrameTrees, hence
   // the decision to mark it as false.
-  frame_tree_->Init(site_instance.get(), /*renderer_initiated_creation=*/false,
-                    /*main_frame_name=*/"", /*opener_for_origin=*/nullptr,
-                    frame_policy);
+  frame_tree_->Init(site_instance.get(),
+                    /*renderer_initiated_creation=*/false,
+                    /*main_frame_name=*/"",
+                    /*opener_for_origin=*/nullptr, frame_policy,
+                    devtools_frame_token);
   // Note that pending frame policy will be passed as `frame_policy` in
   // `replication_state` in `mojom::CreateFrameParams`.
   // See `RenderFrameHostImpl::CreateRenderFrame`.
@@ -270,5 +286,14 @@ WebContents* FencedFrame::DeprecatedGetWebContents() {
 }
 
 void FencedFrame::UpdateOverridingUserAgent() {}
+
+void FencedFrame::DidChangeFramePolicy(const blink::FramePolicy& frame_policy) {
+  FrameTreeNode* inner_root = frame_tree_->root();
+  const blink::FramePolicy& current_frame_policy =
+      inner_root->pending_frame_policy();
+  inner_root->SetPendingFramePolicy(blink::FramePolicy(
+      current_frame_policy.sandbox_flags, frame_policy.container_policy,
+      current_frame_policy.required_document_policy));
+}
 
 }  // namespace content

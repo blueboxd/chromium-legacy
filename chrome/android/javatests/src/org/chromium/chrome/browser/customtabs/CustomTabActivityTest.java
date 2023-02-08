@@ -37,7 +37,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -108,9 +107,9 @@ import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.verification.ChromeOriginVerifier;
 import org.chromium.chrome.browser.contextmenu.ContextMenuCoordinator;
-import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker.ClientIdentifierType;
 import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils.OnFinishedForTest;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
+import org.chromium.chrome.browser.customtabs.features.sessionrestore.SessionRestoreUtils.ClientIdentifierType;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -447,13 +446,8 @@ public class CustomTabActivityTest {
                                    .shouldEmphasizeHttpsScheme());
         // TODO(https://crbug.com/871805): Use helper class to determine whether dark status icons
         // are supported.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            assertEquals(expectedColor,
-                    mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
-        } else {
-            assertEquals(ColorUtils.getDarkenedColorForStatusBar(expectedColor),
-                    mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
-        }
+        assertEquals(expectedColor,
+                mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
 
         MenuButton menuButtonView = toolbarView.findViewById(R.id.menu_button_wrapper);
         assertEquals(ColorUtils.shouldUseLightForegroundOnBackground(expectedColor)

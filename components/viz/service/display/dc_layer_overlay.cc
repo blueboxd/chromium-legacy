@@ -45,7 +45,7 @@ constexpr int kDCLayerFramesDelayedBeforeOverlay = 5;
 // so don't remove entries and make sure to update enums.xml if it changes.
 enum DCLayerResult {
   DC_LAYER_SUCCESS = 0,
-  DC_LAYER_FAILED_UNSUPPORTED_QUAD [[deprecated]] = 1,  // not recorded
+  DC_LAYER_FAILED_UNSUPPORTED_QUAD = 1,  // not recorded
   DC_LAYER_FAILED_QUAD_BLEND_MODE = 2,
   DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE = 3,
   DC_LAYER_FAILED_OCCLUDED [[deprecated]] = 4,
@@ -230,6 +230,7 @@ void FromTextureQuad(const TextureDrawQuad* quad,
   dc_layer->color_space = gfx::ColorSpace::CreateSRGB();
 
   // Both color space and protected_video_type are hard-coded for stream video.
+  // TODO(crbug.com/1384544): Consider using quad->protected_video_type.
   if (quad->is_stream_video) {
     dc_layer->color_space = gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT709,
                                             gfx::ColorSpace::TransferID::BT709);

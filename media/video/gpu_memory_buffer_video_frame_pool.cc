@@ -55,15 +55,6 @@
 
 namespace media {
 
-BASE_FEATURE(kMultiPlaneSoftwareVideoSharedImages,
-             "MultiPlaneSoftwareVideoSharedImages",
-#if BUILDFLAG(IS_MAC)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
-
 bool GpuMemoryBufferVideoFramePool::MultiPlaneVideoSharedImagesEnabled() {
   return base::FeatureList::IsEnabled(kMultiPlaneSoftwareVideoSharedImages);
 }
@@ -213,7 +204,8 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
       const gfx::Size& natural_size,
       const gfx::ColorSpace& color_space,
       base::TimeDelta timestamp,
-      bool allow_i420_overlay);
+      bool allow_i420_overlay,
+      const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
 
   // Return true if |resources| can be used to represent a frame for
   // specific |format| and |size|.
@@ -1114,7 +1106,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDoneOnMediaThread(
           frame_resources, CodedSize(video_frame.get(), output_format_),
           gfx::Rect(video_frame->visible_rect().size()),
           video_frame->natural_size(), video_frame->ColorSpace(),
-          video_frame->timestamp(), video_frame->metadata().allow_overlay);
+          video_frame->timestamp(), video_frame->metadata().allow_overlay,
+          video_frame->ycbcr_info());
   if (!frame) {
     CompleteCopyRequestAndMaybeStartNextCopy(std::move(video_frame));
     return;
@@ -1138,7 +1131,8 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
         const gfx::Size& natural_size,
         const gfx::ColorSpace& color_space,
         base::TimeDelta timestamp,
-        bool allow_i420_overlay) {
+        bool allow_i420_overlay,
+        const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   gpu::SharedImageInterface* sii = gpu_factories_->SharedImageInterface();
   if (!sii) {
@@ -1228,11 +1222,18 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
 
   frame->set_color_space(color_space);
 
+  if (ycbcr_info) {
+    frame->set_ycbcr_info(ycbcr_info);
+  }
+
   bool allow_overlay = false;
 #if BUILDFLAG(IS_WIN)
-  // Windows direct composition path only supports dual GMB NV12 video overlays.
+  // Windows direct composition path only supports NV12 video overlays. We use
+  // separate shared images for the planes for both single and dual NV12 GMBs.
   allow_overlay = (output_format_ ==
-                   GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB);
+                   GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB) ||
+                  (output_format_ ==
+                   GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB);
 #else
   switch (output_format_) {
     case GpuVideoAcceleratorFactories::OutputFormat::I420:
@@ -1243,7 +1244,7 @@ scoped_refptr<VideoFrame> GpuMemoryBufferVideoFramePool::PoolImpl::
       allow_overlay = true;
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB:
-      // Only used on Windows where we can't use single NV12 textures.
+      // Only used on configurations where we can't support overlays.
       break;
     case GpuVideoAcceleratorFactories::OutputFormat::XR30:
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:

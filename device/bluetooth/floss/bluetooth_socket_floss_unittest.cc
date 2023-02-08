@@ -31,6 +31,10 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "device/bluetooth/floss/fake_floss_admin_client.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 namespace {
 
 using ::device::BluetoothAdapter;
@@ -53,6 +57,10 @@ class BluetoothSocketFlossTest : public testing::Test {
     auto fake_floss_battery_manager_client =
         std::make_unique<FakeFlossBatteryManagerClient>();
 
+#if BUILDFLAG(IS_CHROMEOS)
+    auto fake_floss_admin_client = std::make_unique<FakeFlossAdminClient>();
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
     fake_floss_manager_client_ = fake_floss_manager_client.get();
     fake_floss_socket_manager_ = fake_floss_socket_manager.get();
     fake_floss_lescan_client_ = fake_floss_lescan_client.get();
@@ -70,6 +78,9 @@ class BluetoothSocketFlossTest : public testing::Test {
         std::move(fake_floss_advertiser_client));
     dbus_setter->SetFlossBatteryManagerClient(
         std::move(fake_floss_battery_manager_client));
+#if BUILDFLAG(IS_CHROMEOS)
+    dbus_setter->SetFlossAdminClient(std::make_unique<FakeFlossAdminClient>());
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
     InitializeAndEnableAdapter();
   }
@@ -109,7 +120,7 @@ class BluetoothSocketFlossTest : public testing::Test {
                              const device::BluetoothDevice* device,
                              scoped_refptr<device::BluetoothSocket> socket) {
     success_callback_count_++;
-    last_socket_ = socket;
+    last_socket_ = std::move(socket);
     std::move(exitloop).Run();
   }
 
@@ -117,7 +128,7 @@ class BluetoothSocketFlossTest : public testing::Test {
       base::OnceClosure exitloop,
       scoped_refptr<device::BluetoothSocket> socket) {
     success_callback_count_++;
-    last_socket_ = socket;
+    last_socket_ = std::move(socket);
     std::move(exitloop).Run();
   }
 
@@ -125,7 +136,7 @@ class BluetoothSocketFlossTest : public testing::Test {
       base::OnceClosure exitloop,
       scoped_refptr<device::BluetoothSocket> socket) {
     success_callback_count_++;
-    last_socket_ = socket;
+    last_socket_ = std::move(socket);
     std::move(exitloop).Run();
   }
 
@@ -157,11 +168,12 @@ class BluetoothSocketFlossTest : public testing::Test {
     last_socket_ = nullptr;
   }
 
-  void DisconnectSocket(const scoped_refptr<device::BluetoothSocket>& socket) {
+  void DisconnectSocket(device::BluetoothSocket* socket) {
     base::RunLoop run_loop;
     socket->Disconnect(base::BindOnce(
         &BluetoothSocketFlossTest::DisconnectSuccessCallback,
         weak_ptr_factory_.GetWeakPtr(), run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
   }
 
   base::test::TaskEnvironment task_environment_;
@@ -209,7 +221,7 @@ TEST_F(BluetoothSocketFlossTest, Connect) {
   EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of socket.
-  scoped_refptr<device::BluetoothSocket> socket = last_socket_;
+  scoped_refptr<device::BluetoothSocket> socket = std::move(last_socket_);
   ClearCounters();
 
   auto write_buffer = base::MakeRefCounted<net::StringIOBuffer>("test");
@@ -231,11 +243,12 @@ TEST_F(BluetoothSocketFlossTest, Connect) {
   ClearCounters();
 
   // Clean up the socket
-  DisconnectSocket(socket);
+  DisconnectSocket(socket.get());
+  socket = nullptr;
 }
 
 // TODO (b/243420879) - Fix flakiness to re-enable
-TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
+TEST_F(BluetoothSocketFlossTest, Listen) {
   // Get socket id for next returned socket.
   FlossSocketManager::SocketId id = fake_floss_socket_manager_->GetNextId();
 
@@ -259,7 +272,8 @@ TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
   EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of server socket.
-  scoped_refptr<device::BluetoothSocket> server_socket = last_socket_;
+  scoped_refptr<device::BluetoothSocket> server_socket =
+      std::move(last_socket_);
   ClearCounters();
 
   // Mark the socket as ready. This should trigger an accept.
@@ -290,10 +304,11 @@ TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
   EXPECT_TRUE(last_socket_.get() != nullptr);
 
   // Take ownership of the client socket and close it.
-  scoped_refptr<device::BluetoothSocket> client_socket = last_socket_;
+  scoped_refptr<device::BluetoothSocket> client_socket =
+      std::move(last_socket_);
   ClearCounters();
 
-  DisconnectSocket(client_socket);
+  DisconnectSocket(client_socket.get());
   client_socket = nullptr;
   ClearCounters();
 
@@ -327,8 +342,8 @@ TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
     EXPECT_TRUE(last_socket_.get() != nullptr);
 
     // Disconnect last connecting socket
-    client_socket = last_socket_;
-    DisconnectSocket(client_socket);
+    client_socket = std::move(last_socket_);
+    DisconnectSocket(client_socket.get());
     client_socket = nullptr;
     last_socket_ = nullptr;
   }
@@ -364,7 +379,7 @@ TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
   }
 
   // Clean up server socket at end.
-  DisconnectSocket(server_socket);
+  DisconnectSocket(server_socket.get());
 }
 
 }  // namespace floss

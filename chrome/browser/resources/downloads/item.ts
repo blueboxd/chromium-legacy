@@ -20,9 +20,9 @@ import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
 import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
-import {HTMLEscape} from 'chrome://resources/js/util.js';
+import {htmlEscape} from 'chrome://resources/js/util_ts.js';
 import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserProxy} from './browser_proxy.js';
@@ -240,7 +240,7 @@ export class DownloadsItemElement extends DownloadsItemElementBase {
 
     const url = `chrome://extensions/?id=${this.data.byExtId}`;
     const name = this.data.byExtName;
-    return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
+    return loadTimeData.getStringF('controlledByUrl', url, htmlEscape(name));
   }
 
   private computeControlRemoveFromListAriaLabel_(): string {

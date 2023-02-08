@@ -600,6 +600,7 @@ class CORE_EXPORT HTMLMediaElement
   void SetPowerExperimentState(bool enabled) override;
   void SetAudioSinkId(const String&) override;
   void SuspendForFrameClosed() override;
+  void RequestMediaRemoting() override {}
 
   void LoadTimerFired(TimerBase*);
   void ProgressEventTimerFired();
@@ -853,6 +854,9 @@ class CORE_EXPORT HTMLMediaElement
 
   // Whether the player disables the Remote Playback feature.
   bool is_remote_playback_disabled_ = false;
+  // Whether the player is rendering remotely.
+  bool is_remote_rendering_ = false;
+  WebString remote_device_friendly_name_;
   media::AudioCodec audio_codec_ = media::AudioCodec::kUnknown;
   media::VideoCodec video_codec_ = media::VideoCodec::kUnknown;
 
@@ -978,8 +982,7 @@ class CORE_EXPORT HTMLMediaElement
       HeapMojoAssociatedRemote<media::mojom::blink::MediaPlayerHost>>>
       media_player_host_remote_;
 
-  // Multiple objects outside of the renderer process can register as observers,
-  // so we need to store the remotes in a set here.
+  // Note: There's only ever one entry in this set.
   Member<DisallowNewWrapper<
       HeapMojoAssociatedRemoteSet<media::mojom::blink::MediaPlayerObserver>>>
       media_player_observer_remote_set_;

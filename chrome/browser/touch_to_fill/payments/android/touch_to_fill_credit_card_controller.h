@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
@@ -43,13 +44,18 @@ class TouchToFillCreditCardController
   // Hides the surface if it is currently shown.
   void Hide();
 
+  // TouchToFillCreditCardViewController:
+  void OnDismissed(JNIEnv* env) override;
+  void ScanCreditCard(JNIEnv* env) override;
+  void ShowCreditCardSettings(JNIEnv* env) override;
+  void SuggestionSelected(
+      JNIEnv* env,
+      base::android::JavaParamRef<jstring> unique_id) override;
+
  private:
   // Called after the surface gets shown or hidden.
   void SetShouldSuppressKeyboard(bool suppress);
 
-  // TouchToFillCreditCardViewController:
-  // Called whenever the surface gets hidden (regardless of the cause).
-  void OnDismissed(JNIEnv* env) override;
   // Gets or creates the Java counterpart.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
 

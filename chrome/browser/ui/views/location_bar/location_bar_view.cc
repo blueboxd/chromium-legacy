@@ -21,7 +21,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -187,19 +186,12 @@ LocationBarView::LocationBarView(Browser* browser,
              !v->GetOmniboxPopupView()->IsOpen();
     });
 
-    views::FocusRing::Get(this)->SetPathGenerator(
-        std::make_unique<views::PillHighlightPathGenerator>());
+    views::InstallPillHighlightPathGenerator(this);
 
 #if BUILDFLAG(IS_MAC)
     geolocation_permission_observation_.Observe(
         g_browser_process->platform_part()->geolocation_manager());
 #endif
-
-    if (base::FeatureList::IsEnabled(safe_browsing::kAccuracyTipsFeature)) {
-      if (auto* accuracy_service =
-              AccuracyServiceFactory::GetForProfile(profile))
-        accuracy_service_observation_.Observe(accuracy_service);
-    }
   }
 }
 
@@ -345,12 +337,10 @@ void LocationBarView::Init() {
       PageActionIconType::kVirtualCardManualFallback);
   params.types_enabled.push_back(PageActionIconType::kVirtualCardEnroll);
 
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAddressProfileSavePrompt)) {
-    // TODO(crbug.com/1167060): Place this in the proper order upon having
-    // final mocks.
-    params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
-  }
+  // TODO(crbug.com/1167060): Place this in the proper order upon having final
+  // mocks.
+  params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
+
   if (browser_) {
     if (sharing_hub::HasPageAction(profile_, is_popup_mode_))
       params.types_enabled.push_back(PageActionIconType::kSharingHub);
@@ -903,18 +893,12 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
   return delegate_->GetContentSettingBubbleModelDelegate();
 }
 
+#if BUILDFLAG(IS_MAC)
 void LocationBarView::OnSystemPermissionUpdated(
     device::LocationSystemPermissionStatus new_status) {
   UpdateContentSettingsIcons();
 }
-
-void LocationBarView::OnAccuracyTipShown() {
-  location_icon_view_->Update(/*suppress_animations=*/false);
-}
-
-void LocationBarView::OnAccuracyTipClosed() {
-  location_icon_view_->Update(/*suppress_animations=*/false);
-}
+#endif
 
 WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
@@ -1431,7 +1415,7 @@ bool LocationBarView::ShowPageInfoDialog() {
     return false;
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  if (!entry || entry->IsInitialEntry())
+  if (entry->IsInitialEntry())
     return false;
 
   DCHECK(GetWidget());

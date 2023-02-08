@@ -32,7 +32,6 @@
 #include "base/syslog_logging.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -433,10 +432,6 @@ ExtensionService::ExtensionService(Profile* profile,
   SetCurrentDeveloperMode(
       util::GetBrowserContextId(profile),
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode));
-
-  // How long is the path to the Extensions directory?
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
-                              install_directory_.value().length(), 1, 500, 100);
 }
 
 PendingExtensionManager* ExtensionService::pending_extension_manager() {
@@ -446,6 +441,10 @@ PendingExtensionManager* ExtensionService::pending_extension_manager() {
 CorruptedExtensionReinstaller*
 ExtensionService::corrupted_extension_reinstaller() {
   return &corrupted_extension_reinstaller_;
+}
+
+base::WeakPtr<ExtensionServiceInterface> ExtensionService::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 ExtensionService::~ExtensionService() {
@@ -558,10 +557,6 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
     }
   }
   MaybeFinishDelayedInstallations();
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> delayed_info2(
-      extension_prefs_->GetAllDelayedInstallInfo());
-  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateOnLoad",
-                           delayed_info2->size() - delayed_info->size());
 }
 
 scoped_refptr<CrxInstaller> ExtensionService::CreateUpdateInstaller(
@@ -728,8 +723,9 @@ void ExtensionService::LoadExtensionForReload(
         UnpackedInstaller::Create(this);
     unpacked_installer->set_be_noisy_on_failure(load_error_behavior ==
                                                 LoadErrorBehavior::kNoisy);
-    unpacked_installer->set_completion_callback(base::BindOnce(
-        &ExtensionService::OnUnpackedReloadFailure, AsWeakPtr()));
+    unpacked_installer->set_completion_callback(
+        base::BindOnce(&ExtensionService::OnUnpackedReloadFailure,
+                       AsExtensionServiceWeakPtr()));
     unpacked_installer->Load(path);
   }
 }
@@ -1295,7 +1291,6 @@ void ExtensionService::CheckForExternalUpdates() {
 
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::CheckForExternalUpdates");
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.CheckForExternalUpdatesTime");
 
   // Note that this installation is intentionally silent (since it didn't
   // go through the front-end).  Extensions that are registered in this
@@ -1701,10 +1696,6 @@ void ExtensionService::OnExtensionInstalled(
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location());
     RecordPermissionMessagesHistogram(extension, "Install");
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateType", extension->GetType(),
-                              100);
-    UMA_HISTOGRAM_ENUMERATION("Extensions.UpdateSource", extension->location());
   }
 
   const Extension::State initial_state =
@@ -1928,7 +1919,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
   scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->AddInstallerCallback(
       base::BindOnce(&ExtensionService::InstallationFromExternalFileFinished,
-                     AsWeakPtr(), info.extension_id));
+                     AsExtensionServiceWeakPtr(), info.extension_id));
   installer->set_install_source(info.crx_location);
   installer->set_expected_id(info.extension_id);
   installer->set_expected_version(info.version,
@@ -1983,9 +1974,10 @@ void ExtensionService::OnExtensionHostRenderProcessGone(
   // at all, but never half-crashed.  We do it in a PostTask so
   // that other handlers of this notification will still have
   // access to the Extension and ExtensionHost.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ExtensionService::TerminateExtension,
-                                AsWeakPtr(), extension_host->extension_id()));
+                                AsExtensionServiceWeakPtr(),
+                                extension_host->extension_id()));
 }
 
 void ExtensionService::OnAppTerminating() {
@@ -2031,12 +2023,13 @@ void ExtensionService::Observe(int type,
 
     for (auto& extension_id : extension_ids) {
       if (delayed_installs_.Contains(extension_id)) {
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(
                 base::IgnoreResult(
                     &ExtensionService::FinishDelayedInstallationIfReady),
-                AsWeakPtr(), extension_id, false /*install_immediately*/),
+                AsExtensionServiceWeakPtr(), extension_id,
+                false /*install_immediately*/),
             kUpdateIdleDelay);
       }
     }
@@ -2137,7 +2130,8 @@ void ExtensionService::MaybeFinishDelayedInstallations() {
 void ExtensionService::OnBlocklistUpdated() {
   blocklist_->GetBlocklistedIDs(
       registry_->GenerateInstalledExtensionsSet()->GetIDs(),
-      base::BindOnce(&ExtensionService::ManageBlocklist, AsWeakPtr()));
+      base::BindOnce(&ExtensionService::ManageBlocklist,
+                     AsExtensionServiceWeakPtr()));
 }
 
 void ExtensionService::OnUpgradeRecommended() {
@@ -2282,8 +2276,8 @@ void ExtensionService::OnInstalledExtensionsLoaded() {
 
   blocklist_->IsDatabaseReady(base::BindOnce(
       [](base::WeakPtr<ExtensionService> service, bool is_ready) {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      if (!service || !is_ready) {
+        DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+        if (!service || !is_ready) {
           // Either the service was torn down or the database isn't
           // ready yet (and is effectively empty). Either way, no need
           // to update the blocklisted extensions.
@@ -2291,7 +2285,7 @@ void ExtensionService::OnInstalledExtensionsLoaded() {
         }
         service->OnBlocklistUpdated();
       },
-      AsWeakPtr()));
+      AsExtensionServiceWeakPtr()));
 }
 
 void ExtensionService::UninstallMigratedExtensions() {

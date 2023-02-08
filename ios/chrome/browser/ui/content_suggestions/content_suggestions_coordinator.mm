@@ -94,8 +94,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     ContentSuggestionsViewController* contentSuggestionsViewController;
 @property(nonatomic, strong)
     ContentSuggestionsMediator* contentSuggestionsMediator;
-@property(nonatomic, strong)
-    ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
 @property(nonatomic, strong) ActionSheetCoordinator* alertCoordinator;
 @property(nonatomic, assign) BOOL contentSuggestionsEnabled;
 // Authentication Service for the user's signed-in state.
@@ -283,11 +281,11 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
         ContentSuggestionsCoordinator* strongSelf = weakSelf;
 
         // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::kMostVisitedEntry);
+        RecordMenuShown(MenuScenarioHistogram::kMostVisitedEntry);
 
         BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
             initWithBrowser:strongSelf.browser
-                   scenario:MenuScenario::kMostVisitedEntry];
+                   scenario:MenuScenarioHistogram::kMostVisitedEntry];
 
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
@@ -401,6 +399,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     base::RecordAction(
         base::UserMetricsAction("IOS.StartSurface.HideShortcuts"));
   }
+  NewTabPageTabHelper::FromWebState(self.webState)->SetShowStartSurface(false);
 }
 
 // Triggers the URL sharing flow for the given `URL` and `title`, with the

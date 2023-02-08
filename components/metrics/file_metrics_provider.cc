@@ -4,7 +4,10 @@
 
 #include "components/metrics/file_metrics_provider.h"
 
+#include <stddef.h>
+
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -22,11 +25,10 @@
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/ranges_manager.h"
 #include "base/strings/string_piece.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -194,10 +196,7 @@ FileMetricsProvider::Params::Params(const base::FilePath& path,
 FileMetricsProvider::Params::~Params() {}
 
 FileMetricsProvider::FileMetricsProvider(PrefService* local_state)
-    : task_runner_(CreateBackgroundTaskRunner()),
-      pref_service_(local_state),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK(main_task_runner_);
+    : task_runner_(CreateBackgroundTaskRunner()), pref_service_(local_state) {
   base::StatisticsRecorder::RegisterHistogramProvider(
       weak_factory_.GetWeakPtr());
 }
@@ -386,10 +385,13 @@ void FileMetricsProvider::FinishedWithSource(SourceInfo* source,
   }
 }
 
-void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
+// static
+std::vector<size_t> FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
     SourceInfoList* sources) {
   // This method has all state information passed in |sources| and is intended
   // to run on a worker thread rather than the UI thread.
+  std::vector<size_t> samples_counts;
+
   for (std::unique_ptr<SourceInfo>& source : *sources) {
     AccessResult result;
     do {
@@ -414,7 +416,7 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
           break;
 
         if (source->association == ASSOCIATE_INTERNAL_PROFILE_SAMPLES_COUNTER) {
-          RecordFileMetadataOnTaskRunner(source.get());
+          samples_counts.push_back(CollectFileMetadataFromSource(source.get()));
         } else {
           MergeHistogramDeltasFromSource(source.get());
         }
@@ -434,6 +436,8 @@ void FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner(
     if (source->found_files && source->found_files->empty())
       source->found_files.reset();
   }
+
+  return samples_counts;
 }
 
 // This method has all state information passed in |source| and is intended
@@ -682,23 +686,25 @@ bool FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner(
   return false;
 }
 
-void FileMetricsProvider::AppendToSamplesCountPref(size_t samples_count) {
+void FileMetricsProvider::AppendToSamplesCountPref(
+    std::vector<size_t> samples_counts) {
   ScopedListPrefUpdate update(pref_service_,
                               metrics::prefs::kMetricsFileMetricsMetadata);
-  update->Append(static_cast<int>(samples_count));
+  for (size_t samples_count : samples_counts) {
+    update->Append(static_cast<int>(samples_count));
+  }
 }
 
-void FileMetricsProvider::RecordFileMetadataOnTaskRunner(SourceInfo* source) {
+// static
+size_t FileMetricsProvider::CollectFileMetadataFromSource(SourceInfo* source) {
   base::HistogramBase::Count samples_count = 0;
   base::PersistentHistogramAllocator::Iterator it{source->allocator.get()};
   std::unique_ptr<base::HistogramBase> histogram;
   while ((histogram = it.GetNext()) != nullptr) {
     samples_count += histogram->SnapshotFinalDelta()->TotalCount();
   }
-  main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&FileMetricsProvider::AppendToSamplesCountPref,
-                                base::Unretained(this), samples_count));
   source->read_complete = true;
+  return samples_count;
 }
 
 void FileMetricsProvider::ScheduleSourcesCheck() {
@@ -713,17 +719,21 @@ void FileMetricsProvider::ScheduleSourcesCheck() {
   // because that must complete before the reply runs.
   SourceInfoList* check_list = new SourceInfoList();
   std::swap(sources_to_check_, *check_list);
-  task_runner_->PostTaskAndReply(
+  task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &FileMetricsProvider::CheckAndMergeMetricSourcesOnTaskRunner,
-          base::UnsafeDanglingUntriaged(this), base::Unretained(check_list)),
+          base::Unretained(check_list)),
       base::BindOnce(&FileMetricsProvider::RecordSourcesChecked,
                      weak_factory_.GetWeakPtr(), base::Owned(check_list)));
 }
 
-void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
+void FileMetricsProvider::RecordSourcesChecked(
+    SourceInfoList* checked,
+    std::vector<size_t> samples_counts) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  AppendToSamplesCountPref(std::move(samples_counts));
 
   // Sources that still have an allocator at this point are read/write "active"
   // files that may need their contents merged on-demand. If there is no
@@ -820,8 +830,8 @@ void FileMetricsProvider::ProvideIndependentMetrics(
   DCHECK(source->allocator);
 
   // Do the actual work as a background task.
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &FileMetricsProvider::ProvideIndependentMetricsOnTaskRunner,
           source_ptr, system_profile_proto, snapshot_manager),
@@ -844,7 +854,20 @@ void FileMetricsProvider::ProvideIndependentMetricsCleanup(
   ScheduleSourcesCheck();
 
   // Execute the chained callback.
+  // TODO(crbug/1052796): Remove the UMA timer code, which is currently used to
+  // determine if it is worth to finalize independent logs in the background
+  // by measuring the time it takes to execute the callback
+  // MetricsService::PrepareProviderMetricsLogDone().
+  base::TimeTicks start_time = base::TimeTicks::Now();
   std::move(done_callback).Run(success);
+  if (success) {
+    // We don't use the SCOPED_UMA_HISTOGRAM_TIMER macro because we want to
+    // measure the time it takes to finalize an independent log, and that only
+    // happens when |success| is true.
+    base::UmaHistogramTimes(
+        "UMA.IndependentLog.FileMetricsProvider.FinalizeTime",
+        base::TimeTicks::Now() - start_time);
+  }
 }
 
 bool FileMetricsProvider::HasPreviousSessionData() {

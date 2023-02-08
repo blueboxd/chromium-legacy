@@ -40,6 +40,7 @@ class CastConfigControllerMediaRouter
   // CastConfigController:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  bool HasMediaRouterForPrimaryProfile() const override;
   bool HasSinksAndRoutes() const override;
   bool HasActiveRoute() const override;
   bool AccessCodeCastingEnabled() const override;
@@ -50,6 +51,12 @@ class CastConfigControllerMediaRouter
 
   // session_manager::SessionManagerObserver:
   void OnUserProfileLoaded(const AccountId& account_id) override;
+
+#if !defined(OFFICIAL_BUILD)
+  // Adds fake Cast devices for manual testing of the UI (for example, in the
+  // linux-chromeos emulator).
+  void AddFakeCastDevices();
+#endif
 
   // |device_cache_| stores the current source/route status that we query from.
   // This will return null until the media router is initialized.

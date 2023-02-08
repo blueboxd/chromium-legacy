@@ -58,7 +58,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -222,7 +221,9 @@
 #include "content/browser/font_service.h"  // nogncheck
 #include "third_party/blink/public/mojom/memory_usage_monitor_linux.mojom.h"  // nogncheck
 
+#include "content/browser/media/video_encode_accelerator_provider_launcher.h"
 #include "content/public/browser/stable_video_decoder_factory.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -1231,7 +1232,26 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
       ConnectToFontService(std::move(font_receiver));
       return;
     }
-#endif
+
+    if (base::FeatureList::IsEnabled(media::kUseOutOfProcessVideoEncoding)) {
+      if (auto r =
+              receiver.As<media::mojom::VideoEncodeAcceleratorProvider>()) {
+        if (!video_encode_accelerator_factory_remote_.is_bound()) {
+          LaunchVideoEncodeAcceleratorProviderFactory(
+              video_encode_accelerator_factory_remote_
+                  .BindNewPipeAndPassReceiver());
+          video_encode_accelerator_factory_remote_.reset_on_disconnect();
+        }
+
+        if (!video_encode_accelerator_factory_remote_.is_bound())
+          return;
+
+        video_encode_accelerator_factory_remote_
+            ->CreateVideoEncodeAcceleratorProvider(std::move(r));
+        return;
+      }
+    }
+#endif  // (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS))
 
 #if BUILDFLAG(IS_WIN)
     if (auto r = receiver.As<mojom::FontCacheWin>()) {
@@ -1262,14 +1282,11 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
     }
 
 #if BUILDFLAG(IS_ANDROID)
-    if (base::FeatureList::IsEnabled(
-            features::kNavigationThreadingOptimizations)) {
-      // Bind the font lookup on the IO thread as an optimization to avoid
-      // running navigation critical path tasks on the UI thread.
-      if (auto r = receiver.As<blink::mojom::AndroidFontLookup>()) {
-        GetGlobalJavaInterfacesOnIOThread()->GetInterface(std::move(r));
-        return;
-      }
+    // Bind the font lookup on the IO thread as an optimization to avoid
+    // running navigation critical path tasks on the UI thread.
+    if (auto r = receiver.As<blink::mojom::AndroidFontLookup>()) {
+      GetGlobalJavaInterfacesOnIOThread()->GetInterface(std::move(r));
+      return;
     }
 #endif
 
@@ -1298,6 +1315,11 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
   const base::WeakPtr<RenderProcessHostImpl> weak_host_;
   std::unique_ptr<service_manager::BinderRegistry> binders_;
   mojo::Receiver<mojom::ChildProcessHost> receiver_{this};
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  mojo::Remote<media::mojom::VideoEncodeAcceleratorProviderFactory>
+      video_encode_accelerator_factory_remote_;
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 };
 
 // static
@@ -1834,7 +1856,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
       IPC::ChannelMojo::CreateServerFactory(
           std::move(bootstrap), io_task_runner,
-          base::ThreadTaskRunnerHandle::Get());
+          base::SingleThreadTaskRunner::GetCurrentDefault());
 
   ResetChannelProxy();
 
@@ -1842,7 +1864,8 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   channel_ = IPC::ChannelProxy::Create(
       std::move(channel_factory), this,
       /*ipc_task_runner=*/io_task_runner.get(),
-      /*listener_task_runner=*/base::ThreadTaskRunnerHandle::Get());
+      /*listener_task_runner=*/
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 
   // Note that Channel send is effectively paused and unpaused at various points
   // during startup, and existing code relies on a fragile relative message
@@ -1971,6 +1994,22 @@ void RenderProcessHostImpl::BindFileSystemAccessManager(
       std::move(receiver));
 }
 
+void RenderProcessHostImpl::GetSandboxedFileSystemForBucket(
+    const storage::BucketLocator& bucket,
+    blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+        callback) {
+  auto* manager = storage_partition_impl_->GetFileSystemAccessManager();
+  manager->GetSandboxedFileSystem(
+      FileSystemAccessManagerImpl::BindingContext(
+          bucket.storage_key,
+          // TODO(https://crbug.com/989323): Obtain and use a better
+          // URL for workers instead of the origin as source url.
+          // This URL will be used for SafeBrowsing checks and for
+          // the Quarantine Service.
+          bucket.storage_key.origin().GetURL(), GetID()),
+      bucket, std::move(callback));
+}
+
 void RenderProcessHostImpl::BindNativeIOHost(
     const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver) {
@@ -2065,7 +2104,7 @@ void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
 void RenderProcessHostImpl::CreateNotificationService(
     GlobalRenderFrameHostId rfh_id,
     const RenderProcessHost::NotificationServiceCreatorType creator_type,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHost* rfh = RenderFrameHost::FromID(rfh_id);
@@ -2076,7 +2115,7 @@ void RenderProcessHostImpl::CreateNotificationService(
     case RenderProcessHost::NotificationServiceCreatorType::kSharedWorker:
     case RenderProcessHost::NotificationServiceCreatorType::kDedicatedWorker: {
       storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-          this, origin, /*document_url=*/GURL(), weak_document_ptr,
+          this, storage_key, /*document_url=*/GURL(), weak_document_ptr,
           creator_type, std::move(receiver));
       break;
     }
@@ -2084,7 +2123,7 @@ void RenderProcessHostImpl::CreateNotificationService(
       CHECK(rfh);
 
       storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-          this, origin, rfh->GetLastCommittedURL(), weak_document_ptr,
+          this, storage_key, rfh->GetLastCommittedURL(), weak_document_ptr,
           creator_type, std::move(receiver));
       break;
     }
@@ -2403,15 +2442,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderProcessHostImpl::BindPluginRegistry,
                           instance_weak_factory_.GetWeakPtr()));
 #else
-  if (base::FeatureList::IsEnabled(
-          features::kNavigationThreadingOptimizations)) {
-    // On platforms where plugins are disabled, the PluginRegistry interface is
-    // never bound. This still results in posting a task on the UI thread to
-    // look for the interface which can be slow. Instead, drop the interface
-    // immediately on the IO thread by binding en empty interface handler.
-    registry->AddInterface(base::BindRepeating(
-        [](mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {}));
-  }
+  // On platforms where plugins are disabled, the PluginRegistry interface is
+  // never bound. This still results in posting a task on the UI thread to
+  // look for the interface which can be slow. Instead, drop the interface
+  // immediately on the IO thread by binding en empty interface handler.
+  registry->AddInterface(base::BindRepeating(
+      [](mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {}));
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
@@ -2428,6 +2464,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindAecDumpManager,
                           instance_weak_factory_.GetWeakPtr()));
+
+#if BUILDFLAG(IS_FUCHSIA)
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindMediaCodecProvider,
+                          instance_weak_factory_.GetWeakPtr()));
+#endif
 
   // ---- Please do not register interfaces below this line ------
   //
@@ -2531,6 +2574,15 @@ void RenderProcessHostImpl::CreateMediaLogRecordHost(
 void RenderProcessHostImpl::BindPluginRegistry(
     mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {
   plugin_registry_->Bind(std::move(receiver));
+}
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+void RenderProcessHostImpl::BindMediaCodecProvider(
+    mojo::PendingReceiver<media::mojom::FuchsiaMediaCodecProvider> receiver) {
+  if (!media_codec_provider_)
+    media_codec_provider_ = std::make_unique<FuchsiaMediaCodecProviderImpl>();
+  media_codec_provider_->AddReceiver(std::move(receiver));
 }
 #endif
 
@@ -3097,17 +3149,12 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
   GetRendererInterface()->SetIsCrossOriginIsolated(
       process_lock.GetWebExposedIsolationInfo().is_isolated());
 
-  bool isolated_apps_developer_mode_allowed =
-      GetContentClient()->browser()->IsIsolatedWebAppsDeveloperModeAllowed(
-          GetBrowserContext());
-
   bool is_isolated_context_allowed_by_embedder =
       GetContentClient()->browser()->IsIsolatedContextAllowedForUrl(
           GetBrowserContext(), process_lock.lock_url());
 
   GetRendererInterface()->SetIsIsolatedContext(
-      (isolated_apps_developer_mode_allowed &&
-       process_lock.GetWebExposedIsolationInfo().is_isolated_application()) ||
+      process_lock.GetWebExposedIsolationInfo().is_isolated_application() ||
       is_isolated_context_allowed_by_embedder);
 
   if (!process_lock.IsASiteOrOrigin())
@@ -3205,8 +3252,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
                                     "--jitless");
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kTouchTextEditingRedesign)) {
+  if (base::FeatureList::IsEnabled(ash::features::kTouchTextEditingRedesign)) {
     command_line->AppendSwitchASCII(
         blink::switches::kTouchTextSelectionStrategy,
         blink::switches::kTouchTextSelectionStrategy_Direction);
@@ -3272,7 +3318,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableLogging,
     switches::kDisableBackgroundMediaSuspend,
     switches::kDisableNotifications,
-    switches::kEnableDeJelly,
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
@@ -3359,6 +3404,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,
     switches::kVModule,
+    switches::kWaitForDebuggerOnNavigation,
     switches::kWebAuthRemoteDesktopSupport,
     switches::kWebViewDrawFunctorUsesVulkan,
     switches::kWebglAntialiasingMode,
@@ -3963,7 +4009,8 @@ void RenderProcessHostImpl::Cleanup() {
 #ifndef NDEBUG
   is_self_deleted_ = true;
 #endif
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE,
+                                                                this);
   deleting_soon_ = true;
 
   // Destroy all mojo bindings and IPC channels that can cause calls to this

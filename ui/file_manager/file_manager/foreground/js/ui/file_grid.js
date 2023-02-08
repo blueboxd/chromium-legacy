@@ -4,7 +4,7 @@
 
 import {assert, assertInstanceof} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {isRTL} from 'chrome://resources/js/util.js';
+import {isRTL} from 'chrome://resources/ash/common/util.js';
 
 import {RateLimiter} from '../../../common/js/async_util.js';
 import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
@@ -733,15 +733,20 @@ export class FileGrid extends Grid {
         this.querySelectorAll('.img-container'));
     for (let i = 0; i < boxes.length; i++) {
       const box = boxes[i];
-      const listItem = this.getListItemAncestor(box);
+      let listItem = this.getListItemAncestor(box);
       const entry = listItem && this.dataModel.item(listItem.listIndex);
       if (!entry || urls.indexOf(entry.toURL()) === -1) {
         continue;
       }
 
-      this.decorateThumbnailBox_(assert(listItem), entry);
-      this.updateSharedStatus_(assert(listItem), entry);
-      this.updateInlineSyncStatus_(assert(listItem), entry);
+      listItem = /** @type {!FileGrid.Item} */ (listItem);
+      this.decorateThumbnailBox_(listItem, entry);
+      this.updateSharedStatus_(listItem, entry);
+      this.updateInlineSyncStatus_(listItem, entry);
+      listItem.toggleAttribute(
+          'disabled',
+          filelist.isDlpBlocked(
+              entry, assert(this.metadataModel_), assert(this.volumeManager_)));
     }
     this.updateGroupHeading_();
   }
@@ -774,7 +779,8 @@ export class FileGrid extends Grid {
   decorateThumbnail_(li, entry) {
     li.className = 'thumbnail-item';
     if (entry) {
-      filelist.decorateListItem(li, entry, assert(this.metadataModel_));
+      filelist.decorateListItem(
+          li, entry, assert(this.metadataModel_), assert(this.volumeManager_));
     }
 
     const frame = li.ownerDocument.createElement('div');

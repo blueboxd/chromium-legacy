@@ -58,13 +58,9 @@ void EmbeddedPolicyTestServerMixin::SetUp() {
 
   if (!capabilities_.contains(ENABLE_CANNED_SIGNING_KEYS)) {
     // Create universal signing keys that can sign any domain.
-    std::vector<policy::SignatureProvider::SigningKey> universal_signing_keys;
-    universal_signing_keys.push_back(policy::SignatureProvider::SigningKey(
-        policy::PolicyBuilder::CreateTestSigningKey(),
-        {{"*", policy::PolicyBuilder::GetTestSigningKeySignature()}}));
     policy_test_server_->policy_storage()
         ->signature_provider()
-        ->set_signing_keys(std::move(universal_signing_keys));
+        ->SetUniversalSigningKeys();
   }
 
   if (capabilities_.contains(ENABLE_AUTOMATIC_ROTATION_OF_SIGNINGKEYS)) {
@@ -165,7 +161,7 @@ void EmbeddedPolicyTestServerMixin::SetPolicyFetchError(int net_error_code) {
 
 void EmbeddedPolicyTestServerMixin::SetFakeAttestationFlow() {
   std::string valid_certificate;
-  ash::attestation::GetFakeCertificatePEM(base::Days(10), &valid_certificate);
+  attestation::GetFakeCertificatePEM(base::Days(10), &valid_certificate);
 
   g_browser_process->platform_part()
       ->browser_policy_connector_ash()

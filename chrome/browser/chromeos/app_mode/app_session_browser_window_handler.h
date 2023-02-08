@@ -42,7 +42,7 @@ class AppSessionBrowserWindowHandler : public BrowserListObserver {
  public:
   AppSessionBrowserWindowHandler(
       Profile* profile,
-      absl::optional<std::string> web_app_name,
+      const absl::optional<std::string>& web_app_name,
       base::RepeatingCallback<void(bool is_closing)>
           on_browser_window_added_callback,
       base::RepeatingClosure on_last_browser_window_closed_callback);
@@ -72,10 +72,10 @@ class AppSessionBrowserWindowHandler : public BrowserListObserver {
   // open.
   bool IsOnlySettingsBrowserRemainOpen() const;
 
-  const raw_ptr<Profile> profile_;
+  const raw_ptr<Profile, DanglingUntriaged> profile_;
   // |web_app_name_| is set only when we have the initial browser in the web
   // kiosk session.
-  absl::optional<std::string> web_app_name_;
+  const absl::optional<std::string> web_app_name_;
   base::RepeatingCallback<void(bool is_closing)>
       on_browser_window_added_callback_;
   base::RepeatingClosure on_last_browser_window_closed_callback_;

@@ -17,7 +17,6 @@
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/capability_access_update.h"
-#include "components/services/app_service/public/cpp/features.h"
 
 namespace apps {
 
@@ -110,8 +109,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppCapabilityAccessCache {
   // The callee will consume the deltas. An apps::mojom::CapabilityAccessPtr has
   // the ownership semantics of a unique_ptr, and will be deleted when out of
   // scope. The caller presumably calls OnCapabilityAccesses(std::move(deltas)).
-  void OnCapabilityAccesses(
-      std::vector<apps::mojom::CapabilityAccessPtr> deltas);
   void OnCapabilityAccesses(std::vector<CapabilityAccessPtr> deltas);
 
   // Calls f, a void-returning function whose arguments are (const
@@ -132,50 +129,25 @@ class COMPONENT_EXPORT(APP_UPDATE) AppCapabilityAccessCache {
   void ForEachApp(FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-    if (base::FeatureList::IsEnabled(kAppServiceCapabilityAccessWithoutMojom)) {
-      for (const auto& s_iter : states_) {
-        const CapabilityAccess* state = s_iter.second.get();
+    for (const auto& s_iter : states_) {
+      const CapabilityAccess* state = s_iter.second.get();
 
-        auto d_iter = deltas_in_progress_.find(s_iter.first);
-        const CapabilityAccess* delta =
-            (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
+      auto d_iter = deltas_in_progress_.find(s_iter.first);
+      const CapabilityAccess* delta =
+          (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
 
-        f(CapabilityAccessUpdate(state, delta, account_id_));
-      }
-
-      for (const auto& d_iter : deltas_in_progress_) {
-        const CapabilityAccess* delta = d_iter.second;
-
-        auto s_iter = states_.find(d_iter.first);
-        if (s_iter != states_.end()) {
-          continue;
-        }
-
-        f(CapabilityAccessUpdate(nullptr, delta, account_id_));
-      }
-      return;
+      f(CapabilityAccessUpdate(state, delta, account_id_));
     }
 
-    for (const auto& s_iter : mojom_states_) {
-      const apps::mojom::CapabilityAccess* state = s_iter.second.get();
+    for (const auto& d_iter : deltas_in_progress_) {
+      const CapabilityAccess* delta = d_iter.second;
 
-      auto d_iter = mojom_deltas_in_progress_.find(s_iter.first);
-      const apps::mojom::CapabilityAccess* delta =
-          (d_iter != mojom_deltas_in_progress_.end()) ? d_iter->second
-                                                      : nullptr;
-
-      f(apps::CapabilityAccessUpdate(state, delta, account_id_));
-    }
-
-    for (const auto& d_iter : mojom_deltas_in_progress_) {
-      const apps::mojom::CapabilityAccess* delta = d_iter.second;
-
-      auto s_iter = mojom_states_.find(d_iter.first);
-      if (s_iter != mojom_states_.end()) {
+      auto s_iter = states_.find(d_iter.first);
+      if (s_iter != states_.end()) {
         continue;
       }
 
-      f(apps::CapabilityAccessUpdate(nullptr, delta, account_id_));
+      f(CapabilityAccessUpdate(nullptr, delta, account_id_));
     }
   }
 
@@ -191,46 +163,27 @@ class COMPONENT_EXPORT(APP_UPDATE) AppCapabilityAccessCache {
   bool ForOneApp(const std::string& app_id, FunctionType f) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-    if (base::FeatureList::IsEnabled(kAppServiceCapabilityAccessWithoutMojom)) {
-      auto s_iter = states_.find(app_id);
-      const CapabilityAccess* state =
-          (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
+    auto s_iter = states_.find(app_id);
+    const CapabilityAccess* state =
+        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
 
-      auto d_iter = deltas_in_progress_.find(app_id);
-      const CapabilityAccess* delta =
-          (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
-
-      if (state || delta) {
-        f(CapabilityAccessUpdate(state, delta, account_id_));
-        return true;
-      }
-      return false;
-    }
-
-    auto s_iter = mojom_states_.find(app_id);
-    const apps::mojom::CapabilityAccess* state =
-        (s_iter != mojom_states_.end()) ? s_iter->second.get() : nullptr;
-
-    auto d_iter = mojom_deltas_in_progress_.find(app_id);
-    const apps::mojom::CapabilityAccess* delta =
-        (d_iter != mojom_deltas_in_progress_.end()) ? d_iter->second : nullptr;
+    auto d_iter = deltas_in_progress_.find(app_id);
+    const CapabilityAccess* delta =
+        (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
 
     if (state || delta) {
-      f(apps::CapabilityAccessUpdate(state, delta, account_id_));
+      f(CapabilityAccessUpdate(state, delta, account_id_));
       return true;
     }
     return false;
   }
 
  private:
-  void DoOnCapabilityAccesses(
-      std::vector<apps::mojom::CapabilityAccessPtr> deltas);
   void DoOnCapabilityAccesses(std::vector<CapabilityAccessPtr> deltas);
 
   base::ObserverList<Observer> observers_;
 
   // Maps from app_id to the latest state: the "sum" of all previous deltas.
-  std::map<std::string, apps::mojom::CapabilityAccessPtr> mojom_states_;
   std::map<std::string, CapabilityAccessPtr> states_;
 
   // Track the deltas being processed or are about to be processed by
@@ -251,9 +204,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppCapabilityAccessCache {
   // Nested OnCapabilityAccesses calls are expected to be rare (but still dealt
   // with sensibly). In the typical case, OnCapabilityAccesses should call
   // DoOnCapabilityAccesses exactly once, and deltas_pending_ will stay empty.
-  std::map<std::string, apps::mojom::CapabilityAccess*>
-      mojom_deltas_in_progress_;
-  std::vector<apps::mojom::CapabilityAccessPtr> mojom_deltas_pending_;
   std::map<std::string, CapabilityAccess*> deltas_in_progress_;
   std::vector<CapabilityAccessPtr> deltas_pending_;
 

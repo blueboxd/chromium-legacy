@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
+#include "components/onc/onc_constants.h"
 
-namespace chromeos {
-namespace network_config {
+namespace chromeos::network_config {
 
 // This matches logic in NetworkTypePattern and should be kept in sync.
 bool NetworkTypeMatchesType(mojom::NetworkType network_type,
@@ -75,5 +75,20 @@ bool IsInhibited(const mojom::DeviceStateProperties* device) {
   return device->inhibit_reason != mojom::InhibitReason::kNotInhibited;
 }
 
-}  // namespace network_config
-}  // namespace chromeos
+base::Value::Dict UserApnListToOnc(const std::string& network_guid,
+                                   const base::Value::List* user_apn_list) {
+  base::Value::Dict onc;
+  onc.Set(::onc::network_config::kGUID, network_guid);
+  onc.Set(::onc::network_config::kType, ::onc::network_type::kCellular);
+  base::Value::Dict type_dict;
+  // If |user_apn_list| is a nullptr, set the value as Value::Type::NONE
+  if (user_apn_list) {
+    type_dict.Set(::onc::cellular::kUserAPNList, user_apn_list->Clone());
+  } else {
+    type_dict.Set(::onc::cellular::kUserAPNList, base::Value());
+  }
+  onc.Set(::onc::network_type::kCellular, std::move(type_dict));
+  return onc;
+}
+
+}  // namespace chromeos::network_config

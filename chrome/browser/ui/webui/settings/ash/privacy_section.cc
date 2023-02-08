@@ -66,7 +66,7 @@ const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
          {.section = mojom::Section::kPrivacyAndSecurity}},
     });
 
-    if (!features::IsGuestModeActive()) {
+    if (!IsGuestModeActive()) {
       all_tags.insert(
           all_tags.end(),
           {{IDS_OS_SETTINGS_TAG_GUEST_BROWSING,
@@ -285,7 +285,7 @@ const std::vector<SearchConcept>& GetPrivacyControlsSearchConcepts() {
 bool IsSecureDnsAvailable() {
   return
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      base::FeatureList::IsEnabled(ash::features::kEnableDnsProxy) &&
+      base::FeatureList::IsEnabled(features::kEnableDnsProxy) &&
       base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH) &&
 #endif
       ::features::kDnsOverHttpsShowUiParam.Get();
@@ -306,7 +306,7 @@ PrivacySection::PrivacySection(Profile* profile,
 
   // Fingerprint search tags are added if necessary. Remove fingerprint search
   // tags update dynamically during a user session.
-  if (!features::IsGuestModeActive() && AreFingerprintSettingsAllowed()) {
+  if (!IsGuestModeActive() && AreFingerprintSettingsAllowed()) {
     updater.AddSearchTags(GetFingerprintSearchConcepts());
 
     fingerprint_pref_change_registrar_.Init(pref_service_);
@@ -400,6 +400,8 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_OS_SETTINGS_PRIVACY_HUB_NO_MICROPHONE_CONNECTED_TEXT},
       {"geolocationToggleTitle",
        IDS_OS_SETTINGS_PRIVACY_HUB_GEOLOCATION_TOGGLE_TITLE},
+      {"microphoneHwToggleTooltip",
+       IDS_OS_SETTINGS_PRIVACY_HUB_HW_MICROPHONE_TOGGLE_TOOLTIP},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -434,7 +436,6 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showSecureDnsSetting", IsSecureDnsAvailable());
   html_source->AddBoolean("showSecureDnsOsSettingLink", false);
 
-  ::settings::AddPersonalizationOptionsStrings(html_source);
   ::settings::AddSecureDnsStrings(html_source);
 
   html_source->AddBoolean("isRevenBranding", switches::IsRevenBranding());

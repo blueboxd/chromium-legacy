@@ -134,11 +134,11 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
     const std::u16string& title,
     const std::u16string& message,
     const scoped_refptr<message_center::NotificationDelegate>& delegate) {
-  return ash::CreateSystemNotification(
+  return ash::CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title, message,
       l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME), GURL(),
       message_center::NotifierId(), message_center::RichNotificationData(),
-      delegate, ash::kFilesAppIcon,
+      delegate, ash::kFolderIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 }
 
@@ -220,14 +220,13 @@ SystemNotificationManager::CreateProgressNotification(
   rich_data.progress = progress;
   rich_data.progress_status = message;
 
-  return ash::CreateSystemNotification(
+  return ash::CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id, title,
       message, app_name_, GURL(), message_center::NotifierId(), rich_data,
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&SystemNotificationManager::HandleProgressClick,
                               weak_ptr_factory_.GetWeakPtr(), notification_id)),
-      ash::kFilesAppIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+      ash::kFolderIcon, message_center::SystemNotificationWarningLevel::NORMAL);
 }
 
 std::unique_ptr<message_center::Notification>
@@ -241,15 +240,14 @@ SystemNotificationManager::CreateIOTaskProgressNotification(
   rich_data.progress = progress;
   rich_data.progress_status = message;
 
-  auto notification = ash::CreateSystemNotification(
+  auto notification = ash::CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id, title,
       message, app_name_, GURL(), message_center::NotifierId(), rich_data,
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&SystemNotificationManager::CancelTaskId,
                               weak_ptr_factory_.GetWeakPtr(), task_id,
                               notification_id)),
-      ash::kFilesAppIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+      ash::kFolderIcon, message_center::SystemNotificationWarningLevel::NORMAL);
 
   // Add the cancel button:
   notification->set_buttons({message_center::ButtonInfo(
@@ -667,8 +665,7 @@ SystemNotificationManager::MakeMountErrorNotification(
       case MOUNT_STATUS_ONLY_PARENT_ERROR:
       case MOUNT_STATUS_CHILD_ERROR:
         if (event.status ==
-            file_manager_private::
-                MOUNT_COMPLETED_STATUS_ERROR_UNSUPPORTED_FILESYSTEM) {
+            file_manager_private::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM) {
           if (volume.drive_label().empty()) {
             message = l10n_util::GetStringUTF16(
                 IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE);
@@ -758,8 +755,7 @@ SystemNotificationManager::UpdateDeviceMountStatus(
       }
       [[fallthrough]];
     case MOUNT_STATUS_NO_RESULT:
-      if (event.status ==
-          file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+      if (event.status == file_manager_private::MOUNT_ERROR_SUCCESS) {
         status = MOUNT_STATUS_SUCCESS;
       } else if (event.volume_metadata.is_parent_device) {
         status = MOUNT_STATUS_ONLY_PARENT_ERROR;
@@ -770,8 +766,7 @@ SystemNotificationManager::UpdateDeviceMountStatus(
     case MOUNT_STATUS_SUCCESS:
     case MOUNT_STATUS_CHILD_ERROR:
       if (status == MOUNT_STATUS_SUCCESS &&
-          event.status ==
-              file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+          event.status == file_manager_private::MOUNT_ERROR_SUCCESS) {
         status = MOUNT_STATUS_SUCCESS;
       } else {
         // Multi partition device with at least one partition in error.
@@ -789,7 +784,7 @@ SystemNotificationManager::MakeRemovableNotification(
     file_manager_private::MountCompletedEvent& event,
     const Volume& volume) {
   std::unique_ptr<message_center::Notification> notification;
-  if (event.status == file_manager_private::MOUNT_COMPLETED_STATUS_SUCCESS) {
+  if (event.status == file_manager_private::MOUNT_ERROR_SUCCESS) {
     bool show_settings_button = false;
     std::u16string title =
         l10n_util::GetStringUTF16(IDS_REMOVABLE_DEVICE_DETECTION_TITLE);

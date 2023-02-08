@@ -197,10 +197,7 @@ void WebAppNavigationBrowserTest::SetUp() {
         auto response = std::make_unique<net::test_server::BasicHttpResponse>();
         response->set_content_type("text/html");
         response->AddCustomHeader("Access-Control-Allow-Origin", "*");
-        if (blink::features::IsFencedFramesEnabled() &&
-            blink::features::IsFencedFramesMPArchBased()) {
-          response->AddCustomHeader("Supports-Loading-Mode", "fenced-frame");
-        }
+        response->AddCustomHeader("Supports-Loading-Mode", "fenced-frame");
         return static_cast<std::unique_ptr<net::test_server::HttpResponse>>(
             std::move(response));
       }));
@@ -238,7 +235,7 @@ void WebAppNavigationBrowserTest::SetUpOnMainThread() {
 void WebAppNavigationBrowserTest::TearDownOnMainThread() {
 #if BUILDFLAG(IS_CHROMEOS)
   auto* const provider = WebAppProvider::GetForWebApps(profile());
-  const WebAppRegistrar& registrar = provider->registrar();
+  const WebAppRegistrar& registrar = provider->registrar_unsafe();
   std::vector<AppId> app_ids = registrar.GetAppIds();
   for (const auto& app_id : app_ids) {
     if (!registrar.IsInstalled(app_id)) {
@@ -331,6 +328,12 @@ bool WebAppNavigationBrowserTest::TestTabActionDoesNotOpenAppWindow(
     base::OnceClosure action) {
   return TestActionDoesNotOpenAppWindow(browser(), target_url,
                                         std::move(action));
+}
+
+const GURL& WebAppNavigationBrowserTest::test_web_app_start_url() {
+  auto* const provider = WebAppProvider::GetForWebApps(profile());
+  const WebAppRegistrar& registrar = provider->registrar_unsafe();
+  return registrar.GetAppStartUrl(test_web_app_);
 }
 
 }  // namespace web_app

@@ -175,7 +175,8 @@ IndexedDBFactoryImpl::IndexedDBFactoryImpl(
   DCHECK(clock);
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
-          this, "IndexedDBFactoryImpl", base::SequencedTaskRunnerHandle::Get(),
+          this, "IndexedDBFactoryImpl",
+          base::SequencedTaskRunner::GetCurrentDefault(),
           base::trace_event::MemoryDumpProvider::Options());
 }
 
@@ -385,38 +386,6 @@ void IndexedDBFactoryImpl::DeleteDatabase(
   }
 }
 
-void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
-    base::OnceCallback<void(leveldb::Status)> callback,
-    const storage::BucketLocator& bucket_locator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("IndexedDB",
-               "IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase");
-  auto it = factories_per_bucket_.find(bucket_locator.id);
-  if (it == factories_per_bucket_.end()) {
-    std::move(callback).Run(leveldb::Status::OK());
-    return;
-  }
-  it->second->AbortAllTransactions(true);
-  RunTasksForBucket(it->second->AsWeakPtr());
-  std::move(callback).Run(leveldb::Status::OK());
-}
-
-void IndexedDBFactoryImpl::AbortTransactionsForDatabase(
-    base::OnceCallback<void(leveldb::Status)> callback,
-    const storage::BucketLocator& bucket_locator) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  TRACE_EVENT0("IndexedDB",
-               "IndexedDBFactoryImpl::AbortTransactionsForDatabase");
-  auto it = factories_per_bucket_.find(bucket_locator.id);
-  if (it == factories_per_bucket_.end()) {
-    std::move(callback).Run(leveldb::Status::OK());
-    return;
-  }
-  it->second->AbortAllTransactions(false);
-  RunTasksForBucket(it->second->AsWeakPtr());
-  std::move(callback).Run(leveldb::Status::OK());
-}
-
 void IndexedDBFactoryImpl::HandleBackingStoreFailure(
     const storage::BucketLocator& bucket_locator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -538,7 +507,7 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(
   if (!context_)
     return;
   auto it = factories_per_bucket_.find(bucket_locator.id);
-  DCHECK(it != factories_per_bucket_.end());
+  CHECK(it != factories_per_bucket_.end());
 
   it->second->ReportOutstandingBlobs(blobs_outstanding);
 }
@@ -950,11 +919,6 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
           /*is_disk_full=*/false};
 }
 
-void IndexedDBFactoryImpl::RemoveBucketState(
-    const storage::BucketLocator& bucket_locator) {
-  factories_per_bucket_.erase(bucket_locator.id);
-}
-
 void IndexedDBFactoryImpl::OnDatabaseError(
     const storage::BucketLocator& bucket_locator,
     leveldb::Status status,
@@ -1002,7 +966,7 @@ void IndexedDBFactoryImpl::MaybeRunTasksForBucket(
     return;
 
   bucket_state->set_task_run_scheduled();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBFactoryImpl::RunTasksForBucket,
                      bucket_state_destruction_weak_factory_.GetWeakPtr(),
@@ -1042,15 +1006,6 @@ bool IndexedDBFactoryImpl::IsBackingStoreOpen(
     const storage::BucketLocator& bucket_locator) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Contains(factories_per_bucket_, bucket_locator.id);
-}
-
-bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
-    const storage::BucketLocator& bucket_locator) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = factories_per_bucket_.find(bucket_locator.id);
-  if (it == factories_per_bucket_.end())
-    return false;
-  return it->second->IsClosing();
 }
 
 bool IndexedDBFactoryImpl::OnMemoryDump(

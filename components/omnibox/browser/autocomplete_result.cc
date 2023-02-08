@@ -73,6 +73,11 @@ constexpr size_t kMaxPedalCount = std::numeric_limits<size_t>::max();
 constexpr size_t kMaxPedalMatchIndex = std::numeric_limits<size_t>::max();
 #endif
 
+enum class DontCopyDoneProviders { kFalse, kTrue, kUnknown };
+
+DontCopyDoneProviders g_dont_copy_done_providers =
+    DontCopyDoneProviders::kUnknown;
+
 }  // namespace
 
 // static
@@ -173,9 +178,13 @@ void AutocompleteResult::TransferOldMatches(const AutocompleteInput& input,
   // particularly noticeable when the user types the next char before the
   // copied matches are expired leading to outdated matches surviving multiple
   // input changes, e.g. 'gooooooooo[oogle.com]'.
-  static bool dont_copy_done_providers =
-      OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.Get();
-  if (dont_copy_done_providers) {
+  if (g_dont_copy_done_providers == DontCopyDoneProviders::kUnknown) {
+    g_dont_copy_done_providers =
+        OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.Get()
+            ? DontCopyDoneProviders::kTrue
+            : DontCopyDoneProviders::kFalse;
+  }
+  if (g_dont_copy_done_providers == DontCopyDoneProviders::kTrue) {
     old_matches->matches_.erase(
         base::ranges::remove_if(*old_matches,
                                 [](const auto& old_match) {
@@ -371,8 +380,7 @@ void AutocompleteResult::SortAndCull(
 
   // Limit URL matches per OmniboxMaxURLMatches.
   size_t max_url_count = 0;
-  const bool is_zero_suggest =
-      input.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT;
+  const bool is_zero_suggest = input.IsZeroSuggest();
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
     LimitNumberOfURLsShown(GetMaxMatches(is_zero_suggest), max_url_count,
@@ -987,25 +995,6 @@ std::u16string AutocompleteResult::GetCommonPrefix() {
   return common_prefix;
 }
 
-void AutocompleteResult::SetTailSuggestCommonPrefixes() {
-  std::u16string common_prefix = GetCommonPrefix();
-
-  if (!common_prefix.empty()) {
-    for (auto& match : matches_)
-      match.SetTailSuggestCommonPrefix(common_prefix);
-  }
-}
-
-void AutocompleteResult::SetTailSuggestContentPrefixes() {
-  std::u16string common_prefix = GetCommonPrefix();
-
-  if (!common_prefix.empty()) {
-    for (auto& match : matches_) {
-      match.SetTailSuggestContentPrefix(common_prefix);
-    }
-  }
-}
-
 size_t AutocompleteResult::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(matches_);
 }
@@ -1278,4 +1267,9 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
           return 1;
         return 2;
       });
+}
+
+// static
+void AutocompleteResult::ClearDontCopyDoneProvidersForTesting() {
+  g_dont_copy_done_providers = DontCopyDoneProviders::kUnknown;
 }

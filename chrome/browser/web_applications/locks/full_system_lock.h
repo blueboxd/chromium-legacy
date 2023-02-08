@@ -8,12 +8,20 @@
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/lock.h"
 
+namespace content {
+struct PartitionedLockHolder;
+}
+
 namespace web_app {
 
 class OsIntegrationManager;
+class WebAppIconManager;
 class WebAppInstallFinalizer;
+class WebAppInstallManager;
 class WebAppRegistrar;
 class WebAppSyncBridge;
+class WebAppTranslationManager;
+class WebAppUiManager;
 
 // This locks the whole system. No other locks can be held when this lock is
 // acquired.
@@ -28,12 +36,19 @@ class FullSystemLockDescription : public LockDescription {
   ~FullSystemLockDescription();
 };
 
-class FullSystemLock : public AppLock {
+class FullSystemLock : public Lock, public WithAppResources {
  public:
-  FullSystemLock(WebAppRegistrar& registrar,
+  using LockDescription = FullSystemLockDescription;
+
+  FullSystemLock(std::unique_ptr<content::PartitionedLockHolder> holder,
+                 WebAppRegistrar& registrar,
                  WebAppSyncBridge& sync_bridge,
                  WebAppInstallFinalizer& install_finalizer,
-                 OsIntegrationManager& os_integration_manager);
+                 OsIntegrationManager& os_integration_manager,
+                 WebAppInstallManager& install_manager,
+                 WebAppIconManager& icon_manager,
+                 WebAppTranslationManager& translation_manager,
+                 WebAppUiManager& ui_manager);
   ~FullSystemLock();
 };
 

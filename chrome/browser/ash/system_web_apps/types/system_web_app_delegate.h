@@ -91,11 +91,19 @@ class SystemWebAppDelegate {
   // properties for window size.
   virtual gfx::Size GetMinimumWindowSize() const;
 
-  // If set, we allow only a single window for this app.
-  virtual bool ShouldReuseExistingWindow() const;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Decides whether to launch the app at the given url in an existing app
+  // window (returned by the function) or a new one (nullptr). By default, an
+  // existing app window is reused independent of the url.
+  //
+  // This is implemented in
+  // chrome/browser/ui/ash/system_web_apps/system_web_app_delegate_ui_impl.cc.
+  virtual Browser* GetWindowForLaunch(Profile* profile, const GURL& url) const;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // If true, adds a "New Window" option to App's shelf context menu.
-  // ShouldReuseExistingWindow() should return false at the same time.
+  // NOTE: Combining this with a GetWindowForLaunch function that allows window
+  // reuse can lead to an unintuitive UX.
   virtual bool ShouldShowNewWindowMenuOption() const;
 
   // Called when the app is launched with `params`. If the returned value is
@@ -114,7 +122,10 @@ class SystemWebAppDelegate {
   // Resource Ids for additional search terms.
   virtual std::vector<int> GetAdditionalSearchTerms() const;
 
-  // If false, this app will be hidden from the Chrome OS app launcher.
+  // If false, this app will be hidden from the Chrome OS app launcher. If true,
+  // the app must have a launcher position defined in the GetDefault() function
+  // in //chrome/browser/ash/extensions/default_app_order.cc, which should match
+  // the order in go/default-apps.
   virtual bool ShouldShowInLauncher() const;
 
   // If false, this app will be hidden from the Chrome OS search.

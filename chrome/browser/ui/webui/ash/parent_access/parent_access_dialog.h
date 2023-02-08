@@ -16,6 +16,8 @@
 
 namespace ash {
 
+class WindowDimmer;
+
 // Dialog which embeds the Parent Access UI, which verifies a
 // parent during a child session.
 class ParentAccessDialog : public ParentAccessUIHandlerDelegate,
@@ -24,12 +26,12 @@ class ParentAccessDialog : public ParentAccessUIHandlerDelegate,
   struct Result {
     // The status of the result.
     enum class Status {
-      kApproved,   // The parent was verified and they approved.
-      kDeclined,   // The request was explicitly declined by the parent.
-      kCancelled,  // The request was cancelled/dismissed by the parent.
-      kError,      // An error occurred while handling the request.
+      kApproved,  // The parent was verified and they approved.
+      kDeclined,  // The request was explicitly declined by the parent.
+      kCanceled,  // The request was canceled/dismissed by the parent.
+      kError,     // An error occurred while handling the request.
     };
-    Status status = Status::kCancelled;
+    Status status = Status::kCanceled;
 
     // The Parent Access Token.  Only set if status is kVerified.
     std::string parent_access_token = "";
@@ -67,6 +69,9 @@ class ParentAccessDialog : public ParentAccessUIHandlerDelegate,
       parent_access_ui::mojom::ParentAccessParamsPtr params,
       Callback callback);
 
+  // Creates and shows additional dimmer underneath the dialog.
+  void ShowDimmer();
+
  protected:
   ~ParentAccessDialog() override;
 
@@ -75,6 +80,10 @@ class ParentAccessDialog : public ParentAccessUIHandlerDelegate,
 
   parent_access_ui::mojom::ParentAccessParamsPtr parent_access_params_;
   Callback callback_;
+
+  // The dimmer shown underneath the dialog in order to mitigate spoofing by the
+  // malicious website. The dimmer clearly renders over the browser UI.
+  std::unique_ptr<WindowDimmer> dimmer_;
 
   // The Parent Access Dialog result passed back to the caller when the dialog
   // completes.

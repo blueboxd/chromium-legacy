@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">ອະນຸຍາດໃຫ້ເວັບໄຊເຂົ້າເຖິງເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ (ແນະນຳ)</translation>
 <translation id="5050380848339752099">ເວັບໄຊນີ້ກຳລັງຈະແບ່ງປັນຂໍ້ມູນກັບແອັບນອກໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ.</translation>
 <translation id="5063480226653192405">ການນໍາໃຊ້</translation>
-<translation id="5082281938627763039">ນີ້ຈະລຶບຄຸກກີ້ ແລະ ຂໍ້ມູນເວັບໄຊອື່ນໆສຳລັບ <ph name="FPS_MEMBER" /> ແລະ ສຳລັບເວັບໄຊໃນກຸ່ມເວັບໄຊຂອງ <ph name="FPS_OWNER" /> ອອກ</translation>
 <translation id="5091013926750941408">ເວັບໄຊມືຖື</translation>
 <translation id="509133520954049755">ຮ້ອງຂໍມຸມມອງເດັສທັອບ</translation>
 <translation id="5100237604440890931">ຫຍໍ້ລົງແລ້ວ - ຄລິກ​ເພື່ອ​ຂະ​ຫຍາຍ.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">ລາກຈາກດ້ານເທິງ ແລ້ວແຕະປຸ່ມກັບຄືນ ເພື່ອອອກຈາກເຕັມຈໍ.</translation>
 <translation id="5300589172476337783">ສະ​ແດງ​</translation>
 <translation id="5301954838959518834">ຕົກລົງ, ເຂົ້າໃຈແລ້ວ</translation>
-<translation id="5313967007315987356">ເພີ່ມ​ເວັບ​ໄຊ​ທ໌</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>
 <translation id="5335288049665977812">ອະນຸຍາດໃຫ້ເວັບໄຊເປີດໃຊ້ JavaScript (ແນະນຳ)</translation>
 <translation id="534295439873310000">ອຸປະກອນ NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">ກຳລັງແບ່ງປັນໜ້າຈໍຂອງທ່ານ</translation>
 <translation id="5922967540311291836">ບລັອກຄຸກກີ້ພາກສ່ວນທີສາມ:</translation>
 <translation id="5939518447894949180">ຕັ້ງຄ່າຄືນໃໝ່</translation>
+<translation id="5968921426641056619">ລະບຸທີ່ຢູ່ເວັບ</translation>
 <translation id="5975083100439434680">ຊູມອອກ</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">ຄວບຄຸມສິດເຂົ້າເຖິງອຸປະກອນຂອງທ່ານຂອງເວັບໄຊນີ້</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">ເລືອກ <ph name="ITEM_COUNT" /> ລາຍການແລ້ວ</translation>
 <translation id="7260727271532453612">ອະນຸຍາດ <ph name="PERMISSION_1" /> ແລະ <ph name="PERMISSION_2" /> ແລ້ວ</translation>
 <translation id="7302486331832100261">ໂດຍປົກກະຕິແລ້ວທ່ານບລັອກການແຈ້ງເຕືອນ. ເພື່ອອະນຸຍາດ, ກະລຸນາແຕະລາຍລະອຽດ.</translation>
+<translation id="7366415735885268578">ເພີ່ມເວັບໄຊ</translation>
 <translation id="7383715096023715447">ການຕັ້ງຄ່າສຳລັບ <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">ຖາມ​ກ່ອນ</translation>
 <translation id="7423538860840206698">ບລັອກບໍ່ໃຫ້ອ່ານຄລິບບອດແລ້ວ</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">ເວັບໄຊນີ້ສະແດງໂຄສະນາທີ່ລົບກວນ ຫຼື ຫຼອກລວງ</translation>
 <translation id="8394832520002899662">ແຕະເພື່ອກັບຄືນຫາເວັບໄຊ</translation>
 <translation id="8409345997656833551">ຮັບການແຈ້ງເຕືອນເມື່ອສາມາດສະແດງບົດຄວາມໃດໜຶ່ງໃນມຸມມອງແບບງ່າຍໄດ້</translation>
+<translation id="8423565414844018592">ຕັ້ງຄ່າມາດຕາສ່ວນຂໍ້ຄວາມເປັນ <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">ການ​ຕັ້ງຄ່າ</translation>
 <translation id="8441146129660941386">ເລື່ອນກັບຫຼັງ</translation>
 <translation id="8444433999583714703">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ເຂົ້າເຖິງສະຖານທີ່ຂອງທ່ານ, ກະລຸນາເປີດສະຖານທີ່ໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC ປິດຢູ່ສຳລັບອຸປະກອນນີ້. ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">ບລັອກເວັບໄຊບໍ່ໃຫ້ເບິ່ງເຫັນ ແລະ ບໍ່ໃຫ້ປ່ຽນຂໍ້ມູນຢູ່ອຸປະກອນ NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">ບລັອກຄຸກກີ້ສຳລັບເວັບໄຊສະເພາະ.</translation>
 <translation id="8959122750345127698">ການນຳທາງແມ່ນບໍ່ສາມາດເຂົ້າເຖິງໄດ້: <ph name="URL" /></translation>
 <translation id="8986362086234534611">ລືມ</translation>

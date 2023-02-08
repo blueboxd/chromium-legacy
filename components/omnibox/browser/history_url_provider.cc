@@ -18,8 +18,8 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
@@ -319,8 +319,7 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
   // match below if the user has visited "site".
   if ((input.type() == metrics::OmniboxInputType::UNKNOWN) &&
       input.parts().username.is_nonempty() &&
-      !input.parts().password.is_nonempty() &&
-      !input.parts().path.is_nonempty())
+      input.parts().password.is_empty() && input.parts().path.is_empty())
     return;
 
   // If the input can be canonicalized to a valid URL, look up all
@@ -364,7 +363,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     const SearchTermsData* search_terms_data,
     bool allow_deleting_browser_history,
     const TemplateURL* starter_pack_engine)
-    : origin_task_runner(base::SequencedTaskRunnerHandle::Get()),
+    : origin_task_runner(base::SequencedTaskRunner::GetCurrentDefault()),
       input(input),
       input_before_fixup(input_before_fixup),
       trim_http(trim_http),
@@ -749,11 +748,14 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
 void HistoryURLProvider::PromoteMatchesIfNecessary(
     const HistoryURLProviderParams& params) {
+  bool populate_scoring_signals =
+      OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled();
   if (params.promote_type == HistoryURLProviderParams::NEITHER)
     return;
   if (params.promote_type == HistoryURLProviderParams::FRONT_HISTORY_MATCH) {
     matches_.push_back(HistoryMatchToACMatch(
-        params, 0, CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
+        params, 0, CalculateRelevance(INLINE_AUTOCOMPLETE, 0),
+        populate_scoring_signals));
   }
   // There are two cases where we need to add the what-you-typed-match:
   //   * If params.promote_type is WHAT_YOU_TYPED_MATCH, we're being explicitly
@@ -810,6 +812,8 @@ void HistoryURLProvider::QueryComplete(
                                  HistoryURLProviderParams::FRONT_HISTORY_MATCH))
                                    ? 1
                                    : 0;
+    bool populate_scoring_signals =
+        OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled();
     for (size_t i = first_match; i < params->matches.size(); ++i) {
       // All matches score one less than the previous match.
       --relevance;
@@ -818,7 +822,8 @@ void HistoryURLProvider::QueryComplete(
         relevance = CalculateRelevanceScoreUsingScoringParams(
             params->matches[i], relevance, scoring_params_);
       }
-      matches_.push_back(HistoryMatchToACMatch(*params, i, relevance));
+      matches_.push_back(HistoryMatchToACMatch(*params, i, relevance,
+                                               populate_scoring_signals));
     }
   }
 
@@ -920,7 +925,7 @@ GURL HistoryURLProvider::AsKnownIntranetURL(
   // paranoid and check.
   if ((input.type() != metrics::OmniboxInputType::UNKNOWN) ||
       !base::EqualsCaseInsensitiveASCII(input.scheme(), url::kHttpScheme) ||
-      !input.parts().host.is_nonempty())
+      input.parts().host.is_empty())
     return GURL();
 
   const std::string host(base::UTF16ToUTF8(
@@ -1099,7 +1104,8 @@ size_t HistoryURLProvider::RemoveSubsequentMatchesOf(
 AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     const HistoryURLProviderParams& params,
     size_t match_number,
-    int relevance) {
+    int relevance,
+    bool populate_scoring_signals) {
   // The FormattedStringWithEquivalentMeaning() call below requires callers to
   // be on the main thread.
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1128,7 +1134,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
           client()->GetSchemeClassifier(), &inline_autocomplete_offset);
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(
-      params.input.parts().scheme.len > 0 || !params.trim_http ||
+      params.input.parts().scheme.is_nonempty() || !params.trim_http ||
           history_match.match_in_scheme,
       history_match.match_in_subdomain);
   match.contents = url_formatter::FormatUrl(info.url(), format_types,
@@ -1172,5 +1178,20 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   }
 
   RecordAdditionalInfoFromUrlRow(info, &match);
+
+  // Populate scoring signals for machine learning model training and scoring.
+  if (populate_scoring_signals) {
+    match.scoring_signals.set_typed_count(info.typed_count());
+    match.scoring_signals.set_visit_count(info.visit_count());
+    match.scoring_signals.set_elapsed_time_last_visit_secs(
+        (base::Time::Now() - info.last_visit()).InSeconds());
+    match.scoring_signals.set_allowed_to_be_default_match(
+        match.allowed_to_be_default_match);
+    match.scoring_signals.set_length_of_url(info.url().spec().length());
+    match.scoring_signals.set_is_host_only(history_match.IsHostOnly());
+    match.scoring_signals.set_has_non_scheme_www_match(
+        history_match.innermost_match);
+  }
+
   return match;
 }

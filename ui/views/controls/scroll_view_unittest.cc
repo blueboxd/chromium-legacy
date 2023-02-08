@@ -12,11 +12,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -386,7 +386,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   void WaitForCommit() {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, quit_closure_, TestTimeouts::action_timeout());
     run_loop.Run();
     EXPECT_TRUE(quit_closure_.is_null()) << "Timed out waiting for a commit.";
@@ -920,6 +920,31 @@ TEST_F(ScrollViewTest, ScrollRectToVisible) {
   // Scroll to the current y-location and 10x10; should do nothing.
   contents_ptr->ScrollRectToVisible(gfx::Rect(0, offset.y(), 10, 10));
   EXPECT_EQ(415 - viewport_height, test_api.CurrentOffset().y());
+}
+
+// Verifies ScrollByOffset() method works as expected
+TEST_F(ScrollViewTest, ScrollByOffset) {
+  // setup
+  ScrollViewTestApi test_api(scroll_view_.get());
+  auto contents = std::make_unique<CustomView>();
+  contents->SetPreferredSize(gfx::Size(500, 1000));
+  scroll_view_->SetContents(std::move(contents));
+  scroll_view_->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+
+  views::test::RunScheduledLayout(scroll_view_.get());
+  EXPECT_EQ(gfx::Vector2d(0, 0), test_api.IntegralViewOffset());
+
+  // scroll by an offset of x=5 and y=5
+  scroll_view_->ScrollByOffset(gfx::PointF(5, 5));
+
+  EXPECT_EQ(test_api.CurrentOffset().x(), 5);
+  EXPECT_EQ(test_api.CurrentOffset().y(), 5);
+
+  // scroll back to the initial position
+  scroll_view_->ScrollByOffset(gfx::PointF(-5, -5));
+
+  EXPECT_EQ(test_api.CurrentOffset().x(), 0);
+  EXPECT_EQ(test_api.CurrentOffset().y(), 0);
 }
 
 // Verifies ScrollRectToVisible() scrolls the view horizontally even if the

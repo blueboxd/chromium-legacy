@@ -9,6 +9,9 @@
 // Please run the closure compiler before committing changes.
 // See https://chromium.googlesource.com/chromium/src/+/main/docs/closure_compilation.md
 
+// TODO(b/242243189): Disable automatic extern generation until fixed.
+// The longClick method was manually inserted.
+
 /**
  * @fileoverview Externs generated from namespace: automation
  * @externs
@@ -405,6 +408,7 @@ chrome.automation.ActionType = {
   INCREMENT: 'increment',
   INTERNAL_INVALIDATE_TREE: 'internalInvalidateTree',
   LOAD_INLINE_TEXT_BOXES: 'loadInlineTextBoxes',
+  LONG_CLICK: 'longClick',
   REPLACE_SELECTED_TEXT: 'replaceSelectedText',
   RESUME_MEDIA: 'resumeMedia',
   SCROLL_BACKWARD: 'scrollBackward',
@@ -415,6 +419,7 @@ chrome.automation.ActionType = {
   SCROLL_UP: 'scrollUp',
   SCROLL_TO_MAKE_VISIBLE: 'scrollToMakeVisible',
   SCROLL_TO_POINT: 'scrollToPoint',
+  SCROLL_TO_POSITION_AT_ROW_COLUMN: 'scrollToPositionAtRowColumn',
   SET_ACCESSIBILITY_FOCUS: 'setAccessibilityFocus',
   SET_SCROLL_OFFSET: 'setScrollOffset',
   SET_SELECTION: 'setSelection',
@@ -426,7 +431,6 @@ chrome.automation.ActionType = {
   START_DUCKING_MEDIA: 'startDuckingMedia',
   STOP_DUCKING_MEDIA: 'stopDuckingMedia',
   SUSPEND_MEDIA: 'suspendMedia',
-  LONG_CLICK: 'longClick',
 };
 
 /**

@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -95,6 +95,7 @@ void ExternallyManagedAppManagerImpl::UninstallApps(
 }
 
 void ExternallyManagedAppManagerImpl::Shutdown() {
+  is_in_shutdown_ = true;
   pending_registrations_.clear();
   current_registration_.reset();
   pending_installs_.clear();
@@ -124,7 +125,7 @@ ExternallyManagedAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
   return std::make_unique<ExternallyManagedAppInstallTask>(
       profile_, url_loader_.get(), registrar(), ui_manager(), finalizer(),
-      command_manager(), std::move(install_options));
+      command_scheduler(), std::move(install_options));
 }
 
 std::unique_ptr<ExternallyManagedAppRegistrationTaskBase>
@@ -148,14 +149,14 @@ void ExternallyManagedAppManagerImpl::OnRegistrationFinished(
 }
 
 void ExternallyManagedAppManagerImpl::PostMaybeStartNext() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&ExternallyManagedAppManagerImpl::MaybeStartNext,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ExternallyManagedAppManagerImpl::MaybeStartNext() {
-  if (current_install_)
+  if (current_install_ || is_in_shutdown_)
     return;
 
   while (!pending_installs_.empty()) {
@@ -244,6 +245,7 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
 void ExternallyManagedAppManagerImpl::StartInstallationTask(
     std::unique_ptr<TaskAndCallback> task) {
   DCHECK(!current_install_);
+  DCHECK(!is_in_shutdown_);
   if (current_registration_) {
     // Preempt current registration.
     pending_registrations_.push_front(current_registration_->install_url());
@@ -272,6 +274,7 @@ bool ExternallyManagedAppManagerImpl::RunNextRegistration() {
 }
 
 void ExternallyManagedAppManagerImpl::CreateWebContentsIfNecessary() {
+  DCHECK(!is_in_shutdown_);
   if (web_contents_)
     return;
 

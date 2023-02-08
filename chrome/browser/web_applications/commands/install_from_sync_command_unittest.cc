@@ -123,8 +123,7 @@ class InstallFromSyncTest : public WebAppTest {
       InstallFromSyncCommand::Params params,
       OnceInstallCallback install_callback) {
     return std::make_unique<InstallFromSyncCommand>(
-        &url_loader(), profile(), &provider()->install_finalizer(),
-        &provider()->registrar(), std::move(data_retriever), params,
+        &url_loader(), profile(), std::move(data_retriever), params,
         std::move(install_callback));
   }
 
@@ -159,7 +158,7 @@ class InstallFromSyncTest : public WebAppTest {
     return provider()->command_manager();
   }
 
-  WebAppRegistrar& registrar() { return provider()->registrar(); }
+  WebAppRegistrar& registrar() { return provider()->registrar_unsafe(); }
 
   TestWebAppUrlLoader& command_manager_url_loader() const {
     return *command_manager_url_loader_;
@@ -678,7 +677,7 @@ TEST_F(InstallFromSyncTest, ShutdownDoesNotCrash) {
       command_manager_->Shutdown();
     }
 
-    WebAppCommandManager* const command_manager_;
+    const raw_ptr<WebAppCommandManager> command_manager_;
   };
 
   class CustomWebAppDataRetriever : public WebAppDataRetriever {
@@ -698,7 +697,7 @@ TEST_F(InstallFromSyncTest, ShutdownDoesNotCrash) {
       std::move(callback).Run(std::make_unique<WebAppInstallInfo>());
     }
 
-    WebAppCommandManager* const command_manager_;
+    const raw_ptr<WebAppCommandManager> command_manager_;
   };
 
   const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, kWebAppUrl);

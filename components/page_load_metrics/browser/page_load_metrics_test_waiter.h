@@ -38,12 +38,20 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
     kFirstInputDelay = 1 << 8,
     kFirstPaintAfterBackForwardCacheRestore = 1 << 9,
     kFirstInputDelayAfterBackForwardCacheRestore = 1 << 10,
-    kLayoutShift = 1 << 11,
-    kRequestAnimationFrameAfterBackForwardCacheRestore = 1 << 12,
-    kFirstScrollDelay = 1 << 13,
-    kSoftNavigationCountUpdated = 1 << 14,
-    kTotalInputDelay = 1 << 15,
+    kRequestAnimationFrameAfterBackForwardCacheRestore = 1 << 11,
+    kFirstScrollDelay = 1 << 12,
+    kSoftNavigationCountUpdated = 1 << 13,
+    kTotalInputDelay = 1 << 14,
   };
+
+  // Identify which frame the layout shift happens.
+  enum class ShiftFrame {
+    LayoutShiftOnlyInMainFrame,
+    LayoutShiftOnlyInSubFrame,
+    LayoutShiftOnlyInBothFrames,
+    NoLayoutShift,
+  };
+
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
 
@@ -108,6 +116,10 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   // set of expected behaviors.
   void AddLoadingBehaviorExpectation(int behavior_flags);
 
+  // Add a main/sub frame layout shift expectation.
+  void AddPageLayoutShiftExpectation(
+      ShiftFrame frame = ShiftFrame::LayoutShiftOnlyInMainFrame);
+
   // Whether the given TimingField was observed in the page.
   bool DidObserveInPage(TimingField field) const;
 
@@ -130,8 +142,14 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
     expected_num_input_events_ = expected_num_input_events;
   }
 
+  // Add the number of interactions count expectation.
+  void AddNumInteractionsExpectation(uint64_t expected_num_interactions) {
+    expected_num_interactions_ = expected_num_interactions;
+  }
+
  protected:
   virtual bool ExpectationsSatisfied() const;
+  void AssertExpectationsSatisfied() const;
 
   // Intended to be overridden in tests to allow tests to wait on other resource
   // conditions.
@@ -176,6 +194,17 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
       return !((bitmask_ & other.bitmask_) ^ bitmask_);
     }
 
+    // Returns the string representation of the TimingFields this bitset
+    // contains. This method is not called anywhere and is for debug purpose
+    // only.
+    std::string ToDebugString() const;
+
+    // Returns true if the bitset contains the TimingField. This method is not
+    // called anywhere and is for debug purpose only.
+    bool ContainsTimingField(TimingField time_field) const {
+      return (bitmask_ & static_cast<int>(time_field)) > 0;
+    }
+
    private:
     int bitmask_ = 0;
   };
@@ -186,9 +215,7 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
 
   TimingFieldBitSet GetMatchedBits(
       const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::mojom::FrameMetadata& metadata,
-      const PageRenderData* render_data,
-      bool is_main_frame);
+      const page_load_metrics::mojom::FrameMetadata& metadata);
 
   // Updates observed page fields when a timing update is received by the
   // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
@@ -201,7 +228,8 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   // Updates observed page fields when a input timing update is received by the
   // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
   // after update.
-  void OnPageInputTimingUpdated(uint64_t num_input_events);
+  void OnPageInputTimingUpdated(uint64_t num_interactions,
+                                uint64_t num_input_events);
 
   // Updates observed page fields when a timing update is received by the
   // MetricsWebContentsObserver. Stops waiting if expectations are satsfied
@@ -232,6 +260,11 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   void OnFeaturesUsageObserved(
       content::RenderFrameHost* rfh,
       const std::vector<blink::UseCounterFeature>& features);
+
+  // Updates |observed_.layout_shift_| to record any update of new layout
+  // shift. Stops waiting if expectations are satisfied after update.
+  void OnPageRenderDataUpdate(const mojom::FrameRenderDataUpdate& render_data,
+                              bool is_main_frame);
 
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size);
@@ -267,6 +300,8 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
   bool MainFrameViewportRectExpectationsSatisfied() const;
   bool MemoryUpdateExpectationsSatisfied() const;
   bool TotalInputDelayExpectationsSatisfied() const;
+  bool LayoutShiftExpectationsSatisfied() const;
+  bool NumInteractionsExpectationsSatisfied() const;
 
   void AddObserver(page_load_metrics::PageLoadTracker* tracker);
 
@@ -291,11 +326,10 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
     std::unordered_set<content::GlobalRenderFrameHostId,
                        content::GlobalRenderFrameHostIdHasher>
         memory_update_frame_ids_;
+    bool layout_shift_ = false;
   };
   State expected_;
   State observed_;
-
-  TimingFieldBitSet observed_page_fields_;
 
   int current_complete_resources_ = 0;
   int64_t current_network_bytes_ = 0;
@@ -318,6 +352,11 @@ class PageLoadMetricsTestWaiter : public MetricsLifecycleObserver {
 
   uint64_t current_num_input_events_ = 0;
   uint64_t expected_num_input_events_ = 0;
+
+  uint64_t current_num_interactions_ = 0;
+  uint64_t expected_num_interactions_ = 0;
+
+  ShiftFrame shift_frame_ = ShiftFrame::NoLayoutShift;
 
   base::WeakPtrFactory<PageLoadMetricsTestWaiter> weak_factory_{this};
 

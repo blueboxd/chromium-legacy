@@ -7,6 +7,11 @@
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// If you change this, please follow the process in
+// go/preloading-dashboard-updates to update the mapping reflected in
+// dashboard, or if you are not a Googler, please file an FYI bug on
+// https://crbug.new with component Internals>Preload.
 enum class PrerenderFinalStatus {
   kActivated = 0,
   kDestroyed = 1,
@@ -69,8 +74,7 @@ enum class PrerenderFinalStatus {
   // PrerenderHost, but the activation navigation's parameters are different
   // from the initial prerendering navigation so Prerender fails to activate it.
   kActivationNavigationParameterMismatch = 50,
-  kEmbedderHostDisallowed = 52,
-  kMaxValue = kEmbedderHostDisallowed,
+  kMaxValue = kActivationNavigationParameterMismatch,
 };
 
 #endif  // CONTENT_BROWSER_PRELOADING_PRERENDER_PRERENDER_FINAL_STATUS_H_

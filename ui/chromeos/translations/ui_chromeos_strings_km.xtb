@@ -43,8 +43,10 @@
 <translation id="1378727793141957596">ស្វាគមន៍មកកាន់ Google Drive!</translation>
 <translation id="1379911846207762492">អ្នកអាចទាញយកឯកសារសម្រាប់ចូលប្រើ នៅពេលគ្មានការតភ្ជាប់អ៊ីនធឺណិតបាន។</translation>
 <translation id="1383876407941801731">ស្វែងរក</translation>
+<translation id="1388045380422025115">គ្រប់​ប្រភេទ​</translation>
 <translation id="1395262318152388157">រកមើលរបាររំកិល</translation>
 <translation id="1399511500114202393">មិនមាន​វិញ្ញាបនបត្រ​អ្នកប្រើប្រាស់​ទេ</translation>
+<translation id="1403008701842173542">គ្រប់​ទី​កន្លែង</translation>
 <translation id="1404323374378969387">ភាសា​ន័រវែស</translation>
 <translation id="1433628812591023318">ត្រូវតែផ្លាស់ទី​ឯកសារ​ទៅថតឯកសារ​របស់ Windows សិន ទើបអាចទម្លាក់​ឯកសារនោះ​ទៅក្នុង Parallels Desktop បាន។</translation>
 <translation id="1435838927755162558">ចែករំលែក​ថត​ជាមួយ Parallels Desktop</translation>
@@ -102,6 +104,7 @@
 <translation id="1834290891154666894">ការបញ្ចូល​ភាពត្រូវគ្នា​នៃឈ្មោះជំនួស​នៃប្រធានបទ​មិនត្រឹមត្រូវ</translation>
 <translation id="1838709767668011582">គេហទំព័រ Google</translation>
 <translation id="1853795129690976061">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Linux</translation>
+<translation id="1859422890169495746">Chromebook នេះ</translation>
 <translation id="1864756863218646478">ឯកសារមិនត្រូវបានរកឃើញទេ។</translation>
 <translation id="1884013283844450420">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ភ្ជាប់</translation>
 <translation id="1920670151694390848">ការសរសេរ​តាមសូរសព្ទជា​ភាសាម៉ាឡាយ៉ាឡាម</translation>
@@ -133,6 +136,7 @@
 <translation id="2143778271340628265">ការតំឡើងប្រូកស៊ីដោយខ្លូនឯង</translation>
 <translation id="2148716181193084225">ថ្ងៃនេះ</translation>
 <translation id="2163152940313951844">តួអក្សរ​មិនត្រឹមត្រូវ៖ <ph name="CHARACTER_NAME" /></translation>
+<translation id="2178056538281447670">Microsoft 365</translation>
 <translation id="2184934335987813305">ភាសាព័រទុយហ្កាល់​ដែលប្រើ​ក្ដារចុច​កុំព្យូទ័រ​អាមេរិកអន្តរជាតិ</translation>
 <translation id="2193661397560634290">បានប្រើអស់ <ph name="SPACE_USED" /></translation>
 <translation id="2198315389084035571">ភាសាចិនសាមញ្ញ</translation>
@@ -152,6 +156,7 @@
 <translation id="2307462900900812319">តំឡើងបណ្តាញ</translation>
 <translation id="2325650632570794183">ប្រភេទឯកសារនេះមិនត្រូវបានគាំទ្រទេ។ សូមទៅកាន់ Chrome Web Store ដើម្បិស្វែងរកកម្មវិធីដែលអាចបើកប្រភេទឯកសារនេះបាន។</translation>
 <translation id="2326539130272988168">ភាសា​ប៊ុលហ្ការី</translation>
+<translation id="2337715497728194187">ចែករំលែក​ជា​មួយ Bruschetta</translation>
 <translation id="23721837607121582">ទាញយក​កម្រងព័ត៌មាន​ឧបករណ៍​ចល័ត បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">ប្ដូរ​ទៅ​ទិដ្ឋភាពជាបញ្ជី</translation>
 <translation id="2377590462528165447">ថត <ph name="NUMBER_OF_ITEMS" /> ដែលបាន​ចែករំលែកជាមួយ Linux</translation>
@@ -181,6 +186,7 @@
 <translation id="2544853746127077729">វិញ្ញាបនប័ត្រសម្គាល់អត្តសញ្ញាណត្រូវបានបដិសេធដោយបណ្តាញ</translation>
 <translation id="255937426064304553">US អន្តរជាតិ</translation>
 <translation id="2563185590376525700">កង្កែប</translation>
+<translation id="2574327434504608656">បាន​ចែករំលែក​ថត 1 ជា​មួយ Bruschetta</translation>
 <translation id="2578394532502990878">សូរសព្ទជាភាសា​តាមិល</translation>
 <translation id="2579959351793446050">ភាសា​អូឌៀ</translation>
 <translation id="2602810353103180630">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, បានទប់ស្កាត់ដោយអ្នកគ្រប់គ្រងរបស់អ្នក, ព័ត៌មានលម្អិត</translation>
@@ -274,6 +280,7 @@
 <translation id="3408072735282270043">បើកដំណើរការ, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">ភាសា​អាល្លឺម៉ង់ (អាល្លឺម៉ង់) ដែលប្រើ​ក្ដារចុច Neo 2</translation>
 <translation id="3414856743105198592">ការសម្អាតឯកសារកំសាន្តដែលអាចយកចេញបាននឹងលុបទិន្នន័យទាំងអស់។ តើអ្នកចង់បន្តទេ?</translation>
+<translation id="3435143625481187092">ផ្ដល់​ការ​អនុញ្ញាត​ឱ្យ Bruschetta ចូល​ប្រើ​ឯកសារ​នៅ​ក្នុង​ថត <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">ម៉ោងបង្កើត</translation>
 <translation id="343907260260897561">កាមេរ៉ាថតបានរូបសន្លឹកភ្លាមៗ</translation>
 <translation id="3455931012307786678">ភាសា​អេស្តូនី</translation>
@@ -319,6 +326,7 @@
 <translation id="3801082500826908679">ហ្វារូស</translation>
 <translation id="3809272675881623365">ទន្សាយ</translation>
 <translation id="3810973564298564668">គ្រប់គ្រង</translation>
+<translation id="3811408895933919563">អង់គ្លេស (ប៉ាគីស្ថាន​)</translation>
 <translation id="3811494700605067549">ឯកសារ 1 ត្រូវបានជ្រើស</translation>
 <translation id="3817579325494460411">មិនបានផ្ដល់</translation>
 <translation id="3819448694985509187">កូដ PIN មិនត្រឹមត្រូវទេ។ អ្នកអាចព្យាយាមបាន 1 ដងទៀត។</translation>
@@ -353,6 +361,7 @@
 <translation id="4159731583141908892">បានផ្លាស់ទី <ph name="FILE_NAME" />។</translation>
 <translation id="4176286497474237543">សម្អាត​ធុងសំរាម​ឥឡូវ</translation>
 <translation id="4179621117429069925">ធាតុ​​នេះ​ស្ថិត​នៅ​ក្នុង​ធុង​សំរាម​របស់​អ្នក</translation>
+<translation id="4181839429935094755">បាន​ចែករំលែក​ថត <ph name="NUMBER_OF_ITEMS" /> ជា​មួយ Bruschetta</translation>
 <translation id="4186579485882418952">បើកឯកសារគ្មានអ៊ីនធឺណិត</translation>
 <translation id="4193154014135846272">ឯកសារ Google</translation>
 <translation id="4197674956721858839">ការជ្រើសរើសការបង្រួម</translation>
@@ -414,6 +423,7 @@
 <translation id="4646813851450205600">ភាសាឆែក​ដែលប្រើ​ក្ដារចុច Qwerty</translation>
 <translation id="4656777537938206294">កំណត់ឱ្យ​អាចប្រើ​ឯកសារបាន​ពេលគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="4658782175094886150">មនុស្ស​នៅក្រោម​ព្រិលធ្លាក់</translation>
+<translation id="466782788172479199">ផ្ដល់​កា​រអនុញ្ញាត​ឱ្យ Bruschetta ចូល​ប្រើ​ឯកសារ​នៅ​ក្នុង Google ថាសរបស់​អ្នក។ ការផ្លាស់ប្ដូរនឹង​ធ្វើសមកាលកម្ម​ទៅឧបករណ៍​ផ្សេងទៀត​របស់អ្នក។</translation>
 <translation id="4669606053856530811">សមាជិករបស់ '<ph name="SOURCE_NAME" />' នឹងបាត់បង់សិទ្ធិ​ចូលប្រើ ប្រសិនបើធាតុទាំងនេះ​មិនត្រូវបានចែករំលែកដល់ពួកគេទេ។</translation>
 <translation id="467809019005607715">Google បទបង្ហាញ</translation>
 <translation id="4690246192099372265">ភាសាស៊ុយអែដ</translation>
@@ -447,6 +457,7 @@
 <translation id="4850886885716139402">មើល</translation>
 <translation id="485316830061041779">ភាសាអាល្លឺម៉ង់</translation>
 <translation id="4867079195717347957">ចុចដើម្បី​តម្រៀបជួរឈរ​តាមលំដាប់ចុះ។</translation>
+<translation id="4867297348137739678">សប្ដាហ៍​មុន</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> បៃ</translation>
 <translation id="4874569719830985133">លុបចោល​រហូត</translation>
 <translation id="4880214202172289027">របាររំកិលកម្រិតសំឡេង</translation>
@@ -519,6 +530,7 @@
 <translation id="5330145655348521461">ឯកសារទាំងនេះត្រូវបានបើកនៅលើដេស៍ថបដ៏ទៃ។ ផ្លាស់ទីទៅ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) ដើម្បីមើលវា។</translation>
 <translation id="5330512191124428349">ទទួលយកព័ត៌មាន</translation>
 <translation id="5337538975554986899">ការចូលប្រើប្រាស់ឯកសារតាមរយៈ​ url លើកលែងតែ​<ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
+<translation id="5344246330454251646">គ្រប់គ្រង​ការ​ចែករំលែក​ជាមួយ Bruschetta</translation>
 <translation id="535792325654997756">មនុស្ស​កាន់ឆ្មា</translation>
 <translation id="5358764674931277">អត្រា​ហ្រេ្វម</translation>
 <translation id="5363339716524495120">ភាសាបញ្ចូលគឺភាសាចិន</translation>
@@ -564,6 +576,7 @@
 <translation id="5700087501958648444">ព័ត៌មាន​អំពីសំឡេង</translation>
 <translation id="5720028165859493293">បានផ្លាស់ទី <ph name="FILE_NAME" /> ទៅក្នុងធុងសំរាម</translation>
 <translation id="5724172041621205163">ភាសាថៃ​ដែលប្រើ​ក្ដារចុច Pattachote</translation>
+<translation id="57383366388012121">ខែមុន</translation>
 <translation id="5756666464756035725">ក្តារចុចហុងគ្រី</translation>
 <translation id="5763377084591234761">ភាសា​អាល្លឺម៉ង់ (ស្វ៊ីស)</translation>
 <translation id="5769519078756170258">ម៉ាស៊ីន ឬ​ដែនសម្រាប់​ដកចេញ</translation>
@@ -673,6 +686,7 @@
 <translation id="6710213216561001401">មុន</translation>
 <translation id="6732801395666424405">វិញ្ញាបនប័ត្រមិនត្រូវបានដំណើរការទេ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
+<translation id="6740270213273127264">ចែករំលែក​ថត​ជា​មួយ Bruschetta</translation>
 <translation id="6751256176799620176">បានជ្រើសថតឯកសារ 1</translation>
 <translation id="6755827872271341378">ឧបករណ៍ ChromeOS Flex</translation>
 <translation id="6790428901817661496">លេង</translation>
@@ -692,7 +706,6 @@
 <translation id="6874758081814639712">មនុស្ស​កំពុងហាត់​ថៃជី</translation>
 <translation id="6876155724392614295">កង់</translation>
 <translation id="6878261347041253038">ក្តារចុចដេវ៉ាណាការី (Phonetic)</translation>
-<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">ខ្យង</translation>
 <translation id="6896758677409633944">ចម្លង</translation>
 <translation id="6898028766943174120">ថតរងច្រើនទៀត...</translation>
@@ -702,6 +715,7 @@
 <translation id="6935521024859866267">ផ្កាប់ចុះក្រោម</translation>
 <translation id="6943836128787782965">HTTP បានបរាជ័យ</translation>
 <translation id="6949408524333579394">ការសរសេរតាម​សូរសព្ទជាភាសាស៊ែប៊ី</translation>
+<translation id="69548399407432279">ឆ្នាំមុន</translation>
 <translation id="6960565108681981554">មិនបាន​បើកដំណើរការ​ទេ។ សូម​ទាក់ទង​​ក្រុមហ៊ុន​សេវា​ទូរសព្ទ​របស់​អ្នក។</translation>
 <translation id="696203921837389374">បើកដំណើរការធ្វើសមកម្មនៅលើទិន្នន័យចល័ត</translation>
 <translation id="6965382102122355670">យល់ព្រម</translation>
@@ -710,6 +724,7 @@
 <translation id="6973630695168034713">ថតឯកសារ</translation>
 <translation id="6976795442547527108">តោ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6979737339423435258">គ្រប់​ពេល</translation>
 <translation id="6989942356279143254">ភាសា​ស៊ុយអែត</translation>
 <translation id="6990081529015358884">អ្នកអស់ចន្លោះផ្ទុកហើយ</translation>
 <translation id="6993826899923627728">ធាតុទាំងនេះស្ថិតនៅក្នុងធុងសំរាមរបស់អ្នក</translation>
@@ -844,6 +859,7 @@
 <translation id="8042602468072383151">សំឡេង <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">ភាសារូម៉ានី</translation>
 <translation id="8049184478152619004">បញ្ចូលកូដឈប់​ទប់ស្កាត់ផ្ទាល់ខ្លួន (PUK)</translation>
+<translation id="8055538340801153769">ថត​នេះ</translation>
 <translation id="807187749540895545">កំពុងស្រង់ <ph name="FILE_NAME" />...</translation>
 <translation id="8087576439476816834">ទាញយក, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">បានចែករំលែកជាមួយខ្ញុំ</translation>

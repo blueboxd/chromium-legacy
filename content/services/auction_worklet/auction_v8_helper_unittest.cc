@@ -13,10 +13,10 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/worklet_devtools_debug_test_util.h"
@@ -73,6 +73,8 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       const url::Origin& interest_group_join_origin,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
+      const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+      const absl::optional<GURL>& direct_from_seller_auction_signals,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
       const url::Origin& browser_signal_seller_origin,
       const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
@@ -88,6 +90,8 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       const std::string& interest_group_name,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
+      const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+      const absl::optional<GURL>& direct_from_seller_auction_signals,
       const std::string& seller_signals_json,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
@@ -133,7 +137,8 @@ class AuctionV8HelperTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource time_mode =
           base::test::TaskEnvironment::TimeSource::SYSTEM_TIME)
       : task_environment_(time_mode) {
-    helper_ = AuctionV8Helper::Create(base::ThreadTaskRunnerHandle::Get());
+    helper_ = AuctionV8Helper::Create(
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     // Here since we're using the same thread for everything, we need to spin
     // the event loop to let AuctionV8Helper finish initializing "off-thread";
     // normally PostTask semantics will ensure that anything that uses it on its
@@ -242,10 +247,11 @@ class AuctionV8HelperTest : public testing::Test {
     mojo::Remote<auction_worklet::mojom::BidderWorklet> connector_pipe;
 
     helper_->v8_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&DebugConnector::Create, helper_,
-                                  base::SequencedTaskRunnerHandle::Get(),
-                                  std::move(debug_id),
-                                  connector_pipe.BindNewPipeAndPassReceiver()));
+        FROM_HERE,
+        base::BindOnce(&DebugConnector::Create, helper_,
+                       base::SequencedTaskRunner::GetCurrentDefault(),
+                       std::move(debug_id),
+                       connector_pipe.BindNewPipeAndPassReceiver()));
     connector_pipe->ConnectDevToolsAgent(std::move(agent_receiver));
     return connector_pipe;
   }

@@ -9,7 +9,7 @@ import {MetricsConsentBrowserProxyImpl, Router, routes, SecureDnsMode} from 'chr
 import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -125,6 +125,9 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
     const getMicrophoneCrToggle = () =>
         privacyHubSubpage.shadowRoot.querySelector('#microphoneToggle')
             .shadowRoot.querySelector('cr-toggle');
+    const getMicrophoneTooltip = () =>
+        privacyHubSubpage.shadowRoot.querySelector('#microphoneToggle')
+            .querySelector('cr-tooltip-icon');
 
     privacyHubBrowserProxy.microphoneToggleIsEnabled = false;
     await privacyHubBrowserProxy.whenCalled(
@@ -135,6 +138,9 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
     // should be disabled as no microphone is connected.
     assertFalse(!!getMicrophoneList());
     assertTrue(getMicrophoneCrToggle().disabled);
+    // TODO(b/259553116) Check how banshee handles the microphone hardware
+    // switch.
+    assertTrue(getMicrophoneTooltip().hidden);
 
     // Add a microphone.
     mediaDevices.addDevice('audioinput', 'Fake Microphone');
@@ -143,6 +149,8 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
     // Microphone toggle should be enabled to click now as there is a microphone
     // connected and the hw toggle is inactive.
     assertFalse(getMicrophoneCrToggle().disabled);
+    // The tooltip should only show when the HW switch is engaged.
+    assertTrue(getMicrophoneTooltip().hidden);
 
     // Activate the hw toggle.
     webUIListenerCallback('microphone-hardware-toggle-changed', true);
@@ -150,6 +158,8 @@ async function parametrizedPrivacyHubSubpageTestsuite(privacyHubVersion) {
     // Microphone toggle should be disabled again due to the hw switch being
     // active.
     assertTrue(getMicrophoneCrToggle().disabled);
+    // With the HW switch being active the tooltip should be visible.
+    assertFalse(getMicrophoneTooltip().hidden);
 
     mediaDevices.popDevice();
   });

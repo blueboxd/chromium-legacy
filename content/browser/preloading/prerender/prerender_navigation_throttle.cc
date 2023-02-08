@@ -5,8 +5,6 @@
 #include "content/browser/preloading/prerender/prerender_navigation_throttle.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/no_destructor.h"
-#include "base/strings/string_split.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_host.h"
 #include "content/browser/preloading/prerender/prerender_host_registry.h"
@@ -17,7 +15,6 @@
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/public/browser/prerender_trigger_type.h"
-#include "content/public/common/content_features.h"
 #include "services/network/public/mojom/parsed_headers.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
@@ -75,28 +72,6 @@ void AnalyzeCrossOriginRedirection(
   }
 }
 
-// Prerender2 Embedders trigger based on rules decided by the browser. Prevent
-// the browser from triggering on the hosts listed.
-// Blocked hosts are expected to be passed as a comma separated string.
-// e.g. example1.test,example2.test
-const base::FeatureParam<std::string> kPrerender2EmbedderBlockedHosts{
-    &blink::features::kPrerender2, "embedder_blocked_hosts", ""};
-
-bool ShouldSkipHostInBlockList(const GURL& url) {
-  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2)) {
-    return false;
-  }
-
-  // Keep this as static because the blocked origins are served via feature
-  // parameters and are never changed until browser restart.
-  const static base::NoDestructor<std::vector<std::string>>
-      embedder_blocked_hosts(
-          base::SplitString(kPrerender2EmbedderBlockedHosts.Get(), ",",
-                            base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
-
-  return base::Contains(*embedder_blocked_hosts, url.host());
-}
-
 }  // namespace
 
 PrerenderNavigationThrottle::~PrerenderNavigationThrottle() = default;
@@ -108,11 +83,9 @@ PrerenderNavigationThrottle::MaybeCreateThrottleFor(
   auto* navigation_request = NavigationRequest::From(navigation_handle);
   FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
   if (frame_tree_node->IsMainFrame() &&
-      frame_tree_node->frame_tree()->is_prerendering()) {
-    DCHECK(blink::features::IsPrerender2Enabled());
-
+      frame_tree_node->frame_tree().is_prerendering()) {
     PrerenderHost* prerender_host =
-        static_cast<PrerenderHost*>(frame_tree_node->frame_tree()->delegate());
+        static_cast<PrerenderHost*>(frame_tree_node->frame_tree().delegate());
     DCHECK(prerender_host);
 
     return base::WrapUnique(new PrerenderNavigationThrottle(navigation_handle));
@@ -139,7 +112,7 @@ PrerenderNavigationThrottle::PrerenderNavigationThrottle(
     : NavigationThrottle(navigation_handle) {
   auto* navigation_request = NavigationRequest::From(navigation_handle);
   PrerenderHost* prerender_host = static_cast<PrerenderHost*>(
-      navigation_request->frame_tree_node()->frame_tree()->delegate());
+      navigation_request->frame_tree_node()->frame_tree().delegate());
   DCHECK(prerender_host);
 
   // This throttle is responsible for setting the initial navigation id on the
@@ -157,13 +130,11 @@ PrerenderNavigationThrottle::PrerenderNavigationThrottle(
 
 NavigationThrottle::ThrottleCheckResult
 PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
-  DCHECK(blink::features::IsPrerender2Enabled());
-
   // Take the root frame tree node of the prerendering page.
   auto* navigation_request = NavigationRequest::From(navigation_handle());
   FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
   DCHECK(frame_tree_node->IsMainFrame());
-  DCHECK(frame_tree_node->frame_tree()->is_prerendering());
+  DCHECK(frame_tree_node->frame_tree().is_prerendering());
 
   PrerenderHostRegistry* prerender_host_registry =
       frame_tree_node->current_frame_host()
@@ -172,7 +143,7 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
 
   // Get the prerender host of the prerendering page.
   PrerenderHost* prerender_host =
-      static_cast<PrerenderHost*>(frame_tree_node->frame_tree()->delegate());
+      static_cast<PrerenderHost*>(frame_tree_node->frame_tree().delegate());
   DCHECK(prerender_host);
 
   // Navigations after the initial prerendering navigation are disallowed.
@@ -184,18 +155,9 @@ PrerenderNavigationThrottle::WillStartOrRedirectRequest(bool is_redirection) {
     return CANCEL;
   }
 
-  GURL prerendering_url = navigation_handle()->GetURL();
-
-  if ((prerender_host->trigger_type() == PrerenderTriggerType::kEmbedder) &&
-      ShouldSkipHostInBlockList(prerendering_url)) {
-    prerender_host_registry->CancelHost(
-        frame_tree_node->frame_tree_node_id(),
-        PrerenderFinalStatus::kEmbedderHostDisallowed);
-    return CANCEL;
-  }
-
   // Allow only HTTP(S) schemes.
   // https://wicg.github.io/nav-speculation/prerendering.html#no-bad-navs
+  GURL prerendering_url = navigation_handle()->GetURL();
   if (!prerendering_url.SchemeIsHTTPOrHTTPS()) {
     prerender_host_registry->CancelHost(
         frame_tree_node->frame_tree_node_id(),
@@ -283,7 +245,7 @@ PrerenderNavigationThrottle::WillProcessResponse() {
 
   FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
   DCHECK(frame_tree_node->IsMainFrame());
-  DCHECK(frame_tree_node->frame_tree()->is_prerendering());
+  DCHECK(frame_tree_node->frame_tree().is_prerendering());
 
   PrerenderHostRegistry* prerender_host_registry =
       frame_tree_node->current_frame_host()

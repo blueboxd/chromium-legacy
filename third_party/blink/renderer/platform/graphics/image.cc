@@ -51,12 +51,14 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -196,6 +198,10 @@ String Image::FilenameExtension() const {
   return String();
 }
 
+const AtomicString& Image::MimeType() const {
+  return g_empty_atom;
+}
+
 namespace {
 
 sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
@@ -218,7 +224,7 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                      subset_rect.height() + spacing.height());
 
   PaintRecorder recorder;
-  cc::PaintCanvas* canvas = recorder.beginRecording(tile_rect);
+  cc::PaintCanvas* canvas = recorder.beginRecording();
   cc::PaintFlags flags;
   flags.setAntiAlias(should_antialias);
   canvas->drawImageRect(
@@ -295,7 +301,7 @@ void Image::DrawPattern(GraphicsContext& context,
   auto image_id = image.stable_id();
 
   SkSamplingOptions sampling_to_use =
-      context.ComputeSamplingOptions(this, dest_rect, gfx::RectF(subset_rect));
+      context.ComputeSamplingOptions(*this, dest_rect, gfx::RectF(subset_rect));
   sk_sp<PaintShader> tile_shader = CreatePatternShader(
       image, local_matrix, sampling_to_use, context.ShouldAntialias(),
       gfx::SizeF(tiling_info.spacing.width() / tiling_info.scale.x(),

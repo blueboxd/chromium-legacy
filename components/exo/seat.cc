@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/chromeos_buildflags.h"
 #include "components/exo/data_exchange_delegate.h"
 #include "components/exo/data_source.h"
 #include "components/exo/drag_drop_operation.h"
@@ -293,7 +292,7 @@ void Seat::OnAllReadsFinished(
   // |auto_reset| is destroyed, so if there are outstanding references that
   // would prevent that, reschedule this task.
   if (!writer->HasOneRef()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&Seat::OnAllReadsFinished,
                        weak_ptr_factory_.GetWeakPtr(), std::move(writer)));

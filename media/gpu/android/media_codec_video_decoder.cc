@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/android/media_codec_bridge_impl.h"
@@ -705,7 +705,7 @@ void MediaCodecVideoDecoder::OnCodecConfiguredInternal(
           std::move(codec),
           base::BindOnce(
               &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
-              base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
+              base::SequencedTaskRunner::GetCurrentDefault(), FROM_HERE,
               std::move(surface_bundle)));
     }
     return;
@@ -746,7 +746,8 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
                           BindToCurrentLoop(base::BindRepeating(
                               &MediaCodecVideoDecoder::StartTimerOrPumpCodec,
                               weak_factory_.GetWeakPtr()))),
-      base::SequencedTaskRunnerHandle::Get(), decoder_config_.coded_size());
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      decoder_config_.coded_size());
 
   // If the target surface changed while codec creation was in progress,
   // transition to it immediately.
@@ -1027,13 +1028,6 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   if (drain_type_ || deferred_flush_pending_)
     return true;
 
-  // Record the frame type that we're sending and some information about why.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Media.AVDA.FrameInformation", cached_frame_information_,
-      static_cast<int>(
-          SurfaceChooserHelper::FrameInformation::FRAME_INFORMATION_MAX) +
-          1);  // PRESUBMIT_IGNORE_UMA_MAX
-
   // If we're getting outputs larger than our configured size, we run the risk
   // of exceeding MediaCodec's allowed input buffer size. Update the coded size
   // as we go to ensure we can correctly reconfigure if needed later.
@@ -1081,12 +1075,6 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
     scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
-
-  // Record how long this frame was pending.
-  const base::TimeDelta duration = base::TimeTicks::Now() - started_at;
-  UMA_HISTOGRAM_CUSTOM_TIMES("Media.MCVD.ForwardVideoFrameTiming", duration,
-                             base::Milliseconds(1), base::Milliseconds(100),
-                             25);
 
   // Attach the HDR metadata if the color space got this far and is still an HDR
   // color space.  Note that it might be converted to something else along the
@@ -1171,7 +1159,7 @@ void MediaCodecVideoDecoder::OnCodecDrained() {
 
   if (drain_type == DrainType::kForDestroy) {
     // Post the delete in case the caller uses |this| after we return.
-    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE, this);
     return;
   }
 
@@ -1227,7 +1215,7 @@ void MediaCodecVideoDecoder::ReleaseCodec() {
       std::move(pair.first),
       base::BindOnce(
           &base::SequencedTaskRunner::ReleaseSoon<CodecSurfaceBundle>,
-          base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
+          base::SequencedTaskRunner::GetCurrentDefault(), FROM_HERE,
           std::move(pair.second)));
 }
 

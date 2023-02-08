@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -335,7 +336,12 @@ Node::~Node() {
 
 NodeRareData& Node::CreateRareData() {
   if (IsElementNode()) {
-    data_ = MakeGarbageCollected<ElementRareData>(DataAsNodeRenderingData());
+    if (RuntimeEnabledFeatures::ElementSuperRareDataEnabled()) {
+      data_ = MakeGarbageCollected<ElementRareDataVector>(
+          DataAsNodeRenderingData());
+    } else {
+      data_ = MakeGarbageCollected<ElementRareData>(DataAsNodeRenderingData());
+    }
   } else {
     data_ = MakeGarbageCollected<NodeRareData>(DataAsNodeRenderingData());
   }
@@ -1043,6 +1049,11 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
 void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
+
+  if (auto* element = DynamicTo<Element>(this)) {
+    ViewTransitionSupplement::From(GetDocument())
+        ->UpdateViewTransitionNames(*element, computed_style.get());
+  }
 
   NodeRenderingData* node_layout_data =
       HasRareData() ? DataAsNodeRareData()->GetNodeRenderingData()
@@ -2886,11 +2897,6 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
-  if (UNLIKELY(IsDocumentNode() && GetDocument().TopmostPopover())) {
-    // Check if this event should "light dismiss" one or more popovers.
-    HTMLElement::HandlePopoverLightDismiss(event);
-  }
-
   if (!HasEventTargetData())
     return;
 

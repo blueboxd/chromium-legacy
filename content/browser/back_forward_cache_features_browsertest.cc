@@ -15,6 +15,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_hosts_for_document.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/browser/payment_app_provider.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1514,9 +1515,36 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheSMSService) {
       blink::scheduler::WebSchedulerTrackedFeature::kWebOTPService, FROM_HERE);
 }
 
+namespace {
+
+void OnInstallPaymentApp(base::OnceClosure done_callback,
+                         bool* out_success,
+                         bool success) {
+  *out_success = success;
+  std::move(done_callback).Run();
+}
+
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCachePaymentManager) {
   ASSERT_TRUE(CreateHttpsServer()->Start());
+
+  base::RunLoop run_loop;
+  GURL service_worker_javascript_file_url =
+      https_server()->GetURL("a.test", "/payments/payment_app.js");
+  bool success = false;
+  PaymentAppProvider::GetOrCreateForWebContents(shell()->web_contents())
+      ->InstallPaymentAppForTesting(
+          /*app_icon=*/SkBitmap(), service_worker_javascript_file_url,
+          /*service_worker_scope=*/
+          service_worker_javascript_file_url.GetWithoutFilename(),
+          /*payment_method_identifier=*/
+          url::Origin::Create(service_worker_javascript_file_url).Serialize(),
+          base::BindOnce(&OnInstallPaymentApp, run_loop.QuitClosure(),
+                         &success));
+  run_loop.Run();
+  ASSERT_TRUE(success);
 
   // 1) Navigate to a page which includes PaymentManager functionality. Note
   // that service workers are used, and therefore we use https server instead of
@@ -1530,7 +1558,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Execute functionality that calls PaymentManager.
   EXPECT_TRUE(ExecJs(rfh_a, R"(
     new Promise(async resolve => {
-      registerPaymentApp();
+      const registration = await navigator.serviceWorker.getRegistration(
+          '/payments/payment_app.js');
+      await registration.paymentManager.enableDelegations(['shippingAddress']);
       resolve();
     });
   )"));
@@ -2027,116 +2057,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       {blink::scheduler::WebSchedulerTrackedFeature::kBroadcastChannel}, {}, {},
       {}, FROM_HERE);
 }
-
-class MockAppBannerService : public blink::mojom::AppBannerService {
- public:
-  MockAppBannerService() = default;
-
-  MockAppBannerService(const MockAppBannerService&) = delete;
-  MockAppBannerService& operator=(const MockAppBannerService&) = delete;
-
-  ~MockAppBannerService() override = default;
-
-  void Bind(mojo::ScopedMessagePipeHandle handle) {
-    receiver_.Bind(mojo::PendingReceiver<blink::mojom::AppBannerService>(
-        std::move(handle)));
-  }
-
-  mojo::Remote<blink::mojom::AppBannerController>& controller() {
-    return controller_;
-  }
-
-  void OnBannerPromptRequested(base::OnceClosure closure, bool) {
-    std::move(closure).Run();
-  }
-
-  void SendBannerPromptRequest() {
-    blink::mojom::AppBannerController* controller_ptr = controller_.get();
-    base::RunLoop run_loop;
-    base::OnceClosure quit_closure = run_loop.QuitClosure();
-    base::OnceCallback<void(bool)> callback =
-        base::BindOnce(&MockAppBannerService::OnBannerPromptRequested,
-                       base::Unretained(this), std::move(quit_closure));
-    controller_ptr->BannerPromptRequest(
-        receiver_.BindNewPipeAndPassRemote(),
-        event_.BindNewPipeAndPassReceiver(), {"web"},
-        base::BindOnce(&MockAppBannerService::OnBannerPromptReply,
-                       base::Unretained(this), std::move(callback)));
-    run_loop.Run();
-  }
-
-  void OnBannerPromptReply(base::OnceCallback<void(bool)> callback,
-                           blink::mojom::AppBannerPromptReply reply) {
-    std::move(callback).Run(reply ==
-                            blink::mojom::AppBannerPromptReply::CANCEL);
-  }
-
-  // blink::mojom::AppBannerService:
-  void DisplayAppBanner() override {}
-
- private:
-  mojo::Receiver<blink::mojom::AppBannerService> receiver_{this};
-  mojo::Remote<blink::mojom::AppBannerEvent> event_;
-  mojo::Remote<blink::mojom::AppBannerController> controller_;
-};
-
-// The parameter to this test class is whether or not App Banner is supported
-// for BFCache.
-class AppBannerBackForwardCacheBrowserTest
-    : public BackForwardCacheBrowserTest,
-      public ::testing::WithParamInterface<bool> {
- public:
-  AppBannerBackForwardCacheBrowserTest() {
-    const base::Feature& feature = blink::features::kBackForwardCacheAppBanner;
-    if (ShouldEnabledAppBannerCaching()) {
-      EnableFeatureAndSetParams(feature, "", "");
-    } else {
-      DisableFeature(feature);
-    }
-  }
-
- protected:
-  bool ShouldEnabledAppBannerCaching() { return GetParam(); }
-};
-
-IN_PROC_BROWSER_TEST_P(AppBannerBackForwardCacheBrowserTest,
-                       TestAppBannerCaching) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // 1) Navigate to A and request a PWA app banner.
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-
-  // Connect the MockAppBannerService mojom to the renderer's frame.
-  MockAppBannerService mock_app_banner_service;
-  web_contents()->GetPrimaryMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mock_app_banner_service.controller().BindNewPipeAndPassReceiver());
-  // Send the request to the renderer's frame, wait until the request completes.
-  mock_app_banner_service.SendBannerPromptRequest();
-
-  // 2) Navigate away. Page A requested a PWA app banner, and thus not cached.
-  RenderFrameHostWrapper rfh_a(current_frame_host());
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  if (!ShouldEnabledAppBannerCaching()) {
-    ASSERT_TRUE(rfh_a.WaitUntilRenderFrameDeleted());
-  }
-
-  // 3) Go back to A.
-  ASSERT_TRUE(HistoryGoBack(web_contents()));
-  if (ShouldEnabledAppBannerCaching()) {
-    ExpectRestored(FROM_HERE);
-  } else {
-    ExpectNotRestored(
-        {NotRestoredReason::kBlocklistedFeatures},
-        {blink::scheduler::WebSchedulerTrackedFeature::kAppBanner}, {}, {}, {},
-        FROM_HERE);
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AppBannerBackForwardCacheBrowserTest,
-                         testing::Bool());
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
 #if BUILDFLAG(IS_FUCHSIA)

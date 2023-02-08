@@ -260,7 +260,9 @@ template <typename AXSourceNode>
 AXTreeSerializer<AXSourceNode>::~AXTreeSerializer() {
   // Clear |tree_| to prevent any additional calls to the tree source
   // during teardown.
+  // TODO(accessibility) How would that happen?
   tree_ = nullptr;
+  // Free up any resources allocated on the heap that are stored with raw_ptr.
   Reset();
 }
 
@@ -278,11 +280,8 @@ void AXTreeSerializer<AXSourceNode>::InternalReset() {
   // but Reset() needs to work even if the tree is in a broken state.
   // Instead, iterate over |client_id_map_| to ensure we clear all nodes and
   // start from scratch.
-  for (auto&& item : client_id_map_) {
-    if (tree_)
-      tree_->SerializerClearedNode(item.first);
+  for (auto&& item : client_id_map_)
     delete item.second;
-  }
   client_id_map_.clear();
   client_root_ = nullptr;
 }
@@ -369,6 +368,7 @@ bool AXTreeSerializer<AXSourceNode>::AnyDescendantWasReparented(
   tree_->GetChildren(node, &children);
   for (size_t i = 0; i < children.size(); ++i) {
     AXSourceNode& child = children[i];
+    DCHECK(tree_->IsValid(child));
     int child_id = tree_->GetId(child);
     ClientTreeNode* client_child = ClientTreeNodeById(child_id);
     if (client_child) {
@@ -562,7 +562,6 @@ void AXTreeSerializer<AXSourceNode>::DeleteClientSubtree(
 #endif
   } else {
     DeleteDescendants(client_node);
-    tree_->SerializerClearedNode(client_node->id);
     client_id_map_.erase(client_node->id);
     delete client_node;
   }
@@ -730,8 +729,11 @@ bool AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
     int child_id = tree_->GetId(child);
 
     // Skip if the child isn't valid.
-    if (!tree_->IsValid(child))
+    // TODO(accessibility) Turn into a DCHECK() once it's proven not to occur.
+    if (!tree_->IsValid(child)) {
+      NOTREACHED();
       continue;
+    }
 
     // Skip if the same child is included more than once.
     if (new_child_ids.find(child_id) == new_child_ids.end())

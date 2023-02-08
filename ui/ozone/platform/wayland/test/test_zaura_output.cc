@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/wayland/test/test_zaura_output.h"
 
-#include <aura-shell-server-protocol.h>
+#include "ui/base/wayland/wayland_display_util.h"
 
 namespace wl {
 namespace {
@@ -15,15 +15,16 @@ TestZAuraOutput::TestZAuraOutput(wl_resource* resource)
     : ServerObject(resource), display_id_(display_id_counter++) {
   if (wl_resource_get_version(resource) >=
       ZAURA_OUTPUT_DISPLAY_ID_SINCE_VERSION) {
-    uint32_t display_id_hi = static_cast<uint32_t>(display_id_ >> 32);
-    uint32_t display_id_lo = static_cast<uint32_t>(display_id_);
-    zaura_output_send_display_id(resource, display_id_hi, display_id_lo);
+    auto display_id = ui::wayland::ToWaylandDisplayIdPair(display_id_);
+    zaura_output_send_display_id(resource, display_id.high, display_id.low);
   }
 }
 
 TestZAuraOutput::~TestZAuraOutput() = default;
 
-void TestZAuraOutput::SendActivated() {}
+void TestZAuraOutput::SendActivated() {
+  zaura_output_send_activated(resource());
+}
 
 void TestZAuraOutput::Flush() {
   if (pending_insets_) {
@@ -38,5 +39,9 @@ void TestZAuraOutput::Flush() {
     zaura_output_send_logical_transform(resource(), logical_transform_);
   }
 }
+
+const struct zaura_output_interface kTestZAuraOutputImpl {
+  &DestroyResource,
+};
 
 }  // namespace wl

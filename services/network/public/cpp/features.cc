@@ -14,12 +14,6 @@
 
 namespace network::features {
 
-// Enables Expect CT reporting, which sends reports for opted-in sites
-// that don't serve sufficient Certificate Transparency information.
-BASE_FEATURE(kExpectCTReporting,
-             "ExpectCTReporting",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kNetworkErrorLogging,
              "NetworkErrorLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -142,10 +136,12 @@ BASE_FEATURE(kOpaqueResponseBlockingV02,
              "OpaqueResponseBlockingV02",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables preprocessing requests with the Trust Tokens API Fetch flags set,
-// and handling their responses, according to the protocol.
+// Enables preprocessing requests with the Private State Tokens API Fetch flags
+// set, and handling their responses, according to the protocol.
 // (See https://github.com/WICG/trust-token-api.)
-BASE_FEATURE(kTrustTokens, "TrustTokens", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kPrivateStateTokens,
+             "TrustTokens",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Determines which Trust Tokens operations require the TrustTokens origin trial
 // active in order to be used. This is runtime-configurable so that the Trust
@@ -173,18 +169,9 @@ const base::FeatureParam<TrustTokenOriginTrialSpec>::Option
          "only-issuance-requires-origin-trial"}};
 const base::FeatureParam<TrustTokenOriginTrialSpec>
     kTrustTokenOperationsRequiringOriginTrial{
-        &kTrustTokens, "TrustTokenOperationsRequiringOriginTrial",
+        &kPrivateStateTokens, "TrustTokenOperationsRequiringOriginTrial",
         TrustTokenOriginTrialSpec::kOriginTrialNotRequired,
         &kTrustTokenOriginTrialParamOptions};
-
-// Determines whether Trust Tokens issuance requests should be diverted, at the
-// corresponding issuers' request, to the operating system instead of sent
-// to the issuers' servers.
-//
-// WARNING: If you rename this param, you must update the corresponding flag
-// entry in about_flags.cc.
-const base::FeatureParam<bool> kPlatformProvidedTrustTokenIssuance{
-    &kTrustTokens, "PlatformProvidedTrustTokenIssuance", false};
 
 BASE_FEATURE(kWebSocketReassembleShortMessages,
              "WebSocketReassembleShortMessages",
@@ -201,7 +188,7 @@ BASE_FEATURE(kSCTAuditingRetryReports,
 
 BASE_FEATURE(kSCTAuditingPersistReports,
              "SCTAuditingPersistReports",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 // The default Mojo ring buffer size, used to send the content body.
@@ -253,18 +240,6 @@ uint32_t GetLoaderChunkSize() {
 BASE_FEATURE(kCorsNonWildcardRequestHeadersSupport,
              "CorsNonWildcardRequestHeadersSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Whether the sync client optimization is used for communication between the
-// CorsURLLoader and URLLoader.
-BASE_FEATURE(kURLLoaderSyncClient,
-             "URLLoaderSyncClient",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Don't wait for database write before responding to
-// RestrictedCookieManager::SetCookieFromString.
-BASE_FEATURE(kFasterSetCookie,
-             "FasterSetCookie",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allow batching SimpleURLLoaders when the underlying network state is
 // inactive.
@@ -347,5 +322,9 @@ BASE_FEATURE(kOutOfProcessSystemDnsResolution,
 BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
              "AccessControlAllowMethodsInCORSPreflightSpecConformant",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPrefetchNoVarySearch,
+             "PrefetchNoVarySearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace network::features

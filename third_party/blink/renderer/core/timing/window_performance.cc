@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/input_event.h"
@@ -702,23 +703,24 @@ EventCounts* WindowPerformance::eventCounts() {
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(
-    base::TimeTicks paint_time,
+    base::TimeTicks start_time,
+    base::TimeTicks render_time,
     uint64_t paint_size,
     base::TimeTicks load_time,
     base::TimeTicks first_animated_frame_time,
     const AtomicString& id,
     const String& url,
     Element* element) {
-  base::TimeDelta render_timestamp = MonotonicTimeToTimeDelta(paint_time);
+  DOMHighResTimeStamp start_timestamp =
+      MonotonicTimeToDOMHighResTimeStamp(start_time);
+  base::TimeDelta render_timestamp = MonotonicTimeToTimeDelta(render_time);
   base::TimeDelta load_timestamp = MonotonicTimeToTimeDelta(load_time);
   base::TimeDelta first_animated_frame_timestamp =
       MonotonicTimeToTimeDelta(first_animated_frame_time);
   // TODO(yoav): Should we modify start to represent the animated frame?
-  base::TimeDelta start_timestamp =
-      render_timestamp.is_zero() ? load_timestamp : render_timestamp;
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
-      start_timestamp.InMillisecondsF(), render_timestamp, paint_size,
-      load_timestamp, first_animated_frame_timestamp, id, url, element,
+      start_timestamp, render_timestamp, paint_size, load_timestamp,
+      first_animated_frame_timestamp, id, url, element,
       PerformanceEntry::GetNavigationId(GetExecutionContext()));
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);

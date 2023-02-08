@@ -66,6 +66,11 @@ class MockNavigationHandle : public NavigationHandle {
   }
   // By default, MockNavigationHandles are renderer-initiated navigations.
   bool IsRendererInitiated() override { return is_renderer_initiated_; }
+  blink::mojom::NavigationInitiatorActivationAndAdStatus
+  GetNavigationInitiatorActivationAndAdStatus() override {
+    return blink::mojom::NavigationInitiatorActivationAndAdStatus::
+        kDidNotStartWithTransientActivation;
+  }
   bool IsSameOrigin() override {
     NOTIMPLEMENTED();
     return false;
@@ -204,6 +209,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD(bool, SetNavigationTimeout, (base::TimeDelta));
   MOCK_METHOD(PrerenderTriggerType, GetPrerenderTriggerType, ());
   MOCK_METHOD(std::string, GetPrerenderEmbedderHistogramSuffix, ());
+  MOCK_METHOD(void, SetAllowCookiesFromBrowser, (bool));
 
 #if BUILDFLAG(IS_ANDROID)
   MOCK_METHOD(const base::android::JavaRef<jobject>&,

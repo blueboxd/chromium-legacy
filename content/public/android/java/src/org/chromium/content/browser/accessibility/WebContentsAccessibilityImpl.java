@@ -44,6 +44,7 @@ import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Acces
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SHOW_ON_SCREEN;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_LINE;
+import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_PARAGRAPH;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD;
 
 import android.annotation.SuppressLint;
@@ -74,7 +75,6 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.autofill.AutofillManager;
 import android.view.inputmethod.EditorInfo;
 
-import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat;
 import androidx.core.view.accessibility.AccessibilityNodeProviderCompat;
@@ -96,6 +96,7 @@ import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -121,11 +122,9 @@ import java.util.Set;
 @JNINamespace("content")
 public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompat
         implements AccessibilityStateChangeListener, WebContentsAccessibility, WindowEventObserver,
-                   UserData, BrowserAccessibilityState.Listener,
+                   UserData, AccessibilityState.Listener,
                    ViewAndroidDelegate.ContainerViewObserver {
-    // Public catch-all TAG for logging in the accessibility component.
-    public static final String TAG = "ClankAccessibility";
-
+    private static final String TAG = "A11yImpl";
     // The following constants have been hard coded so we can support actions newer than our
     // minimum SDK without having to break methods into a series of subclasses.
     // TODO(mschillaci): Remove these once they are added to the AccessibilityNodeInfoCompat class.
@@ -161,6 +160,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     // Constants defined for requests to add data to AccessibilityNodeInfo Bundle extras.
     public static final String EXTRAS_DATA_REQUEST_IMAGE_DATA_KEY =
             "AccessibilityNodeInfo.requestImageData";
+
+    // Constant for paragraph predicate key from web_contents_accessibility_android.cc
+    private static final String PARAGRAPH_ELEMENT_TYPE = "PARAGRAPH";
 
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
@@ -307,7 +309,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
         });
 
-        BrowserAccessibilityState.addListener(this);
+        AccessibilityState.addListener(this);
 
         // Define our delays on a per event type basis.
         Map<Integer, Integer> eventThrottleDelays = new HashMap<Integer, Integer>();
@@ -423,8 +425,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         // Define a set of relevant AccessibilityEvents if the OnDemand feature is enabled.
         if (ContentFeatureList.isEnabled(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
             Runnable serviceMaskRunnable = () -> {
-                int serviceEventMask =
-                        BrowserAccessibilityState.getAccessibilityServiceEventTypeMask();
+                int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
                 mEventDispatcher.updateRelevantEventTypes(
                         convertMaskToEventTypes(serviceEventMask));
                 mEventDispatcher.setOnDemandEnabled(true);
@@ -461,7 +462,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     @VisibleForTesting
     @Override
     public void setBrowserAccessibilityStateForTesting() {
-        BrowserAccessibilityState.setEventTypeMaskForTesting();
+        AccessibilityState.setEventTypeMaskForTesting();
     }
 
     @VisibleForTesting
@@ -505,12 +506,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
     @VisibleForTesting
     public void setEventTypeMaskEmptyForTesting() {
-        BrowserAccessibilityState.setEventTypeMaskEmptyForTesting();
+        AccessibilityState.setEventTypeMaskEmptyForTesting();
     }
 
     @VisibleForTesting
     public void setScreenReaderModeForTesting(boolean enabled) {
-        BrowserAccessibilityState.setScreenReaderModeForTesting(enabled);
+        AccessibilityState.setScreenReaderModeForTesting(enabled);
     }
 
     @CalledByNative
@@ -623,7 +624,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
             // Update the AXMode based on screen reader status.
             WebContentsAccessibilityImplJni.get().setAXMode(mNativeObj,
-                    BrowserAccessibilityState.screenReaderMode(),
+                    AccessibilityState.screenReaderMode(),
                     /* isAccessibilityEnabled= */ true);
 
             // Update the state of how passwords are exposed based on user settings.
@@ -634,7 +635,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             // Update the state of enabling/disabling the image descriptions feature. To enable the
             // feature, this instance must be a candidate and a screen reader must be enabled.
             WebContentsAccessibilityImplJni.get().setAllowImageDescriptions(mNativeObj,
-                    mIsImageDescriptionsCandidate && BrowserAccessibilityState.screenReaderMode());
+                    mIsImageDescriptionsCandidate && AccessibilityState.screenReaderMode());
         }
     }
 
@@ -671,7 +672,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             onNativeInit();
         }
         if (!isEnabled()) {
-            boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
+            boolean screenReaderMode = AccessibilityState.screenReaderMode();
             WebContentsAccessibilityImplJni.get().enable(mNativeObj, screenReaderMode);
             return null;
         }
@@ -799,6 +800,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             case MOVEMENT_GRANULARITY_CHARACTER:
             case MOVEMENT_GRANULARITY_WORD:
             case MOVEMENT_GRANULARITY_LINE:
+            case MOVEMENT_GRANULARITY_PARAGRAPH:
                 return true;
         }
         return false;
@@ -825,7 +827,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (isNativeInitialized()
                 && ContentFeatureList.isEnabled(
                         ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS)) {
-            int serviceEventMask = BrowserAccessibilityState.getAccessibilityServiceEventTypeMask();
+            int serviceEventMask = AccessibilityState.getAccessibilityServiceEventTypeMask();
             mEventDispatcher.updateRelevantEventTypes(convertMaskToEventTypes(serviceEventMask));
         }
     }
@@ -891,7 +893,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         return false;
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     @Override
     public void onProvideVirtualStructure(
             final ViewStructure structure, final boolean ignoreScrollOffset) {
@@ -1016,6 +1017,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             boolean extend = arguments.getBoolean(ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN);
             if (!isValidMovementGranularity(granularity)) {
                 return false;
+                // ATs view paragraphs as a granularity rather than an element type to jump between.
+                // As a stopgap until we implement an actual paragraph granularity, we can send
+                // these movements to jumpToElementType instead to allow AT users to at least
+                // navigate backward and forward by paragraph
+                // TODO(jacklynch): Implement paragraph granularity and remove this block
+            } else if (granularity == MOVEMENT_GRANULARITY_PARAGRAPH) {
+                return jumpToElementType(virtualViewId, PARAGRAPH_ELEMENT_TYPE, /*forwards*/ true,
+                        /*canWrap*/ false);
             }
             return nextAtGranularity(granularity, extend, virtualViewId);
         } else if (action == ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY.getId()) {
@@ -1024,6 +1033,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             boolean extend = arguments.getBoolean(ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN);
             if (!isValidMovementGranularity(granularity)) {
                 return false;
+                // ATs view paragraphs as a granularity rather than an element type to jump between.
+                // As a stopgap until we implement an actual paragraph granularity, we can send
+                // these movements to jumpToElementType instead to allow AT users to at least
+                // navigate backward and forward by paragraph
+                // TODO(jacklynch): Implement paragraph granularity and remove this block
+            } else if (granularity == MOVEMENT_GRANULARITY_PARAGRAPH) {
+                return jumpToElementType(virtualViewId, PARAGRAPH_ELEMENT_TYPE, /*forwards*/ false,
+                        /*canWrap*/ virtualViewId == mCurrentRootId);
             }
             return previousAtGranularity(granularity, extend, virtualViewId);
         } else if (action == ACTION_SCROLL_FORWARD.getId()) {
@@ -1126,7 +1143,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (!isNativeInitialized()) return;
         // Update the AXMode based on screen reader status.
         WebContentsAccessibilityImplJni.get().setAXMode(
-                mNativeObj, BrowserAccessibilityState.screenReaderMode(), isAccessibilityEnabled());
+                mNativeObj, AccessibilityState.screenReaderMode(), isAccessibilityEnabled());
     }
 
     // Returns true if the hover event is to be consumed by accessibility feature.
@@ -1754,7 +1771,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         }
 
         node.setMovementGranularities(MOVEMENT_GRANULARITY_CHARACTER | MOVEMENT_GRANULARITY_WORD
-                | MOVEMENT_GRANULARITY_LINE);
+                | MOVEMENT_GRANULARITY_LINE | MOVEMENT_GRANULARITY_PARAGRAPH);
 
         node.setAccessibilityFocused(mAccessibilityFocusId == virtualViewId);
     }

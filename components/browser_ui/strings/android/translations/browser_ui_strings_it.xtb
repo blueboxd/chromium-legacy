@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Consenti ai siti di accedere ai sensori di movimento (opzione consigliata)</translation>
 <translation id="5050380848339752099">Questo sito sta per condividere informazioni con un'app esterna alla modalità di navigazione in incognito.</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
-<translation id="5082281938627763039">Vengono eliminati i cookie e altri dati dei siti per <ph name="FPS_MEMBER" /> e per i siti del gruppo di siti di <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Sito mobile</translation>
 <translation id="509133520954049755">Richiedi visualizzazione desktop</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">OK</translation>
-<translation id="5313967007315987356">Aggiungi sito</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5335288049665977812">Consenti l'esecuzione di JavaScript nei siti (opzione consigliata)</translation>
 <translation id="534295439873310000">Dispositivi NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Condivisione dello schermo</translation>
 <translation id="5922967540311291836">Blocca cookie di terze parti:</translation>
 <translation id="5939518447894949180">Reimposta</translation>
+<translation id="5968921426641056619">Inserisci l'indirizzo web</translation>
 <translation id="5975083100439434680">Diminuisci lo zoom</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Controlla l'accesso di questo sito al tuo dispositivo</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7260727271532453612">Autorizzazioni <ph name="PERMISSION_1" /> e <ph name="PERMISSION_2" /> consentite</translation>
 <translation id="7302486331832100261">Di solito blocchi le notifiche. Per consentirle, tocca Dettagli.</translation>
+<translation id="7366415735885268578">Aggiunta di un sito</translation>
 <translation id="7383715096023715447">Impostazioni di <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Chiedi prima</translation>
 <translation id="7423538860840206698">Lettura degli appunti non consentita</translation>
@@ -364,13 +364,14 @@
 <translation id="8380167699614421159">Questo sito mostra annunci invasivi o fuorvianti</translation>
 <translation id="8394832520002899662">Tocca per tornare al sito.</translation>
 <translation id="8409345997656833551">Ricevi una notifica quando un articolo può essere mostrato nella visualizzazione semplificata</translation>
+<translation id="8423565414844018592">Ridimensionamento del testo impostato su <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8441146129660941386">Posiziona indietro</translation>
 <translation id="8444433999583714703">Per consentire all'app <ph name="APP_NAME" /> di accedere alla tua posizione, devi attivare la posizione anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie in uso}other{# cookie in uso}}</translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
-<translation id="848952951823693243">Richiedi sempre sito mobile</translation>
+<translation id="848952951823693243">Richiedi sempre sito per dispositivi mobili</translation>
 <translation id="8499083585497694743">Riattiva microfono</translation>
 <translation id="851751545965956758">Impedisci ai siti di connettersi ai dispositivi</translation>
 <translation id="8525306231823319788">Schermo intero</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Funzionalità NFC non attiva per questo dispositivo. Attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Impedisci ai siti di vedere e modificare informazioni su dispositivi NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blocca i cookie per un sito specifico.</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Elimina</translation>

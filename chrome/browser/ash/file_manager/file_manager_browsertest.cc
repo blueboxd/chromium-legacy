@@ -91,11 +91,6 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& ExtractArchive() {
-    options.extract_archive = true;
-    return *this;
-  }
-
   TestCase& Offline() {
     options.offline = true;
     return *this;
@@ -162,11 +157,6 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableGuestOsFiles() {
-    options.enable_guest_os_files = true;
-    return *this;
-  }
-
   TestCase& EnableVirtioBlkForData() {
     options.enable_virtio_blk_for_data = true;
     return *this;
@@ -189,6 +179,11 @@ struct TestCase {
 
   TestCase& FileTransferConnectorReportOnlyMode() {
     options.file_transfer_connector_report_only = true;
+    return *this;
+  }
+
+  TestCase& EnableSearchV2() {
+    options.enable_search_v2 = true;
     return *this;
   }
 
@@ -236,6 +231,9 @@ struct TestCase {
 
     if (options.file_transfer_connector_report_only)
       full_name += "_ReportOnly";
+
+    if (options.enable_search_v2)
+      full_name += "_SearchV2";
 
     return full_name;
   }
@@ -339,6 +337,7 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
                             base::Unretained(this)));
   }
 
+  // TODO(b/261163959): Optimize DLP messages.
   bool HandleDlpCommands(const std::string& name,
                          const base::Value::Dict& value,
                          std::string* output) override {
@@ -346,6 +345,22 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
       EXPECT_CALL(*mock_rules_manager_, IsRestrictedDestination)
           .WillRepeatedly(
               ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+      return true;
+    }
+    if (name == "setBlockedArc") {
+      policy::DlpRulesManager::AggregatedComponents components;
+      components[policy::DlpRulesManager::Level::kBlock].insert(
+          policy::DlpRulesManager::Component::kArc);
+      EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
+          .WillOnce(testing::Return(components));
+      return true;
+    }
+    if (name == "setBlockedCrostini") {
+      policy::DlpRulesManager::AggregatedComponents components;
+      components[policy::DlpRulesManager::Level::kBlock].insert(
+          policy::DlpRulesManager::Component::kCrostini);
+      EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
+          .WillOnce(testing::Return(components));
       return true;
     }
     if (name == "setIsRestrictedByAnyRuleRestrictions") {
@@ -697,7 +712,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
       // required from the test to issue the requests.
       saved_responses_.push_back(std::move(response));
     } else {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, std::move(response), kResponseDelay);
     }
   }
@@ -709,7 +724,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     save_response_for_later_ = false;
     for (auto&& response : saved_responses_) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, std::move(response), kResponseDelay);
     }
     saved_responses_.clear();
@@ -816,8 +831,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayCheckReadOnlyIconOnFakeDirectory"),
         TestCase("fileDisplayCheckNoReadOnlyIconOnDownloads"),
         TestCase("fileDisplayCheckNoReadOnlyIconOnLinuxFiles"),
-        TestCase("fileDisplayCheckNoReadOnlyIconOnGuestOs")
-            .EnableGuestOsFiles()));
+        TestCase("fileDisplayCheckNoReadOnlyIconOnGuestOs")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenVideoMediaApp, /* open_video_media_app.js */
@@ -861,15 +875,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("zipCreateFileDrive"),
                       TestCase("zipCreateFileDriveOffice"),
                       TestCase("zipCreateFileUsb"),
-                      TestCase("zipExtractA11y").ExtractArchive(),
-                      TestCase("zipExtractCheckContent").ExtractArchive(),
-                      TestCase("zipExtractCheckDuplicates").ExtractArchive(),
-                      TestCase("zipExtractCheckEncodings").ExtractArchive(),
-                      TestCase("zipExtractNotEnoughSpace").ExtractArchive(),
-                      TestCase("zipExtractFromReadOnly").ExtractArchive(),
-                      TestCase("zipExtractShowPanel").ExtractArchive(),
-                      TestCase("zipExtractShowMultiPanel").ExtractArchive(),
-                      TestCase("zipExtractSelectionMenus").ExtractArchive()));
+                      TestCase("zipExtractA11y"),
+                      TestCase("zipExtractCheckContent"),
+                      TestCase("zipExtractCheckDuplicates"),
+                      TestCase("zipExtractCheckEncodings"),
+                      TestCase("zipExtractNotEnoughSpace"),
+                      TestCase("zipExtractFromReadOnly"),
+                      TestCase("zipExtractShowPanel"),
+                      TestCase("zipExtractShowMultiPanel"),
+                      TestCase("zipExtractSelectionMenus")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -972,7 +986,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkContextMenusForInputElements"),
         TestCase("checkDeleteDisabledInRecents"),
         TestCase("checkGoToFileLocationEnabledInRecents"),
-        TestCase("checkGoToFileLocationDisabledInMultipleSelection")));
+        TestCase("checkGoToFileLocationDisabledInMultipleSelection"),
+        TestCase("checkDefaultTask"),
+        TestCase("checkPolicyAssignedDefaultHasManagedIcon")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
@@ -1038,13 +1054,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewDrive"),
         TestCase("openQuickViewSmbfs"),
         TestCase("openQuickViewAndroid"),
-        TestCase("openQuickViewAndroidGuestOs")
-            .EnableGuestOsFiles()
-            .EnableVirtioBlkForData(),
+        TestCase("openQuickViewAndroidGuestOs").EnableVirtioBlkForData(),
         TestCase("openQuickViewDocumentsProvider")
             .EnableGenericDocumentsProvider(),
         TestCase("openQuickViewCrostini"),
-        TestCase("openQuickViewGuestOs").EnableGuestOsFiles(),
+        TestCase("openQuickViewGuestOs"),
         TestCase("openQuickViewLastModifiedMetaData")
             .EnableGenericDocumentsProvider(),
         TestCase("openQuickViewUsb"),
@@ -1196,9 +1210,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveLinkOpenFileThroughTransitiveLink"),
         TestCase("driveWelcomeBanner"),
         TestCase("driveOfflineInfoBanner").EnableDriveDssPin(),
-        TestCase("driveOfflineInfoBannerWithoutFlag"),
-        TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
-        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
+        TestCase("driveOfflineInfoBannerWithoutFlag")
+        // TODO(b/258987225): Enable
+        // TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
+        // TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1277,7 +1292,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("transferShowDlpToast").EnableDlp(),
         TestCase("dlpShowManagedIcon").EnableDlp(),
-        TestCase("dlpContextMenuRestrictionDetails").EnableDlp()));
+        TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
+        TestCase("saveAsDlpRestrictedDirectory").EnableDlp(),
+        TestCase("saveAsDlpRestrictedMountableDirectory").EnableDlp(),
+        TestCase("openDlpRestrictedFile").EnableDlp()));
+// TODO(crbug.com/1394305): Re-enable this test
+// TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp()));
 
 #define FILE_TRANSFER_TEST_CASE(name) \
   TestCase(name).EnableFileTransferConnector()
@@ -1454,16 +1474,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
         TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
         TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser(),
-        TestCase("saveFileDialogGuestOs").WithBrowser().EnableGuestOsFiles(),
-        TestCase("saveFileDialogGuestOs")
-            .WithBrowser()
-            .EnableGuestOsFiles()
-            .InIncognito(),
-        TestCase("openFileDialogGuestOs").WithBrowser().EnableGuestOsFiles(),
-        TestCase("openFileDialogGuestOs")
-            .WithBrowser()
-            .EnableGuestOsFiles()
-            .InIncognito()));
+        TestCase("saveFileDialogGuestOs").WithBrowser(),
+        TestCase("saveFileDialogGuestOs").WithBrowser().InIncognito(),
+        TestCase("openFileDialogGuestOs").WithBrowser(),
+        TestCase("openFileDialogGuestOs").WithBrowser().InIncognito()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */
@@ -1662,7 +1676,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("searchDownloadsClearSearch"),
                       TestCase("searchHidingViaTab"),
                       TestCase("searchHidingTextEntryField"),
-                      TestCase("searchButtonToggles")
+                      TestCase("searchButtonToggles"),
+                      TestCase("searchOptions").EnableSearchV2()
                       // TODO(b/189173190): Enable
                       // TestCase("searchQueryLaunchParam")
                       ));
@@ -1784,12 +1799,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     GuestOs, /* guest_os.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("fakesListed").EnableGuestOsFiles(),
-        TestCase("listUpdatedWhenGuestsChanged").EnableGuestOsFiles(),
-        TestCase("mountGuestSuccess").EnableGuestOsFiles(),
-        TestCase("notListedWithoutFlag"),
-        TestCase("mountAndroidVolumeSuccess")
-            .EnableGuestOsFiles()
-            .EnableVirtioBlkForData()));
+        TestCase("fakesListed"),
+        TestCase("listUpdatedWhenGuestsChanged"),
+        TestCase("mountGuestSuccess"),
+        TestCase("mountAndroidVolumeSuccess").EnableVirtioBlkForData()));
 
 }  // namespace file_manager

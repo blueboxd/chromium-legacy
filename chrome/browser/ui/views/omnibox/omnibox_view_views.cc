@@ -95,7 +95,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
@@ -483,19 +482,17 @@ void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency.ToPaint",
                         now - insert_char_time_);
     latency_histogram_state_ = ON_PAINT_CALLED;
-    GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
+    GetWidget()->GetCompositor()->RequestSuccessfulPresentationTimeForNextFrame(
         base::BindOnce(
             [](base::TimeTicks insert_timestamp,
                base::TimeTicks paint_timestamp,
-               const gfx::PresentationFeedback& feedback) {
-              if (feedback.flags & gfx::PresentationFeedback::kFailure)
-                return;
+               base::TimeTicks presentation_timestamp) {
               UMA_HISTOGRAM_TIMES(
                   "Omnibox.CharTypedToRepaintLatency.PaintToPresent",
-                  feedback.timestamp - paint_timestamp);
+                  presentation_timestamp - paint_timestamp);
               UMA_HISTOGRAM_TIMES(
                   "Omnibox.CharTypedToRepaintLatency.InsertToPresent",
-                  feedback.timestamp - insert_timestamp);
+                  presentation_timestamp - insert_timestamp);
             },
             insert_char_time_, now));
   }
@@ -849,7 +846,7 @@ void OmniboxViewViews::SetAccessibilityLabel(const std::u16string& display_text,
   // with an explicit announcement. Use PostTask to ensure that this
   // announcement happens after the text change notification, otherwise
   // the text change can interrupt the announcement.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&OmniboxViewViews::AnnounceFriendlySuggestionText,
                      weak_factory_.GetWeakPtr()));
@@ -1235,7 +1232,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     return true;
   }
   if (event.key_code() == ui::VKEY_ESCAPE)
-    return model()->WillHandleEscapeKey();
+    return true;
   return Textfield::SkipDefaultKeyEventProcessing(event);
 }
 
@@ -1455,7 +1452,7 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (command_id == Textfield::kSelectAll) {
     return base::FeatureList::IsEnabled(
-        chromeos::features::kTouchTextEditingRedesign);
+        ash::features::kTouchTextEditingRedesign);
   }
 #endif
   if (command_id == Textfield::kPaste)

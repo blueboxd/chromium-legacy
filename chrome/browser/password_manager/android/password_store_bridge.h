@@ -54,15 +54,9 @@ class PasswordStoreBridge
 
  private:
   // SavedPasswordsPresenter::Observer:
-  void OnSavedPasswordsChanged(
-      password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
-      override;
+  void OnSavedPasswordsChanged() override;
 
-  void OnEdited(const password_manager::PasswordForm& form) override;
-
-  // Callback executed after clearing the password store. It re-initializes
-  // `saved_passwords_presenter_`.
-  void OnPasswordStoreCleared(bool success);
+  void OnEdited(const password_manager::CredentialUIEntry& form) override;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_bridge_;

@@ -161,7 +161,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     // VideoCaptureControllerEventHandler. To satisfy this, we have to post our
     // invocation to the end of the IO message queue.
     if (post_to_end_of_message_queue) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
@@ -209,7 +209,9 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 
   void OnDeviceDescriptorsReceived(
       base::OnceClosure continuation,
+      media::mojom::DeviceEnumerationResult result,
       const media::VideoCaptureDeviceDescriptors& descriptors) {
+    ASSERT_EQ(media::mojom::DeviceEnumerationResult::kSuccess, result);
     ASSERT_TRUE(params_.device_index_to_use < descriptors.size());
     const auto& descriptor = descriptors[params_.device_index_to_use];
     blink::MediaStreamDevice media_stream_device(
@@ -281,13 +283,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 #endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        MAYBE_ReceiveFramesFromFakeCaptureDevice) {
-#if BUILDFLAG(IS_MAC)
-  if (base::mac::IsOS10_12()) {
-    // Flaky on MacOS 10.12. https://crbug.com/938074
-    return;
-  }
-#endif
-
   // Only fake device with index 2 delivers MJPEG.
   if (params_.exercise_accelerated_jpeg_decoding &&
       params_.device_index_to_use != 2) {

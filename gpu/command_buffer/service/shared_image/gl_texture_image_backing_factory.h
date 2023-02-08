@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image/gl_common_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 
@@ -67,7 +66,6 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
       gfx::BufferPlane plane,
-      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -80,15 +78,6 @@ class GPU_GLES2_EXPORT GLTextureImageBackingFactory
                    gfx::GpuMemoryBufferType gmb_type,
                    GrContextType gr_context_type,
                    base::span<const uint8_t> pixel_data) override;
-
-  static std::unique_ptr<SharedImageBacking> CreateSharedImageForTest(
-      const Mailbox& mailbox,
-      GLenum target,
-      GLuint service_id,
-      bool is_cleared,
-      viz::SharedImageFormat format,
-      const gfx::Size& size,
-      uint32_t usage);
 
  private:
   std::unique_ptr<SharedImageBacking> CreateSharedImageInternal(

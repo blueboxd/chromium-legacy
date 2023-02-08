@@ -388,6 +388,10 @@ const char kGattConnectionResult[] =
     "Bluetooth.ChromeOS.FastPair.GattConnection.Result";
 const char kGattConnectionErrorMetric[] =
     "Bluetooth.ChromeOS.FastPair.GattConnection.ErrorReason";
+const char kGattConnectionEffectiveSuccessRate[] =
+    "Bluetooth.ChromeOS.FastPair.GattConnection.EffectiveSuccessRate";
+const char kGattConnectionAttemptCount[] =
+    "Bluetooth.ChromeOS.FastPair.GattConnection.AttemptCount";
 const char kFastPairPairFailureInitialMetric[] =
     "Bluetooth.ChromeOS.FastPair.PairFailure.InitialPairingProtocol";
 const char kFastPairPairFailureSubsequentMetric[] =
@@ -532,6 +536,9 @@ const char kSavedDevicesTotalUxLoadTime[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.TotalUxLoadTime";
 const char kSavedDevicesCount[] =
     "Bluetooth.ChromeOS.FastPair.SavedDevices.DeviceCount";
+constexpr char kFastPairGattConnectionStep[] = "FastPair.GattConnection";
+constexpr char kInitialSuccessFunnelMetric[] = "FastPair.InitialPairing";
+constexpr char kSubsequentSuccessFunnelMetric[] = "FastPair.SubsequentPairing";
 
 const std::string GetEngagementFlowInitialModelIdMetric(
     const ash::quick_pair::Device& device) {
@@ -585,6 +592,15 @@ void AttemptRecordingFastPairEngagementFlow(const Device& device,
                                static_cast<int>(event));
       break;
   }
+}
+
+void RecordInitialSuccessFunnelFlow(FastPairInitialSuccessFunnelEvent event) {
+  base::UmaHistogramEnumeration(kInitialSuccessFunnelMetric, event);
+}
+
+void RecordSubsequentSuccessFunnelFlow(
+    FastPairSubsequentSuccessFunnelEvent event) {
+  base::UmaHistogramEnumeration(kSubsequentSuccessFunnelMetric, event);
 }
 
 void AttemptRecordingTotalUxPairTime(const Device& device,
@@ -645,6 +661,15 @@ void RecordGattConnectionErrorCode(
   base::UmaHistogramEnumeration(
       kGattConnectionErrorMetric, error_code,
       device::BluetoothDevice::ConnectErrorCode::NUM_CONNECT_ERROR_CODES);
+}
+
+void RecordEffectiveGattConnectionSuccess(bool success) {
+  base::UmaHistogramBoolean(kGattConnectionEffectiveSuccessRate, success);
+}
+
+void RecordGattConnectionAttemptCount(int num_attempts) {
+  base::UmaHistogramExactLinear(kGattConnectionAttemptCount, num_attempts,
+                                /*exclusive_max=*/10);
 }
 
 void RecordPairingResult(const Device& device, bool success) {
@@ -872,6 +897,12 @@ void RecordFootprintsFetcherGetResult(const FastPairHttpResult& result) {
 
 void RecordFastPairRepositoryCacheResult(bool success) {
   base::UmaHistogramBoolean(kFastPairRepositoryCacheResult, success);
+}
+
+void RecordGattInitializationStep(
+    FastPairGattConnectionSteps initialization_step) {
+  base::UmaHistogramEnumeration(kFastPairGattConnectionStep,
+                                initialization_step);
 }
 
 void RecordHandshakeResult(bool success) {

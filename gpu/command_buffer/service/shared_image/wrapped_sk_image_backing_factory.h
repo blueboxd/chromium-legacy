@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_gles2_export.h"
@@ -56,7 +55,6 @@ class GPU_GLES2_EXPORT WrappedSkImageBackingFactory
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
       gfx::BufferPlane plane,
-      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,

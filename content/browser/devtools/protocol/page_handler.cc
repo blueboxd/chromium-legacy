@@ -466,8 +466,10 @@ namespace {
 void DispatchNavigateCallback(
     NavigationRequest* request,
     std::unique_ptr<PageHandler::NavigateCallback> callback) {
-  std::string frame_id =
-      request->frame_tree_node()->devtools_frame_token().ToString();
+  std::string frame_id = request->frame_tree_node()
+                             ->current_frame_host()
+                             ->devtools_frame_token()
+                             .ToString();
   // A new NavigationRequest may have been created before |request|
   // started, in which case it is not marked as aborted. We report this as an
   // abort to DevTools anyway.
@@ -549,8 +551,8 @@ void PageHandler::Navigate(const std::string& url,
   else
     type = ui::PAGE_TRANSITION_TYPED;
 
-  std::string out_frame_id = frame_id.fromMaybe(
-      host_->frame_tree_node()->devtools_frame_token().ToString());
+  std::string out_frame_id =
+      frame_id.fromMaybe(host_->devtools_frame_token().ToString());
   FrameTreeNode* frame_tree_node = FrameTreeNodeFromDevToolsFrameToken(
       host_->frame_tree_node(), out_frame_id);
 
@@ -629,9 +631,10 @@ void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
       item->GetURL(), item->GetContentDisposition(), std::string(),
       item->GetSuggestedFilename(), item->GetMimeType(), "download");
 
-  frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
-                               item->GetGuid(), item->GetURL().spec(),
-                               base::UTF16ToUTF8(likely_filename));
+  frontend_->DownloadWillBegin(
+      ftn->current_frame_host()->devtools_frame_token().ToString(),
+      item->GetGuid(), item->GetURL().spec(),
+      base::UTF16ToUTF8(likely_filename));
 
   item->AddObserver(this);
   pending_downloads_.insert(item);
@@ -1574,8 +1577,6 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
     case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
       return Page::PrerenderFinalStatusEnum::
           ActivationNavigationParameterMismatch;
-    case PrerenderFinalStatus::kEmbedderHostDisallowed:
-      return Page::PrerenderFinalStatusEnum::EmbedderHostDisallowed;
   }
 }
 
@@ -1654,8 +1655,6 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequestXHR:
       return Page::BackForwardCacheNotRestoredReasonEnum::
           OutstandingNetworkRequestXHR;
-    case WebSchedulerTrackedFeature::kAppBanner:
-      return Page::BackForwardCacheNotRestoredReasonEnum::AppBanner;
     case WebSchedulerTrackedFeature::kPrinting:
       return Page::BackForwardCacheNotRestoredReasonEnum::Printing;
     case WebSchedulerTrackedFeature::kWebDatabase:
@@ -1689,6 +1688,8 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       // This is a test only reason and should never be called.
       NOTREACHED();
       return Page::BackForwardCacheNotRestoredReasonEnum::Dummy;
+    case WebSchedulerTrackedFeature::kAuthorizationHeader:
+      return Page::BackForwardCacheNotRestoredReasonEnum::AuthorizationHeader;
   }
 }
 
@@ -1751,9 +1752,6 @@ DisableForRenderFrameHostReasonToProtocol(
         case back_forward_cache::DisabledReasonId::kSafeBrowsingThreatDetails:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               EmbedderSafeBrowsingThreatDetails;
-        case back_forward_cache::DisabledReasonId::kAppBannerManager:
-          return Page::BackForwardCacheNotRestoredReasonEnum::
-              EmbedderAppBannerManager;
         case back_forward_cache::DisabledReasonId::kDomDistillerViewerSource:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               EmbedderDomDistillerViewerSource;
@@ -1891,7 +1889,6 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kPrinting:
     case WebSchedulerTrackedFeature::kPictureInPicture:
     case WebSchedulerTrackedFeature::kWebLocks:
-    case WebSchedulerTrackedFeature::kAppBanner:
     case WebSchedulerTrackedFeature::kWebSocket:
     case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
     case WebSchedulerTrackedFeature::kSpeechSynthesis:
@@ -1905,6 +1902,7 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kInjectedJavascript:
     case WebSchedulerTrackedFeature::kDocumentLoaded:
     case WebSchedulerTrackedFeature::kDummy:
+    case WebSchedulerTrackedFeature::kAuthorizationHeader:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
   }
 }
@@ -2016,7 +2014,8 @@ void PageHandler::BackForwardCacheNotUsed(
   FrameTreeNode* ftn = navigation->frame_tree_node();
   std::string devtools_navigation_token =
       navigation->devtools_navigation_token().ToString();
-  std::string frame_id = ftn->devtools_frame_token().ToString();
+  std::string frame_id =
+      ftn->current_frame_host()->devtools_frame_token().ToString();
 
   auto explanation = CreateNotRestoredExplanation(
       result->not_restored_reasons(), result->blocklisted_features(),
@@ -2038,7 +2037,8 @@ void PageHandler::DidActivatePrerender(const NavigationRequest& nav_request) {
   if (!enabled_)
     return;
   FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string initiating_frame_id = ftn->devtools_frame_token().ToString();
+  std::string initiating_frame_id =
+      ftn->current_frame_host()->devtools_frame_token().ToString();
   const GURL& prerendering_url = nav_request.common_params().url;
   frontend_->PrerenderAttemptCompleted(
       initiating_frame_id, prerendering_url.spec(),
@@ -2073,8 +2073,7 @@ void PageHandler::RetrievePrerenderActivationFromWebContents() {
       WebContentsImpl::FromRenderFrameHostImpl(host_);
   if (web_contents->last_navigation_was_prerender_activation_for_devtools() &&
       !has_dispatched_stored_prerender_activation_) {
-    std::string frame_token =
-        host_->frame_tree_node()->devtools_frame_token().ToString();
+    std::string frame_token = host_->devtools_frame_token().ToString();
     has_dispatched_stored_prerender_activation_ = true;
     frontend_->PrerenderAttemptCompleted(
         frame_token, host_->GetLastCommittedURL().spec(),

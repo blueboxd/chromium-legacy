@@ -36,7 +36,7 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_instance.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
 #include "components/arc/test/fake_intent_helper_host.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #endif
@@ -210,7 +210,7 @@ TEST_F(FetchManifestAndInstallCommandTest, SuccessWithManifest) {
                      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
                      CreateDialogCallback(true, UserDisplayMode::kStandalone)),
       webapps::InstallResultCode::kSuccessNewInstall);
-  EXPECT_TRUE(provider()->registrar().IsLocallyInstalled(kWebAppId));
+  EXPECT_TRUE(provider()->registrar_unsafe().IsLocallyInstalled(kWebAppId));
   EXPECT_EQ(1, fake_ui_manager()->num_reparent_tab_calls());
 }
 
@@ -230,7 +230,7 @@ TEST_F(FetchManifestAndInstallCommandTest, SuccessWithFallbackInstall) {
                      CreateDialogCallback(true, UserDisplayMode::kStandalone),
                      /*use_fallback=*/true),
       webapps::InstallResultCode::kSuccessNewInstall);
-  EXPECT_TRUE(provider()->registrar().IsLocallyInstalled(kWebAppId));
+  EXPECT_TRUE(provider()->registrar_unsafe().IsLocallyInstalled(kWebAppId));
   EXPECT_EQ(1, fake_ui_manager()->num_reparent_tab_calls());
 }
 
@@ -242,7 +242,7 @@ TEST_F(FetchManifestAndInstallCommandTest,
                      CreateDialogCallback(true, UserDisplayMode::kStandalone),
                      /*use_fallback=*/true),
       webapps::InstallResultCode::kGetWebAppInstallInfoFailed);
-  EXPECT_FALSE(provider()->registrar().IsLocallyInstalled(kWebAppId));
+  EXPECT_FALSE(provider()->registrar_unsafe().IsLocallyInstalled(kWebAppId));
   EXPECT_EQ(0, fake_ui_manager()->num_reparent_tab_calls());
 }
 
@@ -261,7 +261,7 @@ TEST_F(FetchManifestAndInstallCommandTest, UserInstallDeclined) {
                      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
                      CreateDialogCallback(false, UserDisplayMode::kStandalone)),
       webapps::InstallResultCode::kUserInstallDeclined);
-  EXPECT_FALSE(provider()->registrar().IsLocallyInstalled(kWebAppId));
+  EXPECT_FALSE(provider()->registrar_unsafe().IsLocallyInstalled(kWebAppId));
   EXPECT_EQ(0, fake_ui_manager()->num_reparent_tab_calls());
 }
 

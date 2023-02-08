@@ -36,6 +36,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
+#include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
 #include "ui/gfx/text_elider.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -729,9 +730,6 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() {
 }
 
 bool NavigationEntryImpl::IsInitialEntry() {
-  DCHECK(blink::features::IsInitialNavigationEntryEnabled() ||
-         initial_navigation_entry_state_ ==
-             InitialNavigationEntryState::kNonInitial);
   return initial_navigation_entry_state_ !=
          InitialNavigationEntryState::kNonInitial;
 }
@@ -858,7 +856,9 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     int current_history_list_offset,
     int current_history_list_length,
     const blink::FramePolicy& frame_policy,
-    bool ancestor_or_self_has_cspee) {
+    bool ancestor_or_self_has_cspee,
+    absl::optional<blink::scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   // Set the redirect chain to the navigation's redirects, unless returning to a
   // completed navigation (whose previous redirects don't apply).
   // Note that this is actually does not work as intended right now because
@@ -916,8 +916,6 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           -1 /* http_response_code */,
           blink::mojom::NavigationApiHistoryEntryArrays::New(),
           std::vector<GURL>() /* early_hints_preloaded_resources */,
-          absl::nullopt /* ad_auction_components */,
-          /*fenced_frame_reporting_metadata=*/nullptr,
           // This timestamp will be populated when the commit IPC is sent.
           base::TimeTicks() /* commit_sent */, std::string() /* srcdoc_value */,
           GURL() /* fallback_srcdoc_baseurl */,
@@ -926,6 +924,10 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
           /*view_transition_state=*/absl::nullopt,
+          soft_navigation_heuristics_task_id,
+          /*modified_runtime_features=*/
+          base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
+          /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr);
 #if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by

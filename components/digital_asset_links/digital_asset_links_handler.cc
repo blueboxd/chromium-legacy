@@ -250,7 +250,7 @@ void DigitalAssetLinksHandler::OnJSONParseResult(
 }
 
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForAndroidApp(
-    const std::string& web_domain,
+    const url::Origin& web_domain,
     const std::string& relationship,
     std::vector<std::string> fingerprints,
     const std::string& package,
@@ -262,7 +262,7 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForAndroidApp(
 }
 
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForWebApk(
-    const std::string& web_domain,
+    const url::Origin& web_domain,
     const std::string& manifest_url,
     RelationshipCheckResultCallback callback) {
   return CheckDigitalAssetLinkRelationship(
@@ -271,13 +271,12 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationshipForWebApk(
 }
 
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
-    const std::string& web_domain,
+    const url::Origin& web_domain,
     const std::string& relationship,
     absl::optional<std::vector<std::string>> fingerprints,
     const std::map<std::string, std::set<std::string>>& target_values,
     RelationshipCheckResultCallback callback) {
-  // TODO(peconn): Propagate the use of url::Origin backwards to clients.
-  GURL request_url = GetUrlForAssetLinks(url::Origin::Create(GURL(web_domain)));
+  GURL request_url = GetUrlForAssetLinks(web_domain);
 
   if (!request_url.is_valid())
     return false;
@@ -325,7 +324,6 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
   url_loader_->SetRetryOptions(
       kNumNetworkRetries,
       network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
-  url_loader_->SetTimeoutDuration(timeout_duration_);
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       shared_url_loader_factory_.get(),
       base::BindOnce(&DigitalAssetLinksHandler::OnURLLoadComplete,
@@ -333,11 +331,6 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
                      std::move(fingerprints), target_values));
 
   return true;
-}
-
-void DigitalAssetLinksHandler::SetTimeoutDuration(
-    base::TimeDelta timeout_duration) {
-  timeout_duration_ = timeout_duration;
 }
 
 }  // namespace digital_asset_links

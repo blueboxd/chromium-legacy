@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/mock_css_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -2043,9 +2044,7 @@ namespace {
 
 void UpdateDummyTransformNode(ObjectPaintProperties& properties,
                               CompositingReasons reasons) {
-  // Initialize with gfx::Transform() to avoid 2d translation optimization
-  // in case of transform animation.
-  TransformPaintPropertyNode::State state{gfx::Transform()};
+  TransformPaintPropertyNode::State state;
   state.direct_compositing_reasons = reasons;
   properties.UpdateTransform(TransformPaintPropertyNode::Root(),
                              std::move(state));

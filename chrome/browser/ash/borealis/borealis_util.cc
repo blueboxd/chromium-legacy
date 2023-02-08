@@ -34,7 +34,7 @@ const char kBorealisDlcName[] = "borealis-dlc";
 const char kAllowedScheme[] = "steam";
 const base::StringPiece kURLAllowlist[] = {"//store/", "//run/"};
 const char kBorealisAppIdRegex[] = "(?:steam:\\/\\/rungameid\\/)(\\d+)";
-const char kProtonVersionGameMismatch[] = "UNKNOWN (GameID mismatch)";
+const char kCompatToolVersionGameMismatch[] = "UNKNOWN (GameID mismatch)";
 const char kDeviceInformationKey[] = "entry.1613887985";
 
 const char kInsertCoinSuccessMessage[] = "Success";
@@ -75,18 +75,17 @@ GURL AssembleUrlAsync(std::string owner_id,
   GURL url(kFeedbackUrl);
   url = net::AppendQueryParameter(url, kAppNameKey, window_title);
 
-  base::DictionaryValue json_root;
+  base::Value::Dict json_root;
 
   // System specs
-  json_root.SetString(kJSONBoardKey, base::SysInfo::HardwareModelName());
-  json_root.SetString(
+  json_root.Set(kJSONBoardKey, base::SysInfo::HardwareModelName());
+  json_root.Set(
       kJSONSpecsKey,
       base::StringPrintf("%ldGB; %s",
                          (long)(base::SysInfo::AmountOfPhysicalMemory() /
                                 (1000 * 1000 * 1000)),
                          base::SysInfo::CPUModelName().c_str()));
-  json_root.SetString(kJSONPlatformKey,
-                      base::SysInfo::OperatingSystemVersion());
+  json_root.Set(kJSONPlatformKey, base::SysInfo::OperatingSystemVersion());
 
   // Number of monitors
   int internal_displays = 0;
@@ -99,8 +98,8 @@ GURL AssembleUrlAsync(std::string owner_id,
       external_displays++;
     }
   }
-  json_root.SetInteger(kJSONMonitorsInternal, internal_displays);
-  json_root.SetInteger(kJSONMonitorsExternal, external_displays);
+  json_root.Set(kJSONMonitorsInternal, internal_displays);
+  json_root.Set(kJSONMonitorsExternal, external_displays);
 
   // Proton/SLR versions
   borealis::CompatToolInfo compat_tool_info;
@@ -108,19 +107,18 @@ GURL AssembleUrlAsync(std::string owner_id,
   if (borealis::GetCompatToolInfo(owner_id, &output)) {
     compat_tool_info = borealis::ParseCompatToolInfo(game_id, output);
   } else {
-    LOG(WARNING) << "Failed to run get_compat_tool_versions.py:";
+    LOG(WARNING) << "Failed to get compat tool version info:";
     LOG(WARNING) << output;
   }
-  json_root.SetString(kJSONProtonKey, compat_tool_info.proton);
-  json_root.SetString(kJSONSteamKey, compat_tool_info.slr);
+  json_root.Set(kJSONProtonKey, compat_tool_info.proton);
+  json_root.Set(kJSONSteamKey, compat_tool_info.slr);
 
   // Steam GameID
   if (!game_id.has_value() && compat_tool_info.game_id.has_value()) {
     game_id = compat_tool_info.game_id.value();
   }
   if (game_id.has_value()) {
-    json_root.SetString(kJSONAppIdKey,
-                        base::StringPrintf("%d", game_id.value()));
+    json_root.Set(kJSONAppIdKey, base::StringPrintf("%d", game_id.value()));
   }
 
   std::string device_info;
@@ -247,15 +245,8 @@ CompatToolInfo ParseCompatToolInfo(absl::optional<int> game_id,
       game_id.value() != compat_tool_info.game_id.value()) {
     LOG(WARNING) << "Expected GameID " << game_id.value() << " got "
                  << compat_tool_info.game_id.value();
-    compat_tool_info.proton = kProtonVersionGameMismatch;
-    compat_tool_info.slr = kProtonVersionGameMismatch;
-  } else if (compat_tool_info.game_id.has_value()) {
-    if (compat_tool_info.proton.empty()) {
-      LOG(WARNING) << "Found an unexpected empty Proton version.";
-    }
-    if (compat_tool_info.slr.empty()) {
-      LOG(WARNING) << "Found an unexpected empty SLR version.";
-    }
+    compat_tool_info.proton = kCompatToolVersionGameMismatch;
+    compat_tool_info.slr = kCompatToolVersionGameMismatch;
   }
 
   return compat_tool_info;

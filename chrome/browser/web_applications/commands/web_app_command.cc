@@ -16,7 +16,7 @@
 
 namespace web_app {
 
-WebAppCommand::WebAppCommand() {
+WebAppCommand::WebAppCommand(const std::string& name) : name_(name) {
   DETACH_FROM_SEQUENCE(command_sequence_checker_);
   // We don't have an easy way to enforce construction of class on the
   // WebAppProvider sequence without requiring a UI thread in unittests, so just
@@ -48,24 +48,16 @@ WebAppCommandManager* WebAppCommand::command_manager() const {
   return command_manager_;
 }
 
-void WebAppCommand::RequestLock(WebAppCommandManager* command_manager,
-                                WebAppLockManager* lock_manager,
-                                LockAcquiredCallback on_lock_acquired) {
-  lock_manager->AcquireLock(
-      lock_description(),
-      base::BindOnce(std::move(on_lock_acquired),
-                     base::BindOnce(&WebAppCommand::PrepareForStart,
-                                    AsWeakPtr(), command_manager)));
-}
-
-void WebAppCommand::PrepareForStart(WebAppCommandManager* command_manager) {
-  command_manager_ = command_manager;
-  Start();
-}
-
 base::WeakPtr<WebAppCommand> WebAppCommand::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
+
+template <typename LockType>
+WebAppCommandTemplate<LockType>::WebAppCommandTemplate(const std::string& name)
+    : WebAppCommand(name) {}
+
+template <typename LockType>
+WebAppCommandTemplate<LockType>::~WebAppCommandTemplate() = default;
 
 template <typename LockType>
 void WebAppCommandTemplate<LockType>::RequestLock(

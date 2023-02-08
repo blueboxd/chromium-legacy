@@ -7,7 +7,6 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/string_piece.h"
 #include "net/cert/pem.h"
 #include "net/cert/pki/cert_error_params.h"
 #include "net/cert/pki/cert_errors.h"
@@ -77,17 +76,7 @@ der::Input SequenceValueFromString(const std::string* s) {
     const std::string& file_path_ascii,
     const PemBlockMapping* mappings,
     size_t mappings_length) {
-  // Compute the full path, relative to the src/ directory.
-  base::FilePath src_root;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-  base::FilePath filepath = src_root.AppendASCII(file_path_ascii);
-
-  // Read the full contents of the PEM file.
-  std::string file_data;
-  if (!base::ReadFileToString(filepath, &file_data)) {
-    return ::testing::AssertionFailure()
-           << "Couldn't read file: " << filepath.value();
-  }
+  std::string file_data = ReadTestFileToString(file_path_ascii);
 
   // mappings_copy is used to keep track of which mappings have already been
   // satisfied (by nulling the |value| field). This is used to track when
@@ -180,7 +169,7 @@ bool ReadCertChainFromFile(const std::string& file_path_ascii,
   return true;
 }
 
-scoped_refptr<ParsedCertificate> ReadCertFromFile(
+std::shared_ptr<const ParsedCertificate> ReadCertFromFile(
     const std::string& file_path_ascii) {
   ParsedCertificateList chain;
   if (!ReadCertChainFromFile(file_path_ascii, &chain))

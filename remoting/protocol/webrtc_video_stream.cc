@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
@@ -29,6 +28,22 @@
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace remoting::protocol {
+
+FrameStatsMessage::VideoCodec VideoCodecToProtoEnum(
+    webrtc::VideoCodecType codec) {
+  switch (codec) {
+    case webrtc::VideoCodecType::kVideoCodecVP8:
+      return FrameStatsMessage::VP8;
+    case webrtc::VideoCodecType::kVideoCodecVP9:
+      return FrameStatsMessage::VP9;
+    case webrtc::VideoCodecType::kVideoCodecAV1:
+      return FrameStatsMessage::AV1;
+    case webrtc::VideoCodecType::kVideoCodecH264:
+      return FrameStatsMessage::H264;
+    default:
+      return FrameStatsMessage::UNKNOWN;
+  }
+}
 
 struct WebrtcVideoStream::FrameStats : public WebrtcVideoEncoder::FrameStats {
   FrameStats() = default;
@@ -113,7 +128,8 @@ WebrtcVideoStream::Core::Core(std::unique_ptr<DesktopCapturer> capturer,
                               base::WeakPtr<WebrtcVideoStream> video_stream)
     : capturer_(std::move(capturer)),
       video_stream_(std::move(video_stream)),
-      video_stream_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      video_stream_task_runner_(
+          base::SingleThreadTaskRunner::GetCurrentDefault()) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -224,7 +240,7 @@ WebrtcVideoStream::WebrtcVideoStream(const std::string& stream_name,
       {base::TaskPriority::HIGHEST},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 #else
-  core_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  core_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
 #endif
 }
 
@@ -466,6 +482,11 @@ void WebrtcVideoStream::OnEncodedFrameSent(
     stats.frame_quality = (63 - frame.quantizer) * 100 / 63;
 
     stats.screen_id = current_frame_stats->screen_id;
+
+    stats.codec = VideoCodecToProtoEnum(frame.codec);
+    stats.profile = frame.profile;
+    stats.encoded_rect_width = frame.encoded_rect_width;
+    stats.encoded_rect_height = frame.encoded_rect_height;
 
     video_stats_dispatcher_->OnVideoFrameStats(result.frame_id, stats);
   }

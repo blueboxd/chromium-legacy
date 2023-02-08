@@ -35,6 +35,14 @@ bool HistogramNameLesser(const base::HistogramBase* a,
 LazyInstance<Lock>::Leaky StatisticsRecorder::lock_ = LAZY_INSTANCE_INITIALIZER;
 
 // static
+LazyInstance<base::Lock>::Leaky StatisticsRecorder::snapshot_lock_ =
+    LAZY_INSTANCE_INITIALIZER;
+
+// static
+StatisticsRecorder::SnapshotTransactionId
+    StatisticsRecorder::last_snapshot_transaction_id_ = 0;
+
+// static
 StatisticsRecorder* StatisticsRecorder::top_ = nullptr;
 
 // static
@@ -213,16 +221,35 @@ void StatisticsRecorder::ImportProvidedHistograms() {
 }
 
 // static
-void StatisticsRecorder::PrepareDeltas(
+StatisticsRecorder::SnapshotTransactionId StatisticsRecorder::PrepareDeltas(
     bool include_persistent,
     HistogramBase::Flags flags_to_set,
     HistogramBase::Flags required_flags,
     HistogramSnapshotManager* snapshot_manager) {
-  Histograms histograms = GetHistograms();
-  if (!include_persistent)
-    histograms = NonPersistent(std::move(histograms));
-  snapshot_manager->PrepareDeltas(Sort(std::move(histograms)), flags_to_set,
+  Histograms histograms = Sort(GetHistograms(include_persistent));
+  base::AutoLock lock(snapshot_lock_.Get());
+  snapshot_manager->PrepareDeltas(std::move(histograms), flags_to_set,
                                   required_flags);
+  return ++last_snapshot_transaction_id_;
+}
+
+// static
+StatisticsRecorder::SnapshotTransactionId
+StatisticsRecorder::SnapshotUnloggedSamples(
+    HistogramBase::Flags required_flags,
+    HistogramSnapshotManager* snapshot_manager) {
+  Histograms histograms = Sort(GetHistograms());
+  base::AutoLock lock(snapshot_lock_.Get());
+  snapshot_manager->SnapshotUnloggedSamples(std::move(histograms),
+                                            required_flags);
+  return ++last_snapshot_transaction_id_;
+}
+
+// static
+StatisticsRecorder::SnapshotTransactionId
+StatisticsRecorder::GetLastSnapshotTransactionId() {
+  base::AutoLock lock(snapshot_lock_.Get());
+  return last_snapshot_transaction_id_;
 }
 
 // static
@@ -372,7 +399,8 @@ bool StatisticsRecorder::ShouldRecordHistogram(uint32_t histogram_hash) {
 }
 
 // static
-StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms() {
+StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms(
+    bool include_persistent) {
   // This must be called *before* the lock is acquired below because it will
   // call back into this object to register histograms. Those called methods
   // will acquire the lock at that time.
@@ -384,8 +412,13 @@ StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms() {
   EnsureGlobalRecorderWhileLocked();
 
   out.reserve(top_->histograms_.size());
-  for (const auto& entry : top_->histograms_)
+  for (const auto& entry : top_->histograms_) {
+    bool is_persistent =
+        (entry.second->flags() & HistogramBase::kIsPersistent) != 0;
+    if (!include_persistent && is_persistent)
+      continue;
     out.push_back(entry.second);
+  }
 
   return out;
 }
@@ -406,19 +439,6 @@ StatisticsRecorder::Histograms StatisticsRecorder::WithName(
       ranges::remove_if(histograms,
                         [query_string](const HistogramBase* const h) {
                           return !strstr(h->histogram_name(), query_string);
-                        }),
-      histograms.end());
-  return histograms;
-}
-
-// static
-StatisticsRecorder::Histograms StatisticsRecorder::NonPersistent(
-    Histograms histograms) {
-  histograms.erase(
-      ranges::remove_if(histograms,
-                        [](const HistogramBase* const h) {
-                          return (h->flags() & HistogramBase::kIsPersistent) !=
-                                 0;
                         }),
       histograms.end());
   return histograms;

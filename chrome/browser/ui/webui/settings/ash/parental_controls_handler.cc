@@ -10,8 +10,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/child_accounts/child_user_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
@@ -19,8 +19,6 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/features.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
@@ -71,15 +69,9 @@ void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
       ChildUserService::kFamilyLinkHelperAppPackageName, profile_);
   if (registry.GetAppType(app_id) != apps::AppType::kUnknown) {
     // Launch FLH app since it is available.
-    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      proxy->Launch(
-          app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls,
-          std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
-    } else {
-      proxy->Launch(app_id, ui::EF_NONE,
-                    apps::mojom::LaunchSource::kFromParentalControls,
-                    apps::MakeWindowInfo(display::kDefaultDisplayId));
-    }
+    proxy->Launch(
+        app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls,
+        std::make_unique<apps::WindowInfo>(display::kDefaultDisplayId));
     return;
   }
 

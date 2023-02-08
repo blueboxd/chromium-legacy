@@ -6,6 +6,8 @@
 
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -50,11 +52,22 @@ class MultiCaptureNotificationTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  absl::optional<message_center::Notification> GetNotification() {
-    return tester_->GetNotification("multi_capture");
+  absl::optional<message_center::Notification> GetNotification(
+      const std::string& origin) {
+    return tester_->GetNotification(base::StrCat({"multi_capture:", origin}));
   }
 
   void OnNotificationAdded() { notification_count_++; }
+
+  void CheckNotification(const std::u16string& origin) {
+    absl::optional<message_center::Notification> notification =
+        GetNotification(base::UTF16ToUTF8(origin));
+    ASSERT_TRUE(notification);
+    EXPECT_EQ(u"", notification->title());
+    EXPECT_EQ(u"Your system administrator has allowed " + origin +
+                  u" to record your screen",
+              notification->message());
+  }
 
  protected:
   user_manager::FakeUserManager* user_manager_ = nullptr;
@@ -66,16 +79,26 @@ class MultiCaptureNotificationTest : public BrowserWithTestWindowTest {
 
 TEST_F(MultiCaptureNotificationTest, NotificationTriggered) {
   multi_capture_notification_->MultiCaptureStarted(
-      /*label=*/"test_label", /*origin=*/url::Origin::CreateFromNormalizedTuple(
+      /*label=*/"test_label_1",
+      /*origin=*/url::Origin::CreateFromNormalizedTuple(
           /*scheme=*/"https", /*host=*/"example.com", /*port=*/443));
-  absl::optional<message_center::Notification> notification = GetNotification();
-  ASSERT_TRUE(notification);
-  EXPECT_EQ(u"", notification->title());
-  EXPECT_EQ(
-      u"Your system administrator has allowed example.com to record your "
-      u"screen",
-      notification->message());
+  CheckNotification(u"example.com");
   EXPECT_EQ(1u, notification_count_);
+}
+
+TEST_F(MultiCaptureNotificationTest,
+       NotificationsWithDifferentOriginsTriggered) {
+  multi_capture_notification_->MultiCaptureStarted(
+      /*label=*/"test_label_1",
+      /*origin=*/url::Origin::CreateFromNormalizedTuple(
+          /*scheme=*/"https", /*host=*/"example.com", /*port=*/443));
+  multi_capture_notification_->MultiCaptureStarted(
+      /*label=*/"test_label_2",
+      /*origin=*/url::Origin::CreateFromNormalizedTuple(
+          /*scheme=*/"https", /*host=*/"anotherexample.com", /*port=*/443));
+  CheckNotification(u"example.com");
+  CheckNotification(u"anotherexample.com");
+  EXPECT_EQ(2u, notification_count_);
 }
 
 }  // namespace ash

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/no_destructor.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,7 +47,7 @@ Profile* DevToolsBrowserContextManager::GetProfileById(
 
 content::BrowserContext* DevToolsBrowserContextManager::CreateBrowserContext() {
   Profile* original_profile =
-      ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+      ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
 
   Profile* otr_profile = original_profile->GetOffTheRecordProfile(
       Profile::OTRProfileID::CreateUniqueForDevTools(),
@@ -70,7 +70,7 @@ DevToolsBrowserContextManager::GetBrowserContexts() {
 
 content::BrowserContext*
 DevToolsBrowserContextManager::GetDefaultBrowserContext() {
-  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+  return ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
 }
 
 void DevToolsBrowserContextManager::DisposeBrowserContext(
@@ -144,7 +144,7 @@ void DevToolsBrowserContextManager::OnBrowserRemoved(Browser* browser) {
 
   // We cannot delete immediately here: the profile might still be referenced
   // during the browser tear-down process.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&DestroyOTRProfileWhenAppropriate,
                                 browser->profile()->GetWeakPtr()));
 

@@ -1170,23 +1170,6 @@
     No thanks
   </message>
 
-  <!-- TODO(crbug.com/1261902): Clean-up old strings once feature is launched. -->
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
-    Find apps for work and play
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SCREEN_DESCRIPTION" desc="The description of the 'Recommend Apps' section">
-    Get creative, be productive, and stay entertained with apps on the Google Play Store
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_OLD_SELECT_ALL" desc="The label on the button that selects all recommended apps">
-    Select all
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_DO_IT_LATER" desc="The label on the button that skips installing any recomended apps">
-    Do it later
-  </message>
-  <message name="IDS_LOGIN_RECOMMEND_APPS_DONE" desc="The label on the button that installs the user selected apps">
-    Done
-  </message>
-
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps to user">
     Install apps for your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> from the Google Play Store
   </message>
@@ -2914,7 +2897,7 @@
   <message name="IDS_ENTERPRISE_ACCOUNT_CHECK_TITLE" desc="The title of spinner dialog shown during account check.">
     Checking eligibility
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The subtitle on the device attribute prompt screen.">
+  <message name="IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION" desc="The title on the device attribute prompt screen.">
     Device information
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE" desc="Title of the screen to be shown upon an error during enterprise enrollment.">
@@ -3162,7 +3145,7 @@
   </message>
 
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_EXPLANATION" desc="Device attribute message to be shown on attribute update prompt screen.">
-    Optional — enter new or update existing information to be associated with this device.
+    Enter new or update existing information to be associated with this device.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_ATTRIBUTE_LINK" desc="Text on the link to the device attribute update help article.">
     Learn more.
@@ -4590,9 +4573,6 @@
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_LABEL" desc="Label for the field where the user enters their username">
     Username
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE" desc="Text shown in the Crostini installer dialog prompting the user to pick their username">
-    Select a username
-  </message>
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_INVALID_FIRST_CHARACTER_ERROR" desc="Text shown in the Crostini installer dialog when the user picks a username starting with an invalid character">
     Must start with a lowercase character or underscore
   </message>
@@ -5101,7 +5081,7 @@
     This picture will show up on the Chromebook sign in screen and lock screen.
   </message>
 
-  <!-- Strings for Oobe fingerprint enrollment screen -->
+  <!-- Strings for OOBE fingerprint setup screen and Settings fingerprint setup dialog -->
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_TITLE" desc="The title of the dialog that allow users to register their fingerprint.">
     Unlock faster with your fingerprint
   </message>
@@ -5109,23 +5089,54 @@
     Unlock faster with fingerprint
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION" desc="The label that explains that the fingerprint sensor is in the power button.">
-    Touch the power button with your finger. Your data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+    Touch the power button with your finger. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_POWER_BUTTON_DESCRIPTION_CHILD" desc="The label that explains that the fingerprint sensor is in the power button, when a child account is in use.">
     To set up fingerprint, have your child touch the power button. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor on the device.">
-    Touch the fingerprint sensor with your finger. Your data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+    Touch the fingerprint sensor with your finger. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_GENERAL_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor on the device, when a child account is in use.">
     To set up fingerprint, have your child touch the fingerprint sensor. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
-  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard.">
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard.">
     Touch the fingerprint sensor at the top right corner of your keyboard, next to the Power button. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
-  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard, when a child account is in use.">
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_OF_POWER_BUTTON_TOP_RIGHT_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located left to the power button on the top right corner of the keyboard, when a child account is in use.">
     To set up fingerprint, have your child touch the fingerprint sensor at the top right corner of the keyboard, next to the Power button. Your child’s fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_BOTTOM_LEFT_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor on the bottom left corner of the keyboard.">
+    Touch the fingerprint sensor at the bottom left corner of your keyboard. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_BOTTOM_LEFT_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor on the bottom left corner of the keyboard, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the bottom left corner of the keyboard. Your child's fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_BOTTOM_RIGHT_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the bottom right corner of the keyboard.">
+    Touch the fingerprint sensor at the bottom right corner of your keyboard. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_BOTTOM_RIGHT_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the bottom right corner of the keyboard, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the bottom right corner of the keyboard. Your child's fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_TOP_RIGHT_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the top right corner of the keyboard.">
+    Touch the fingerprint sensor at the top right corner of your keyboard. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_KEYBOARD_TOP_RIGHT_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the top right corner of the keyboard, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the top right corner of the keyboard. Your child's fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_RIGHT_SIDE_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the right hand side of the device.">
+    Touch the fingerprint sensor at the right hand side of your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_RIGHT_SIDE_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at the right hand side of the device, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the right hand side of this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Your child's fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_SIDE_DESCRIPTION" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at left side of the device.">
+    Touch the fingerprint sensor at the left hand side of your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Your fingerprint data is stored securely and never leaves your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+  <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_SENSOR_LEFT_SIDE_DESCRIPTION_CHILD" desc="The label that explains the location of the fingerprint sensor for devices with fingerprint sensor located at left side of the device, when a child account is in use.">
+    To set up fingerprint, have your child touch the fingerprint sensor at the left hand side of this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Your child's fingerprint data is stored securely and never leaves this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+  </message>
+
   <message name="IDS_OOBE_FINGERPINT_SETUP_SCREEN_ENROLLMENT_PROGRESS_TITLE" desc="The title of the dialog that shows where the fingerprint sensor is.">
     Lift, then touch again
   </message>
@@ -5977,6 +5988,18 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_PARENT_ACCESS_WEBVIEW_LOADING_MESSAGE" desc="Message shown while the parent access screen is loading.">
     Please wait...
   </message>
+  <message name="IDS_PARENT_ACCESS_ERROR_TITLE" desc="Title for the parent access dialog when an error has occurred.">
+    An error occurred
+  </message>
+  <message name="IDS_PARENT_ACCESS_ERROR_DESCRIPTION" desc="Message shown if the parent access dialog has failed to load for any reason.">
+    Please try again later
+  </message>
+  <message name="IDS_PARENT_ACCESS_OFFLINE_HEADING" desc="Heading string shown in the parent access flow when the network is not available.">
+    Can’t connect to the internet
+  </message>
+  <message name="IDS_PARENT_ACCESS_OFFLINE_DESCRIPTION" desc="Description shown in the parent access flow when the network is not available.">
+    Check your internet connection
+  </message>
 
   <!-- Strings for gnubby U2FD authentication UI -->
   <message name="IDS_GNUBBY_NOTIFICATION_TITLE" desc="Title for notification informing user to press power button for gnubby U2FD.">
@@ -6290,5 +6313,70 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_THEME_AUTO_DESCRIPTION" desc="Description of the auto theme button">
     Switch themes at sunrise and sunset
+  </message>
+
+  <!-- CHOOBE Screen -->
+  <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_CHOOBE_TITLE" desc="Title of the CHOOBE screen." translateable="false">
+    Select features you want to set up next
+  </message>
+  <message name="IDS_OOBE_CHOOBE_DESCRIPTION" desc="Subitle of the CHOOBE screen." translateable="false">
+    Or you can click Done for now and find them later in system Settings
+  </message>
+  <message name="IDS_OOBE_CHOOBE_SKIP_BUTTON" desc="Skip button for the CHOOBE screen" translateable="false">
+    Remind me later
+  </message>
+
+  <!-- CHOOBE Tiles -->
+  <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_CHOOBE_THEME_SELECTION_TILE_TITLE" desc="Title of the theme selection tile in the CHOOBE screen." translateable="false">
+    Select dark/light theme
+  </message>
+
+  <!-- Strings for the office fallback dialog -->
+  <message name="IDS_OFFICE_FALLBACK_CANCEL" desc="Label for the button that cancels office fallback.">
+    Cancel
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TRY_AGAIN" desc="Label for the button that retries opening the office file with the original application.">
+    Try again
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_OPEN_WITH_OFFLINE_EDITOR" desc="Label for the button that uses the offline editor fallback to open the office file.">
+    Open in offline editor
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_OFFLINE" desc="Title for a dialog that appears when an office file is unable to be opened due to the system being offline.">
+    Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> when offline
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_OFFLINE" desc="Explanation for a dialog that appears when an office file is unable to be opened due to the system being offline.">
+    The application <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> isn’t available offline.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_OFFLINE" desc="Office Fallback dialog instructions for the choices (and buttons) the user has available to open the office file when the system is offline.">
+    Check your internet connection and choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_DRIVE_UNAVAILABLE" desc="Title for a dialog that appears when an office file is unable to be opened due to Google Drive not being available.">
+    Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> when Drive is not available
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_DRIVE_UNAVAILABLE" desc="Explanation for a dialog that appears when an office file is unable to be opened due to Google Drive not being available.">
+    The application <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> requires Drive to be available.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_ONEDRIVE_UNAVAILABLE" desc="Title for a dialog that appears when an office file is unable to be opened due to OneDrive not being available.">
+    Can't open <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph> when OneDrive is not available
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_ONEDRIVE_UNAVAILABLE" desc="Explanation for a dialog that appears when an office file is unable to be opened due to OneDrive not being available.">
+    The application <ph name="APPLICATION_NAME">$1<ex>Microsoft 365</ex></ph> requires OneDrive to be available.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_ERROR_OPENING_WEB" desc="Title for a dialog that appears when an office file is unable to be opened due to an error opening the URL.">
+    Can't open the URL for <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph>
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_ERROR_OPENING_WEB" desc="Explanation for a dialog that appears when an office file is unable to be opened due to OneDrive not being available.">
+    The application <ph name="APPLICATION_NAME">$1<ex>Microsoft 365</ex></ph> requires OneDrive to be available.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_TITLE_INVALID_GOOGLE_DOCS_URL" desc="Title for a dialog that appears when an office file is unable to be opened due to the URL for the office file being inaccessible.">
+    Can't open the URL for <ph name="FILE_NAMES">$1<ex>file.docx</ex></ph>
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_REASON_INVALID_GOOGLE_DOCS_URL" desc="Explanation for a dialog that appears when an office file is unable to be opened from Google Drive due to the URL for the office file being inaccessible.">
+    The application <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> requires a valid <ph name="APPLICATION_NAME">$1<ex>Google Docs</ex></ph> URL.
+  </message>
+  <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS" desc="Office Fallback dialog instructions for the choices (buttons) the user has available to open the office file.">
+    Choose "Try again", or choose "Open in offline editor" to use limited view and editing options.
   </message>
 </grit-part>

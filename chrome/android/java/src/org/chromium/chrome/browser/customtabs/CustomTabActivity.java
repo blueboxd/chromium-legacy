@@ -31,7 +31,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BackupSigninProcessor;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -150,6 +149,13 @@ public class CustomTabActivity extends BaseCustomTabActivity {
     }
 
     @Override
+    protected void onFirstDrawComplete() {
+        super.onFirstDrawComplete();
+
+        FontPreloader.getInstance().onFirstDrawCustomTabActivity();
+    }
+
+    @Override
     public void finishNativeInitialization() {
         if (!mIntentDataProvider.isInfoPage()) {
             FirstRunSignInProcessor.openSyncSettingsIfScheduled(this);
@@ -167,13 +173,6 @@ public class CustomTabActivity extends BaseCustomTabActivity {
                 });
 
         super.finishNativeInitialization();
-
-        // We start the Autofill Assistant after the call to super.finishNativeInitialization() as
-        // this will initialize the BottomSheet that is used to embed the Autofill Assistant bottom
-        // bar.
-        if (AutofillAssistantFacade.isAutofillAssistantEnabled(getInitialIntent())) {
-            AutofillAssistantFacade.start(this);
-        }
     }
 
     @Override

@@ -2,6 +2,7 @@
 # in Network Service, please consider sharing the design idea/doc with
 # network-service-dev@chromium.org beforehand.
 
+bashi@chromium.org
 cduvall@chromium.org
 ericorth@chromium.org
 jam@chromium.org
@@ -17,8 +18,6 @@ per-file cross_origin_read_blocking*=lukasza@chromium.org
 per-file sec_header_helpers*=creis@chromium.org
 per-file sec_header_helpers*=lukasza@chromium.org
 per-file sec_header_helpers*=mkwst@chromium.org
-
-per-file expect_ct_reporter*=estark@chromium.org
 
 per-file cert_verifier_with_trust_anchors*=file://chromeos/ash/components/policy/OWNERS
 

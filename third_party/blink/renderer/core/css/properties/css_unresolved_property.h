@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_UNRESOLVED_PROPERTY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_UNRESOLVED_PROPERTY_H_
 
+#include "base/containers/span.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/properties/css_exposure.h"
@@ -14,7 +15,7 @@
 namespace blink {
 
 class ExecutionContext;
-const CSSUnresolvedProperty& GetCSSPropertyVariableInternal();
+CORE_EXPORT const CSSUnresolvedProperty& GetCSSPropertyVariableInternal();
 
 // TODO(crbug.com/793288): audit and consider redesigning how aliases are
 // handled once more of project Ribbon is done and all use of aliases can be
@@ -24,21 +25,18 @@ class CORE_EXPORT CSSUnresolvedProperty {
   static const CSSUnresolvedProperty& Get(CSSPropertyID);
   static const CSSUnresolvedProperty* GetAliasProperty(CSSPropertyID);
 
-  bool IsWebExposed() const { return blink::IsWebExposed(Exposure()); }
-  bool IsUAExposed() const { return blink::IsUAExposed(Exposure()); }
-  virtual CSSExposure Exposure() const { return CSSExposure::kWeb; }
-  // Takes origin trial into account
-  bool IsWebExposed(const ExecutionContext* context) const {
+  // Origin trials are taken into account only when a non-nullptr
+  // ExecutionContext is provided.
+  bool IsWebExposed(const ExecutionContext* context = nullptr) const {
     return blink::IsWebExposed(Exposure(context));
   }
-  bool IsUAExposed(const ExecutionContext* context) const {
+  bool IsUAExposed(const ExecutionContext* context = nullptr) const {
     return blink::IsUAExposed(Exposure(context));
   }
-  virtual CSSExposure Exposure(const ExecutionContext* context) const {
-    // css properties that does not override this function should return
-    // the same value as Exposure()
-    return Exposure();
+  virtual CSSExposure Exposure(const ExecutionContext* = nullptr) const {
+    return CSSExposure::kWeb;
   }
+
   virtual bool IsResolvedProperty() const { return false; }
   virtual const char* GetPropertyName() const {
     NOTREACHED();
@@ -55,6 +53,10 @@ class CORE_EXPORT CSSUnresolvedProperty {
   WTF::String GetPropertyNameString() const {
     // We share the StringImpl with the AtomicStrings.
     return GetPropertyNameAtomicString().GetString();
+  }
+  // See documentation near "alternative_of" in css_properties.json5.
+  virtual CSSPropertyID GetAlternative() const {
+    return CSSPropertyID::kInvalid;
   }
 
  protected:

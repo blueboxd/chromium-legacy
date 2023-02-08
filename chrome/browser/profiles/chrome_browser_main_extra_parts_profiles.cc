@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/page_colors_factory.h"
-#include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -221,7 +220,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/extensions/chromeos_browser_context_keyed_service_factories.h"
+#include "chrome/browser/extensions/api/chromeos_api_browser_context_keyed_service_factories.h"
 #endif
 #endif
 
@@ -313,9 +312,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   AccountConsistencyModeManagerFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();
   AccountReconcilorFactory::GetInstance();
-#if !BUILDFLAG(IS_ANDROID)
-  AccuracyServiceFactory::GetInstance();
-#endif
   AdaptiveQuietNotificationPermissionUiEnabler::Factory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::AppListSyncableServiceFactory::GetInstance();

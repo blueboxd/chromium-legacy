@@ -32,6 +32,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/camera/autozoom_nudge_controller.h"
+#include "ash/system/camera/camera_effects_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
@@ -80,6 +81,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AutozoomNudgeController::RegisterProfilePrefs(registry);
   AmbientController::RegisterProfilePrefs(registry);
   CalendarController::RegisterProfilePrefs(registry);
+  CameraEffectsController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
   CaptureModeController::RegisterProfilePrefs(registry);
   CellularSetupNotifier::RegisterProfilePrefs(registry);
@@ -127,8 +129,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
     quick_answers::prefs::RegisterProfilePrefs(registry);
     registry->RegisterBooleanPref(prefs::kMouseReverseScroll, false);
     registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
-    registry->RegisterBooleanPref(chromeos::prefs::kSuggestedContentEnabled,
-                                  true);
+    registry->RegisterBooleanPref(prefs::kSuggestedContentEnabled, true);
     registry->RegisterBooleanPref(::prefs::kLiveCaptionEnabled, false);
     registry->RegisterListPref(
         chromeos::prefs::kKeepFullscreenWithoutNotificationUrlAllowList);

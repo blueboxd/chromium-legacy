@@ -39,9 +39,9 @@
 #include "chromeos/ash/components/dbus/userdataauth/cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -89,7 +89,7 @@ class ScreenLockerUnitTest : public testing::Test {
     // Initialize SessionControllerClientImpl and dependencies:
     LoginState::Initialize();
 
-    fake_user_manager_ = new ash::FakeChromeUserManager;
+    fake_user_manager_ = new FakeChromeUserManager;
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(fake_user_manager_));
 
@@ -192,7 +192,7 @@ class ScreenLockerUnitTest : public testing::Test {
   LoginScreenClientImpl login_screen_client_;
 
   // * SessionControllerClientImpl dependencies:
-  ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   Profile* user_profile_ = nullptr;

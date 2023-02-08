@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #import "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -141,30 +142,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   return [super initWithStyle:style];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
-
-  // Center search bar's cancel button vertically so it looks centered.
-  // We change the cancel button proxy styles, so we will return it to
-  // default in viewDidDisappear.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:offset
-                             forBarMetrics:UIBarMetricsDefault];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-
-  // Restore to default origin offset for cancel button proxy style.
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                             forBarMetrics:UIBarMetricsDefault];
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self loadModel];
@@ -234,13 +211,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // Place the search bar in the navigation bar.
   [self updateNavigationBar];
   self.navigationItem.hidesSearchBarWhenScrolling = NO;
-
-  // Center search bar and cancel button vertically so it looks centered
-  // in the header when searching.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-      offset;
 }
 
 #pragma mark - TableViewModel
@@ -720,6 +690,23 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
     [self fetchHistoryForQuery:_currentQuery continuation:true];
   }
+}
+
+#pragma mark - UIResponder
+
+// To always be able to register key commands via -keyCommands, the VC must be
+// able to become first responder.
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
+- (NSArray*)keyCommands {
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self.delegate dismissHistoryWithCompletion:nil];
 }
 
 #pragma mark - TableViewURLDragDataSource

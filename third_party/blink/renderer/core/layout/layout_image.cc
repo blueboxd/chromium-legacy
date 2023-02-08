@@ -204,7 +204,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     }
   }
 
-  SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+  SetShouldDoFullPaintInvalidationWithoutLayoutChange(
       PaintInvalidationReason::kImage);
 
   if (defer == CanDeferInvalidation::kYes && ImageResource() &&
@@ -280,12 +280,6 @@ bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {
     return false;
 
   return ForegroundIsKnownToBeOpaqueInRect(BackgroundPaintedExtent(), 0);
-}
-
-LayoutUnit LayoutImage::MinimumReplacedHeight() const {
-  NOT_DESTROYED();
-  return image_resource_->ErrorOccurred() ? IntrinsicSize().Height()
-                                          : LayoutUnit();
 }
 
 HTMLMapElement* LayoutImage::ImageMap() const {

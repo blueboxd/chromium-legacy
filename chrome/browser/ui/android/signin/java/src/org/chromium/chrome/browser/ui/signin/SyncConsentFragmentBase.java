@@ -410,6 +410,7 @@ public abstract class SyncConsentFragmentBase
         mSyncConsentView.getHistoryRow().setOnClickListener(this::recordClickAndResetListener);
 
         mSyncConsentView.getRefuseButton().setOnClickListener(this::onRefuseButtonClicked);
+        mSyncConsentView.getRefuseButton().setVisibility(View.GONE);
         mSyncConsentView.getAcceptButton().setOnClickListener(this::onAcceptButtonClicked);
         mSyncConsentView.getAcceptButton().setVisibility(View.GONE);
         mSyncConsentView.getMoreButton().setVisibility(View.VISIBLE);
@@ -444,10 +445,6 @@ public abstract class SyncConsentFragmentBase
         final Drawable endImageViewDrawable;
         if (mIsChild) {
             endImageViewDrawable = SigninView.getCheckmarkDrawable(getContext());
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)) {
-                mSigninView.getRefuseButton().setVisibility(View.GONE);
-                mSigninView.getAcceptButtonEndPadding().setVisibility(View.INVISIBLE);
-            }
         } else {
             endImageViewDrawable = SigninView.getExpandArrowDrawable(getContext());
         }
@@ -658,6 +655,7 @@ public abstract class SyncConsentFragmentBase
 
     private void showAcceptButton() {
         if (mSyncConsentView != null) {
+            mSyncConsentView.getRefuseButton().setVisibility(View.VISIBLE);
             mSyncConsentView.getAcceptButton().setVisibility(View.VISIBLE);
             mSyncConsentView.getMoreButton().setVisibility(View.GONE);
             mSyncConsentView.getScrollView().setScrolledToBottomObserver(null);
@@ -714,13 +712,27 @@ public abstract class SyncConsentFragmentBase
         AccountInfoServiceProvider.get()
                 .getAccountInfoByEmail(mSelectedAccountName)
                 .then(accountInfo -> {
-                    assert accountInfo != null : "The seeded CoreAccountInfo shouldn't be null";
-                    mConsentTextTracker.recordConsent(accountInfo.getId(),
-                            ConsentAuditorFeature.CHROME_SYNC, (TextView) confirmationView,
-                            mSyncConsentView != null ? mSyncConsentView : mSigninView);
-                    if (isResumed()) {
-                        runStateMachineAndSignin(settingsClicked);
+                    if (accountInfo != null) {
+                        mConsentTextTracker.recordConsent(accountInfo.getId(),
+                                ConsentAuditorFeature.CHROME_SYNC, (TextView) confirmationView,
+                                mSyncConsentView != null ? mSyncConsentView : mSigninView);
+                        if (isResumed()) {
+                            runStateMachineAndSignin(settingsClicked);
+                        }
+                        return;
                     }
+                    mAccountManagerFacade.getAccounts().then((accounts) -> {
+                        if (AccountUtils.findAccountByName(accounts, mSelectedAccountName)
+                                == null) {
+                            // TODO(crbug.com/1380917): This is a temporary solution to investigate
+                            // the crash. After the bug is fixed we can probably replace this with
+                            // just updateAccounts().
+                            updateAccounts(accounts);
+                        } else {
+                            throw new NullPointerException(
+                                    "The seeded CoreAccountInfo shouldn't be null");
+                        }
+                    });
                 });
     }
 
@@ -884,14 +896,6 @@ public abstract class SyncConsentFragmentBase
             // for the previously selected account).
             mConfirmSyncDataStateMachine.cancel(/* isBeingDestroyed = */ false);
             mConfirmSyncDataStateMachine = null;
-        }
-
-        // Account for forced sign-in flow disappeared before the sign-in was completed.
-        if (mIsChild
-                && !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.ALLOW_SYNC_OFF_FOR_CHILD_ACCOUNTS)) {
-            onSyncRefused();
-            return;
         }
 
         if (mSelectedAccountName != null) {

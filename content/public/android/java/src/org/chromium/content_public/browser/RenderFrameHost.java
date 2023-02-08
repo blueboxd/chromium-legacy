@@ -176,11 +176,19 @@ public interface RenderFrameHost {
     int getLifecycleState();
 
     /**
-     * Forces a new compositor frame to be drawn and waits for its presentation in the display
-     * compositor.
-     * TODO(bokan): This would be better named requestPresentationTimeForForcedRedraw
+     * Inserts a VisualStateCallback that's resolved once a visual update has been processed.
      *
-     * @param callback the callback to be invoked when the display presents the redrawn frame.
+     * The VisualStateCallback will be inserted in Blink and will be invoked when the contents of
+     * the DOM tree at the moment that the callback was inserted (or later) are submitted to the
+     * compositor in a CompositorFrame. In other words, the following events need to happen before
+     * the callback is invoked:
+     * 1. The DOM tree is committed becoming the pending tree - see ThreadProxy::BeginMainFrame
+     * 2. The pending tree is activated becoming the active tree
+     * 3. The compositor calls Draw and submits a new CompositorFrame to the Viz process.
+     * The callback is synchronously invoked if this is called while being destroyed.
+     *
+     * @param callback the callback to be inserted. The callback takes a single Boolean parameter
+     *     which will be true if the visual state update was successful or false if it was aborted.
      */
-    void forceRedrawAndWaitForPresentation(Runnable callback);
+    void insertVisualStateCallback(Callback<Boolean> callback);
 }

@@ -57,8 +57,7 @@ void AndroidAutofillManager::FillCreditCardFormImpl(
     const FormData& form,
     const FormFieldData& field,
     const CreditCard& credit_card,
-    const std::u16string& cvc,
-    int query_id) {
+    const std::u16string& cvc) {
   NOTREACHED();
 }
 
@@ -66,16 +65,6 @@ void AndroidAutofillManager::FillProfileFormImpl(
     const FormData& form,
     const FormFieldData& field,
     const autofill::AutofillProfile& profile) {
-  NOTREACHED();
-}
-
-void AndroidAutofillManager::SetProfileFillViaAutofillAssistantIntent(
-    const autofill_assistant::AutofillAssistantIntent intent) {
-  NOTREACHED();
-}
-
-void AndroidAutofillManager::SetCreditCardFillViaAutofillAssistantIntent(
-    const autofill_assistant::AutofillAssistantIntent intent) {
   NOTREACHED();
 }
 
@@ -108,11 +97,10 @@ void AndroidAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& bounding_box,
-    int query_id,
     AutoselectFirstSuggestion autoselect_first_suggestion,
     FormElementWasClicked form_element_was_clicked) {
   if (auto* provider = GetAutofillProvider()) {
-    provider->OnAskForValuesToFill(this, form, field, bounding_box, query_id,
+    provider->OnAskForValuesToFill(this, form, field, bounding_box,
                                    autoselect_first_suggestion,
                                    form_element_was_clicked);
   }
@@ -205,11 +193,10 @@ AutofillProvider* AndroidAutofillManager::GetAutofillProvider() {
 }
 
 void AndroidAutofillManager::FillOrPreviewForm(
-    int query_id,
     mojom::RendererFormDataAction action,
     const FormData& form,
     const url::Origin& triggered_origin) {
-  driver()->FillOrPreviewForm(query_id, action, form, triggered_origin, {});
+  driver()->FillOrPreviewForm(action, form, triggered_origin, {});
 }
 
 }  // namespace autofill

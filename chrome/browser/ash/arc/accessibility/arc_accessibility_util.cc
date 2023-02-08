@@ -5,11 +5,11 @@
 #include "chrome/browser/ash/arc/accessibility/arc_accessibility_util.h"
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/mojom/accessibility_helper.mojom-shared.h"
 #include "ash/components/arc/mojom/accessibility_helper.mojom.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "base/containers/contains.h"
 #include "chrome/browser/ash/arc/accessibility/accessibility_info_data_wrapper.h"
-#include "chrome/browser/ash/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
@@ -170,6 +170,8 @@ absl::optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
       return arc::mojom::AccessibilityActionType::SCROLL_LEFT;
     case ax::mojom::Action::kScrollRight:
       return arc::mojom::AccessibilityActionType::SCROLL_RIGHT;
+    case ax::mojom::Action::kScrollToPositionAtRowColumn:
+      return arc::mojom::AccessibilityActionType::SCROLL_TO_POSITION;
     case ax::mojom::Action::kCustomAction:
       return arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
     case ax::mojom::Action::kSetAccessibilityFocus:
@@ -234,6 +236,8 @@ ax::mojom::Action ConvertToChromeAction(
       return ax::mojom::Action::kExpand;
     case arc::mojom::AccessibilityActionType::LONG_CLICK:
       return ax::mojom::Action::kLongClick;
+    case arc::mojom::AccessibilityActionType::SCROLL_TO_POSITION:
+      return ax::mojom::Action::kScrollToPositionAtRowColumn;
     // Below are actions not mapped in ConvertToAndroidAction().
     case arc::mojom::AccessibilityActionType::CLEAR_FOCUS:
     case arc::mojom::AccessibilityActionType::SELECT:
@@ -249,7 +253,6 @@ ax::mojom::Action ConvertToChromeAction(
     case arc::mojom::AccessibilityActionType::DISMISS:
     case arc::mojom::AccessibilityActionType::SET_TEXT:
     case arc::mojom::AccessibilityActionType::CONTEXT_CLICK:
-    case arc::mojom::AccessibilityActionType::SCROLL_TO_POSITION:
     case arc::mojom::AccessibilityActionType::SET_PROGRESS:
       return ax::mojom::Action::kNone;
   }

@@ -1519,7 +1519,7 @@ external/wpt/css/css-writing-modes/writing-mode-vlr-table-001-manual.html [ Skip
 external/wpt/css/css-writing-modes/writing-mode-vlr-009-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-table-002-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-012-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-006-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-006-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-009-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-015-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-010-manual.html [ Skip ]
@@ -1532,22 +1532,22 @@ external/wpt/css/css-writing-modes/writing-mode-vlr-002-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-007-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-015-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-003-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-003-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-004-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-003-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-004-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-001-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-006-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-008-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-004-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-003-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-014-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-002-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-002-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-010-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-002-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-012-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-005-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-002-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-001-manual.html [ Skip ]
-external/wpt/css/css-writing-modes/writing-mode-vlr-forms-005-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-001-manual.html [ Skip ]
+external/wpt/css/css-writing-modes/forms/manual/form-controls-vlr-005-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-005-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vlr-007-manual.html [ Skip ]
 external/wpt/css/css-writing-modes/writing-mode-vrl-forms-006-manual.html [ Skip ]
@@ -1573,15 +1573,6 @@ crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-
 
 # Ctrl and mouse wheel scroll will not make page zoom on Mac
 crbug.com/1047176 [ Mac ] fast/events/wheel/wheelevent-ctrl.html [ Skip ]
-
-# The following tests are temporarily skipped. See the associated bugs.
-# Actually they should not be in this file because they are temporary.
-crbug.com/1150938 virtual/force-eager/external/wpt/measure-memory/detached.https.window.html [ Skip ]
-crbug.com/1150938 virtual/force-eager/external/wpt/measure-memory/window-open.mix.https.window.html [ Skip ]
-crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/main-frame-and-worker.https.window.html [ Skip ]
-crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/idlharness.window.html [ Skip ]
-crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/service-worker.https.any.serviceworker.html [ Skip ]
-crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/shared-worker.https.any.sharedworker.html [ Skip ]
 
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
 
@@ -1745,6 +1736,9 @@ crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/m
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanagement/tools/virtual-authenticator-environment-manual.html [ Skip ]
+
+# Since enabling the multi IDP flag affects existing tests, we only enable the flag in the virtual multi IDP test suite
+crbug.com/1373766 external/wpt/credential-management/fedcm-multi-idp/* [ Skip ]
 
 # Feature can only be disabled via base feature flag, not by commandline switch.
 crbug.com/1293679 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/pending-beacon-origin-trial-interfaces.html [ Skip ]

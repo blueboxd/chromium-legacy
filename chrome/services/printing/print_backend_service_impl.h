@@ -97,7 +97,14 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
 
  protected:
   // Common initialization for both production and test instances.
-  void InitCommon(const std::string& locale);
+  void InitCommon(
+#if BUILDFLAG(IS_WIN)
+      const std::string& locale,
+      mojo::PendingRemote<mojom::PrinterXmlParser> remote
+#else
+      const std::string& locale
+#endif  // BUILDFLAG(IS_WIN)
+  );
 
  private:
   friend class PrintBackendServiceTestImpl;
@@ -128,11 +135,14 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
   };
 
   // mojom::PrintBackendService implementation:
-  void Init(const std::string& locale) override;
+  void Init(
 #if BUILDFLAG(IS_WIN)
-  void BindPrinterXmlParser(
-      mojo::PendingRemote<mojom::PrinterXmlParser> remote) override;
+      const std::string& locale,
+      mojo::PendingRemote<mojom::PrinterXmlParser> remote
+#else
+      const std::string& locale
 #endif  // BUILDFLAG(IS_WIN)
+      ) override;
   void Poke() override;
   void EnumeratePrinters(
       mojom::PrintBackendService::EnumeratePrintersCallback callback) override;
@@ -187,24 +197,18 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
   void DocumentDone(
       int32_t document_cookie,
       mojom::PrintBackendService::DocumentDoneCallback callback) override;
+  void Cancel(int32_t document_cookie,
+              mojom::PrintBackendService::CancelCallback callback) override;
 
   // Callbacks from worker functions.
   void OnDidStartPrintingReadyDocument(DocumentHelper& document_helper,
                                        mojom::ResultCode result);
-#if BUILDFLAG(IS_WIN)
-  void OnDidRenderPrintedPage(
-      DocumentHelper& document_helper,
-      mojom::PrintBackendService::RenderPrintedPageCallback callback,
-      mojom::ResultCode result);
-#endif
-  void OnDidRenderPrintedDocument(
-      DocumentHelper& document_helper,
-      mojom::PrintBackendService::RenderPrintedDocumentCallback callback,
-      mojom::ResultCode result);
   void OnDidDocumentDone(
       DocumentHelper& document_helper,
       mojom::PrintBackendService::DocumentDoneCallback callback,
       mojom::ResultCode result);
+  void OnDidCancel(DocumentHelper& document_helper,
+                   mojom::PrintBackendService::CancelCallback callback);
 
   // Utility helpers.
   DocumentHelper* GetDocumentHelper(int document_cookie);

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_PICKER_VIEW_H_
 
-#include "base/callback_forward.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
@@ -41,7 +40,9 @@ class WebContents;
 
 // Dialog widget that contains the Desktop Profile picker webui.
 class ProfilePickerView : public views::WidgetDelegateView,
-                          public ProfilePickerWebContentsHost {
+                          public ProfilePickerWebContentsHost,
+                          public content::WebContentsDelegate,
+                          public web_modal::WebContentsModalDialogHost {
  public:
   ProfilePickerView(const ProfilePickerView&) = delete;
   ProfilePickerView& operator=(const ProfilePickerView&) = delete;
@@ -66,6 +67,9 @@ class ProfilePickerView : public views::WidgetDelegateView,
           base::OnceClosure()) override;
   bool ShouldUseDarkColors() const override;
   content::WebContents* GetPickerContents() const override;
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override;
+  content::WebContentsDelegate* GetWebContentsDelegate() override;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void SetNativeToolbarVisible(bool visible) override;
@@ -167,6 +171,7 @@ class ProfilePickerView : public views::WidgetDelegateView,
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   void SwitchToSignedInFlow(Profile* signed_in_profile,
+                            absl::optional<SkColor> profile_color,
                             std::unique_ptr<content::WebContents> contents);
 #endif
 

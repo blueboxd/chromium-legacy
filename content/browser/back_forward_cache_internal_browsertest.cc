@@ -2856,7 +2856,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
     // Posted because Stop() will destroy the NavigationRequest but
     // DisableJsEviction will be called from inside the navigation which may
     // not be a safe place to destruct a NavigationRequest.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&WebContentsImpl::Stop,
                                   base::Unretained(web_contents())));
   }));
@@ -3848,9 +3848,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 }
 
 class BackForwardCacheBrowserTestWithFencedFrames
-    : public BackForwardCacheBrowserTest,
-      public ::testing::WithParamInterface<
-          test::FencedFrameTestHelper::FencedFrameType> {
+    : public BackForwardCacheBrowserTest {
  public:
   BackForwardCacheBrowserTestWithFencedFrames() = default;
   ~BackForwardCacheBrowserTestWithFencedFrames() override = default;
@@ -3861,22 +3859,17 @@ class BackForwardCacheBrowserTestWithFencedFrames
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(blink::features::kFencedFrames, "", "");
+    EnableFeatureAndSetParams(features::kPrivacySandboxAdsAPIsOverride, "", "");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
 
-    fenced_frame_test_helper_ =
-        std::make_unique<test::FencedFrameTestHelper>(GetParam());
+    fenced_frame_test_helper_ = std::make_unique<test::FencedFrameTestHelper>();
   }
 
   std::unique_ptr<test::FencedFrameTestHelper> fenced_frame_test_helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BackForwardCacheBrowserTestWithFencedFrames,
-    ::testing::Values(test::FencedFrameTestHelper::FencedFrameType::kShadowDOM,
-                      test::FencedFrameTestHelper::FencedFrameType::kMPArch));
-
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
                        CachesFencedFramesSimple) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
@@ -3908,12 +3901,8 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
 
 // Test that the back/forward cache can store documents containing a fenced
 // frame in their contents.
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
                        InnerFrameStorageSupport) {
-  // This tests specific FrameTree information so isn't applicable to
-  // ShadowDOM.
-  if (GetParam() == test::FencedFrameTestHelper::FencedFrameType::kShadowDOM)
-    return;
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
   GURL url_a(https_server()->GetURL(
@@ -4025,12 +4014,8 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
 }
 
 // Test that documents are evicted correctly through the outermost main frame.
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
                        OuterDocumentTimeEviction) {
-  // This tests specific FrameTree information so isn't applicable to
-  // ShadowDOM.
-  if (GetParam() == test::FencedFrameTestHelper::FencedFrameType::kShadowDOM)
-    return;
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
   // Inject mock time task runner to be used in the eviction timer, so we can,
@@ -4097,12 +4082,8 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
 }
 
 // This test checks that the TreeResults generated are correct.
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
                        TreeResults) {
-  // This tests specific FrameTree information so isn't applicable to
-  // ShadowDOM.
-  if (GetParam() == test::FencedFrameTestHelper::FencedFrameType::kShadowDOM)
-    return;
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
   GURL url_a(https_server()->GetURL("a.test", "/title1.html"));
@@ -4187,7 +4168,7 @@ IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
       web_reasons->same_origin_details->children.at(1)->same_origin_details);
 }
 
-IN_PROC_BROWSER_TEST_P(BackForwardCacheBrowserTestWithFencedFrames,
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
                        EvictionOnInnerFrameTree) {
   DoNotFailForUnexpectedMessagesWhileCached();
   CreateHttpsServer();

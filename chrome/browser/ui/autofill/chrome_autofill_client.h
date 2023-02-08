@@ -179,9 +179,6 @@ class ChromeAutofillClient
   bool IsFastCheckoutSupported() override;
   bool IsFastCheckoutTriggerForm(const FormData& form,
                                  const FormFieldData& field) override;
-  bool FastCheckoutScriptSupportsConsentlessExecution(
-      const url::Origin& origin) override;
-  bool FastCheckoutClientSupportsConsentlessExecution() override;
   bool ShowFastCheckout(base::WeakPtr<FastCheckoutDelegate> delegate) override;
   void HideFastCheckout() override;
   bool IsTouchToFillCreditCardSupported() override;
@@ -213,7 +210,6 @@ class ChromeAutofillClient
       base::OnceClosure cancel_callback) override;
   void CloseAutofillProgressDialog(
       bool show_confirmation_before_closing) override;
-  bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(

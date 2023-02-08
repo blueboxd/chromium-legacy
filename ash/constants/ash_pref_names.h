@@ -514,6 +514,8 @@ extern const char kLoginScreenWebUILazyLoading[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFloatingWorkspaceEnabled[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFloatingWorkspaceV2Enabled[];
+
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowPostRebootNotification[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -525,15 +527,15 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAutozoomNudges[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kRecoveryFactorBehavior[];
 
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kApnMigratedIccids[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kBackgroundBlur[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kBackgroundReplace[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPortraitRelighting[];
+
 }  // namespace prefs
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the Chrome OS source code
-// directory migration is finished.
-namespace chromeos {
-namespace prefs {
-using namespace ::ash::prefs;
-}
-}  // namespace chromeos
 
 #endif  // ASH_CONSTANTS_ASH_PREF_NAMES_H_

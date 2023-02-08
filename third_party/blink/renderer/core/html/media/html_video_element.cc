@@ -218,16 +218,6 @@ void HTMLVideoElement::ParseAttribute(
       remoting_interstitial_->OnPosterImageChanged();
     if (picture_in_picture_interstitial_)
       picture_in_picture_interstitial_->OnPosterImageChanged();
-  } else if (params.name == html_names::kAutopictureinpictureAttr &&
-             RuntimeEnabledFeatures::AutoPictureInPictureEnabled(
-                 GetExecutionContext())) {
-    if (!params.new_value.IsNull()) {
-      PictureInPictureController::From(GetDocument())
-          .AddToAutoPictureInPictureElementsList(this);
-    } else {
-      PictureInPictureController::From(GetDocument())
-          .RemoveFromAutoPictureInPictureElementsList(this);
-    }
   } else {
     HTMLMediaElement::ParseAttribute(params);
   }
@@ -378,6 +368,10 @@ void HTMLVideoElement::RequestEnterPictureInPicture() {
 void HTMLVideoElement::RequestExitPictureInPicture() {
   PictureInPictureController::From(GetDocument())
       .ExitPictureInPicture(this, nullptr);
+}
+
+void HTMLVideoElement::RequestMediaRemoting() {
+  GetWebMediaPlayer()->RequestMediaRemoting();
 }
 
 void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
@@ -612,6 +606,9 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
 
 void HTMLVideoElement::MediaRemotingStarted(
     const WebString& remote_device_friendly_name) {
+  is_remote_rendering_ = true;
+  remote_device_friendly_name_ = remote_device_friendly_name;
+  OnRemotePlaybackMetadataChange();
   if (!remoting_interstitial_) {
     remoting_interstitial_ =
         MakeGarbageCollected<MediaRemotingInterstitial>(*this);
@@ -623,6 +620,9 @@ void HTMLVideoElement::MediaRemotingStarted(
 }
 
 void HTMLVideoElement::MediaRemotingStopped(int error_code) {
+  is_remote_rendering_ = false;
+  remote_device_friendly_name_.Reset();
+  OnRemotePlaybackMetadataChange();
   if (remoting_interstitial_)
     remoting_interstitial_->Hide(error_code);
 }

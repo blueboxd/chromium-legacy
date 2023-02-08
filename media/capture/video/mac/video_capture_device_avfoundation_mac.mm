@@ -29,7 +29,6 @@
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #import "media/capture/video/mac/video_capture_metrics_mac.h"
 #include "media/capture/video_capture_types.h"
-#include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -179,7 +178,7 @@ AVCaptureDeviceFormat* FindBestCaptureFormat(
 - (instancetype)initWithFrameReceiver:
     (media::VideoCaptureDeviceAVFoundationFrameReceiver*)frameReceiver {
   if ((self = [super init])) {
-    _mainThreadTaskRunner = base::ThreadTaskRunnerHandle::Get();
+    _mainThreadTaskRunner = base::SingleThreadTaskRunner::GetCurrentDefault();
     _sampleQueue.reset(
         dispatch_queue_create("org.chromium.VideoCaptureDeviceAVFoundation."
                               "SampleDeliveryDispatchQueue",

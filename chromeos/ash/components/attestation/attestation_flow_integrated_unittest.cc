@@ -10,14 +10,16 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
+#include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/attestation/attestation_flow_factory.h"
-#include "chromeos/ash/components/attestation/attestation_flow_utils.h"
 #include "chromeos/ash/components/attestation/mock_attestation_flow.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/attestation/attestation_client.h"
@@ -58,13 +60,6 @@ class AttestationFlowIntegratedTest : public testing::Test {
       ::attestation::ACAType aca_type,
       ::attestation::GetCertificateRequest request) {
     request.set_aca_type(aca_type);
-    request.set_key_type(request.key_type());
-    if (request.key_label().empty()) {
-      request.set_key_label(
-          GetKeyNameForProfile(static_cast<AttestationCertificateProfile>(
-                                   request.certificate_profile()),
-                               request.request_origin()));
-    }
     AttestationClient::Get()->GetTestInterface()->AllowlistCertificateRequest(
         request);
   }
@@ -77,6 +72,19 @@ class AttestationFlowIntegratedTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop* run_loop_;
   base::HistogramTester histogram_tester_;
+};
+
+// Same as `AttestationFlowIntegratedTest` except this used to run death tests
+// in isolated processes.
+class AttestationFlowIntegratedDeathTest
+    : public AttestationFlowIntegratedTest {
+ public:
+  AttestationFlowIntegratedDeathTest() = default;
+  AttestationFlowIntegratedDeathTest(
+      const AttestationFlowIntegratedDeathTest&) = delete;
+  AttestationFlowIntegratedDeathTest& operator=(
+      const AttestationFlowIntegratedDeathTest&) = delete;
+  ~AttestationFlowIntegratedDeathTest() override = default;
 };
 
 TEST_F(AttestationFlowIntegratedTest, GetCertificate) {
@@ -419,6 +427,50 @@ TEST_F(AttestationFlowIntegratedTest, GetCertificateAttestationNeverPrepared) {
       "ChromeOS.Attestation.GetCertificateStatus", 0);
 }
 
+TEST_F(AttestationFlowIntegratedTest, GetCertificateAttestationNotAvailable) {
+  AttestationClient::Get()->GetTestInterface()->ConfigureEnrollmentPreparations(
+      false);
+
+  AttestationClient::Get()
+      ->GetTestInterface()
+      ->mutable_features_reply()
+      ->set_is_available(false);
+
+  ::attestation::GetCertificateRequest request;
+  request.set_certificate_profile(
+      ::attestation::CertificateProfile::ENTERPRISE_USER_CERTIFICATE);
+  request.set_username("username@email.com");
+  request.set_key_label("label");
+  request.set_request_origin("origin");
+  request.set_key_type(::attestation::KEY_TYPE_RSA);
+
+  AllowlistCertificateRequest(::attestation::ACAType::DEFAULT_ACA, request);
+
+  base::MockCallback<AttestationFlowIntegrated::CertificateCallback> callback;
+  AttestationStatus status = AttestationStatus::ATTESTATION_SUCCESS;
+  EXPECT_CALL(callback, Run(_, _)).WillOnce(SaveArg<0>(&status));
+
+  AttestationFlowIntegrated flow;
+  flow.set_ready_timeout_for_testing(base::Milliseconds(10));
+  flow.set_retry_delay_for_testing(base::Milliseconds(3));
+  flow.GetCertificate(
+      /*certificate_profile=*/static_cast<AttestationCertificateProfile>(
+          request.certificate_profile()),
+      /*account_id=*/AccountId::FromUserEmail(request.username()),
+      /*request_origin=*/request.request_origin(),
+      /*force_new_key=*/true, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+      /*key_name=*/request.key_label(),
+      /*profile_specific_data=*/absl::nullopt,
+      /*callback=*/
+      base::BindOnce(
+          &AttestationFlowIntegratedTest::QuitRunLoopCertificateCallback,
+          base::Unretained(this), callback.Get()));
+  Run();
+  EXPECT_EQ(status, AttestationStatus::ATTESTATION_NOT_AVAILABLE);
+  histogram_tester_.ExpectTotalCount(
+      "ChromeOS.Attestation.GetCertificateStatus", 0);
+}
+
 TEST_F(AttestationFlowIntegratedTest, GetCertificateAttestationTestAca) {
   AttestationClient::Get()->GetTestInterface()->ConfigureEnrollmentPreparations(
       true);
@@ -537,6 +589,83 @@ TEST_F(AttestationFlowIntegratedTest, GetMachineCertificate) {
       ::attestation::STATUS_SUCCESS, 1);
 }
 
+// Same as GetCertificate test, but for `DEVICE_SETUP_CERTIFICATE`.
+TEST_F(AttestationFlowIntegratedTest, GetDeviceSetupCertificate) {
+  AttestationClient::Get()->GetTestInterface()->ConfigureEnrollmentPreparations(
+      true);
+
+  const std::string kId = "random_id";
+  const std::string kContentBinding = "content_binding";
+
+  ::attestation::GetCertificateRequest request;
+  request.set_certificate_profile(
+      ::attestation::CertificateProfile::DEVICE_SETUP_CERTIFICATE);
+  request.set_key_label("label");
+  request.set_request_origin("origin");
+  request.set_key_type(::attestation::KEY_TYPE_RSA);
+  request.mutable_device_setup_certificate_request_metadata()->set_id(kId);
+  request.mutable_device_setup_certificate_request_metadata()
+      ->set_content_binding(kContentBinding);
+
+  AllowlistCertificateRequest(::attestation::ACAType::DEFAULT_ACA, request);
+
+  base::MockCallback<AttestationFlowIntegrated::CertificateCallback> callback1,
+      callback2, callback3;
+  std::string certificate1, certificate2, certificate3;
+  EXPECT_CALL(callback1, Run(AttestationStatus::ATTESTATION_SUCCESS, _))
+      .WillOnce(SaveArg<1>(&certificate1));
+  EXPECT_CALL(callback2, Run(AttestationStatus::ATTESTATION_SUCCESS, _))
+      .WillOnce(SaveArg<1>(&certificate2));
+  EXPECT_CALL(callback3, Run(AttestationStatus::ATTESTATION_SUCCESS, _))
+      .WillOnce(SaveArg<1>(&certificate3));
+
+  ::attestation::DeviceSetupCertificateRequestMetadata profile_specific_data;
+  profile_specific_data.set_id(kId);
+  profile_specific_data.set_content_binding(kContentBinding);
+  auto optional_profile_specific_data = absl::make_optional(
+      AttestationFlow::CertProfileSpecificData(profile_specific_data));
+
+  AttestationFlowIntegrated flow;
+  flow.GetCertificate(
+      /*certificate_profile=*/static_cast<AttestationCertificateProfile>(
+          request.certificate_profile()),
+      /*account_id=*/EmptyAccountId(),
+      /*request_origin=*/request.request_origin(),
+      /*force_new_key=*/true, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+      /*key_name=*/request.key_label(),
+      /*profile_specific_data=*/optional_profile_specific_data,
+      /*callback=*/callback1.Get());
+  flow.GetCertificate(
+      /*certificate_profile=*/static_cast<AttestationCertificateProfile>(
+          request.certificate_profile()),
+      /*account_id=*/EmptyAccountId(),
+      /*request_origin=*/request.request_origin(),
+      /*force_new_key=*/true, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+      /*key_name=*/request.key_label(),
+      /*profile_specific_data=*/optional_profile_specific_data,
+      /*callback=*/callback2.Get());
+  flow.GetCertificate(
+      /*certificate_profile=*/static_cast<AttestationCertificateProfile>(
+          request.certificate_profile()),
+      /*account_id=*/EmptyAccountId(),
+      /*request_origin=*/request.request_origin(),
+      /*force_new_key=*/false, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+      /*key_name=*/request.key_label(),
+      /*profile_specific_data=*/optional_profile_specific_data,
+      /*callback=*/
+      base::BindOnce(
+          &AttestationFlowIntegratedTest::QuitRunLoopCertificateCallback,
+          base::Unretained(this), callback3.Get()));
+  Run();
+  EXPECT_FALSE(certificate1.empty());
+  EXPECT_FALSE(certificate2.empty());
+  EXPECT_NE(certificate1, certificate2);
+  EXPECT_EQ(certificate2, certificate3);
+  histogram_tester_.ExpectUniqueSample(
+      "ChromeOS.Attestation.GetCertificateStatus",
+      ::attestation::STATUS_SUCCESS, 3);
+}
+
 // There used to be an incidence that a non-empty username are sent when
 // requesting a device key certificate, and we remove the username in the
 // attestation flow process though it is not considered a valid input.
@@ -580,42 +709,36 @@ TEST_F(AttestationFlowIntegratedTest, GetMachineCertificateWithAccountId) {
       ::attestation::STATUS_SUCCESS, 1);
 }
 
-TEST_F(AttestationFlowIntegratedTest,
-       GetCertificateAttestationKeyNameFromProfile) {
+TEST_F(AttestationFlowIntegratedDeathTest,
+       GetDeviceSetupCertificateWithIncorrectParams) {
   AttestationClient::Get()->GetTestInterface()->ConfigureEnrollmentPreparations(
       true);
 
   ::attestation::GetCertificateRequest request;
   request.set_certificate_profile(
-      ::attestation::CertificateProfile::ENTERPRISE_ENROLLMENT_CERTIFICATE);
-  // Note: no key label is set.
+      ::attestation::CertificateProfile::DEVICE_SETUP_CERTIFICATE);
+  // Do not set up profile_specific_data value.
+  request.set_key_label("label");
   request.set_request_origin("origin");
   request.set_key_type(::attestation::KEY_TYPE_RSA);
 
   AllowlistCertificateRequest(::attestation::ACAType::DEFAULT_ACA, request);
 
-  base::MockCallback<AttestationFlowIntegrated::CertificateCallback> callback;
-  std::string certificate;
-  EXPECT_CALL(callback, Run(AttestationStatus::ATTESTATION_SUCCESS, _))
-      .WillOnce(SaveArg<1>(&certificate));
-
   AttestationFlowIntegrated flow;
+  // `profile_specific_data` is `absl::nullopt`.
   flow.GetCertificate(
       /*certificate_profile=*/static_cast<AttestationCertificateProfile>(
           request.certificate_profile()),
       /*account_id=*/EmptyAccountId(),
-      /*request_origin=*/request.request_origin(), /*force_new_key=*/true,
-      /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
-      /*key_name=*/request.key_label(), /*profile_specific_data=*/absl::nullopt,
+      /*request_origin=*/request.request_origin(),
+      /*force_new_key=*/true, /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
+      /*key_name=*/request.key_label(),
+      /*profile_specific_data=*/absl::nullopt,
       /*callback=*/
       base::BindOnce(
           &AttestationFlowIntegratedTest::QuitRunLoopCertificateCallback,
-          base::Unretained(this), callback.Get()));
-  Run();
-  EXPECT_FALSE(certificate.empty());
-  histogram_tester_.ExpectUniqueSample(
-      "ChromeOS.Attestation.GetCertificateStatus",
-      ::attestation::STATUS_SUCCESS, 1);
+          base::Unretained(this), base::DoNothing()));
+  EXPECT_DCHECK_DEATH(Run());
 }
 
 }  // namespace attestation

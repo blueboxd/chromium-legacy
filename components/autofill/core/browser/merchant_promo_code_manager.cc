@@ -19,7 +19,6 @@ MerchantPromoCodeManager::MerchantPromoCodeManager() = default;
 MerchantPromoCodeManager::~MerchantPromoCodeManager() = default;
 
 bool MerchantPromoCodeManager::OnGetSingleFieldSuggestions(
-    int query_id,
     AutoselectFirstSuggestion autoselect_first_suggestion,
     const FormFieldData& field,
     const AutofillClient& client,
@@ -41,8 +40,8 @@ bool MerchantPromoCodeManager::OnGetSingleFieldSuggestions(
     if (!promo_code_offers.empty()) {
       SendPromoCodeSuggestions(
           promo_code_offers, field.global_id(),
-          QueryHandler(query_id, autoselect_first_suggestion, field.value,
-                       handler));
+          QueryHandler(field.global_id(), autoselect_first_suggestion,
+                       field.value, handler));
       return true;
     }
   }
@@ -166,16 +165,15 @@ void MerchantPromoCodeManager::SendPromoCodeSuggestions(
       // Return empty suggestions to query handler. This will result in no
       // suggestions being displayed.
       query_handler.handler_->OnSuggestionsReturned(
-          query_handler.client_query_id_,
-          query_handler.autoselect_first_suggestion_, {});
+          query_handler.field_id_, query_handler.autoselect_first_suggestion_,
+          {});
       return;
     }
   }
 
   // Return suggestions to query handler.
   query_handler.handler_->OnSuggestionsReturned(
-      query_handler.client_query_id_,
-      query_handler.autoselect_first_suggestion_,
+      query_handler.field_id_, query_handler.autoselect_first_suggestion_,
       AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
           promo_code_offers));
 

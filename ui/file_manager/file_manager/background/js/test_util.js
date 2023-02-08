@@ -13,6 +13,14 @@ import {test} from './test_util_base.js';
 export {test};
 
 /**
+ * Sanitizes the formatted date. Replaces unusual space with normal space.
+ * @param {string} strDate the date already in the string format.
+ * @return {string}
+ */
+export function sanitizeDate(strDate) {
+  return strDate.replace('\u202f', ' ');
+}
+/**
  * Opens the main Files app's window and waits until it is ready.
  *
  * @param {!FilesAppState} appState App state.
@@ -64,7 +72,7 @@ test.util.sync.getFileList = contentWindow => {
       row.querySelector('.filename-label').textContent,
       row.querySelector('.size').textContent,
       row.querySelector('.type').textContent,
-      row.querySelector('.date').textContent,
+      sanitizeDate(row.querySelector('.date').textContent || ''),
     ]);
   }
   return fileList;
@@ -375,13 +383,20 @@ test.util.sync.execCommand = (contentWindow, command) => {
  * @param {Window} contentWindow Window to be tested.
  * @param {Array<Object>} taskList List of tasks to be returned in
  *     fileManagerPrivate.getFileTasks().
+ * @param {boolean}
+ *     isPolicyDefault Whether the default is set by policy.
  * @return {boolean} Always return true.
  */
-test.util.sync.overrideTasks = (contentWindow, taskList) => {
+test.util.sync
+    .overrideTasks = (contentWindow, taskList, isPolicyDefault = false) => {
   const getFileTasks = (entries, onTasks) => {
     // Call onTask asynchronously (same with original getFileTasks).
     setTimeout(() => {
-      onTasks({tasks: taskList});
+      const policyDefaultHandlerStatus = isPolicyDefault ?
+          chrome.fileManagerPrivate.PolicyDefaultHandlerStatus
+              .DEFAULT_HANDLER_ASSIGNED_BY_POLICY :
+          undefined;
+      onTasks({tasks: taskList, policyDefaultHandlerStatus});
     }, 0);
   };
 

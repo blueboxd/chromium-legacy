@@ -26,7 +26,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -93,8 +92,8 @@ const char kForceUpdateInfoMessage[] =
 
 void RunSoon(base::OnceClosure callback) {
   if (callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
   }
 }
 
@@ -499,7 +498,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   }
 
   if (is_running_start_callbacks_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&ServiceWorkerVersion::StartWorker,
                                   weak_factory_.GetWeakPtr(), purpose,
                                   std::move(callback)));
@@ -733,6 +732,12 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::StartExternalRequest(
                      request_uuid),
       request_timeout, CONTINUE_ON_TIMEOUT);
   external_request_uuid_to_request_id_[request_uuid] = request_id;
+
+  // Cancel idle timeout when there is a new request started.
+  // Idle timer will be scheduled when request finishes, if there is no other
+  // requests and events.
+  endpoint()->AddKeepAlive();
+
   return ServiceWorkerExternalRequestResult::kOk;
 }
 
@@ -785,9 +790,24 @@ ServiceWorkerExternalRequestResult ServiceWorkerVersion::FinishExternalRequest(
   if (iter != external_request_uuid_to_request_id_.end()) {
     int request_id = iter->second;
     external_request_uuid_to_request_id_.erase(iter);
-    return FinishRequest(request_id, /*was_handled=*/true)
-               ? ServiceWorkerExternalRequestResult::kOk
-               : ServiceWorkerExternalRequestResult::kBadRequestId;
+    bool ok = FinishRequest(request_id, /*was_handled=*/true);
+
+    // If an request is finished and there is no other requests, we ask event
+    // queue to check if idle timeout should be scheduled. Event queue may
+    // schedule idle timeout if there is no events at the time.
+    // Also checks running status. Idle timeout is not meaningful if the worker
+    // is stopping or stopped.
+    if (ok && !HasWorkInBrowser() &&
+        running_status() == EmbeddedWorkerStatus::RUNNING) {
+      // If SW event queue request termination at this very moment, then SW can
+      // be terminated before waiting for the next idle timeout. Details are
+      // described in crbug/1399324.
+      // TODO(richardzh): Complete crbug/1399324 which would resolve this issue.
+      endpoint()->ClearKeepAlive();
+    }
+
+    return ok ? ServiceWorkerExternalRequestResult::kOk
+              : ServiceWorkerExternalRequestResult::kBadRequestId;
   }
 
   // It is possible that the request was cancelled or timed out before and we
@@ -851,7 +871,7 @@ void ServiceWorkerVersion::AddControllee(
   }
 
   // Notify observers asynchronously for consistency with RemoveControllee.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                                 weak_factory_.GetWeakPtr(), uuid,
                                 container_host->GetServiceWorkerClientInfo()));
@@ -878,7 +898,7 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   // Notify observers asynchronously since this gets called during
   // ServiceWorkerHost's destructor, and we don't want observers to do work
   // during that.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
 
@@ -902,7 +922,7 @@ void ServiceWorkerVersion::OnControlleeNavigationCommitted(
             blink::mojom::ServiceWorkerClientType::kWindow);
 #endif  // DCHECK_IS_ON()
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerVersion::NotifyControlleeNavigationCommitted,
                      weak_factory_.GetWeakPtr(), client_uuid, rfh_id));
@@ -1272,11 +1292,14 @@ void ServiceWorkerVersion::OnStarted(
           fetch_handler_type);
     }
     if (!fetch_handler_type_) {
+      // When the new service worker starts, the fetch handler type is unknown
+      // until this point.
       set_fetch_handler_type(fetch_handler_type);
-    } else if (
-        // Avoid to change live fetch_handler_existence() result.
-        fetch_handler_type != FetchHandlerType::kNoHandler &&
-        fetch_handler_type_ != FetchHandlerType::kNoHandler) {
+    } else {
+      // Starting the installed service worker should not change the existence
+      // of the fetch handler.
+      DCHECK_EQ(*fetch_handler_type_ != FetchHandlerType::kNoHandler,
+                fetch_handler_type != FetchHandlerType::kNoHandler);
       fetch_handler_type_ = fetch_handler_type;
     }
   }
@@ -2059,7 +2082,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       client_security_state_->is_web_secure_context =
           policy_container_host_->policies().is_web_secure_context;
       client_security_state_->private_network_request_policy =
-          DerivePrivateNetworkRequestPolicy(policy_container_host_->policies());
+          DerivePrivateNetworkRequestPolicy(
+              policy_container_host_->policies(),
+              PrivateNetworkRequestContext::kWorker);
     }
   }
 

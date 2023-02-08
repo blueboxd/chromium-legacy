@@ -100,7 +100,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/accuracy_tips/features.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
@@ -162,7 +161,6 @@
 #include "chrome/browser/video_tutorials/video_tutorial_tab_helper.h"
 #include "content/public/common/content_features.h"
 #else
-#include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
@@ -173,7 +171,6 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "components/accuracy_tips/accuracy_web_contents_observer.h"
 #include "components/commerce/content/browser/hint/commerce_hint_tab_helper.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -194,7 +191,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
+#include "chrome/browser/ash/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -207,14 +204,10 @@
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-#include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
-#include "chrome/browser/autofill_assistant/platform_dependencies_desktop.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
 #include "chrome/browser/ui/shared_highlighting/shared_highlighting_promo.h"
-#include "components/autofill_assistant/browser/features.h"
-#include "components/autofill_assistant/browser/tab_helper.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -476,10 +469,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PluginObserverAndroid::CreateForWebContents(web_contents);
   video_tutorials::VideoTutorialTabHelper::CreateForWebContents(web_contents);
 #else
-  if (accuracy_tips::AccuracyWebContentsObserver::IsEnabled(web_contents)) {
-    accuracy_tips::AccuracyWebContentsObserver::CreateForWebContents(
-        web_contents, AccuracyServiceFactory::GetForProfile(profile));
-  }
   if (web_app::AreWebAppsUserInstallable(profile))
     webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);
@@ -556,9 +545,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
           features::kHappinessTrackingSurveysForDesktopDemo) ||
-      base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurvey) ||
-      base::FeatureList::IsEnabled(
-          accuracy_tips::features::kAccuracyTipsSurveyFeature)) {
+      base::FeatureList::IsEnabled(features::kTrustSafetySentimentSurvey)) {
     HatsHelper::CreateForWebContents(web_contents);
   }
   SharedHighlightingPromo::CreateForWebContents(web_contents);
@@ -572,18 +559,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
             profile),
         ImageFetcherServiceFactory::GetForKey(profile->GetProfileKey()),
         profile->GetPrefs());
-  }
-#endif
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          autofill_assistant::features::kAutofillAssistantDesktop)) {
-    autofill_assistant::CreateForWebContents(
-        web_contents,
-        std::make_unique<autofill_assistant::CommonDependenciesChrome>(
-            web_contents->GetBrowserContext()),
-        std::make_unique<autofill_assistant::PlatformDependenciesDesktop>());
   }
 #endif
 

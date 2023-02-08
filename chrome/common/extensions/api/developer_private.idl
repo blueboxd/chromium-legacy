@@ -70,7 +70,8 @@ namespace developerPrivate {
     EXTENSION_POPUP,
     EXTENSION_SERVICE_WORKER_BACKGROUND,
     TAB_CONTENTS,
-    OFFSCREEN_DOCUMENT
+    OFFSCREEN_DOCUMENT,
+    EXTENSION_SIDE_PANEL
   };
 
   enum ErrorType {
@@ -429,6 +430,19 @@ namespace developerPrivate {
     //   least one site in its host permissions.
     // - ON_ALL_SITES: same as above except the extension has no withheld access
     //   to its specified sites.
+    HostAccess siteAccess;
+  };
+
+  dictionary ExtensionSiteAccessUpdate {
+    // The id of the extension to update its site access settings for.
+    DOMString id;
+    // Describes the update made to the extension's site access for a given site
+    // Note that this has a different meaning from the original enum:
+    // - ON_CLICK: Withholds the extension's access to the given site,
+    // - ON_SPECIFIC_SITES: Grants the extension access to the intersection of
+    //   (given site, extension's specified host permissions.)
+    // - ON_ALL_SITES: Grants access to all of the extension's specified host
+    //   permissions.
     HostAccess siteAccess;
   };
 
@@ -814,6 +828,14 @@ namespace developerPrivate {
     [supportsPromises] static void getMatchingExtensionsForSite(
         DOMString site,
         GetMatchingExtensionsForSiteCallback callback);
+
+    // Updates the site access settings for multiple extensions for the given
+    // `site` and calls `callback` once all updates have been finished.
+    // Each update species an extension id an a new HostAccess setting.
+    [supportsPromises] static void updateSiteAccess(
+        DOMString site,
+        ExtensionSiteAccessUpdate[] updates,
+        optional VoidCallback callback);
 
     [nocompile, deprecated="Use management.setEnabled"]
         static void enable(DOMString id,

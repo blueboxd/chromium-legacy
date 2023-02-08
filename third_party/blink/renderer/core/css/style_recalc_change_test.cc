@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/style_recalc_change.h"
 
 #include "third_party/blink/renderer/core/css/container_query_data.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -17,16 +18,10 @@ namespace blink {
 
 class StyleRecalcChangeTest : public PageTestBase {};
 
-class StyleRecalcChangeTestCQ
-    : public StyleRecalcChangeTest,
-      private ScopedCSSContainerQueriesForTest,
-      private ScopedCSSContainerSkipStyleRecalcForTest,
-      private ScopedLayoutNGForTest {
+class StyleRecalcChangeTestCQ : public StyleRecalcChangeTest,
+                                private ScopedLayoutNGForTest {
  public:
-  StyleRecalcChangeTestCQ()
-      : ScopedCSSContainerQueriesForTest(true),
-        ScopedCSSContainerSkipStyleRecalcForTest(true),
-        ScopedLayoutNGForTest(true) {}
+  StyleRecalcChangeTestCQ() : ScopedLayoutNGForTest(true) {}
 };
 
 TEST_F(StyleRecalcChangeTest, SuppressRecalc) {

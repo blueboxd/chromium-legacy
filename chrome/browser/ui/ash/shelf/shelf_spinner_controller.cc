@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
+#include "base/task/single_thread_task_runner.h"
+#include "chrome/browser/ash/guest_os/guest_os_shelf_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -238,7 +238,7 @@ void ShelfSpinnerController::CloseCrostiniSpinners() {
   const Profile* profile =
       ash::ProfileHelper::Get()->GetProfileByAccountId(current_account_id_);
   for (const auto& app_id_controller_pair : app_controller_map_) {
-    if (crostini::IsCrostiniShelfAppId(profile, app_id_controller_pair.first))
+    if (guest_os::IsCrostiniShelfAppId(profile, app_id_controller_pair.first))
       app_ids_to_close.push_back(app_id_controller_pair.first);
   }
   for (const auto& app_id : app_ids_to_close)
@@ -328,7 +328,7 @@ void ShelfSpinnerController::UpdateApps() {
 }
 
 void ShelfSpinnerController::RegisterNextUpdate() {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ShelfSpinnerController::UpdateApps,
                      weak_ptr_factory_.GetWeakPtr()),

@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -478,7 +479,7 @@ void AccessCodeCastIntegrationBrowserTest::MockOnChannelOpenedCall(
 
 void AccessCodeCastIntegrationBrowserTest::SpinRunLoop(base::TimeDelta delay) {
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), delay);
   run_loop.Run();
 }
@@ -567,6 +568,11 @@ raw_ptr<AccessCodeCastPrefUpdater>
 AccessCodeCastIntegrationBrowserTest::GetPrefUpdater() {
   return AccessCodeCastSinkServiceFactory::GetForProfile(browser()->profile())
       ->pref_updater_.get();
+}
+
+void AccessCodeCastIntegrationBrowserTest::AddScreenplayTag(
+    const std::string& screenplay_tag) {
+  base::AddTagToTestResult("feature_id", screenplay_tag);
 }
 
 }  // namespace media_router

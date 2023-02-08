@@ -81,9 +81,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should enable drive dss pinning.
     bool drive_dss_pin = false;
 
-    // Whether test needs the extract-archive feature.
-    bool extract_archive = false;
-
     // Whether Drive should act as if offline.
     bool offline = false;
 
@@ -121,9 +118,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should run with the Upload Office to Cloud feature.
     bool enable_upload_office_to_cloud = false;
 
-    // Whether test should run with the GuestOs <-> Files app integration.
-    bool enable_guest_os_files = false;
-
     // Whether test should run Android with the virtio-blk for /data.
     bool enable_virtio_blk_for_data = false;
 
@@ -141,6 +135,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
     // Whether test should use report-only mode for the file transfer connector.
     bool file_transfer_connector_report_only = false;
+
+    // Whether tests should enable V2 of search.
+    bool enable_search_v2 = false;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;

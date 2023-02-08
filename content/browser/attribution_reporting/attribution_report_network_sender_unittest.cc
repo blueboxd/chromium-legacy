@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
@@ -40,6 +41,9 @@ namespace content {
 
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
+
+using ::testing::_;
 using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Mock;
@@ -191,14 +195,14 @@ TEST_F(AttributionReportNetworkSenderTest, ReportSent_ReportBodySetCorrectly) {
 TEST_F(AttributionReportNetworkSenderTest,
        MultiDestination_ReportBodySetCorrectly) {
   const struct {
-    base::flat_set<url::Origin> destination_origins;
+    base::flat_set<SuitableOrigin> destination_origins;
     const char* expected_report;
   } kTestCases[] = {
       {
           {
-              url::Origin::Create(GURL("https://a.b.test")),
-              url::Origin::Create(GURL("https://c1.d.test")),
-              url::Origin::Create(GURL("https://c2.d.test")),
+              *SuitableOrigin::Deserialize("https://a.b.test"),
+              *SuitableOrigin::Deserialize("https://c1.d.test"),
+              *SuitableOrigin::Deserialize("https://c2.d.test"),
           },
           R"({"attribution_destination":["https://b.test","https://d.test"],)"
           R"("randomized_trigger_rate":0.0,)"
@@ -209,8 +213,8 @@ TEST_F(AttributionReportNetworkSenderTest,
       },
       {
           {
-              url::Origin::Create(GURL("https://c1.d.test")),
-              url::Origin::Create(GURL("https://c2.d.test")),
+              *SuitableOrigin::Deserialize("https://c1.d.test"),
+              *SuitableOrigin::Deserialize("https://c2.d.test"),
           },
           R"({"attribution_destination":"https://d.test",)"
           R"("randomized_trigger_rate":0.0,)"
@@ -967,7 +971,10 @@ TEST_F(AttributionReportNetworkSenderTest,
               /*max_destinations_per_source_site_reporting_origin=*/3));
   ASSERT_TRUE(report);
 
-  network_sender_->SendReport(std::move(*report));
+  base::MockCallback<AttributionReportSender::DebugReportSentCallback> callback;
+  EXPECT_CALL(callback, Run(_, 200));
+
+  network_sender_->SendReport(std::move(*report), callback.Get());
 
   const network::ResourceRequest* pending_request;
   EXPECT_TRUE(
@@ -975,6 +982,36 @@ TEST_F(AttributionReportNetworkSenderTest,
   EXPECT_EQ(kExpectedReportBody, network::GetUploadData(*pending_request));
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       kErrorReportUrl, ""));
+}
+
+TEST_F(AttributionReportNetworkSenderTest,
+       ErrorReportSent_CallbackInvokedWithNetworkError) {
+  static constexpr char kErrorReportUrl[] =
+      "https://report.test/.well-known/attribution-reporting/debug/verbose";
+
+  absl::optional<AttributionDebugReport> report =
+      AttributionDebugReport::Create(
+          SourceBuilder().SetDebugReporting(true).Build(),
+          /*is_debug_cookie_set=*/false,
+          AttributionStorage::StoreSourceResult(
+              StorableSource::Result::kInsufficientUniqueDestinationCapacity,
+              /*min_fake_report_time=*/absl::nullopt,
+              /*max_destinations_per_source_site_reporting_origin=*/3));
+  ASSERT_TRUE(report);
+
+  base::MockCallback<AttributionReportSender::DebugReportSentCallback> callback;
+  EXPECT_CALL(callback, Run(_, net::ERR_CONNECTION_ABORTED));
+
+  network_sender_->SendReport(std::move(*report), callback.Get());
+
+  const network::ResourceRequest* pending_request;
+  EXPECT_TRUE(
+      test_url_loader_factory_.IsPending(kErrorReportUrl, &pending_request));
+
+  test_url_loader_factory_.SimulateResponseForPendingRequest(
+      GURL(kErrorReportUrl),
+      network::URLLoaderCompletionStatus(net::ERR_CONNECTION_ABORTED),
+      network::mojom::URLResponseHead::New(), "");
 }
 
 }  // namespace content

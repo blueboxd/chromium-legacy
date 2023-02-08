@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_palette.h"
+#include "third_party/blink/renderer/platform/fonts/font_variant_alternates.h"
 #include "third_party/blink/renderer/platform/fonts/font_variant_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -80,9 +81,11 @@ class CORE_EXPORT FontBuilder {
   void SetTextRendering(TextRenderingMode);
   void SetKerning(FontDescription::Kerning);
   void SetFontPalette(scoped_refptr<FontPalette>);
+  void SetFontVariantAlternates(scoped_refptr<FontVariantAlternates>);
   void SetFontOpticalSizing(OpticalSizing);
   void SetFontSmoothing(FontSmoothingMode);
   void SetVariationSettings(scoped_refptr<FontVariationSettings>);
+  void SetVariantPosition(FontDescription::FontVariantPosition);
 
   // FIXME: These need to just vend a Font object eventually.
   void UpdateFontDescription(FontDescription&,
@@ -98,6 +101,9 @@ class CORE_EXPORT FontBuilder {
   static FontFeatureSettings* InitialFeatureSettings() { return nullptr; }
   static FontVariationSettings* InitialVariationSettings() { return nullptr; }
   static FontPalette* InitialFontPalette() { return nullptr; }
+  static FontVariantAlternates* InitialFontVariantAlternates() {
+    return nullptr;
+  }
   static FontDescription::GenericFamilyType InitialGenericFamily() {
     return FontDescription::kStandardFamily;
   }
@@ -139,6 +145,9 @@ class CORE_EXPORT FontBuilder {
   InitialFontSynthesisSmallCaps() {
     return FontDescription::kAutoFontSynthesisSmallCaps;
   }
+  static FontDescription::FontVariantPosition InitialVariantPosition() {
+    return FontDescription::kNormalVariantPosition;
+  }
 
  private:
   void SetFamilyDescription(FontDescription&,
@@ -148,9 +157,8 @@ class CORE_EXPORT FontBuilder {
   // generic font family has changed. -dwh
   void CheckForGenericFamilyChange(const FontDescription&, FontDescription&);
   void UpdateSpecifiedSize(FontDescription&,
-                           const ComputedStyle&,
-                           const ComputedStyle* parent_style);
-  void UpdateComputedSize(FontDescription&, const ComputedStyle&);
+                           const FontDescription& parent_description);
+  void UpdateComputedSize(FontDescription&, const ComputedStyleBuilder&);
   void UpdateAdjustedSize(FontDescription&, FontSelector*);
 
   float GetComputedSizeFromSpecifiedSize(FontDescription&,
@@ -158,7 +166,7 @@ class CORE_EXPORT FontBuilder {
                                          float specified_size);
 
   FontSelector* FontSelectorFromTreeScope(const TreeScope* tree_scope);
-  FontSelector* ComputeFontSelector(const ComputedStyle& style);
+  FontSelector* ComputeFontSelector(const ComputedStyleBuilder&);
 
   Document* document_{nullptr};
   const TreeScope* family_tree_scope_{nullptr};
@@ -177,11 +185,13 @@ class CORE_EXPORT FontBuilder {
     kVariantEastAsian,
     kVariantLigatures,
     kVariantNumeric,
+    kVariantPosition,
     kVariationSettings,
     kTextRendering,
     kKerning,
     kFontOpticalSizing,
     kFontPalette,
+    kFontVariantAlternates,
     kFontSmoothing,
     kFontSynthesisWeight,
     kFontSynthesisStyle,

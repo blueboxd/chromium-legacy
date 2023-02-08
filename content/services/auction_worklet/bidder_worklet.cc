@@ -19,10 +19,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/types/optional_util.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
+#include "content/services/auction_worklet/bidder_lazy_filler.h"
+#include "content/services/auction_worklet/direct_from_seller_signals_requester.h"
 #include "content/services/auction_worklet/for_debugging_only_bindings.h"
 #include "content/services/auction_worklet/private_aggregation_bindings.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
@@ -72,40 +75,6 @@ bool AppendJsonValueOrNull(AuctionV8Helper* const v8_helper,
     args->push_back(v8::Null(isolate));
   }
   return true;
-}
-
-// Creates a V8 array containing information about the passed in previous wins.
-// Array is sorted by time, earliest wins first. Modifies order of `prev_wins`
-// input vector. This should should be harmless, since each list of previous
-// wins is only used for a single bid in a single auction, and its order is
-// unspecified, anyways.
-v8::MaybeLocal<v8::Value> CreatePrevWinsArray(
-    AuctionV8Helper* v8_helper,
-    v8::Local<v8::Context> context,
-    base::Time auction_start_time,
-    std::vector<mojom::PreviousWinPtr>& prev_wins) {
-  std::sort(prev_wins.begin(), prev_wins.end(),
-            [](const mojom::PreviousWinPtr& prev_win1,
-               const mojom::PreviousWinPtr& prev_win2) {
-              return prev_win1->time < prev_win2->time;
-            });
-  std::vector<v8::Local<v8::Value>> prev_wins_v8;
-  v8::Isolate* isolate = v8_helper->isolate();
-  for (const auto& prev_win : prev_wins) {
-    int64_t time_delta = (auction_start_time - prev_win->time).InSeconds();
-    // Don't give negative times if clock has changed since last auction win.
-    if (time_delta < 0)
-      time_delta = 0;
-    v8::Local<v8::Value> win_values[2];
-    win_values[0] = v8::Number::New(isolate, time_delta);
-    if (!v8_helper->CreateValueFromJson(context, prev_win->ad_json)
-             .ToLocal(&win_values[1])) {
-      return v8::MaybeLocal<v8::Value>();
-    }
-    prev_wins_v8.push_back(
-        v8::Array::New(isolate, win_values, std::size(win_values)));
-  }
-  return v8::Array::New(isolate, prev_wins_v8.data(), prev_wins_v8.size());
 }
 
 // Converts a vector of blink::InterestGroup::Ads into a v8 object.
@@ -223,6 +192,8 @@ void BidderWorklet::GenerateBid(
     const url::Origin& interest_group_join_origin,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+    const absl::optional<GURL>& direct_from_seller_auction_signals,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
@@ -257,6 +228,40 @@ void BidderWorklet::GenerateBid(
   generate_bid_task->generate_bid_client.set_disconnect_handler(
       base::BindOnce(&BidderWorklet::OnGenerateBidClientDestroyed,
                      base::Unretained(this), generate_bid_task));
+
+  if (direct_from_seller_per_buyer_signals) {
+    // Deleting `generate_bid_task` will destroy
+    // `direct_from_seller_request_per_buyer_signals` and thus abort this
+    // callback, so it's safe to use Unretained(this) and `generate_bid_task`
+    // here.
+    generate_bid_task->direct_from_seller_request_per_buyer_signals =
+        direct_from_seller_requester_per_buyer_signals_.LoadSignals(
+            *url_loader_factory_, *direct_from_seller_per_buyer_signals,
+            base::BindOnce(
+                &BidderWorklet::
+                    OnDirectFromSellerPerBuyerSignalsDownloadedGenerateBid,
+                base::Unretained(this), generate_bid_task));
+  } else {
+    generate_bid_task->direct_from_seller_result_per_buyer_signals =
+        DirectFromSellerSignalsRequester::Result();
+  }
+
+  if (direct_from_seller_auction_signals) {
+    // Deleting `generate_bid_task` will destroy
+    // `direct_from_seller_request_auction_signals` and thus abort this
+    // callback, so it's safe to use Unretained(this) and `generate_bid_task`
+    // here.
+    generate_bid_task->direct_from_seller_request_auction_signals =
+        direct_from_seller_requester_auction_signals_.LoadSignals(
+            *url_loader_factory_, *direct_from_seller_auction_signals,
+            base::BindOnce(
+                &BidderWorklet::
+                    OnDirectFromSellerAuctionSignalsDownloadedGenerateBid,
+                base::Unretained(this), generate_bid_task));
+  } else {
+    generate_bid_task->direct_from_seller_result_auction_signals =
+        DirectFromSellerSignalsRequester::Result();
+  }
 
   const auto& trusted_bidding_signals_keys =
       generate_bid_task->bidder_worklet_non_shared_params
@@ -293,6 +298,8 @@ void BidderWorklet::ReportWin(
     const std::string& interest_group_name,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+    const absl::optional<GURL>& direct_from_seller_auction_signals,
     const std::string& seller_signals_json,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
@@ -327,14 +334,43 @@ void BidderWorklet::ReportWin(
   report_win_task->callback = std::move(report_win_callback);
   report_win_task->trace_id = trace_id;
 
+  if (direct_from_seller_per_buyer_signals) {
+    // Deleting `report_win_task` will destroy
+    // `direct_from_seller_request_seller_signals` and thus abort this
+    // callback, so it's safe to use Unretained(this) and `report_win_task`
+    // here.
+    report_win_task->direct_from_seller_request_per_buyer_signals =
+        direct_from_seller_requester_per_buyer_signals_.LoadSignals(
+            *url_loader_factory_, *direct_from_seller_per_buyer_signals,
+            base::BindOnce(
+                &BidderWorklet::
+                    OnDirectFromSellerPerBuyerSignalsDownloadedReportWin,
+                base::Unretained(this), report_win_task));
+  } else {
+    report_win_task->direct_from_seller_result_per_buyer_signals =
+        DirectFromSellerSignalsRequester::Result();
+  }
+
+  if (direct_from_seller_auction_signals) {
+    // Deleting `report_win_task` will destroy
+    // `direct_from_seller_request_auction_signals` and thus abort this
+    // callback, so it's safe to use Unretained(this) and `report_win_task`
+    // here.
+    report_win_task->direct_from_seller_request_auction_signals =
+        direct_from_seller_requester_auction_signals_.LoadSignals(
+            *url_loader_factory_, *direct_from_seller_auction_signals,
+            base::BindOnce(
+                &BidderWorklet::
+                    OnDirectFromSellerAuctionSignalsDownloadedReportWin,
+                base::Unretained(this), report_win_task));
+  } else {
+    report_win_task->direct_from_seller_result_auction_signals =
+        DirectFromSellerSignalsRequester::Result();
+  }
+
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("fledge", "waiting_for_bidder_script",
                                     trace_id);
-
-  // If not yet ready, need to wait for load to complete.
-  if (!IsCodeReady())
-    return;
-
-  RunReportWin(report_win_task);
+  RunReportWinIfReady(report_win_task);
 }
 
 void BidderWorklet::ConnectDevToolsAgent(
@@ -363,7 +399,7 @@ BidderWorklet::V8State::V8State(
     : v8_helper_(std::move(v8_helper)),
       debug_id_(std::move(debug_id)),
       parent_(std::move(parent)),
-      user_thread_(base::SequencedTaskRunnerHandle::Get()),
+      user_thread_(base::SequencedTaskRunner::GetCurrentDefault()),
       script_source_url_(script_source_url),
       top_window_origin_(top_window_origin),
       wasm_helper_url_(wasm_helper_url),
@@ -419,6 +455,10 @@ void BidderWorklet::V8State::ReportWin(
     const std::string& interest_group_name,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    DirectFromSellerSignalsRequester::Result
+        direct_from_seller_result_per_buyer_signals,
+    DirectFromSellerSignalsRequester::Result
+        direct_from_seller_result_auction_signals,
     const std::string& seller_signals_json,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
@@ -492,9 +532,29 @@ void BidderWorklet::V8State::ReportWin(
   }
   args.push_back(browser_signals);
 
+  std::vector<std::string> errors_out;
+  v8::Local<v8::Object> direct_from_seller_signals = v8::Object::New(isolate);
+  gin::Dictionary direct_from_seller_signals_dict(isolate,
+                                                  direct_from_seller_signals);
+  v8::Local<v8::Value> per_buyer_signals =
+      direct_from_seller_result_per_buyer_signals.GetSignals(
+          *v8_helper_, context, errors_out);
+  v8::Local<v8::Value> auction_signals =
+      direct_from_seller_result_auction_signals.GetSignals(*v8_helper_, context,
+                                                           errors_out);
+  if (!direct_from_seller_signals_dict.Set("perBuyerSignals",
+                                           per_buyer_signals) ||
+      !direct_from_seller_signals_dict.Set("auctionSignals", auction_signals)) {
+    PostReportWinCallbackToUserThread(std::move(callback),
+                                      /*report_url=*/absl::nullopt,
+                                      /*ad_beacon_map=*/{}, /*pa_requests=*/{},
+                                      /*errors=*/std::move(errors_out));
+    return;
+  }
+  args.push_back(direct_from_seller_signals);
+
   // An empty return value indicates an exception was thrown. Any other return
   // value indicates no exception.
-  std::vector<std::string> errors_out;
   v8_helper_->MaybeTriggerInstrumentationBreakpoint(
       *debug_id_, "beforeBidderWorkletReportingStart");
 
@@ -536,6 +596,10 @@ void BidderWorklet::V8State::GenerateBid(
     const url::Origin& interest_group_join_origin,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    DirectFromSellerSignalsRequester::Result
+        direct_from_seller_result_per_buyer_signals,
+    DirectFromSellerSignalsRequester::Result
+        direct_from_seller_result_auction_signals,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
     const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
@@ -555,7 +619,9 @@ void BidderWorklet::V8State::GenerateBid(
   absl::optional<SingleGenerateBidResult> result = GenerateSingleBid(
       bidder_worklet_non_shared_params, interest_group_join_origin,
       base::OptionalToPtr(auction_signals_json),
-      base::OptionalToPtr(per_buyer_signals_json), per_buyer_timeout,
+      base::OptionalToPtr(per_buyer_signals_json),
+      direct_from_seller_result_per_buyer_signals,
+      direct_from_seller_result_auction_signals, per_buyer_timeout,
       browser_signal_seller_origin,
       base::OptionalToPtr(browser_signal_top_level_seller_origin),
       bidding_browser_signals, auction_start_time,
@@ -585,7 +651,9 @@ void BidderWorklet::V8State::GenerateBid(
           GenerateSingleBid(
               bidder_worklet_non_shared_params, interest_group_join_origin,
               base::OptionalToPtr(auction_signals_json),
-              base::OptionalToPtr(per_buyer_signals_json), per_buyer_timeout,
+              base::OptionalToPtr(per_buyer_signals_json),
+              direct_from_seller_result_per_buyer_signals,
+              direct_from_seller_result_auction_signals, per_buyer_timeout,
               browser_signal_seller_origin,
               base::OptionalToPtr(browser_signal_top_level_seller_origin),
               bidding_browser_signals, auction_start_time,
@@ -631,6 +699,10 @@ BidderWorklet::V8State::GenerateSingleBid(
     const url::Origin& interest_group_join_origin,
     const std::string* auction_signals_json,
     const std::string* per_buyer_signals_json,
+    const DirectFromSellerSignalsRequester::Result&
+        direct_from_seller_result_per_buyer_signals,
+    const DirectFromSellerSignalsRequester::Result&
+        direct_from_seller_result_auction_signals,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
     const url::Origin* browser_signal_top_level_seller_origin,
@@ -671,6 +743,8 @@ BidderWorklet::V8State::GenerateSingleBid(
     fresh_context_recycler->AddSetBidBindings();
     fresh_context_recycler->AddSetPriorityBindings();
     fresh_context_recycler->AddSetPrioritySignalsOverrideBindings();
+    fresh_context_recycler->AddInterestGroupLazyFiller();
+    fresh_context_recycler->AddBiddingBrowserSignalsLazyFiller();
     context_recycler = fresh_context_recycler.get();
   }
 
@@ -706,48 +780,15 @@ BidderWorklet::V8State::GenerateSingleBid(
            bidder_worklet_non_shared_params->daily_update_url->spec())) ||
       (trusted_bidding_signals_url_ &&
        !interest_group_dict.Set("trustedBiddingSignalsUrl",
-                                trusted_bidding_signals_url_->spec())) ||
-      (bidder_worklet_non_shared_params->user_bidding_signals &&
-       !v8_helper_->InsertJsonValue(
-           context, "userBiddingSignals",
-           *bidder_worklet_non_shared_params->user_bidding_signals,
-           interest_group_object))) {
+                                trusted_bidding_signals_url_->spec()))) {
     return absl::nullopt;
   }
 
-  if (bidder_worklet_non_shared_params->priority_vector) {
-    v8::Local<v8::Object> priority_vector = v8::Object::New(isolate);
-    gin::Dictionary priority_vector_dict(isolate, priority_vector);
-    for (const auto& pair :
-         *bidder_worklet_non_shared_params->priority_vector) {
-      if (!priority_vector_dict.Set(pair.first, pair.second)) {
-        return absl::nullopt;
-      }
-    }
-    if (!v8_helper_->InsertValue("priorityVector", priority_vector,
-                                 interest_group_object)) {
-      return absl::nullopt;
-    }
-  }
-
-  if (bidder_worklet_non_shared_params->trusted_bidding_signals_keys) {
-    std::vector<v8::Local<v8::Value>> trusted_bidding_signals_keys;
-    for (const auto& key :
-         *bidder_worklet_non_shared_params->trusted_bidding_signals_keys) {
-      v8::Local<v8::Value> key_value;
-      if (!v8_helper_->CreateUtf8String(key).ToLocal(&key_value)) {
-        return absl::nullopt;
-      }
-      trusted_bidding_signals_keys.emplace_back(std::move(key_value));
-    }
-
-    if (!v8_helper_->InsertValue(
-            "trustedBiddingSignalsKeys",
-            v8::Array::New(isolate, trusted_bidding_signals_keys.data(),
-                           trusted_bidding_signals_keys.size()),
-            interest_group_object)) {
-      return absl::nullopt;
-    }
+  context_recycler->interest_group_lazy_filler()->ReInitialize(
+      bidder_worklet_non_shared_params.get());
+  if (!context_recycler->interest_group_lazy_filler()->FillInObject(
+          interest_group_object)) {
+    return absl::nullopt;
   }
 
   v8::Local<v8::Value> ads;
@@ -826,23 +867,33 @@ BidderWorklet::V8State::GenerateSingleBid(
     }
   }
 
-  v8::Local<v8::Value> prev_wins;
-  if (!CreatePrevWinsArray(v8_helper_.get(), context, auction_start_time,
-                           bidding_browser_signals->prev_wins)
-           .ToLocal(&prev_wins)) {
-    return absl::nullopt;
-  }
-
-  v8::Maybe<bool> result = browser_signals->Set(
-      context, gin::StringToV8(isolate, "prevWins"), prev_wins);
-  if (result.IsNothing() || !result.FromJust()) {
+  context_recycler->bidding_browser_signals_lazy_filler()->ReInitialize(
+      bidding_browser_signals.get(), auction_start_time);
+  if (!context_recycler->bidding_browser_signals_lazy_filler()->FillInObject(
+          browser_signals)) {
     return absl::nullopt;
   }
 
   args.push_back(browser_signals);
 
-  v8::Local<v8::Value> generate_bid_result;
   std::vector<std::string> errors_out;
+  v8::Local<v8::Object> direct_from_seller_signals = v8::Object::New(isolate);
+  gin::Dictionary direct_from_seller_signals_dict(isolate,
+                                                  direct_from_seller_signals);
+  v8::Local<v8::Value> per_buyer_signals =
+      direct_from_seller_result_per_buyer_signals.GetSignals(
+          *v8_helper_, context, errors_out);
+  v8::Local<v8::Value> auction_signals =
+      direct_from_seller_result_auction_signals.GetSignals(*v8_helper_, context,
+                                                           errors_out);
+  if (!direct_from_seller_signals_dict.Set("perBuyerSignals",
+                                           per_buyer_signals) ||
+      !direct_from_seller_signals_dict.Set("auctionSignals", auction_signals)) {
+    return absl::nullopt;
+  }
+  args.push_back(direct_from_seller_signals);
+
+  v8::Local<v8::Value> generate_bid_result;
   v8_helper_->MaybeTriggerInstrumentationBreakpoint(
       *debug_id_, "beforeBidderWorkletBiddingStart");
 
@@ -1065,11 +1116,11 @@ void BidderWorklet::RunReadyTasks() {
   if (!IsCodeReady())
     return;
 
-  // Run all ReportWin() tasks. RunReportWin() does *not* modify
-  // `report_win_tasks_` when invoked, so this is safe.
+  // Run all ReportWin() tasks that are ready. RunReportWinIfReady() does *not*
+  // modify `report_win_tasks_` when invoked, so this is safe.
   for (auto report_win_task = report_win_tasks_.begin();
        report_win_task != report_win_tasks_.end(); ++report_win_task) {
-    RunReportWin(report_win_task);
+    RunReportWinIfReady(report_win_task);
   }
 }
 
@@ -1116,7 +1167,7 @@ void BidderWorklet::OnGenerateBidClientDestroyed(
   // loaded, it hasn't posted a task to run off-thread, so can be safely
   // deleted, as everything else, including fetching trusted bidding signals,
   // can be safely cancelled.
-  if (!task->signals_received_callback_invoked || !IsCodeReady()) {
+  if (!IsReadyToGenerateBid(*task)) {
     generate_bid_tasks_.erase(task);
   } else {
     // Otherwise, there should be a pending V8 call. Try to cancel that, but if
@@ -1135,9 +1186,37 @@ void BidderWorklet::SignalsReceivedCallback(
   GenerateBidIfReady(task);
 }
 
+void BidderWorklet::OnDirectFromSellerPerBuyerSignalsDownloadedGenerateBid(
+    GenerateBidTaskList::iterator task,
+    DirectFromSellerSignalsRequester::Result result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+
+  task->direct_from_seller_result_per_buyer_signals = std::move(result);
+  task->direct_from_seller_request_per_buyer_signals.reset();
+
+  GenerateBidIfReady(task);
+}
+
+void BidderWorklet::OnDirectFromSellerAuctionSignalsDownloadedGenerateBid(
+    GenerateBidTaskList::iterator task,
+    DirectFromSellerSignalsRequester::Result result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+
+  task->direct_from_seller_result_auction_signals = std::move(result);
+  task->direct_from_seller_request_auction_signals.reset();
+
+  GenerateBidIfReady(task);
+}
+
+bool BidderWorklet::IsReadyToGenerateBid(const GenerateBidTask& task) const {
+  return task.signals_received_callback_invoked &&
+         !task.direct_from_seller_request_per_buyer_signals &&
+         !task.direct_from_seller_request_auction_signals && IsCodeReady();
+}
+
 void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
-  if (!task->signals_received_callback_invoked || !IsCodeReady())
+  if (!IsReadyToGenerateBid(*task))
     return;
 
   // If there was a trusted signals request, it should have already completed
@@ -1155,7 +1234,7 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
   // is passed to ask for `task` to get cleaned up in case the
   // V8State::GenerateBid closure gets destroyed without running.
   base::OnceClosure cleanup_generate_bid_task = base::BindPostTask(
-      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&BidderWorklet::CleanUpBidTaskOnUserThread,
                      weak_ptr_factory_.GetWeakPtr(), task));
 
@@ -1163,11 +1242,11 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
   // `task` are needed after this point, so can consume them instead of copying
   // them.
   //
-  // Since `signals_received_callback_invoked` and IsCodeReady() are true, the
-  // GenerateBidTask won't be deleted on the main thread during this call, even
-  // if the GenerateBidClient pipe is deleted by the caller (unless the
-  // BidderWorklet  itself is deleted). Therefore, it's safe to post a callback
-  // with the `task`  iterator the v8 thread.
+  // Since IsReadyToGenerateBid() is true, the GenerateBidTask won't be deleted
+  // on the main thread during this call, even if the GenerateBidClient pipe is
+  // deleted by the caller (unless the BidderWorklet  itself is deleted).
+  // Therefore, it's safe to post a callback with the `task`  iterator the v8
+  // thread.
   task->task_id = cancelable_task_tracker_.PostTask(
       v8_runner_.get(), FROM_HERE,
       base::BindOnce(
@@ -1177,6 +1256,8 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
           std::move(task->interest_group_join_origin),
           std::move(task->auction_signals_json),
           std::move(task->per_buyer_signals_json),
+          std::move(task->direct_from_seller_result_per_buyer_signals),
+          std::move(task->direct_from_seller_result_auction_signals),
           std::move(task->per_buyer_timeout),
           std::move(task->browser_signal_seller_origin),
           std::move(task->browser_signal_top_level_seller_origin),
@@ -1187,8 +1268,37 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
                          weak_ptr_factory_.GetWeakPtr(), task)));
 }
 
-void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
+void BidderWorklet::OnDirectFromSellerPerBuyerSignalsDownloadedReportWin(
+    ReportWinTaskList::iterator task,
+    DirectFromSellerSignalsRequester::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+
+  task->direct_from_seller_result_per_buyer_signals = std::move(result);
+  task->direct_from_seller_request_per_buyer_signals.reset();
+
+  RunReportWinIfReady(task);
+}
+
+void BidderWorklet::OnDirectFromSellerAuctionSignalsDownloadedReportWin(
+    ReportWinTaskList::iterator task,
+    DirectFromSellerSignalsRequester::Result result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+
+  task->direct_from_seller_result_auction_signals = std::move(result);
+  task->direct_from_seller_request_auction_signals.reset();
+
+  RunReportWinIfReady(task);
+}
+
+bool BidderWorklet::IsReadyToReportWin(const ReportWinTask& task) const {
+  return IsCodeReady() && !task.direct_from_seller_request_per_buyer_signals &&
+         !task.direct_from_seller_request_auction_signals;
+}
+
+void BidderWorklet::RunReportWinIfReady(ReportWinTaskList::iterator task) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+  if (!IsReadyToReportWin(*task))
+    return;
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "waiting_for_bidder_script",
                                   task->trace_id);
@@ -1203,6 +1313,8 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
           std::move(task->interest_group_name),
           std::move(task->auction_signals_json),
           std::move(task->per_buyer_signals_json),
+          std::move(task->direct_from_seller_result_per_buyer_signals),
+          std::move(task->direct_from_seller_result_auction_signals),
           std::move(task->seller_signals_json),
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_bid),

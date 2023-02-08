@@ -12,6 +12,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/unified/feature_pod_button.h"
+#include "ash/system/unified/feature_tile.h"
+#include "ash/system/unified/quick_settings_metrics_util.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,10 +39,34 @@ FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
 
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
   LoginStatus login_status = Shell::Get()->session_controller()->login_status();
-  button->SetVisible(login_status == LoginStatus::NOT_LOGGED_IN ||
-                     login_status == LoginStatus::LOCKED ||
-                     delegate->ShouldShowAccessibilityMenu());
+  const bool visible = login_status == LoginStatus::NOT_LOGGED_IN ||
+                       login_status == LoginStatus::LOCKED ||
+                       delegate->ShouldShowAccessibilityMenu();
+  button->SetVisible(visible);
+  if (visible)
+    TrackVisibilityUMA();
+
   return button;
+}
+
+std::unique_ptr<FeatureTile> AccessibilityFeaturePodController::CreateTile() {
+  DCHECK(features::IsQsRevampEnabled());
+  auto feature_tile = std::make_unique<FeatureTile>(
+      base::BindRepeating(&FeaturePodControllerBase::OnIconPressed,
+                          weak_ptr_factory_.GetWeakPtr()),
+      /*is_togglable=*/false);
+  feature_tile->SetVectorIcon(kUnifiedMenuAccessibilityIcon);
+  feature_tile->SetLabel(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY));
+  feature_tile->SetSubLabelVisibility(false);
+  const std::u16string tooltip_text =
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOOLTIP);
+  feature_tile->SetTooltipText(tooltip_text);
+  feature_tile->CreateDrillInButton(
+      base::BindRepeating(&FeaturePodControllerBase::OnLabelPressed,
+                          weak_ptr_factory_.GetWeakPtr()),
+      tooltip_text);
+  return feature_tile;
 }
 
 QsFeatureCatalogName AccessibilityFeaturePodController::GetCatalogName() {

@@ -21,6 +21,7 @@ from typing import (
     Mapping,
     Optional,
     Set,
+    TypedDict,
 )
 
 from blinkpy.common import path_finder
@@ -44,7 +45,7 @@ from wptrunner.wptmanifest.backends import conditional
 _log = logging.getLogger(__name__)
 
 
-class TestPaths:
+class TestPaths(TypedDict):
     tests_path: str
     metadata_path: str
     manifest_path: str
@@ -69,12 +70,14 @@ class UpdateMetadata(Command):
             optparse.make_option(
                 '--build',
                 dest='builds',
-                metavar='<builder>[:<buildnum>],...',
+                metavar='[{ci,try}/]<builder>[:<start>[-<end>]],...',
                 action='callback',
                 callback=_parse_build_specifiers,
                 type='string',
-                help=('Comma-separated list of builds to download results for '
-                      '(e.g., "Linux Tests:100,linux-rel"). '
+                help=('Comma-separated list of builds or build ranges to '
+                      'download results for (e.g., "ci/Linux Tests:100-110"). '
+                      'When provided with only the builder name, use the try '
+                      'build from the latest patchset. '
                       'May specify multiple times.')),
             optparse.make_option(
                 '-b',
@@ -105,6 +108,10 @@ class UpdateMetadata(Command):
             optparse.make_option('--keep-statuses',
                                  action='store_true',
                                  help='Keep all existing statuses.'),
+            optparse.make_option('--exclude',
+                                 action='append',
+                                 help='URL prefix of tests to exclude. '
+                                 'May specify multiple times.'),
             # TODO(crbug.com/1299650): Support nargs='*' after migrating to
             # argparse to allow usage with shell glob expansion. Example:
             #   --report out/*/wpt_reports*android*.json
@@ -140,13 +147,13 @@ class UpdateMetadata(Command):
     def execute(self, options: optparse.Values, args: List[str],
                 _tool: Host) -> Optional[int]:
         build_resolver = BuildResolver(
-            self._tool.builders,
             self.git_cl,
             can_trigger_jobs=(options.trigger_jobs and not options.dry_run))
         manifests = load_and_update_manifests(self._path_finder)
         updater = MetadataUpdater.from_manifests(
             manifests,
             self._explicit_include_patterns(options, args),
+            options.exclude,
             overwrite_conditions=options.overwrite_conditions,
             disable_intermittent=options.disable_intermittent,
             keep_statuses=options.keep_statuses,
@@ -218,14 +225,17 @@ class UpdateMetadata(Command):
                          test_files: List[metadata.TestFileData],
                          dry_run: bool = False):
         test_files_to_stage = []
-        update_results = self._io_pool.map(updater.update, test_files)
-        for i, (test_file,
-                modified) in enumerate(zip(test_files, update_results)):
+        update_results = zip(test_files,
+                             self._io_pool.map(updater.update, test_files))
+        _log.info('Updating expectations for up to %s.',
+                  grammar.pluralize('test file', len(test_files)))
+        for i, (test_file, modified) in enumerate(update_results):
             test_path = pathlib.Path(test_file.test_path).as_posix()
-            _log.info("Updated '%s' (%d/%d%s)", test_path, i + 1,
-                      len(test_files), ', modified' if modified else '')
             if modified:
+                _log.info("Updated '%s'", test_path)
                 test_files_to_stage.append(test_file)
+            else:
+                _log.debug("No change needed for '%s'", test_path)
 
         if not dry_run:
             unstaged_changes = {
@@ -239,6 +249,12 @@ class UpdateMetadata(Command):
                 path for path in self._metadata_paths(test_files_to_stage)
                 if path in unstaged_changes
             ]
+            all_pass = len(test_files_to_stage) - len(paths)
+            if all_pass:
+                _log.info(
+                    'Already deleted %s from the index '
+                    'for all-pass tests.',
+                    grammar.pluralize('metadata file', all_pass))
             self.git.add_list(paths)
             _log.info('Staged %s.',
                       grammar.pluralize('metadata file', len(paths)))
@@ -463,6 +479,7 @@ class MetadataUpdater:
     def from_manifests(cls,
                        manifests: ManifestMap,
                        include: Optional[List[str]] = None,
+                       exclude: Optional[List[str]] = None,
                        **options) -> 'MetadataUpdater':
         """Construct a metadata updater from WPT manifests.
 
@@ -476,7 +493,9 @@ class MetadataUpdater:
         """
         # TODO(crbug.com/1299650): Validate the include list instead of silently
         # ignoring the bad test pattern.
-        test_filter = testloader.TestFilter(manifests, include=include)
+        test_filter = testloader.TestFilter(manifests,
+                                            include=include,
+                                            exclude=exclude)
         test_files = {}
         for manifest, paths in manifests.items():
             # Unfortunately, test filtering is tightly coupled to the
@@ -601,14 +620,25 @@ def _default_expected_by_type():
 def _parse_build_specifiers(option: optparse.Option, _opt_str: str, value: str,
                             parser: optparse.OptionParser):
     builds = getattr(parser.values, option.dest, None) or []
-    for build_specifier in value.split(','):
-        builder, sep, maybe_num = build_specifier.partition(':')
-        try:
-            build_num = int(maybe_num) if sep else None
-            builds.append(Build(builder, build_num))
-        except ValueError:
-            raise optparse.OptionValueError('invalid build number for %r' %
-                                            builder)
+    specifier_pattern = re.compile(r'(ci/|try/)?([^:]+)(:\d+(-\d+)?)?')
+    for specifier in value.split(','):
+        specifier_match = specifier_pattern.fullmatch(specifier)
+        if not specifier_match:
+            raise optparse.OptionValueError('invalid build specifier %r' %
+                                            specifier)
+        bucket, builder, build_range, maybe_end = specifier_match.groups()
+        if build_range:
+            start = int(build_range[1:].split('-')[0])
+            end = int(maybe_end[1:]) if maybe_end else start
+            build_numbers = range(start, end + 1)
+            if not build_numbers:
+                raise optparse.OptionValueError(
+                    'start build number must precede end for %r' % specifier)
+        else:
+            build_numbers = [None]
+        bucket = bucket[:-1] if bucket else 'try'
+        for build_number in build_numbers:
+            builds.append(Build(builder, build_number, bucket=bucket))
     setattr(parser.values, option.dest, builds)
 
 

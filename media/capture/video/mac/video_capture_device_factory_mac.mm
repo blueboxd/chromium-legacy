@@ -19,7 +19,6 @@
 #import "media/capture/video/mac/video_capture_device_avfoundation_utils_mac.h"
 #import "media/capture/video/mac/video_capture_device_decklink_mac.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
-#include "services/video_capture/public/uma/video_capture_service_event.h"
 
 namespace {
 
@@ -38,7 +37,32 @@ void EnsureRunsOnCFRunLoopEnabledThread() {
 media::VideoCaptureFormats GetDeviceSupportedFormats(
     const media::VideoCaptureDeviceDescriptor& descriptor) {
   media::VideoCaptureFormats formats;
-  NSArray* devices = [AVCaptureDevice devices];
+
+  NSArray<AVCaptureDevice*>* devices = nil;
+  // The awkward repeated if statements are required for the compiler to
+  // recognise that the contained code is protected by an API version check.
+  if (@available(macOS 10.15, *)) {
+    if (base::FeatureList::IsEnabled(
+            media::kUseAVCaptureDeviceDiscoverySession)) {
+      // Query for all camera device types available on macOS. The others in the
+      // enum are only supported on iOS/iPadOS.
+      NSArray* captureDeviceType = @[
+        AVCaptureDeviceTypeBuiltInWideAngleCamera,
+        AVCaptureDeviceTypeExternalUnknown
+      ];
+      AVCaptureDeviceDiscoverySession* deviceDescoverySession =
+          [AVCaptureDeviceDiscoverySession
+              discoverySessionWithDeviceTypes:captureDeviceType
+                                    mediaType:AVMediaTypeVideo
+                                     position:
+                                         AVCaptureDevicePositionUnspecified];
+      devices = deviceDescoverySession.devices;
+    }
+  }
+  if (!devices) {
+    devices = [AVCaptureDevice devices];
+  }
+
   AVCaptureDevice* device = nil;
   for (device in devices) {
     if (base::SysNSStringToUTF8([device uniqueID]) == descriptor.device_id)
@@ -173,11 +197,6 @@ void VideoCaptureDeviceFactoryMac::GetDevicesInfo(
 
   // Also retrieve Blackmagic devices, if present, via DeckLink SDK API.
   VideoCaptureDeviceDeckLinkMac::EnumerateDevices(&devices_info);
-
-  if ([capture_devices count] > 0 && devices_info.empty()) {
-    video_capture::uma::LogMacbookRetryGetDeviceInfosEvent(
-        video_capture::uma::AVF_DROPPED_DESCRIPTORS_AT_FACTORY);
-  }
 
   std::move(callback).Run(std::move(devices_info));
 }

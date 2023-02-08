@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -59,6 +60,7 @@ void AbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
   NOTIMPLEMENTED();
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void AbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
                                                  GLuint service_id) {
   const GLint level = 0;
@@ -67,10 +69,17 @@ void AbstractTextureImpl::BindStreamTextureImage(gl::GLImage* image,
       target, level, image, Texture::ImageState::UNBOUND, service_id);
   texture_->SetLevelCleared(target, level, true);
 }
+#endif
 
-void AbstractTextureImpl::BindImage(gl::GLImage* image, bool client_managed) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void AbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
   NOTIMPLEMENTED();
 }
+#else
+void AbstractTextureImpl::SetBoundImage(gl::GLImage* image) {
+  NOTIMPLEMENTED();
+}
+#endif
 
 gl::GLImage* AbstractTextureImpl::GetImageForTesting() const {
   NOTIMPLEMENTED();
@@ -133,18 +142,25 @@ void AbstractTextureImplPassthrough::SetParameteri(GLenum pname, GLint param) {
   NOTIMPLEMENTED();
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void AbstractTextureImplPassthrough::BindStreamTextureImage(gl::GLImage* image,
                                                             GLuint service_id) {
   const GLint level = 0;
   const GLuint target = texture_->target();
   texture_->SetStreamLevelImage(target, level, image, service_id);
-  texture_->set_is_bind_pending(true);
+  texture_->set_bind_pending();
 }
+#endif
 
-void AbstractTextureImplPassthrough::BindImage(gl::GLImage* image,
-                                               bool client_managed) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void AbstractTextureImplPassthrough::SetUnboundImage(gl::GLImage* image) {
   NOTIMPLEMENTED();
 }
+#else
+void AbstractTextureImplPassthrough::SetBoundImage(gl::GLImage* image) {
+  NOTIMPLEMENTED();
+}
+#endif
 
 gl::GLImage* AbstractTextureImplPassthrough::GetImageForTesting() const {
   NOTIMPLEMENTED();

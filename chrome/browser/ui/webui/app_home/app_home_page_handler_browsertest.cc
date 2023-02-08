@@ -12,14 +12,24 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/ui/webui/app_home/mock_app_home_page.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/test/dialog_test.h"
+#include "ui/views/widget/any_widget_observer.h"
+#include "ui/views/widget/widget.h"
 
 using web_app::AppId;
 using GetAppsCallback =
@@ -32,6 +42,30 @@ namespace {
 constexpr char kTestAppUrl[] = "https://www.example.com/";
 constexpr char kTestManifestUrl[] = "https://www.example.com/manifest.json";
 constexpr char kTestAppName[] = "Test App";
+
+#if !BUILDFLAG(IS_MAC)
+void FlushShortcutTasks() {
+  // Execute the UI thread task runner before and after the shortcut task runner
+  // to ensure that tasks get to the shortcut runner, and then any scheduled
+  // replies on the UI thread get run.
+  {
+    base::RunLoop loop;
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    web_app::internals::GetShortcutIOTaskRunner()->PostTask(FROM_HERE,
+                                                            loop.QuitClosure());
+    loop.Run();
+  }
+  {
+    base::RunLoop loop;
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
+}
+#endif
 
 class TestAppHomePageHandler : public AppHomePageHandler {
  public:
@@ -52,8 +86,14 @@ class TestAppHomePageHandler : public AppHomePageHandler {
   ~TestAppHomePageHandler() override = default;
 
   void Wait() {
+    // TODO(crbug.com/1350406): Define specific Wait for each
+    // listener.
     run_loop_->Run();
     run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+  void WaitForRunOnOsLoginModeChanged(base::OnceClosure handle) {
+    run_on_os_login_mode_changed_handle_ = std::move(handle);
   }
 
  private:
@@ -81,7 +121,16 @@ class TestAppHomePageHandler : public AppHomePageHandler {
                                                reason);
   }
 
+  void OnWebAppRunOnOsLoginModeChanged(
+      const web_app::AppId& app_id,
+      web_app::RunOnOsLoginMode run_on_os_login_mode) override {
+    std::move(run_on_os_login_mode_changed_handle_).Run();
+    AppHomePageHandler::OnWebAppRunOnOsLoginModeChanged(app_id,
+                                                        run_on_os_login_mode);
+  }
+
   std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure run_on_os_login_mode_changed_handle_;
 };
 
 std::unique_ptr<WebAppInstallInfo> BuildWebAppInfo() {
@@ -147,8 +196,19 @@ class AppHomePageHandlerTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<const extensions::Extension> InstallTestExtensionApp() {
-    scoped_refptr<const extensions::Extension> extension =
-        extensions::ExtensionBuilder(kTestAppName).Build();
+    base::DictionaryValue manifest;
+    manifest.SetString(extensions::manifest_keys::kName, kTestAppName);
+    manifest.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
+    manifest.SetString(extensions::manifest_keys::kApp, "true");
+    manifest.SetString(extensions::manifest_keys::kPlatformAppBackgroundPage,
+                       std::string());
+
+    std::string error;
+    scoped_refptr<extensions::Extension> extension =
+        extensions::Extension::Create(
+            base::FilePath(), extensions::mojom::ManifestLocation::kUnpacked,
+            manifest, 0, &error);
+
     extension_service()->AddExtension(extension.get());
     return extension;
   }
@@ -310,6 +370,92 @@ IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, UninstallExtensionApp) {
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   page_handler->UninstallApp(extension->id());
   page_handler->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, ShowWebAppSettings) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+
+  // First, install a test web app for test.
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)));
+  AppId installed_app_id = InstallTestWebApp();
+  page_handler->Wait();
+
+  content::WebContentsAddedObserver nav_observer;
+  page_handler->ShowAppSettings(installed_app_id);
+  // Wait for new web content to be created.
+  nav_observer.GetWebContents();
+  GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  EXPECT_EQ(url, GURL(chrome::kChromeUIWebAppSettingsURL + installed_app_id));
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateWebAppShortcut) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+
+  // First, install a test web app for test.
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)));
+  AppId installed_app_id = InstallTestWebApp();
+  page_handler->Wait();
+
+#if BUILDFLAG(IS_MAC)
+  base::RunLoop loop;
+  page_handler->CreateAppShortcut(installed_app_id, loop.QuitClosure());
+  loop.Run();
+#else
+  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
+                                       "CreateChromeApplicationShortcutView");
+  page_handler->CreateAppShortcut(installed_app_id, base::DoNothing());
+  FlushShortcutTasks();
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
+  ASSERT_TRUE(widget != nullptr);
+  views::test::AcceptDialog(widget);
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, CreateExtensionAppShortcut) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+
+  // First, install a test extension app for test.
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)));
+  scoped_refptr<const extensions::Extension> extension =
+      InstallTestExtensionApp();
+  page_handler->Wait();
+
+#if BUILDFLAG(IS_MAC)
+  base::RunLoop loop;
+  page_handler->CreateAppShortcut(extension->id(), loop.QuitClosure());
+  loop.Run();
+#else
+  views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
+                                       "CreateChromeApplicationShortcutView");
+  page_handler->CreateAppShortcut(extension->id(), base::DoNothing());
+  FlushShortcutTasks();
+  views::Widget* widget = waiter.WaitIfNeededAndGet();
+  ASSERT_TRUE(widget != nullptr);
+  views::test::AcceptDialog(widget);
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(AppHomePageHandlerTest, SetRunOnOsLoginMode) {
+  std::unique_ptr<TestAppHomePageHandler> page_handler =
+      GetAppHomePageHandler();
+  EXPECT_CALL(page_, AddApp(MatchAppName(kTestAppName)))
+      .Times(testing::AtLeast(1));
+  AppId installed_app_id = InstallTestWebApp();
+  page_handler->Wait();
+
+  page_handler->SetRunOnOsLoginMode(installed_app_id,
+                                    web_app::RunOnOsLoginMode::kWindowed);
+  base::RunLoop loop;
+  page_handler->WaitForRunOnOsLoginModeChanged(loop.QuitClosure());
+  loop.Run();
+  EXPECT_EQ(web_app::RunOnOsLoginMode::kWindowed,
+            web_app::WebAppProvider::GetForWebApps(profile())
+                ->registrar()
+                .GetAppRunOnOsLoginMode(installed_app_id)
+                .value);
 }
 
 }  // namespace webapps

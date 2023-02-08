@@ -8,11 +8,11 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/base/cdm_context.h"
@@ -78,7 +78,7 @@ class MockDecoder : public VideoDecoderMixin {
  public:
   MockDecoder()
       : VideoDecoderMixin(std::make_unique<MockMediaLog>(),
-                          base::ThreadTaskRunnerHandle::Get(),
+                          base::SingleThreadTaskRunner::GetCurrentDefault(),
                           base::WeakPtr<VideoDecoderMixin::Client>(nullptr)) {}
   ~MockDecoder() override = default;
 
@@ -184,9 +184,9 @@ class VideoDecoderPipelineTest
     auto pool = std::make_unique<MockVideoFramePool>();
     pool_ = pool.get();
     decoder_ = base::WrapUnique(new VideoDecoderPipeline(
-        gpu::GpuDriverBugWorkarounds(), base::ThreadTaskRunnerHandle::Get(),
-        std::move(pool), std::move(converter_),
-        std::make_unique<MockMediaLog>(),
+        gpu::GpuDriverBugWorkarounds(),
+        base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(pool),
+        std::move(converter_), std::make_unique<MockMediaLog>(),
         // This callback needs to be configured in the individual tests.
         base::BindOnce(&VideoDecoderPipelineTest::CreateNullMockDecoder)));
 
@@ -670,7 +670,7 @@ TEST_F(VideoDecoderPipelineTest, TranscryptError) {
 TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormat) {
   constexpr gfx::Size kSize(320, 240);
   constexpr gfx::Rect kVisibleRect(320, 240);
-  constexpr size_t kMaxNumOfFrames = 4u;
+  constexpr size_t kNumCodecReferenceFrames = 4u;
   constexpr uint64_t kModifier = ~DRM_FORMAT_MOD_LINEAR;
 
   const struct {
@@ -712,18 +712,21 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormat) {
         test_vector.expected_chosen_candidate.size;
     std::vector<ColorPlaneLayout> planes(
         VideoFrame::NumPlanes(expected_fourcc.ToVideoPixelFormat()));
-    EXPECT_CALL(*pool_,
-                Initialize(expected_fourcc, expected_coded_size, kVisibleRect,
-                           /*natural_size=*/kVisibleRect.size(),
-                           kMaxNumOfFrames, /*use_protected=*/false,
-                           /*use_linear_buffers=*/false))
+    EXPECT_CALL(
+        *pool_,
+        Initialize(expected_fourcc, expected_coded_size, kVisibleRect,
+                   /*natural_size=*/kVisibleRect.size(),
+                   /*max_num_frames=*/::testing::Gt(kNumCodecReferenceFrames),
+                   /*use_protected=*/false,
+                   /*use_linear_buffers=*/false))
         .WillOnce(Return(*GpuBufferLayout::Create(
             expected_fourcc, expected_coded_size, std::move(planes),
             /*modifier=*/kModifier)));
     auto status_or_chosen_candidate = decoder_->PickDecoderOutputFormat(
         test_vector.input_candidates, kVisibleRect,
         /*decoder_natural_size=*/kVisibleRect.size(),
-        /*output_size=*/absl::nullopt, /*num_of_pictures=*/kMaxNumOfFrames,
+        /*output_size=*/absl::nullopt,
+        /*num_codec_reference_frames=*/kNumCodecReferenceFrames,
         /*use_protected=*/false, /*need_aux_frame_pool=*/false, absl::nullopt);
     ASSERT_TRUE(status_or_chosen_candidate.has_value());
     const PixelLayoutCandidate chosen_candidate =
@@ -749,7 +752,7 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormat) {
 TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatLinearModifier) {
   constexpr gfx::Size kSize(320, 240);
   constexpr gfx::Rect kVisibleRect(320, 240);
-  constexpr size_t kMaxNumOfFrames = 4u;
+  constexpr size_t kNumCodecReferenceFrames = 4u;
   const Fourcc kFourcc(Fourcc::NV12);
 
   auto image_processor =
@@ -781,7 +784,8 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatLinearModifier) {
   auto status_or_chosen_candidate = decoder_->PickDecoderOutputFormat(
       {candidate}, kVisibleRect,
       /*decoder_natural_size=*/kVisibleRect.size(),
-      /*output_size=*/absl::nullopt, /*num_of_pictures=*/kMaxNumOfFrames,
+      /*output_size=*/absl::nullopt,
+      /*num_codec_reference_frames=*/kNumCodecReferenceFrames,
       /*use_protected=*/false, /*need_aux_frame_pool=*/false, absl::nullopt);
 
   EXPECT_TRUE(status_or_chosen_candidate.has_value());
@@ -796,7 +800,7 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatLinearModifier) {
 TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatUnsupportedModifier) {
   constexpr gfx::Size kSize(320, 240);
   constexpr gfx::Rect kVisibleRect(320, 240);
-  constexpr size_t kMaxNumOfFrames = 4u;
+  constexpr size_t kNumCodecReferenceFrames = 4u;
   const Fourcc kFourcc(Fourcc::NV12);
 
   // Modifier is *not* the linear format.
@@ -814,7 +818,8 @@ TEST_F(VideoDecoderPipelineTest, PickDecoderOutputFormatUnsupportedModifier) {
   auto status_or_chosen_candidate = decoder_->PickDecoderOutputFormat(
       {candidate}, kVisibleRect,
       /*decoder_natural_size=*/kVisibleRect.size(),
-      /*output_size=*/absl::nullopt, /*num_of_pictures=*/kMaxNumOfFrames,
+      /*output_size=*/absl::nullopt,
+      /*num_codec_reference_frames=*/kNumCodecReferenceFrames,
       /*use_protected=*/false, /*need_aux_frame_pool=*/false, absl::nullopt);
 
   EXPECT_FALSE(status_or_chosen_candidate.has_value());

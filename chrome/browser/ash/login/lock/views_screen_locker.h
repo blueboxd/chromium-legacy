@@ -10,16 +10,14 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/mojo_system_info_dispatcher.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/screens/user_selection_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/user_board_view_mojo.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
 namespace ash {
+
+class MojoSystemInfoDispatcher;
+class UserBoardViewMojo;
+class UserSelectionScreen;
 
 // ViewsScreenLocker acts like LoginScreenClientImpl::Delegate which handles
 // method calls coming from ash into chrome.
@@ -75,6 +73,9 @@ class ViewsScreenLocker : public LoginScreenClientImpl::Delegate,
   void HandleLockScreenAppFocusOut(bool reverse) override;
 
  private:
+  void OnAuthenticated(const AccountId& account_id,
+                       base::OnceCallback<void(bool)> success_callback,
+                       bool success);
   void UpdatePinKeyboardState(const AccountId& account_id);
   void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);

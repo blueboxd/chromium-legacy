@@ -21,8 +21,9 @@
 <translation id="1110914759170138831">Highlight was shortened</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1113597929977215864">Show simplified view</translation>
-<translation id="1118561384561215815">Get help with tasks on the web</translation>
 <translation id="1123070903960493543">How you interact with Chrome, settings that you’ve selected, details of Chrome crashes</translation>
+<translation id="1126013303640354461">Payment methods and addresses from Google Pay won’t be encrypted. Browsing history from Chrome won’t sync.
+Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting, you’ll need to reset sync. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">Does not protect you against dangerous websites, downloads and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.</translation>
 <translation id="1129510026454351943">Details: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">Don’t offer to translate these sites</translation>
@@ -31,7 +32,6 @@
 <translation id="1149401351239820326">Expiry month</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to the <ph name="BEGIN_LINK1" />Google Terms of Service<ph name="END_LINK1" />, and the <ph name="BEGIN_LINK2" />Google Chrome and Chrome OS additional Terms of Service<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Page unavailable offline: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">See popular websites by tapping the 'Top sites' button</translation>
 <translation id="1173894706177603556">Rename</translation>
 <translation id="1177863135347784049">Customised</translation>
 <translation id="1181037720776840403">Remove</translation>
@@ -123,11 +123,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="1571304935088121812">Copy username</translation>
 <translation id="1592864538817356322">Standard protection:</translation>
 <translation id="1594635596540195766"><ph name="SUGGESTIONS_COUNT" /> suggested items in list below.</translation>
-<translation id="161647866166517041">Spam and fraud reduction relies on trust tokens to help sites fight fraud and distinguish bots from people.
-
-Based on your interaction with a site, like regularly signing in to an account, that site can issue a trust token to your browser. Later, if other sites that you visit check for and find a valid trust token, they’re more likely to treat you like a person and not a bot.
-
-Trust tokens improve privacy on the web and can’t be used to find out who you are.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />How you can manage your data:<ph name="END_BOLD" /> To protect your privacy, we auto-delete your interests that are older than four weeks. As you keep browsing, an interest might appear on the list again. Or you can remove interests that you don’t want Chrome to consider.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remove 1 selected item}other{Remove # selected items}}</translation>
 <translation id="1633659023549081553">Discover new content on Chrome’s homepage</translation>
@@ -240,7 +235,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="228704530595896923">List of sharing options.</translation>
 <translation id="230115972905494466">No compatible devices found</translation>
-<translation id="230155349749732438">To use this setting <ph name="BEGIN_LINK" />Make searches and browsing better<ph name="END_LINK" /> must be turned on</translation>
 <translation id="2318045970523081853">Tap to make call</translation>
 <translation id="2321086116217818302">Preparing passwords…</translation>
 <translation id="2323763861024343754">Site storage</translation>
@@ -266,7 +260,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2472163211318554013">Sign in to get the most out of Chrome</translation>
 <translation id="247737702124049222">Image descriptions are on</translation>
 <translation id="2482878487686419369">Notifications</translation>
-<translation id="2485422356828889247">Uninstall</translation>
 <translation id="2494974097748878569">Google Assistant in Chrome</translation>
 <translation id="2496180316473517155">Browsing history</translation>
 <translation id="2497852260688568942">Sync is disabled by your administrator</translation>
@@ -289,6 +282,11 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2569733278091928697">You’ll be able to easily manage media controls, Incognito sessions, downloads and more</translation>
 <translation id="2571711316400087311">Offer to send pages in other languages to Google Translate</translation>
 <translation id="2573452357057307036">Learn how to set Chrome as your default</translation>
+<translation id="2580436639406015883">Spam and fraud reduction relies on private state tokens to help sites fight fraud and distinguish bots from people.
+
+Based on your interaction with a site, like regularly signing in to an account, that site can issue a private state token to your browser. Later, if other sites that you visit check for and find a valid private state token, they’re more likely to treat you like a person and not a bot.
+
+Private state tokens improve privacy on the web and can’t be used to find out who you are.</translation>
 <translation id="2581165646603367611">This will clear cookies, cache and other data of sites Chrome doesn't think is important.</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -324,7 +322,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="2781151931089541271">1 sec left</translation>
 <translation id="2788468313014644040">Group number</translation>
 <translation id="2800066122460699237">The tab <ph name="TAB_TITLE" /> will be closed</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2806840421670364300">FLoC</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
@@ -400,6 +397,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3130863904455712965">History and more</translation>
 <translation id="3134784203083076891">'</translation>
 <translation id="314939179385989105">Chrome’s homepage</translation>
+<translation id="3157931365184549694">Restore</translation>
 <translation id="3166827708714933426">Tab and window shortcuts</translation>
 <translation id="316694332262407393">Chrome is already running here.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -429,7 +427,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3280562213547448728">Voice search</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
-<translation id="3284510035090979597">Proactive help</translation>
 <translation id="3285080554353377245">Videos about how to use Chrome</translation>
 <translation id="3288003805934695103">Reloading the page</translation>
 <translation id="3290249595466894471">Also sends a small sample of pages, downloads, extension activity and system information to help discover new threats</translation>
@@ -454,6 +451,7 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="3428747202529429621">Keeps you safe on Chrome and may be used to improve your security in other Google apps when you are signed in</translation>
 <translation id="3429160811076349561">Trial features are off</translation>
 <translation id="3435465986463792564">Got many windows? You can manage them from here</translation>
+<translation id="3435738964857648380">Security</translation>
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3444179773590444986">Share feedback on Dark theme for sites?</translation>
 <translation id="3452832259067974318">To protect your privacy, Chrome will not auto-fill your password in this field.</translation>
@@ -552,11 +550,13 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="4016425174436051808">Can’t follow. Something went wrong.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# hr}other{# hrs}}</translation>
 <translation id="4035877632587724847">Don't allow</translation>
+<translation id="4036177530563778041">Easily continue where you left off</translation>
 <translation id="4045764304651014138">Usage data</translation>
 <translation id="405399507749852140">Get alerts if the price drops on any site</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Options available near the top of the screen</translation>
 <translation id="4062305924942672200">Legal information</translation>
+<translation id="4072805772816336153">Try again later</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4084712963632273211">From <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />delivered by Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">You can use this tablet to sign in on the device that’s displaying this QR code.</translation>
@@ -573,8 +573,12 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="4137746084635924146">Current device language</translation>
 <translation id="414128724510021958">Desktop sites requested by default</translation>
 <translation id="4141536112466364990">Learn Chrome</translation>
+<translation id="4147131678541801076">When trials are on, spam and fraud reduction relies on private state tokens to help sites fight fraud and distinguish bots from people.
+
+Based on your interaction with a site, like regularly signing in to an account, that site can issue a private state token to your browser. Later, if other sites that you visit check for and find a valid private state token, they’re more likely to treat you like a person and not a bot.
+
+Private state tokens improve privacy on the web and can’t be used to find out who you are.</translation>
 <translation id="4162867837470729563">List of sharing options at full height.</translation>
-<translation id="4165986682804962316">Site settings</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
 <translation id="4177222230309051052">Get all your bookmarks</translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -584,7 +588,6 @@ When you delete your browsing history – all or for a specific site – you als
 <translation id="4209895695669353772">To get personalised content suggested by Google, turn on sync</translation>
 <translation id="4214315110991671325">If you allow cookies, Chrome may use them for preloading.</translation>
 <translation id="4225895483398857530">Toolbar shortcut</translation>
-<translation id="4227318652298512614">Follow any sites you want</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="4248098802131000011">Keep your passwords safe from data breaches and other security issues</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
@@ -681,6 +684,8 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Passwords are saved to Password Manager on this device</translation>
 <translation id="4766678251456904326">Add account to device</translation>
+<translation id="4769095993849849966">New file name</translation>
+<translation id="4778653490315793244">Nothing to show yet</translation>
 <translation id="4787736314074622408">Do you want to delete <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Helps you complete tasks, such as checkout, throughout the web</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
@@ -744,6 +749,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5032430150487044192">Can't create QR code</translation>
 <translation id="5039804452771397117">Allow</translation>
+<translation id="5040262127954254034">Privacy</translation>
 <translation id="504456571576643789">Things to consider</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Other forms of activity<ph name="END_LINK1" /> may be saved in your Google Account when you’re signed in. You can delete them at any time.</translation>
 <translation id="506254248375231072">No tabs</translation>
@@ -872,7 +878,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5795872532621730126">Search and browse</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
-<translation id="5810864297166300463">Web assistance</translation>
 <translation id="5813552293717797987">This browser is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
 <translation id="5814131985548525293">Type here or tap the voice icon to start</translation>
 <translation id="5814749351757353073">Keep up with your favourite sites</translation>
@@ -895,7 +900,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5869789175361934029">Continue from another device</translation>
 <translation id="587735546353481577">To follow a site, go to the site, open the Chrome menu and tap Follow.</translation>
 <translation id="5879072387416556377">Get better suggestions</translation>
-<translation id="5884076754568147479">To help you complete tasks, Google will receive the URLs and contents of sites on which you use Assistant, as well as information that you submit through Assistant</translation>
 <translation id="5906513782029855931">Knowing the URLs of sites allows Google Assistant to help you complete tasks. You can turn off Assistant in Chrome settings.</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
@@ -980,11 +984,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6363990818884053551">To start sync, verify that it's you</translation>
 <translation id="6364438453358674297">Remove suggestion from history?</translation>
 <translation id="6380100320871303656">More frequently preloads pages that Chrome thinks you are likely to visit. This setting may result in increased data use.</translation>
-<translation id="6385407407546870227">When trials are on, spam and fraud reduction relies on trust tokens to help sites fight fraud and distinguish bots from people.
-
-Based on your interaction with a site, like regularly signing in to an account, that site can issue a trust token to your browser. Later, if other sites that you visit check for and find a valid trust token, they’re more likely to treat you like a person and not a bot.
-
-Trust tokens improve privacy on the web and can’t be used to find out who you are.</translation>
 <translation id="6394791151443660613">Search: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Back online</translation>
@@ -1107,6 +1106,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6908998565271542516">Option to approve or not approve a website opened at full height</translation>
 <translation id="6909589135458168665">Preload pages</translation>
+<translation id="692924882724759447">See sites that you follow here</translation>
 <translation id="6942665639005891494">Change the default download location at any time using the Settings menu option</translation>
 <translation id="694267552845942083">You are currently customising your Sync settings. To finish turning on sync, tap the Confirm button near the bottom of the screen. Navigate up</translation>
 <translation id="6945221475159498467">Select</translation>
@@ -1123,6 +1123,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="7029390216614421513">Position QR code/barcode in this frame.</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7030304022046916278">Sends URLs to Safe Browsing to check them</translation>
+<translation id="7030585293819777123">Resume your last task?</translation>
 <translation id="7037830628447527439">Sign in to Chrome with your Google Account</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="7054588988317389591">Get image descriptions?</translation>
@@ -1300,6 +1301,7 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="7971136598759319605">Active 1 day ago</translation>
 <translation id="7975379999046275268">Preview page <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7986497153528221272">To view passwords, first set a screen lock on your device</translation>
+<translation id="7995059495660416932">You'll see content when it becomes available</translation>
 <translation id="799576009106109668">You’ll browse faster because content is proactively loaded based on your current web page visit</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -1340,7 +1342,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="8127542551745560481">Edit homepage</translation>
 <translation id="8130309322784422030">Your stored sign-in info might be out of date</translation>
 <translation id="813082847718468539">View site information</translation>
-<translation id="8153351135626613369">Assistant will appear when it detects that it can help you on supported websites</translation>
 <translation id="8156139159503939589">What languages do you read?</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8186512483418048923"><ph name="FILES" /> files left</translation>
@@ -1372,7 +1373,6 @@ Trust tokens improve privacy on the web and can’t be used to find out who you 
 <translation id="8352996530981010042">Can’t download reactions. Try again.</translation>
 <translation id="8354977102499939946">Quickly search with your voice. To edit this shortcut, go to Settings.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> downloads restored</translation>
-<translation id="8364299278605033898">See popular websites</translation>
 <translation id="8368001212524806591">Track price</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />How we use this data:<ph name="END_BOLD" /> Chrome can estimate your interests. Later, a site that you visit can ask Chrome to see your interests in order to personalise the ads that you see.</translation>
 <translation id="8387617938027387193">Verify that it’s you</translation>

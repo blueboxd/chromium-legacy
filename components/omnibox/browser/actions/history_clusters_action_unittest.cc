@@ -90,6 +90,7 @@ class HistoryClustersActionTest : public testing::Test {
         /*entity_metadata_provider=*/nullptr,
         /*url_loader_factory=*/nullptr,
         /*engagement_score_provider=*/nullptr,
+        /*template_url_service=*/nullptr,
         /*optimization_guide_decider=*/nullptr);
 
     history_clusters_service_test_api_ =
@@ -207,11 +208,12 @@ TEST_F(HistoryClustersActionTest, AttachHistoryClustersActions) {
 
   {
     SCOPED_TRACE(
-        "Should not add action if an action incompatible (e.g. search entity) "
+        "Should add action if an action is search entity "
         "suggestion matches.");
     SetUpWithConfig(search_actions_config_);
     TestAttachHistoryClustersActions(
-        {{.type = AutocompleteMatchType::Type::SEARCH_SUGGEST_ENTITY}});
+        {{.type = AutocompleteMatchType::Type::SEARCH_SUGGEST_ENTITY,
+          .expect_history_clusters_action = true}});
   }
 
   {
@@ -319,14 +321,6 @@ TEST_F(HistoryClustersActionTest, AttachHistoryClustersActions) {
          .expect_history_clusters_action = true},
     });
   }
-}
-
-TEST_F(HistoryClustersActionTest, AttachHistoryClustersActions_AllowEntities) {
-  search_actions_config_.omnibox_action_on_entities = true;
-  SetUpWithConfig(search_actions_config_);
-  TestAttachHistoryClustersActions(
-      {{.type = AutocompleteMatchType::Type::SEARCH_SUGGEST_ENTITY,
-        .expect_history_clusters_action = true}});
 }
 
 }  // namespace history_clusters

@@ -6,7 +6,7 @@
 import 'chrome://settings/lazy_load.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {CrInputElement, SettingsSyncEncryptionOptionsElement, SettingsSyncPageElement} from 'chrome://settings/lazy_load.js';
 // <if expr="not chromeos_ash">
@@ -448,6 +448,39 @@ suite('SyncSettingsTests', function() {
             .querySelector<HTMLElement>(
                 '#encryptionRadioGroupContainer')!.style.display,
         'none');
+  });
+
+  test('EnterPassphraseLabelWhenNoPassphraseTime', () => {
+    const prefs = getSyncAllPrefs();
+    prefs.encryptAllData = true;
+    prefs.passphraseRequired = true;
+    webUIListenerCallback('sync-prefs-changed', prefs);
+    flush();
+    const enterPassphraseLabel =
+        syncPage.shadowRoot!.querySelector<HTMLElement>(
+            '#enterPassphraseLabel')!;
+
+    assertEquals(
+        'Your data is encrypted with your sync passphrase. Enter it to start' +
+            ' sync.',
+        enterPassphraseLabel.innerText);
+  });
+
+  test('EnterPassphraseLabelWhenHasPassphraseTime', () => {
+    const prefs = getSyncAllPrefs();
+    prefs.encryptAllData = true;
+    prefs.passphraseRequired = true;
+    prefs.explicitPassphraseTime = 'Jan 01, 1970';
+    webUIListenerCallback('sync-prefs-changed', prefs);
+    flush();
+    const enterPassphraseLabel =
+        syncPage.shadowRoot!.querySelector<HTMLElement>(
+            '#enterPassphraseLabel')!;
+
+    assertEquals(
+        `Your data was encrypted with your sync passphrase on ${
+            prefs.explicitPassphraseTime}. Enter it to start sync.`,
+        enterPassphraseLabel.innerText);
   });
 
   test(

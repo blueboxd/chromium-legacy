@@ -139,6 +139,7 @@ source_set("chromoting_host_services_client") {
   deps = [
     ":ipc_constants",
     "//base",
+    "//components/named_mojo_ipc_server",
     "//mojo/public/cpp/platform",
     "//remoting/host/mojom",
   ]
@@ -517,6 +518,12 @@ static_library("common") {
     defines += [ "REMOTING_USE_WAYLAND" ]
     sources += [
       "input_injector_constants_linux.h",
+      "linux/clipboard_portal.cc",
+      "linux/clipboard_portal.h",
+      "linux/clipboard_portal_injector.cc",
+      "linux/clipboard_portal_injector.h",
+      "linux/clipboard_wayland.cc",
+      "linux/clipboard_wayland.h",
       "linux/desktop_display_info_loader_wayland.cc",
       "linux/desktop_resizer_wayland.cc",
       "linux/input_injector_wayland.cc",
@@ -540,8 +547,8 @@ static_library("common") {
       "linux/wayland_seat.h",
     ]
     public_deps += [
+      "//third_party/wayland:wayland_client",
       "//third_party/wayland-protocols:xdg_output_protocol",
-      "//third_party/wayland-protocols:xdg_shell_protocol",
     ]
     deps += [ "//ui/gtk:gtk_config" ]
     public_configs = [ ":xkbcommon" ]
@@ -829,6 +836,11 @@ source_set("unit_tests") {
     "//ui/base:base",
     "//ui/events:events",
   ]
+
+  if (remoting_use_wayland && is_linux) {
+    defines = [ "REMOTING_USE_WAYLAND" ]
+    deps += [ "//ui/gtk:gtk_config" ]
+  }
 
   if (is_linux) {
     sources += [ "pairing_registry_delegate_linux_unittest.cc" ]

@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#import "base/metrics/user_metrics.h"
+#import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/permissions/permission_info.h"
 #import "ios/chrome/browser/ui/permissions/permissions_constants.h"
@@ -127,7 +130,6 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
   securityHeader.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_SECURITY);
   securityHeader.detailText = self.pageInfoSecurityDescription.status;
   securityHeader.iconImage = self.pageInfoSecurityDescription.iconImage;
-  securityHeader.iconTintColor = UIColor.whiteColor;
   securityHeader.iconBackgroundColor =
       self.pageInfoSecurityDescription.iconBackgroundColor;
   securityHeader.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;
@@ -254,6 +256,23 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
+  [self.pageInfoCommandsHandler hidePageInfo];
+}
+
+#pragma mark - UIResponder
+
+// To always be able to register key commands via -keyCommands, the VC must be
+// able to become first responder.
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
+- (NSArray*)keyCommands {
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
   [self.pageInfoCommandsHandler hidePageInfo];
 }
 

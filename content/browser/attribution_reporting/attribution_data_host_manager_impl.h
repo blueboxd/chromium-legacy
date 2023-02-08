@@ -19,6 +19,13 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 
+namespace attribution_reporting {
+class SuitableOrigin;
+
+struct SourceRegistration;
+struct TriggerRegistration;
+}  // namespace attribution_reporting
+
 namespace base {
 class TimeDelta;
 class TimeTicks;
@@ -29,10 +36,10 @@ namespace content {
 class AttributionManager;
 
 // Manages a receiver set of all ongoing `AttributionDataHost`s and forwards
-// events to the AttributionManager which owns `this`. Because attributionsrc
+// events to the `AttributionManager` that owns `this`. Because attributionsrc
 // requests may continue until after we have detached a frame, all browser
-// process data needed to validate sources/triggers is frozen and stored
-// alongside each receiver.
+// process data needed to validate sources/triggers is stored alongside each
+// receiver.
 class CONTENT_EXPORT AttributionDataHostManagerImpl
     : public AttributionDataHostManager,
       public blink::mojom::AttributionDataHost {
@@ -50,27 +57,31 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // AttributionDataHostManager:
   void RegisterDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-      url::Origin context_origin,
-      bool is_within_fenced_frame) override;
+      attribution_reporting::SuitableOrigin context_origin,
+      bool is_within_fenced_frame,
+      blink::mojom::AttributionRegistrationType) override;
   bool RegisterNavigationDataHost(
       mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-      const blink::AttributionSrcToken& attribution_src_token) override;
+      const blink::AttributionSrcToken& attribution_src_token,
+      AttributionInputEvent input_event,
+      blink::mojom::AttributionNavigationType nav_type) override;
   void NotifyNavigationRedirectRegistration(
       const blink::AttributionSrcToken& attribution_src_token,
       std::string header_value,
-      url::Origin reporting_origin,
-      const url::Origin& source_origin) override;
+      attribution_reporting::SuitableOrigin reporting_origin,
+      const attribution_reporting::SuitableOrigin& source_origin,
+      AttributionInputEvent input_event,
+      blink::mojom::AttributionNavigationType nav_type) override;
   void NotifyNavigationForDataHost(
       const blink::AttributionSrcToken& attribution_src_token,
-      const url::Origin& source_origin,
-      const url::Origin& destination_origin) override;
+      const attribution_reporting::SuitableOrigin& source_origin,
+      blink::mojom::AttributionNavigationType nav_type) override;
   void NotifyNavigationFailure(
       const blink::AttributionSrcToken& attribution_src_token) override;
 
  private:
-  // Represents frozen data from the browser process associated with each
-  // receiver.
-  struct FrozenContext;
+  class ReceiverContext;
+
   struct DelayedTrigger;
   struct NavigationDataHost;
 
@@ -80,17 +91,19 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
 
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(
-      blink::mojom::AttributionSourceDataPtr data) override;
+      attribution_reporting::SuitableOrigin reporting_origin,
+      attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
-      blink::mojom::AttributionTriggerDataPtr data) override;
+      attribution_reporting::TriggerRegistration) override;
 
   void OnReceiverDisconnected();
   void OnSourceEligibleDataHostFinished(base::TimeTicks register_time);
 
   void OnRedirectSourceParsed(
       const blink::AttributionSrcToken& attribution_src_token,
-      url::Origin reporting_origin,
+      attribution_reporting::SuitableOrigin reporting_origin,
       std::string header_value,
+      blink::mojom::AttributionNavigationType nav_type,
       data_decoder::DataDecoder::ValueOrError result);
 
   void SetTriggerTimer(base::TimeDelta delay);
@@ -99,7 +112,7 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   // Owns `this`.
   raw_ptr<AttributionManager> attribution_manager_;
 
-  mojo::ReceiverSet<blink::mojom::AttributionDataHost, FrozenContext>
+  mojo::ReceiverSet<blink::mojom::AttributionDataHost, ReceiverContext>
       receivers_;
 
   // Map which stores pending receivers for data hosts which are going to

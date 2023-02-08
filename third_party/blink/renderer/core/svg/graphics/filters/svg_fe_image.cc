@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
@@ -180,8 +181,7 @@ sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
   // cull rect for the paint record.
   gfx::RectF crop_rect = IntersectWithFilterRegion(GetFilter(), dst_rect);
   PaintRecorder paint_recorder;
-  cc::PaintCanvas* canvas =
-      paint_recorder.beginRecording(gfx::RectFToSkRect(crop_rect));
+  cc::PaintCanvas* canvas = paint_recorder.beginRecording();
   canvas->concat(AffineTransformToSkMatrix(transform));
   {
     auto* builder = MakeGarbageCollected<PaintRecordBuilder>();

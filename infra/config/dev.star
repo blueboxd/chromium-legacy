@@ -37,8 +37,6 @@ lucicfg.emit(
     data = io.read_file("luci-analysis-dev.cfg"),
 )
 
-# TODO(b/243488110): Delete when Weetbix renaming to
-# LUCI Analysis complete.
 lucicfg.emit(
     dest = "luci/chops-weetbix-dev.cfg",
     data = io.read_file("chops-weetbix-dev.cfg"),

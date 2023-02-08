@@ -23,7 +23,7 @@
       "is_debug": false,
       "symbol_level": 0,
       "target_os": "fuchsia",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-angle-try-intel": {
@@ -71,7 +71,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win-angle-chromium-x86-try": {
@@ -83,7 +83,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "target_cpu": "x86",
-      "use_goma": true
+      "use_remoteexec": true
     }
   }
 }

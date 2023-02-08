@@ -34,9 +34,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/callback_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/functional/function_ref.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -170,13 +170,12 @@ using ::ui::mojom::blink::DragOperation;
 
 void ForEachLocalFrameControlledByWidget(
     LocalFrame* frame,
-    const base::RepeatingCallback<void(WebLocalFrameImpl*)>& callback) {
-  callback.Run(WebLocalFrameImpl::FromFrame(frame));
+    base::FunctionRef<void(WebLocalFrameImpl*)> callback) {
+  callback(WebLocalFrameImpl::FromFrame(frame));
   for (Frame* child = frame->FirstChild(); child;
        child = child->NextSibling()) {
-    if (child->IsLocalFrame()) {
-      ForEachLocalFrameControlledByWidget(DynamicTo<LocalFrame>(child),
-                                          callback);
+    if (auto* local_child = DynamicTo<LocalFrame>(child)) {
+      ForEachLocalFrameControlledByWidget(local_child, callback);
     }
   }
 }
@@ -185,11 +184,11 @@ void ForEachLocalFrameControlledByWidget(
 // any RemoteFrames have have another LocalFrame root as their parent.
 void ForEachRemoteFrameChildrenControlledByWidget(
     Frame* frame,
-    const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
+    base::FunctionRef<void(RemoteFrame*)> callback) {
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (auto* remote_frame = DynamicTo<RemoteFrame>(child)) {
-      callback.Run(remote_frame);
+      callback(remote_frame);
       ForEachRemoteFrameChildrenControlledByWidget(remote_frame, callback);
     } else if (auto* local_frame = DynamicTo<LocalFrame>(child)) {
       // If iteration arrives at a local root then don't descend as it will be
@@ -206,14 +205,14 @@ void ForEachRemoteFrameChildrenControlledByWidget(
       if (auto* portals = DocumentPortals::Get(*document)) {
         for (PortalContents* portal : portals->GetPortals()) {
           if (RemoteFrame* remote_frame = portal->GetFrame())
-            callback.Run(remote_frame);
+            callback(remote_frame);
         }
       }
       // Iterate on any fenced frames owned by a local frame.
       if (auto* fenced_frames = DocumentFencedFrames::Get(*document)) {
         for (HTMLFencedFrameElement* fenced_frame :
              fenced_frames->GetFencedFrames()) {
-          callback.Run(To<RemoteFrame>(fenced_frame->ContentFrame()));
+          callback(To<RemoteFrame>(fenced_frame->ContentFrame()));
         }
       }
     }
@@ -1133,6 +1132,7 @@ void WebFrameWidgetImpl::CancelDrag() {
   if (!doing_drag_and_drop_)
     return;
   GetPage()->GetDragController().DragEnded();
+  current_drag_data_ = nullptr;
   doing_drag_and_drop_ = false;
 }
 
@@ -1332,10 +1332,9 @@ void WebFrameWidgetImpl::RequestBeginMainFrameNotExpected(bool request) {
 
 void WebFrameWidgetImpl::DidCommitAndDrawCompositorFrame() {
   ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
+      local_root_->GetFrame(), [](WebLocalFrameImpl* local_frame) {
         local_frame->Client()->DidCommitAndDrawCompositorFrame();
-      }));
+      });
 }
 
 void WebFrameWidgetImpl::DidObserveFirstScrollDelay(
@@ -1358,17 +1357,17 @@ void WebFrameWidgetImpl::WillBeginMainFrame() {
     return;
 
   ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
+      local_root_->GetFrame(), [](WebLocalFrameImpl* local_frame) {
+        // A frame in the frame tree is fully attached and must always have a
+        // document.
         auto* document = local_frame->GetFrame()->GetDocument();
-        if (!document)
-          return;
+        DCHECK(document);
 
         if (auto* transition =
                 ViewTransitionUtils::GetActiveTransition(*document)) {
           transition->WillBeginMainFrame();
         }
-      }));
+      });
 }
 
 std::unique_ptr<cc::LayerTreeFrameSink>
@@ -1509,11 +1508,11 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
 
     // Send the capture sequence number to RemoteFrames that are below the
     // local root for this widget.
-    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](uint32_t capture_sequence_number, RemoteFrame* remote_frame) {
+    ForEachRemoteFrameControlledByWidget(
+        [capture_sequence_number = visual_properties.capture_sequence_number](
+            RemoteFrame* remote_frame) {
           remote_frame->UpdateCaptureSequenceNumber(capture_sequence_number);
-        },
-        visual_properties.capture_sequence_number));
+        });
   }
 
   if (!View()->AutoResizeMode()) {
@@ -1536,17 +1535,15 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
       widget_base_->VisibleViewportSizeInDIPs()) {
     ForEachLocalFrameControlledByWidget(
         local_root_->GetFrame(),
-        WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
-          local_frame->ResetHasScrolledFocusedEditableIntoView();
-        }));
+        &WebLocalFrameImpl::ResetHasScrolledFocusedEditableIntoView);
 
     // Propagate changes down to child local root RenderWidgets and
     // BrowserPlugins in other frame trees/processes.
-    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](const gfx::Size& visible_viewport_size, RemoteFrame* remote_frame) {
+    ForEachRemoteFrameControlledByWidget(
+        [visible_viewport_size = widget_base_->VisibleViewportSizeInDIPs()](
+            RemoteFrame* remote_frame) {
           remote_frame->DidChangeVisibleViewportSize(visible_viewport_size);
-        },
-        widget_base_->VisibleViewportSizeInDIPs()));
+        });
   }
 
   // All non-top-level Widgets (child local-root frames, Portals, GuestViews,
@@ -1945,11 +1942,9 @@ void WebFrameWidgetImpl::SetZoomLevel(double zoom_level) {
 
   // Part of the UpdateVisualProperties dance we send the zoom level to
   // RemoteFrames that are below the local root for this widget.
-  ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-      [](double zoom_level, RemoteFrame* remote_frame) {
-        remote_frame->ZoomLevelChanged(zoom_level);
-      },
-      zoom_level));
+  ForEachRemoteFrameControlledByWidget([zoom_level](RemoteFrame* remote_frame) {
+    remote_frame->ZoomLevelChanged(zoom_level);
+  });
 }
 
 void WebFrameWidgetImpl::SetAutoResizeMode(bool auto_resize,
@@ -2154,21 +2149,20 @@ void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
       .RecomputeMouseHoverStateIfNeeded();
 
   ForEachLocalFrameControlledByWidget(
-      LocalRootImpl()->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
-        if (LocalFrameView* view = local_frame->GetFrameView()) {
-          if (FragmentAnchor* anchor = view->GetFragmentAnchor())
-            anchor->PerformScriptableActions();
-        }
-      }));
+      LocalRootImpl()->GetFrame(), [](WebLocalFrameImpl* local_frame) {
+        // A frame in the frame tree is fully attached and must always have a
+        // view.
+        LocalFrameView* view = local_frame->GetFrameView();
+        DCHECK(view);
+        if (FragmentAnchor* anchor = view->GetFragmentAnchor())
+          anchor->PerformScriptableActions();
+      });
 
   absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> ukm_timer;
   if (WidgetBase::ShouldRecordBeginMainFrameMetrics()) {
-    ukm_timer.emplace(LocalRootImpl()
-                          ->GetFrame()
-                          ->View()
-                          ->EnsureUkmAggregator()
-                          .GetScopedTimer(LocalFrameUkmAggregator::kAnimate));
+    ukm_timer.emplace(
+        LocalRootImpl()->GetFrame()->View()->GetUkmAggregator()->GetScopedTimer(
+            LocalFrameUkmAggregator::kAnimate));
   }
 
   GetPage()->Animate(last_frame_time);
@@ -2216,9 +2210,9 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
   LocalRootImpl()
       ->GetFrame()
       ->View()
-      ->EnsureUkmAggregator()
-      .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
-                                  commit_start_time, commit_finish_time);
+      ->GetUkmAggregator()
+      ->RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
+                                   commit_start_time, commit_finish_time);
   commit_compositor_frame_start_time_ =
       next_commit_compositor_frame_start_time_;
   next_commit_compositor_frame_start_time_.reset();
@@ -2267,13 +2261,9 @@ void WebFrameWidgetImpl::RecordManipulationTypeCounts(
 void WebFrameWidgetImpl::RecordDispatchRafAlignedInputTime(
     base::TimeTicks raf_aligned_input_start_time) {
   if (LocalRootImpl()) {
-    LocalRootImpl()
-        ->GetFrame()
-        ->View()
-        ->EnsureUkmAggregator()
-        .RecordTimerSample(LocalFrameUkmAggregator::kHandleInputEvents,
-                           raf_aligned_input_start_time,
-                           base::TimeTicks::Now());
+    LocalRootImpl()->GetFrame()->View()->GetUkmAggregator()->RecordTimerSample(
+        LocalFrameUkmAggregator::kHandleInputEvents,
+        raf_aligned_input_start_time, base::TimeTicks::Now());
   }
 }
 
@@ -2313,8 +2303,8 @@ WebFrameWidgetImpl::GetBeginMainFrameMetrics() {
   return LocalRootImpl()
       ->GetFrame()
       ->View()
-      ->EnsureUkmAggregator()
-      .GetBeginMainFrameMetrics();
+      ->GetUkmAggregator()
+      ->GetBeginMainFrameMetrics();
 }
 
 std::unique_ptr<cc::WebVitalMetrics> WebFrameWidgetImpl::GetWebVitalMetrics() {
@@ -2362,13 +2352,9 @@ void WebFrameWidgetImpl::BeginUpdateLayers() {
 void WebFrameWidgetImpl::EndUpdateLayers() {
   if (LocalRootImpl()) {
     DCHECK(update_layers_start_time_);
-    LocalRootImpl()
-        ->GetFrame()
-        ->View()
-        ->EnsureUkmAggregator()
-        .RecordTimerSample(LocalFrameUkmAggregator::kUpdateLayers,
-                           update_layers_start_time_.value(),
-                           base::TimeTicks::Now());
+    LocalRootImpl()->GetFrame()->View()->GetUkmAggregator()->RecordTimerSample(
+        LocalFrameUkmAggregator::kUpdateLayers,
+        update_layers_start_time_.value(), base::TimeTicks::Now());
     probe::LayerTreeDidChange(LocalRootImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
@@ -2378,7 +2364,7 @@ void WebFrameWidgetImpl::RecordStartOfFrameMetrics() {
   if (!LocalRootImpl())
     return;
 
-  LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().BeginMainFrame();
+  LocalRootImpl()->GetFrame()->View()->GetUkmAggregator()->BeginMainFrame();
 }
 
 void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
@@ -2390,9 +2376,9 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
   LocalRootImpl()
       ->GetFrame()
       ->View()
-      ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
-                               trackers);
+      ->GetUkmAggregator()
+      ->RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
+                                trackers);
 }
 
 void WebFrameWidgetImpl::WillHandleGestureEvent(const WebGestureEvent& event,
@@ -2503,12 +2489,10 @@ void WebFrameWidgetImpl::SetWindowSegments(
     LocalFrame* frame = LocalRootImpl()->GetFrame();
     frame->WindowSegmentsChanged(window_segments_);
 
-    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](const std::vector<gfx::Rect>& window_segments,
-           RemoteFrame* remote_frame) {
+    ForEachRemoteFrameControlledByWidget(
+        [&window_segments = window_segments_param](RemoteFrame* remote_frame) {
           remote_frame->DidChangeRootWindowSegments(window_segments);
-        },
-        window_segments_param));
+        });
   }
 }
 
@@ -2878,12 +2862,9 @@ void WebFrameWidgetImpl::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   }
 
   ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(),
-      WTF::BindRepeating(
-          [](WebMeaningfulLayout layout_type, WebLocalFrameImpl* local_frame) {
-            local_frame->Client()->DidMeaningfulLayout(layout_type);
-          },
-          layout_type));
+      local_root_->GetFrame(), [layout_type](WebLocalFrameImpl* local_frame) {
+        local_frame->Client()->DidMeaningfulLayout(layout_type);
+      });
 }
 
 void WebFrameWidgetImpl::PresentationCallbackForMeaningfulLayout(
@@ -3013,7 +2994,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
                             std::move(promise_callbacks_), frame_token_));
   }
 
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason,
+                              base::TimeTicks timestamp) override {
     if (base::FeatureList::IsEnabled(
             features::kReportFCPOnlyOnSuccessfulCommit)) {
       if (reason != DidNotSwapReason::SWAP_FAILS &&
@@ -3040,8 +3022,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
     if (!promise_callbacks_on_failure.IsEmpty()) {
       ReportSwapAndPresentationFailureOnTaskRunner(
-          task_runner_, std::move(promise_callbacks_on_failure),
-          base::TimeTicks::Now());
+          task_runner_, std::move(promise_callbacks_on_failure), timestamp);
     }
     return action;
   }
@@ -3962,7 +3943,7 @@ void WebFrameWidgetImpl::SelectAroundCaret(
 #endif
 
 void WebFrameWidgetImpl::ForEachRemoteFrameControlledByWidget(
-    const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
+    base::FunctionRef<void(RemoteFrame*)> callback) {
   ForEachRemoteFrameChildrenControlledByWidget(local_root_->GetFrame(),
                                                callback);
 }
@@ -4060,11 +4041,12 @@ void WebFrameWidgetImpl::NotifyCompositingScaleFactorChanged(
 
   // Update the scale factor for remote frames which in turn depends on the
   // compositing scale factor set in the widget.
-  ForEachRemoteFrameControlledByWidget(
-      WTF::BindRepeating([](RemoteFrame* remote_frame) {
-        if (remote_frame->View())
-          remote_frame->View()->UpdateCompositingScaleFactor();
-      }));
+  ForEachRemoteFrameControlledByWidget([](RemoteFrame* remote_frame) {
+    // Only RemoteFrames with a local parent frame participate in compositing
+    // (and thus have a view).
+    if (remote_frame->View())
+      remote_frame->View()->UpdateCompositingScaleFactor();
+  });
 }
 
 void WebFrameWidgetImpl::NotifyPageScaleFactorChanged(
@@ -4081,13 +4063,11 @@ void WebFrameWidgetImpl::NotifyPageScaleFactorChanged(
   // global value per-page, we could instead store it once in the browser
   // (such as in RenderViewHost) and distribute it to each WebFrameWidgetImpl
   // from there.
-  ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-      [](float page_scale_factor, bool is_pinch_gesture_active,
-         RemoteFrame* remote_frame) {
+  ForEachRemoteFrameControlledByWidget(
+      [page_scale_factor, is_pinch_gesture_active](RemoteFrame* remote_frame) {
         remote_frame->PageScaleFactorChanged(page_scale_factor,
                                              is_pinch_gesture_active);
-      },
-      page_scale_factor, is_pinch_gesture_active));
+      });
 }
 
 void WebFrameWidgetImpl::SetPageScaleStateAndLimits(
@@ -4162,7 +4142,8 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   const bool window_screen_has_changed =
       !Screen::AreWebExposedScreenPropertiesEqual(
           previous_original_screen_infos.current(),
-          original_screen_infos.current());
+          original_screen_infos.current(),
+          !RuntimeEnabledFeatures::FullscreenScreenSizeMatchesDisplayEnabled());
 
   // Update Screens interface data before firing any events. The API is designed
   // to offer synchronous access to the most up-to-date cached screen
@@ -4171,27 +4152,23 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   // window.screen events are fired as well.
   ForEachLocalFrameControlledByWidget(
       LocalRootImpl()->GetFrame(),
-      WTF::BindRepeating(
-          [](const display::ScreenInfos& original_screen_infos,
-             bool window_screen_has_changed, WebLocalFrameImpl* local_frame) {
-            auto* screen = local_frame->GetFrame()->DomWindow()->screen();
-            screen->UpdateDisplayId(original_screen_infos.current().display_id);
-            CoreInitializer::GetInstance().DidUpdateScreens(
-                *local_frame->GetFrame(), original_screen_infos);
-            if (window_screen_has_changed)
-              screen->DispatchEvent(*Event::Create(event_type_names::kChange));
-          },
-          original_screen_infos, window_screen_has_changed));
+      [&original_screen_infos,
+       window_screen_has_changed](WebLocalFrameImpl* local_frame) {
+        auto* screen = local_frame->GetFrame()->DomWindow()->screen();
+        screen->UpdateDisplayId(original_screen_infos.current().display_id);
+        CoreInitializer::GetInstance().DidUpdateScreens(
+            *local_frame->GetFrame(), original_screen_infos);
+        if (window_screen_has_changed)
+          screen->DispatchEvent(*Event::Create(event_type_names::kChange));
+      });
 
   if (previous_original_screen_infos != original_screen_infos) {
     // Propagate changes down to child local root RenderWidgets and
     // BrowserPlugins in other frame trees/processes.
-    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](const display::ScreenInfos& original_screen_infos,
-           RemoteFrame* remote_frame) {
+    ForEachRemoteFrameControlledByWidget(
+        [&original_screen_infos](RemoteFrame* remote_frame) {
           remote_frame->DidChangeScreenInfos(original_screen_infos);
-        },
-        original_screen_infos));
+        });
   }
 }
 
@@ -4209,26 +4186,22 @@ WebFrameWidgetImpl::ScreenOrientationOverride() {
 }
 
 void WebFrameWidgetImpl::WasHidden() {
-  ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
-        local_frame->Client()->WasHidden();
-      }));
+  ForEachLocalFrameControlledByWidget(local_root_->GetFrame(),
+                                      [](WebLocalFrameImpl* local_frame) {
+                                        local_frame->Client()->WasHidden();
+                                      });
 }
 
 void WebFrameWidgetImpl::WasShown(bool was_evicted) {
-  ForEachLocalFrameControlledByWidget(
-      local_root_->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
-        local_frame->Client()->WasShown();
-      }));
+  ForEachLocalFrameControlledByWidget(local_root_->GetFrame(),
+                                      [](WebLocalFrameImpl* local_frame) {
+                                        local_frame->Client()->WasShown();
+                                      });
   if (was_evicted) {
     ForEachRemoteFrameControlledByWidget(
-        WTF::BindRepeating([](RemoteFrame* remote_frame) {
-          // On eviction, the last SurfaceId is invalidated. We need to
-          // allocate a new id.
-          remote_frame->ResendVisualProperties();
-        }));
+        // On eviction, the last SurfaceId is invalidated. We need to
+        // allocate a new id.
+        &RemoteFrame::ResendVisualProperties);
   }
 }
 
@@ -4363,17 +4336,17 @@ WebFrameWidgetImpl::GetFrameWidgetTestHelperForTesting() {
 
 void WebFrameWidgetImpl::PrepareForFinalLifecyclUpdateForTesting() {
   ForEachLocalFrameControlledByWidget(
-      LocalRootImpl()->GetFrame(),
-      WTF::BindRepeating([](WebLocalFrameImpl* local_frame) {
+      LocalRootImpl()->GetFrame(), [](WebLocalFrameImpl* local_frame) {
         LocalFrame* core_frame = local_frame->GetFrame();
-        if (!core_frame)
-          return;
+        // A frame in the frame tree is fully attached and must always have a
+        // core frame.
+        DCHECK(core_frame);
         Document* document = core_frame->GetDocument();
-        if (!document)
-          return;
+        // Similarly, a fully attached frame must always have a document.
+        DCHECK(document);
         if (auto* ds_controller = DeferredShapingController::From(*document))
           ds_controller->ReshapeAllDeferred(ReshapeReason::kTesting);
-      }));
+      });
 }
 
 void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(
@@ -4387,6 +4360,10 @@ void WebFrameWidgetImpl::SetMayThrottleIfUndrawnFrames(
 int WebFrameWidgetImpl::GetVirtualKeyboardResizeHeight() const {
   DCHECK(!virtual_keyboard_resize_height_physical_px_ || ForTopMostMainFrame());
   return virtual_keyboard_resize_height_physical_px_;
+}
+
+void WebFrameWidgetImpl::SetVirtualKeyboardResizeHeightForTesting(int height) {
+  virtual_keyboard_resize_height_physical_px_ = height;
 }
 
 bool WebFrameWidgetImpl::GetMayThrottleIfUndrawnFramesForTesting() {

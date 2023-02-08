@@ -21,16 +21,27 @@ import {FindShortcutMixin, FindShortcutMixinInterface} from '//resources/cr_elem
 import {assert} from '//resources/js/assert_ts.js';
 import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
 import {I18nMixin, I18nMixinInterface} from '//resources/cr_elements/i18n_mixin.js';
-import {listenOnce} from '//resources/js/util.js';
+import {listenOnce} from '//resources/js/util_ts.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
 import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
-import {getSettingIdParameter} from '../setting_id_param_util.js';
 
 import {getTemplate} from './settings_subpage.html.js';
+
+
+const SETTING_ID_URL_PARAM_NAME: string = 'settingId';
+
+/**
+ * Retrieves the setting ID saved in the URL's query parameter. Returns null if
+ * setting ID is unavailable.
+ */
+function getSettingIdParameter(): string|null {
+  return Router.getInstance().getQueryParameters().get(
+      SETTING_ID_URL_PARAM_NAME);
+}
 
 export interface SettingsSubpageElement {
   $: {

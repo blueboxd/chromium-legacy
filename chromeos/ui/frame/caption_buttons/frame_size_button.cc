@@ -13,6 +13,7 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/frame_utils.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -225,11 +226,12 @@ FrameSizeButton::FrameSizeButton(PressedCallback callback,
 
 FrameSizeButton::~FrameSizeButton() = default;
 
-void FrameSizeButton::ShowMultitaskMenu() {
+void FrameSizeButton::ShowMultitaskMenu(MultitaskMenuEntryType entry_type) {
   // Show Multitask Menu if float is enabled. Note here float flag is also used
   // to represent other relatable UI/UX changes.
   if (chromeos::wm::features::IsFloatWindowEnabled()) {
     DCHECK(!chromeos::TabletState::Get()->InTabletMode());
+    RecordMultitaskMenuEntryType(entry_type);
     // Owned by the bubble which contains this view. If there is an existing
     // bubble, it will be deactivated and then close and destroy itself.
     auto* multitask_menu = new MultitaskMenu(/*anchor=*/this, GetWidget());
@@ -244,7 +246,8 @@ bool FrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
 
   if (IsTriggerableEvent(event)) {
     // Add a visual indicator of when snap mode will get triggered.
-    StartPieAnimation(kPieAnimationPressDuration);
+    StartPieAnimation(kPieAnimationPressDuration,
+                      MultitaskMenuEntryType::kFrameSizeButtonLongPress);
 
     // The minimize and close buttons are set to snap left and right when
     // snapping is enabled. Do not enable snapping if the minimize button is not
@@ -300,7 +303,8 @@ void FrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
     // Add a visual indicator of when snap mode will get triggered. Note that
     // order matters as the subclasses will call `StateChanged()` and we want
     // the changes there to run first.
-    StartPieAnimation(kPieAnimationPressDuration);
+    StartPieAnimation(kPieAnimationPressDuration,
+                      MultitaskMenuEntryType::kFrameSizeButtonLongTouch);
     return;
   }
 
@@ -330,7 +334,8 @@ void FrameSizeButton::StateChanged(views::Button::ButtonState old_state) {
 
   if (GetState() == views::Button::STATE_HOVERED && GetWidget()->IsActive()) {
     // On animation end we should show the multitask menu.
-    StartPieAnimation(kPieAnimationHoverDuration);
+    StartPieAnimation(kPieAnimationHoverDuration,
+                      MultitaskMenuEntryType::kFrameSizeButtonHover);
   } else if (old_state == views::Button::STATE_HOVERED) {
     pie_animation_.reset();
   }
@@ -362,14 +367,16 @@ void FrameSizeButton::StartSetButtonsToSnapModeTimer(
   }
 }
 
-void FrameSizeButton::StartPieAnimation(base::TimeDelta duration) {
+void FrameSizeButton::StartPieAnimation(base::TimeDelta duration,
+                                        MultitaskMenuEntryType entry_type) {
   if (!chromeos::wm::features::IsFloatWindowEnabled())
     return;
 
   base::OnceClosure cancel_animation = base::BindOnce(
       &FrameSizeButton::DestroyPieAnimation, base::Unretained(this));
-  base::OnceClosure show_multitask_menu = base::BindOnce(
-      &FrameSizeButton::OnPieAnimationCompleted, base::Unretained(this));
+  base::OnceClosure show_multitask_menu =
+      base::BindOnce(&FrameSizeButton::OnPieAnimationCompleted,
+                     base::Unretained(this), entry_type);
   pie_animation_ =
       std::make_unique<PieAnimation>(duration, std::move(cancel_animation),
                                      std::move(show_multitask_menu), this);
@@ -487,8 +494,9 @@ void FrameSizeButton::SetButtonsToNormalMode(
   delegate_->SetButtonsToNormal(animate);
 }
 
-void FrameSizeButton::OnPieAnimationCompleted() {
-  ShowMultitaskMenu();
+void FrameSizeButton::OnPieAnimationCompleted(
+    MultitaskMenuEntryType entry_type) {
+  ShowMultitaskMenu(entry_type);
   pie_animation_.reset();
 }
 

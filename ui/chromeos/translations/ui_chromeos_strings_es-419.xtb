@@ -43,8 +43,10 @@
 <translation id="1378727793141957596">Te damos la bienvenida a Google Drive</translation>
 <translation id="1379911846207762492">Puedes hacer que los archivos estén disponibles sin conexión para cuando no tengas conexión a Internet.</translation>
 <translation id="1383876407941801731">Buscar</translation>
+<translation id="1388045380422025115">Todos los tipos</translation>
 <translation id="1395262318152388157">Buscar control deslizante</translation>
 <translation id="1399511500114202393">Sin certificado del usuario</translation>
+<translation id="1403008701842173542">En todas partes</translation>
 <translation id="1404323374378969387">Noruego</translation>
 <translation id="1433628812591023318">Para poder soltar un archivo en Parallels Desktop, este debe moverse a Archivos de Windows.</translation>
 <translation id="1435838927755162558">Compartir carpeta con Parallels Desktop</translation>
@@ -102,6 +104,7 @@
 <translation id="1834290891154666894">La entrada de la coincidencia del nombre alternativo del sujeto no es válida</translation>
 <translation id="1838709767668011582">Sitio de Google</translation>
 <translation id="1853795129690976061">Se comparte esta carpeta con Linux</translation>
+<translation id="1859422890169495746">Esta Chromebook</translation>
 <translation id="1864756863218646478">No se pudo encontrar el archivo.</translation>
 <translation id="1884013283844450420">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
 <translation id="1920670151694390848">Malabar (transliteración)</translation>
@@ -133,6 +136,7 @@
 <translation id="2143778271340628265">Configuración manual de proxy</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2163152940313951844">Carácter no válido: <ph name="CHARACTER_NAME" /></translation>
+<translation id="2178056538281447670">Microsoft 365</translation>
 <translation id="2184934335987813305">Portugués con teclado internacional de EE.UU. (para PC)</translation>
 <translation id="2193661397560634290"><ph name="SPACE_USED" /> usados</translation>
 <translation id="2198315389084035571">Chino simplificado</translation>
@@ -152,6 +156,7 @@
 <translation id="2307462900900812319">Configurar red</translation>
 <translation id="2325650632570794183">Este tipo de archivo no es compatible. Visita Chrome Web Store para buscar una aplicación que pueda abrir este tipo de archivo.</translation>
 <translation id="2326539130272988168">Búlgaro</translation>
+<translation id="2337715497728194187">Compartir con Bruschetta</translation>
 <translation id="23721837607121582">Descarga un perfil de dispositivo móvil, red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Cambiar a la vista de lista</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> carpetas compartidas con Linux</translation>
@@ -181,6 +186,7 @@
 <translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
 <translation id="255937426064304553">Inglés (Estados Unidos; internacional)</translation>
 <translation id="2563185590376525700">Rana</translation>
+<translation id="2574327434504608656">Se compartió 1 carpeta con Bruschetta</translation>
 <translation id="2578394532502990878">Tamil (fonético)</translation>
 <translation id="2579959351793446050">Oriya</translation>
 <translation id="2602810353103180630">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, bloqueda por tu administrador, detalles</translation>
@@ -274,6 +280,7 @@
 <translation id="3408072735282270043">Activar <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Alemán (Alemania) con teclado Neo 2</translation>
 <translation id="3414856743105198592">El formato de los medios extraíbles borrará todos los datos. ¿Deseas continuar?</translation>
+<translation id="3435143625481187092">Otorgar permiso a Bruschetta para que acceda a los archivos de la carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Hora de creación</translation>
 <translation id="343907260260897561">Cámara instantánea</translation>
 <translation id="3455931012307786678">Estonio</translation>
@@ -319,6 +326,7 @@
 <translation id="3801082500826908679">Feroés</translation>
 <translation id="3809272675881623365">Conejo</translation>
 <translation id="3810973564298564668">Administrar</translation>
+<translation id="3811408895933919563">Inglés (Pakistán)</translation>
 <translation id="3811494700605067549">1 archivo seleccionado</translation>
 <translation id="3817579325494460411">No proporcionada</translation>
 <translation id="3819448694985509187">El PIN es incorrecto. Te queda 1 intento.</translation>
@@ -353,6 +361,7 @@
 <translation id="4159731583141908892">Se movió <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Vaciar la papelera ahora</translation>
 <translation id="4179621117429069925">Este elemento está en la papelera</translation>
+<translation id="4181839429935094755">Se compartieron <ph name="NUMBER_OF_ITEMS" /> carpetas con Bruschetta</translation>
 <translation id="4186579485882418952">Habilitar acceso sin conexión</translation>
 <translation id="4193154014135846272">Documento de Google</translation>
 <translation id="4197674956721858839">Comprim. selección</translation>
@@ -414,6 +423,7 @@
 <translation id="4646813851450205600">Checo con teclado Qwerty</translation>
 <translation id="4656777537938206294">Haz que los archivos estén disponibles sin conexión</translation>
 <translation id="4658782175094886150">Persona en la nieve</translation>
+<translation id="466782788172479199">Otorgar permiso a Bruschetta para que acceda a los archivos de tu unidad de Google Drive Los cambios se sincronizarán con tus otros dispositivos.</translation>
 <translation id="4669606053856530811">Los miembros de "<ph name="SOURCE_NAME" />" ya no tendrán acceso a estos elementos, a menos que se los comparta con ellos.</translation>
 <translation id="467809019005607715">Presentaciones de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
@@ -447,6 +457,7 @@
 <translation id="4850886885716139402">Ver</translation>
 <translation id="485316830061041779">Alemán</translation>
 <translation id="4867079195717347957">Haz clic para ordenar la columna de forma descendente.</translation>
+<translation id="4867297348137739678">Última semana</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4874569719830985133">Eliminar definitivamente</translation>
 <translation id="4880214202172289027">Control deslizante del volumen</translation>
@@ -520,6 +531,7 @@
 <translation id="5330145655348521461">Estos archivos están abiertos en otro escritorio. Ve a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para visualizarlos.</translation>
 <translation id="5330512191124428349">Obtener información</translation>
 <translation id="5337538975554986899">Acceso a archivos para todas las URLs excepto <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
+<translation id="5344246330454251646">Administrar el uso compartido de Bruschetta</translation>
 <translation id="535792325654997756">Persona con gatos</translation>
 <translation id="5358764674931277">Velocidad de fotogramas</translation>
 <translation id="5363339716524495120">El idioma de entrada es chino</translation>
@@ -565,6 +577,7 @@
 <translation id="5700087501958648444">Información de audio</translation>
 <translation id="5720028165859493293">Se movió <ph name="FILE_NAME" /> a la papelera</translation>
 <translation id="5724172041621205163">Tailandés con teclado pattachote</translation>
+<translation id="57383366388012121">Último mes</translation>
 <translation id="5756666464756035725">QWERTY húngaro</translation>
 <translation id="5763377084591234761">Alemán (Suiza)</translation>
 <translation id="5769519078756170258">Host o dominio para excluir</translation>
@@ -674,6 +687,7 @@
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6732801395666424405">No se cargaron los certificados.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
+<translation id="6740270213273127264">Compartir carpeta con Bruschetta</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
 <translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>
 <translation id="6790428901817661496">Reproducir</translation>
@@ -693,7 +707,6 @@
 <translation id="6874758081814639712">Persona practicando tai chi</translation>
 <translation id="6876155724392614295">Bicicleta</translation>
 <translation id="6878261347041253038">Teclado devanagari (fonético)</translation>
-<translation id="6881853403185175088">Office</translation>
 <translation id="6885780034956018177">Caracol</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6898028766943174120">Más subcarpetas…</translation>
@@ -703,6 +716,7 @@
 <translation id="6935521024859866267">Cabeza abajo</translation>
 <translation id="6943836128787782965">Error al obtener HTTP</translation>
 <translation id="6949408524333579394">Serbio (transliteración)</translation>
+<translation id="69548399407432279">Último año</translation>
 <translation id="6960565108681981554">No está activada. Comunícate con tu proveedor.</translation>
 <translation id="696203921837389374">Habilitar la sincronización mediante datos móviles</translation>
 <translation id="6965382102122355670">Aceptar</translation>
@@ -711,6 +725,7 @@
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="6976795442547527108">León</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6979737339423435258">Todos</translation>
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6993826899923627728">Estos elementos están en la papelera</translation>
@@ -845,6 +860,7 @@
 <translation id="8042602468072383151">Audio <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">Rumano</translation>
 <translation id="8049184478152619004">Ingresa la clave personal de desbloqueo (PUK).</translation>
+<translation id="8055538340801153769">Esta carpeta</translation>
 <translation id="807187749540895545">Extrayendo <ph name="FILE_NAME" />…</translation>
 <translation id="8087576439476816834">Descargar, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Compartidos conmigo</translation>

@@ -15,7 +15,6 @@ class WebContents;
 
 namespace ash {
 
-class InSessionPasswordSyncManager;
 class LockScreenStartReauthDialog;
 class LockScreenStartReauthUI;
 class LockScreenReauthHandler;
@@ -72,6 +71,9 @@ class LockScreenReauthDialogTestHelper {
   // Clicks the 'Cancel' button on the 'Saml Account' screen.
   void ClickCancelButtonOnSamlScreen();
 
+  // Clicks the 'Enter Google Account Info' button on the SAML screen.
+  void ClickChangeIdPButtonOnSamlScreen();
+
   // Waits for a screen with the `saml-container` element to be shown.
   void WaitForSamlScreen();
 
@@ -82,6 +84,8 @@ class LockScreenReauthDialogTestHelper {
   void ExpectErrorScreenVisible();
   void ExpectSamlScreenVisible();
   void ExpectSamlScreenHidden();
+
+  void ExpectGaiaScreenVisible();
 
   // Next members allow to check visibility of some elements on 'confirm
   // password screen' and also help to fill forms. Precondition: 'confirm
@@ -145,18 +149,24 @@ class LockScreenReauthDialogTestHelper {
   void WaitForNetworkDialogToLoad();
 
   // Main Dialog
-  base::raw_ptr<InSessionPasswordSyncManager> password_sync_manager_ = nullptr;
-  base::raw_ptr<LockScreenStartReauthDialog> reauth_dialog_ = nullptr;
-  base::raw_ptr<LockScreenStartReauthUI> reauth_webui_controller_ = nullptr;
-  base::raw_ptr<LockScreenReauthHandler> main_handler_ = nullptr;
+  base::raw_ptr<LockScreenStartReauthDialog, DanglingUntriaged> reauth_dialog_ =
+      nullptr;
+  base::raw_ptr<LockScreenStartReauthUI, DanglingUntriaged>
+      reauth_webui_controller_ = nullptr;
+  base::raw_ptr<LockScreenReauthHandler, DanglingUntriaged> main_handler_ =
+      nullptr;
 
   // Network dialog which is owned by the main dialog.
-  base::raw_ptr<LockScreenNetworkDialog> network_dialog_ = nullptr;
-  base::raw_ptr<LockScreenNetworkUI> network_webui_controller_ = nullptr;
-  base::raw_ptr<NetworkConfigMessageHandler> network_handler_ = nullptr;
+  base::raw_ptr<LockScreenNetworkDialog, DanglingUntriaged> network_dialog_ =
+      nullptr;
+  base::raw_ptr<LockScreenNetworkUI, DanglingUntriaged>
+      network_webui_controller_ = nullptr;
+  base::raw_ptr<NetworkConfigMessageHandler, DanglingUntriaged>
+      network_handler_ = nullptr;
 
   // Captive portal dialog which is owned by the main dialog.
-  base::raw_ptr<LockScreenCaptivePortalDialog> captive_portal_dialog_ = nullptr;
+  base::raw_ptr<LockScreenCaptivePortalDialog, DanglingUntriaged>
+      captive_portal_dialog_ = nullptr;
 };
 
 }  // namespace ash

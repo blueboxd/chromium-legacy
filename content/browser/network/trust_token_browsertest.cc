@@ -106,7 +106,7 @@ TrustTokenBrowsertest::TrustTokenBrowsertest() {
   auto& field_trial_param =
       network::features::kTrustTokenOperationsRequiringOriginTrial;
   features_.InitAndEnableFeatureWithParameters(
-      network::features::kTrustTokens,
+      network::features::kPrivateStateTokens,
       {{field_trial_param.name,
         field_trial_param.GetName(network::features::TrustTokenOriginTrialSpec::
                                       kOriginTrialNotRequired)}});
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, HasTrustTokenAfterIssuance) {
   std::string command = JsReplace(R"(
   (async () => {
     await fetch("/issue", {trustToken: {type: 'token-request'}});
-    return await document.hasTrustToken($1);
+    return await document.hasPrivateStateToken($1);
   })();)",
                                   IssuanceOriginFromHost("a.test"));
 
@@ -677,13 +677,14 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
       "Consider rewriting this test for performance's sake if the "
       "number-of-issuers limit gets too large.");
 
-  // Each hasTrustToken call adds the provided issuer to the calling context's
-  // list of associated issuers.
+  // Each hasPrivateStateToken call adds the provided issuer to the calling
+  // context's list of associated issuers.
   for (int i = 0;
        i < network::kTrustTokenPerToplevelMaxNumberOfAssociatedIssuers; ++i) {
-    ASSERT_EQ("Success", EvalJs(shell(), "document.hasTrustToken('https://a" +
-                                             base::NumberToString(i) +
-                                             ".test').then(()=>'Success');"));
+    ASSERT_EQ("Success",
+              EvalJs(shell(), "document.hasPrivateStateToken('https://a" +
+                                  base::NumberToString(i) +
+                                  ".test').then(()=>'Success');"));
   }
 
   EXPECT_EQ("OperationError", EvalJs(shell(), R"(
@@ -716,10 +717,11 @@ IN_PROC_BROWSER_TEST_F(
              JsReplace(command,
                        server_.GetURL("a.test", "/cross-site/b.test/issue"))));
 
-  EXPECT_EQ(true, EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
-                                            IssuanceOriginFromHost("b.test"))));
+  EXPECT_EQ(true,
+            EvalJs(shell(), JsReplace("document.hasPrivateStateToken($1);",
+                                      IssuanceOriginFromHost("b.test"))));
   EXPECT_EQ(false,
-            EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+            EvalJs(shell(), JsReplace("document.hasPrivateStateToken($1);",
                                       IssuanceOriginFromHost("a.test"))));
 }
 
@@ -749,10 +751,11 @@ IN_PROC_BROWSER_TEST_F(
              JsReplace(command,
                        server_.GetURL("a.test", "/cross-site/b.test/issue"))));
 
-  EXPECT_EQ(true, EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
-                                            IssuanceOriginFromHost("a.test"))));
+  EXPECT_EQ(true,
+            EvalJs(shell(), JsReplace("document.hasPrivateStateToken($1);",
+                                      IssuanceOriginFromHost("a.test"))));
   EXPECT_EQ(false,
-            EvalJs(shell(), JsReplace("document.hasTrustToken($1);",
+            EvalJs(shell(), JsReplace("document.hasPrivateStateToken($1);",
                                       IssuanceOriginFromHost("b.test"))));
 }
 
@@ -780,7 +783,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
   EXPECT_EQ(
       false,
       EvalJs(shell(),
-             JsReplace("document.hasTrustToken($1);",
+             JsReplace("document.hasPrivateStateToken($1);",
                        url::Origin::Create(server_.base_url()).Serialize())));
 }
 
@@ -813,8 +816,8 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
       EvalJs(shell(), JsReplace(command, server_.GetURL("a.test", "/redeem"))));
 }
 
-// hasTrustToken from a context with a secure-but-non-HTTP/S top frame origin
-// should fail.
+// hasPrivateStateToken from a context with a secure-but-non-HTTP/S top frame
+// origin should fail.
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                        HasTrustTokenRequiresSuitableTopFrameOrigin) {
   GURL file_url = GetTestUrl(/*dir=*/nullptr, "title1.html");
@@ -823,12 +826,13 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
 
   EXPECT_EQ("NotAllowedError",
             EvalJs(shell(),
-                   R"(document.hasTrustToken('https://issuer.example')
+                   R"(document.hasPrivateStateToken('https://issuer.example')
                               .catch(error => error.name);)"));
 }
 
-// A hasTrustToken call initiated from a secure context should succeed even if
-// the initiating frame's origin is opaque (e.g. from a sandboxed iframe).
+// A hasPrivateStateToken call initiated from a secure context should succeed
+// even if the initiating frame's origin is opaque (e.g. from a sandboxed
+// iframe).
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
                        HasTrustTokenFromSecureSubframeWithOpaqueOrigin) {
   ASSERT_TRUE(NavigateToURL(
@@ -840,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
 
   EXPECT_EQ("Success",
             EvalJs(root->child_at(0)->current_frame_host(),
-                   R"(document.hasTrustToken('https://davids.website')
+                   R"(document.hasPrivateStateToken('https://davids.website')
                               .then(()=>'Success');)"));
 }
 
@@ -1350,254 +1354,5 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RedemptionLimit) {
         .catch(()=>'Error'); )",
                                       server_.GetURL("a.test", "/redeem"))));
 }
-
-class TrustTokenBrowsertestWithPlatformIssuance : public TrustTokenBrowsertest {
- public:
-  TrustTokenBrowsertestWithPlatformIssuance() {
-    // This assertion helps guard against the brittleness of deserializing
-    // "true", in case we refactor the parameter's type.
-    static_assert(
-        std::is_same<
-            decltype(network::features::kPlatformProvidedTrustTokenIssuance
-                         .default_value),
-            const bool>::value,
-        "Need to update this initialization logic if the type of the param "
-        "changes.");
-    features_.InitAndEnableFeatureWithParameters(
-        network::features::kTrustTokens,
-        {{network::features::kPlatformProvidedTrustTokenIssuance.name,
-          "true"}});
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-#if BUILDFLAG(IS_ANDROID)
-HandlerWrappingLocalTrustTokenFulfiller::
-    HandlerWrappingLocalTrustTokenFulfiller(TrustTokenRequestHandler& handler)
-    : handler_(handler) {
-  interface_overrider_.SetBinderForName(
-      mojom::LocalTrustTokenFulfiller::Name_,
-      base::BindRepeating(&HandlerWrappingLocalTrustTokenFulfiller::Bind,
-                          base::Unretained(this)));
-}
-HandlerWrappingLocalTrustTokenFulfiller::
-    ~HandlerWrappingLocalTrustTokenFulfiller() = default;
-
-void HandlerWrappingLocalTrustTokenFulfiller::FulfillTrustTokenIssuance(
-    network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
-    FulfillTrustTokenIssuanceCallback callback) {
-  absl::optional<std::string> maybe_result =
-      handler_->Issue(std::move(request->request));
-  if (maybe_result) {
-    std::move(callback).Run(
-        network::mojom::FulfillTrustTokenIssuanceAnswer::New(
-            network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kOk,
-            std::move(*maybe_result)));
-    return;
-  }
-  std::move(callback).Run(network::mojom::FulfillTrustTokenIssuanceAnswer::New(
-      network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kUnknownError,
-      ""));
-}
-
-void HandlerWrappingLocalTrustTokenFulfiller::Bind(
-    mojo::ScopedMessagePipeHandle handle) {
-  receiver_.Bind(
-      mojo::PendingReceiver<content::mojom::LocalTrustTokenFulfiller>(
-          std::move(handle)));
-}
-
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertestWithPlatformIssuance,
-                       EndToEndAndroidPlatformIssuance) {
-  base::HistogramTester histograms;
-
-  TrustTokenRequestHandler::Options options;
-  options.specify_platform_issuance_on = {
-      network::mojom::TrustTokenKeyCommitmentResult::Os::kAndroid};
-  request_handler_.UpdateOptions(std::move(options));
-
-  HandlerWrappingLocalTrustTokenFulfiller fulfiller(request_handler_);
-
-  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
-
-  GURL start_url = server_.GetURL("a.test", "/title1.html");
-  ASSERT_TRUE(NavigateToURL(shell(), start_url));
-
-  // Issuance operations successfully answered locally result in
-  // NoModificationAllowedError.
-  std::string command = R"(
-  (async () => {
-    try {
-      await fetch("/issue", {trustToken: {type: 'token-request'}});
-      return "Unexpected success";
-    } catch (e) {
-      if (e.name !== "NoModificationAllowedError") {
-        return "Unexpected exception";
-      }
-      const hasToken = await document.hasTrustToken($1);
-      if (!hasToken)
-        return "Unexpectedly absent token";
-      return "Success";
-    }})(); )";
-
-  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
-  // resolve.
-  EXPECT_EQ(
-      "Success",
-      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
-
-  content::FetchHistogramsFromChildProcesses();
-  histograms.ExpectTotalCount(
-      base::StrCat({"Net.TrustTokens.OperationBeginTime.Success.Issuance."
-                    "PlatformProvided"}),
-      1);
-}
-
-IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertestWithPlatformIssuance,
-                       PlatformIssuanceWithoutEmbedderSupport) {
-  base::HistogramTester histograms;
-
-  TrustTokenRequestHandler::Options options;
-  options.specify_platform_issuance_on = {
-      network::mojom::TrustTokenKeyCommitmentResult::Os::kAndroid};
-  options.unavailable_local_operation_fallback =
-      network::mojom::TrustTokenKeyCommitmentResult::
-          UnavailableLocalOperationFallback::kReturnWithError;
-  request_handler_.UpdateOptions(std::move(options));
-
-  service_manager::InterfaceProvider::TestApi interface_overrider(
-      content::GetGlobalJavaInterfaces());
-  // Instead of using interface_overrider.ClearBinder(name), it's necessary to
-  // provide a callback that explicitly closes the pipe, since
-  // InterfaceProvider's contract requires that it either bind or close pipes
-  // it's given (see its comments in interface_provider.mojom).
-  interface_overrider.SetBinderForName(
-      mojom::LocalTrustTokenFulfiller::Name_,
-      base::BindRepeating([](mojo::ScopedMessagePipeHandle handle) {
-        mojo::Close(std::move(handle));
-      }));
-
-  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
-
-  GURL start_url = server_.GetURL("a.test", "/title1.html");
-  ASSERT_TRUE(NavigateToURL(shell(), start_url));
-
-  // Issuance operations diverted locally without embedder support, with
-  // "return_with_error" specified in the issuer's key commitments, should
-  // result in OperationError.
-  std::string command = R"(
-  (async () => {
-    try {
-      await fetch("/issue", {trustToken: {type: 'token-request'}});
-      return "Unexpected success";
-    } catch (e) {
-      return e.name;
-    }})(); )";
-
-  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
-  // resolve.
-  EXPECT_EQ("OperationError", EvalJs(shell(), command));
-
-  content::FetchHistogramsFromChildProcesses();
-  histograms.ExpectTotalCount(
-      base::StrCat({"Net.TrustTokens.OperationBeginTime.Failure.Issuance."
-                    "PlatformProvided"}),
-      1);
-}
-#endif  // BUILDFLAG(IS_ANDROID)
-#if !BUILDFLAG(IS_ANDROID)
-IN_PROC_BROWSER_TEST_F(
-    TrustTokenBrowsertestWithPlatformIssuance,
-    IssuanceOnOsNotSpecifiedInKeyCommitmentsReturnsErrorIfConfiguredToDoSo) {
-  TrustTokenRequestHandler::Options options;
-  options.specify_platform_issuance_on = {
-      network::mojom::TrustTokenKeyCommitmentResult::Os::kAndroid};
-  // Since we're not on Android, if the issuer
-  // 1) configures that, on Android, we should attempt platform-provided token
-  //    issuance,
-  // 2) specifies "return_with_error" as the fallback behavior for other OSes,
-  // issuance against the host configured for platform-provided issuance should
-  // fail.
-  options.unavailable_local_operation_fallback =
-      network::mojom::TrustTokenKeyCommitmentResult::
-          UnavailableLocalOperationFallback::kReturnWithError;
-  request_handler_.UpdateOptions(std::move(options));
-
-  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
-
-  GURL start_url = server_.GetURL("a.test", "/title1.html");
-  ASSERT_TRUE(NavigateToURL(shell(), start_url));
-
-  // Issuance operations attempted on OSes other than those specified in
-  // the key commitment's "request_issuance_locally_on" field should result in
-  // OperationError returns if the issuer specified "return_with_error" as the
-  // fallback behavior.
-  std::string command = R"(
-  (async () => {
-    try {
-      await fetch("/issue", {trustToken: {type: 'token-request'}});
-      return "Unexpected success";
-    } catch (e) {
-      return e.name;
-    }})(); )";
-
-  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
-  // resolve.
-  EXPECT_EQ("OperationError", EvalJs(shell(), command));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    TrustTokenBrowsertestWithPlatformIssuance,
-    IssuanceOnOsNotSpecifiedInKeyCommitmentsFallsBackToWebIssuanceIfSpecified) {
-  base::HistogramTester histograms;
-
-  TrustTokenRequestHandler::Options options;
-  options.specify_platform_issuance_on = {
-      network::mojom::TrustTokenKeyCommitmentResult::Os::kAndroid};
-  // Since we're not on Android, if the issuer
-  // 1) configures that, on Android, we should attempt platform-provided token
-  //    issuance,
-  // 2) specifies "web_issuance" as fallback behavior for other OSes,
-  // we should see issuance succeed.
-  options.unavailable_local_operation_fallback =
-      network::mojom::TrustTokenKeyCommitmentResult::
-          UnavailableLocalOperationFallback::kWebIssuance;
-  request_handler_.UpdateOptions(std::move(options));
-
-  ProvideRequestHandlerKeyCommitmentsToNetworkService({"a.test"});
-
-  GURL start_url = server_.GetURL("a.test", "/title1.html");
-  ASSERT_TRUE(NavigateToURL(shell(), start_url));
-
-  // Issuance operations attempted on OSes other than those specified in
-  // the key commitment's "request_issuance_locally_on" field should result in
-  // OperationError returns if the issuer specified "return_with_error" as the
-  // fallback behavior.
-  std::string command = R"(
-  (async () => {
-    try {
-      await fetch("/issue", {trustToken: {type: 'token-request'}});
-      if (await document.hasTrustToken($1))
-        return "Success";
-      return "Issuance failed unexpectedly";
-    } catch (e) {
-      return e.name;
-    }})(); )";
-
-  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
-  // resolve.
-  EXPECT_EQ(
-      "Success",
-      EvalJs(shell(), JsReplace(command, IssuanceOriginFromHost("a.test"))));
-
-  content::FetchHistogramsFromChildProcesses();
-  histograms.ExpectTotalCount(
-      base::StrCat({"Net.TrustTokens.OperationBeginTime.Failure.Issuance."
-                    "PlatformProvided"}),
-      0);  // No platform-provided operation was attempted.
-}
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace content

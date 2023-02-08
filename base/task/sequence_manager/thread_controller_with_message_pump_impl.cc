@@ -54,15 +54,34 @@ BASE_FEATURE(kRunTasksByBatches,
              "RunTasksByBatches",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+#if BUILDFLAG(IS_WIN)
+// If enabled, deactivate the high resolution timer immediately in DoWork(),
+// instead of waiting for next DoIdleWork.
+BASE_FEATURE(kUseLessHighResTimers,
+             "UseLessHighResTimers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+std::atomic_bool g_use_less_high_res_timers = false;
+#endif
+
 std::atomic_bool g_align_wake_ups = false;
 std::atomic_bool g_run_tasks_by_batches = false;
+#if BUILDFLAG(IS_WIN)
+bool g_explicit_high_resolution_timer_win = false;
+#endif  // BUILDFLAG(IS_WIN)
 
 TimeTicks WakeUpRunTime(const WakeUp& wake_up) {
+  // Windows relies on the low resolution timer rather than manual wake up
+  // alignment.
+#if BUILDFLAG(IS_WIN)
+  if (g_explicit_high_resolution_timer_win)
+    return wake_up.earliest_time();
+#else  // BUILDFLAG(IS_WIN)
   if (g_align_wake_ups.load(std::memory_order_relaxed)) {
     TimeTicks aligned_run_time = wake_up.earliest_time().SnappedToNextTick(
-        TimeTicks(), base::GetTaskLeeway());
+        TimeTicks(), GetTaskLeewayForCurrentThread());
     return std::min(aligned_run_time, wake_up.latest_time());
   }
+#endif
   return wake_up.time;
 }
 
@@ -73,6 +92,12 @@ void ThreadControllerWithMessagePumpImpl::InitializeFeatures() {
   g_align_wake_ups = FeatureList::IsEnabled(kAlignWakeUps);
   g_run_tasks_by_batches.store(FeatureList::IsEnabled(kRunTasksByBatches),
                                std::memory_order_relaxed);
+#if BUILDFLAG(IS_WIN)
+  g_explicit_high_resolution_timer_win =
+      FeatureList::IsEnabled(kExplicitHighResolutionTimerWin);
+  g_use_less_high_res_timers.store(
+      FeatureList::IsEnabled(kUseLessHighResTimers), std::memory_order_relaxed);
+#endif
 }
 
 // static
@@ -222,7 +247,8 @@ void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
   // so reset the old one.
   main_thread_only().thread_task_runner_handle.reset();
   main_thread_only().thread_task_runner_handle =
-      std::make_unique<ThreadTaskRunnerHandle>(task_runner_);
+      std::make_unique<SingleThreadTaskRunner::CurrentDefaultHandle>(
+          task_runner_);
   // When the task runner is known, bind the power manager. Power notifications
   // are received through that sequence.
   power_monitor_.BindToCurrentThread();
@@ -293,6 +319,15 @@ void ThreadControllerWithMessagePumpImpl::BeforeWait() {
 
 MessagePump::Delegate::NextWorkInfo
 ThreadControllerWithMessagePumpImpl::DoWork() {
+#if BUILDFLAG(IS_WIN)
+  // We've been already in a wakeup here. Deactivate the high res timer of OS
+  // immediately instead of waiting for next DoIdleWork().
+  if (g_use_less_high_res_timers.load(std::memory_order_relaxed) &&
+      main_thread_only().in_high_res_mode) {
+    main_thread_only().in_high_res_mode = false;
+    Time::ActivateHighResolutionTimer(false);
+  }
+#endif
   MessagePump::Delegate::NextWorkInfo next_work_info{};
 
   work_deduplicator_.OnWorkStarted();

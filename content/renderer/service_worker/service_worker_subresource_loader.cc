@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -108,6 +109,8 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
     DCHECK(url_loader_client_.is_bound());
+    network::RecordOnTransferSizeUpdatedUMA(
+        network::OnTransferSizeUpdatedFrom::kHeaderRewritingURLLoaderClient);
     url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
   }
 
@@ -658,12 +661,26 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
 
   base::TimeTicks completion_time = base::TimeTicks::Now();
 
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+      "ServiceWorker", "ServiceWorker.LoadTiming.Subresource", this,
+      response_head_->load_timing.service_worker_start_time, "url",
+      resource_request_.url);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "ServiceWorker", "ServiceWorker.LoadTiming.Subresource", this,
+      completion_time);
+
   // Time spent for service worker startup including mojo message delay.
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.Subresource."
       "ForwardServiceWorkerToWorkerReady",
       response_head_->load_timing.service_worker_ready_time -
           response_head_->load_timing.service_worker_start_time);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "ServiceWorker", "ForwardServiceWorkerToWorkerReady", this,
+      response_head_->load_timing.service_worker_start_time);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "ServiceWorker", "ForwardServiceWorkerToWorkerReady", this,
+      response_head_->load_timing.service_worker_ready_time);
 
   // Time spent by fetch handlers.
   UMA_HISTOGRAM_TIMES(
@@ -671,6 +688,12 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
       "WorkerReadyToFetchHandlerEnd",
       fetch_event_timing_->respond_with_settled_time -
           response_head_->load_timing.service_worker_ready_time);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "ServiceWorker", "WorkerReadyToFetchHandlerEnd", this,
+      response_head_->load_timing.service_worker_ready_time);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "ServiceWorker", "WorkerReadyToFetchHandlerEnd", this,
+      fetch_event_timing_->respond_with_settled_time);
 
   if (handled) {
     // Mojo message delay. If the controller service worker lives in the same
@@ -682,17 +705,31 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
         "FetchHandlerEndToResponseReceived",
         response_head_->load_timing.receive_headers_end -
             fetch_event_timing_->respond_with_settled_time);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "ServiceWorker", "FetchHandlerEndToResponseReceived", this,
+        fetch_event_timing_->respond_with_settled_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "ServiceWorker", "FetchHandlerEndToResponseReceived", this,
+        response_head_->load_timing.receive_headers_end);
 
     // Time spent reading response body.
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.Subresource."
         "ResponseReceivedToCompleted2",
         completion_time - response_head_->load_timing.receive_headers_end);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "ServiceWorker", "ResponseReceivedToCompleted", this,
+        response_head_->load_timing.receive_headers_end,
+        "fetch_response_source",
+        blink::ServiceWorkerLoaderHelpers::FetchResponseSourceToSuffix(
+            response_source_));
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "ServiceWorker", "ResponseReceivedToCompleted", this, completion_time);
     // Same as above, breakdown by response source.
     base::UmaHistogramMediumTimes(
         base::StrCat(
             {"ServiceWorker.LoadTiming.Subresource."
-             "ResponseReceivedToCompleted2",
+             "ResponseReceivedToCompleted2.",
              blink::ServiceWorkerLoaderHelpers::FetchResponseSourceToSuffix(
                  response_source_)}),
         completion_time - response_head_->load_timing.receive_headers_end);
@@ -702,6 +739,12 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
         "ServiceWorker.LoadTiming.Subresource."
         "FetchHandlerEndToFallbackNetwork",
         completion_time - fetch_event_timing_->respond_with_settled_time);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "ServiceWorker", "FetchHandlerEndToFallbackNetwork", this,
+        fetch_event_timing_->respond_with_settled_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+        "ServiceWorker", "FetchHandlerEndToFallbackNetwork", this,
+        completion_time);
   }
 }
 

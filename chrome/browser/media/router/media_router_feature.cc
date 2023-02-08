@@ -4,12 +4,16 @@
 
 #include "chrome/browser/media/router/media_router_feature.h"
 
+#include <stdint.h>
+#include <string>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -118,19 +122,13 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kMediaRouterReceiverIdHashToken, "",
                                PrefRegistry::PUBLIC);
-
   registry->RegisterBooleanPref(
       media_router::prefs::kMediaRouterMediaRemotingEnabled, true);
   registry->RegisterListPref(
       media_router::prefs::kMediaRouterTabMirroringSources);
-
-// TODO(crbug.com/1308053): Register it on ChromeOS after Cast+GMC ships on
-// ChromeOS.
-#if !BUILDFLAG(IS_CHROMEOS)
   registry->RegisterBooleanPref(
       media_router::prefs::kMediaRouterShowCastSessionsStartedByOtherDevices,
       true);
-#endif
 }
 
 bool GetCastAllowAllIPsPref(PrefService* pref_service) {
@@ -168,6 +166,20 @@ bool DialMediaRouteProviderEnabled() {
 bool GlobalMediaControlsCastStartStopEnabled(content::BrowserContext* context) {
   return base::FeatureList::IsEnabled(kGlobalMediaControlsCastStartStop) &&
          MediaRouterEnabled(context);
+}
+
+absl::optional<base::TimeDelta> GetMirroringRefreshInterval() {
+  const std::string refresh_interval_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          "mirroring-refresh-interval-ms");
+  if (!refresh_interval_str.empty()) {
+    int64_t refresh_interval;
+    if (base::StringToInt64(refresh_interval_str, &refresh_interval) &&
+        refresh_interval > 0) {
+      return base::Milliseconds(refresh_interval);
+    }
+  }
+  return absl::nullopt;
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)

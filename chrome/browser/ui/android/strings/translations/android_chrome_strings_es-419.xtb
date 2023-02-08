@@ -21,8 +21,9 @@
 <translation id="1110914759170138831">Se acortó el texto destacado</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1113597929977215864">Mostrar la vista simplificada</translation>
-<translation id="1118561384561215815">Obtener ayuda para la Web</translation>
 <translation id="1123070903960493543">Cómo interactúas con Chrome, las opciones de configuración que elegiste y detalles sobre las fallas de Chrome</translation>
+<translation id="1126013303640354461">No se encriptarán las formas de pago ni las direcciones de Google Pay. No se sincronizará el historial de navegación de Chrome.
+Solo alguien con tu frase de contraseña puede leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si olvidas tu frase de contraseña o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">No te protege contra descargas, extensiones ni sitios web peligrosos. Seguirás teniendo la protección (donde esté disponible) de la Navegación segura en otros servicios de Google, como Gmail y la Búsqueda.</translation>
 <translation id="1129510026454351943">Detalles: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1142732900304639782">No ofrecer traducir estos sitios</translation>
@@ -31,7 +32,6 @@
 <translation id="1149401351239820326">Mes de vencimiento</translation>
 <translation id="1150263420752757504">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="1154704303112745282">Página no disponible sin conexión: <ph name="VIOLATED_URL" /></translation>
-<translation id="1171770572613082465">Presiona el botón "Populares" para ver los sitios web más conocidos</translation>
 <translation id="1173894706177603556">Cambiar nombre</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -123,11 +123,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="1571304935088121812">Copiar el nombre de usuario</translation>
 <translation id="1592864538817356322">Protección estándar:</translation>
 <translation id="1594635596540195766">Hay <ph name="SUGGESTIONS_COUNT" /> elementos sugeridos en la siguiente lista.</translation>
-<translation id="161647866166517041">La reducción de spam y fraude se basa en tokens de confianza que ayudan a los sitios a combatir el fraude y distinguir los bots de las personas.
-
-Un sitio puede emitir un token de confianza para tu navegador en función de tu interacción con ese sitio, por ejemplo, si accedes de manera regular a una cuenta. Más adelante, si otros sitios que visitas buscan y encuentran un token de confianza, es más probable que te traten como persona y no como bot.
-
-Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para descubrir tu identidad.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Cómo puedes administrar tu información:<ph name="END_BOLD" /> Para proteger tu privacidad, borramos los intereses automáticamente después de 4 semanas. Es posible que, a medida que navegues, un interés vuelva a aparecer en la lista. También puedes borrar los intereses que no quieres que Chrome tenga en cuenta.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
 <translation id="1633659023549081553">Descubre nuevo contenido en la página principal de Chrome</translation>
@@ -240,7 +235,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="2286841657746966508">Dirección de facturación</translation>
 <translation id="228704530595896923">Lista de opciones para compartir.</translation>
 <translation id="230115972905494466">No se encontraron dispositivos compatibles</translation>
-<translation id="230155349749732438">Para usar esta configuración, debes activar <ph name="BEGIN_LINK" />Mejorar las búsquedas y la navegación<ph name="END_LINK" />.</translation>
 <translation id="2318045970523081853">Presiona para realizar la llamada</translation>
 <translation id="2321086116217818302">Preparando las contraseñas…</translation>
 <translation id="2323763861024343754">Almacenamiento del sitio</translation>
@@ -266,7 +260,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="2472163211318554013">Para aprovechar Chrome al máximo, accede a tu cuenta.</translation>
 <translation id="247737702124049222">Las descripciones de imágenes están activadas.</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
-<translation id="2485422356828889247">Desinstalación</translation>
 <translation id="2494974097748878569">Asistente de Google en Chrome</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497852260688568942">Tu administrador inhabilitó la sincronización</translation>
@@ -289,6 +282,11 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="2569733278091928697">Podrás administrar fácilmente los controles multimedia, las sesiones en modo Incógnito, las descargas y más</translation>
 <translation id="2571711316400087311">Mostrar la opción para enviar páginas en otros idiomas a Google Traductor</translation>
 <translation id="2573452357057307036">Aprende a configurar Chrome como tu navegador predeterminado</translation>
+<translation id="2580436639406015883">La reducción de spam y fraude se basa en tokens de estado privado que ayudan a los sitios a combatir el fraude y distinguir a los bots de las personas.
+
+Un sitio puede emitir un token de estado privado para tu navegador en función de tu interacción con ese sitio, por ejemplo, si accedes de manera regular a una cuenta. Más adelante, si otros sitios que visitas buscan y encuentran un token de estado privado válido, es más probable que te traten como una persona y no como un bot.
+
+Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse para descubrir tu identidad.</translation>
 <translation id="2581165646603367611">Esta acción borrará la caché, cookies y otros datos de sitios que Chrome no considera importantes.</translation>
 <translation id="2587052924345400782">Nueva versión disponible</translation>
 <translation id="2593272815202181319">Monoespaciada</translation>
@@ -324,7 +322,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="2781151931089541271">1 segundo restante</translation>
 <translation id="2788468313014644040">Número de grupo</translation>
 <translation id="2800066122460699237">Se cerrará la pestaña <ph name="TAB_TITLE" />.</translation>
-<translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2806840421670364300">FLoC</translation>
 <translation id="281504910091592009">Ver y administrar las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Para que tus favoritos estén en todos tus dispositivos, accede a tu cuenta y activa la sincronización</translation>
@@ -344,7 +341,7 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="2886836735871983413">Aparecerá una lista de sitios aquí mientras navegas en la Web</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
 <translation id="2891154217021530873">Detener la carga de la página</translation>
-<translation id="2893180576842394309">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
+<translation id="2893180576842394309">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google</translation>
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2901411048554510387">Se muestran sugerencias para <ph name="WEBSITE_TITLE" /></translation>
 <translation id="2904414404539560095">La lista de dispositivos con los que se puede compartir una pestaña está totalmente abierta.</translation>
@@ -400,6 +397,7 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="3130863904455712965">Historial y más</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Página principal de Chrome</translation>
+<translation id="3157931365184549694">Restaurar</translation>
 <translation id="3166827708714933426">Accesos directos a ventanas y pestañas</translation>
 <translation id="316694332262407393">Chrome ya se está ejecutando aquí.</translation>
 <translation id="3169472444629675720">Discover</translation>
@@ -429,7 +427,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="3280562213547448728">Búsqueda por voz</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
-<translation id="3284510035090979597">Ayuda proactiva</translation>
 <translation id="3285080554353377245">Videos sobre cómo usar Chrome</translation>
 <translation id="3288003805934695103">Volver a cargar la página.</translation>
 <translation id="3290249595466894471">También envía una pequeña muestra de páginas, descargas, información del sistema y actividad de extensiones para ayudar a descubrir nuevas amenazas.</translation>
@@ -454,6 +451,7 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="3428747202529429621">Te protege en Chrome y puede usarse para mejorar tu seguridad en otras apps de Google cuando accedes a tu cuenta.</translation>
 <translation id="3429160811076349561">Las funciones de prueba están desactivadas</translation>
 <translation id="3435465986463792564">¿Tienes muchas ventanas? Puedes administrarlas desde aquí.</translation>
+<translation id="3435738964857648380">Seguridad</translation>
 <translation id="3443221991560634068">Volver a cargar la página actual</translation>
 <translation id="3444179773590444986">¿Deseas compartir comentarios sobre el Tema oscuro para los sitios?</translation>
 <translation id="3452832259067974318">Para proteger tu privacidad, Chrome no completará de forma automática tu contraseña en este campo.</translation>
@@ -552,11 +550,13 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="4016425174436051808">No se puede seguir. Se produjo un error.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4035877632587724847">No permitir</translation>
+<translation id="4036177530563778041">Continúa fácilmente desde donde dejaste</translation>
 <translation id="4045764304651014138">Datos de uso</translation>
 <translation id="405399507749852140">Recibe alertas si baja el precio en algún sitio</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opciones disponibles cerca de la parte superior de la pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
+<translation id="4072805772816336153">Vuelve a intentarlo más tarde</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />publicado por Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="409109920254068737">Puedes usar esta tablet para acceder en el dispositivo que muestra este código QR.</translation>
@@ -573,8 +573,12 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="4137746084635924146">Idioma actual del dispositivo</translation>
 <translation id="414128724510021958">Se solicitan los sitios de escritorio de forma predeterminada</translation>
 <translation id="4141536112466364990">Aprende a usar Chrome</translation>
+<translation id="4147131678541801076">Cuando comienzan las pruebas, la reducción de spam y fraude se basa en tokens de estado privado que ayudan a los sitios a combatir el fraude y distinguir a los bots de las personas.
+
+Un sitio puede emitir un token de estado privado para tu navegador en función de tu interacción con ese sitio, por ejemplo, si accedes de manera regular a una cuenta. Más adelante, si otros sitios que visitas buscan y encuentran un token de estado privado válido, es más probable que te traten como una persona y no como un bot.
+
+Los tokens de estado privado mejoran la privacidad en la Web y no pueden usarse para descubrir tu identidad.</translation>
 <translation id="4162867837470729563">La lista de opciones para compartir está totalmente abierta.</translation>
-<translation id="4165986682804962316">Configuración de sitios</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4177222230309051052">Accede a todos tus favoritos</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -584,7 +588,6 @@ Si borras el historial de navegación por completo o de un sitio específico, ta
 <translation id="4209895695669353772">Para obtener contenido personalizado y sugerido por Google, activa la sincronización</translation>
 <translation id="4214315110991671325">Si permites las cookies, Chrome puede usarlas para la precarga.</translation>
 <translation id="4225895483398857530">Acceso directo a la barra de herramientas</translation>
-<translation id="4227318652298512614">Sigue los sitios que quieras</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4248098802131000011">Mantén protegidas tus contraseñas ante violaciones de la seguridad de los datos y otros problemas de seguridad.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
@@ -681,6 +684,8 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4763480195061959176">video</translation>
 <translation id="4766313118839197559">Las contraseñas se guardan en el Administrador de contraseñas en este dispositivo</translation>
 <translation id="4766678251456904326">Agregar una cuenta al dispositivo</translation>
+<translation id="4769095993849849966">Nuevo nombre de archivo</translation>
+<translation id="4778653490315793244">Aún no hay nada que mostrar</translation>
 <translation id="4787736314074622408">¿Quieres borrar <ph name="ITEM_TITLE" />?</translation>
 <translation id="4791358705705538979">Te ayuda a completar tareas en la Web, como confirmaciones de compras.</translation>
 <translation id="4794291718671962615">(<ph name="MEGABYTES" />) <ph name="URL" /></translation>
@@ -744,6 +749,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5032430150487044192">No se puede crear el código QR</translation>
 <translation id="5039804452771397117">Permitir</translation>
+<translation id="5040262127954254034">Privacidad</translation>
 <translation id="504456571576643789">Aspectos para tener en cuenta</translation>
 <translation id="5054455334322721892">Es posible que se guarden <ph name="BEGIN_LINK1" />otras formas de actividad<ph name="END_LINK1" /> en tu Cuenta de Google cuando accedes. Podrás borrarlas en cualquier momento.</translation>
 <translation id="506254248375231072">No hay pestañas</translation>
@@ -805,7 +811,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="5423934151118863508">Aquí aparecerán las páginas que visites con más frecuencia</translation>
 <translation id="5424588387303617268">GB disponibles: <ph name="GIGABYTES" /></translation>
-<translation id="543338862236136125">Editar contraseña</translation>
+<translation id="543338862236136125">Editar la contraseña</translation>
 <translation id="5433691172869980887">Se copió el nombre de usuario</translation>
 <translation id="5438292632479953702">Volver a descargar</translation>
 <translation id="5441466871879044658">Traducir a este idioma</translation>
@@ -872,7 +878,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5795872532621730126">Busca y explora</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
-<translation id="5810864297166300463">Asistencia web</translation>
 <translation id="5813552293717797987"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran este navegador.</translation>
 <translation id="5814131985548525293">Escribe aquí o presiona el ícono de micrófono para comenzar</translation>
 <translation id="5814749351757353073">Mantente al tanto de tus sitios favoritos</translation>
@@ -895,7 +900,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5869789175361934029">Continua desde otro dispositivo</translation>
 <translation id="587735546353481577">Para seguir un sitio, visítalo, abre el menú de Chrome y presiona Seguir.</translation>
 <translation id="5879072387416556377">Obtén mejores sugerencias</translation>
-<translation id="5884076754568147479">Para ayudarte a completar tareas, Google recibirá las URL y los contenidos de los sitios en los que uses el Asistente, así como la información que envías a través de este servicio</translation>
 <translation id="5906513782029855931">Conocer las URLs de los sitios permite a Asistente de Google ayudarlo a completar las tareas. En la configuración de Chrome, puedes desactivar Asistente.</translation>
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5919204609460789179">Actualiza <ph name="PRODUCT_NAME" /> para iniciar la sincronización</translation>
@@ -980,11 +984,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6363990818884053551">Para iniciar la sincronización, verifica tu identidad.</translation>
 <translation id="6364438453358674297">¿Borrar la sugerencia del historial?</translation>
 <translation id="6380100320871303656">Precarga con más frecuencia las páginas que Chrome considera que posiblemente visites. Esta configuración puede generar un mayor uso de datos.</translation>
-<translation id="6385407407546870227">Cuando comienzan las pruebas, la reducción de spam y fraude se basa en tokens de confianza que ayudan a los sitios a combatir el fraude y distinguir a los bots de las personas.
-
-Un sitio puede emitir un token de confianza para tu navegador en función de tu interacción con ese sitio, por ejemplo, si accedes de manera regular a una cuenta. Más adelante, si otros sitios que visitas buscan y encuentran un token de confianza, es más probable que te traten como una persona y no como un bot.
-
-Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para descubrir tu identidad.</translation>
 <translation id="6394791151443660613">Buscar: <ph name="SEARCH_QUERY" /></translation>
 <translation id="6395288395575013217">VÍNCULO</translation>
 <translation id="6397616442223433927">De nuevo en línea</translation>
@@ -1035,7 +1034,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="6588043302623806746">Usar DNS seguro</translation>
 <translation id="6590471736817333463">Ahorra hasta un 60% de datos</translation>
 <translation id="6590680911007613645">Asegúrate de que la contraseña que guardes coincida con la de <ph name="SITE" />.</translation>
-<translation id="6593061639179217415">Sitio para computadoras</translation>
+<translation id="6593061639179217415">Sitio de escritorio</translation>
 <translation id="6594121454516132231">Ve cómo Chrome planea protegerte ante el seguimiento entre sitios, a la vez que se preserva la Web abierta</translation>
 <translation id="6595046016124923392">Se envían las imágenes a Google para proporcionarte mejores descripciones.</translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
@@ -1107,6 +1106,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6908998565271542516">Opción para aprobar o no un sitio web abierto en su totalidad</translation>
 <translation id="6909589135458168665">Precargar páginas</translation>
+<translation id="692924882724759447">Consulta los sitios que sigues aquí</translation>
 <translation id="6942665639005891494">Cambia la ubicación predeterminada de las descargas en cualquier momento en la opción de menú de Configuración</translation>
 <translation id="694267552845942083">Estás personalizando la configuración de sincronización. Para activar la sincronización, presiona el botón Confirmar que se encuentra cerca de la parte inferior de la pantalla. Subir</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
@@ -1123,6 +1123,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="7029390216614421513">Coloca el código QR o de barras en este recuadro.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7030304022046916278">Envía las URL a la Navegación segura para revisarlas.</translation>
+<translation id="7030585293819777123">¿Quieres reanudar tu última tarea?</translation>
 <translation id="7037830628447527439">Accede a Chrome con tu Cuenta de Google</translation>
 <translation id="7038956721828960940">chrome_image_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="7054588988317389591">¿Deseas obtener la descripción de las imágenes?</translation>
@@ -1300,6 +1301,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="7971136598759319605">Activo hace 1 día</translation>
 <translation id="7975379999046275268">Vista previa de página <ph name="BEGIN_NEW" />Nueva<ph name="END_NEW" /></translation>
 <translation id="7986497153528221272">Para ver las contraseñas, primero establece un bloqueo de pantalla en el dispositivo.</translation>
+<translation id="7995059495660416932">Verás contenido cuando esté disponible</translation>
 <translation id="799576009106109668">Navegarás más rápido porque el contenido se cargará proactivamente en función de la página web que visites en el momento.</translation>
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -1340,7 +1342,6 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="8127542551745560481">Editar la página principal</translation>
 <translation id="8130309322784422030">Es posible que la información de acceso almacenada esté desactualizada</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
-<translation id="8153351135626613369">Asistente aparecerá cuando detecte que puede ayudarte en sitios web compatibles</translation>
 <translation id="8156139159503939589">¿En qué idioma lees?</translation>
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8186512483418048923">Quedan <ph name="FILES" /> archivos</translation>
@@ -1372,7 +1373,6 @@ Los tokens de confianza mejoran la privacidad en la Web y no pueden usarse para 
 <translation id="8352996530981010042">No se pueden descargar las reacciones. Vuelve a intentarlo.</translation>
 <translation id="8354977102499939946">Haz una búsqueda rápida con la voz. Para editar este atajo, ve a Configuración.</translation>
 <translation id="835847953965672673">Se restablecieron <ph name="NUMBER_OF_DOWNLOADS" /> descargas</translation>
-<translation id="8364299278605033898">Ver sitios populares</translation>
 <translation id="8368001212524806591">Seguir precio</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Cómo usamos esta información:<ph name="END_BOLD" /> Chrome puede estimar tus intereses. Luego, los sitios que visites pueden consultar tus intereses con Chrome para personalizar los anuncios que te muestran.</translation>
 <translation id="8387617938027387193">Verifica que eres tú</translation>

@@ -62,7 +62,6 @@ static const char kCapturedTabTitle[] = "totally-unique-captured-page-title";
 static const char kCapturedPageMain[] = "/webrtc/captured_page_main.html";
 static const std::u16string kShareThisTabInsteadMessage =
     u"Share this tab instead";
-static const std::u16string kViewTabMessagePrefix = u"View tab:";
 
 enum class DisplaySurfaceType { kTab, kWindow, kScreen };
 
@@ -327,8 +326,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1396270): Re-enable.
 IN_PROC_BROWSER_TEST_P(WebRtcScreenCaptureBrowserTestWithPicker,
-                       ScreenCaptureVideoWithDlp) {
+                       DISABLED_ScreenCaptureVideoWithDlp) {
   if (!test_config_.should_prefer_current_tab &&
       !test_config_.accept_this_tab_capture) {
     GTEST_SKIP();
@@ -943,7 +943,9 @@ IN_PROC_BROWSER_TEST_P(GetDisplayMediaVideoTrackBrowserTest, RunCombinedTest) {
 }
 
 // Flaky on Mac, Windows, and ChromeOS bots, https://crbug.com/1371309
-#if BUILDFLAG(IS_LINUX)
+// Also some flakes on Linux ASAN/MSAN builds.
+#if BUILDFLAG(IS_LINUX) && \
+    !(defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER))
 class GetDisplayMediaHiDpiBrowserTest
     : public WebRtcTestBase,
       public testing::WithParamInterface<TestConfigForHiDpi> {
@@ -1039,7 +1041,7 @@ class GetDisplayMediaHiDpiBrowserTest
 
   base::test::ScopedFeatureList feature_list_;
   const TestConfigForHiDpi test_config_;
-  raw_ptr<content::WebContents> tab_ = nullptr;
+  raw_ptr<content::WebContents, DanglingUntriaged> tab_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_P(GetDisplayMediaHiDpiBrowserTest, Capture) {

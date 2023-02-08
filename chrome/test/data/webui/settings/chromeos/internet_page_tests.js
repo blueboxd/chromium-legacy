@@ -5,10 +5,13 @@
 import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {CellularSetupPageName} from 'chrome://resources/ash/common/cellular_setup/cellular_types.js';
 import {setESimManagerRemoteForTesting} from 'chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js';
+import {setHotspotConfigForTesting} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.js';
+import {FakeHotspotConfig} from 'chrome://resources/ash/common/hotspot/fake_hotspot_config.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {ESimManagerRemote} from 'chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js';
+import {CrosHotspotConfigInterface, HotspotAllowStatus, HotspotConfig, HotspotInfo, HotspotState, WiFiSecurityMode} from 'chrome://resources/mojo/chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-webui.js';
 import {CrosNetworkConfigRemote, InhibitReason, VpnType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {ConnectionStateType, DeviceStateType, NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -29,6 +32,9 @@ suite('InternetPage', function() {
 
   /** @type {?ESimManagerRemote} */
   let eSimManagerRemote;
+
+  /** @type {?CrosHotspotConfigInterface} */
+  let hotspotConfig_ = null;
 
   suiteSetup(function() {
     // Disable animations so sub-pages open within one event loop.
@@ -127,6 +133,14 @@ suite('InternetPage', function() {
     return flushAsync();
   }
 
+  async function navigateToApnSubpage() {
+    await navigateToCellularDetailPage();
+    internetPage.shadowRoot.querySelector('settings-internet-detail-page')
+        .shadowRoot.querySelector('#apnSubpageButton')
+        .click();
+    return await flushAsync();
+  }
+
   function init() {
     loadTimeData.overrideValues({
       bypassConnectivityCheck: false,
@@ -157,12 +171,15 @@ suite('InternetPage', function() {
       internetDetailPageTitle: 'internetDetailPageTitle',
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
       isApnRevampEnabled: false,
+      isHotspotEnabled: false,
     });
 
     mojoApi_ = new FakeNetworkConfig();
     MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     eSimManagerRemote = new FakeESimManagerRemote();
     setESimManagerRemoteForTesting(eSimManagerRemote);
+    hotspotConfig_ = new FakeHotspotConfig();
+    setHotspotConfigForTesting(hotspotConfig_);
 
     PolymerTest.clearBody();
   });
@@ -738,14 +755,7 @@ suite('InternetPage', function() {
 
   test('Navigate to/from APN subpage', async function() {
     loadTimeData.overrideValues({isApnRevampEnabled: true});
-    await navigateToCellularDetailPage();
-
-    let detailPage =
-        internetPage.shadowRoot.querySelector('settings-internet-detail-page');
-    const getCrLink = () =>
-        detailPage.shadowRoot.querySelector('#apnSubpageButton');
-    getCrLink().click();
-    await flushAsync();
+    await navigateToApnSubpage();
     assertEquals(Router.getInstance().getCurrentRoute(), routes.APN);
     assertTrue(!!internetPage.shadowRoot.querySelector('apn-subpage'));
 
@@ -753,15 +763,97 @@ suite('InternetPage', function() {
     Router.getInstance().navigateToPreviousRoute();
     await windowPopstatePromise;
     await waitBeforeNextRender(internetPage);
-    detailPage =
+    const detailPage =
         internetPage.shadowRoot.querySelector('settings-internet-detail-page');
     await flushAsync();
 
     assertEquals(
-        getCrLink(), detailPage.shadowRoot.activeElement,
+        detailPage.shadowRoot.querySelector('#apnSubpageButton'),
+        detailPage.shadowRoot.activeElement,
         'Apn subpage row should be focused');
   });
 
+  test(
+      'Create apn button opens dialogs and clicking cancel button removes it',
+      async function() {
+        loadTimeData.overrideValues({isApnRevampEnabled: true});
+        await navigateToApnSubpage();
+        const getApnDetailDialog = () =>
+            internetPage.shadowRoot.querySelector('apn-detail-dialog');
+
+        assertFalse(!!getApnDetailDialog());
+        const createCustomApnButton =
+            internetPage.shadowRoot.querySelector('#createCustomApnButton');
+        assertTrue(!!createCustomApnButton);
+        createCustomApnButton.click();
+        await flushAsync();
+
+        assertTrue(!!getApnDetailDialog());
+        const onCloseEventPromise = eventToPromise('close', window);
+        const cancelBtn = getApnDetailDialog().shadowRoot.querySelector(
+            '#apnDetailCancelBtn');
+        cancelBtn.click();
+        await onCloseEventPromise;
+
+        assertFalse(!!getApnDetailDialog());
+      });
+
+  test(
+      'Navigate to APN subpage and remove cellular properties.',
+      async function() {
+        loadTimeData.overrideValues({isApnRevampEnabled: true});
+        await navigateToApnSubpage();
+        assertEquals(Router.getInstance().getCurrentRoute(), routes.APN);
+        assertTrue(!!internetPage.shadowRoot.querySelector('apn-subpage'));
+        // We use the same guid as in navigateToCellularDetailPage so that
+        // we trigger onNetworkStateChanged
+        const network = OncMojo.getDefaultManagedProperties(
+            NetworkType.kWiFi, 'cellular1', 'name1');
+        const windowPopstatePromise = eventToPromise('popstate', window);
+        mojoApi_.setManagedPropertiesForTest(network);
+        await windowPopstatePromise;
+        await waitBeforeNextRender(internetPage);
+        // Because there were no cellular properties we call apn_subpage close
+        // which navigates to the previous page.
+        assertEquals(
+            Router.getInstance().getCurrentRoute(), routes.NETWORK_DETAIL);
+      });
+
+  test(
+      'Navigate to APN subpage without providing guid as parameter',
+      async function() {
+        loadTimeData.overrideValues({isApnRevampEnabled: true});
+        await navigateToCellularDetailPage();
+        const windowPopstatePromise = eventToPromise('popstate', window);
+        Router.getInstance().navigateTo(routes.APN);
+        await windowPopstatePromise;
+        await waitBeforeNextRender(internetPage);
+        assertNotEquals(Router.getInstance().getCurrentRoute(), routes.APN);
+      });
+
+  test('Hotspot info test', async function() {
+    loadTimeData.overrideValues({isHotspotEnabled: true});
+    hotspotConfig_.setFakeHotspotInfo({
+      state: HotspotState.kDisabled,
+      allowStatus: HotspotAllowStatus.kDisallowedNoCellularUpstream,
+      clientCount: 0,
+      config: {
+        ssid: 'test_ssid',
+        passphrase: 'test_passphrase',
+      },
+    });
+    await init();
+
+    const hotspotInfo = internetPage.getHotspotInfoForTesting();
+    assertTrue(!!hotspotInfo);
+    assertEquals(hotspotInfo.state, HotspotState.kDisabled);
+    assertEquals(
+        hotspotInfo.allowStatus,
+        HotspotAllowStatus.kDisallowedNoCellularUpstream);
+    assertEquals(hotspotInfo.clientCount, 0);
+    assertEquals(hotspotInfo.config.ssid, 'test_ssid');
+    assertEquals(hotspotInfo.config.passphrase, 'test_passphrase');
+  });
   // TODO(stevenjb): Figure out a way to reliably test navigation. Currently
   // such tests are flaky.
 });

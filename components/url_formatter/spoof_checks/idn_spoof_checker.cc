@@ -22,6 +22,7 @@
 #include "third_party/icu/source/i18n/unicode/regex.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 #include "third_party/icu/source/i18n/unicode/uspoof.h"
+#include "url/url_features.h"
 
 namespace url_formatter {
 
@@ -375,8 +376,10 @@ IDNSpoofChecker::Result IDNSpoofChecker::SafeToDisplayAsUnicode(
   // chosen. On the other hand, 'fu<sharp-s>' typed or copy and pasted
   // as Unicode would be canonicalized to 'fuss' by GURL and is displayed as
   // such. See http://crbug.com/595263 .
-  if (deviation_characters_.containsSome(label_string))
+  if (!url::IsUsingIDNA2008NonTransitional() &&
+      deviation_characters_.containsSome(label_string)) {
     return Result::kDeviationCharacters;
+  }
 
   // Disallow Icelandic confusables for domains outside Iceland's ccTLD (.is).
   if (label_string.length() > 1 && top_level_domain != "is" &&
@@ -709,6 +712,15 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   allowed_set.remove(0x1F00u, 0x1FFFu);  // Greek Extended
   allowed_set.remove(0xA640u, 0xA69Fu);  // Cyrillic Extended-B
   allowed_set.remove(0xA720u, 0xA7FFu);  // Latin Extended-D
+
+#if U_ICU_VERSION_MAJOR_NUM < 72
+  // Unicode 15 changes ZWJ and ZWNJ from allowed to restricted. Restrict them
+  // in lower versions too. This only relevant in Non-Transitional Mode as
+  // Transitional Mode maps these characters out.
+  // TODO(crbug.com/1386204): Remove these after ICU 72 is rolled out.
+  allowed_set.remove(0x200Cu);  // Zero Width Non-Joiner
+  allowed_set.remove(0x200Du);  // Zero Width Joiner
+#endif
 
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
 }

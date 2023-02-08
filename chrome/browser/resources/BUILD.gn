@@ -128,12 +128,10 @@ group("resources") {
 if (enable_js_type_check) {
   group("closure_compile") {
     deps = []
-    if (is_linux || is_chromeos || is_win || is_mac) {
-      deps += [ "gaia_auth_host:closure_compile" ]
-    }
     if (is_chromeos_ash) {
       deps += [
         "chromeos:closure_compile",
+        "gaia_auth_host:closure_compile",
         "nearby_internals:closure_compile",
         "nearby_share:closure_compile",
         "nearby_share/shared:closure_compile_module",
@@ -143,11 +141,7 @@ if (enable_js_type_check) {
     if (is_android) {
       deps += [
         "explore_sites_internals:closure_compile",
-        "feed_internals:closure_compile",
-        "internals/lens:closure_compile",
         "internals/notifications:closure_compile",
-        "internals/query_tiles:closure_compile",
-        "offline_pages:closure_compile",
         "video_tutorials:closure_compile",
       ]
     }
@@ -309,7 +303,13 @@ repack("dev_ui_paks") {
   ]
 
   if (is_android) {
-    sources += [ "$root_gen_dir/chrome/webapks_resources.pak" ]
-    deps += [ "//chrome/browser/resources/webapks:resources" ]
+    sources += [
+      "$root_gen_dir/chrome/feed_internals_resources.pak",
+      "$root_gen_dir/chrome/webapks_resources.pak",
+    ]
+    deps += [
+      "//chrome/browser/resources/feed_internals:resources",
+      "//chrome/browser/resources/webapks:resources",
+    ]
   }
 }

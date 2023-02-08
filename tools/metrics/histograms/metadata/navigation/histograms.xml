@@ -180,7 +180,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.Eviction.Renderer"
-    enum="BackForwardCacheRendererEvictionReason" expires_after="2023-03-19">
+    enum="BackForwardCacheRendererEvictionReason" expires_after="2023-06-04">
   <owner>rakina@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -201,7 +201,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.MethodHash"
-    enum="MojoInterfaceName" expires_after="2023-03-12">
+    enum="MojoInterfaceName" expires_after="2023-05-14">
   <owner>hbolaria@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -219,7 +219,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="BackForwardCache.Experimental.UnexpectedIPCMessagePostedToCachedFrame.TimeUntilIPCReceived"
-    units="ms" expires_after="2023-03-12">
+    units="ms" expires_after="2023-05-14">
   <owner>hbolaria@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
@@ -529,24 +529,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
-<histogram name="Navigation.ClearSiteData.Duration" units="ms"
-    expires_after="M77">
-  <owner>msramek@chromium.org</owner>
-  <summary>
-    Recorded when a navigation is deferred while clearing site data. Indicates
-    how much time the clearing took.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.ClearSiteData.Parameters"
-    enum="ClearSiteDataParameters" expires_after="M77">
-  <owner>msramek@chromium.org</owner>
-  <summary>
-    The parameters of the Clear-Site-Data header. Recorded when the header is
-    successfully parsed.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.CodeCacheTime.{CodeCacheType}" units="ms"
     expires_after="2023-06-15">
   <owner>cduvall@chromium.org</owner>
@@ -681,22 +663,30 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.HTTP" units="ms"
-    expires_after="2022-01-09">
+    expires_after="never">
+<!-- expires-never: Underlies a public transparency report graph https://transparencyreport.google.com/https/overview?hl=en -->
+
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
     The amount of time that an HTTP page was in the foreground. Recorded on
-    every page close/transition.
+    every page close/transition. This metric is exposed publicly on the HTTPS
+    Transparency Report at
+    https://transparencyreport.google.com/https/overview?hl=en.
   </summary>
 </histogram>
 
 <histogram name="Navigation.EngagementTime.HTTPS" units="ms"
-    expires_after="2023-04-23">
+    expires_after="never">
+<!-- expires-never: Underlies a public transparency report graph https://transparencyreport.google.com/https/overview?hl=en -->
+
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
     The amount of time that an HTTPS page was in the foreground. Recorded on
-    every page close/transition.
+    every page close/transition. This metric is exposed publicly on the HTTPS
+    Transparency Report at
+    https://transparencyreport.google.com/https/overview?hl=en.
   </summary>
 </histogram>
 
@@ -710,8 +700,20 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.GetFrameHostForNavigation.Duration" units="ms"
+    expires_after="2023-01-28">
+  <owner>peilinwang@google.com</owner>
+  <owner>woa-performance-bugs+jank@google.com</owner>
+  <summary>
+    Measures the amount of time it takes to call
+    RenderFrameHostManager::GetFrameHostForNavigation(). Logged once per call to
+    RenderFrameHostManager::GetFrameHostForNavigation(), most often two times
+    per navigation.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.Guest.IsHTTPOrHTTPS"
-    enum="BooleanHttpBasedOrOtherScheme" expires_after="2023-03-09">
+    enum="BooleanHttpBasedOrOtherScheme" expires_after="2023-05-14">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -724,7 +726,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Guest.IsMainFrame" enum="BooleanMainFrame"
-    expires_after="2023-03-09">
+    expires_after="2023-05-14">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -759,7 +761,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.HostnameHasDeviationCharacters" units="count"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>meacer@chromium.org</owner>
   <owner>chrome-trusty-transport@google.com</owner>
   <summary>
@@ -770,7 +772,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsGuest" enum="NavigationIsGuest"
-    expires_after="2023-03-09">
+    expires_after="2023-05-14">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -782,7 +784,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess" enum="NavigationIsLockedProcess"
-    expires_after="2022-12-09">
+    expires_after="2023-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -793,7 +795,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsLockedProcess.HTTPOrHTTPS"
-    enum="NavigationIsLockedProcess" expires_after="2023-02-19">
+    enum="NavigationIsLockedProcess" expires_after="2023-11-10">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -803,8 +805,20 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.IsNavigationSameSite.Duration" units="ms"
+    expires_after="2023-01-28">
+  <owner>peilinwang@google.com</owner>
+  <owner>woa-performance-bugs+jank@google.com</owner>
+  <summary>
+    Measures the amount of time it takes to call
+    RenderFrameHostImpl::IsNavigationSameSite(). Logged once per call to
+    RenderFrameHostImpl::IsNavigationSameSite(), potentially numerous times per
+    navigation.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.IsSameBrowsingInstance"
-    enum="NavigationIsSameBrowsingInstance" expires_after="2023-01-15">
+    enum="NavigationIsSameBrowsingInstance" expires_after="2025-01-01">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
@@ -821,7 +835,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsSameSiteInstance"
-    enum="NavigationIsSameSiteInstance" expires_after="2023-05-07">
+    enum="NavigationIsSameSiteInstance" expires_after="2025-01-01">
   <owner>arthursonzogni@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
@@ -831,7 +845,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.LatencyAblation.ExcessWaitTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>ryansturm@chromium.org</owner>
   <owner>spelchat@chromium.org</owner>
   <summary>
@@ -931,7 +945,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameHasRTLDomain2" enum="Boolean"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -977,7 +991,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeDifferentPage2"
-    enum="NavigationScheme" expires_after="2023-05-07">
+    enum="NavigationScheme" expires_after="never">
+<!-- expires-never: Underlies a public transparency report graph https://transparencyreport.google.com/https/overview?hl=en -->
+
   <owner>estark@chromium.org</owner>
   <owner>elawrence@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
@@ -990,7 +1006,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeDifferentPageOTR2"
-    enum="NavigationScheme" expires_after="2022-11-01">
+    enum="NavigationScheme" expires_after="2023-05-07">
   <owner>estark@chromium.org</owner>
   <owner>elawrence@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
@@ -1003,7 +1019,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrameSchemeOTR2" enum="NavigationScheme"
-    expires_after="2022-11-01">
+    expires_after="2023-05-07">
   <owner>elawrence@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <summary>
@@ -1028,7 +1044,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.NavigationStartToBeforeUnloadForLegacy" units="ms"
-    expires_after="M112">
+    expires_after="2023-06-04">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -1041,7 +1057,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Navigation.NavigationStartToBeginWithAvoidUnnecessaryBeforeUnloadSync"
-    units="ms" expires_after="M112">
+    units="ms" expires_after="2023-06-04">
   <owner>sky@chromium.org</owner>
   <owner>swarm-team@chromium.org</owner>
   <summary>
@@ -1052,7 +1068,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadBrowserToRendererIpcTime" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1062,7 +1078,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadLegacyPostTaskTime" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-05-14">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1085,7 +1101,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadTotalTime" units="ms"
-    expires_after="2023-04-01">
+    expires_after="2023-06-04">
   <owner>chikamune@chromium.org</owner>
   <owner>chrome-loading@google.com</owner>
   <summary>
@@ -1112,33 +1128,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
-<histogram name="Navigation.PolicyBlocklistNavigationThrottle.PolicyLoadDelay"
-    units="ms" expires_after="2023-01-02">
-  <owner>ydago@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
-  <summary>
-    The time spent waiting for policies to load before checking a navigation
-    against url blocking policies. Gathered when policies have finished loading
-    after a navigation requests has been already issued.
-  </summary>
-</histogram>
-
-<histogram
-    name="Navigation.PolicyBlocklistNavigationThrottle.PolicyLoadTimeout"
-    enum="Boolean" expires_after="2023-01-02">
-  <owner>ydago@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
-  <summary>
-    Records if the policy load delay before PolicyBlocklistNavigationThrottle
-    checks a navigation against url blocking policies timed out. In case of a
-    timeout, the navigation resumes ignoring potential policy restrictions.
-    Gathered when policies have not finished loading in time for a navigation
-    request to be checked against the blocklist policy.
-  </summary>
-</histogram>
-
 <histogram name="Navigation.Preconnect.PreresolveJobQueueingTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1151,7 +1142,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.PreresolveJobQueueLength" units="count"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1164,7 +1155,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ProxyLookupCallbackQueueingTime"
-    units="ms" expires_after="2023-03-19">
+    units="ms" expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1177,7 +1168,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ProxyLookupLatency" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
@@ -1190,7 +1181,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ResolveHostCallbackQueueingTime"
-    units="ms" expires_after="2023-03-19">
+    units="ms" expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
@@ -1203,7 +1194,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Preconnect.ResolveHostLatency" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>alexilin@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
@@ -1241,7 +1232,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Prerender.ActivationCommitDeferTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -1418,7 +1409,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.TimeToActivatePrerender{PrerenderTriggerType}"
-    units="ms" expires_after="2022-11-27">
+    units="ms" expires_after="2023-04-27">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
@@ -1461,6 +1452,9 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 <histogram
     name="Navigation.UrlParamFilter.ApplicableClassificationCount{UrlParamFilterClassificationRole}"
     units="count" expires_after="2023-01-02">
+  <obsolete>
+    Obsolete and no longer written as of m109.
+  </obsolete>
   <owner>mreichhoff@chromium.org</owner>
   <owner>wanderview@chromium.org</owner>
   <owner>bcl@chromium.org</owner>
@@ -1475,7 +1469,10 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.UrlParamFilter.ClassificationListValidationResult"
-    enum="ClassificationListValidationResult" expires_after="2023-03-26">
+    enum="ClassificationListValidationResult" expires_after="2023-01-02">
+  <obsolete>
+    Obsolete and no longer written as of m109.
+  </obsolete>
   <owner>kaklilu@chromium.org</owner>
   <owner>src/chrome/browser/url_param_filter/OWNERS</owner>
   <summary>
@@ -1491,7 +1488,10 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.UrlParamFilter.FilteredParamCount" units="count"
-    expires_after="2023-05-07">
+    expires_after="2023-01-02">
+  <obsolete>
+    Obsolete and no longer written as of m109.
+  </obsolete>
   <owner>mreichhoff@chromium.org</owner>
   <owner>wanderview@chromium.org</owner>
   <owner>bcl@chromium.org</owner>
@@ -1504,7 +1504,10 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.UrlParamFilter.FilteredParamCountExperimental"
-    units="count" expires_after="2023-05-07">
+    units="count" expires_after="2023-01-02">
+  <obsolete>
+    Obsolete and no longer written as of m109.
+  </obsolete>
   <owner>mreichhoff@chromium.org</owner>
   <owner>wanderview@chromium.org</owner>
   <owner>bcl@chromium.org</owner>
@@ -1564,31 +1567,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <token key="FrameType" variants="FrameTypes"/>
 </histogram>
 
-<histogram name="NavigationSuggestion.DigitalAssetLinks.Event"
-    enum="NavigationSuggestionDigitalAssetLinkValidationEvent"
-    expires_after="2021-06-20">
-  <owner>meacer@chromium.org</owner>
-  <owner>security-enamel@chromium.org</owner>
-  <summary>
-    Tracks events when the currently navigated domain name is a lookalike and a
-    Digital Asset Link validation must be made between the lookalike and target
-    sites. If both sites serve valid asset links pointing to each other, the
-    lookalike warning UI is surpressed.
-  </summary>
-</histogram>
-
-<histogram name="NavigationSuggestion.DigitalAssetLinks.ValidationTime"
-    units="ms" expires_after="2021-08-30">
-  <owner>meacer@chromium.org</owner>
-  <owner>security-enamel@chromium.org</owner>
-  <summary>
-    Records the time duration to validate lookalike and target manifests. Only
-    recorded when both manifests are validated.
-  </summary>
-</histogram>
-
 <histogram name="NavigationSuggestion.Event2" enum="NavigationSuggestionEvent"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -1666,7 +1646,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.CanceledForInactivePageRestriction.DisallowActivationReason{PrerenderTriggerType}"
-    enum="InactiveFrameDisallowActivationReason" expires_after="2022-11-30">
+    enum="InactiveFrameDisallowActivationReason" expires_after="2023-03-01">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@chromium.org</owner>
   <summary>
@@ -1773,7 +1753,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.DefaultSearchEngine.SearchTermExtractorCorrectness"
-    enum="Boolean" expires_after="2022-07-27">
+    enum="Boolean" expires_after="2023-02-01">
   <owner>lingqi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>

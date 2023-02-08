@@ -18,7 +18,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -220,7 +219,16 @@ class MessageCenterImplTest : public testing::Test {
       const std::string& id,
       scoped_refptr<NotificationDelegate> delegate) {
     return CreateNotificationWithNotifierIdAndDelegate(
-        id, kDefaultAppId, NOTIFICATION_TYPE_SIMPLE, delegate);
+        id, kDefaultAppId, NOTIFICATION_TYPE_SIMPLE, delegate,
+        RichNotificationData());
+  }
+
+  std::unique_ptr<Notification> CreateSimpleNotificationWithOptionalFields(
+      const std::string& id,
+      const RichNotificationData& optional_fields) {
+    return CreateNotificationWithNotifierIdAndDelegate(
+        id, kDefaultAppId, NOTIFICATION_TYPE_SIMPLE,
+        base::MakeRefCounted<TestDelegate>(), optional_fields);
   }
 
   std::unique_ptr<Notification> CreateNotification(const std::string& id,
@@ -233,17 +241,16 @@ class MessageCenterImplTest : public testing::Test {
       const std::string& notifier_id,
       NotificationType type) {
     return CreateNotificationWithNotifierIdAndDelegate(
-        id, notifier_id, type, base::MakeRefCounted<TestDelegate>());
+        id, notifier_id, type, base::MakeRefCounted<TestDelegate>(),
+        RichNotificationData());
   }
 
   std::unique_ptr<Notification> CreateNotificationWithNotifierIdAndDelegate(
       const std::string& id,
       const std::string& notifier_id,
       NotificationType type,
-      scoped_refptr<NotificationDelegate> delegate) {
-    RichNotificationData optional_fields;
-    optional_fields.buttons.emplace_back(u"foo");
-    optional_fields.buttons.emplace_back(u"foo");
+      scoped_refptr<NotificationDelegate> delegate,
+      const RichNotificationData& optional_fields) {
     return std::make_unique<Notification>(
         type, id, u"title", UTF8ToUTF16(id), ui::ImageModel() /* icon */,
         std::u16string() /* display_source */, GURL(),
@@ -388,7 +395,8 @@ class MockPopupTimersController : public PopupTimersController {
   ~MockPopupTimersController() override = default;
 
   void TimerFinished(const std::string& id) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                                quit_closure_);
     timer_finished_++;
     last_id_ = id;
   }
@@ -469,7 +477,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerStartMultipleTimers) {
 
 TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   scoped_refptr<base::SingleThreadTaskRunner> old_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+      base::SingleThreadTaskRunner::GetCurrentDefault();
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner =
       base::MakeRefCounted<base::TestMockTimeTaskRunner>(
@@ -1245,6 +1253,56 @@ TEST_F(MessageCenterImplTest, ButtonClick) {
   message_center()->ClickOnNotificationButton(id, 1);
 
   EXPECT_EQ("ButtonClick_1_", GetDelegate(id)->log());
+}
+
+TEST_F(MessageCenterImplTest, RemoveAfterClick) {
+  const std::string id = "n";
+  RichNotificationData notification_data;
+
+  ASSERT_FALSE(message_center()->FindNotificationById(id));
+  message_center()->AddNotification(
+      CreateSimpleNotificationWithOptionalFields(id, notification_data));
+  ASSERT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->ClickOnNotification(id);
+  EXPECT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->RemoveNotification(id, false);
+  ASSERT_FALSE(message_center()->FindNotificationById(id));
+
+  notification_data.remove_on_click = true;
+
+  message_center()->AddNotification(
+      CreateSimpleNotificationWithOptionalFields(id, notification_data));
+  ASSERT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->ClickOnNotification(id);
+  EXPECT_FALSE(message_center()->FindNotificationById(id));
+}
+
+TEST_F(MessageCenterImplTest, RemoveAfterButtonClick) {
+  const std::string id = "n";
+  RichNotificationData notification_data;
+  notification_data.buttons.emplace_back(u"button");
+
+  message_center()->AddNotification(
+      CreateSimpleNotificationWithOptionalFields(id, notification_data));
+  ASSERT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->ClickOnNotificationButton(id, 0);
+  EXPECT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->RemoveNotification(id, false);
+  ASSERT_FALSE(message_center()->FindNotificationById(id));
+
+  notification_data.remove_on_click = true;
+
+  message_center()->AddNotification(
+      CreateSimpleNotificationWithOptionalFields(id, notification_data));
+  ASSERT_TRUE(message_center()->FindNotificationById(id));
+
+  message_center()->ClickOnNotificationButton(id, 0);
+  EXPECT_FALSE(message_center()->FindNotificationById(id));
 }
 
 TEST_F(MessageCenterImplTest, ButtonClickWithReply) {

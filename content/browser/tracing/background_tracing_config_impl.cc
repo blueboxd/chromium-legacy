@@ -114,7 +114,7 @@ base::Value::Dict BackgroundTracingConfigImpl::ToDict() {
       break;
   }
 
-  base::ListValue configs_list;
+  base::Value::List configs_list;
   for (const auto& rule : rules_) {
     DCHECK(rule);
     configs_list.Append(rule->ToDict());
@@ -188,9 +188,6 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
 size_t BackgroundTracingConfigImpl::GetTraceUploadLimitKb() const {
 #if BUILDFLAG(IS_ANDROID)
   auto type = net::NetworkChangeNotifier::GetConnectionType();
-  UMA_HISTOGRAM_ENUMERATION(
-      "Tracing.Background.NetworkConnectionTypeWhenUploaded", type,
-      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
   if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
     return upload_limit_network_kb_;
   }
@@ -422,9 +419,6 @@ int BackgroundTracingConfigImpl::GetMaximumTraceBufferSizeKb() const {
   }
 #if BUILDFLAG(IS_ANDROID)
   auto type = net::NetworkChangeNotifier::GetConnectionType();
-  UMA_HISTOGRAM_ENUMERATION(
-      "Tracing.Background.NetworkConnectionTypeWhenStarted", type,
-      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
   if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
     return mobile_network_buffer_size_kb_;
   }

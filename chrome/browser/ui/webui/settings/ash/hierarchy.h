@@ -161,6 +161,7 @@ class Hierarchy {
 
  private:
   class PerSectionHierarchyGenerator;
+  friend std::ostream& operator<<(std::ostream& os, const Hierarchy& h);
 
   // Generates an array with the Settings app name and |section|'s name.
   std::vector<std::u16string> GenerateHierarchyStrings(
@@ -172,14 +173,14 @@ class Hierarchy {
       OsSettingsIdentifier id,
       const std::string& url_to_modify) const;
 
-  const OsSettingsSections* sections_;
+  const OsSettingsSections* sections_;  // Owned by |OsSettingsManager|
 };
 
-}  // namespace ash::settings
+#ifdef DCHECK
+// For logging use only. Prints out text representation of the `Hierarchy`.
+std::ostream& operator<<(std::ostream& os, const Hierarchy& h);
+#endif
 
-// TODO(https://crbug.com/1164001): remove when the migration is finished.
-namespace chromeos::settings {
-using ::ash::settings::Hierarchy;
-}
+}  // namespace ash::settings
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_ASH_HIERARCHY_H_

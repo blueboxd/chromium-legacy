@@ -228,7 +228,7 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
       server_id_(server_id),
       record_type_(type),
       has_converted_(false),
-      source_(Source::kLocal) {
+      source_(Source::kLocalOrSyncable) {
   DCHECK(type == SERVER_PROFILE);
 }
 
@@ -619,12 +619,6 @@ bool AutofillProfile::MergeStructuredDataFrom(const AutofillProfile& profile,
 
 bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
                                     const std::string& app_locale) {
-  // Verified profiles should never be overwritten with unverified data.
-  // This is not true anymore when explicit save prompts are used.
-  DCHECK(!IsVerified() || profile.IsVerified() ||
-         base::FeatureList::IsEnabled(
-             features::kAutofillAddressProfileSavePrompt));
-
   AutofillProfileComparator comparator(app_locale);
   DCHECK(comparator.AreMergeable(*this, profile));
 

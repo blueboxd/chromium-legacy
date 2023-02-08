@@ -24,13 +24,12 @@ class TabletModeMultitaskMenuView;
 
 // Creates and maintains the multitask menu. Responsible for showing,
 // hiding, and animating the menu.
-class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
+class ASH_EXPORT TabletModeMultitaskMenu : public aura::WindowObserver,
                                            public views::WidgetObserver,
                                            public display::DisplayObserver {
  public:
   TabletModeMultitaskMenu(TabletModeMultitaskMenuEventHandler* event_handler,
-                          aura::Window* window,
-                          base::RepeatingClosure hide_menu);
+                          aura::Window* window);
 
   TabletModeMultitaskMenu(const TabletModeMultitaskMenu&) = delete;
   TabletModeMultitaskMenu& operator=(const TabletModeMultitaskMenu&) = delete;
@@ -41,11 +40,19 @@ class ASH_EXPORT TabletModeMultitaskMenu : aura::WindowObserver,
 
   views::Widget* widget() { return widget_.get(); }
 
-  // Show the menu using a slide down animation.
-  void AnimateShow();
+  // Performs a slide down animation on the menu if `show` is true, otherwise
+  // slide up animation.
+  void Animate(bool show);
 
-  // Close the menu using a slide up animation.
-  void AnimateClose();
+  // Performs a fade out animation and closes the menu. Called when tap outside
+  // the menu dismisses it.
+  void AnimateFadeOut();
+
+  // Actions called by the event handler, where `initial_y` and `current_y` are
+  // in `window_`'s coordinates.
+  void BeginDrag(float initial_y);
+  void UpdateDrag(float current_y);
+  void EndDrag();
 
   // Calls the event handler to destroy `this`.
   void Reset();

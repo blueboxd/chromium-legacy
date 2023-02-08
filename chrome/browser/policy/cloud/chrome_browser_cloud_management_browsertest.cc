@@ -15,11 +15,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -236,7 +236,7 @@ class PolicyFetchCoreObserver : public CloudPolicyCore::Observer {
     // `DM_STATUS_SERVICE_DEVICE_NEEDS_RESET` for this to happen.
     EXPECT_THAT((std::array{DM_STATUS_SERVICE_DEVICE_NOT_FOUND,
                             DM_STATUS_SERVICE_DEVICE_NEEDS_RESET}),
-                testing::Contains(core->client()->status()));
+                testing::Contains(core->client()->last_dm_status()));
     std::move(quit_closure_).Run();
   }
 
@@ -463,7 +463,7 @@ class MachineLevelUserCloudPolicyManagerTest : public PlatformBrowserTest {
     std::unique_ptr<MachineLevelUserCloudPolicyManager> manager =
         std::make_unique<MachineLevelUserCloudPolicyManager>(
             std::move(policy_store), nullptr, policy_dir,
-            base::ThreadTaskRunnerHandle::Get(),
+            base::SingleThreadTaskRunner::GetCurrentDefault(),
             base::BindRepeating(&content::GetNetworkConnectionTracker));
     manager->Init(&schema_registry);
 

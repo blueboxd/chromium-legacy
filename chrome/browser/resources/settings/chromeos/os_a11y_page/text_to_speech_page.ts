@@ -14,10 +14,11 @@ import '../../settings_shared.css.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from '../device_page/device_page_browser_proxy.js';
 import {routes} from '../os_route.js';
@@ -64,6 +65,14 @@ class SettingsTextToSpeechPageElement extends
        */
       hasKeyboard_: Boolean,
 
+      isAccessibilitySelectToSpeakPageMigrationEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'isAccessibilitySelectToSpeakPageMigrationEnabled');
+        },
+      },
+
       /**
        * Used by DeepLinkingBehavior to focus this page's deep links.
        */
@@ -98,7 +107,7 @@ class SettingsTextToSpeechPageElement extends
   override connectedCallback() {
     super.connectedCallback();
 
-    this.addWebUIListener(
+    this.addWebUiListener(
         'has-hardware-keyboard',
         (hasKeyboard: boolean) => this.set('hasKeyboard_', hasKeyboard));
     this.deviceBrowserProxy_.initializeKeyboardWatcher();
@@ -107,6 +116,8 @@ class SettingsTextToSpeechPageElement extends
   override ready() {
     super.ready();
 
+    this.addFocusConfig(
+        routes.A11Y_SELECT_TO_SPEAK, '#select-to-speak-subpage-trigger');
     this.addFocusConfig(routes.MANAGE_TTS_SETTINGS, '#ttsSubpageButton');
   }
 
@@ -162,6 +173,10 @@ class SettingsTextToSpeechPageElement extends
 
   private onSelectToSpeakSettingsTap_(): void {
     this.textToSpeechBrowserProxy_.showSelectToSpeakSettings();
+  }
+
+  private onSelectToSpeakTap_(): void {
+    Router.getInstance().navigateTo(routes.A11Y_SELECT_TO_SPEAK);
   }
 }
 

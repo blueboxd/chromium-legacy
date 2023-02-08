@@ -35,12 +35,12 @@ import './network_proxy_section.js';
 import './settings_traffic_counters.js';
 import './tether_connection_dialog.js';
 
-import {isActiveSim} from 'chrome://resources/ash/common/network/cellular_utils.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
+import {isActiveSim, processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {MojoInterfaceProvider, MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/ash/common/i18n_behavior.js';
 import {WebUIListenerBehavior, WebUIListenerBehaviorInterface} from 'chrome://resources/ash/common/web_ui_listener_behavior.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -50,7 +50,7 @@ import {afterNextRender, flush, html, mixinBehaviors, PolymerElement} from 'chro
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
@@ -59,6 +59,19 @@ import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_ob
 
 import {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page_browser_proxy.js';
 import {TetherConnectionDialogElement} from './tether_connection_dialog.js';
+
+/**
+ * TODO(crbug/1315757) The following type definitions are only needed for
+ * Closure compiler and can be removed when this file is converted to TS.
+ *
+ * @constructor
+ * @extends {HTMLElement}
+ */
+export function CellularRoamingToggleButtonElement() {}
+
+/** @return {?CrToggleElement} */
+CellularRoamingToggleButtonElement.prototype.getCellularRoamingToggle =
+    function() {};
 
 /**
  * @constructor
@@ -508,7 +521,9 @@ class SettingsInternetDetailPageElement extends
     if (settingId === Setting.kCellularRoaming) {
       this.afterRenderShowDeepLink(
           settingId,
-          () => this.shadowRoot.querySelector('cellular-roaming-toggle-button')
+          () => /** @type {CellularRoamingToggleButtonElement} */ (
+                    this.shadowRoot.querySelector(
+                        'cellular-roaming-toggle-button'))
                     .getCellularRoamingToggle());
       // Stop deep link attempt since we completed it manually.
       return false;
@@ -781,25 +796,6 @@ class SettingsInternetDetailPageElement extends
     }
   }
 
-  /**
-   * Returns true if all significant DeviceState fields match. Ignores
-   * |scanning| which can be noisy and is handled separately.
-   * @param {!OncMojo.DeviceStateProperties} a
-   * @param {!OncMojo.DeviceStateProperties} b
-   * @return {boolean}
-   * @private
-   */
-  deviceStatesMatch_(a, b) {
-    return a.type === b.type && a.macAddress === b.macAddress &&
-        a.simAbsent === b.simAbsent && a.deviceState === b.deviceState &&
-        a.managedNetworkAvailable === b.managedNetworkAvailable &&
-        OncMojo.ipAddressMatch(a.ipv4Address, b.ipv4Address) &&
-        OncMojo.ipAddressMatch(a.ipv6Address, b.ipv6Address) &&
-        OncMojo.simLockStatusMatch(a.simLockStatus, b.simLockStatus) &&
-        OncMojo.simInfosMatch(a.simInfos, b.simInfos) &&
-        a.inhibitReason === b.inhibitReason;
-  }
-
   /** @private */
   getDeviceState_() {
     if (!this.managedProperties_) {
@@ -815,34 +811,9 @@ class SettingsInternetDetailPageElement extends
         return;
       }
 
-      const devices = response.result;
-      const newDeviceState =
-          devices.find(device => device.type === type) || null;
-      let shouldGetNetworkDetails = false;
-      if (!this.deviceState_ || !newDeviceState) {
-        this.deviceState_ = newDeviceState;
-        shouldGetNetworkDetails = !!this.deviceState_;
-      } else if (!this.deviceStatesMatch_(this.deviceState_, newDeviceState)) {
-        // Only request a network state update if the deviceState changed.
-        shouldGetNetworkDetails =
-            this.deviceState_.deviceState !== newDeviceState.deviceState;
-        this.deviceState_ = newDeviceState;
-      } else if (this.deviceState_.scanning !== newDeviceState.scanning) {
-        // Update just the scanning state to avoid interrupting other parts of
-        // the UI (e.g. custom IP addresses or nameservers).
-        this.deviceState_.scanning = newDeviceState.scanning;
-        // Cellular properties are not updated while scanning (since they
-        // may be invalid), so request them on scan completion.
-        if (type === NetworkType.kCellular) {
-          shouldGetNetworkDetails = true;
-        }
-      } else if (type === NetworkType.kCellular) {
-        // If there are no device state property changes but type is
-        // cellular, then always fetch network details. This is because
-        // for cellular networks, some shill device level properties are
-        // represented at network level in ONC.
-        shouldGetNetworkDetails = true;
-      }
+      const {deviceState, shouldGetNetworkDetails} =
+          processDeviceState(type, response.result, this.deviceState_);
+      this.deviceState_ = deviceState;
       if (shouldGetNetworkDetails) {
         this.getNetworkDetails_();
       }
@@ -2039,7 +2010,14 @@ class SettingsInternetDetailPageElement extends
    * @private
    */
   onApnRowClicked_() {
-    Router.getInstance().navigateTo(routes.APN);
+    if (!this.isCellular_(this.managedProperties_)) {
+      console.error(
+          'APN row should only be visible when cellular is available.');
+      return;
+    }
+    const params = new URLSearchParams();
+    params.append('guid', this.guid);
+    Router.getInstance().navigateTo(routes.APN, params);
   }
 
   /**

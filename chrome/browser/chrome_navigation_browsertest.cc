@@ -386,13 +386,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::NavigationController& navigation_controller =
       new_web_contents->GetController();
   WaitForLoadStop(new_web_contents);
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(
-        navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
-    EXPECT_EQ(1, navigation_controller.GetEntryCount());
-  } else {
-    EXPECT_EQ(0, navigation_controller.GetEntryCount());
-  }
+  EXPECT_TRUE(navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
+  EXPECT_EQ(1, navigation_controller.GetEntryCount());
   EXPECT_NE(new_tab_url, new_web_contents->GetLastCommittedURL());
 
   // Verify that the pending entry is still present, even though the navigation
@@ -455,13 +450,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     content::NavigationController& navigation_controller =
         new_contents->GetController();
     WaitForLoadStop(new_contents);
-    if (blink::features::IsInitialNavigationEntryEnabled()) {
-      EXPECT_TRUE(
-          navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
-      EXPECT_EQ(1, navigation_controller.GetEntryCount());
-    } else {
-      EXPECT_EQ(0, navigation_controller.GetEntryCount());
-    }
+    EXPECT_TRUE(
+        navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
+    EXPECT_EQ(1, navigation_controller.GetEntryCount());
     EXPECT_NE(test_url, new_contents->GetLastCommittedURL());
 
     // Ensure that the omnibox doesn't start with javascript: scheme.
@@ -646,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     if (content.find("HTTP ERROR 404") != std::string::npos)
       break;
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
@@ -1015,11 +1006,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     popup = popup_observer.GetWebContents();
   }
   content::RenderFrameHost* popup_main_rfh = popup->GetPrimaryMainFrame();
-  // Popup should be on the initial entry, or no NavigationEntry if
-  // InitialNavigationEntry is disabled.
+  // Popup should be on the initial entry,
   content::NavigationEntry* last_entry =
       popup->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!last_entry || last_entry->IsInitialEntry());
+  EXPECT_TRUE(last_entry->IsInitialEntry());
 
   // 2. Add blank iframe in popup.
   EXPECT_TRUE(content::ExecJs(popup_main_rfh,
@@ -1060,11 +1050,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     ASSERT_TRUE(content::ExecJs(opener, "var w = window.open('', 'my-popup')"));
     popup = popup_observer.GetWebContents();
   }
-  // Popup should be on the initial entry, or no NavigationEntry if
-  // InitialNavigationEntry is disabled.
+  // Popup should be on the initial entry.
   content::NavigationEntry* last_entry =
       popup->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!last_entry || last_entry->IsInitialEntry());
+  EXPECT_TRUE(last_entry->IsInitialEntry());
 
   // 2. Same-document navigation in popup.
   {
@@ -1192,6 +1181,17 @@ class WebstoreIsolationBrowserTest : public ChromeNavigationBrowserTest {
     ChromeNavigationBrowserTest::SetUpOnMainThread();
   }
 
+  void OpenPopup(content::WebContents* creating_contents, GURL destination) {
+    content::TestNavigationObserver popup_waiter(destination);
+    popup_waiter.StartWatchingNewWebContents();
+    EXPECT_TRUE(
+        content::EvalJs(creating_contents,
+                        content::JsReplace("!!window.open($1);", destination))
+            .ExtractBool());
+    popup_waiter.WaitForNavigationFinished();
+    EXPECT_TRUE(popup_waiter.last_navigation_succeeded());
+  }
+
  private:
   net::EmbeddedTestServer https_server_;
 };
@@ -1211,16 +1211,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest, WebstorePopupIsIsolated) {
   // Open a popup for chrome.google.com and ensure that it's isolated in a
   // different SiteInstance and process from the previous google.com page.
   const GURL webstore_origin_url("https://chrome.google.com/title1.html");
-  {
-    content::TestNavigationObserver popup_waiter(webstore_origin_url);
-    popup_waiter.StartWatchingNewWebContents();
-    EXPECT_TRUE(content::EvalJs(initial_web_contents,
-                                content::JsReplace("!!window.open($1);",
-                                                   webstore_origin_url))
-                    .ExtractBool());
-    popup_waiter.WaitForNavigationFinished();
-    EXPECT_TRUE(popup_waiter.last_navigation_succeeded());
-  }
+  OpenPopup(initial_web_contents, webstore_origin_url);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1238,16 +1229,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest, WebstorePopupIsIsolated) {
   // Now navigate the popup to the full web store URL. This will again cause it
   // to be isolated in a different SiteInstance and process from the previous
   // pages, but also now cause a BrowsingInstance swap.
-  {
-    const GURL webstore_url(
-        "https://chrome.google.com/webstore/mock_store.html");
-    content::TestNavigationObserver navigation_waiter(popup);
-    EXPECT_TRUE(
-        ExecuteScript(popup, "location = '" + webstore_url.spec() + "';"));
-    navigation_waiter.WaitForNavigationFinished();
-    EXPECT_TRUE(navigation_waiter.last_navigation_succeeded());
-    EXPECT_EQ(webstore_url, popup->GetLastCommittedURL());
-  }
+  const GURL webstore_url("https://chrome.google.com/webstore/mock_store.html");
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(popup, webstore_url));
   scoped_refptr<content::SiteInstance> webstore_instance(
       popup->GetPrimaryMainFrame()->GetSiteInstance());
   EXPECT_NE(webstore_instance, popup_instance);
@@ -1257,6 +1240,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest, WebstorePopupIsIsolated) {
   EXPECT_FALSE(webstore_instance->IsRelatedSiteInstance(popup_instance.get()));
   EXPECT_FALSE(
       webstore_instance->IsRelatedSiteInstance(initial_instance.get()));
+
+  // Finally navigate the popup back away from the web store URL. This will lead
+  // to another new process and BrowsingInstance swap.
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(popup, first_url));
+  scoped_refptr<content::SiteInstance> final_instance(
+      popup->GetPrimaryMainFrame()->GetSiteInstance());
+  EXPECT_NE(final_instance->GetProcess(), webstore_instance->GetProcess());
+  EXPECT_FALSE(final_instance->IsRelatedSiteInstance(webstore_instance.get()));
 }
 
 // Make sure that the new Chrome Web Store URL used in production
@@ -1277,16 +1268,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest,
   // a BrowsingInstance swap at this point.
   const GURL webstore_origin_url(
       "https://chromewebstore.google.com/title1.html");
-  {
-    content::TestNavigationObserver popup_waiter(webstore_origin_url);
-    popup_waiter.StartWatchingNewWebContents();
-    EXPECT_TRUE(content::EvalJs(initial_web_contents,
-                                content::JsReplace("!!window.open($1);",
-                                                   webstore_origin_url))
-                    .ExtractBool());
-    popup_waiter.WaitForNavigationFinished();
-    EXPECT_TRUE(popup_waiter.last_navigation_succeeded());
-  }
+  OpenPopup(initial_web_contents, webstore_origin_url);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1298,6 +1280,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest,
   EXPECT_NE(initial_instance, popup_instance);
   EXPECT_NE(initial_instance->GetProcess(), popup_instance->GetProcess());
   EXPECT_FALSE(initial_instance->IsRelatedSiteInstance(popup_instance.get()));
+
+  // Navigating the popup away from the webstore should cause another new
+  // process and BrowsingInstance swap.
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(popup, first_url));
+  scoped_refptr<content::SiteInstance> final_instance(
+      popup->GetPrimaryMainFrame()->GetSiteInstance());
+  EXPECT_NE(final_instance->GetProcess(), popup_instance->GetProcess());
+  EXPECT_FALSE(final_instance->IsRelatedSiteInstance(popup_instance.get()));
 }
 
 class WebstoreOverrideIsolationBrowserTest
@@ -1327,16 +1317,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreOverrideIsolationBrowserTest,
   // Open a popup for chrome.foo.com and ensure that it's isolated in a
   // different SiteInstance and process from the rest of foo.com.
   const GURL webstore_origin_url("https://chrome.foo.com/title1.html");
-  {
-    content::TestNavigationObserver popup_waiter(webstore_origin_url);
-    popup_waiter.StartWatchingNewWebContents();
-    EXPECT_TRUE(content::EvalJs(initial_web_contents,
-                                content::JsReplace("!!window.open($1);",
-                                                   webstore_origin_url))
-                    .ExtractBool());
-    popup_waiter.WaitForNavigationFinished();
-    EXPECT_TRUE(popup_waiter.last_navigation_succeeded());
-  }
+  OpenPopup(initial_web_contents, webstore_origin_url);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1354,15 +1335,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreOverrideIsolationBrowserTest,
 
   // Now navigate the popup to the full web store URL and confirm that this
   // causes a BrowsingInstance swap.
-  {
-    const GURL webstore_url("https://chrome.foo.com/frame_tree/simple.htm");
-    content::TestNavigationObserver navigation_waiter(popup);
-    EXPECT_TRUE(
-        ExecuteScript(popup, "location = '" + webstore_url.spec() + "';"));
-    navigation_waiter.WaitForNavigationFinished();
-    EXPECT_TRUE(navigation_waiter.last_navigation_succeeded());
-    EXPECT_EQ(webstore_url, popup->GetLastCommittedURL());
-  }
+  const GURL webstore_url("https://chrome.foo.com/frame_tree/simple.htm");
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(popup, webstore_url));
   scoped_refptr<content::SiteInstance> webstore_instance(
       popup->GetPrimaryMainFrame()->GetSiteInstance());
   EXPECT_NE(webstore_instance, popup_instance);
@@ -1370,6 +1344,14 @@ IN_PROC_BROWSER_TEST_F(WebstoreOverrideIsolationBrowserTest,
   EXPECT_FALSE(webstore_instance->IsRelatedSiteInstance(popup_instance.get()));
   EXPECT_FALSE(
       webstore_instance->IsRelatedSiteInstance(initial_instance.get()));
+
+  // Finally navigate the popup back away from the web store URL. This will lead
+  // to another new process and BrowsingInstance swap.
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(popup, first_url));
+  scoped_refptr<content::SiteInstance> final_instance(
+      popup->GetPrimaryMainFrame()->GetSiteInstance());
+  EXPECT_NE(final_instance->GetProcess(), webstore_instance->GetProcess());
+  EXPECT_FALSE(final_instance->IsRelatedSiteInstance(webstore_instance.get()));
 }
 
 // Check that it's possible to navigate to a chrome scheme URL from a crashed

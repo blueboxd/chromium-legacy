@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ash/constants/ash_switches.h"
+#include "ash/ime/ime_controller_impl.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/webui/diagnostics_ui/backend/input/input_data_provider.h"
 #include "ash/webui/diagnostics_ui/backend/input/input_data_provider_keyboard.h"
@@ -14,6 +16,7 @@
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom-shared.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_piece_forward.h"
 #include "chromeos/ash/components/test/ash_test_suite.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "content/public/test/browser_task_environment.h"
@@ -60,6 +63,12 @@ enum VivaldiTopRowScanCode {
   kRefresh = 0xE7,
 };
 
+// xkb layout ids for both turkish Q-Type and F-Type layouts.
+constexpr base::StringPiece kTurkishKeyboardLayoutId = "xkb:tr::tur";
+constexpr base::StringPiece kTurkishKeyboardFLayoutId = "xkb:tr:f:tur";
+constexpr base::StringPiece kTurkeyRegionCode = "tr";
+constexpr base::StringPiece kTurkeyFLayoutRegionCode = "tr.f";
+
 ui::InputDevice InputDeviceFromCapabilities(
     int device_id,
     const ui::DeviceCapabilities& capabilities) {
@@ -88,6 +97,17 @@ ui::EventRewriterChromeOS::MutableKeyState MakeMutableKeyStateForFKey(
       ui::DomKey(ui::DomKey::F1 + diff), key_code);
 }
 
+void SetCurrentImeId(const std::string& current_ime_id) {
+  // Only data relavent is the ime id.
+  ImeInfo ime_info;
+  ime_info.id = current_ime_id;
+  ime_info.name = u"English";
+  ime_info.short_name = u"US";
+  ime_info.third_party = false;
+
+  Shell::Get()->ime_controller()->RefreshIme(
+      current_ime_id, /*available_imes=*/{ime_info}, /*menu_items=*/{});
+}
 }  // namespace
 
 class InputDataProviderKeyboardTest : public ash::AshTestBase {
@@ -112,6 +132,11 @@ class InputDataProviderKeyboardTest : public ash::AshTestBase {
 
     chromeos::system::StatisticsProvider::SetTestProvider(
         &statistics_provider_);
+
+    statistics_provider_.SetMachineStatistic(
+        chromeos::system::kKeyboardMechanicalLayoutKey, "ANSI");
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             "us");
 
     keyboard_info_ = input_data_provider_keyboard_->ConstructKeyboard(
         &device_information, &aux_data_);
@@ -285,6 +310,28 @@ TEST_F(VivaldiKeyboardTestBase, ScanCodeIndexesWithZeroScanCodes) {
   EXPECT_EQ(top_row_keys_, keyboard_info_->top_row_keys);
 }
 
+TEST_F(VivaldiKeyboardTestBase, TurkishNoFLayout) {
+  SetCurrentImeId(std::string(kTurkishKeyboardLayoutId));
+  statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                           std::string(kTurkeyRegionCode));
+
+  keyboard_info_ = input_data_provider_keyboard_->ConstructKeyboard(
+      &device_information, &aux_data_);
+
+  EXPECT_EQ(kTurkeyRegionCode, keyboard_info_->region_code);
+}
+
+TEST_F(VivaldiKeyboardTestBase, TurkishFLayout) {
+  SetCurrentImeId(std::string(kTurkishKeyboardFLayoutId));
+  statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                           std::string(kTurkeyRegionCode));
+
+  keyboard_info_ = input_data_provider_keyboard_->ConstructKeyboard(
+      &device_information, &aux_data_);
+
+  EXPECT_EQ(kTurkeyFLayoutRegionCode, keyboard_info_->region_code);
+}
+
 class MechanicalLayoutTest
     : public VivaldiKeyboardTestBase,
       public testing::WithParamInterface<
@@ -374,10 +421,30 @@ TEST_F(HasNumpadTest, SwitchDisabled) {
             keyboard_info_->number_pad_present);
 }
 
-class AssistantKeyTest : public VivaldiKeyboardTestBase {
-  void SetUp() override { VivaldiKeyboardTestBase::SetUp(); }
-};
+class RevenBoardTest : public VivaldiKeyboardTestBase {};
+TEST_F(RevenBoardTest, SwitchEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kRevenBranding);
 
+  keyboard_info_ = input_data_provider_keyboard_->ConstructKeyboard(
+      &device_information, &aux_data_);
+
+  EXPECT_EQ(mojom::ConnectionType::kUnknown, keyboard_info_->connection_type);
+  EXPECT_EQ(mojom::PhysicalLayout::kUnknown, keyboard_info_->physical_layout);
+}
+
+TEST_F(RevenBoardTest, SwitchDisabled) {
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      switches::kRevenBranding);
+
+  keyboard_info_ = input_data_provider_keyboard_->ConstructKeyboard(
+      &device_information, &aux_data_);
+
+  EXPECT_EQ(mojom::ConnectionType::kInternal, keyboard_info_->connection_type);
+  EXPECT_EQ(mojom::PhysicalLayout::kChromeOS, keyboard_info_->physical_layout);
+}
+
+class AssistantKeyTest : public VivaldiKeyboardTestBase {};
 TEST_F(AssistantKeyTest, DrobitNoAssistantKey) {
   InitInputDeviceInformation(ui::kDrobitKeyboard);
 

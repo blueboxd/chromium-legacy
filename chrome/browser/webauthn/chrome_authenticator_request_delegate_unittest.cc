@@ -36,6 +36,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -398,7 +399,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, VirtualEnvironmentAttestation) {
 }
 
 #if BUILDFLAG(IS_MAC)
-API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(ChromeWebAuthenticationDelegate& delegate,
                                   content::BrowserContext* browser_context) {
   return delegate.GetTouchIdAuthenticatorConfig(browser_context)
@@ -406,40 +406,33 @@ std::string TouchIdMetadataSecret(ChromeWebAuthenticationDelegate& delegate,
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    ChromeWebAuthenticationDelegate delegate;
-    std::string secret = TouchIdMetadataSecret(delegate, GetBrowserContext());
-    EXPECT_EQ(secret.size(), 32u);
-    // The secret should be stable.
-    EXPECT_EQ(secret, TouchIdMetadataSecret(delegate, GetBrowserContext()));
-  }
+  ChromeWebAuthenticationDelegate delegate;
+  std::string secret = TouchIdMetadataSecret(delegate, GetBrowserContext());
+  EXPECT_EQ(secret.size(), 32u);
+  // The secret should be stable.
+  EXPECT_EQ(secret, TouchIdMetadataSecret(delegate, GetBrowserContext()));
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_EqualForSameProfile) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    // Different delegates on the same BrowserContext (Profile) should return
-    // the same secret.
-    ChromeWebAuthenticationDelegate delegate1;
-    ChromeWebAuthenticationDelegate delegate2;
-    EXPECT_EQ(TouchIdMetadataSecret(delegate1, GetBrowserContext()),
-              TouchIdMetadataSecret(delegate2, GetBrowserContext()));
-  }
+  // Different delegates on the same BrowserContext (Profile) should return
+  // the same secret.
+  ChromeWebAuthenticationDelegate delegate1;
+  ChromeWebAuthenticationDelegate delegate2;
+  EXPECT_EQ(TouchIdMetadataSecret(delegate1, GetBrowserContext()),
+            TouchIdMetadataSecret(delegate2, GetBrowserContext()));
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_NotEqualForDifferentProfiles) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    // Different profiles have different secrets.
-    auto other_browser_context = CreateBrowserContext();
-    ChromeWebAuthenticationDelegate delegate;
-    EXPECT_NE(TouchIdMetadataSecret(delegate, GetBrowserContext()),
-              TouchIdMetadataSecret(delegate, other_browser_context.get()));
-    // Ensure this second secret is actually valid.
-    EXPECT_EQ(
-        32u,
-        TouchIdMetadataSecret(delegate, other_browser_context.get()).size());
-  }
+  // Different profiles have different secrets.
+  auto other_browser_context = CreateBrowserContext();
+  ChromeWebAuthenticationDelegate delegate;
+  EXPECT_NE(TouchIdMetadataSecret(delegate, GetBrowserContext()),
+            TouchIdMetadataSecret(delegate, other_browser_context.get()));
+  // Ensure this second secret is actually valid.
+  EXPECT_EQ(
+      32u, TouchIdMetadataSecret(delegate, other_browser_context.get()).size());
 }
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -641,7 +634,23 @@ TEST_F(DisableWebAuthnWithBrokenCertsTest, SecurityLevelNotAcceptable) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   simulator->SetSSLInfo(std::move(ssl_info));
   simulator->Commit();
-  EXPECT_FALSE(delegate.IsSecurityLevelAcceptableForWebAuthn(main_rfh()));
+  EXPECT_FALSE(delegate.IsSecurityLevelAcceptableForWebAuthn(
+      main_rfh(), url::Origin::Create(url)));
+}
+
+TEST_F(DisableWebAuthnWithBrokenCertsTest, ExtensionSupported) {
+  GURL url("chrome-extension://extensionid");
+  ChromeWebAuthenticationDelegate delegate;
+  auto simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+  net::SSLInfo ssl_info;
+  ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  simulator->SetSSLInfo(std::move(ssl_info));
+  simulator->Commit();
+  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(
+      main_rfh(), url::Origin::Create(url)));
 }
 
 TEST_F(DisableWebAuthnWithBrokenCertsTest, EnterpriseOverride) {
@@ -658,7 +667,17 @@ TEST_F(DisableWebAuthnWithBrokenCertsTest, EnterpriseOverride) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   simulator->SetSSLInfo(std::move(ssl_info));
   simulator->Commit();
-  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(main_rfh()));
+  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(
+      main_rfh(), url::Origin::Create(url)));
+}
+
+TEST_F(DisableWebAuthnWithBrokenCertsTest, Localhost) {
+  GURL url("http://localhost");
+  ChromeWebAuthenticationDelegate delegate;
+  auto simulator =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
+  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(
+      main_rfh(), url::Origin::Create(url)));
 }
 
 TEST_F(DisableWebAuthnWithBrokenCertsTest, SecurityLevelAcceptable) {
@@ -672,7 +691,8 @@ TEST_F(DisableWebAuthnWithBrokenCertsTest, SecurityLevelAcceptable) {
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   simulator->SetSSLInfo(std::move(ssl_info));
   simulator->Commit();
-  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(main_rfh()));
+  EXPECT_TRUE(delegate.IsSecurityLevelAcceptableForWebAuthn(
+      main_rfh(), url::Origin::Create(url)));
 }
 
 }  // namespace

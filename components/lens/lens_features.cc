@@ -30,13 +30,13 @@ BASE_FEATURE(kEnableLatencyLogging,
              "LensImageLatencyLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableRegionSearchOnPdfViewer,
-             "LensEnableRegionSearchOnPdfViewer",
+BASE_FEATURE(kEnableRegionSearchKeyboardShortcut,
+             "LensEnableRegionSearchKeyboardShortcut",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLensInstructionChipImprovements,
-             "LensInstructionChipImprovements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableRegionSearchOnPdfViewer,
+             "LensEnableRegionSearchOnPdfViewer",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableImageSearchSidePanelFor3PDse,
              "EnableImageSearchSidePanelFor3PDse",
@@ -74,18 +74,6 @@ constexpr base::FeatureParam<int> kMaxAreaForRegionSearch{
 constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensImageCompression, "dimensions-max-pixels", 1000};
 
-const base::FeatureParam<bool> kUseGoogleAsVisualSearchProvider{
-    &kLensSearchOptimizations, "use-google-as-visual-search-provider", false};
-
-const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1{
-    &kLensSearchOptimizations, "use-menu-item-alt-text-1", false};
-
-const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
-    &kLensSearchOptimizations, "use-menu-item-alt-text-2", false};
-
-const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
-    &kLensSearchOptimizations, "use-menu-item-alt-text-3", false};
-
 const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing{
     &kLensSearchImageInScreenshotSharing,
     "use-side-panel-for-screenshot-sharing", false};
@@ -93,15 +81,6 @@ const base::FeatureParam<bool> kUseSidePanelForScreenshotSharing{
 const base::FeatureParam<bool> kEnablePersistentBubble{
     &kLensSearchImageInScreenshotSharing, "enable-persistent-bubble", false};
 
-const base::FeatureParam<bool> kUseSelectionIconWithImage{
-    &kLensInstructionChipImprovements, "use-selection-icon-with-image", false};
-
-const base::FeatureParam<bool> kUseAltChipString{
-    &kLensInstructionChipImprovements, "use-alt-chip-string", false};
-
-// Default is set to true but it is only enabled if kLensSearchOptimizations is
-// enabled. This setup allows us to have fullscreen search as a toggleable
-// experience in chrome://flags
 const base::FeatureParam<bool> kEnableLensFullscreenSearch{
     &kLensSearchOptimizations, "enable-lens-fullscreen-search", true};
 
@@ -157,30 +136,6 @@ bool GetEnableImageSearchUnifiedSidePanelFor3PDse() {
   return base::FeatureList::IsEnabled(kEnableImageSearchSidePanelFor3PDse);
 }
 
-bool UseRegionSearchMenuItemAltText1() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
-         kRegionSearchUseMenuItemAltText1.Get();
-}
-
-bool UseRegionSearchMenuItemAltText2() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
-         kRegionSearchUseMenuItemAltText2.Get();
-}
-
-bool UseRegionSearchMenuItemAltText3() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
-         kRegionSearchUseMenuItemAltText3.Get();
-}
-
-bool UseGoogleAsVisualSearchProvider() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
-         kUseGoogleAsVisualSearchProvider.Get();
-}
-
 bool IsLensFullscreenSearchEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          base::FeatureList::IsEnabled(kLensSearchOptimizations) &&
@@ -199,20 +154,6 @@ bool IsLensSidePanelEnabledForRegionSearch() {
 bool IsLensInScreenshotSharingEnabled() {
   return base::FeatureList::IsEnabled(kLensStandalone) &&
          base::FeatureList::IsEnabled(kLensSearchImageInScreenshotSharing);
-}
-
-bool IsLensInstructionChipImprovementsEnabled() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         base::FeatureList::IsEnabled(kLensInstructionChipImprovements);
-}
-
-bool UseSelectionIconWithImage() {
-  return IsLensInstructionChipImprovementsEnabled() &&
-         kUseSelectionIconWithImage.Get();
-}
-
-bool UseAltChipString() {
-  return IsLensInstructionChipImprovementsEnabled() && kUseAltChipString.Get();
 }
 
 // Does not check if kLensSearchImageInScreenshotSharing is enabled because this

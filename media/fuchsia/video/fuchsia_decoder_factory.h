@@ -6,7 +6,7 @@
 #define MEDIA_FUCHSIA_VIDEO_FUCHSIA_DECODER_FACTORY_H_
 
 #include "media/base/decoder_factory.h"
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
+#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 
 namespace media {
@@ -14,10 +14,10 @@ namespace media {
 class FuchsiaDecoderFactory final : public DecoderFactory {
  public:
   FuchsiaDecoderFactory(
-      mojo::PendingRemote<media::mojom::FuchsiaMediaResourceProvider>
+      mojo::PendingRemote<media::mojom::FuchsiaMediaCodecProvider>
           resource_provider,
       bool allow_overlays);
-  ~FuchsiaDecoderFactory() final;
+  ~FuchsiaDecoderFactory() override;
 
   // DecoderFactory implementation.
   void CreateAudioDecoders(
@@ -33,7 +33,7 @@ class FuchsiaDecoderFactory final : public DecoderFactory {
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) override;
 
  private:
-  const mojo::SharedRemote<media::mojom::FuchsiaMediaResourceProvider>
+  const mojo::SharedRemote<media::mojom::FuchsiaMediaCodecProvider>
       resource_provider_;
   const bool allow_overlays_;
 };

@@ -6,11 +6,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/rand_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/reporting/util/refcounted_closure_list.h"
 #include "components/reporting/util/test_support_callbacks.h"
@@ -36,7 +37,7 @@ class RefCountedClosureListTest : public ::testing::Test {
     void Run() { (*count_)--; }
 
    private:
-    std::atomic<size_t>* const count_;
+    const raw_ptr<std::atomic<size_t>> count_;
     const scoped_refptr<RefCountedClosureList> callback_;
   };
 
@@ -54,18 +55,23 @@ TEST_F(RefCountedClosureListTest, BasicUsageTest) {
     std::atomic<size_t> count{num_tasks};
     {
       test::TestCallbackAutoWaiter waiter;
-      const auto closure_list = base::MakeRefCounted<RefCountedClosureList>(
-          base::SequencedTaskRunnerHandle::Get());
-      closure_list->RegisterCompletionCallback(base::BindOnce(
-          &test::TestCallbackAutoWaiter::Signal, base::Unretained(&waiter)));
-      for (size_t t = 0; t < num_tasks; ++t) {
-        auto worker = std::make_unique<Worker>(&count, closure_list);
-        base::ThreadPool::PostDelayedTask(
-            FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-            base::BindOnce(&Worker::Run, std::move(worker)),
-            base::Seconds(1.0 + base::RandDouble()));
+
+      {
+        const auto closure_list = base::MakeRefCounted<RefCountedClosureList>(
+            base::SequencedTaskRunnerHandle::Get());
+        closure_list->RegisterCompletionCallback(base::BindOnce(
+            &test::TestCallbackAutoWaiter::Signal, base::Unretained(&waiter)));
+        for (size_t t = 0; t < num_tasks; ++t) {
+          auto worker = std::make_unique<Worker>(&count, closure_list);
+          base::ThreadPool::PostDelayedTask(
+              FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+              base::BindOnce(&Worker::Run, std::move(worker)),
+              base::Seconds(1.0 + base::RandDouble()));
+        }
+        ASSERT_THAT(count.load(), Eq(num_tasks));
+        // Drop the original reference to `closure_list`.
+        // After that only Workers will hold it.
       }
-      ASSERT_THAT(count.load(), Eq(num_tasks));
 
       // Forward time to trigger workers to run.
       task_environment_.FastForwardBy(base::Seconds(2));

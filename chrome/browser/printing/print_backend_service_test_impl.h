@@ -20,6 +20,10 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/containers/queue.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/scoped_refptr.h"
+#include "chrome/services/printing/public/mojom/printer_xml_parser.mojom-forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "printing/mojom/print.mojom.h"
 #endif
 
@@ -49,13 +53,34 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
       scoped_refptr<TestPrintBackend> backend,
       bool sandboxed);
 
+#if BUILDFLAG(IS_WIN)
+  // Launch the service in-process for testing using the provided backend.
+  // `sandboxed` identifies if this service is potentially subject to
+  // experiencing access-denied errors on some commands. Launches the service on
+  // the thread associated with `service_task_runner`.
+  static std::unique_ptr<PrintBackendServiceTestImpl>
+  LaunchForTestingWithServiceThread(
+      mojo::Remote<mojom::PrintBackendService>& remote,
+      scoped_refptr<TestPrintBackend> backend,
+      bool sandboxed,
+      mojo::PendingRemote<mojom::PrinterXmlParser> xml_parser_remote,
+      scoped_refptr<base::SingleThreadTaskRunner> service_task_runner);
+#endif  // BUILDFLAG(IS_WIN)
+
   PrintBackendServiceTestImpl(const PrintBackendServiceTestImpl&) = delete;
   PrintBackendServiceTestImpl& operator=(const PrintBackendServiceTestImpl&) =
       delete;
   ~PrintBackendServiceTestImpl() override;
 
   // Override which needs special handling for using `test_print_backend_`.
-  void Init(const std::string& locale) override;
+  void Init(
+#if BUILDFLAG(IS_WIN)
+      const std::string& locale,
+      mojo::PendingRemote<mojom::PrinterXmlParser> remote
+#else
+      const std::string& locale
+#endif  // BUILDFLAG(IS_WIN)
+      ) override;
 
   // Overrides to support testing service termination scenarios.
   void EnumeratePrinters(
@@ -101,7 +126,7 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
 #endif
 
  private:
-  // Use LaunchForTesting().
+  // Use LaunchForTesting() or LaunchForTestingWithServiceThread().
   PrintBackendServiceTestImpl(
       mojo::PendingReceiver<mojom::PrintBackendService> receiver,
       scoped_refptr<TestPrintBackend> backend);
@@ -111,6 +136,16 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
       mojom::DefaultPrinterNameResultPtr printer_name);
 
   void TerminateConnection();
+
+#if BUILDFLAG(IS_WIN)
+  // Launches and returns a test Print Backend service run on a service thread.
+  // This runs on the service thread.
+  static std::unique_ptr<PrintBackendServiceTestImpl>
+  CreateServiceOnServiceThread(
+      mojo::PendingReceiver<mojom::PrintBackendService> receiver,
+      scoped_refptr<TestPrintBackend> backend,
+      mojo::PendingRemote<mojom::PrinterXmlParser> xml_parser_remote);
+#endif  // BUILDFLAG(IS_WIN)
 
   // When pretending to be sandboxed, have the possibility of getting access
   // denied errors.

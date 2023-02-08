@@ -48,10 +48,6 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom-forward.h"
 #endif
 
-#if BUILDFLAG(IS_FUCHSIA)
-#include "media/fuchsia/mojom/fuchsia_media_resource_provider.mojom.h"
-#endif
-
 namespace network {
 
 struct CrossOriginEmbedderPolicy;
@@ -155,11 +151,6 @@ class DedicatedWorkerHost final
   void BindSerialService(
       mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 #endif
-#if BUILDFLAG(IS_FUCHSIA)
-  void BindFuchsiaMediaResourceProvider(
-      mojo::PendingReceiver<media::mojom::FuchsiaMediaResourceProvider>
-          receiver);
-#endif
 
   // PlzDedicatedWorker:
   void StartScriptLoad(
@@ -225,6 +216,10 @@ class DedicatedWorkerHost final
   void BindCacheStorageForBucket(
       const storage::BucketInfo& bucket,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
+  void GetSandboxedFileSystemForBucket(
+      const storage::BucketInfo& bucket,
+      blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+          callback) override;
 
   // Returns the features set that disable back-forward cache.
   blink::scheduler::WebSchedulerTrackedFeatures

@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -61,12 +60,14 @@ bool DefaultDeleteFunction(const base::FilePath& file) {
 
 PasswordManagerExporter::PasswordManagerExporter(
     SavedPasswordsPresenter* presenter,
-    ProgressCallback on_progress)
+    ProgressCallback on_progress,
+    base::OnceClosure completion_callback)
     : presenter_(presenter),
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(base::BindRepeating(&DefaultWriteFunction)),
       delete_function_(base::BindRepeating(&DefaultDeleteFunction)),
+      completion_callback_(std::move(completion_callback)),
 #if BUILDFLAG(IS_POSIX)
       set_permissions_function_(
           base::BindRepeating(base::SetPosixFilePermissions)),
@@ -89,8 +90,8 @@ void PasswordManagerExporter::PreparePasswordsForExport() {
     return credential.blocked_by_user;
   });
 
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&PasswordCSVWriter::SerializePasswords, credentials),
       base::BindOnce(&PasswordManagerExporter::SetSerialisedPasswordList,
                      weak_factory_.GetWeakPtr(), credentials.size()));
@@ -128,6 +129,9 @@ void PasswordManagerExporter::Cancel() {
   // If we are currently writing to the disk, we will have to cleanup the file
   // once writing stops.
   Cleanup();
+
+  // Resets the unique pointer to the current object instance.
+  std::move(completion_callback_).Run();
 }
 
 ExportProgressStatus PasswordManagerExporter::GetProgressStatus() {
@@ -160,8 +164,8 @@ void PasswordManagerExporter::Export() {
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(DoWriteOnTaskRunner, write_function_,
                      set_permissions_function_, destination_,
                      std::move(serialised_password_list_)),
@@ -178,6 +182,9 @@ void PasswordManagerExporter::OnPasswordsExported(bool success) {
     // Don't leave partial password files, if we tell the user we couldn't write
     Cleanup();
   }
+
+  // Resets the unique pointer to the current object instance.
+  std::move(completion_callback_).Run();
 }
 
 void PasswordManagerExporter::OnProgress(ExportProgressStatus status,

@@ -108,7 +108,7 @@ const char kTranslateScriptPath[] = "/translatescript/";
 const char kTranslateScript[] = "Fake_Translate_Script";
 
 // Body text for /languagepath/.
-const char kLanguagePathText[] = "Some text here.";
+const char kLanguagePathText[] = "123456";
 
 // Builds a HTML document with a French text and the given `html` and `meta`
 // tags.
@@ -399,8 +399,7 @@ void TestResponseProvider::GetLanguageResponse(
 }
 
 // Tests that language in http content is detected.
-// TODO(crbug.com/1328970): Re-enable when translate works in HTTP
-- (void)DISABLED_testLanguageDetectionHttpContentLanguage {
+- (void)testLanguageDetectionHttpContentLanguage {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -437,8 +436,7 @@ void TestResponseProvider::GetLanguageResponse(
 }
 
 // Tests that language in http content is detected when navigating to a link.
-// TODO(crbug.com/1328970): Re-enable when translate works in HTTP
-- (void)DISABLED_testLanguageDetectionHttpContentLanguageBehindLink {
+- (void)testLanguageDetectionHttpContentLanguageBehindLink {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -632,8 +630,7 @@ void TestResponseProvider::GetLanguageResponse(
 
 // Test that the Show Original banner dismisses with a longer delay since it is
 // a high priority banner.
-// TODO(crbug.com/1316562): Re-enable the test.
-- (void)DISABLED_testInfobarAcceptedBannerDismissWithHighPriorityDelay {
+- (void)testInfobarAcceptedBannerDismissWithHighPriorityDelay {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -728,7 +725,7 @@ void TestResponseProvider::GetLanguageResponse(
 // Tests that the target language can be changed. TODO(crbug.com/1046629):
 // implement test for changing source language.
 // TODO(crbug.com/1116012): This test is failing flaky on iOS14.
-- (void)DISABLED_testInfobarChangeTargetLanguage {
+- (void)testInfobarChangeTargetLanguage {
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
@@ -963,12 +960,6 @@ void TestResponseProvider::GetLanguageResponse(
 // translate is available and it brings up the Translate infobar and translates
 // the page when tapped.
 - (void)testTranslateManualTrigger {
-// TODO(crbug.com/1209349): test failing on ipad device
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
-  }
-#endif
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));

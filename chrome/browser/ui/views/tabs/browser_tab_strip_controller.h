@@ -63,7 +63,7 @@ class BrowserTabStripController : public TabStripController,
   int GetCount() const override;
   bool IsValidIndex(int model_index) const override;
   bool IsActiveTab(int model_index) const override;
-  int GetActiveIndex() const override;
+  absl::optional<int> GetActiveIndex() const override;
   bool IsTabSelected(int model_index) const override;
   bool IsTabPinned(int model_index) const override;
   void SelectTab(int model_index, const ui::Event& event) override;
@@ -78,7 +78,7 @@ class BrowserTabStripController : public TabStripController,
   void RemoveTabFromGroup(int model_index) override;
   void MoveTab(int start_index, int final_index) override;
   void MoveGroup(const tab_groups::TabGroupId& group, int final_index) override;
-  bool ToggleTabGroupCollapsedState(
+  void ToggleTabGroupCollapsedState(
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin) override;
   void ShowContextMenuForTab(Tab* tab,
@@ -154,7 +154,7 @@ class BrowserTabStripController : public TabStripController,
   void SetTabDataAt(content::WebContents* web_contents, int model_index);
 
   // Adds a tab.
-  void AddTab(content::WebContents* contents, int index, bool is_active);
+  void AddTab(content::WebContents* contents, int index);
 
   raw_ptr<TabStripModel> model_;
 

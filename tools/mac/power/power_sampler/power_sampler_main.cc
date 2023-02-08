@@ -47,12 +47,12 @@ void InitLogging() {
 
 constexpr char kSwitchHelp[] = "h";
 constexpr char kSwitchSamplers[] = "samplers";
+constexpr char kSwitchInitialSample[] = "initial-sample";
 constexpr char kSwitchSampleInterval[] = "sample-interval";
 constexpr char kSwitchSampleCount[] = "sample-count";
 constexpr char kSwitchTimeout[] = "timeout";
 constexpr char kSwitchJsonOutputFile[] = "json-output-file";
-constexpr char kSwitchSampleEveryNthNotification[] =
-    "sample-every-nth-notification";
+constexpr char kSwitchSampleOnNotification[] = "sample-on-notification";
 constexpr char kSwitchResourceCoalitionPid[] = "resource-coalition-pid";
 constexpr char kSwitchSimulateUserActive[] = "simulate-user-active";
 constexpr char kSwitchNoSamplers[] = "no-samplers";
@@ -63,10 +63,10 @@ in CSV or JSON format.
 
 Options:
   --samplers=<samplers>           Comma separated list of samplers.
+  --initial-sample                Sample on launch.
   --sample-interval=<num>         Sample on a <num> second interval.
-  --sample-every-nth-notification        Sample on power manager notifications.
-      Respond to every nth notification only.
-      Note that interval and event notifications are mutually exclusive.
+  --sample-on-notification        Sample on power manager notification.
+      Sampling on interval or on notification are mutually exclusive.
   --sample-count=<num>            Collect <num> samples before exiting.
   --no-samplers                   Use no samplers.
   --timeout=<num>                 Stops the sampler after <num> seconds.
@@ -153,10 +153,10 @@ int main(int argc, char** argv) {
 
   base::TimeDelta sampling_interval = base::Seconds(60);
   if (command_line.HasSwitch(kSwitchSampleInterval)) {
-    if (command_line.HasSwitch(kSwitchSampleEveryNthNotification)) {
+    if (command_line.HasSwitch(kSwitchSampleOnNotification)) {
       PrintUsage(
           "--sample-interval should not be specified with "
-          "--sample-every-nth-notification.");
+          "--sample-on-notification.");
       return kStatusInvalidParam;
     }
 
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
   }
 
   std::unique_ptr<base::SamplingEventSource> event_source;
-  if (command_line.HasSwitch(kSwitchSampleEveryNthNotification)) {
+  if (command_line.HasSwitch(kSwitchSampleOnNotification)) {
     event_source = std::make_unique<base::IOPMPowerSourceSamplingEventSource>();
   } else {
     event_source =
@@ -223,19 +223,7 @@ int main(int argc, char** argv) {
 
   base::SingleThreadTaskExecutor executor(base::MessagePumpType::NS_RUNLOOP);
 
-  int64_t sample_every = 1;
-  if (command_line.HasSwitch(kSwitchSampleEveryNthNotification)) {
-    std::string sample_every_switch =
-        command_line.GetSwitchValueASCII(kSwitchSampleEveryNthNotification);
-    if (!base::StringToInt64(sample_every_switch, &sample_every) ||
-        sample_every < 1) {
-      PrintUsage(
-          "sample-every-nth-notification must be numeric and larger than 0.");
-      return kStatusInvalidParam;
-    }
-  }
-
-  power_sampler::SamplingController controller(sample_every);
+  power_sampler::SamplingController controller;
 
   std::unique_ptr<power_sampler::UserActiveSimulator> user_active_simulator;
   if (command_line.HasSwitch(kSwitchSimulateUserActive)) {
@@ -367,18 +355,24 @@ int main(int argc, char** argv) {
                        },
                        run_loop.QuitClosure()));
 
-  if (!event_source->Start(BindRepeating(
-          [](power_sampler::SamplingController* controller,
-             base::OnceClosure quit_closure) {
-            if (controller->OnSamplingEvent())
-              std::move(quit_closure).Run();
-          },
-          base::Unretained(&controller), run_loop.QuitClosure()))) {
+  auto sample_closure = BindRepeating(
+      [](power_sampler::SamplingController* controller,
+         base::OnceClosure quit_closure) {
+        if (controller->OnSamplingEvent())
+          std::move(quit_closure).Run();
+      },
+      base::Unretained(&controller), run_loop.QuitClosure());
+
+  controller.StartSession();
+
+  if (!event_source->Start(sample_closure)) {
     PrintUsage("Could not start the sampling event source.");
     return kStatusRuntimeError;
   }
 
-  controller.StartSession();
+  if (command_line.HasSwitch(kSwitchInitialSample)) {
+    sample_closure.Run();
+  }
 
   run_loop.Run();
 

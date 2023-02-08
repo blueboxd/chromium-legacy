@@ -6,14 +6,20 @@
 #define CHROME_BROWSER_UI_WEBUI_ASH_CLOUD_UPLOAD_CLOUD_UPLOAD_PAGE_HANDLER_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom-shared.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+class Profile;
 
 namespace ash::cloud_upload {
 
@@ -24,6 +30,8 @@ class CloudUploadPageHandler : public mojom::PageHandler {
   using RespondAndCloseCallback =
       base::OnceCallback<void(mojom::UserAction action)>;
   CloudUploadPageHandler(
+      content::WebUI* web_ui,
+      Profile* profile,
       mojom::DialogArgsPtr args,
       mojo::PendingReceiver<mojom::PageHandler> pending_page_handler,
       RespondAndCloseCallback callback);
@@ -33,11 +41,29 @@ class CloudUploadPageHandler : public mojom::PageHandler {
 
   ~CloudUploadPageHandler() override;
 
+  void OnMountResponse(
+      CloudUploadPageHandler::SignInToOneDriveCallback callback,
+      base::File::Error result);
+
   // mojom::PageHandler:
   void GetDialogArgs(GetDialogArgsCallback callback) override;
+  void IsOfficeWebAppInstalled(
+      IsOfficeWebAppInstalledCallback callback) override;
+  void InstallOfficeWebApp(InstallOfficeWebAppCallback callback) override;
+  void IsODFSMounted(IsODFSMountedCallback callback) override;
+  void SignInToOneDrive(SignInToOneDriveCallback callback) override;
   void RespondAndClose(mojom::UserAction action) override;
+  void SetOfficeAsDefaultHandler() override;
+  void SetAlwaysMoveOfficeFiles(bool always_move) override;
 
  private:
+  void OnOfficeWebAppInstalled(
+      InstallOfficeWebAppCallback callback,
+      const GURL& install_url,
+      web_app::ExternallyManagedAppManager::InstallResult result);
+
+  Profile* profile_;
+  content::WebUI* web_ui_;
   mojom::DialogArgsPtr dialog_args_;
 
   mojo::Receiver<PageHandler> receiver_;

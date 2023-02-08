@@ -461,7 +461,7 @@ window.onload = function() {
 In the C++:
 
 ```c++
-void OvenHandler::HandleStartPilotLight(cont base::ListValue* /*args*/) {
+void OvenHandler::HandleStartPilotLight(const base::Value::List& /*args*/) {
   AllowJavascript();
   // CallJavascriptFunction() and FireWebUIListener() are now safe to do.
   GetOven()->StartPilotLight();
@@ -513,7 +513,7 @@ alternatives:
 * [`FireWebUIListener()`](#FireWebUIListener) allows easily notifying the page
   when an event occurs in C++ and is more loosely coupled (nothing blows up if
   the event dispatch is ignored). JS subscribes to notifications via
-  [`addWebUIListener`](#addWebUIListener).
+  [`addWebUiListener`](#addWebUiListener).
 * [`ResolveJavascriptCallback`](#ResolveJavascriptCallback) and
   [`RejectJavascriptCallback`](#RejectJavascriptCallback) are useful
   when Javascript requires a response to an inquiry about C++-canonical state
@@ -529,7 +529,7 @@ happen in timely manner, or may be caused to happen by unpredictable events
 Here's some example to detect a change to Chrome's theme:
 
 ```js
-addWebUIListener("theme-changed", refreshThemeStyles);
+addWebUiListener("theme-changed", refreshThemeStyles);
 ```
 
 This Javascript event listener can be triggered in C++ via:
@@ -634,10 +634,10 @@ and any
 callbacks in the chain.
 
 ```c++
-void OvenHandler::HandleBakeDonuts(const base::ListValue* args) {
+void OvenHandler::HandleBakeDonuts(const base::Value::List& args) {
   AllowJavascript();
   if (!GetOven()->HasGas()) {
-    RejectJavascriptCallback(args->GetList()[0],
+    RejectJavascriptCallback(args[0],
                              base::StringValue("need gas to cook the donuts!"));
   }
 ```
@@ -674,10 +674,10 @@ sendWithPromise('bakeDonuts').then(function(numDonutsBaked: number) {
 Some handling C++ might do this:
 
 ```c++
-void OvenHandler::HandleBakeDonuts(const base::ListValue* args) {
+void OvenHandler::HandleBakeDonuts(const base::Value::List& args) {
   AllowJavascript();
   double num_donuts_baked = GetOven()->BakeDonuts();
-  ResolveJavascriptCallback(args->GetList()[0], base::Value(num_donuts_baked));
+  ResolveJavascriptCallback(args[0], base::Value(num_donuts_baked));
 }
 ```
 
@@ -734,23 +734,23 @@ callback with the deserialized arguments:
 message_callbacks_.find(message)->second.Run(&args);
 ```
 
-### addWebUIListener()
+### addWebUiListener()
 
 WebUI listeners are a convenient way for C++ to inform JavaScript of events.
 
 Older WebUI code exposed public methods for event notification, similar to how
 responses to [chrome.send()](#chrome_send) used to work. They both
 resulted in global namespace pollution, but it was additionally hard to stop
-listening for events in some cases. **cr.addWebUIListener** is preferred in new
+listening for events in some cases. **addWebUiListener** is preferred in new
 code.
 
 Adding WebUI listeners creates and inserts a unique ID into a map in JavaScript,
 just like [sendWithPromise()](#sendWithPromise).
 
-addWebUIListener can be imported from 'chrome://resources/js/cr.m.js'.
+addWebUiListener can be imported from 'chrome://resources/js/cr.m.js'.
 
 ```js
-// addWebUIListener():
+// addWebUiListener():
 webUIListenerMap[eventName] = webUIListenerMap[eventName] || {};
 webUIListenerMap[eventName][createUid()] = callback;
 ```
@@ -780,7 +780,7 @@ TypeScript can listen for WebUI events via:
 
 ```js
 let donutsReady: number = 0;
-addWebUIListener('donuts-baked', function(numFreshlyBakedDonuts: number) {
+addWebUiListener('donuts-baked', function(numFreshlyBakedDonuts: number) {
   donutsReady += numFreshlyBakedDonuts;
 });
 ```
@@ -806,7 +806,7 @@ sendWithPromise('getNumberOfDonuts').then(function(numDonuts: number) {
 });
 ```
 
-Note that sendWithPromise can be imported from 'chrome://resources/js/cr.m.js';
+Note that sendWithPromise can be imported from 'chrome://resources/js/cr.js';
 
 On the C++ side, the message registration is similar to
 [`chrome.send()`](#chrome_send) except that the first argument in the
@@ -815,10 +815,10 @@ message handler's list is a callback ID. That ID is passed to
 JavaScript/TypeScript and calling the `then()` function.
 
 ```c++
-void DonutHandler::HandleGetNumberOfDonuts(const base::ListValue* args) {
+void DonutHandler::HandleGetNumberOfDonuts(const base::Value::List& args) {
   AllowJavascript();
 
-  const base::Value& callback_id = args->GetList()[0];
+  const base::Value& callback_id = args[0];
   size_t num_donuts = GetOven()->GetNumberOfDonuts();
   ResolveJavascriptCallback(callback_id, base::Value(num_donuts));
 }

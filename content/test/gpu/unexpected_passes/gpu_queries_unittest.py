@@ -5,7 +5,6 @@
 
 # pylint: disable=protected-access
 
-import json
 import subprocess
 import unittest
 import unittest.mock as mock
@@ -15,6 +14,7 @@ from unexpected_passes import gpu_unittest_utils as gpu_uu
 from unexpected_passes_common import builders
 from unexpected_passes_common import constants
 from unexpected_passes_common import data_types
+from unexpected_passes_common import expectations
 from unexpected_passes_common import unittest_utils as uu
 
 
@@ -25,67 +25,9 @@ class QueryBuilderUnittest(unittest.TestCase):
     self.addCleanup(self._patcher.stop)
 
     builders.ClearInstance()
+    expectations.ClearInstance()
     uu.RegisterGenericBuildersImplementation()
-
-  def testWebGlVersion(self) -> None:
-    """Tests that only results for the correct WebGL version are returned."""
-    query_results = [
-        {
-            'id':
-            'build-1234',
-            'test_id': ('ninja://chrome/test:telemetry_gpu_integration_test/'
-                        'gpu_tests.webgl_conformance_integration_test.'
-                        'WebGLConformanceIntegrationTest.test_name'),
-            'status':
-            'FAIL',
-            'typ_expectations': [
-                'RetryOnFailure',
-            ],
-            'typ_tags': [
-                'webgl-version-1',
-            ],
-            'step_name':
-            'step_name',
-        },
-        {
-            'id':
-            'build-2345',
-            'test_id': ('ninja://chrome/test:telemetry_gpu_integration_test/'
-                        'gpu_tests.webgl_conformance_integration_test.'
-                        'WebGLConformanceIntegrationTest.test_name'),
-            'status':
-            'FAIL',
-            'typ_expectations': [
-                'RetryOnFailure',
-            ],
-            'typ_tags': [
-                'webgl-version-2',
-            ],
-            'step_name':
-            'step_name',
-        },
-    ]
-    querier = gpu_uu.CreateGenericGpuQuerier(suite='webgl_conformance1')
-    self._popen_mock.return_value = uu.FakeProcess(
-        stdout=json.dumps(query_results))
-    results, expectation_files = querier.QueryBuilder(
-        data_types.BuilderEntry('builder', constants.BuilderTypes.CI, False))
-    self.assertEqual(len(results), 1)
-    self.assertIsNone(expectation_files)
-    self.assertEqual(
-        results[0],
-        data_types.Result('test_name', ['webgl-version-1'], 'Failure',
-                          'step_name', '1234'))
-
-    querier = gpu_uu.CreateGenericGpuQuerier(suite='webgl_conformance2')
-    results, expectation_files = querier.QueryBuilder(
-        data_types.BuilderEntry('builder', constants.BuilderTypes.CI, False))
-    self.assertEqual(len(results), 1)
-    self.assertIsNone(expectation_files)
-    self.assertEqual(
-        results[0],
-        data_types.Result('test_name', ['webgl-version-2'], 'Failure',
-                          'step_name', '2345'))
+    uu.RegisterGenericExpectationsImplementation()
 
   def testSuiteExceptionMap(self) -> None:
     """Tests that the suite passed to the query changes for some suites."""
@@ -200,6 +142,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.gpu_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
   )
 SELECT DISTINCT builder_name
@@ -221,6 +165,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.gpu_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     UNION ALL
     SELECT
       (
@@ -229,6 +175,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chrome.gpu_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   )
 SELECT DISTINCT builder_name
 FROM builders
@@ -249,6 +197,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.gpu_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
   )
 SELECT DISTINCT builder_name
@@ -270,6 +220,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.gpu_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     UNION ALL
     SELECT
       (
@@ -278,6 +230,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chrome.gpu_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   )
 SELECT DISTINCT builder_name
 FROM builders
@@ -301,7 +255,8 @@ WITH
     FROM
       `chrome-luci-data.chromium.gpu_ci_test_results` tr
     WHERE
-      exported.realm = "chromium:ci"
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chromium:ci"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
     ORDER BY partition_time DESC
     LIMIT @num_builds
@@ -327,7 +282,8 @@ WITH
       `chrome-luci-data.chromium.gpu_ci_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -353,7 +309,8 @@ WITH
     FROM
       `chrome-luci-data.chrome.gpu_ci_test_results` tr
     WHERE
-      exported.realm = "chrome:ci"
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chrome:ci"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
     ORDER BY partition_time DESC
     LIMIT @num_builds
@@ -379,7 +336,8 @@ WITH
       `chrome-luci-data.chrome.gpu_ci_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -431,7 +389,8 @@ WITH
       `chrome-luci-data.chromium.gpu_try_test_results` tr,
       submitted_builds sb
     WHERE
-      exported.realm = "chromium:try"
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chromium:try"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
       AND exported.id = sb.id
     ORDER BY partition_time DESC
@@ -458,7 +417,8 @@ WITH
       `chrome-luci-data.chromium.gpu_try_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -510,7 +470,8 @@ WITH
       `chrome-luci-data.chrome.gpu_try_test_results` tr,
       submitted_builds sb
     WHERE
-      exported.realm = "chrome:try"
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chrome:try"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
       AND exported.id = sb.id
     ORDER BY partition_time DESC
@@ -537,7 +498,8 @@ WITH
       `chrome-luci-data.chrome.gpu_try_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -605,34 +567,6 @@ class QueryGeneratorImplUnittest(unittest.TestCase):
                                      data_types.BuilderEntry(
                                          'unknown_builder', 'unknown_type',
                                          False))
-
-
-class GetSuiteFilterClauseUnittest(unittest.TestCase):
-  def testNonWebGl(self) -> None:
-    """Tests that no filter is returned for non-WebGL suites."""
-    for suite in [
-        'context_lost',
-        'hardware_accelerated_feature',
-        'gpu_process',
-        'info_collection',
-        'maps',
-        'pixel',
-        'power',
-        'screenshot_sync',
-        'trace_test',
-    ]:
-      querier = gpu_uu.CreateGenericGpuQuerier(suite=suite)
-      self.assertEqual(querier._GetSuiteFilterClause(), '')
-
-  def testWebGl(self) -> None:
-    """Tests that filters are returned for WebGL suites."""
-    querier = gpu_uu.CreateGenericGpuQuerier(suite='webgl_conformance1')
-    expected_filter = 'AND "webgl-version-1" IN UNNEST(typ_tags)'
-    self.assertEqual(querier._GetSuiteFilterClause(), expected_filter)
-
-    querier = gpu_uu.CreateGenericGpuQuerier(suite='webgl_conformance2')
-    expected_filter = 'AND "webgl-version-2" IN UNNEST(typ_tags)'
-    self.assertEqual(querier._GetSuiteFilterClause(), expected_filter)
 
 
 class HelperMethodUnittest(unittest.TestCase):

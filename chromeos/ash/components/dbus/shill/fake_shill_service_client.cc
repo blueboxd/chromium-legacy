@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/shill/shill_device_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
@@ -190,8 +189,8 @@ void FakeShillServiceClient::GetProperties(
   if (hold_back_service_property_updates_)
     recorded_property_updates_.push_back(std::move(property_update));
   else
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(property_update));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(property_update));
 }
 
 void FakeShillServiceClient::SetProperty(const dbus::ObjectPath& service_path,
@@ -204,7 +203,8 @@ void FakeShillServiceClient::SetProperty(const dbus::ObjectPath& service_path,
     std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
     return;
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::SetProperties(const dbus::ObjectPath& service_path,
@@ -218,7 +218,8 @@ void FakeShillServiceClient::SetProperties(const dbus::ObjectPath& service_path,
       return;
     }
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::ClearProperty(const dbus::ObjectPath& service_path,
@@ -233,7 +234,8 @@ void FakeShillServiceClient::ClearProperty(const dbus::ObjectPath& service_path,
   }
   dict->RemoveKey(name);
   // Note: Shill does not send notifications when properties are cleared.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::ClearProperties(
@@ -248,12 +250,12 @@ void FakeShillServiceClient::ClearProperties(
     return;
   }
 
-  base::ListValue result;
+  base::Value::List result;
   for (const auto& name : names) {
     // Note: Shill does not send notifications when properties are cleared.
     result.Append(dict->RemoveKey(name));
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(result)));
 }
 
@@ -270,7 +272,7 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
   }
 
   if (connect_error_name_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback), *connect_error_name_,
                        /*error_message=*/std::string()));
@@ -292,13 +294,14 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
                      associating_value);
 
   // Stay Associating until the state is changed again after a delay.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillServiceClient::ContinueConnect,
                      weak_ptr_factory_.GetWeakPtr(), service_path.value()),
       GetInteractiveDelay());
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
@@ -310,7 +313,7 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
     return;
   }
   // Set Idle after a delay
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillServiceClient::SetProperty,
                      weak_ptr_factory_.GetWeakPtr(), service_path,
@@ -323,14 +326,16 @@ void FakeShillServiceClient::Disconnect(const dbus::ObjectPath& service_path,
 void FakeShillServiceClient::Remove(const dbus::ObjectPath& service_path,
                                     base::OnceClosure callback,
                                     ErrorCallback error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::CompleteCellularActivation(
     const dbus::ObjectPath& service_path,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 void FakeShillServiceClient::GetLoadableProfileEntries(
@@ -350,7 +355,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
     result_properties.SetKey(profile, base::Value(service_path.value()));
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), std::move(result_properties)));
 }
@@ -403,20 +408,21 @@ void FakeShillServiceClient::RequestPortalDetection(
 void FakeShillServiceClient::RequestTrafficCounters(
     const dbus::ObjectPath& service_path,
     chromeos::DBusMethodCallback<base::Value> callback) {
-  std::move(callback).Run(fake_traffic_counters_.Clone());
+  std::move(callback).Run(base::Value(fake_traffic_counters_.Clone()));
 }
 
 void FakeShillServiceClient::ResetTrafficCounters(
     const dbus::ObjectPath& service_path,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  fake_traffic_counters_.ClearList();
+  fake_traffic_counters_.clear();
   base::Time reset_time =
       !time_getter_.is_null() ? time_getter_.Run() : base::Time::Now();
   SetServiceProperty(
       service_path.value(), shill::kTrafficCounterResetTimeProperty,
       base::Value(reset_time.ToDeltaSinceWindowsEpoch().InMillisecondsF()));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(callback));
 }
 
 ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
@@ -592,7 +598,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   // change and the DefaultService property may change.
   if (property == shill::kStateProperty ||
       property == shill::kVisibleProperty) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&CallSortManagerServices));
   }
 
@@ -604,8 +610,8 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   if (hold_back_service_property_updates_)
     recorded_property_updates_.push_back(std::move(property_update));
   else
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(property_update));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(property_update));
   return true;
 }
 
@@ -726,8 +732,8 @@ void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {
     return;
 
   for (auto& property_update : property_updates)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(property_update));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(property_update));
 }
 
 void FakeShillServiceClient::SetRequireServiceToGetProperties(
@@ -835,7 +841,7 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
                        base::Value(shill::kErrorBadPassphrase));
     SetServiceProperty(service_path, shill::kStateProperty,
                        base::Value(shill::kStateFailure));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             base::IgnoreResult(&FakeShillServiceClient::SetServiceProperty),
@@ -850,29 +856,25 @@ void FakeShillServiceClient::ContinueConnect(const std::string& service_path) {
 }
 
 void FakeShillServiceClient::SetDefaultFakeTrafficCounters() {
-  base::Value traffic_counters(base::Value::Type::LIST);
+  base::Value::List traffic_counters;
 
-  base::Value chrome_dict(base::Value::Type::DICTIONARY);
-  chrome_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceChrome));
-  chrome_dict.SetKey("rx_bytes", base::Value(1000));
-  chrome_dict.SetKey("tx_bytes", base::Value(2000.5));
+  base::Value::Dict chrome_dict;
+  chrome_dict.Set("source", shill::kTrafficCounterSourceChrome);
+  chrome_dict.Set("rx_bytes", 1000);
+  chrome_dict.Set("tx_bytes", 2000.5);
   traffic_counters.Append(std::move(chrome_dict));
 
-  base::Value user_dict(base::Value::Type::DICTIONARY);
-  user_dict.SetKey("source", base::Value(shill::kTrafficCounterSourceUser));
-  user_dict.SetKey("rx_bytes", base::Value(45));
-  user_dict.SetKey("tx_bytes", base::Value(55));
+  base::Value::Dict user_dict;
+  user_dict.Set("source", shill::kTrafficCounterSourceUser);
+  user_dict.Set("rx_bytes", 45);
+  user_dict.Set("tx_bytes", 55);
   traffic_counters.Append(std::move(user_dict));
 
-  SetFakeTrafficCounters(traffic_counters.Clone());
+  SetFakeTrafficCounters(std::move(traffic_counters));
 }
 
 void FakeShillServiceClient::SetFakeTrafficCounters(
-    base::Value fake_traffic_counters) {
-  if (!fake_traffic_counters.is_list()) {
-    LOG(ERROR) << "Fake traffic counters must be a list";
-    return;
-  }
+    base::Value::List fake_traffic_counters) {
   fake_traffic_counters_ = std::move(fake_traffic_counters);
 }
 

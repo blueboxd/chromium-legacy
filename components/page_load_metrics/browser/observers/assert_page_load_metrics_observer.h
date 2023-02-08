@@ -119,10 +119,16 @@ class AssertPageLoadMetricsObserver final
   void OnUserInput(
       const blink::WebInputEvent& event,
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnPageInputTimingUpdate(uint64_t num_input_events) override;
+  void OnPageInputTimingUpdate(uint64_t num_interactions,
+                               uint64_t num_input_events) override;
   void OnInputTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::InputTiming& input_timing_delta) override;
+
+  // Page render data update
+  void OnPageRenderDataUpdate(
+      const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
+      bool is_main_frame) override;
 
   // Subframe events
   void OnSubFrameRenderDataUpdate(
@@ -142,8 +148,6 @@ class AssertPageLoadMetricsObserver final
       const page_load_metrics::mojom::PageLoadTiming& timing,
       content::NavigationHandle* navigation_handle) override {}
   void OnSoftNavigationCountUpdated() override {}
-  void OnMobileFriendlinessUpdate(
-      const blink::MobileFriendliness& mobile_friendliness) override {}
   void OnCpuTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override {}

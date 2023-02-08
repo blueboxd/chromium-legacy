@@ -208,13 +208,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableBrowserVerifiedUserActivationMouse,
      features::kBrowserVerifiedUserActivationMouse},
     {wf::EnableCompositeBGColorAnimation, features::kCompositeBGColorAnimation},
+    {wf::EnableCompositeClipPathAnimation,
+     features::kCompositeClipPathAnimation},
     {wf::EnableConsolidatedMovementXY, features::kConsolidatedMovementXY},
     {wf::EnableCooperativeScheduling, features::kCooperativeScheduling},
     {wf::EnableDevicePosture, features::kDevicePosture},
     {wf::EnableDigitalGoods, features::kDigitalGoodsApi, kSetOnlyIfOverridden},
     {wf::EnableDirectSockets, features::kIsolatedWebApps},
-    {wf::EnableDocumentPictureInPictureAPI,
-     features::kDocumentPictureInPictureAPI},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
@@ -243,7 +243,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaCastOverlayButton, media::kMediaCastOverlayButton},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      media::kMediaEngagementBypassAutoplayPolicies},
-    {wf::EnableMediaSessionWebRTC, media::kMediaSessionWebRTC},
     {wf::EnableMouseSubframeNoImplicitCapture,
      features::kMouseSubframeNoImplicitCapture},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode},
@@ -254,7 +253,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePaymentRequest, features::kWebPayments},
     {wf::EnablePercentBasedScrolling, features::kWindowsScrollingPersonality},
     {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
-    {wf::EnablePictureInPicture, media::kPictureInPicture},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions},
     {wf::EnablePushMessagingSubscriptionChange,
      features::kPushSubscriptionChangeEvent},
@@ -292,6 +290,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRHandInput, device::features::kWebXrHandInput},
     {wf::EnableWebXRHitTest, device::features::kWebXrHitTest},
     {wf::EnableWebXRImageTracking, device::features::kWebXrIncubations},
+    {wf::EnableWebXRLayers, device::features::kWebXrLayers},
     {wf::EnableWebXRPlaneDetection, device::features::kWebXrIncubations},
     {wf::EnableRemoveMobileViewportDoubleTap,
      features::kRemoveMobileViewportDoubleTap},
@@ -503,30 +502,30 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
   WebRuntimeFeatures::EnableBackForwardCache(
       content::IsBackForwardCacheEnabled());
 
-  if (base::FeatureList::IsEnabled(network::features::kTrustTokens)) {
+  if (base::FeatureList::IsEnabled(network::features::kPrivateStateTokens)) {
     // See https://bit.ly/configuring-trust-tokens.
     using network::features::TrustTokenOriginTrialSpec;
     switch (
         network::features::kTrustTokenOperationsRequiringOriginTrial.Get()) {
       case TrustTokenOriginTrialSpec::kOriginTrialNotRequired:
-        // Setting TrustTokens=true enables the Trust Tokens interface;
-        // TrustTokensAlwaysAllowIssuance disables a runtime check during
-        // issuance that the origin trial is active (see
+        // Setting PrivateStateTokens=true enables the Trust Tokens interface;
+        // PrivateStateTokensAlwaysAllowIssuance disables a runtime check
+        // during issuance that the origin trial is active (see
         // blink/.../trust_token_issuance_authorization.h).
-        WebRuntimeFeatures::EnableTrustTokens(true);
-        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(true);
+        WebRuntimeFeatures::EnablePrivateStateTokens(true);
+        WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(true);
         break;
       case TrustTokenOriginTrialSpec::kAllOperationsRequireOriginTrial:
         // The origin trial itself will be responsible for enabling the
-        // TrustTokens RuntimeEnabledFeature.
-        WebRuntimeFeatures::EnableTrustTokens(false);
-        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(false);
+        // PrivateStateTokens RuntimeEnabledFeature.
+        WebRuntimeFeatures::EnablePrivateStateTokens(false);
+        WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(false);
         break;
       case TrustTokenOriginTrialSpec::kOnlyIssuanceRequiresOriginTrial:
         // At issuance, a runtime check will be responsible for checking that
         // the origin trial is present.
-        WebRuntimeFeatures::EnableTrustTokens(true);
-        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(false);
+        WebRuntimeFeatures::EnablePrivateStateTokens(true);
+        WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(false);
         break;
     }
   }

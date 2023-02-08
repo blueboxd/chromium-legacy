@@ -40,6 +40,7 @@
 #include "content/public/test/test_utils.h"
 #include "ipc/message_filter.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/load_flags.h"
@@ -526,8 +527,14 @@ bool IsWebcamAvailableOnSystem(WebContents* web_contents);
 class ToRenderFrameHost {
  public:
   template <typename T>
+  // NOLINTNEXTLINE(google-explicit-constructor)
   ToRenderFrameHost(T* frame_convertible_value)
       : render_frame_host_(ConvertToRenderFrameHost(frame_convertible_value)) {}
+
+  template <typename T, typename RawPtrType>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  ToRenderFrameHost(const raw_ptr<T, RawPtrType>& frame_convertible_value)
+      : ToRenderFrameHost(frame_convertible_value.get()) {}
 
   // Extract the underlying frame.
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
@@ -758,34 +765,62 @@ template <typename T>
 bool operator==(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) == b.value);
 }
+template <typename T>
+bool operator==(const EvalJsResult& a, const T& b) {
+  return b == a;
+}
 
 template <typename T>
 bool operator!=(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) != b.value);
+}
+template <typename T>
+bool operator!=(const EvalJsResult& a, const T& b) {
+  return b != a;
 }
 
 template <typename T>
 bool operator>=(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) >= b.value);
 }
+template <typename T>
+bool operator>=(const EvalJsResult& a, const T& b) {
+  return b < a;
+}
 
 template <typename T>
 bool operator<=(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) <= b.value);
+}
+template <typename T>
+bool operator<=(const EvalJsResult& a, const T& b) {
+  return b > a;
 }
 
 template <typename T>
 bool operator<(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) < b.value);
 }
+template <typename T>
+bool operator<(const EvalJsResult& a, const T& b) {
+  return b >= a;
+}
 
 template <typename T>
 bool operator>(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) > b.value);
 }
+template <typename T>
+bool operator>(const EvalJsResult& a, const T& b) {
+  return b <= a;
+}
 
 inline bool operator==(std::nullptr_t a, const EvalJsResult& b) {
   return b.error.empty() && (base::Value() == b.value);
+}
+template <typename T>
+inline bool operator==(const EvalJsResult& a, std::nullptr_t b) {
+  return nullptr == a;
 }
 
 // Provides informative failure messages when the result of EvalJs() is

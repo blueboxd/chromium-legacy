@@ -131,11 +131,11 @@ export class SettingsSecurityKeysBioEnrollDialogElement extends
   override connectedCallback() {
     super.connectedCallback();
     this.$.dialog.showModal();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'security-keys-bio-enroll-error',
         (error: string, requiresPINChange = false) =>
             this.onError_(error, requiresPINChange));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'security-keys-bio-enroll-status',
         (response: SampleResponse) => this.onEnrollmentSample_(response));
     this.browserProxy_.startBioEnroll().then(([minPinLength]) => {
@@ -159,11 +159,11 @@ export class SettingsSecurityKeysBioEnrollDialogElement extends
     this.dialogPage_ = BioEnrollDialogPage.ERROR;
   }
 
-  private submitPIN_() {
+  private submitPin_() {
     // Disable the confirm button to prevent concurrent submissions.
     this.confirmButtonDisabled_ = true;
 
-    this.$.pin.trySubmit(pin => this.browserProxy_.providePIN(pin))
+    this.$.pin.trySubmit(pin => this.browserProxy_.providePin(pin))
         .then(
             () => {
               this.browserProxy_.getSensorInfo().then(sensorInfo => {
@@ -319,7 +319,7 @@ export class SettingsSecurityKeysBioEnrollDialogElement extends
   private confirmButtonClick_() {
     switch (this.dialogPage_) {
       case BioEnrollDialogPage.PIN_PROMPT:
-        this.submitPIN_();
+        this.submitPin_();
         break;
       case BioEnrollDialogPage.ENROLL:
         assert(!!this.recentEnrollmentId_.length);

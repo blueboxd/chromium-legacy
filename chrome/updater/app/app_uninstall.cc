@@ -25,15 +25,13 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/updater/win/setup/uninstall.h"
-#elif BUILDFLAG(IS_MAC)
-#include "chrome/updater/mac/setup/setup.h"
-#elif BUILDFLAG(IS_LINUX)
-#include "chrome/updater/linux/setup/setup.h"
+#elif BUILDFLAG(IS_POSIX)
+#include "chrome/updater/posix/setup.h"
 #endif
 
 namespace updater {
@@ -60,7 +58,7 @@ void UninstallOtherVersions(UpdaterScope scope) {
     if (base::PathExists(version_executable_path)) {
       base::CommandLine command_line(version_executable_path);
       command_line.AppendSwitch(kUninstallSelfSwitch);
-      if (scope == UpdaterScope::kSystem)
+      if (IsSystemInstall(scope))
         command_line.AppendSwitch(kSystemSwitch);
       command_line.AppendSwitch(kEnableLoggingSwitch);
       command_line.AppendSwitchASCII(kLoggingModuleSwitch,

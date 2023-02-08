@@ -88,6 +88,10 @@
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_FUCHSIA)
+#include "media/fuchsia_media_codec_provider_impl.h"
+#endif
+
 namespace base {
 class CommandLine;
 class PersistentMemoryAllocator;
@@ -581,6 +585,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager> receiver)
       override;
 
+  // Returns an OPFS (origin private file system) associated with
+  // `bucket_locator`.
+  void GetSandboxedFileSystemForBucket(
+      const storage::BucketLocator& bucket_locator,
+      blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+          callback) override;
+
   // Binds |receiver| to a NativeIOHost instance indirectly owned by the
   // StoragePartition. Used by frames and workers via BrowserInterfaceBroker.
   void BindNativeIOHost(
@@ -615,6 +626,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // render process host, and is used by workers via `BrowserInterfaceBroker`.
   void BindPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
+
+#if BUILDFLAG(IS_FUCHSIA)
+  // Binds |receiver| to the FuchsiaMediaCodecProvider instance owned by the
+  // render process host, and is used by workers via BrowserInterfaceBroker.
+  void BindMediaCodecProvider(
+      mojo::PendingReceiver<media::mojom::FuchsiaMediaCodecProvider> receiver)
+      override;
+#endif
 
   // Binds |receiver| to a OneShotBackgroundSyncService instance owned by the
   // StoragePartition associated with the render process host, and is used by
@@ -670,7 +689,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateNotificationService(
       GlobalRenderFrameHostId rfh_id,
       RenderProcessHost::NotificationServiceCreatorType creator_type,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override;
 
@@ -1145,6 +1164,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojo::Remote<media::stable::mojom::StableVideoDecoderFactory>
       stable_video_decoder_factory_remote_;
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_FUCHSIA)
+  std::unique_ptr<FuchsiaMediaCodecProviderImpl> media_codec_provider_;
+#endif
 
   // The memory allocator, if any, in which the renderer will write its metrics.
   std::unique_ptr<base::PersistentMemoryAllocator> metrics_allocator_;

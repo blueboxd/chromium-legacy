@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -247,7 +247,7 @@ class DeviceService : public mojom::DeviceService {
 
   // InterfaceProvider that is bound to the Java-side interface registry.
   service_manager::InterfaceProvider java_interface_provider_{
-      base::ThreadTaskRunnerHandle::Get()};
+      base::SingleThreadTaskRunner::GetCurrentDefault()};
 
   bool java_interface_provider_initialized_ = false;
 

@@ -23,6 +23,7 @@
 static_assert(BUILDFLAG(IS_CHROMEOS_ASH), "For ChromeOS ash-chrome only");
 
 namespace ash {
+
 class FakeSupervisedUserManager;
 
 // Fake chrome user manager with a barebones implementation. Users can be added
@@ -110,6 +111,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
   void SaveUserType(const user_manager::User* user) override;
+  absl::optional<std::string> GetOwnerEmail() override;
   void UpdateUserAccountData(const AccountId& account_id,
                              const UserAccountData& account_data) override;
   bool IsCurrentUserOwner() const override;
@@ -277,7 +279,6 @@ class FakeChromeUserManager : public ChromeUserManager {
 
 }  // namespace ash
 
-// TODO(https://crbug.com/1164001): remove when then migration is finished.
 namespace chromeos {
 using ::ash::FakeChromeUserManager;
 }

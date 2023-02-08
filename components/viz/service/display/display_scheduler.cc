@@ -11,6 +11,7 @@
 #include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/delay_policy.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/performance_hint/hint_session.h"
@@ -20,10 +21,6 @@ namespace viz {
 namespace {
 
 base::TimeDelta ComputeAdpfTarget(const BeginFrameArgs& args) {
-  int target_ms = features::kAdpfTargetDurationMs.Get();
-  if (target_ms > 0 && target_ms <= 1000) {
-    return base::Milliseconds(target_ms);
-  }
   if (args.possible_deadlines) {
     const auto& deadline = args.possible_deadlines->GetPreferredDeadline();
     // Arbitrarily use 75% of the deadline for CPU work.
@@ -473,9 +470,11 @@ void DisplayScheduler::ScheduleBeginFrameDeadline() {
     return;
   }
 
-  begin_frame_deadline_timer_.Start(FROM_HERE, desired_deadline,
-                                    begin_frame_deadline_closure_,
-                                    base::ExactDeadline(true));
+  begin_frame_deadline_timer_.Start(
+      FROM_HERE, desired_deadline, begin_frame_deadline_closure_,
+      deadline_mode == BeginFrameDeadlineMode::kLate
+          ? base::subtle::DelayPolicy::kFlexibleNoSooner
+          : base::subtle::DelayPolicy::kPrecise);
   TRACE_EVENT2("viz", "Using new deadline", "deadline_mode", deadline_mode,
                "desired_deadline", desired_deadline);
 }

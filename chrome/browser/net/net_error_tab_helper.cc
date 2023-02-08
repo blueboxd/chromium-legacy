@@ -31,6 +31,11 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "chrome/browser/ui/ash/network/network_portal_signin_controller.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
@@ -159,6 +164,23 @@ void NetErrorTabHelper::SetIsShowingDownloadButtonInErrorPage(
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
+#if BUILDFLAG(IS_CHROMEOS)
+void NetErrorTabHelper::ShowPortalSignin() {
+  // TODO(b/247618374): Lacros implementation.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!ash::features::IsCaptivePortalErrorPageEnabled()) {
+    mojo::ReportBadMessage("Captive Portal Error Page feature not enabled");
+    return;
+  }
+  if (!portal_signin_controller_) {
+    portal_signin_controller_ =
+        std::make_unique<ash::NetworkPortalSigninController>();
+  }
+  portal_signin_controller_->ShowSignin();
+#endif
+}
+#endif
+
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
       content::WebContentsUserData<NetErrorTabHelper>(*contents),
@@ -279,8 +301,8 @@ void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
   if (!CanShowNetworkDiagnosticsDialog(web_contents()))
     return;
 
-  if (network_diagnostics_receivers_.GetCurrentTargetFrame() !=
-      web_contents()->GetPrimaryMainFrame()) {
+  if (!network_diagnostics_receivers_.GetCurrentTargetFrame()
+           ->IsInPrimaryMainFrame()) {
     return;
   }
 

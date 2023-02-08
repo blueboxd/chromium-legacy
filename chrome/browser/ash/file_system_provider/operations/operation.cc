@@ -10,6 +10,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/file_system_provider_service_ash.h"
+#include "chrome/browser/ash/file_system_provider/operation_request_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
@@ -22,16 +23,16 @@
 namespace ash {
 namespace file_system_provider {
 namespace operations {
+
 namespace {
 
 // This method is only used when Lacros is enabled. It's a callback from Lacros
 // indicating whether the operation was successfully forwarded. If the operation
 // could not be forwarded then the file system request manager must be informed.
-void OperationForwarded(ash::file_system_provider::ProviderId provider_id,
+void OperationForwarded(ProviderId provider_id,
                         const std::string& file_system_id,
                         int request_id,
                         bool delivery_failure) {
-  using ash::file_system_provider::Service;
   // Successful deliveries will go through the FileSystemProvider mojom path.
   if (!delivery_failure)
     return;
@@ -43,7 +44,9 @@ void OperationForwarded(ash::file_system_provider::ProviderId provider_id,
       service->GetProvidedFileSystem(provider_id, file_system_id);
   if (!file_system)
     return;
-  file_system->GetRequestManager()->DestroyRequest(request_id);
+  file_system->GetRequestManager()->RejectRequest(
+      request_id, std::make_unique<RequestValue>(),
+      base::File::FILE_ERROR_FAILED);
 }
 
 // Default implementation for dispatching an event. Can be replaced for unit

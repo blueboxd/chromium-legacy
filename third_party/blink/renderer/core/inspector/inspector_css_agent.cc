@@ -1024,6 +1024,26 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   // Matched rules.
   *matched_css_rules = BuildArrayForMatchedRuleList(resolver.MatchedRules());
 
+  // Inherited styles.
+  *inherited_entries =
+      std::make_unique<protocol::Array<protocol::CSS::InheritedStyleEntry>>();
+  for (InspectorCSSMatchedRules* match : resolver.ParentRules()) {
+    std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
+        protocol::CSS::InheritedStyleEntry::create()
+            .setMatchedCSSRules(
+                BuildArrayForMatchedRuleList(match->matched_rules))
+            .build();
+    if (match->element->style() && match->element->style()->length()) {
+      InspectorStyleSheetForInlineStyle* style_sheet =
+          AsInspectorStyleSheet(match->element);
+      if (style_sheet) {
+        entry->setInlineStyle(
+            style_sheet->BuildObjectForStyle(style_sheet->InlineStyle()));
+      }
+    }
+    inherited_entries->fromJust()->emplace_back(std::move(entry));
+  }
+
   // Pseudo elements.
   if (element_pseudo_id)
     return Response::Success();
@@ -1049,25 +1069,6 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
       pseudo_id_matches->fromJust()->back()->setPseudoIdentifier(
           match->view_transition_name);
     }
-  }
-
-  // Inherited styles.
-  *inherited_entries =
-      std::make_unique<protocol::Array<protocol::CSS::InheritedStyleEntry>>();
-  for (InspectorCSSMatchedRules* match : resolver.ParentRules()) {
-    std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
-        protocol::CSS::InheritedStyleEntry::create()
-            .setMatchedCSSRules(
-                BuildArrayForMatchedRuleList(match->matched_rules))
-            .build();
-    if (match->element->style() && match->element->style()->length()) {
-      InspectorStyleSheetForInlineStyle* style_sheet =
-          AsInspectorStyleSheet(match->element);
-      if (style_sheet)
-        entry->setInlineStyle(
-            style_sheet->BuildObjectForStyle(style_sheet->InlineStyle()));
-    }
-    inherited_entries->fromJust()->emplace_back(std::move(entry));
   }
 
   *inherited_pseudo_id_matches = std::make_unique<
@@ -2230,8 +2231,7 @@ void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
   result->setScopes(std::move(scopes_list));
   std::reverse(layers_list.get()->begin(), layers_list.get()->end());
   result->setLayers(std::move(layers_list));
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    result->setContainerQueries(std::move(container_queries_list));
+  result->setContainerQueries(std::move(container_queries_list));
 }
 
 std::unique_ptr<protocol::CSS::CSSScope> InspectorCSSAgent::BuildScopeObject(
@@ -2909,9 +2909,13 @@ Response InspectorCSSAgent::takeCoverageDelta(
       // If the rule comes from an @import'ed file, the `rule_style_sheet` is
       // different from `style_sheet`.
       InspectorStyleSheet* rule_style_sheet = it->value;
-      if (std::unique_ptr<protocol::CSS::RuleUsage> rule_usage_object =
-              rule_style_sheet->BuildObjectForRuleUsage(css_style_rule, true)) {
-        (*result)->emplace_back(std::move(rule_usage_object));
+      CSSRule* rule = css_style_rule;
+      while (rule) {
+        if (std::unique_ptr<protocol::CSS::RuleUsage> rule_usage_object =
+                rule_style_sheet->BuildObjectForRuleUsage(rule, true)) {
+          (*result)->emplace_back(std::move(rule_usage_object));
+        }
+        rule = rule->parentRule();
       }
     }
   }

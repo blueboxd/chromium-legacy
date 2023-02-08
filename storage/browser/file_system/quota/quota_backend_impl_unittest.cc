@@ -17,8 +17,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/file_system_usage_cache.h"
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -46,7 +46,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
  public:
   MockQuotaManagerProxy()
       : QuotaManagerProxy(/*quota_manager_impl=*/nullptr,
-                          base::ThreadTaskRunnerHandle::Get(),
+                          base::SingleThreadTaskRunner::GetCurrentDefault(),
                           /*profile_path=*/base::FilePath()),
         storage_modified_count_(0),
         usage_(0),
@@ -61,10 +61,9 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
                             blink::mojom::StorageType type,
                             bool enabled) override {}
 
-  void NotifyStorageModified(
+  void NotifyBucketModified(
       QuotaClientType client_id,
-      const blink::StorageKey& storage_key,
-      blink::mojom::StorageType type,
+      const BucketLocator& bucket,
       int64_t delta,
       base::Time modification_time,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
@@ -148,7 +147,7 @@ class QuotaBackendImplTest : public testing::Test,
   }
 
   base::SequencedTaskRunner* file_task_runner() {
-    return base::ThreadTaskRunnerHandle::Get().get();
+    return base::SingleThreadTaskRunner::GetCurrentDefault().get();
   }
 
   base::FilePath GetUsageCachePath(const url::Origin& origin,

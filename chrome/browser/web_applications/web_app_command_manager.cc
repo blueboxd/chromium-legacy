@@ -34,9 +34,13 @@ namespace {
 base::Value CreateLogValue(const WebAppCommand& command,
                            absl::optional<CommandResult> result) {
   base::Value::Dict dict;
+  dict.Set("name", command.name());
   dict.Set("id", command.id());
-  dict.Set("started", command.IsStarted());
-  dict.Set("value", command.ToDebugValue());
+  base::Value debug_value = command.ToDebugValue();
+  bool is_empty_dict = debug_value.is_dict() && debug_value.DictEmpty();
+  if (!debug_value.is_none() && !is_empty_dict) {
+    dict.Set("value", command.ToDebugValue());
+  }
   if (result) {
     switch (result.value()) {
       case CommandResult::kSuccess:
@@ -125,9 +129,11 @@ void WebAppCommandManager::StartCommandOrPrepareForLoad(
   DCHECK(command_it != commands_.end());
 #endif
   if (command->lock_description().IncludesSharedWebContents()) {
-    command->shared_web_contents_ = EnsureWebContentsCreated();
+    CHECK(shared_web_contents_);
     url_loader_->PrepareForLoad(
-        command->shared_web_contents(),
+        // web_contents is created by `WebAppLockManager` when lock is granted,
+        // this grabs the same web_contents.
+        shared_web_contents_.get(),
         base::BindOnce(&WebAppCommandManager::OnAboutBlankLoadedForCommandStart,
                        weak_ptr_factory_.GetWeakPtr(), command,
                        std::move(start_command)));
@@ -200,9 +206,9 @@ void WebAppCommandManager::NotifySyncSourceRemoved(
   // commands. The main complications that can occur are a command calling
   // `CompleteAndDestruct` or `ScheduleCommand` inside of the
   // `OnSyncSourceRemoved` call. Because all commands are
-  // `Start()`ed asynchronously, we will never have to notify any commands that
-  // are newly scheduled. So at most one command needs to be notified per queue,
-  // and that command can be destroyed before we notify it.
+  // `StartWithLock()`ed asynchronously, we will never have to notify any
+  // commands that are newly scheduled. So at most one command needs to be
+  // notified per queue, and that command can be destroyed before we notify it.
   std::vector<base::WeakPtr<WebAppCommand>> commands_to_notify;
   for (const AppId& app_id : app_ids) {
     for (const auto& [id, command] : commands_) {
@@ -238,6 +244,13 @@ base::Value WebAppCommandManager::ToDebugValue() {
 }
 
 void WebAppCommandManager::LogToInstallManager(base::Value log) {
+  if (log.is_none())
+    return;
+#if DCHECK_IS_ON()
+  // This is wrapped with DCHECK_IS_ON() to prevent calling DebugString() in
+  // production builds.
+  DVLOG(1) << log.DebugString();
+#endif
   provider_->install_manager().TakeCommandErrorLog(PassKey(), std::move(log));
 }
 
@@ -292,6 +305,12 @@ void WebAppCommandManager::OnCommandComplete(
 }
 
 void WebAppCommandManager::AddValueToLog(base::Value value) {
+  DCHECK(!value.is_none());
+#if DCHECK_IS_ON()
+  // This is wrapped with DCHECK_IS_ON() to prevent calling DebugString() in
+  // production builds.
+  DVLOG(1) << value.DebugString();
+#endif
   static constexpr const int kMaxLogLength = 20;
   command_debug_log_.push_front(std::move(value));
   if (command_debug_log_.size() > kMaxLogLength)

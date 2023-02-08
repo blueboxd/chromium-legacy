@@ -19,6 +19,7 @@
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
@@ -26,9 +27,9 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
+#include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
@@ -139,8 +140,7 @@ std::unique_ptr<TestSearchResult> CreateOmniboxSuggestionResult(
   suggestion_result->set_best_match(true);
   suggestion_result->set_display_type(SearchResultDisplayType::kList);
   SearchResultActions actions;
-  actions.push_back(SearchResultAction(SearchResultActionType::kRemove,
-                                       u"Remove", true /*visible_on_hover*/));
+  actions.emplace_back(SearchResultActionType::kRemove, u"Remove");
   suggestion_result->SetActions(actions);
 
   // Give this item a name so that the accessibility paint checks pass.
@@ -275,17 +275,14 @@ class AppListPresenterTest : public AshTestBase,
         ->search_result_page_view();
   }
 
-  AppsGridView* apps_grid_view() {
-    return GetAppListTestHelper()->GetScrollableAppsGridView();
+  SearchResultContainerView* GetDefaultSearchResultListView() {
+    return search_result_page()
+        ->search_view_for_test()
+        ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
-  SearchResultBaseView* GetSearchResultListViewItemAt(int index) {
-    return GetAppListView()
-        ->app_list_main_view()
-        ->contents_view()
-        ->search_result_page_view()
-        ->GetSearchResultListViewForTest()
-        ->GetResultViewAt(index);
+  AppsGridView* apps_grid_view() {
+    return GetAppListTestHelper()->GetScrollableAppsGridView();
   }
 
   void ClickMouseAt(const gfx::Point& point) {
@@ -416,23 +413,23 @@ class AppListBubbleAndTabletTestBase : public AshTestBase {
   SearchResultContainerView* GetDefaultSearchResultListView() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_container_views_for_test()[kBestMatchContainerIndex];
     }
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_container_views_for_test()[kBestMatchContainerIndex];
   }
 
   ResultSelectionController* GetResultSelectionController() {
     if (should_show_bubble_launcher()) {
       return GetAppListTestHelper()
-          ->GetProductivityLauncherSearchView()
+          ->GetBubbleAppListSearchView()
           ->result_selection_controller_for_test();
     }
 
     return GetFullscreenSearchPage()
-        ->productivity_launcher_search_view_for_test()
+        ->search_view_for_test()
         ->result_selection_controller_for_test();
   }
 
@@ -2110,7 +2107,8 @@ TEST_P(AppListBubbleAndTabletTest,
   views::test::WidgetDestroyedWaiter widget_close_waiter(confirmation_dialog);
   GetSearchBoxView()->ClearSearchAndDeactivateSearchBox();
   EXPECT_FALSE(AppListSearchResultPageVisible());
-  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+  if (tablet_mode_param())
+    EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
 
   // Exiting the search results page should close the dialog.
   widget_close_waiter.Wait();
@@ -2120,7 +2118,7 @@ TEST_P(AppListBubbleAndTabletTest,
 // (e.g. on screen rotation).
 TEST_F(PopulatedAppListTest, CancelItemDragOnMouseCaptureLoss) {
   InitializeAppsGrid();
-  PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  PopulateApps(apps_grid_test_api_->TilesPerPageInPagedGrid(0) + 1);
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -2406,7 +2404,7 @@ TEST_F(PopulatedAppListTest, ScreenRotationDuringAppsGridItemDrag) {
   UpdateDisplay("1200x600");
 
   InitializeAppsGrid();
-  PopulateApps(apps_grid_test_api_->TilesPerPage(0) + 1);
+  PopulateApps(apps_grid_test_api_->TilesPerPageInPagedGrid(0) + 1);
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -2448,8 +2446,8 @@ TEST_F(PopulatedAppListTest,
   UpdateDisplay("1200x600");
 
   InitializeAppsGrid();
-  PopulateApps(apps_grid_test_api_->TilesPerPage(0) +
-               apps_grid_test_api_->TilesPerPage(1));
+  PopulateApps(apps_grid_test_api_->TilesPerPageInPagedGrid(0) +
+               apps_grid_test_api_->TilesPerPageInPagedGrid(1));
 
   AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
 
@@ -3112,9 +3110,8 @@ TEST_P(AppListPresenterTest, SearchBoxDeactivatedOnModelChange) {
   Shell::Get()->app_list_controller()->ClearActiveModel();
 }
 
-// Tests that search UI gets closed if search model gets changed.
-// TODO(crbug.com/1360501): Fix to work with the new launcher.
-TEST_F(AppListPresenterTest, DISABLED_SearchClearedOnModelChange) {
+// Tests that search UI gets closed if search model changes.
+TEST_F(AppListPresenterTest, SearchClearedOnModelChange) {
   EnableTabletMode(true);
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -3132,13 +3129,14 @@ TEST_F(AppListPresenterTest, DISABLED_SearchClearedOnModelChange) {
   test_result->set_display_type(SearchResultDisplayType::kList);
   search_model->results()->Add(std::move(test_result));
 
-  auto test_tile_result = std::make_unique<TestSearchResult>();
-  test_tile_result->set_result_id("test_tile");
+  auto test_list_result = std::make_unique<TestSearchResult>();
+  test_list_result->set_result_id("test_list");
   // Give this item a name so that the accessibility paint checks pass.
   // (Focusable items should have accessible names.)
-  test_tile_result->SetAccessibleName(u"test_tile");
-  test_tile_result->set_display_type(SearchResultDisplayType::kTile);
-  search_model->results()->Add(std::move(test_tile_result));
+  test_list_result->SetAccessibleName(u"test_list");
+  test_list_result->set_best_match(true);
+  test_list_result->set_display_type(SearchResultDisplayType::kList);
+  search_model->results()->Add(std::move(test_list_result));
 
   // The results are updated asynchronously. Wait until the update is finished.
   base::RunLoop().RunUntilIdle();
@@ -3147,9 +3145,10 @@ TEST_F(AppListPresenterTest, DISABLED_SearchClearedOnModelChange) {
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
   SearchResultContainerView* item_list_container =
-      search_result_page()->GetSearchResultListViewForTest();
+      GetDefaultSearchResultListView();
   ASSERT_EQ(1, item_list_container->num_results());
-  EXPECT_EQ("test", item_list_container->GetResultViewAt(0)->result()->id());
+  EXPECT_EQ("test_list",
+            item_list_container->GetResultViewAt(0)->result()->id());
 
   // Switch the active app list and search model, and verify the search UI gets
   // cleared.
@@ -3165,21 +3164,14 @@ TEST_F(AppListPresenterTest, DISABLED_SearchClearedOnModelChange) {
   // model.
   PressAndReleaseKey(ui::VKEY_A);
 
-  auto test_result_override = std::make_unique<TestSearchResult>();
-  test_result_override->set_result_id("test_override");
+  auto test_list_result_override = std::make_unique<TestSearchResult>();
+  test_list_result_override->set_result_id("test_list_override");
   // Give this item a name so that the accessibility paint checks pass.
   // (Focusable items should have accessible names.)
-  test_result_override->SetAccessibleName(u"test_override");
-  test_result_override->set_display_type(SearchResultDisplayType::kList);
-  search_model_override->results()->Add(std::move(test_result_override));
-
-  auto test_tile_result_override = std::make_unique<TestSearchResult>();
-  test_tile_result_override->set_result_id("test_tile_override");
-  // Give this item a name so that the accessibility paint checks pass.
-  // (Focusable items should have accessible names.)
-  test_tile_result_override->SetAccessibleName(u"test_tile_override");
-  test_tile_result_override->set_display_type(SearchResultDisplayType::kTile);
-  search_model_override->results()->Add(std::move(test_tile_result_override));
+  test_list_result_override->SetAccessibleName(u"test_list_override");
+  test_list_result_override->set_display_type(SearchResultDisplayType::kList);
+  test_list_result_override->set_best_match(true);
+  search_model_override->results()->Add(std::move(test_list_result_override));
 
   // The results are updated asynchronously. Wait until the update is finished.
   base::RunLoop().RunUntilIdle();
@@ -3187,8 +3179,9 @@ TEST_F(AppListPresenterTest, DISABLED_SearchClearedOnModelChange) {
   EXPECT_TRUE(search_box_view->is_search_box_active());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
+  item_list_container = GetDefaultSearchResultListView();
   ASSERT_EQ(1, item_list_container->num_results());
-  EXPECT_EQ("test_override",
+  EXPECT_EQ("test_list_override",
             item_list_container->GetResultViewAt(0)->result()->id());
 
   Shell::Get()->app_list_controller()->ClearActiveModel();

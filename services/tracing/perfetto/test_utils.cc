@@ -278,6 +278,8 @@ void MockConsumer::OnDetach(bool /*success*/) {}
 void MockConsumer::OnAttach(bool /*success*/, const perfetto::TraceConfig&) {}
 void MockConsumer::OnTraceStats(bool /*success*/, const perfetto::TraceStats&) {
 }
+void MockConsumer::OnSessionCloned(bool /*success*/,
+                                   const std::string& /*error*/) {}
 
 void MockConsumer::OnObservableEvents(
     const perfetto::ObservableEvents& events) {
@@ -430,7 +432,7 @@ TracingUnitTest::TracingUnitTest()
           base::test::TaskEnvironment::MainThreadType::IO)),
       tracing_environment_(std::make_unique<base::test::TracingEnvironment>(
           *task_environment_,
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           PerfettoTracedProcess::Get()->perfetto_platform_for_testing())) {}
 
 TracingUnitTest::~TracingUnitTest() {
@@ -442,7 +444,7 @@ void TracingUnitTest::SetUp() {
 
   // Also tell PerfettoTracedProcess to use the current task environment.
   test_handle_ = PerfettoTracedProcess::SetupForTesting(
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   PerfettoTracedProcess::Get()->OnThreadPoolAvailable(
       /* enable_consumer */ true);
 

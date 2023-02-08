@@ -4,6 +4,7 @@
 
 #include "components/power_bookmarks/storage/power_bookmark_backend.h"
 
+#include "components/power_bookmarks/core/powers/search_params.h"
 #include "components/power_bookmarks/storage/empty_power_bookmark_database.h"
 #include "components/power_bookmarks/storage/power_bookmark_database_impl.h"
 
@@ -44,15 +45,22 @@ void PowerBookmarkBackend::Shutdown() {
 
 std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::GetPowersForURL(
     const GURL& url,
-    const PowerType& power_type) {
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return db_->GetPowersForURL(url, power_type);
 }
 
 std::vector<std::unique_ptr<PowerOverview>>
-PowerBookmarkBackend::GetPowerOverviewsForType(const PowerType& power_type) {
+PowerBookmarkBackend::GetPowerOverviewsForType(
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return db_->GetPowerOverviewsForType(power_type);
+}
+
+std::vector<std::unique_ptr<Power>> PowerBookmarkBackend::Search(
+    const SearchParams& search_params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return db_->GetPowersForSearchParams(search_params);
 }
 
 bool PowerBookmarkBackend::CreatePower(std::unique_ptr<Power> power) {
@@ -70,8 +78,9 @@ bool PowerBookmarkBackend::DeletePower(const base::GUID& guid) {
   return db_->DeletePower(guid);
 }
 
-bool PowerBookmarkBackend::DeletePowersForURL(const GURL& url,
-                                              const PowerType& power_type) {
+bool PowerBookmarkBackend::DeletePowersForURL(
+    const GURL& url,
+    const sync_pb::PowerBookmarkSpecifics::PowerType& power_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return db_->DeletePowersForURL(url, power_type);
 }

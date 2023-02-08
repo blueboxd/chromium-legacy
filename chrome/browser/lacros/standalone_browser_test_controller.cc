@@ -12,9 +12,8 @@
 #include "chrome/browser/extensions/extension_keeplist_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chromeos/crosapi/mojom/tts.mojom-forward.h"
@@ -118,14 +117,12 @@ void StandaloneBrowserTestController::InstallWebApp(
   info->user_display_mode = WindowModeToUserDisplayMode(window_mode);
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
-  provider->command_manager().ScheduleCommand(
-      std::make_unique<web_app::InstallFromInfoCommand>(
-          std::move(info), &provider->install_finalizer(),
-          /*overwrite_existing_manifest_fields=*/false,
-          webapps::WebappInstallSource::SYNC,
-          base::BindOnce(
-              &StandaloneBrowserTestController::WebAppInstallationDone,
-              weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+  provider->scheduler().InstallFromInfo(
+      std::move(info),
+      /*overwrite_existing_manifest_fields=*/false,
+      webapps::WebappInstallSource::SYNC,
+      base::BindOnce(&StandaloneBrowserTestController::WebAppInstallationDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void StandaloneBrowserTestController::LoadVpnExtension(
@@ -166,14 +163,15 @@ void StandaloneBrowserTestController::GetTtsVoices(
 void StandaloneBrowserTestController::TtsSpeak(
     crosapi::mojom::TtsUtterancePtr mojo_utterance,
     mojo::PendingRemote<crosapi::mojom::TtsUtteranceClient> utterance_client) {
-  std::unique_ptr<content::TtsUtterance> utterance =
-      tts_crosapi_util::FromMojo(mojo_utterance);
+  std::unique_ptr<content::TtsUtterance> lacros_utterance =
+      tts_crosapi_util::CreateUtteranceFromMojo(
+          mojo_utterance, /*should_always_be_spoken=*/true);
   auto event_delegate = std::make_unique<LacrosUtteranceEventDelegate>(
       this, std::move(utterance_client));
-  utterance->SetEventDelegate(event_delegate.get());
-  lacros_utterance_event_delegates_.emplace(utterance->GetId(),
+  lacros_utterance->SetEventDelegate(event_delegate.get());
+  lacros_utterance_event_delegates_.emplace(lacros_utterance->GetId(),
                                             std ::move(event_delegate));
-  tts_crosapi_util::SpeakForTesting(std::move(utterance));
+  tts_crosapi_util::SpeakForTesting(std::move(lacros_utterance));
 }
 
 void StandaloneBrowserTestController::OnUtteranceFinished(int utterance_id) {

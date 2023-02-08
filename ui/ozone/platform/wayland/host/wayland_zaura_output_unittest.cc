@@ -4,60 +4,58 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_zaura_output.h"
 
-#include <aura-shell-client-protocol.h>
-#include <aura-shell-server-protocol.h>
-#include <wayland-server-protocol.h>
-
 #include "base/memory/raw_ptr.h"
-#include "base/run_loop.h"
-#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/wayland/wayland_display_util.h"
+#include "ui/display/test/test_screen.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
-#include "ui/ozone/platform/wayland/test/mock_zaura_shell.h"
-#include "ui/ozone/platform/wayland/test/server_object.h"
-#include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/test_zaura_output.h"
-
-#include "base/logging.h"
-
-namespace ui {
+#include "ui/ozone/platform/wayland/test/test_zaura_shell.h"
+#include "ui/ozone/platform/wayland/test/wayland_test.h"
 
 using ::testing::Values;
-namespace {
-class WaylandZAuraOutputTest : public ::testing::Test {
- public:
-  WaylandZAuraOutputTest()
-      : task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
+namespace ui {
+namespace {
+
+// A Test Screen that uses Display info in WaylandOutputManager.  It has bare
+// minimum impl to support the test case for {Set|Get|DisplayForNewWindows().
+class WaylandTestScreen : public display::test::TestScreen {
+ public:
+  explicit WaylandTestScreen(WaylandScreen* wayland_screen)
+      : display::test::TestScreen(/*create_display=*/false,
+                                  /*register_screen=*/true),
+        wayland_screen_(wayland_screen) {}
+
+  const std::vector<display::Display>& GetAllDisplays() const override {
+    return wayland_screen_->GetAllDisplays();
+  }
+
+ private:
+  raw_ptr<WaylandScreen> wayland_screen_;
+};
+
+class WaylandZAuraOutputTest : public WaylandTestSimpleWithAuraShell {
+ public:
+  WaylandZAuraOutputTest() = default;
   WaylandZAuraOutputTest(const WaylandZAuraOutputTest&) = delete;
   WaylandZAuraOutputTest& operator=(const WaylandZAuraOutputTest&) = delete;
-
   ~WaylandZAuraOutputTest() override = default;
 
   void SetUp() override {
-    ::testing::Test::SetUp();
-
-    ASSERT_TRUE(server_.Start({}));
-    mock_zaura_shell_.Initialize(server_.display());
-
-    ASSERT_TRUE(connection_.Initialize());
-    connection_.event_source()->StartProcessingEvents();
-    base::RunLoop().RunUntilIdle();
+    WaylandTestSimpleWithAuraShell::SetUp();
 
     // Set default values for the output.
-    wl::TestOutput* output = server_.output();
-    output->SetRect({800, 600});
-    output->SetScale(1);
-    output->Flush();
+    PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+      wl::TestOutput* output = server->output();
+      output->SetRect({800, 600});
+      output->SetScale(1);
+      output->Flush();
+    });
 
-    base::RunLoop().RunUntilIdle();
-    server_.Pause();
-
-    output_manager_ = connection_.wayland_output_manager();
+    output_manager_ = connection_->wayland_output_manager();
     ASSERT_TRUE(output_manager_);
     EXPECT_TRUE(output_manager_->IsOutputReady());
 
@@ -68,11 +66,6 @@ class WaylandZAuraOutputTest : public ::testing::Test {
   }
 
  protected:
-  base::test::SingleThreadTaskEnvironment task_environment_;
-  wl::TestWaylandServerThread server_;
-  wl::MockZAuraShell mock_zaura_shell_;
-  WaylandConnection connection_;
-
   raw_ptr<WaylandOutputManager> output_manager_ = nullptr;
   std::unique_ptr<WaylandScreen> platform_screen_;
 };
@@ -87,25 +80,23 @@ TEST_F(WaylandZAuraOutputTest, HandleInsets) {
   EXPECT_TRUE(wayland_output->insets().IsEmpty());
   EXPECT_TRUE(wayland_output->get_zaura_output());
 
-  // Simulate server sending updated insets to the client.
-  wl_resource* zaura_output_resource =
-      server_.output()->GetAuraOutput()->resource();
-  ASSERT_TRUE(zaura_output_resource);
-  const gfx::Insets sent_insets =
+  const gfx::Insets insets =
       gfx::Rect(800, 600).InsetsFrom(gfx::Rect(10, 10, 500, 400));
-  EXPECT_FALSE(sent_insets.IsEmpty());
-  zaura_output_send_insets(zaura_output_resource, sent_insets.top(),
-                           sent_insets.left(), sent_insets.bottom(),
-                           sent_insets.right());
 
-  server_.Resume();
-  base::RunLoop().RunUntilIdle();
-  server_.Pause();
+  // Simulate server sending updated insets to the client.
+  PostToServerAndWait([&insets](wl::TestWaylandServerThread* server) {
+    auto* const zaura_output = server->output()->GetAuraOutput()->resource();
+
+    ASSERT_TRUE(zaura_output);
+    EXPECT_FALSE(insets.IsEmpty());
+    zaura_output_send_insets(zaura_output, insets.top(), insets.left(),
+                             insets.bottom(), insets.right());
+  });
 
   // Verify that insets is updated.
   EXPECT_TRUE(wayland_output->IsReady());
   EXPECT_EQ(wayland_output->physical_size(), gfx::Size(800, 600));
-  EXPECT_EQ(wayland_output->insets(), sent_insets);
+  EXPECT_EQ(wayland_output->insets(), insets);
 }
 
 TEST_F(WaylandZAuraOutputTest, HandleLogicalTransform) {
@@ -116,15 +107,11 @@ TEST_F(WaylandZAuraOutputTest, HandleLogicalTransform) {
   EXPECT_TRUE(wayland_output->get_zaura_output());
 
   // Simulate server sending updated transform offset to the client.
-  wl_resource* zaura_output_resource =
-      server_.output()->GetAuraOutput()->resource();
-  ASSERT_TRUE(zaura_output_resource);
-  zaura_output_send_logical_transform(zaura_output_resource,
-                                      WL_OUTPUT_TRANSFORM_270);
+  PostToServerAndWait([](wl::TestWaylandServerThread* server) {
+    auto* const zaura_output = server->output()->GetAuraOutput()->resource();
 
-  server_.Resume();
-  base::RunLoop().RunUntilIdle();
-  server_.Pause();
+    zaura_output_send_logical_transform(zaura_output, WL_OUTPUT_TRANSFORM_270);
+  });
 
   EXPECT_TRUE(wayland_output->IsReady());
   EXPECT_EQ(wayland_output->logical_transform(), WL_OUTPUT_TRANSFORM_270);
@@ -148,13 +135,52 @@ TEST_F(WaylandZAuraOutputTest, DisplayIdConversions) {
       std::numeric_limits<int64_t>::max()};
 
   for (int64_t id : kTestIds) {
-    uint32_t display_id_hi = static_cast<uint32_t>(id >> 32);
-    uint32_t display_id_lo = static_cast<uint32_t>(id);
+    auto display_id = ui::wayland::ToWaylandDisplayIdPair(id);
     WaylandZAuraOutput aura_output;
-    WaylandZAuraOutput::OnDisplayId(&aura_output, nullptr, display_id_hi,
-                                    display_id_lo);
+    WaylandZAuraOutput::OnDisplayId(&aura_output, nullptr, display_id.high,
+                                    display_id.low);
     EXPECT_EQ(id, aura_output.display_id().value());
   }
+}
+
+TEST_F(WaylandZAuraOutputTest, ActiveDisplay) {
+  WaylandTestScreen test_screen(output_manager_->wayland_screen());
+
+  wl::TestOutput *primary = nullptr, *secondary = nullptr;
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    primary = server->output();
+    secondary = server->CreateAndInitializeOutput();
+  });
+
+  int64_t primary_id = display::kInvalidDisplayId,
+          secondary_id = display::kInvalidDisplayId;
+  // Wait so that the client creates xdg/aura outputs.
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    secondary->SetRect(gfx::Rect(100, 100));
+    secondary->Flush();
+    primary_id = primary->GetAuraOutput()->display_id();
+    secondary_id = secondary->GetAuraOutput()->display_id();
+  });
+
+  WaitForAllDisplaysReady();
+
+  auto* platform_screen = output_manager_->wayland_screen();
+  DCHECK(platform_screen);
+  ASSERT_EQ(2u, platform_screen->GetAllDisplays().size());
+
+  EXPECT_EQ(primary_id, platform_screen->GetAllDisplays()[0].id());
+  EXPECT_EQ(secondary_id, platform_screen->GetAllDisplays()[1].id());
+
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    secondary->GetAuraOutput()->SendActivated();
+  });
+  EXPECT_EQ(secondary_id,
+            display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+  PostToServerAndWait([&](wl::TestWaylandServerThread* server) {
+    primary->GetAuraOutput()->SendActivated();
+  });
+  EXPECT_EQ(primary_id,
+            display::Screen::GetScreen()->GetDisplayForNewWindows().id());
 }
 
 }  // namespace ui

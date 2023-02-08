@@ -15,18 +15,15 @@
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_app.h"
-#include "components/payments/content/payment_app_service.h"
-#include "components/payments/content/payment_app_service_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
@@ -52,7 +49,7 @@ void CallStatusCallback(PaymentRequestState::StatusCallback callback,
 // Posts the |callback| to be invoked with |status| asynchronously.
 void PostStatusCallback(PaymentRequestState::StatusCallback callback,
                         bool status) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&CallStatusCallback, std::move(callback), status));
 }
@@ -60,6 +57,7 @@ void PostStatusCallback(PaymentRequestState::StatusCallback callback,
 }  // namespace
 
 PaymentRequestState::PaymentRequestState(
+    std::unique_ptr<PaymentAppService> payment_app_service,
     content::RenderFrameHost* initiator_render_frame_host,
     const GURL& top_level_origin,
     const GURL& frame_origin,
@@ -71,7 +69,8 @@ PaymentRequestState::PaymentRequestState(
     base::WeakPtr<ContentPaymentRequestDelegate> payment_request_delegate,
     base::WeakPtr<JourneyLogger> journey_logger,
     base::WeakPtr<CSPChecker> csp_checker)
-    : frame_routing_id_(initiator_render_frame_host->GetGlobalId()),
+    : payment_app_service_(std::move(payment_app_service)),
+      frame_routing_id_(initiator_render_frame_host->GetGlobalId()),
       top_origin_(top_level_origin),
       frame_origin_(frame_origin),
       frame_security_origin_(frame_security_origin),
@@ -85,10 +84,9 @@ PaymentRequestState::PaymentRequestState(
       profile_comparator_(app_locale, *spec) {
   PopulateProfileCache();
 
-  PaymentAppService* service = PaymentAppServiceFactory::GetForContext(
-      initiator_render_frame_host->GetBrowserContext());
-  number_of_payment_app_factories_ = service->GetNumberOfFactories();
-  service->Create(weak_ptr_factory_.GetWeakPtr());
+  number_of_payment_app_factories_ =
+      payment_app_service_->GetNumberOfFactories();
+  payment_app_service_->Create(weak_ptr_factory_.GetWeakPtr());
 
   spec_->AddObserver(this);
 }
@@ -156,15 +154,6 @@ PaymentRequestState::GetPaymentManifestWebDataService() const {
   return GetPaymentRequestDelegate()->GetPaymentManifestWebDataService();
 }
 
-const std::vector<autofill::AutofillProfile*>&
-PaymentRequestState::GetBillingProfiles() {
-  return shipping_profiles_;
-}
-
-bool PaymentRequestState::IsRequestedAutofillDataAvailable() {
-  return is_requested_autofill_data_available_;
-}
-
 bool PaymentRequestState::IsOffTheRecord() const {
   return GetPaymentRequestDelegate()->IsOffTheRecord();
 }
@@ -188,10 +177,6 @@ void PaymentRequestState::OnPaymentAppCreationError(
     AppCreationFailureReason reason) {
   get_all_payment_apps_error_ = error_message;
   get_all_payment_apps_error_reason_ = reason;
-}
-
-bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
-  return false;
 }
 
 void PaymentRequestState::OnDoneCreatingPaymentApps() {
@@ -248,6 +233,11 @@ void PaymentRequestState::SetCanMakePaymentEvenWithoutApps() {
 
 base::WeakPtr<CSPChecker> PaymentRequestState::GetCSPChecker() {
   return csp_checker_;
+}
+
+void PaymentRequestState::SetOptOutOffered() {
+  if (journey_logger_)
+    journey_logger_->SetOptOutOffered();
 }
 
 void PaymentRequestState::OnPaymentResponseReady(
@@ -329,7 +319,7 @@ void PaymentRequestState::AreRequestedMethodsSupported(
     return;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PaymentRequestState::CheckRequestedMethodsSupported,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -427,13 +417,6 @@ void PaymentRequestState::SetAvailablePaymentAppForRetry() {
     return payment_app.get() != selected_app_.get();
   });
   is_retry_called_ = true;
-}
-
-void PaymentRequestState::AddAutofillPaymentApp(
-    bool selected,
-    const autofill::CreditCard& card) {
-  // TODO(https://crbug.com/1209835): Remove this method.
-  return;
 }
 
 void PaymentRequestState::AddAutofillShippingProfile(
@@ -624,7 +607,6 @@ void PaymentRequestState::PopulateProfileCache() {
         contact_profiles_.empty()
             ? false
             : profile_comparator()->IsContactInfoComplete(contact_profiles_[0]);
-    is_requested_autofill_data_available_ &= has_complete_contact;
     if (journey_logger_) {
       journey_logger_->SetNumberOfSuggestionsShown(
           JourneyLogger::Section::SECTION_CONTACT_INFO,
@@ -636,8 +618,6 @@ void PaymentRequestState::PopulateProfileCache() {
         shipping_profiles_.empty()
             ? false
             : profile_comparator()->IsShippingComplete(shipping_profiles_[0]);
-    is_requested_autofill_data_available_ &= has_complete_shipping;
-
     if (journey_logger_) {
       journey_logger_->SetNumberOfSuggestionsShown(
           JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,

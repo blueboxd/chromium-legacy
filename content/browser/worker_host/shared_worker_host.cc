@@ -259,7 +259,8 @@ void SharedWorkerHost::Start(
       worker_client_security_state_->private_network_request_policy =
           DerivePrivateNetworkRequestPolicy(
               worker_client_security_state_->ip_address_space,
-              worker_client_security_state_->is_web_secure_context);
+              worker_client_security_state_->is_web_secure_context,
+              PrivateNetworkRequestContext::kWorker);
     }
     switch (worker_client_security_state_->cross_origin_embedder_policy.value) {
       case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
@@ -468,6 +469,13 @@ void SharedWorkerHost::BindCacheStorageInternal(
   GetProcessHost()->BindCacheStorage(cross_origin_embedder_policy(),
                                      std::move(coep_reporter), bucket_locator,
                                      std::move(receiver));
+}
+
+void SharedWorkerHost::GetSandboxedFileSystemForBucket(
+    const storage::BucketInfo& bucket,
+    blink::mojom::BucketHost::GetDirectoryCallback callback) {
+  GetProcessHost()->GetSandboxedFileSystemForBucket(bucket.ToBucketLocator(),
+                                                    std::move(callback));
 }
 
 void SharedWorkerHost::AllowFileSystem(

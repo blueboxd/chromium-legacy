@@ -7,9 +7,8 @@
 #include "base/bind.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #import "device/bluetooth/bluetooth_adapter_mac.h"
-#include "device/bluetooth/bluetooth_adapter_mac_metrics.h"
 #import "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
 
 using base::mac::ObjCCast;
@@ -97,7 +96,7 @@ void BluetoothRemoteGattDescriptorMac::ReadRemoteDescriptor(
     ValueCallback callback) {
   if (destructor_called_ || HasPendingRead() || HasPendingWrite()) {
     DVLOG(1) << *this << ": Read failed, already in progress.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        BluetoothGattService::GattErrorCode::kInProgress,
@@ -115,7 +114,7 @@ void BluetoothRemoteGattDescriptorMac::WriteRemoteDescriptor(
     ErrorCallback error_callback) {
   if (destructor_called_ || HasPendingRead() || HasPendingWrite()) {
     DVLOG(1) << *this << ": Write failed, already in progress.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),
                        BluetoothGattService::GattErrorCode::kInProgress));
@@ -135,7 +134,6 @@ void BluetoothRemoteGattDescriptorMac::DidUpdateValueForDescriptor(
     DVLOG(1) << *this << ": Value updated, no read in progress.";
     return;
   }
-  RecordDidUpdateValueForDescriptorResult(error);
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
@@ -160,7 +158,6 @@ void BluetoothRemoteGattDescriptorMac::DidWriteValueForDescriptor(
   }
   std::pair<base::OnceClosure, ErrorCallback> callbacks;
   callbacks.swap(write_value_callbacks_);
-  RecordDidWriteValueForDescriptorResult(error);
   if (error) {
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);

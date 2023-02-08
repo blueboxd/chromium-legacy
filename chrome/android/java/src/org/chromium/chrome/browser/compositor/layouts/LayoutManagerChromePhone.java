@@ -15,10 +15,8 @@ import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayou
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
@@ -86,7 +84,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         if (getActiveLayout() == mStaticLayout && !incognito) {
             startShowing(DeviceClassManager.enableAccessibilityLayout(mHost.getContext())
                             ? mOverviewListLayout
-                            : mOverviewLayout,
+                            : (mTabSwitcherLayout != null ? mTabSwitcherLayout : mOverviewLayout),
                     /* animate= */ false);
         }
         super.onTabsAllClosing(incognito);
@@ -120,7 +118,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     @Override
     protected void tabClosed(int id, int nextId, boolean incognito, boolean tabRemoved) {
         boolean showOverview = nextId == Tab.INVALID_TAB_ID;
-        if (getActiveLayoutType() != LayoutType.TAB_SWITCHER && showOverview) {
+        if (getActiveLayoutType() != LayoutType.TAB_SWITCHER
+                && getActiveLayoutType() != LayoutType.START_SURFACE && showOverview) {
             // Since there will be no 'next' tab to display, switch to
             // overview mode when the animation is finished.
             if (getActiveLayoutType() == LayoutType.SIMPLE_ANIMATION) {
@@ -130,10 +129,9 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             }
         }
         getActiveLayout().onTabClosed(time(), id, nextId, incognito);
-        Tab nextTab = getTabById(nextId);
-        if (nextTab != null && nextTab.getView() != null) nextTab.getView().requestFocus();
         boolean animate = !tabRemoved && animationsEnabled();
-        if (getActiveLayoutType() != LayoutType.TAB_SWITCHER && showOverview && !animate) {
+        if (getActiveLayoutType() != LayoutType.TAB_SWITCHER
+                && getActiveLayoutType() != LayoutType.START_SURFACE && showOverview && !animate) {
             showLayout(LayoutType.TAB_SWITCHER, false);
         }
     }
@@ -147,7 +145,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
         } else if (animationsEnabled()) {
-            if (!isLayoutVisible(LayoutType.TAB_SWITCHER)) {
+            if (!isLayoutVisible(LayoutType.TAB_SWITCHER)
+                    && !isLayoutVisible(LayoutType.START_SURFACE)) {
                 if (getActiveLayout() != null && getActiveLayout().isStartingToHide()) {
                     setNextLayout(mSimpleAnimationLayout, true);
                     // The method Layout#doneHiding() will automatically show the next layout.
@@ -179,16 +178,5 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             }
         }
         return false;
-    }
-
-    @Override
-    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
-            boolean isIncognito, boolean willBeSelected, float originX, float originY) {
-        super.tabCreated(id, sourceId, launchType, isIncognito, willBeSelected, originX, originY);
-
-        if (willBeSelected) {
-            Tab newTab = TabModelUtils.getTabById(getTabModelSelector().getModel(isIncognito), id);
-            if (newTab != null && newTab.getView() != null) newTab.getView().requestFocus();
-        }
     }
 }

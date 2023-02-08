@@ -17,9 +17,8 @@ namespace ash {
 
 class NetworkStateHandler;
 
-// This class provides the ability to add, remove and get ICCID and SMDP+
-// address pair for managed cellular networks and stores it persistently in
-// prefs.
+// This class provides the ability to store and query prefs for managed cellular
+// networks.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedCellularPrefHandler {
  public:
   class Observer : public base::CheckedObserver {
@@ -34,7 +33,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedCellularPrefHandler {
   ManagedCellularPrefHandler(const ManagedCellularPrefHandler&) = delete;
   ManagedCellularPrefHandler& operator=(const ManagedCellularPrefHandler&) =
       delete;
-  ~ManagedCellularPrefHandler();
+  virtual ~ManagedCellularPrefHandler();
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
@@ -49,6 +48,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedCellularPrefHandler {
   // Remove the ICCID and SMDP+ address pair from the device pref with given
   // |iccid|.
   void RemovePairWithIccid(const std::string& iccid);
+
+  // Marks cellular network with iccid |iccid| as migrated to the APN revamp
+  // feature. See (b/162365553).
+  virtual void AddApnMigratedIccid(const std::string& iccid);
+
+  // Return true if the |iccid| has been migrated to the APN Revamp feature.
+  virtual bool ContainsApnMigratedIccid(const std::string& iccid) const;
 
   // Returns the corresponding SMDP+ address for the given |iccid|. Returns
   // nullptr if no such |iccid| is found.

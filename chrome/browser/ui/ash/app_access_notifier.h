@@ -8,8 +8,9 @@
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
-#include "ash/public/cpp/microphone_mute_notification_delegate.h"
+#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/account_id/account_id.h"
@@ -30,11 +31,11 @@ class SessionManager;
 
 // This class is responsible for observing AppCapabilityAccessCache, notifying
 // to appropriate entities when an app is accessing camera/microphone. This is
-// also the concrete implementation of MicrophoneMuteNotificationDelegate, which
-// allows code relevant to microphone mute notifications that resides under
-// //ash to invoke functions/objects that actually reside under //chrome.
+// also the concrete implementation of SensorDisabledNotificationDelegate, which
+// allows code relevant to microphone and camera notifications that resides
+// under //ash to invoke functions/objects that actually reside under //chrome.
 class AppAccessNotifier
-    : public ash::MicrophoneMuteNotificationDelegate,
+    : public ash::SensorDisabledNotificationDelegate,
       public apps::AppCapabilityAccessCache::Observer,
       public session_manager::SessionManagerObserver,
       public user_manager::UserManager::UserSessionStateObserver {
@@ -44,8 +45,8 @@ class AppAccessNotifier
   AppAccessNotifier& operator=(const AppAccessNotifier&) = delete;
   ~AppAccessNotifier() override;
 
-  // ash::MicrophoneMuteNotificationDelegate
-  absl::optional<std::u16string> GetAppAccessingMicrophone() override;
+  // ash::SensorDisabledNotificationDelegate
+  std::vector<std::u16string> GetAppsAccessingSensor(Sensor sensor) override;
 
   // apps::AppCapabilityAccessCache::Observer
   void OnCapabilityAccessUpdate(
@@ -92,9 +93,14 @@ class AppAccessNotifier
 
   // Each user has their own list of MRU apps.  It's intended to persist across
   // multiple logouts/logins, and we specifically don't ever clear it. This is
-  // used for the microphone mute notification.
+  // used for the microphone and camera mute notifications.
   using MruAppIdMap = std::map<AccountId, MruAppIdList>;
-  MruAppIdMap mic_using_app_ids;
+
+  // A helper to check if `app_id` can be found in `id_map` for the active user.
+  bool MapContainsAppId(const MruAppIdMap& id_map, const std::string& app_id);
+
+  MruAppIdMap mic_using_app_ids_;
+  MruAppIdMap camera_using_app_ids_;
 
   // Account ID of the last known active user.
   AccountId active_user_account_id_ = EmptyAccountId();

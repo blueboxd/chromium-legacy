@@ -85,10 +85,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void set_user_activity_callback(base::RepeatingClosure callback) {
     user_activity_callback_ = std::move(callback);
   }
-  void set_peripheral_battery_refresh_level(const std::string& address,
-                                            int level) {
-    peripheral_battery_refresh_levels_[address] = level;
-  }
   void set_restart_callback(base::OnceClosure callback) {
     restart_callback_ = std::move(callback);
   }
@@ -108,9 +104,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void IncreaseKeyboardBrightness() override;
   void GetKeyboardBrightnessPercent(
       DBusMethodCallback<double> callback) override;
-  void SetKeyboardBacklightToggledOff(bool toggled_off) override;
-  void GetKeyboardBacklightToggledOff(
-      DBusMethodCallback<bool> callback) override;
+  void SetKeyboardBrightness(
+      const power_manager::SetBacklightBrightnessRequest& request) override;
+  void ToggleKeyboardBacklight() override;
   const absl::optional<power_manager::PowerSupplyProperties>& GetLastStatus()
       override;
   void RequestStatusUpdate() override;
@@ -136,7 +132,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void BlockSuspend(const base::UnguessableToken& token,
                     const std::string& debug_info) override;
   void UnblockSuspend(const base::UnguessableToken& token) override;
-  bool SupportsAmbientColor() override;
   void CreateArcTimers(
       const std::string& tag,
       std::vector<std::pair<clockid_t, base::ScopedFD>> arc_timer_requests,
@@ -147,7 +142,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void DeleteArcTimers(const std::string& tag,
                        VoidDBusMethodCallback callback) override;
   base::TimeDelta GetDarkSuspendDelayTimeout() override;
-  void RefreshBluetoothBattery(const std::string& address) override;
   void SetExternalDisplayALSBrightness(bool enabled) override;
   void GetExternalDisplayALSBrightness(
       DBusMethodCallback<bool> callback) override;
@@ -220,10 +214,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
     keyboard_brightness_percent_ = percent;
   }
 
-  void set_supports_ambient_color(bool supports_ambient_color) {
-    supports_ambient_color_ = supports_ambient_color;
-  }
-
   // Sets |tick_clock| to |tick_clock_|.
   void set_tick_clock(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
@@ -290,10 +280,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   // explicitly by calling ApplyPendingScreenBrightnessChange().
   bool enqueue_brightness_changes_on_backlights_forced_off_ = false;
 
-  // Whether the device has an ambient color sensor. Can be set via
-  // SetSupportsAmbientColor().
-  bool supports_ambient_color_ = false;
-
   // Pending screen brightness changes caused by SetBacklightsForcedOff().
   // ApplyPendingScreenBrightnessChange() applies the first pending change.
   std::queue<power_manager::BacklightBrightnessChange>
@@ -340,9 +326,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // If set then |StartArcTimer| returns failure.
   bool simulate_start_arc_timer_failure_ = false;
-
-  // Used in RefreshBluetoothBattery.
-  base::flat_map<std::string, int> peripheral_battery_refresh_levels_;
 
   bool external_display_als_brightness_enabled_ = false;
 

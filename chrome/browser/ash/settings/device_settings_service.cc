@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/ash/policy/off_hours/off_hours_policy_applier.h"
@@ -133,17 +132,6 @@ void DeviceSettingsService::SetDeviceMode(policy::DeviceMode device_mode) {
   }
 }
 
-void DeviceSettingsService::GetPolicyDataAsync(PolicyDataCallback callback) {
-  if (policy_data_) {
-    std::move(callback).Run(policy_data_.get());
-    return;
-  }
-
-  pending_policy_data_callbacks_.push_back(std::move(callback));
-  if (pending_operations_.empty())
-    EnqueueLoad(false);
-}
-
 scoped_refptr<PublicKey> DeviceSettingsService::GetPublicKey() {
   return public_key_;
 }
@@ -208,7 +196,7 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
     OwnershipStatusCallback callback) {
   if (GetOwnershipStatus() != OWNERSHIP_UNKNOWN) {
     // Report status immediately.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DeviceSettingsService::ValidateOwnershipStatusAndNotify,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -384,10 +372,6 @@ void DeviceSettingsService::HandleCompletedOperation(
   NotifyDeviceSettingsUpdated();
   RunPendingOwnershipStatusCallbacks();
 
-  if ((status == STORE_SUCCESS) || (status == STORE_NO_POLICY)) {
-    RunPendingPolicyDataCallbacks();
-  }
-
   // The completion callback happens after the notification so clients can
   // filter self-triggered updates.
   if (!callback.is_null())
@@ -409,14 +393,6 @@ void DeviceSettingsService::RunPendingOwnershipStatusCallbacks() {
   callbacks.swap(pending_ownership_status_callbacks_);
   for (auto& callback : callbacks) {
     std::move(callback).Run(GetOwnershipStatus());
-  }
-}
-
-void DeviceSettingsService::RunPendingPolicyDataCallbacks() {
-  std::vector<PolicyDataCallback> callbacks;
-  callbacks.swap(pending_policy_data_callbacks_);
-  for (auto& callback : callbacks) {
-    std::move(callback).Run(policy_data_.get());
   }
 }
 

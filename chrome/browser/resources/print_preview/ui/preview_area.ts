@@ -8,7 +8,7 @@ import './print_preview_vars.css.js';
 import '../strings.m.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {hasKeyModifiers} from 'chrome://resources/js/util.js';
+import {hasKeyModifiers} from 'chrome://resources/js/util_ts.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -135,7 +135,7 @@ export class PrintPreviewPreviewAreaElement extends
     super.connectedCallback();
 
     this.nativeLayer_ = NativeLayerImpl.getInstance();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
   }
 
@@ -611,6 +611,14 @@ export class PrintPreviewPreviewAreaElement extends
     const newValue = this.getSettingValue('mediaSize') as MediaSizeValue;
     if (newValue.height_microns !== lastTicket.mediaSize.height_microns ||
         newValue.width_microns !== lastTicket.mediaSize.width_microns ||
+        newValue.imageable_area_left_microns !==
+            lastTicket.mediaSize.imageable_area_left_microns ||
+        newValue.imageable_area_bottom_microns !==
+            lastTicket.mediaSize.imageable_area_bottom_microns ||
+        newValue.imageable_area_right_microns !==
+            lastTicket.mediaSize.imageable_area_right_microns ||
+        newValue.imageable_area_top_microns !==
+            lastTicket.mediaSize.imageable_area_top_microns ||
         (this.destination.id !== lastTicket.deviceName &&
          this.getSettingValue('margins') === MarginsType.MINIMUM)) {
       return true;

@@ -101,6 +101,11 @@ class ASH_EXPORT IconButton : public views::ImageButton {
   // states.
   void SetVectorIcon(const gfx::VectorIcon& icon);
 
+  // Sets the vector icon used when the button is toggled. If the button does
+  // not specify a toggled vector icon, it will use the same vector icon for
+  // all states.
+  void SetToggledVectorIcon(const gfx::VectorIcon& icon);
+
   // Sets the button's background color or toggled color with color value and
   // color ID when the button wants to have a different background color from
   // the default one. When both color value and color ID are set, color ID takes
@@ -138,12 +143,20 @@ class ASH_EXPORT IconButton : public views::ImageButton {
  protected:
   void UpdateVectorIcon();
 
+  // Gets the background color of the icon button.
+  SkColor GetBackgroundColor() const;
+
  private:
   // For unit tests.
   friend class BluetoothFeaturePodControllerTest;
 
+  // True if the button is in the state of toggled, even when the button is
+  // disabled.
+  bool IsToggledOn() const;
+
   const Type type_;
   const gfx::VectorIcon* icon_ = nullptr;
+  const gfx::VectorIcon* toggled_icon_ = nullptr;
 
   Delegate* delegate_ = nullptr;
 

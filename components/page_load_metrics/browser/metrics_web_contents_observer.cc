@@ -40,7 +40,6 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
-#include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
 #include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {
@@ -1048,7 +1047,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
     uint32_t soft_navigation_count) {
   // Replacing this call by GetPageLoadTracker breaks some tests.
   //
@@ -1079,7 +1078,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
         render_frame_host, std::move(timing), std::move(metadata),
         std::move(new_features), resources, std::move(render_data),
         std::move(cpu_timing), std::move(input_timing_delta),
-        std::move(mobile_friendliness), soft_navigation_count);
+        std::move(subresource_load_metrics), soft_navigation_count);
   }
 }
 
@@ -1108,14 +1107,14 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
     mojom::InputTimingPtr input_timing_delta,
-    const absl::optional<blink::MobileFriendliness>& mobile_friendliness,
+    mojom::SubresourceLoadMetricsPtr subresource_load_metrics,
     uint32_t soft_navigation_count) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receivers_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   new_features, resources, std::move(render_data),
                   std::move(cpu_timing), std::move(input_timing_delta),
-                  std::move(mobile_friendliness), soft_navigation_count);
+                  std::move(subresource_load_metrics), soft_navigation_count);
 }
 
 void MetricsWebContentsObserver::SetUpSharedMemoryForSmoothness(

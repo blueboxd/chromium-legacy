@@ -4,6 +4,7 @@
 
 #include "base/memory/raw_ptr.h"
 
+#include "base/task/single_thread_task_runner.h"
 #import "ui/views/widget/native_widget_mac.h"
 
 #import <Cocoa/Cocoa.h>
@@ -18,7 +19,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
@@ -85,8 +85,7 @@ const std::string kDummyWindowRestorationData = "e30=";
 @interface FocusableTestNSView : NSView
 @end
 
-namespace views {
-namespace test {
+namespace views::test {
 
 // NativeWidgetNSWindowBridge friend to access private members.
 class BridgedNativeWidgetTestApi {
@@ -222,7 +221,7 @@ class WidgetChangeObserver : public TestWidgetObserver {
 
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop.Run();
     run_loop_ = nullptr;
@@ -482,8 +481,6 @@ TEST_F(NativeWidgetMacTest, ChildWidgetOnInactiveSpace) {
 // Test minimized states triggered externally, implied visibility and restored
 // bounds whilst minimized.
 TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
-  if (base::mac::IsOS10_10())
-    return;  // Fails when swarmed. http://crbug.com/660582
   Widget* widget = new Widget;
   Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
   widget->Init(std::move(init_params));
@@ -890,10 +887,6 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
 // deminiaturize on the parent window (after attempting to show the child while
 // the parent was miniaturized).
 TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentDeminiaturize) {
-  // Disabled on 10.10 due to flakes. See http://crbug.com/777247.
-  if (base::mac::IsOS10_10())
-    return;
-
   NSWindow* native_parent = MakeBorderlessNativeParent();
   [native_parent makeKeyAndOrderFront:nil];
   [native_parent miniaturize:nil];
@@ -1105,7 +1098,7 @@ class ScopedSwizzleWaiter {
       return;
 
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop_ = &run_loop;
     run_loop.Run();
@@ -1966,7 +1959,7 @@ TEST_F(NativeWidgetMacTest, ReparentNativeViewTypes) {
 // Test class for Full Keyboard Access related tests.
 class NativeWidgetMacFullKeyboardAccessTest : public NativeWidgetMacTest {
  public:
-  NativeWidgetMacFullKeyboardAccessTest() {}
+  NativeWidgetMacFullKeyboardAccessTest() = default;
 
  protected:
   // testing::Test:
@@ -2120,7 +2113,7 @@ TEST_F(NativeWidgetMacFullKeyboardAccessTest, Activation) {
 
 class NativeWidgetMacViewsOrderTest : public WidgetTest {
  public:
-  NativeWidgetMacViewsOrderTest() {}
+  NativeWidgetMacViewsOrderTest() = default;
 
   NativeWidgetMacViewsOrderTest(const NativeWidgetMacViewsOrderTest&) = delete;
   NativeWidgetMacViewsOrderTest& operator=(
@@ -2144,7 +2137,7 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     NativeViewHost* host() const { return host_; }
 
    private:
-    NativeHostHolder(NativeViewHost* host)
+    explicit NativeHostHolder(NativeViewHost* host)
         : host_(host), view_([[NSView alloc] init]) {}
 
     const raw_ptr<NativeViewHost> host_;
@@ -2266,22 +2259,21 @@ namespace {
 // Also verifies that the touch bar's delegate returns non-nil for all items.
 NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
   NSArray* result = nil;
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [view touchBar];
-    NSTouchBarItemIdentifier principal = [touch_bar principalItemIdentifier];
-    EXPECT_TRUE(principal);
-    NSGroupTouchBarItem* group = base::mac::ObjCCastStrict<NSGroupTouchBarItem>(
-        [[touch_bar delegate] touchBar:touch_bar
-                 makeItemForIdentifier:principal]);
-    EXPECT_TRUE(group);
-    NSTouchBar* nested_touch_bar = [group groupTouchBar];
-    result = [nested_touch_bar itemIdentifiers];
+  NSTouchBar* touch_bar = [view touchBar];
+  NSTouchBarItemIdentifier principal = [touch_bar principalItemIdentifier];
+  EXPECT_TRUE(principal);
+  NSGroupTouchBarItem* group = base::mac::ObjCCastStrict<NSGroupTouchBarItem>(
+      [[touch_bar delegate] touchBar:touch_bar
+               makeItemForIdentifier:principal]);
+  EXPECT_TRUE(group);
+  NSTouchBar* nested_touch_bar = [group groupTouchBar];
+  result = [nested_touch_bar itemIdentifiers];
 
-    for (NSTouchBarItemIdentifier item in result) {
-      EXPECT_TRUE([[touch_bar delegate] touchBar:nested_touch_bar
-                           makeItemForIdentifier:item]);
-    }
+  for (NSTouchBarItemIdentifier item in result) {
+    EXPECT_TRUE([[touch_bar delegate] touchBar:nested_touch_bar
+                         makeItemForIdentifier:item]);
   }
+
   return result;
 }
 
@@ -2295,9 +2287,6 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()
               contentView];
 
-  NSString* principal = nil;
-  NSObject* old_touch_bar = nil;
-
   // Constants from bridged_content_view_touch_bar.mm.
   NSString* const kTouchBarOKId = @"com.google.chrome-OK";
   NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
@@ -2306,23 +2295,19 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   EXPECT_TRUE(delegate->GetOkButton());
   EXPECT_TRUE(delegate->GetCancelButton());
 
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [content touchBar];
-    EXPECT_TRUE([touch_bar delegate]);
-    EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
-                         makeItemForIdentifier:kTouchBarOKId]);
-    EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
-                         makeItemForIdentifier:kTouchBarCancelId]);
+  NSTouchBar* touch_bar = [content touchBar];
+  EXPECT_TRUE([touch_bar delegate]);
+  EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
+                       makeItemForIdentifier:kTouchBarOKId]);
+  EXPECT_TRUE([[touch_bar delegate] touchBar:touch_bar
+                       makeItemForIdentifier:kTouchBarCancelId]);
 
-    principal = [touch_bar principalItemIdentifier];
-    EXPECT_NSEQ(@"com.google.chrome-DIALOG-BUTTONS-GROUP", principal);
-    EXPECT_NSEQ((@[ kTouchBarCancelId, kTouchBarOKId ]),
-                ExtractTouchBarGroupIdentifiers(content));
+  NSString* principal = [touch_bar principalItemIdentifier];
+  EXPECT_NSEQ(@"com.google.chrome-DIALOG-BUTTONS-GROUP", principal);
+  EXPECT_NSEQ((@[ kTouchBarCancelId, kTouchBarOKId ]),
+              ExtractTouchBarGroupIdentifiers(content));
 
-    // Ensure the touchBar is recreated by comparing pointers.
-    old_touch_bar = touch_bar;
-    EXPECT_NSEQ(old_touch_bar, [content touchBar]);
-  }
+  // Ensure the touchBar is recreated by comparing pointers.
 
   // Remove the cancel button.
   delegate->SetButtons(ui::DIALOG_BUTTON_OK);
@@ -2330,11 +2315,9 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   EXPECT_TRUE(delegate->GetOkButton());
   EXPECT_FALSE(delegate->GetCancelButton());
 
-  if (@available(macOS 10.12.2, *)) {
-    NSTouchBar* touch_bar = [content touchBar];
-    EXPECT_NSNE(old_touch_bar, touch_bar);
-    EXPECT_NSEQ((@[ kTouchBarOKId ]), ExtractTouchBarGroupIdentifiers(content));
-  }
+  NSTouchBar* new_touch_bar = [content touchBar];
+  EXPECT_NSNE(touch_bar, new_touch_bar);
+  EXPECT_NSEQ((@[ kTouchBarOKId ]), ExtractTouchBarGroupIdentifiers(content));
 
   delegate->GetWidget()->CloseNow();
 }
@@ -2383,8 +2366,7 @@ TEST_F(NativeWidgetMacTest, FocusManagerChangeOnReparentNativeView) {
   EXPECT_EQ(GetFocusManager(child_native_widget), child->GetFocusManager());
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test
 
 @implementation TestStopAnimationWaiter
 - (void)setWindowStateForEnd {

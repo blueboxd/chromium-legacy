@@ -143,8 +143,6 @@ source_set("vaapi") {
     sources += [
       "vaapi_picture_native_pixmap_angle.cc",
       "vaapi_picture_native_pixmap_angle.h",
-      "vaapi_picture_tfp.cc",
-      "vaapi_picture_tfp.h",
     ]
   }
 
@@ -343,6 +341,7 @@ test("vaapi_unittest") {
     "//build:chromeos_buildflags",
     "//gpu",
     "//media/gpu/test:helpers",
+    "//media/gpu/vaapi/test/fake_libva_driver:fake_drv_video",
     "//testing/gtest",
     "//third_party/minigbm",
     "//ui/gfx/linux:gbm",
@@ -410,11 +409,12 @@ executable("decode_test") {
   deps = [
     ":libva_stubs",
     "//base",
+    "//build/config/linux/libdrm",
     "//media",
     "//media:test_support",
     "//media/gpu:common",
     "//media/parsers:parsers",
-    "//third_party/libgav1:libgav1",
+    "//third_party/libgav1:libgav1_parser",
     "//third_party/libyuv",
     "//ui/gfx/codec:codec",
     "//ui/gfx/geometry",

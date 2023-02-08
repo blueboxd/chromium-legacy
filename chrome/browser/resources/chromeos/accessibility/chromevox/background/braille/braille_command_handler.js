@@ -17,7 +17,7 @@ import {BridgeHelper} from '../../common/bridge_helper.js';
 import {Command} from '../../common/command_store.js';
 import {EventSourceType} from '../../common/event_source_type.js';
 import {Spannable} from '../../common/spannable.js';
-import {QueueMode} from '../../common/tts_interface.js';
+import {QueueMode} from '../../common/tts_types.js';
 import {ChromeVox} from '../chromevox.js';
 import {ChromeVoxState} from '../chromevox_state.js';
 import {CommandHandlerInterface} from '../command_handler_interface.js';
@@ -25,6 +25,7 @@ import {DesktopAutomationInterface} from '../desktop_automation_interface.js';
 import {EventSourceState} from '../event_source.js';
 import {Output} from '../output/output.js';
 import {OutputNodeSpan, OutputSelectionSpan} from '../output/output_types.js';
+import {ChromeVoxPrefs} from '../prefs.js';
 
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
@@ -198,7 +199,7 @@ export class BrailleCommandHandler {
    */
   static onEditCommand_(command) {
     const current = ChromeVoxState.instance.currentRange;
-    if (ChromeVox.isStickyModeOn() || !current || !current.start ||
+    if (ChromeVoxPrefs.isStickyModeOn() || !current || !current.start ||
         !current.start.node || !current.start.node.state[StateType.EDITABLE]) {
       return true;
     }

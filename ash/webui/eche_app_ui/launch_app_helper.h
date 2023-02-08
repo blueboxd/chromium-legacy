@@ -5,8 +5,6 @@
 #ifndef ASH_WEBUI_ECHE_APP_UI_LAUNCH_APP_HELPER_H_
 #define ASH_WEBUI_ECHE_APP_UI_LAUNCH_APP_HELPER_H_
 
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/webui/eche_app_ui/feature_status.h"
 #include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/callback.h"
@@ -18,6 +16,11 @@ class Image;
 }  //  namespace gfx
 
 namespace ash {
+
+namespace phonehub {
+class PhoneHubManager;
+}
+
 namespace eche_app {
 
 // A helper class for launching/closing the app or show a notification.
@@ -65,7 +68,8 @@ class LaunchAppHelper {
       const std::string& package_name,
       const std::u16string& visible_name,
       const absl::optional<int64_t>& user_id,
-      const gfx::Image& icon)>;
+      const gfx::Image& icon,
+      const std::u16string& phone_name)>;
 
   // Enum representing potential reasons why an app is forbidden to launch.
   enum class AppLaunchProhibitedReason {
@@ -109,7 +113,8 @@ class LaunchAppHelper {
                      const std::string& package_name,
                      const std::u16string& visible_name,
                      const absl::optional<int64_t>& user_id,
-                     const gfx::Image& icon) const;
+                     const gfx::Image& icon,
+                     const std::u16string& phone_name) const;
 
  private:
   bool IsScreenLockRequired() const;

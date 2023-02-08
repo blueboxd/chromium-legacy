@@ -22,7 +22,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
@@ -216,7 +216,7 @@ WebBluetoothServiceImpl::TranslateConnectErrorAndRecord(
       return blink::mojom::WebBluetoothResult::CONNECT_ALREADY_IN_PROGRESS;
     case BluetoothDevice::ERROR_FAILED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::FAILED);
-      return blink::mojom::WebBluetoothResult::CONNECT_UNKNOWN_FAILURE;
+      return blink::mojom::WebBluetoothResult::CONNECT_CONN_FAILED;
     case BluetoothDevice::ERROR_AUTH_FAILED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_FAILED);
       return blink::mojom::WebBluetoothResult::CONNECT_AUTH_FAILED;
@@ -232,6 +232,24 @@ WebBluetoothServiceImpl::TranslateConnectErrorAndRecord(
     case BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
       return blink::mojom::WebBluetoothResult::CONNECT_UNSUPPORTED_DEVICE;
+    case BluetoothDevice::ERROR_DEVICE_NOT_READY:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::NOT_READY);
+      return blink::mojom::WebBluetoothResult::CONNECT_NOT_READY;
+    case BluetoothDevice::ERROR_ALREADY_CONNECTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ALREADY_CONNECTED);
+      return blink::mojom::WebBluetoothResult::CONNECT_ALREADY_CONNECTED;
+    case BluetoothDevice::ERROR_DEVICE_ALREADY_EXISTS:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::ALREADY_EXISTS);
+      return blink::mojom::WebBluetoothResult::CONNECT_ALREADY_EXISTS;
+    case BluetoothDevice::ERROR_DEVICE_UNCONNECTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::NOT_CONNECTED);
+      return blink::mojom::WebBluetoothResult::CONNECT_NOT_CONNECTED;
+    case BluetoothDevice::ERROR_DOES_NOT_EXIST:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::DOES_NOT_EXIST);
+      return blink::mojom::WebBluetoothResult::CONNECT_DOES_NOT_EXIST;
+    case BluetoothDevice::ERROR_INVALID_ARGS:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::INVALID_ARGS);
+      return blink::mojom::WebBluetoothResult::CONNECT_INVALID_ARGS;
     case BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED();
       return blink::mojom::WebBluetoothResult::CONNECT_UNKNOWN_FAILURE;
@@ -496,10 +514,10 @@ struct CacheQueryResult {
     return blink::mojom::WebBluetoothResult::DEVICE_NO_LONGER_IN_RANGE;
   }
 
-  BluetoothDevice* device = nullptr;
-  BluetoothRemoteGattService* service = nullptr;
-  BluetoothRemoteGattCharacteristic* characteristic = nullptr;
-  BluetoothRemoteGattDescriptor* descriptor = nullptr;
+  raw_ptr<BluetoothDevice> device = nullptr;
+  raw_ptr<BluetoothRemoteGattService> service = nullptr;
+  raw_ptr<BluetoothRemoteGattCharacteristic> characteristic = nullptr;
+  raw_ptr<BluetoothRemoteGattDescriptor> descriptor = nullptr;
   CacheQueryOutcome outcome;
 };
 
@@ -852,7 +870,7 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
   // On Chrome OS and Linux, GattCharacteristicValueChanged is called before the
   // success callback for ReadRemoteCharacteristic is called, which could result
   // in an event being fired before the readValue promise is resolved.
-  if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+  if (!base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &WebBluetoothServiceImpl::NotifyCharacteristicValueChanged,
@@ -1011,13 +1029,12 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
   // TODO(ortuno): CHECK that this never happens once the platform
   // abstraction allows to check for pending connections.
   // http://crbug.com/583544
-  const base::TimeTicks start_time = base::TimeTicks::Now();
   mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient>
       web_bluetooth_server_client(std::move(client));
 
   query_result.device->CreateGattConnection(base::BindOnce(
       &WebBluetoothServiceImpl::OnCreateGATTConnection,
-      weak_ptr_factory_.GetWeakPtr(), device_id, start_time,
+      weak_ptr_factory_.GetWeakPtr(), device_id,
       std::move(web_bluetooth_server_client), std::move(callback)));
 }
 
@@ -1061,7 +1078,6 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
   }
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
-    RecordGetPrimaryServicesOutcome(quantity, query_result.outcome);
     std::move(callback).Run(query_result.GetWebResult(),
                             absl::nullopt /* service */);
     return;
@@ -1901,8 +1917,6 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
     // The device disconnected while discovery was pending. The returned error
     // does not matter because the renderer ignores the error if the device
     // disconnected.
-    RecordGetPrimaryServicesOutcome(
-        quantity, UMAGetPrimaryServiceOutcome::DEVICE_DISCONNECTED);
     std::move(callback).Run(blink::mojom::WebBluetoothResult::NO_SERVICES_FOUND,
                             absl::nullopt /* services */);
     return;
@@ -1952,17 +1966,12 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServicesImpl(
 
   if (!response_services.empty()) {
     DVLOG(1) << "Services found in device.";
-    RecordGetPrimaryServicesOutcome(quantity,
-                                    UMAGetPrimaryServiceOutcome::SUCCESS);
     std::move(callback).Run(blink::mojom::WebBluetoothResult::SUCCESS,
                             std::move(response_services));
     return;
   }
 
   DVLOG(1) << "Services not found in device.";
-  RecordGetPrimaryServicesOutcome(
-      quantity, services_uuid ? UMAGetPrimaryServiceOutcome::NOT_FOUND
-                              : UMAGetPrimaryServiceOutcome::NO_SERVICES);
   std::move(callback).Run(
       services_uuid ? blink::mojom::WebBluetoothResult::SERVICE_NOT_FOUND
                     : blink::mojom::WebBluetoothResult::NO_SERVICES_FOUND,
@@ -2018,18 +2027,15 @@ void WebBluetoothServiceImpl::OnGetDevice(
 
 void WebBluetoothServiceImpl::OnCreateGATTConnection(
     const blink::WebBluetoothDeviceId& device_id,
-    base::TimeTicks start_time,
     mojo::AssociatedRemote<blink::mojom::WebBluetoothServerClient> client,
     RemoteServerConnectCallback callback,
     std::unique_ptr<BluetoothGattConnection> connection,
     absl::optional<BluetoothDevice::ConnectErrorCode> error_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error_code.has_value()) {
-    RecordConnectGATTTimeFailed(base::TimeTicks::Now() - start_time);
     std::move(callback).Run(TranslateConnectErrorAndRecord(error_code.value()));
     return;
   }
-  RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
 
   if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {

@@ -118,6 +118,12 @@ std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
 
 namespace internal {
 
+std::unique_ptr<SequenceManagerImpl> CreateUnboundSequenceManagerImpl(
+    PassKey<base::internal::SequenceManagerThreadDelegate>,
+    SequenceManager::Settings settings) {
+  return SequenceManagerImpl::CreateUnbound(std::move(settings));
+}
+
 using TimeRecordingPolicy =
     base::sequence_manager::TaskQueue::TaskTiming::TimeRecordingPolicy;
 
@@ -174,6 +180,10 @@ char* PrependHexAddress(char* output, const void* address) {
 // Note: An atomic is used here because some tests can initialize two different
 //       sequence managers on different threads (e.g. by using base::Thread).
 std::atomic_bool g_no_wake_ups_for_canceled_tasks{false};
+
+#if BUILDFLAG(IS_WIN)
+bool g_explicit_high_resolution_timer_win = false;
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -303,10 +313,14 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
 
 // static
 void SequenceManagerImpl::InitializeFeatures() {
+  base::InitializeTaskLeeway();
   ApplyNoWakeUpsForCanceledTasks();
   TaskQueueImpl::InitializeFeatures();
   ThreadControllerWithMessagePumpImpl::InitializeFeatures();
-  base::InitializeTaskLeeway();
+#if BUILDFLAG(IS_WIN)
+  g_explicit_high_resolution_timer_win =
+      FeatureList::IsEnabled(kExplicitHighResolutionTimerWin);
+#endif  // BUILDFLAG(IS_WIN)
 }
 
 // static
@@ -763,13 +777,31 @@ absl::optional<WakeUp> SequenceManagerImpl::AdjustWakeUp(
 
 void SequenceManagerImpl::MaybeAddLeewayToTask(Task& task) const {
   if (!main_thread_only().time_domain) {
-    task.leeway = base::GetTaskLeeway();
+    task.leeway = GetTaskLeewayForCurrentThread();
   }
 }
 
+// TODO(crbug/1267874): Rename once ExplicitHighResolutionTimerWin experiment is
+// shipped.
 bool SequenceManagerImpl::HasPendingHighResolutionTasks() {
   // Only consider high-res tasks in the |wake_up_queue| (ignore the
   // |non_waking_wake_up_queue|).
+#if BUILDFLAG(IS_WIN)
+  if (g_explicit_high_resolution_timer_win) {
+    absl::optional<WakeUp> wake_up =
+        main_thread_only().wake_up_queue->GetNextDelayedWakeUp();
+    if (!wake_up)
+      return false;
+    // Under the kExplicitHighResolutionTimerWin experiment, rely on leeway
+    // being larger than the minimum time of a low resolution timer (16ms). This
+    // way, we don't need to activate the high resolution timer for precise
+    // tasks that will run in more than 16ms if there are non precise tasks in
+    // front of them.
+    DCHECK_GE(GetDefaultTaskLeeway(),
+              Milliseconds(Time::kMinLowResolutionThresholdMs));
+    return wake_up->delay_policy == subtle::DelayPolicy::kPrecise;
+  }
+#endif  // BUILDFLAG(IS_WIN)
   return main_thread_only().wake_up_queue->has_pending_high_resolution_tasks();
 }
 

@@ -11,6 +11,14 @@ namespace features {
 
 // Alphabetical:
 
+// Enables package name logging for the most popular WebView embedders that are
+// on a dynamically generated allowlist.
+// The filtering for package names will be done on the server side using this
+// flag
+BASE_FEATURE(kWebViewAppsPackageNamesServerSideAllowlist,
+             "WebViewAppsPackageNamesServerSideAllowlist",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable brotli compression support in WebView.
 BASE_FEATURE(kWebViewBrotliSupport,
              "WebViewBrotliSupport",
@@ -26,6 +34,12 @@ BASE_FEATURE(kWebViewCheckReturnResources,
 BASE_FEATURE(kWebViewConnectionlessSafeBrowsing,
              "WebViewConnectionlessSafeBrowsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Cache origins which have camera/mic permissions approved to allow subsequent
+// calls to enumerate devices to return device labels.
+BASE_FEATURE(kWebViewEnumerateDevicesCache,
+             "WebViewEnumerateDevicesCache",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable WebView to automatically darken the page in FORCE_DARK_AUTO mode if
 // the app's theme is dark.
@@ -133,6 +147,11 @@ BASE_FEATURE(kWebViewXRequestedWithHeaderManifestAllowList,
 // This persists client hints between top-level navigations.
 BASE_FEATURE(kWebViewClientHintsControllerDelegate,
              "WebViewClientHintsControllerDelegate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This enables image drage out for Webview.
+BASE_FEATURE(kWebViewImageDrag,
+             "WebViewImageDrag",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

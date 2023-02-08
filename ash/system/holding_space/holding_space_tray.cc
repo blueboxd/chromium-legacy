@@ -37,6 +37,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/pickle.h"
 #include "base/ranges/algorithm.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -325,7 +326,10 @@ void HoldingSpaceTray::HandleLocaleChange() {
   TooltipTextChanged();
 }
 
-void HoldingSpaceTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {}
+void HoldingSpaceTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
+  if (bubble_->GetBubbleView() == bubble_view)
+    CloseBubble();
+}
 
 void HoldingSpaceTray::AnchorUpdated() {
   if (bubble_)
@@ -360,10 +364,8 @@ void HoldingSpaceTray::ShowBubble() {
 
   bubble_ = std::make_unique<HoldingSpaceTrayBubble>(this);
 
-  // Observe the bubble widget so that we can do proper clean up when it is
-  // being destroyed. If destruction is due to a call to `CloseBubble()` we will
-  // have already cleaned up state but there are cases where the bubble widget
-  // is destroyed independent of a call to `CloseBubble()`, e.g. ESC key press.
+  // Observe the bubble widget so that we can close the bubble when a holding
+  // space item is being dragged.
   widget_observer_.Observe(bubble_->GetBubbleWidget());
 
   SetIsActive(true);
@@ -668,13 +670,9 @@ void HoldingSpaceTray::OnWidgetDragWillStart(views::Widget* widget) {
   // items so as not to obstruct drop targets. Post the task to close the bubble
   // so that we don't attempt to destroy the bubble widget before the associated
   // drag event has been fully initialized.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&HoldingSpaceTray::CloseBubble,
                                 weak_factory_.GetWeakPtr()));
-}
-
-void HoldingSpaceTray::OnWidgetDestroying(views::Widget* widget) {
-  CloseBubble();
 }
 
 void HoldingSpaceTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {

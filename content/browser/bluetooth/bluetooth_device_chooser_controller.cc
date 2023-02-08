@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/bluetooth/bluetooth_blocklist.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/bluetooth_util.h"
@@ -116,26 +116,25 @@ void LogRequestDeviceOptions(
       DVLOG(1) << "Name Prefix: " << filter->name_prefix.value();
 
     if (filter->services) {
-      base::Value services_list(base::Value::Type::LIST);
+      base::Value::List services_list;
       for (const auto& service : filter->services.value())
         services_list.Append(service.canonical_value());
       DVLOG(1) << "Services: " << services_list;
     }
 
     if (filter->manufacturer_data) {
-      base::Value manufacturer_data_list(base::Value::Type::LIST);
+      base::Value::List manufacturer_data_list;
       for (const auto& manufacturer_data : filter->manufacturer_data.value()) {
-        base::Value filter_data_list(base::Value::Type::LIST);
-        base::Value filter_mask_list(base::Value::Type::LIST);
+        base::Value::List filter_data_list;
+        base::Value::List filter_mask_list;
         for (const auto& data_filter : manufacturer_data.second) {
-          filter_data_list.Append(base::Value(data_filter->data));
-          filter_mask_list.Append(base::Value(data_filter->mask));
+          filter_data_list.Append(data_filter->data);
+          filter_mask_list.Append(data_filter->mask);
         }
-        base::Value data_filter_dict(base::Value::Type::DICTIONARY);
-        data_filter_dict.SetKey("Company Identifier",
-                                base::Value(manufacturer_data.first->id));
-        data_filter_dict.SetKey("Data", std::move(filter_data_list));
-        data_filter_dict.SetKey("Mask", std::move(filter_mask_list));
+        base::Value::Dict data_filter_dict;
+        data_filter_dict.Set("Company Identifier", manufacturer_data.first->id);
+        data_filter_dict.Set("Data", std::move(filter_data_list));
+        data_filter_dict.Set("Mask", std::move(filter_mask_list));
         manufacturer_data_list.Append(std::move(data_filter_dict));
       }
       DVLOG(1) << "Manufacturer Data: " << manufacturer_data_list;
@@ -507,7 +506,7 @@ void BluetoothDeviceChooserController::PostSuccessCallback(
     const std::string& device_address) {
   DCHECK(callback_);
 
-  if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+  if (!base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback_), WebBluetoothResult::SUCCESS,
                          std::move(options_), device_address))) {
@@ -519,7 +518,7 @@ void BluetoothDeviceChooserController::PostErrorCallback(
     WebBluetoothResult error) {
   DCHECK(callback_);
 
-  if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
+  if (!base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback_), error, /*options=*/nullptr,
                          /*device_id=*/std::string()))) {

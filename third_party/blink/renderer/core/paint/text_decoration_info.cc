@@ -175,8 +175,7 @@ gfx::RectF ComputeWavyPatternRect(const WavyParams& params,
   // Expand the stroke rect to integer y coordinates in both directions, to
   // avoid messing with the vertical antialiasing.
   gfx::RectF stroke_rect = stroke_path.StrokeBoundingRect(stroke_data);
-  DCHECK_LT(stroke_rect.y(), 0.f);
-  float top = -ceilf(fabsf(stroke_rect.y()));
+  float top = floorf(stroke_rect.y());
   float bottom = ceilf(stroke_rect.bottom());
   return {0.f, top, 2.f * WavyStep(params), bottom - top};
 }
@@ -252,14 +251,12 @@ sk_sp<cc::PaintRecord> PrepareWavyTileRecord(const WavyParams& params,
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(params.resolved_thickness);
 
-  // Create a canvas with origin (0,0) and size of the wavy pattern rect.
   PaintRecorder recorder;
-  recorder.beginRecording(pattern_rect.width(), pattern_rect.height());
+  cc::PaintCanvas* canvas = recorder.beginRecording();
 
   // Translate the wavy pattern so that nothing is painted at y<0.
-  cc::RecordPaintCanvas* canvas = recorder.getRecordingCanvas();
   canvas->translate(-pattern_rect.x(), -pattern_rect.y());
-  canvas->cc::PaintCanvas::drawPath(stroke_path.GetSkPath(), flags);
+  canvas->drawPath(stroke_path.GetSkPath(), flags);
 
   return recorder.finishRecordingAsPicture();
 }

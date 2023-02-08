@@ -230,12 +230,6 @@ void CountAudioConstraintUses(ExecutionContext* context,
           &MediaTrackConstraintSetPlatform::goog_auto_gain_control)) {
     counter.Count(WebFeature::kMediaStreamConstraintsGoogAutoGainControl);
   }
-  if (RequestUsesDiscreteConstraint(constraints,
-                                    &MediaTrackConstraintSetPlatform::
-                                        goog_experimental_auto_gain_control)) {
-    counter.Count(
-        WebFeature::kMediaStreamConstraintsGoogExperimentalAutoGainControl);
-  }
   if (RequestUsesDiscreteConstraint(
           constraints,
           &MediaTrackConstraintSetPlatform::goog_noise_suppression)) {
@@ -781,8 +775,16 @@ void UserMediaRequest::OnMediaStreamsInitialized(MediaStreamVector streams) {
         surface_, GetExecutionContext(),
         IdentifiabilityBenignStringToken(g_empty_string));
     if (auto* window = GetWindow()) {
-      PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this,
-                                                                    stream);
+      if (media_type_ == UserMediaRequestType::kUserMedia) {
+        PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this,
+                                                                      stream);
+      } else if (media_type_ == UserMediaRequestType::kDisplayMedia ||
+                 media_type_ == UserMediaRequestType::kDisplayMediaSet) {
+        PeerConnectionTracker::From(*window).TrackGetDisplayMediaSuccess(
+            this, stream);
+      } else {
+        NOTREACHED();
+      }
     }
   }
   // After this call, the execution context may be invalid.
@@ -799,8 +801,16 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
   if (auto* window = GetWindow()) {
-    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
-        this, "OverConstrainedError", message);
+    if (media_type_ == UserMediaRequestType::kUserMedia) {
+      PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+          this, "OverConstrainedError", message);
+    } else if (media_type_ == UserMediaRequestType::kDisplayMedia ||
+               media_type_ == UserMediaRequestType::kDisplayMediaSet) {
+      PeerConnectionTracker::From(*window).TrackGetDisplayMediaFailure(
+          this, "OverConstrainedError", message);
+    } else {
+      NOTREACHED();
+    }
   }
   // After this call, the execution context may be invalid.
   callbacks_->OnError(
@@ -851,8 +861,16 @@ void UserMediaRequest::Fail(Error name, const String& message) {
                               IdentifiabilityBenignStringToken(message));
 
   if (auto* window = GetWindow()) {
-    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
-        this, DOMException::GetErrorName(exception_code), message);
+    if (media_type_ == UserMediaRequestType::kUserMedia) {
+      PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+          this, DOMException::GetErrorName(exception_code), message);
+    } else if (media_type_ == UserMediaRequestType::kDisplayMedia ||
+               media_type_ == UserMediaRequestType::kDisplayMediaSet) {
+      PeerConnectionTracker::From(*window).TrackGetDisplayMediaFailure(
+          this, DOMException::GetErrorName(exception_code), message);
+    } else {
+      NOTREACHED();
+    }
   }
 
   // After this call, the execution context may be invalid.

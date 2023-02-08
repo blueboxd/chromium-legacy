@@ -5,7 +5,7 @@
 import './strings.m.js';
 
 import {CustomElement} from 'chrome://resources/js/custom_element.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {getTemplate} from './status_box.html.js';
 
@@ -126,6 +126,11 @@ export class StatusBoxElement extends CustomElement {
           '.last-cloud-report-sent-timestamp',
           status.lastCloudReportSentTimestamp + ' (' +
               status.timeSinceLastCloudReportSent + ')');
+    }
+
+    if (status.error) {
+      this.setLabelAndShow_(
+          '.error', loadTimeData.getString('statusErrorManagedNoPolicy'));
     }
   }
 }

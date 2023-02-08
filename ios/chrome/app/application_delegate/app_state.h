@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-
 #import "ios/chrome/app/application_delegate/app_state_agent.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
 #import "ios/chrome/browser/ui/main/scene_state_observer.h"
@@ -28,6 +27,22 @@ typedef NS_ENUM(NSUInteger, DefaultPromoType);
 namespace base {
 class TimeTicks;
 }
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PostCrashAction {
+  // Restore tabs normally after a clean shutdown.
+  kRestoreTabsCleanShutdown = 0,
+  // Restore tabs normally after an unclean shutdown.
+  kRestoreTabsUncleanShutdown = 1,
+  // Don't restore tabs, show crash infobar and NTP.
+  kStashTabsAndShowNTP = 2,
+  // Restore tabs with `return to previous tab` NTP.
+  kShowNTPWithReturnToTab = 3,
+  // Show safe mode.
+  kShowSafeMode = 4,
+  kMaxValue = kShowSafeMode,
+};
 
 // Represents the application state and responds to application state changes
 // and system events.
@@ -72,8 +87,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // startup.
 @property(nonatomic) BOOL shouldShowForceSignOutPrompt;
 
-// Indicates that this app launch is one after a crash.
-@property(nonatomic, assign) BOOL postCrashLaunch;
+// Indicates what action, if any, is taken after a crash (stash tabs, show NTP,
+// show safe mode).
+@property(nonatomic, assign) PostCrashAction postCrashAction;
+
+// YES if the app is resuming from safe mode.
+@property(nonatomic) BOOL resumingFromSafeMode;
 
 // Indicates that session restoration might be required for connecting scenes.
 @property(nonatomic, assign) BOOL sessionRestorationRequired;

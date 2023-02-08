@@ -171,8 +171,9 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   // Now remove the listeners one at a time, verifying the counts after each
   // removal.
   ExtensionWebRequestEventRouter::GetInstance()->UpdateActiveListener(
-      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove, &profile_,
-      ext_id, kSubEventName1, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove,
+      ExtensionWebRequestEventRouter::GetBrowserContextID(&profile_), ext_id,
+      kSubEventName1, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   EXPECT_EQ(
       1u,
@@ -180,8 +181,9 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
           &profile_, kEventName));
 
   ExtensionWebRequestEventRouter::GetInstance()->UpdateActiveListener(
-      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove, &profile_,
-      ext_id, kSubEventName2, extensions::kMainThreadId,
+      ExtensionWebRequestEventRouter::ListenerUpdateType::kRemove,
+      ExtensionWebRequestEventRouter::GetBrowserContextID(&profile_), ext_id,
+      kSubEventName2, extensions::kMainThreadId,
       blink::mojom::kInvalidServiceWorkerVersionId);
   EXPECT_EQ(
       0u,
@@ -320,7 +322,7 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
-  base::Value list_value(base::Value::Type::LIST);
+  base::Value::List list_value;
   list_value.Append('1');
   list_value.Append('2');
   list_value.Append('3');
@@ -330,11 +332,11 @@ TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);
 
-  base::Value converted_list(StringToCharList(string_value));
+  base::Value::List converted_list = StringToCharList(string_value);
   EXPECT_EQ(list_value, converted_list);
 
   std::string converted_string;
-  EXPECT_TRUE(CharListToString(list_value.GetList(), &converted_string));
+  EXPECT_TRUE(CharListToString(list_value, &converted_string));
   EXPECT_EQ(string_value, converted_string);
 }
 

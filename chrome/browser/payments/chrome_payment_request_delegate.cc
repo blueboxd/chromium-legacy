@@ -86,8 +86,9 @@ absl::optional<web_app::AppId> GetWebAppId(content::RenderFrameHost* rfh) {
   web_app::AppId app_id = browser->app_controller()->app_id();
   auto* web_app_provider =
       web_app::WebAppProvider::GetForWebApps(browser->profile());
-  if (!web_app_provider || !web_app_provider->registrar().IsUrlInAppScope(
-                               web_contents->GetLastCommittedURL(), app_id)) {
+  if (!web_app_provider ||
+      !web_app_provider->registrar_unsafe().IsUrlInAppScope(
+          web_contents->GetLastCommittedURL(), app_id)) {
     return absl::nullopt;
   }
 
@@ -252,6 +253,11 @@ void ChromePaymentRequestDelegate::ShowNoMatchingPaymentCredentialDialog(
                                    std::move(opt_out_callback));
 }
 
+content::RenderFrameHost* ChromePaymentRequestDelegate::GetRenderFrameHost()
+    const {
+  return content::RenderFrameHost::FromID(frame_routing_id_);
+}
+
 std::unique_ptr<webauthn::InternalAuthenticator>
 ChromePaymentRequestDelegate::CreateInternalAuthenticator() const {
   // This authenticator can be used in a cross-origin iframe only if the
@@ -308,10 +314,6 @@ ChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
              ? SslValidityChecker::GetInvalidSslCertificateErrorMessage(
                    content::WebContents::FromRenderFrameHost(rfh))
              : "";
-}
-
-bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
-  return false;  // Only tests do this.
 }
 
 std::string ChromePaymentRequestDelegate::GetTwaPackageName() const {

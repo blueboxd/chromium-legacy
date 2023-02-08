@@ -80,8 +80,11 @@ class ExtensionAlarmsTest : public ApiUnitTest {
 
   // Takes a JSON result from a function and converts it to a vector of
   // JsAlarms.
-  std::vector<std::unique_ptr<JsAlarm>> ToAlarmList(base::Value* value) {
+  std::vector<std::unique_ptr<JsAlarm>> ToAlarmList(
+      const absl::optional<base::Value>& value) {
     std::vector<std::unique_ptr<JsAlarm>> list;
+    if (!value)
+      return list;
     for (const auto& item : value->GetList()) {
       std::unique_ptr<JsAlarm> alarm(new JsAlarm());
 
@@ -105,10 +108,9 @@ class ExtensionAlarmsTest : public ApiUnitTest {
         "[\"0\", {\"delayInMinutes\": 0}]",
     };
     for (size_t i = 0; i < num_alarms; ++i) {
-      std::unique_ptr<base::DictionaryValue> result(
-          RunFunctionAndReturnDictionary(new AlarmsCreateFunction(&test_clock_),
-                                         kCreateArgs[i]));
-      EXPECT_FALSE(result.get());
+      absl::optional<base::Value> result = RunFunctionAndReturnValue(
+          new AlarmsCreateFunction(&test_clock_), kCreateArgs[i]);
+      EXPECT_FALSE(result);
     }
   }
 
@@ -280,7 +282,7 @@ void ExtensionAlarmsTestCreateDupeGetAllAlarmsCallback(
     const AlarmManager::AlarmList* alarms) {
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_DOUBLE_EQ(430000, (*alarms)[0]->js_alarm->scheduled_time);
+  EXPECT_DOUBLE_EQ(430000, (*alarms)[0].js_alarm->scheduled_time);
 }
 
 TEST_F(ExtensionAlarmsTest, CreateDupe) {
@@ -342,9 +344,9 @@ TEST_F(ExtensionAlarmsTest, Get) {
   // Get the default one.
   {
     JsAlarm alarm;
-    std::unique_ptr<base::DictionaryValue> result(
-        RunFunctionAndReturnDictionary(new AlarmsGetFunction(), "[null]"));
-    ASSERT_TRUE(result.get());
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsGetFunction(), "[null]");
+    ASSERT_TRUE(result);
     EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
     EXPECT_EQ("", alarm.name);
     EXPECT_DOUBLE_EQ(4060, alarm.scheduled_time);
@@ -354,9 +356,9 @@ TEST_F(ExtensionAlarmsTest, Get) {
   // Get "7".
   {
     JsAlarm alarm;
-    std::unique_ptr<base::DictionaryValue> result(
-        RunFunctionAndReturnDictionary(new AlarmsGetFunction(), "[\"7\"]"));
-    ASSERT_TRUE(result.get());
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsGetFunction(), "[\"7\"]");
+    ASSERT_TRUE(result);
     EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
     EXPECT_EQ("7", alarm.name);
     EXPECT_EQ(424000, alarm.scheduled_time);
@@ -365,19 +367,18 @@ TEST_F(ExtensionAlarmsTest, Get) {
 
   // Get a non-existent one.
   {
-    std::unique_ptr<base::DictionaryValue> result(
-        RunFunctionAndReturnDictionary(new AlarmsGetFunction(),
-                                       "[\"nobody\"]"));
-    ASSERT_FALSE(result.get());
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsGetFunction(), "[\"nobody\"]");
+    ASSERT_FALSE(result);
   }
 }
 
 TEST_F(ExtensionAlarmsTest, GetAll) {
   // Test getAll with 0 alarms.
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[]"));
-    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsGetAllFunction(), "[]");
+    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result);
     EXPECT_EQ(0u, alarms.size());
   }
 
@@ -385,9 +386,9 @@ TEST_F(ExtensionAlarmsTest, GetAll) {
   CreateAlarms(2);
 
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnList(new AlarmsGetAllFunction(), "[null]"));
-    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result.get());
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsGetAllFunction(), "[null]");
+    std::vector<std::unique_ptr<JsAlarm>> alarms = ToAlarmList(result);
     EXPECT_EQ(2u, alarms.size());
 
     // Test the "7" alarm.
@@ -404,7 +405,7 @@ void ExtensionAlarmsTestClearGetAllAlarms2Callback(
   // Ensure the 0.001-minute alarm is still there, since it's repeating.
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0]->js_alarm->period_in_minutes, testing::Eq(0.001));
+  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes, testing::Eq(0.001));
 }
 
 void ExtensionAlarmsTestClearGetAllAlarms1Callback(
@@ -412,7 +413,7 @@ void ExtensionAlarmsTestClearGetAllAlarms1Callback(
     const AlarmManager::AlarmList* alarms) {
   ASSERT_TRUE(alarms);
   EXPECT_EQ(1u, alarms->size());
-  EXPECT_THAT((*alarms)[0]->js_alarm->period_in_minutes, testing::Eq(0.001));
+  EXPECT_THAT((*alarms)[0].js_alarm->period_in_minutes, testing::Eq(0.001));
 
   // Now wait for the alarms to fire, and ensure the cancelled alarms don't
   // fire.
@@ -432,8 +433,8 @@ void ExtensionAlarmsTestClearGetAllAlarms1Callback(
 TEST_F(ExtensionAlarmsTest, Clear) {
   // Clear a non-existent one.
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"nobody\"]"));
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"nobody\"]");
     ASSERT_TRUE(result->is_bool());
     EXPECT_FALSE(result->GetBool());
   }
@@ -443,14 +444,14 @@ TEST_F(ExtensionAlarmsTest, Clear) {
 
   // Clear all but the 0.001-minute alarm.
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"7\"]"));
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"7\"]");
     ASSERT_TRUE(result->is_bool());
     EXPECT_TRUE(result->GetBool());
   }
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"0\"]"));
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsClearFunction(), "[\"0\"]");
     ASSERT_TRUE(result->is_bool());
     EXPECT_TRUE(result->GetBool());
   }
@@ -481,8 +482,8 @@ void ExtensionAlarmsTestClearAllGetAllAlarms1Callback(
 TEST_F(ExtensionAlarmsTest, ClearAll) {
   // ClearAll with no alarms set.
   {
-    std::unique_ptr<base::Value> result(
-        RunFunctionAndReturnValue(new AlarmsClearAllFunction(), "[]"));
+    absl::optional<base::Value> result =
+        RunFunctionAndReturnValue(new AlarmsClearAllFunction(), "[]");
     ASSERT_TRUE(result->is_bool());
     EXPECT_TRUE(result->GetBool());
   }
@@ -544,20 +545,20 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
   {
     test_clock_.SetNow(base::Time::FromDoubleT(10));
     CreateAlarm("[\"a\", {\"periodInMinutes\": 10}]");
-    std::unique_ptr<Alarm> alarm(new Alarm);
-    alarm->js_alarm->name = "bb";
-    alarm->js_alarm->scheduled_time = 30 * 60000;
-    alarm->js_alarm->period_in_minutes = 30;
+    Alarm alarm;
+    alarm.js_alarm->name = "bb";
+    alarm.js_alarm->scheduled_time = 30 * 60000;
+    alarm.js_alarm->period_in_minutes = 30;
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     VerifyScheduledTime("a");
     RemoveAllAlarms();
   }
   {
     test_clock_.SetNow(base::Time::FromDoubleT(3 * 60 + 1));
-    std::unique_ptr<Alarm> alarm(new Alarm);
-    alarm->js_alarm->name = "bb";
-    alarm->js_alarm->scheduled_time = 3 * 60000;
-    alarm->js_alarm->period_in_minutes = 3;
+    Alarm alarm;
+    alarm.js_alarm->name = "bb";
+    alarm.js_alarm->scheduled_time = 3 * 60000;
+    alarm.js_alarm->period_in_minutes = 3;
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm));
     base::RunLoop().Run();
     EXPECT_EQ(base::Time::FromJsTime(3 * 60000) + base::Minutes(3),
@@ -568,15 +569,15 @@ TEST_F(ExtensionAlarmsSchedulingTest, PollScheduling) {
     test_clock_.SetNow(base::Time::FromDoubleT(4 * 60 + 1));
     CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
     RemoveAlarm("a");
-    std::unique_ptr<Alarm> alarm2(new Alarm);
-    alarm2->js_alarm->name = "bb";
-    alarm2->js_alarm->scheduled_time = 4 * 60000;
-    alarm2->js_alarm->period_in_minutes = 4;
+    Alarm alarm2;
+    alarm2.js_alarm->name = "bb";
+    alarm2.js_alarm->scheduled_time = 4 * 60000;
+    alarm2.js_alarm->period_in_minutes = 4;
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm2));
-    std::unique_ptr<Alarm> alarm3(new Alarm);
-    alarm3->js_alarm->name = "ccc";
-    alarm3->js_alarm->scheduled_time = 25 * 60000;
-    alarm3->js_alarm->period_in_minutes = 25;
+    Alarm alarm3;
+    alarm3.js_alarm->name = "ccc";
+    alarm3.js_alarm->scheduled_time = 25 * 60000;
+    alarm3.js_alarm->period_in_minutes = 25;
     alarm_manager_->AddAlarmImpl(extension()->id(), std::move(alarm3));
     base::RunLoop().Run();
     EXPECT_EQ(base::Time::FromJsTime(4 * 60000) + base::Minutes(4),

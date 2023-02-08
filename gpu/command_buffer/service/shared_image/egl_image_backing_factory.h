@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image/gl_common_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -63,7 +62,6 @@ class GPU_GLES2_EXPORT EGLImageBackingFactory
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
       gfx::BufferPlane plane,
-      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,

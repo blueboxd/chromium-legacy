@@ -347,9 +347,10 @@ void AwSettings::UpdateMixedContentModeLocked(
       Java_AwSettings_getMixedContentMode(env, obj));
 }
 
-void AwSettings::RenderViewHostChanged(content::RenderViewHost* old_host,
-                                       content::RenderViewHost* new_host) {
-  DCHECK_EQ(new_host, web_contents()->GetRenderViewHost());
+void AwSettings::RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                                        content::RenderFrameHost* new_host) {
+  if (!new_host->IsInPrimaryMainFrame())
+    return;
 
   UpdateEverything();
 }
@@ -564,7 +565,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
         Java_AwSettings_isAlgorithmicDarkeningAllowedLocked(env, obj));
   }
 
-  // WebView does not support WebAuthn yet.
+  // WebView does not support WebAuthn yet. See crbug.com/1284805.
   web_prefs->disable_webauthn = true;
 }
 

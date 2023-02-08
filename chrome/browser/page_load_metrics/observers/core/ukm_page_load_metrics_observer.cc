@@ -326,8 +326,11 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
   connection_info_ = navigation_handle->GetConnectionInfo();
   const net::HttpResponseHeaders* response_headers =
       navigation_handle->GetResponseHeaders();
-  if (response_headers)
+  if (response_headers) {
     http_response_code_ = response_headers->response_code();
+    main_frame_resource_has_no_store_ =
+        response_headers->HasHeaderValue("cache-control", "no-store");
+  }
   // The PageTransition for the navigation may be updated on commit.
   page_transition_ = navigation_handle->GetPageTransition();
   was_cached_ = navigation_handle->WasResponseCached();
@@ -468,7 +471,6 @@ void UkmPageLoadMetricsObserver::OnComplete(
   RecordResponsivenessMetrics();
   RecordPageEndMetrics(&timing, current_time,
                        /* app_entered_background */ false);
-  RecordMobileFriendlinessMetrics();
 }
 
 void UkmPageLoadMetricsObserver::OnResourceDataUseObserved(
@@ -657,11 +659,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
 
   // FCP is reported in OnFirstContentfulPaintInPage.
 
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
-    builder.SetExperimental_PaintTiming_NavigationToFirstMeaningfulPaint(
-        timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
-  }
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
           GetDelegate()
@@ -878,6 +875,12 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
     builder.SetNet_DownstreamKbpsEstimate_OnNavigationStart(
         static_cast<int64_t>(downstream_kbps_estimate_.value()));
   }
+
+  if (main_frame_resource_has_no_store_.has_value()) {
+    builder.SetMainFrameResource_RequestHasNoStore(
+        main_frame_resource_has_no_store_.value() ? 1 : 0);
+  }
+
   if (GetDelegate().DidCommit() && was_cached_) {
     builder.SetWasCached(1);
   }
@@ -1309,28 +1312,6 @@ void UkmPageLoadMetricsObserver::RecordSmoothnessMetrics() {
   base::UmaHistogramPercentage(
       "Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow",
       smoothness_data.worst_smoothness);
-}
-
-void UkmPageLoadMetricsObserver::RecordMobileFriendlinessMetrics() {
-  ukm::builders::MobileFriendliness builder(GetDelegate().GetPageUkmSourceId());
-  const absl::optional<blink::MobileFriendliness>& mf =
-      GetDelegate().GetMobileFriendliness();
-  if (!mf.has_value())
-    return;
-
-  builder.SetViewportDeviceWidth(mf->viewport_device_width);
-  builder.SetAllowUserZoom(mf->allow_user_zoom);
-
-  builder.SetSmallTextRatio(mf->small_text_ratio);
-  builder.SetViewportInitialScaleX10(
-      page_load_metrics::GetBucketedViewportInitialScale(*mf));
-  builder.SetViewportHardcodedWidth(
-      page_load_metrics::GetBucketedViewportHardcodedWidth(*mf));
-  builder.SetTextContentOutsideViewportPercentage(
-      mf->text_content_outside_viewport_percentage);
-
-  // Make sure at least one MF evaluation happen.
-  builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordPageEndMetrics(

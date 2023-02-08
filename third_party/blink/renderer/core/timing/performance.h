@@ -32,6 +32,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
+#include <list>
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
@@ -88,6 +89,11 @@ class V8UnionPerformanceMeasureOptionsOrString;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceEntryDeque = HeapDeque<Member<PerformanceEntry>>;
+
+// Merge two sorted PerformanceEntryVectors in linear time.
+CORE_EXPORT PerformanceEntryVector
+MergePerformanceEntryVectors(const PerformanceEntryVector& first_entry_vector,
+                             const PerformanceEntryVector& second_entry_vector);
 
 class CORE_EXPORT Performance : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -147,17 +153,30 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   // Internal getter method for the time origin value.
   base::TimeTicks GetTimeOriginInternal() const { return time_origin_; }
 
-  PerformanceEntryVector getEntries();
+  // Get performance entries of the current frame, and optionally, nested
+  // same-origin iframes.
+  PerformanceEntryVector getEntries(ScriptState* script_state,
+                                    bool include_frames = false);
   // Get BufferedEntriesByType will return all entries in the buffer regardless
   // of whether they are exposed in the Performance Timeline. getEntriesByType
   // will only return all entries for existing types in
   // PerformanceEntry.IsValidTimelineEntryType.
   PerformanceEntryVector getBufferedEntriesByType(
       const AtomicString& entry_type);
-  PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
+
+  // Get performance entries of the current frame by type, and optionally,
+  // nested same-origin iframes.
+  PerformanceEntryVector getEntriesByType(ScriptState* script_state,
+                                          const AtomicString& entry_type,
+                                          bool includeFrames = false);
+
+  // Get performance entries of the current frame by name and/or type, and
+  // optionally, nested same-origin iframes.
   PerformanceEntryVector getEntriesByName(
+      ScriptState* script_state,
       const AtomicString& name,
-      const AtomicString& entry_type = g_null_atom);
+      const AtomicString& entry_type = g_null_atom,
+      bool includeFrames = false);
 
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
@@ -307,8 +326,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
+  enum Metrics { kRecordSwaps = 0, kDoNotRecordSwaps = 1 };
+
+  // Insert a PerformanceEntry into a Vector sorted by StartTime. By Default,
+  // record the number of 'swaps' per function call in a histogram.
   void InsertEntryIntoSortedBuffer(PerformanceEntryVector& vector,
-                                   PerformanceEntry& entry);
+                                   PerformanceEntry& entry,
+                                   Metrics record);
 
   void Trace(Visitor*) const override;
 
@@ -342,6 +366,19 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       PerformanceEntry::EntryType type);
 
   void MeasureMemoryExperimentTimerFired(TimerBase*);
+
+  // Get performance entries of the current frame.
+  PerformanceEntryVector GetEntriesForCurrentFrame();
+
+  // Get performance entries of the current frame by type.
+  PerformanceEntryVector GetEntriesByTypeForCurrentFrame(
+      const AtomicString& entry_type);
+
+  // Get performance entries of nested same-origin iframes, with an optional
+  // type.
+  PerformanceEntryVector GetEntriesWithChildFrames(
+      ScriptState* script_state,
+      const AtomicString& entry_type = g_null_atom);
 
  protected:
   Performance(base::TimeTicks time_origin,
@@ -389,8 +426,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector soft_navigation_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
-  Member<PerformanceEntry> first_paint_timing_;
-  Member<PerformanceEntry> first_contentful_paint_timing_;
+  PerformanceEntryVector paint_entries_timing_;
   Member<PerformanceEventTiming> first_input_timing_;
 
   base::TimeTicks time_origin_;

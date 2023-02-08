@@ -11,11 +11,13 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -131,8 +133,7 @@ class BrowserAutofillManager : public AutofillManager,
   virtual bool ShouldShowCardsFromAccountOption(const FormData& form,
                                                 const FormFieldData& field);
   virtual void OnUserAcceptedCardsFromAccountOption();
-  virtual void RefetchCardsAndUpdatePopup(int query_id,
-                                          const FormData& form,
+  virtual void RefetchCardsAndUpdatePopup(const FormData& form,
                                           const FormFieldData& field_data);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -154,18 +155,25 @@ class BrowserAutofillManager : public AutofillManager,
   // ContentAutofillDriver::FillFormForAssistant().
   // TODO(crbug.com/1330108): Clean up the API.
   virtual void FillOrPreviewForm(mojom::RendererFormDataAction action,
-                                 int query_id,
                                  const FormData& form,
                                  const FormFieldData& field,
                                  int unique_id);
   void FillCreditCardFormImpl(const FormData& form,
                               const FormFieldData& field,
                               const CreditCard& credit_card,
-                              const std::u16string& cvc,
-                              int query_id) override;
+                              const std::u16string& cvc) override;
   void DidShowSuggestions(bool has_autofill_suggestions,
                           const FormData& form,
                           const FormFieldData& field);
+
+  // Fills or previews the credit card form.
+  // Assumes the form and field are valid.
+  // Asks for authentication via CVC before filling with server card data.
+  // TODO(crbug.com/1330108): Clean up the API.
+  virtual void FillOrPreviewCreditCardForm(mojom::RendererFormDataAction action,
+                                           const FormData& form,
+                                           const FormFieldData& field,
+                                           const CreditCard* credit_card);
 
   // Called only from Autofill Assistant through
   // ContentAutofillDriver::FillFormForAssistant().
@@ -180,7 +188,6 @@ class BrowserAutofillManager : public AutofillManager,
   virtual void FillOrPreviewVirtualCardInformation(
       mojom::RendererFormDataAction action,
       const std::string& guid,
-      int query_id,
       const FormData& form,
       const FormFieldData& field);
 
@@ -262,7 +269,7 @@ class BrowserAutofillManager : public AutofillManager,
 
   // SingleFieldFormFiller::SuggestionsHandler:
   void OnSuggestionsReturned(
-      int query_id,
+      FieldGlobalId field_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       const std::vector<Suggestion>& suggestions) override;
 
@@ -281,12 +288,6 @@ class BrowserAutofillManager : public AutofillManager,
   // server. It verifies that uploading is allowed and |form| meets conditions
   // to be uploadable. Exposed for testing.
   bool ShouldUploadForm(const FormStructure& form);
-
-  void SetProfileFillViaAutofillAssistantIntent(
-      const autofill_assistant::AutofillAssistantIntent intent) override;
-
-  void SetCreditCardFillViaAutofillAssistantIntent(
-      const autofill_assistant::AutofillAssistantIntent intent) override;
 
   // Returns the last form the autofill manager considered in this frame.
   virtual const FormData& last_query_form() const;
@@ -334,10 +335,11 @@ class BrowserAutofillManager : public AutofillManager,
       const std::vector<CreditCard>& credit_cards,
       const std::u16string& last_unlocked_credit_card_cvc,
       const std::string& app_locale,
-      FormStructure* submitted_form) {
-    DeterminePossibleFieldTypesForUpload(profiles, credit_cards,
-                                         last_unlocked_credit_card_cvc,
-                                         app_locale, submitted_form);
+      FormStructure* form) {
+    // For tests, the observed_submission is hardcoded to true.
+    DeterminePossibleFieldTypesForUpload(
+        profiles, credit_cards, last_unlocked_credit_card_cvc, app_locale,
+        /*observed_submission=*/true, form);
   }
 
   bool ShouldTriggerRefillForTest(const FormStructure& form_structure) {
@@ -386,17 +388,8 @@ class BrowserAutofillManager : public AutofillManager,
     return WillFillCreditCardNumber(form, field);
   }
 
-  void FillOrPreviewCreditCardFormForTest(mojom::RendererFormDataAction action,
-                                          int query_id,
-                                          const FormData& form,
-                                          const FormFieldData& field,
-                                          const CreditCard* credit_card) {
-    FillOrPreviewCreditCardForm(action, query_id, form, field, credit_card);
-  }
-
   void FillOrPreviewDataModelFormForTest(
       mojom::RendererFormDataAction action,
-      int query_id,
       const FormData& form,
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
@@ -404,7 +397,7 @@ class BrowserAutofillManager : public AutofillManager,
       const std::u16string* optional_cvc,
       FormStructure* form_structure,
       AutofillField* autofill_field) {
-    return FillOrPreviewDataModelForm(action, query_id, form, field,
+    return FillOrPreviewDataModelForm(action, form, field,
                                       profile_or_credit_card, optional_cvc,
                                       form_structure, autofill_field);
   }
@@ -412,18 +405,27 @@ class BrowserAutofillManager : public AutofillManager,
   FormData* pending_form_data_for_test() { return pending_form_data_.get(); }
 
  protected:
-  // Uploads the form data to the Autofill server. |observed_submission|
-  // indicates that upload is the result of a submission event.
-  virtual void UploadFormData(const FormStructure& submitted_form,
-                              bool observed_submission);
+  // Stores a `callback` for `form_signature`, possibly overriding an older
+  // callback for `form_signature` or triggering a pending callback in case too
+  // many callbacks are stored to create space.
+  virtual void StoreUploadVotesAndLogQualityCallback(
+      FormSignature form_signature,
+      base::OnceClosure callback);
 
-  // Logs quality metrics for the |submitted_form| and uploads the form data
-  // to the crowdsourcing server, if appropriate. |observed_submission|
-  // indicates whether the upload is a result of an observed submission event.
-  virtual void UploadFormDataAsyncCallback(
-      const FormStructure* submitted_form,
-      const base::TimeTicks& interaction_time,
-      const base::TimeTicks& submission_time,
+  // Triggers and wipes all pending QualityAndVotesUploadCallbacks.
+  void FlushPendingLogQualityAndVotesUploadCallbacks();
+
+  // Removes a callback for the given `form_signature` without calling it.
+  void WipeLogQualityAndVotesUploadCallback(FormSignature form_signature);
+
+  // Logs quality metrics for the |submitted_form| and uploads votes for the
+  // field types to the crowdsourcing server, if appropriate.
+  // |observed_submission| indicates whether the upload is a result of an
+  // observed submission event.
+  virtual void UploadVotesAndLogQuality(
+      std::unique_ptr<FormStructure> submitted_form,
+      base::TimeTicks interaction_time,
+      base::TimeTicks submission_time,
       bool observed_submission);
 
   // Returns the card image for `credit_card`. If the `credit_card` has a card
@@ -445,7 +447,6 @@ class BrowserAutofillManager : public AutofillManager,
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& transformed_box,
-      int query_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) override;
   void OnSelectControlDidChangeImpl(const FormData& form,
@@ -518,20 +519,10 @@ class BrowserAutofillManager : public AutofillManager,
   bool WillFillCreditCardNumber(const FormData& form,
                                 const FormFieldData& triggered_field);
 
-  // Fills or previews the credit card form.
-  // Assumes the form and field are valid.
-  // TODO(crbug.com/1330108): Clean up the API.
-  void FillOrPreviewCreditCardForm(mojom::RendererFormDataAction action,
-                                   int query_id,
-                                   const FormData& form,
-                                   const FormFieldData& field,
-                                   const CreditCard* credit_card);
-
   // Fills or previews the profile form.
   // Assumes the form and field are valid.
   // TODO(crbug.com/1330108): Clean up the API.
   void FillOrPreviewProfileForm(mojom::RendererFormDataAction action,
-                                int query_id,
                                 const FormData& form,
                                 const FormFieldData& field,
                                 const AutofillProfile& profile);
@@ -540,7 +531,6 @@ class BrowserAutofillManager : public AutofillManager,
   // TODO(crbug.com/1330108): Clean up the API.
   void FillOrPreviewDataModelForm(
       mojom::RendererFormDataAction action,
-      int query_id,
       const FormData& form,
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
@@ -594,10 +584,9 @@ class BrowserAutofillManager : public AutofillManager,
   // |should_display_gpay_logo| will be set to true if there is no credit card
   // suggestions or all suggestions come from Payments server.
   std::vector<Suggestion> GetCreditCardSuggestions(
-      const FormStructure& form_structure,
       const FormFieldData& field,
       const AutofillType& type,
-      bool* should_display_gpay_logo) const;
+      bool& should_display_gpay_logo) const;
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
@@ -610,7 +599,7 @@ class BrowserAutofillManager : public AutofillManager,
   bool IsFormNonSecure(const FormData& form) const;
 
   // Uses the existing personal data in |profiles| and |credit_cards| to
-  // determine possible field types for the |submitted_form|.  This is
+  // determine possible field types for the |form|.  This is
   // potentially expensive -- on the order of 50ms even for a small set of
   // |stored_data|. Hence, it should not run on the UI thread -- to avoid
   // locking up the UI -- nor on the IO thread -- to avoid blocking IPC calls.
@@ -619,7 +608,8 @@ class BrowserAutofillManager : public AutofillManager,
       const std::vector<CreditCard>& credit_cards,
       const std::u16string& last_unlocked_credit_card_cvc,
       const std::string& app_locale,
-      FormStructure* submitted_form);
+      bool observed_submission,
+      FormStructure* form);
 
   // Uses context about previous and next fields to select the appropriate type
   // for fields with ambiguous upload types.
@@ -788,7 +778,6 @@ class BrowserAutofillManager : public AutofillManager,
   // Collected information about the autofill form where a credit card will be
   // filled.
   mojom::RendererFormDataAction credit_card_action_;
-  int credit_card_query_id_ = -1;
   FormData credit_card_form_;
   FormFieldData credit_card_field_;
   CreditCard credit_card_;
@@ -816,6 +805,29 @@ class BrowserAutofillManager : public AutofillManager,
   // value="6" label="Phone Collected, WebOTP Used, OTC Not Used"
   // value="7" label="Phone Collected, WebOTP Used, OTC Used"
   uint32_t phone_collection_metric_state_ = 0;
+
+  // List of callbacks to be called for sending blur votes. Only one callback is
+  // stored per FormSignature. We rely on FormSignatures rather than
+  // FormGlobalId to send votes for the various signatures of a form while it
+  // evolves (when fields are added or removed). The list of callbacks is
+  // ordered by time of creation: newest elements first. If the list becomes too
+  // long, the oldest pending callbacks are just called and popped removed the
+  // list.
+  //
+  // Callbacks are triggered in the following situations:
+  // - We observe a form submission.
+  // - The list becomes to large.
+
+  // Callbacks are wiped in the following  situations:
+  // - A form is submitted.
+  // - A callback is overridden by a more recent version.
+  std::list<std::pair<FormSignature, base::OnceClosure>> queued_vote_uploads_;
+
+  // This task runner sequentializes calls to
+  // DeterminePossibleFieldTypesForUpload to ensure that blur votes are
+  // processed before form submission votes. This is important so that a
+  // submission can trigger the upload of blur votes.
+  scoped_refptr<base::SequencedTaskRunner> vote_upload_task_runner_;
 
   base::WeakPtrFactory<BrowserAutofillManager> weak_ptr_factory_{this};
 };

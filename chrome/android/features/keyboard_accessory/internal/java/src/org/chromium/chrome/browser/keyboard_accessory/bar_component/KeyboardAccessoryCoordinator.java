@@ -62,6 +62,12 @@ public class KeyboardAccessoryCoordinator {
          * Called when the sheet needs to be hidden.
          */
         void onCloseAccessorySheet();
+
+        /**
+         * Signals that the accessory bar has completed the fade-in. This may be relevant to the
+         * keyboard extensions state to adjust the scroll position.
+         */
+        void onBarFadeInAnimationEnd();
     }
 
     /**
@@ -136,7 +142,7 @@ public class KeyboardAccessoryCoordinator {
         mTabLayout = tabLayout;
         mModel = KeyboardAccessoryProperties.defaultModelBuilder().build();
         mMediator = new KeyboardAccessoryMediator(mModel, visibilityDelegate,
-                mTabLayout.getTabSwitchingDelegate(), mTabLayout.getTabLayoutCallbacks());
+                mTabLayout.getTabSwitchingDelegate(), mTabLayout.getSheetOpenerCallbacks());
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             viewProvider.whenLoaded(barView -> mTabLayout.assignNewView(barView.getTabLayout()));
         }
@@ -245,6 +251,7 @@ public class KeyboardAccessoryCoordinator {
      * while the view might still be in progress of being updated accordingly.
      * @return True if the accessory should be visible, false otherwise.
      */
+    // TODO(crbug/1385400): Hide because it's only used in tests.
     public boolean isShown() {
         return mMediator.isShown();
     }

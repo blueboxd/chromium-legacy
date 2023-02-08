@@ -63,21 +63,24 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppBrowserTest, AppInfo) {
   const GURL app_url =
       https_server()->GetURL("/web_apps/file_handler_index.html");
   const AppId app_id = InstallWebAppFromManifest(browser(), app_url);
-  EXPECT_EQ(provider().registrar().GetAppFileHandlers(app_id)->size(), 1U);
+  EXPECT_EQ(provider().registrar_unsafe().GetAppFileHandlers(app_id)->size(),
+            1U);
 
   LaunchWebAppBrowser(app_id);
 
   // Wait for item to exist in shelf.
-  browser_test_util::WaitForShelfItem(app_id, /*exists=*/true);
+  ASSERT_TRUE(browser_test_util::WaitForShelfItem(app_id, /*exists=*/true));
 
   AppReadinessWaiter(profile(), kOsSettingsAppId).Await();
 
   // Settings should not yet exist in the shelf.
-  browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/false);
+  ASSERT_TRUE(
+      browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/false));
 
   ASSERT_TRUE(selectContextMenu(app_id, kAppInfoIndex));
 
-  browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/true);
+  ASSERT_TRUE(
+      browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/true));
 
   {
     // Get the Settings context menu.
@@ -92,12 +95,13 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppBrowserTest, AppInfo) {
   ASSERT_TRUE(selectContextMenu(kOsSettingsAppId, kCloseSettingsIndex));
 
   // Settings should no longer exist in the shelf.
-  browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/false);
+  ASSERT_TRUE(
+      browser_test_util::WaitForShelfItem(kOsSettingsAppId, /*exists=*/false));
 
   UninstallWebApp(app_id);
 
   // Wait for item to stop existing in shelf.
-  browser_test_util::WaitForShelfItem(app_id, /*exists=*/false);
+  ASSERT_TRUE(browser_test_util::WaitForShelfItem(app_id, /*exists=*/false));
 }
 
 // Regression test for crbug.com/1335266
@@ -120,11 +124,12 @@ IN_PROC_BROWSER_TEST_F(LacrosWebAppBrowserTest, Shortcut) {
   const GURL app_url =
       https_server()->GetURL("/web_app_shortcuts/shortcuts.html");
   const AppId app_id = InstallWebAppFromManifest(browser(), app_url);
-  EXPECT_EQ(provider().registrar().GetAppShortcutsMenuItemInfos(app_id).size(),
-            6U);
+  EXPECT_EQ(
+      provider().registrar_unsafe().GetAppShortcutsMenuItemInfos(app_id).size(),
+      6U);
 
   // Wait for item to exist in shelf.
-  browser_test_util::WaitForShelfItem(app_id, /*exists=*/true);
+  ASSERT_TRUE(browser_test_util::WaitForShelfItem(app_id, /*exists=*/true));
 
   auto selectContextMenu = [&](int index) {
     bool success = false;

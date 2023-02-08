@@ -5,18 +5,22 @@
 #ifndef ASH_WEBUI_ECHE_APP_UI_ECHE_RECENT_APP_CLICK_HANDLER_H_
 #define ASH_WEBUI_ECHE_APP_UI_ECHE_RECENT_APP_CLICK_HANDLER_H_
 
-#include "ash/components/phonehub/notification.h"
-#include "ash/components/phonehub/notification_click_handler.h"
-#include "ash/components/phonehub/notification_interaction_handler.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/components/phonehub/recent_app_click_observer.h"
-#include "ash/components/phonehub/recent_apps_interaction_handler.h"
 #include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
 #include "ash/webui/eche_app_ui/feature_status_provider.h"
+#include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/callback.h"
+#include "chromeos/ash/components/phonehub/notification.h"
+#include "chromeos/ash/components/phonehub/notification_click_handler.h"
+#include "chromeos/ash/components/phonehub/notification_interaction_handler.h"
+#include "chromeos/ash/components/phonehub/recent_app_click_observer.h"
+#include "chromeos/ash/components/phonehub/recent_apps_interaction_handler.h"
 
 namespace ash {
+
+namespace phonehub {
+class PhoneHubManager;
+}
+
 namespace eche_app {
 
 class LaunchAppHelper;
@@ -46,7 +50,8 @@ class EcheRecentAppClickHandler
 
   // phonehub::RecentAppClickObserver:
   void OnRecentAppClicked(
-      const phonehub::Notification::AppMetadata& app_metadata) override;
+      const phonehub::Notification::AppMetadata& app_metadata,
+      mojom::AppStreamLaunchEntryPoint entrypoint) override;
 
   // FeatureStatusProvider::Observer:
   void OnFeatureStatusChanged() override;
@@ -58,6 +63,7 @@ class EcheRecentAppClickHandler
  private:
   bool IsClickable(FeatureStatus status);
 
+  phonehub::PhoneHubManager* phone_hub_manager_;
   phonehub::NotificationInteractionHandler* notification_handler_;
   phonehub::RecentAppsInteractionHandler* recent_apps_handler_;
   FeatureStatusProvider* feature_status_provider_;

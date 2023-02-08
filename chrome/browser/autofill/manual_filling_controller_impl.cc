@@ -19,6 +19,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
 #include "chrome/browser/autofill/credit_card_accessory_controller.h"
+#include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "chrome/browser/password_manager/android/password_accessory_controller.h"
 #include "chrome/browser/password_manager/android/password_accessory_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -345,7 +346,8 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "ManualFillingCache", base::ThreadTaskRunnerHandle::Get());
+      this, "ManualFillingCache",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
@@ -360,7 +362,8 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
       cc_controller_(std::move(cc_controller)),
       view_(std::move(view)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "ManualFillingCache", base::ThreadTaskRunnerHandle::Get());
+      this, "ManualFillingCache",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 bool ManualFillingControllerImpl::OnMemoryDump(
@@ -404,10 +407,11 @@ bool ManualFillingControllerImpl::ShouldShowAccessory() const {
     case FocusedFieldType::kFillableTextArea:
       return false;  // TODO(https://crbug.com/965478): true on long-press.
 
-    // Never show if the focused field is not explicitly fillable.
+    // Sometimes autocomplete entries may be set when the focus is on an unknown
+    // or unfillable field.
     case FocusedFieldType::kUnfillableElement:
     case FocusedFieldType::kUnknown:
-      return false;
+      return available_sources_.contains(FillingSource::AUTOFILL);
   }
 }
 
@@ -428,7 +432,10 @@ void ManualFillingControllerImpl::UpdateVisibility() {
       if (sheet.has_value())
         view_->OnItemsAvailable(std::move(sheet.value()));
     }
-    view_->ShowWhenKeyboardIsVisible();
+    view_->Show(ManualFillingViewInterface::WaitForKeyboard(
+        last_focused_field_type_ != FocusedFieldType::kUnfillableElement &&
+        last_focused_field_type_ != FocusedFieldType::kUnknown));
+
   } else {
     view_->Hide();
   }

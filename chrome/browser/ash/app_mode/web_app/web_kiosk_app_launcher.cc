@@ -45,14 +45,18 @@ constexpr base::TimeDelta kSplashWindowCloseDelayTime = base::Seconds(1);
 
 WebKioskAppLauncher::WebKioskAppLauncher(
     Profile* profile,
-    WebKioskAppLauncher::Delegate* delegate,
-    const AccountId& account_id)
+    const AccountId& account_id,
+    bool should_skip_install,
+    WebKioskAppLauncher::Delegate* delegate)
     : KioskAppLauncher(delegate),
       profile_(profile),
       account_id_(account_id),
+      should_skip_install_(should_skip_install),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       data_retriever_factory_(base::BindRepeating(
-          &std::make_unique<web_app::WebAppDataRetriever>)) {}
+          &std::make_unique<web_app::WebAppDataRetriever>)) {
+  DCHECK(profile_);
+}
 
 WebKioskAppLauncher::~WebKioskAppLauncher() = default;
 
@@ -62,7 +66,7 @@ void WebKioskAppLauncher::Initialize() {
   DCHECK(app);
   SYSLOG(INFO) << "Launching web kiosk for url: " << app->install_url();
   if (app->status() == WebKioskAppData::Status::kInstalled ||
-      delegate_->ShouldSkipAppInstallation()) {
+      should_skip_install_) {
     delegate_->OnAppPrepared();
     return;
   }
@@ -71,6 +75,9 @@ void WebKioskAppLauncher::Initialize() {
 }
 
 void WebKioskAppLauncher::ContinueWithNetworkReady() {
+  if (!profile_)
+    return;
+
   delegate_->OnAppInstalling();
   DCHECK(!is_installed_);
   install_task_ = std::make_unique<web_app::WebAppInstallTask>(
@@ -135,6 +142,9 @@ void WebKioskAppLauncher::CreateNewLacrosWindow() {
 }
 
 void WebKioskAppLauncher::LaunchApp() {
+  if (!profile_)
+    return;
+
   DCHECK(!browser_);
   const WebKioskAppData* app = GetCurrentApp();
 
@@ -190,6 +200,9 @@ void WebKioskAppLauncher::OnStateChanged() {
 }
 
 void WebKioskAppLauncher::OnExoWindowCreated(aura::Window* window) {
+  if (!profile_)
+    return;
+
   CHECK(crosapi::browser_util::IsLacrosWindow(window));
   exo::WMHelper::GetInstance()->RemoveExoWindowObserver(this);
   WebKioskAppManager::Get()->InitSession(nullptr, profile_);
@@ -198,11 +211,17 @@ void WebKioskAppLauncher::OnExoWindowCreated(aura::Window* window) {
   // when an exo window is launched in a fullscreen mode. This short delay is
   // just a temporary workaround, and should be removed after the issue is
   // solved.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&KioskAppLauncher::Delegate::OnAppWindowCreated,
                      base::Unretained(delegate_)),
       kSplashWindowCloseDelayTime);
+}
+
+void WebKioskAppLauncher::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_EQ(profile_, profile);
+  profile_observation_.Reset();
+  profile_ = nullptr;
 }
 
 void WebKioskAppLauncher::SetDataRetrieverFactoryForTesting(

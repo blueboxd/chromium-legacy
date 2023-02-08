@@ -11,8 +11,8 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
@@ -181,7 +181,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     content::BrowserContext* context,
     TaskLogger* task_logger) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+      base::SingleThreadTaskRunner::GetCurrentDefault();
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -538,8 +538,8 @@ void SyncEngine::DumpFiles(const GURL& origin, ListCallback callback) {
   ListCallback tracked_callback = callback_tracker_.Register(
       std::move(abort_closure), std::move(split_callback.second));
 
-  PostTaskAndReplyWithResult(
-      worker_task_runner_.get(), FROM_HERE,
+  worker_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SyncWorkerInterface::DumpFiles,
                      base::Unretained(sync_worker_.get()), origin),
       std::move(tracked_callback));
@@ -559,8 +559,8 @@ void SyncEngine::DumpDatabase(ListCallback callback) {
   ListCallback tracked_callback = callback_tracker_.Register(
       std::move(abort_closure), std::move(split_callback.second));
 
-  PostTaskAndReplyWithResult(
-      worker_task_runner_.get(), FROM_HERE,
+  worker_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SyncWorkerInterface::DumpDatabase,
                      base::Unretained(sync_worker_.get())),
       std::move(tracked_callback));

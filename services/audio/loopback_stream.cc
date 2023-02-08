@@ -10,7 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
 #include "base/sync_socket.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"
@@ -223,7 +223,7 @@ void LoopbackStream::OnError() {
 
   // Post a task to run the BindingLostCallback, since this method can be called
   // from the constructor.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](base::WeakPtr<LoopbackStream> weak_self,
@@ -402,7 +402,8 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   // started below will just run immediately and there will be no harmful
   // effects in the next GenerateMoreAudio() call. http://crbug.com/847487
   timer_->Start(FROM_HERE, next_generate_time_, this,
-                &FlowNetwork::GenerateMoreAudio, base::ExactDeadline(true));
+                &FlowNetwork::GenerateMoreAudio,
+                base::subtle::DelayPolicy::kPrecise);
 }
 
 }  // namespace audio

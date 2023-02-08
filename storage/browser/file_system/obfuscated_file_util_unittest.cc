@@ -23,13 +23,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "net/base/features.h"
@@ -240,8 +241,9 @@ class ObfuscatedFileUtilTest : public testing::Test,
         FROM_HERE, base::BindOnce(
                        [](const scoped_refptr<QuotaManager>& quota_manager) {
                          QuotaSettings settings;
-                         settings.per_host_quota = 25 * 1024 * 1024;
-                         settings.pool_size = settings.per_host_quota * 5;
+                         settings.per_storage_key_quota = 25 * 1024 * 1024;
+                         settings.pool_size =
+                             settings.per_storage_key_quota * 5;
                          settings.must_remain_available = 10 * 1024 * 1024;
                          settings.refresh_interval = base::TimeDelta::Max();
                          quota_manager->SetQuotaSettings(settings);
@@ -254,8 +256,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
     // We need to pass in the context to skip all that.
     file_system_context_ =
         is_incognito() ? CreateIncognitoFileSystemContextForTesting(
-                             base::ThreadTaskRunnerHandle::Get(),
-                             base::ThreadTaskRunnerHandle::Get(),
+                             base::SingleThreadTaskRunner::GetCurrentDefault(),
+                             base::SingleThreadTaskRunner::GetCurrentDefault(),
                              quota_manager_->proxy(), data_dir_.GetPath())
                        : CreateFileSystemContextForTesting(
                              quota_manager_->proxy(), data_dir_.GetPath());
@@ -265,7 +267,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
     base::test::TestFuture<QuotaErrorOr<BucketInfo>> default_future;
     quota_manager_->proxy()->UpdateOrCreateBucket(
         BucketInitParams::ForDefaultBucket(storage_key()),
-        base::SequencedTaskRunnerHandle::Get(), default_future.GetCallback());
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        default_future.GetCallback());
     QuotaErrorOr<BucketInfo> default_bucket = default_future.Take();
     CHECK(default_bucket.ok());
     default_bucket_ = default_bucket.value().ToBucketLocator();
@@ -276,7 +279,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     BucketInitParams params = BucketInitParams::ForDefaultBucket(storage_key());
     params.name = "non-default bucket";
     quota_manager_->proxy()->UpdateOrCreateBucket(
-        params, base::SequencedTaskRunnerHandle::Get(),
+        params, base::SequencedTaskRunner::GetCurrentDefault(),
         custom_future.GetCallback());
     QuotaErrorOr<BucketInfo> custom_bucket = custom_future.Take();
     CHECK(custom_bucket.ok());
@@ -287,7 +290,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     base::test::TestFuture<QuotaErrorOr<BucketInfo>> alternate_future;
     params.name = "alternate non-default bucket";
     quota_manager_->proxy()->UpdateOrCreateBucket(
-        params, base::SequencedTaskRunnerHandle::Get(),
+        params, base::SequencedTaskRunner::GetCurrentDefault(),
         alternate_future.GetCallback());
     QuotaErrorOr<BucketInfo> alternate_bucket = alternate_future.Take();
     CHECK(alternate_bucket.ok());

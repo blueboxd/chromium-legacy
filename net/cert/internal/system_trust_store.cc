@@ -49,6 +49,8 @@
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #elif BUILDFLAG(IS_WIN)
 #include "net/cert/internal/trust_store_win.h"
+#elif BUILDFLAG(IS_ANDROID)
+#include "net/cert/internal/trust_store_android.h"
 #endif
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 #include "net/cert/internal/trust_store_chrome.h"
@@ -231,16 +233,14 @@ TrustStoreMac::TrustImplType ParamToTrustImplType(
     int param,
     TrustStoreMac::TrustImplType default_impl) {
   // These values are used in experiment configs, do not change or reuse the
-  // numbers.
+  // numbers. Next available value: 6.
   switch (param) {
-    case 1:
-      return TrustStoreMac::TrustImplType::kDomainCache;
     case 2:
       return TrustStoreMac::TrustImplType::kSimple;
-    case 3:
-      return TrustStoreMac::TrustImplType::kLruCache;
     case 4:
       return TrustStoreMac::TrustImplType::kDomainCacheFullCerts;
+    case 5:
+      return TrustStoreMac::TrustImplType::kKeychainCacheFullCerts;
     default:
       return default_impl;
   }
@@ -268,26 +268,11 @@ TrustStoreMac::TrustImplType GetTrustStoreImplParam(
   return default_impl;
 }
 
-size_t GetTrustStoreCacheSize() {
-  if (base::FeatureList::IsEnabled(features::kChromeRootStoreUsed) &&
-      features::kChromeRootStoreSysCacheSize.Get() > 0) {
-    return features::kChromeRootStoreSysCacheSize.Get();
-  }
-  if (base::FeatureList::IsEnabled(
-          features::kCertDualVerificationTrialFeature) &&
-      features::kCertDualVerificationTrialCacheSize.Get() > 0) {
-    return features::kCertDualVerificationTrialCacheSize.Get();
-  }
-  constexpr size_t kDefaultCacheSize = 512;
-  return kDefaultCacheSize;
-}
-
 TrustStoreMac* GetGlobalTrustStoreMacForCRS() {
   constexpr TrustStoreMac::TrustImplType kDefaultMacTrustImplForCRS =
       TrustStoreMac::TrustImplType::kDomainCacheFullCerts;
   static base::NoDestructor<TrustStoreMac> static_trust_store_mac(
-      kSecPolicyAppleSSL, GetTrustStoreImplParam(kDefaultMacTrustImplForCRS),
-      GetTrustStoreCacheSize());
+      kSecPolicyAppleSSL, GetTrustStoreImplParam(kDefaultMacTrustImplForCRS));
   return static_trust_store_mac.get();
 }
 
@@ -387,10 +372,35 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
+namespace {
+TrustStoreWin* GetGlobalTrustStoreWinForCRS() {
+  static base::NoDestructor<TrustStoreWin> static_trust_store_win;
+  return static_trust_store_win.get();
+}
+}  // namespace
+
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStoreChromeRoot(
     std::unique_ptr<TrustStoreChrome> chrome_root) {
-  return std::make_unique<SystemTrustStoreChrome>(std::move(chrome_root),
-                                                  TrustStoreWin::Create());
+  return std::make_unique<SystemTrustStoreChromeWithUnOwnedSystemStore>(
+      std::move(chrome_root), GetGlobalTrustStoreWinForCRS());
+}
+
+#endif  // CHROME_ROOT_STORE_SUPPORTED
+
+#elif BUILDFLAG(IS_ANDROID)
+
+// Using the Builtin Verifier w/o the Chrome Root Store is unsupported on
+// Android.
+std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
+  return std::make_unique<DummySystemTrustStore>();
+}
+
+#if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
+
+std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStoreChromeRoot(
+    std::unique_ptr<TrustStoreChrome> chrome_root) {
+  return std::make_unique<SystemTrustStoreChrome>(
+      std::move(chrome_root), std::make_unique<TrustStoreAndroid>());
 }
 
 #endif  // CHROME_ROOT_STORE_SUPPORTED

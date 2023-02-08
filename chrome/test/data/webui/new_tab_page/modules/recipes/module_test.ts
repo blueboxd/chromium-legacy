@@ -7,7 +7,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 import {DismissModuleEvent, RecipesHandlerProxy, RecipesModuleElement, recipeTasksDescriptor} from 'chrome://new-tab-page/lazy_load.js';
 import {$$, CrAutoImgElement} from 'chrome://new-tab-page/new_tab_page.js';
 import {RecipesHandlerRemote} from 'chrome://new-tab-page/recipes.mojom-webui.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -16,7 +16,7 @@ import {eventToPromise} from 'chrome://webui-test/test_util.js';
 import {installMock} from '../../test_support.js';
 
 suite('NewTabPageModulesRecipesTest', () => {
-  let handler: TestBrowserProxy;
+  let handler: TestBrowserProxy<RecipesHandlerRemote>;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -212,7 +212,10 @@ suite('NewTabPageModulesRecipesTest', () => {
     const restoreCallback = dismissEvent.detail.restoreCallback;
 
     // Assert.
-    assertEquals('Recipe ideas hidden', toastMessage);
+    const moduleHeaderTitle =
+        moduleElement.shadowRoot!.querySelector(
+                                     'ntp-module-header')!.textContent!.trim();
+    assertEquals(moduleHeaderTitle + ' hidden', toastMessage);
     assertEquals('Hello world', await handler.whenCalled('dismissTask'));
 
     // Act.

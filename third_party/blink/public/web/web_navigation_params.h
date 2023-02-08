@@ -17,6 +17,7 @@
 #include "services/network/public/mojom/url_response_head.mojom-shared.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/public/common/navigation/impression.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_fenced_frame_reporting.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/platform/web_policy_container.h"
@@ -105,6 +105,10 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // Whether the navigation initiator frame is an ad frame.
   bool initiator_frame_is_ad = false;
+
+  // Whether there is ad script in stack when the navigation is initiated. Note
+  // that will also be true if the initiator frame is ad.
+  bool is_ad_script_in_stack = false;
 
   // Whether this is a navigation in the opener frame initiated
   // by the window.open'd frame.
@@ -471,7 +475,7 @@ struct BLINK_EXPORT WebNavigationParams {
   // reporting metadata which in turn is a map from the event type to the
   // reporting url. Null, otherwise.
   // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  absl::optional<WebFencedFrameReporting> fenced_frame_reporting;
+  absl::optional<FencedFrame::FencedFrameReporting> fenced_frame_reporting;
 
   // Whether the current context would be allowed to create an opaque-ads
   //  frame (based on the browser-side calculations). See
@@ -502,6 +506,14 @@ struct BLINK_EXPORT WebNavigationParams {
   // Provides cached state from the previous Document that will be replaced by
   // this navigation for a ViewTransition.
   absl::optional<ViewTransitionState> view_transition_state;
+
+  // If this is a navigation to an "opaque-ads" fenced frame through an ad
+  // auction, this stores the collection of properties that were loaded into a
+  // fenced frame to specify its behavior. This is read into an inner
+  // `FencedFrameConfig` object to give a fenced frame access to the
+  // components associated with the winning bid in an auction.
+  absl::optional<FencedFrame::RedactedFencedFrameProperties>
+      fenced_frame_properties;
 };
 
 }  // namespace blink

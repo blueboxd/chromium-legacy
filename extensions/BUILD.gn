@@ -11,10 +11,6 @@ import("//ui/base/ui_features.gni")
 
 assert(enable_extensions)
 
-assert(
-    !(enable_autofill_assistant_api && is_official_build),
-    "The AutofillAssistant Extension API must be disabled in official builds.")
-
 if (is_component_build) {
   component("extensions") {
     visibility = [
@@ -189,7 +185,7 @@ static_library("test_support") {
   # of the APIs and the extensions shell already do. We should try to avoid
   # expanding these dependencies.
   if (is_chromeos_ash) {
-    deps += [ "//chromeos/login/login_state" ]
+    deps += [ "//chromeos/ash/components/login/login_state" ]
   }
 
   if (is_chromeos_lacros) {

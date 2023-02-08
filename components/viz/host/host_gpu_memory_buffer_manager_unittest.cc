@@ -13,8 +13,8 @@
 #include "base/clang_profiling_buildflags.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -285,7 +285,7 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
     gpu_memory_buffer_manager_ = std::make_unique<HostGpuMemoryBufferManager>(
         std::move(gpu_service_provider), 1,
         std::move(gpu_memory_buffer_support),
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     if (MustSignalGmbConfigReadyForTest())
       gpu_memory_buffer_manager_->native_configurations_initialized_.Set();
   }
@@ -522,8 +522,8 @@ TEST_F(HostGpuMemoryBufferManagerTest, CancelRequestsForShutdown) {
   // Flush tasks posted back to main thread from CreateGpuMemoryBuffer() to make
   // sure they are harmless.
   base::RunLoop loop;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   loop.QuitClosure());
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           loop.QuitClosure());
   loop.Run();
 }
 

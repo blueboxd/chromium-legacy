@@ -20,10 +20,11 @@
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -128,13 +129,13 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
   using ComponentReadyCallback =
       base::OnceCallback<void(const base::Version& version,
                               const base::FilePath& install_dir,
-                              base::Value manifest)>;
+                              base::Value::Dict manifest)>;
   explicit MockInstallerPolicy(
       ComponentReadyCallback component_ready_cb = ComponentReadyCallback())
       : component_ready_cb_(std::move(component_ready_cb)) {}
   ~MockInstallerPolicy() override = default;
 
-  bool VerifyInstallation(const base::Value& manifest,
+  bool VerifyInstallation(const base::Value::Dict& manifest,
                           const base::FilePath& dir) const override {
     return true;
   }
@@ -146,7 +147,7 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
   bool RequiresNetworkEncryption() const override { return true; }
 
   update_client::CrxInstaller::Result OnCustomInstall(
-      const base::Value& manifest,
+      const base::Value::Dict& manifest,
       const base::FilePath& install_dir) override {
     return update_client::CrxInstaller::Result(0);
   }
@@ -155,7 +156,7 @@ class MockInstallerPolicy : public ComponentInstallerPolicy {
 
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
-                      base::Value manifest) override {
+                      base::Value::Dict manifest) override {
     if (component_ready_cb_) {
       std::move(component_ready_cb_)
           .Run(version, install_dir, std::move(manifest));
@@ -223,7 +224,7 @@ class ComponentInstallerTest : public testing::Test {
                 const UpdateScheduler::OnStopTaskCallback& on_stop);
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
-      base::ThreadTaskRunnerHandle::Get();
+      base::SingleThreadTaskRunner::GetCurrentDefault();
   base::RunLoop runloop_;
 
   std::unique_ptr<TestingPrefServiceSimple> pref_ =
@@ -452,7 +453,7 @@ TEST_F(ComponentInstallerTest, InstallerRegister_CheckSequence) {
       std::make_unique<MockInstallerPolicy>(base::BindLambdaForTesting(
           [&mock_register_handler](const base::Version& version,
                                    const base::FilePath& install_dir,
-                                   base::Value manifest) {
+                                   base::Value::Dict manifest) {
             EXPECT_EQ(version.GetString(), "1.0");
             mock_register_handler.ComponentReady();
           }));

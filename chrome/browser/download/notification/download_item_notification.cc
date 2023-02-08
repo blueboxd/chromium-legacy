@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -832,7 +833,7 @@ bool DownloadItemNotification::IsGalleryAppPdfEditNotificationEligible() const {
 
   file_manager::file_tasks::TaskDescriptor task_descriptor;
   if (!file_manager::file_tasks::GetDefaultTaskFromPrefs(
-          *(profile_->GetPrefs()), "application/pdf", "pdf",
+          *(profile_->GetPrefs()), "application/pdf", ".pdf",
           &task_descriptor)) {
     // GetDefaultTaskFromPrefs returns false if no default app is specified. If
     // no default app is specified, a pdf will be opened with Gallery app.
@@ -953,8 +954,12 @@ std::u16string DownloadItemNotification::GetCommandLabel(
       break;
     case DownloadCommands::PLATFORM_OPEN:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      return base::UTF8ToUTF16(
-          ash::features::kGalleryAppPdfEditNotificationText.Get());
+      // If a flag is specified by chrome://flags UI, flags_state.cc escape
+      // params, i.e. a space is converted to a plus. Unescape the string for
+      // the case.
+      return base::UTF8ToUTF16(base::UnescapeURLComponent(
+          ash::features::kGalleryAppPdfEditNotificationText.Get(),
+          base::UnescapeRule::REPLACE_PLUS_WITH_SPACE));
 #else
       NOTREACHED();
       return std::u16string();

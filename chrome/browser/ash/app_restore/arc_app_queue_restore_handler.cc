@@ -15,11 +15,12 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_handler.h"
 #include "chrome/browser/ash/app_restore/arc_window_utils.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/exit_type_service.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/shelf/arc_shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
@@ -47,12 +47,12 @@
 #include "components/exo/wm_helper.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/display/display.h"
 #include "ui/wm/public/activation_client.h"
+
+namespace ash::app_restore {
 
 namespace {
 
@@ -94,15 +94,13 @@ constexpr char kNoGhostWindowReasonHistogram[] =
 
 }  // namespace
 
-namespace ash::app_restore {
-
 ArcAppQueueRestoreHandler::ArcAppQueueRestoreHandler() {
   if (aura::Env::HasInstance())
     env_observer_.Observe(aura::Env::GetInstance());
 
-  if (ash::Shell::HasInstance() && ash::Shell::Get()->GetPrimaryRootWindow()) {
+  if (Shell::HasInstance() && Shell::Get()->GetPrimaryRootWindow()) {
     auto* activation_client =
-        wm::GetActivationClient(ash::Shell::Get()->GetPrimaryRootWindow());
+        wm::GetActivationClient(Shell::Get()->GetPrimaryRootWindow());
     if (activation_client)
       activation_client->AddObserver(this);
   }
@@ -125,9 +123,9 @@ ArcAppQueueRestoreHandler::ArcAppQueueRestoreHandler() {
 }
 
 ArcAppQueueRestoreHandler::~ArcAppQueueRestoreHandler() {
-  if (ash::Shell::HasInstance() && ash::Shell::Get()->GetPrimaryRootWindow()) {
+  if (Shell::HasInstance() && Shell::Get()->GetPrimaryRootWindow()) {
     auto* activation_client =
-        wm::GetActivationClient(ash::Shell::Get()->GetPrimaryRootWindow());
+        wm::GetActivationClient(Shell::Get()->GetPrimaryRootWindow());
     if (activation_client)
       activation_client->RemoveObserver(this);
   }
@@ -212,7 +210,7 @@ void ArcAppQueueRestoreHandler::OnAppConnectionReady() {
 }
 
 void ArcAppQueueRestoreHandler::OnShelfReady() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ArcAppQueueRestoreHandler::PrepareLaunchApps,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
@@ -496,7 +494,7 @@ void ArcAppQueueRestoreHandler::PrepareAppLaunching(const std::string& app_id) {
       window_info->window_id = arc_session_id;
       chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
           app_id, std::make_unique<ArcShelfSpinnerItemController>(
-                      app_id, app_restore_data->event_flag.value(),
+                      app_id, nullptr, app_restore_data->event_flag.value(),
                       arc::UserInteractionType::APP_STARTED_FROM_FULL_RESTORE,
                       apps::MakeArcWindowInfo(std::move(window_info))));
     }
@@ -663,15 +661,8 @@ void ArcAppQueueRestoreHandler::LaunchAppWindow(const std::string& app_id,
                                apps::LaunchSource::kFromFullRestore,
                                std::move(window_info), base::DoNothing());
   } else {
-    if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-      proxy->Launch(app_id, app_restore_data->event_flag.value(),
-                    apps::LaunchSource::kFromFullRestore,
-                    std::move(window_info));
-    } else {
-      proxy->Launch(app_id, app_restore_data->event_flag.value(),
-                    apps::mojom::LaunchSource::kFromFullRestore,
-                    ConvertWindowInfoToMojomWindowInfo(window_info));
-    }
+    proxy->Launch(app_id, app_restore_data->event_flag.value(),
+                  apps::LaunchSource::kFromFullRestore, std::move(window_info));
   }
 
   if (!HasRestoreData())
@@ -914,7 +905,7 @@ void ArcAppQueueRestoreHandler::RecordRestoreResult() {
 #endif
 }
 
-ash::SchedulerConfigurationManager*
+SchedulerConfigurationManager*
 ArcAppQueueRestoreHandler::GetSchedulerConfigurationManager() {
   if (!g_browser_process || !g_browser_process->platform_part())
     return nullptr;

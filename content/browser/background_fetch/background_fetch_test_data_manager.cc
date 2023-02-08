@@ -29,7 +29,7 @@ class MockBGFQuotaManagerProxy : public storage::MockQuotaManagerProxy {
   explicit MockBGFQuotaManagerProxy(storage::MockQuotaManager* quota_manager)
       : storage::MockQuotaManagerProxy(
             quota_manager,
-            base::ThreadTaskRunnerHandle::Get().get()) {}
+            base::SingleThreadTaskRunner::GetCurrentDefault().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
   void RegisterClient(
@@ -76,8 +76,8 @@ void BackgroundFetchTestDataManager::Initialize() {
   // The mock one is still used for testing quota exceeded scenarios in
   // DatabaseTask.
   storage::QuotaSettings settings;
-  settings.per_host_quota = kBackgroundFetchMaxQuotaBytes;
-  settings.pool_size = settings.per_host_quota * 5;
+  settings.per_storage_key_quota = kBackgroundFetchMaxQuotaBytes;
+  settings.pool_size = settings.per_storage_key_quota * 5;
   settings.must_remain_available = 0;
   settings.refresh_interval = base::TimeDelta::Max();
   storage_partition_->GetQuotaManager()->SetQuotaSettings(settings);
@@ -88,7 +88,7 @@ void BackgroundFetchTestDataManager::Initialize() {
 
   mock_quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
       storage_partition_->GetPath().empty(), storage_partition_->GetPath(),
-      base::ThreadTaskRunnerHandle::Get().get(),
+      base::SingleThreadTaskRunner::GetCurrentDefault().get(),
       base::MakeRefCounted<storage::MockSpecialStoragePolicy>());
 
   quota_manager_proxy_ =

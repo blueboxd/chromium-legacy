@@ -8,12 +8,13 @@
 #include <oleacc.h>
 #include <wrl/client.h>
 
-#include "ui/accessibility/ax_export.h"
+#include "base/component_export.h"
 #include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
 
 namespace ui {
 
-class AX_EXPORT AXTreeFormatterWin : public AXTreeFormatterBase {
+class COMPONENT_EXPORT(AX_PLATFORM) AXTreeFormatterWin
+    : public AXTreeFormatterBase {
  public:
   AXTreeFormatterWin();
   ~AXTreeFormatterWin() override;
@@ -27,12 +28,23 @@ class AX_EXPORT AXTreeFormatterWin : public AXTreeFormatterBase {
   std::string EvaluateScript(
       const AXTreeSelector& selector,
       const ui::AXInspectScenario& scenario) const override;
+  std::string EvaluateScript(
+      AXPlatformNodeDelegate* root,
+      const std::vector<AXScriptInstruction>& instructions,
+      size_t start_index,
+      size_t end_index) const override;
 
  protected:
   void AddDefaultFilters(
       std::vector<AXPropertyFilter>* property_filters) override;
 
  private:
+  std::string EvaluateScript(
+      Microsoft::WRL::ComPtr<IAccessible> root,
+      const std::vector<AXScriptInstruction>& instructions,
+      size_t start_index,
+      size_t end_index) const;
+
   void RecursiveBuildTree(const Microsoft::WRL::ComPtr<IAccessible> node,
                           base::Value::Dict* dict,
                           LONG root_x,

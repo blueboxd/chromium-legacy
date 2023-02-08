@@ -4,6 +4,7 @@
 
 #include "ash/webui/diagnostics_ui/backend/input/input_data_provider.h"
 
+#include <cstdint>
 #include <iostream>
 #include <map>
 #include <vector>
@@ -17,6 +18,8 @@
 #include "ash/webui/diagnostics_ui/backend/input/event_watcher_factory.h"
 #include "ash/webui/diagnostics_ui/backend/input/input_data_event_watcher.h"
 #include "ash/webui/diagnostics_ui/backend/input/keyboard_input_data_event_watcher.h"
+#include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
@@ -27,11 +30,15 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/test/ash_test_suite.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/test/browser_task_environment.h"
@@ -184,6 +191,8 @@ constexpr KeyDefinition kKeyActionKeyboardVolumeDown = {KEY_VOLUMEDOWN, 0xAE,
                                                         0x0C00EA};
 constexpr KeyDefinition kKeyActionKeyboardVolumeUp = {KEY_VOLUMEUP, 0xB0,
                                                       0x0C00E9};
+
+constexpr uint32_t kKeyboardTesterMetricTimeDelay = 10u;
 #if 0
 // TODO(b/208729519): Not useful until we can test Drallion keyboards.
 // Drallion, no HID equivalent
@@ -378,6 +387,27 @@ class FakeTabletModeObserver : public mojom::TabletModeObserver {
   bool is_tablet_mode_ = false;
 };
 
+class FakeLidStateObserver : public mojom::LidStateObserver {
+ public:
+  uint32_t num_lid_state_change_calls() const {
+    return num_lid_state_change_calls_;
+  }
+
+  bool is_lid_open() { return is_lid_open_; }
+
+  // mojom::TabletModeObserver:
+  void OnLidStateChanged(bool is_lid_open) override {
+    ++num_lid_state_change_calls_;
+    is_lid_open_ = is_lid_open;
+  }
+
+  mojo::Receiver<mojom::LidStateObserver> receiver{this};
+
+ private:
+  uint32_t num_lid_state_change_calls_ = 0;
+  bool is_lid_open_ = false;
+};
+
 // A mock observer that records current internal display power state and counts
 // when OnInternalDisplayPowerStateChanged function is called.
 class FakeInternalDisplayPowerStateObserver
@@ -530,18 +560,56 @@ class FakeInputDeviceInfoHelper : public InputDeviceInfoHelper {
   }
 };
 
+// Test implementation of ui::EventRewriterChromeOS::Delegate used to check that
+// modifier key rewrites are suppressed appropriately in InputDataProvider.
+class TestEventRewriterChromeOSDelegate
+    : public ui::EventRewriterChromeOS::Delegate {
+ public:
+  // ui::EventRewriterChromeOS::Delegate:
+  bool RewriteModifierKeys() override {
+    return !suppress_modifier_key_rewrites_;
+  }
+  void SuppressModifierKeyRewrites(bool should_supress) override {
+    suppress_modifier_key_rewrites_ = should_supress;
+  }
+
+  // Not used, only to satisfy interface.
+  bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                    int* result) const override {
+    return false;
+  }
+  bool TopRowKeysAreFunctionKeys() const override { return false; }
+  bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
+                                    int flags) const override {
+    return false;
+  }
+  bool IsSearchKeyAcceleratorReserved() const override { return false; }
+  bool NotifyDeprecatedRightClickRewrite() override { return false; }
+  bool NotifyDeprecatedSixPackKeyRewrite(ui::KeyboardCode key_code) override {
+    return false;
+  }
+
+ protected:
+  bool suppress_modifier_key_rewrites_ = false;
+};
+
 // Our modifications to InputDataProvider that carries around its own
 // widget (representing the window that needs to be visible for key events
 // to be observed), the needed factories for our fake utilities, and a
 // reference to the current event watchers.
 class TestInputDataProvider : public InputDataProvider {
  public:
-  TestInputDataProvider(views::Widget* widget, watchers_t& watchers)
+  TestInputDataProvider(
+      views::Widget* widget,
+      watchers_t& watchers,
+      ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate)
       : InputDataProvider(
             widget->GetNativeWindow(),
             std::make_unique<FakeDeviceManager>(),
             std::make_unique<FakeInputDataEventWatcherFactory>(watchers),
-            /*keyboard_input_log_ptr=*/nullptr),
+            /*keyboard_input_log_ptr=*/nullptr,
+            Shell::Get()->accelerator_controller(),
+            event_rewriter_delegate),
         attached_widget_(widget),
         watchers_(watchers) {
     info_helper_ = base::SequenceBound<FakeInputDeviceInfoHelper>(
@@ -555,10 +623,10 @@ class TestInputDataProvider : public InputDataProvider {
   // be destroyed early. (See next item.)
   views::Widget* attached_widget_;
   // Keep a list of watchers for each evdev in the provider. This is a
-  // reference to an instance outside of this class, as the lifetime of the list
-  // needs to exceed the destruction of this test class, and can only be cleaned
-  // up once all watchers have been destroyed by the base InputDataProvider,
-  // which occurs after our destruction.
+  // reference to an instance outside of this class, as the lifetime of the
+  // list needs to exceed the destruction of this test class, and can only be
+  // cleaned up once all watchers have been destroyed by the base
+  // InputDataProvider, which occurs after our destruction.
   watchers_t& watchers_;
 };
 
@@ -580,9 +648,12 @@ class InputDataProviderTest : public AshTestBase {
     AshTestSuite::LoadTestResources();
     AshTestBase::SetUp();
 
+    event_rewriter_delegate_ =
+        std::make_unique<TestEventRewriterChromeOSDelegate>();
+
     // Note: some init for creating widgets is performed in base SetUp
-    // instead of the constructor, so our init must also be delayed until SetUp,
-    // so we can safely invoke CreateTestWidget().
+    // instead of the constructor, so our init must also be delayed until
+    // SetUp, so we can safely invoke CreateTestWidget().
 
     statistics_provider_.SetMachineStatistic(
         chromeos::system::kKeyboardMechanicalLayoutKey, "ANSI");
@@ -591,8 +662,8 @@ class InputDataProviderTest : public AshTestBase {
 
     fake_udev_ = std::make_unique<testing::FakeUdevLoader>();
     widget_ = CreateTestWidget();
-    provider_ =
-        std::make_unique<TestInputDataProvider>(widget_.get(), watchers_);
+    provider_ = std::make_unique<TestInputDataProvider>(
+        widget_.get(), watchers_, event_rewriter_delegate_.get());
 
     // Apply these early, in SetUp; delaying until
     // FakeInputDeviceInfoHelper::GetDeviceInfo() is not appropriate, as
@@ -627,6 +698,10 @@ class InputDataProviderTest : public AshTestBase {
                launcher_accelerator);
   }
 
+  bool ModifierRewritesAreSuppressed() {
+    return !event_rewriter_delegate_->RewriteModifierKeys();
+  }
+
  protected:
   struct ExpectedKeyEvent {
     KeyDefinition key;
@@ -653,13 +728,14 @@ class InputDataProviderTest : public AshTestBase {
 
     i = 0;
     for (auto* iter = list.begin(); iter != list.end(); iter++, i++) {
-      EXPECT_EQ(*fake_observer->events_[i].second,
-                mojom::KeyEvent(/*id=*/id, /*type=*/iter->down
-                                               ? mojom::KeyEventType::kPress
-                                               : mojom::KeyEventType::kRelease,
-                                /*key_code=*/iter->key.key_code,
-                                /*scan_code=*/iter->key.at_scan_code,
-                                /*top_row_position=*/iter->position))
+      EXPECT_EQ(
+          *fake_observer->events_[i].second,
+          mojom::KeyEvent(/*id=*/id,
+                          /*type=*/iter->down ? mojom::KeyEventType::kPress
+                                              : mojom::KeyEventType::kRelease,
+                          /*key_code=*/iter->key.key_code,
+                          /*scan_code=*/iter->key.at_scan_code,
+                          /*top_row_position=*/iter->position))
           << " which is EXPECT_KEY_EVENTS item #" << i;
     }
   }
@@ -702,6 +778,7 @@ class InputDataProviderTest : public AshTestBase {
   // All evdev watchers in use by provider_.
   watchers_t watchers_;
   std::unique_ptr<TestInputDataProvider> provider_;
+  std::unique_ptr<TestEventRewriterChromeOSDelegate> event_rewriter_delegate_;
 
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -1654,6 +1731,8 @@ TEST_F(InputDataProviderTest, ShortcutBlockingObeysFocus) {
   provider_->OnDeviceEvent(event0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // If widget is in focus, ObserveKeyEvents should block shortcuts, however
   // since the widget is not in focus, it does not block
@@ -1661,6 +1740,8 @@ TEST_F(InputDataProviderTest, ShortcutBlockingObeysFocus) {
       kDeviceId, fake_observer->receiver.BindNewPipeAndPassRemote());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 }
 
 TEST_F(InputDataProviderTest, ShortcutBlockingObeysFocusSwitching) {
@@ -1678,20 +1759,28 @@ TEST_F(InputDataProviderTest, ShortcutBlockingObeysFocusSwitching) {
   provider_->OnDeviceEvent(event0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // If widget is in focus, ObserveKeyEvents should block shortcuts
   provider_->ObserveKeyEvents(
       kDeviceId, fake_observer->receiver.BindNewPipeAndPassRemote());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(OpenAndCloseLauncher());
+  EXPECT_TRUE(ModifierRewritesAreSuppressed());
+  EXPECT_FALSE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // Hide widget and check that we can use shortcuts
   provider_->attached_widget_->Hide();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // Show widget and check that shortcuts are blocked
   provider_->attached_widget_->Show();
   EXPECT_FALSE(OpenAndCloseLauncher());
+  EXPECT_TRUE(ModifierRewritesAreSuppressed());
+  EXPECT_FALSE(InputDataProvider::ShouldCloseDialogOnEscape());
 }
 
 TEST_F(InputDataProviderTest, ShortcutBlockingObeysLastObserverDisconnect) {
@@ -1713,28 +1802,38 @@ TEST_F(InputDataProviderTest, ShortcutBlockingObeysLastObserverDisconnect) {
   provider_->OnDeviceEvent(event0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // If widget is in focus, ObserveKeyEvents should block shortcuts
   provider_->ObserveKeyEvents(
       kDeviceId, fake_observer1->receiver.BindNewPipeAndPassRemote());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(OpenAndCloseLauncher());
+  EXPECT_TRUE(ModifierRewritesAreSuppressed());
+  EXPECT_FALSE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // When second observer is added, shortcuts should still be blocked
   provider_->ObserveKeyEvents(
       kDeviceId, fake_observer2->receiver.BindNewPipeAndPassRemote());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(OpenAndCloseLauncher());
+  EXPECT_TRUE(ModifierRewritesAreSuppressed());
+  EXPECT_FALSE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // When first observer is destroyed, shortcuts should still be blocked
   fake_observer1.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(OpenAndCloseLauncher());
+  EXPECT_TRUE(ModifierRewritesAreSuppressed());
+  EXPECT_FALSE(InputDataProvider::ShouldCloseDialogOnEscape());
 
   // After second observer is destroyed, shortcuts should be unblocked
   fake_observer2.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(OpenAndCloseLauncher());
+  EXPECT_FALSE(ModifierRewritesAreSuppressed());
+  EXPECT_TRUE(InputDataProvider::ShouldCloseDialogOnEscape());
 }
 
 // Test overlapping lifetimes of separate observers of one device.
@@ -1807,7 +1906,8 @@ TEST_F(InputDataProviderTest, KeyObservationMultipleProviders) {
 
   std::unique_ptr<TestInputDataProvider> provider2_ =
       std::make_unique<TestInputDataProvider>(provider2_widget.get(),
-                                              provider2_watchers);
+                                              provider2_watchers,
+                                              event_rewriter_delegate_.get());
   auto& provider1_ = provider_;
 
   std::unique_ptr<FakeKeyboardObserver> fake_observer1 =
@@ -2175,16 +2275,111 @@ TEST_F(InputDataProviderTest, KeyboardInputLog) {
   task_environment()->RunUntilIdle();
   std::string contents;
   EXPECT_TRUE(base::ReadFileToString(full_log_path, &contents));
+
   std::vector<std::string> lines = GetLogLines(contents);
-  EXPECT_EQ("Key press test - AT Translated Set 2 keyboard", lines[0]);
+  ASSERT_EQ(2u, lines.size());
+
+  // First line is of form:
+  // [TimeStamp] - Key press test - AT Translated Set 2 keyboard
+  std::vector<std::string> first_line_contents =
+      GetLogLineContents(lines[0], "-");
+  ASSERT_EQ(3u, first_line_contents.size());
+  EXPECT_EQ("Key press test", first_line_contents[1]);
+  EXPECT_EQ("AT Translated Set 2 keyboard", first_line_contents[2]);
+
   EXPECT_EQ("Key code: 30, Scan code: 30", lines[1]);
+}
+
+TEST_F(InputDataProviderTest, KeyboardTesterRoutineDurationMetric) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<FakeKeyboardObserver> fake_observer =
+      std::make_unique<FakeKeyboardObserver>();
+
+  // Widget must be active and visible.
+  provider_->attached_widget_->Show();
+  provider_->attached_widget_->Activate();
+
+  // Construct a keyboard.
+  const ui::DeviceEvent event0(ui::DeviceEvent::DeviceType::INPUT,
+                               ui::DeviceEvent::ActionType::ADD,
+                               base::FilePath("/dev/input/event6"));
+  provider_->OnDeviceEvent(event0);
+  base::RunLoop().RunUntilIdle();
+
+  // Attach a key observer.
+  provider_->ObserveKeyEvents(
+      /*id=*/6u, fake_observer->receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  task_environment()->FastForwardBy(
+      base::Seconds(kKeyboardTesterMetricTimeDelay));
+  ASSERT_TRUE(provider_->watchers_[6]);
+
+  // Test a key event.
+  EXPECT_KEY_EVENTS(fake_observer.get(), /*id=*/6u, {{kKeyA, -1}});
+
+  // Disconnect keyboard while it is being observed.
+  ui::DeviceEvent remove_kbd_event(ui::DeviceEvent::DeviceType::INPUT,
+                                   ui::DeviceEvent::ActionType::REMOVE,
+                                   base::FilePath("/dev/input/event6"));
+  provider_->OnDeviceEvent(remove_kbd_event);
+  base::RunLoop().RunUntilIdle();
+
+  // Watcher should have been shut down, and receiver disconnected.
+  EXPECT_FALSE(provider_->watchers_[6]);
+  task_environment()->RunUntilIdle();
+
+  histogram_tester.ExpectUniqueTimeSample(
+      "ChromeOS.DiagnosticsUi.KeyboardTesterRoutineDuration",
+      base::Seconds(kKeyboardTesterMetricTimeDelay),
+      /*expected_bucket_count=*/1);
+}
+
+TEST_F(InputDataProviderTest,
+       KeyboardTesterRoutineDurationMetricOnDestruction) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<FakeKeyboardObserver> fake_observer =
+      std::make_unique<FakeKeyboardObserver>();
+
+  // Widget must be active and visible.
+  provider_->attached_widget_->Show();
+  provider_->attached_widget_->Activate();
+
+  // Construct a keyboard.
+  const ui::DeviceEvent event0(ui::DeviceEvent::DeviceType::INPUT,
+                               ui::DeviceEvent::ActionType::ADD,
+                               base::FilePath("/dev/input/event6"));
+  provider_->OnDeviceEvent(event0);
+  base::RunLoop().RunUntilIdle();
+
+  // Attach a key observer.
+  provider_->ObserveKeyEvents(
+      /*id=*/6u, fake_observer->receiver.BindNewPipeAndPassRemote());
+  base::RunLoop().RunUntilIdle();
+
+  task_environment()->FastForwardBy(
+      base::Seconds(kKeyboardTesterMetricTimeDelay));
+  ASSERT_TRUE(provider_->watchers_[6]);
+
+  // Test a key event.
+  EXPECT_KEY_EVENTS(fake_observer.get(), /*id=*/6u, {{kKeyA, -1}});
+
+  // Manually destroy the provider.
+  provider_.reset();
+
+  histogram_tester.ExpectUniqueTimeSample(
+      "ChromeOS.DiagnosticsUi.KeyboardTesterRoutineDuration",
+      base::Seconds(kKeyboardTesterMetricTimeDelay),
+      /*expected_bucket_count=*/1);
 }
 
 // TODO(b/211780758): Test all Fx scancodes using
 // ui/events/keycodes/dom/dom_code_data.inc as source of truth.
 
-// Test the behavior when the tablet mode status has changed. The tablet mode is
-// initialized as "not-in-tablet-mode".
+// Test the behavior when the tablet mode status has changed. The tablet mode
+// is initialized as "not-in-tablet-mode".
 TEST_F(InputDataProviderTest, TabletModeObservation) {
   FakeTabletModeObserver fake_observer;
   base::test::TestFuture<bool> future;
@@ -2196,33 +2391,114 @@ TEST_F(InputDataProviderTest, TabletModeObservation) {
   // Default initial state is "not-in-tablet-mode".
   ASSERT_FALSE(future.Get<0>());
 
-  provider_->OnTabletModeStarted();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(fake_observer.is_tablet_mode());
   EXPECT_EQ(1u, fake_observer.num_tablet_mode_change_calls());
 
-  provider_->OnTabletModeEnded();
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(fake_observer.is_tablet_mode());
   EXPECT_EQ(2u, fake_observer.num_tablet_mode_change_calls());
 }
 
-// Test the behavior when the tablet mode status has changed. The tablet mode is
-// initialized as "in-tablet-mode".
+// Test the behavior when the tablet mode status has changed. The tablet mode
+// is initialized as "in-tablet-mode".
 TEST_F(InputDataProviderTest, TabletModeObservationInitAsTabletMode) {
   FakeTabletModeObserver fake_observer;
   base::test::TestFuture<bool> future;
 
   // Set initial state as tablet mode.
-  TabletMode::Get()->SetEnabledForTest(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Attach a tablet mode observer.
   provider_->ObserveTabletMode(
       fake_observer.receiver.BindNewPipeAndPassRemote(), future.GetCallback());
 
   // Initial state is set to "in-tablet-mode".
+  ASSERT_TRUE(future.Get<0>());
+}
+
+// Test the behavior when the lid state has changed. The lid state is
+// initialized as open.
+TEST_F(InputDataProviderTest, LidStateObservation) {
+  // Need to run loop here to give constructor time to receive response from
+  // FakePowerManagerClient.
+  base::RunLoop().RunUntilIdle();
+
+  FakeLidStateObserver fake_observer;
+  base::test::TestFuture<bool> future;
+
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::OPEN, /*timestamp=*/{});
+
+  // Attach a lid state observer.
+  provider_->ObserveLidState(fake_observer.receiver.BindNewPipeAndPassRemote(),
+                             future.GetCallback());
+  base::RunLoop().RunUntilIdle();
+
+  // Default state is that lid is open.
+  ASSERT_TRUE(future.Get<0>());
+
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::CLOSED, /*timestamp=*/{});
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(fake_observer.is_lid_open());
+  EXPECT_EQ(1u, fake_observer.num_lid_state_change_calls());
+
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::OPEN, /*timestamp=*/{});
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(fake_observer.is_lid_open());
+  EXPECT_EQ(2u, fake_observer.num_lid_state_change_calls());
+}
+
+// Test the behavior when the lid state status has changed. The lid state is
+// initialized as closed.
+TEST_F(InputDataProviderTest, LidStateObservationInitAsClosed) {
+  // Need to run loop here to give constructor time to receive response from
+  // FakePowerManagerClient.
+  base::RunLoop().RunUntilIdle();
+
+  FakeLidStateObserver fake_observer;
+  base::test::TestFuture<bool> future;
+
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::CLOSED, /*timestamp=*/{});
+
+  // Attach a tablet mode observer.
+  provider_->ObserveLidState(fake_observer.receiver.BindNewPipeAndPassRemote(),
+                             future.GetCallback());
+  base::RunLoop().RunUntilIdle();
+
+  // Default state is that lid is closed.
+  ASSERT_FALSE(future.Get<0>());
+}
+
+// Test the behavior when the lid state status has changed. The lid state is
+// initialized as closed.
+TEST_F(InputDataProviderTest, LidStateObservationInitAsUnsupported) {
+  // Need to run loop here to give constructor time to receive response from
+  // FakePowerManagerClient.
+  base::RunLoop().RunUntilIdle();
+
+  FakeLidStateObserver fake_observer;
+  base::test::TestFuture<bool> future;
+
+  power_manager_client()->SetLidState(
+      chromeos::PowerManagerClient::LidState::NOT_PRESENT, /*timestamp=*/{});
+
+  // Attach a tablet mode observer.
+  provider_->ObserveLidState(fake_observer.receiver.BindNewPipeAndPassRemote(),
+                             future.GetCallback());
+  base::RunLoop().RunUntilIdle();
+
+  // Default state is that lid is unsupported, which should act as though lid is
+  // open.
   ASSERT_TRUE(future.Get<0>());
 }
 
@@ -2335,8 +2611,8 @@ TEST_F(InputDataProviderTest, MoveAppToTestingScreen) {
   aura::Window* window = widget_->GetNativeWindow();
   ASSERT_EQ(primary_display_id, screen->GetDisplayNearestWindow(window).id());
 
-  // Call MoveAppToTestingScreen function with the touchscreen evdev id 2, which
-  // maps to the secondary display.
+  // Call MoveAppToTestingScreen function with the touchscreen evdev id 2,
+  // which maps to the secondary display.
   provider_->MoveAppToTestingScreen(/*evdev_id=*/2);
 
   // Confirm the app has been moved to the secondary display.
@@ -2395,14 +2671,15 @@ TEST_F(InputDataProviderTest, MoveAppBackToPreviousScreen) {
   aura::Window* window = widget_->GetNativeWindow();
   ASSERT_EQ(primary_display_id, screen->GetDisplayNearestWindow(window).id());
 
-  // Call MoveAppToTestingScreen function with the touchscreen evdev id 2, which
-  // maps to the secondary display.
+  // Call MoveAppToTestingScreen function with the touchscreen evdev id 2,
+  // which maps to the secondary display.
   provider_->MoveAppToTestingScreen(/*evdev_id=*/2);
 
   // Confirm the app has been moved to the secondary display.
   ASSERT_EQ(secondary_display_id, screen->GetDisplayNearestWindow(window).id());
 
-  // Call MoveAppBackToPreviousScreen to move the app back to original display.
+  // Call MoveAppBackToPreviousScreen to move the app back to original
+  // display.
   provider_->MoveAppBackToPreviousScreen();
 
   // Confirm the app has been moved back to the original display.

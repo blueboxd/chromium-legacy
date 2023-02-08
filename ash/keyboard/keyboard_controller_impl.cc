@@ -23,6 +23,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -268,7 +269,10 @@ void KeyboardControllerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-KeyRepeatSettings KeyboardControllerImpl::GetKeyRepeatSettings() {
+absl::optional<KeyRepeatSettings>
+KeyboardControllerImpl::GetKeyRepeatSettings() {
+  if (!pref_change_registrar_)
+    return absl::nullopt;
   PrefService* prefs = pref_change_registrar_->prefs();
   bool enabled = prefs->GetBoolean(ash::prefs::kXkbAutoRepeatEnabled);
   int delay_in_ms = prefs->GetInteger(ash::prefs::kXkbAutoRepeatDelay);
@@ -311,6 +315,20 @@ void KeyboardControllerImpl::OnSigninScreenPrefServiceInitialized(
 
 void KeyboardControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
+  auto account_id = Shell::Get()->session_controller()->GetActiveAccountId();
+  if (prefs && !recorded_accounts_.contains(account_id)) {
+    base::UmaHistogramBoolean(
+        "ChromeOS.Settings.Device.KeyboardAutoRepeatEnabled",
+        prefs->GetBoolean(prefs::kXkbAutoRepeatEnabled));
+    base::UmaHistogramTimes(
+        "ChromeOS.Settings.Device.KeyboardAutoRepeatDelay",
+        base::Milliseconds(prefs->GetInteger(prefs::kXkbAutoRepeatDelay)));
+    base::UmaHistogramTimes(
+        "ChromeOS.Settings.Device.KeyboardAutoRepeatInterval",
+        base::Milliseconds(prefs->GetInteger(prefs::kXkbAutoRepeatInterval)));
+    recorded_accounts_.insert(account_id);
+  }
+
   ObservePrefs(prefs);
 }
 
@@ -321,6 +339,12 @@ void KeyboardControllerImpl::OnActiveUserPrefServiceChanged(
 // active user's PrefService, or the signin screen's PrefService if nobody's
 // logged in yet.
 void KeyboardControllerImpl::ObservePrefs(PrefService* prefs) {
+  if (!prefs) {
+    // Just for testing cases.
+    pref_change_registrar_.reset();
+    return;
+  }
+
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
 
@@ -350,7 +374,9 @@ void KeyboardControllerImpl::ObservePrefs(PrefService* prefs) {
 }
 
 void KeyboardControllerImpl::SendKeyRepeatUpdate() {
-  OnKeyRepeatSettingsChanged(GetKeyRepeatSettings());
+  auto key_repeat_settings = GetKeyRepeatSettings();
+  DCHECK(key_repeat_settings.has_value());
+  OnKeyRepeatSettingsChanged(key_repeat_settings.value());
 }
 
 void KeyboardControllerImpl::SendKeyboardConfigUpdate() {

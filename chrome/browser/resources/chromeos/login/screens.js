@@ -8,20 +8,22 @@
 // COMMON SCREENS
 import './screens/common/adb_sideloading.js';
 import './screens/common/app_downloading.js';
-import './screens/common/app_launch_splash.m.js';
+import './screens/common/app_launch_splash.js';
 import './screens/common/arc_terms_of_service.js';
 import './screens/common/assistant_optin.js';
 import './screens/common/autolaunch.js';
+import './screens/common/choobe.js';
 import './screens/common/consolidated_consent.js';
+import './screens/common/cryptohome_recovery_setup.js';
 import './screens/common/device_disabled.js';
 import './screens/common/enable_kiosk.js';
 import './screens/common/error_message.js';
-import './screens/common/family_link_notice.m.js';
+import './screens/common/family_link_notice.js';
 import './screens/common/fingerprint_setup.js';
 import './screens/common/gaia_signin.js';
 import './screens/common/gesture_navigation.js';
-import './screens/common/guest_tos.m.js';
-import './screens/common/hw_data_collection.m.js';
+import './screens/common/guest_tos.js';
+import './screens/common/hw_data_collection.js';
 import './screens/common/local_state_error.js';
 import './screens/common/managed_terms_of_service.js';
 import './screens/common/marketing_opt_in.js';
@@ -33,11 +35,11 @@ import './screens/common/os_install.js';
 import './screens/common/os_trial.js';
 import './screens/common/parental_handoff.js';
 import './screens/common/pin_setup.js';
-import './screens/common/recommend_apps.m.js';
+import './screens/common/recommend_apps.js';
 import './screens/common/saml_confirm_password.js';
-import './screens/common/signin_fatal_error.m.js';
-import './screens/common/smart_privacy_protection.m.js';
-import './screens/common/sync_consent.m.js';
+import './screens/common/signin_fatal_error.js';
+import './screens/common/smart_privacy_protection.js';
+import './screens/common/sync_consent.js';
 import './screens/common/theme_selection.js';
 import './screens/common/tpm_error.js';
 import './screens/common/user_creation.js';
@@ -57,11 +59,11 @@ import './screens/oobe/auto_enrollment_check.js';
 import './screens/oobe/demo_preferences.js';
 import './screens/oobe/demo_setup.js';
 import './screens/oobe/enable_debugging.js';
-import './screens/oobe/enterprise_enrollment.m.js';
+import './screens/oobe/enterprise_enrollment.js';
 import './screens/oobe/hid_detection.js';
 import './screens/oobe/oobe_network.js';
-import './screens/oobe/packaged_license.m.js';
-import './screens/oobe/quick_start.m.js';
+import './screens/oobe/packaged_license.js';
+import './screens/oobe/quick_start.js';
 import './screens/oobe/update.js';
 import './screens/oobe/welcome.js';
 
@@ -79,7 +81,13 @@ export const commonScreensList = [
   },
   {tag: 'assistant-optin-element', id: 'assistant-optin-flow'},
   {tag: 'autolaunch-element', id: 'autolaunch'},
+  {
+    tag: 'choobe-element',
+    id: 'choobe',
+    condition: 'isChoobeEnabled',
+  },
   {tag: 'consolidated-consent-element', id: 'consolidated-consent'},
+  {tag: 'cryptohome-recovery-setup-element', id: 'cryptohome-recovery-setup'},
   {tag: 'device-disabled-element', id: 'device-disabled'},
   {tag: 'enable-kiosk-element', id: 'kiosk-enable'},
   {tag: 'error-message-element', id: 'error-message'},
@@ -146,15 +154,15 @@ export const loginScreensList = [
  * List of screens that are used during the `oobe` flow only.
  */
 export const oobeScreensList = [
-    {tag: 'auto-enrollment-check-element', id: 'auto-enrollment-check'},
-    {tag: 'demo-preferences-element', id: 'demo-preferences'},
-    {tag: 'demo-setup-element', id: 'demo-setup'},
-    {tag: 'enable-debugging-element', id: 'debugging'},
-    {tag: 'enterprise-enrollment-element', id: 'enterprise-enrollment'},
-    {tag: 'hid-detection-element', id: 'hid-detection'},
-    {tag: 'oobe-network-element', id: 'network-selection'},
-    {tag: 'packaged-license-element', id: 'packaged-license'},
-    {tag: 'quick-start-element', id: 'quick-start'},
-    {tag: 'update-element', id: 'oobe-update'},
-    {tag: 'oobe-welcome-element', id: 'connect'},
+  {tag: 'auto-enrollment-check-element', id: 'auto-enrollment-check'},
+  {tag: 'demo-preferences-element', id: 'demo-preferences'},
+  {tag: 'demo-setup-element', id: 'demo-setup'},
+  {tag: 'enable-debugging-element', id: 'debugging'},
+  {tag: 'enterprise-enrollment-element', id: 'enterprise-enrollment'},
+  {tag: 'hid-detection-element', id: 'hid-detection'},
+  {tag: 'oobe-network-element', id: 'network-selection'},
+  {tag: 'packaged-license-element', id: 'packaged-license'},
+  {tag: 'quick-start-element', id: 'quick-start'},
+  {tag: 'update-element', id: 'oobe-update'},
+  {tag: 'oobe-welcome-element', id: 'connect'},
 ];

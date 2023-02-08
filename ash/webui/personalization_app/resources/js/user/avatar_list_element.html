@@ -97,6 +97,7 @@
           class$="[[getOptionInnerContainerClass_(item, image_)]]"
           role="option"
           on-click="onOptionSelected_" on-keypress="onOptionSelected_"
+          on-error="onAvatarNetworkError_"
           tabindex$="[[tabIndex]]"
           aria-posinset$="[[getAriaIndex_(index)]]"
           aria-selected$="[[getAriaSelected_(item, image_)]]"
@@ -106,7 +107,8 @@
         <paper-ripple class="circle"></paper-ripple>
         <div class="image-border-container">
           <img class$="[[getImageClassForOption_(item)]]"
-              src="[[item.imgSrc]]" style$="[[getImgBackgroudStyle_(item.imgSrc)]]">
+              src="[[item.imgSrc]]"
+              style$="[[getImgBackgroundStyle_(item.imgSrc, item.defaultImageIndex)]]">
           <iron-icon icon$="[[item.icon]]"></iron-icon>
         </div>
       </div>

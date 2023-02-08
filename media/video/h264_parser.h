@@ -26,6 +26,8 @@
 namespace gfx {
 class Rect;
 class Size;
+struct ColorVolumeMetadata;
+struct HDRMetadata;
 }  // namespace gfx
 
 namespace media {
@@ -285,6 +287,7 @@ struct MEDIA_EXPORT H264DecRefPicMarking {
 
 struct MEDIA_EXPORT H264SliceHeader {
   H264SliceHeader();
+  H264SliceHeader(const H264SliceHeader& t);
 
   enum { kRefListSize = 32, kRefListModSize = kRefListSize };
 
@@ -370,11 +373,33 @@ struct MEDIA_EXPORT H264SliceHeader {
   uint32_t full_sample_index;
 };
 
-struct H264SEIRecoveryPoint {
+struct MEDIA_EXPORT H264SEIRecoveryPoint {
   int recovery_frame_cnt;
   bool exact_match_flag;
   bool broken_link_flag;
   int changing_slice_group_idc;
+};
+
+struct MEDIA_EXPORT H264SEIMasteringDisplayInfo {
+  enum {
+    kNumDisplayPrimaries = 3,
+    kDisplayPrimaryComponents = 2,
+  };
+
+  uint16_t display_primaries[kNumDisplayPrimaries][kDisplayPrimaryComponents];
+  uint16_t white_points[2];
+  uint32_t max_luminance;
+  uint32_t min_luminance;
+
+  void PopulateColorVolumeMetadata(
+      gfx::ColorVolumeMetadata& color_volume_metadata) const;
+};
+
+struct MEDIA_EXPORT H264SEIContentLightLevelInfo {
+  uint16_t max_content_light_level;
+  uint16_t max_picture_average_light_level;
+
+  void PopulateHDRMetadata(gfx::HDRMetadata& hdr_metadata) const;
 };
 
 struct MEDIA_EXPORT H264SEIMessage {
@@ -382,6 +407,8 @@ struct MEDIA_EXPORT H264SEIMessage {
 
   enum Type {
     kSEIRecoveryPoint = 6,
+    kSEIMasteringDisplayInfo = 137,
+    kSEIContentLightLevelInfo = 144,
   };
 
   int type;
@@ -390,7 +417,16 @@ struct MEDIA_EXPORT H264SEIMessage {
     // Placeholder; in future more supported types will contribute to more
     // union members here.
     H264SEIRecoveryPoint recovery_point;
+    H264SEIMasteringDisplayInfo mastering_display_info;
+    H264SEIContentLightLevelInfo content_light_level_info;
   };
+};
+
+struct MEDIA_EXPORT H264SEI {
+  H264SEI();
+  ~H264SEI();
+
+  std::vector<H264SEIMessage> msgs;
 };
 
 // Class to parse an Annex-B H.264 stream,
@@ -496,9 +532,8 @@ class MEDIA_EXPORT H264Parser {
   // the NALU returned from AdvanceToNextNALU() and corresponding to |*shdr|.
   Result ParseSliceHeader(const H264NALU& nalu, H264SliceHeader* shdr);
 
-  // Parse a SEI message, returning it in |*sei_msg|, provided and managed
-  // by the caller.
-  Result ParseSEI(H264SEIMessage* sei_msg);
+  // Parse a SEI, returning it in |*sei|, provided and managed by the caller.
+  Result ParseSEI(H264SEI* sei);
 
   // The return value of this method changes for every successful call to
   // AdvanceToNextNALU().
@@ -517,11 +552,13 @@ class MEDIA_EXPORT H264Parser {
   bool LocateNALU(off_t* nalu_size, off_t* start_code_size);
 
   // Exp-Golomb code parsing as specified in chapter 9.1 of the spec.
-  // Read one unsigned exp-Golomb code from the stream and return in |*val|.
-  Result ReadUE(int* val);
+  // Read one unsigned exp-Golomb code from the stream and return in |*val|
+  // with total bits read return in |*num_bits_read|.
+  Result ReadUE(int* val, int* num_bits_read);
 
-  // Read one signed exp-Golomb code from the stream and return in |*val|.
-  Result ReadSE(int* val);
+  // Read one signed exp-Golomb code from the stream and return in |*val|
+  // with total bits read return in |*num_bits_read|.
+  Result ReadSE(int* val, int* num_bits_read);
 
   // Parse scaling lists (see spec).
   Result ParseScalingList(int size, int* scaling_list, bool* use_default);

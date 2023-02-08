@@ -20,11 +20,11 @@
 #include "base/run_loop.h"
 #include "base/sequence_checker_impl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
@@ -92,7 +92,7 @@ class MockDatabaseTracker : public DatabaseTracker {
                            net::CompletionOnceCallback callback) override {
     ++delete_called_count_;
     if (async_delete()) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
                          std::move(callback)));
@@ -159,7 +159,7 @@ class DatabaseQuotaClientTest : public testing::TestWithParam<bool> {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<QuotaManager>(
         /*is_incognito_=*/false, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
         /*quota_change_callback=*/base::DoNothing(), special_storage_policy_,
         GetQuotaSettingsFunc());
     mock_tracker_ = base::MakeRefCounted<MockDatabaseTracker>(
@@ -185,7 +185,7 @@ class DatabaseQuotaClientTest : public testing::TestWithParam<bool> {
     base::test::TestFuture<storage::QuotaErrorOr<storage::BucketInfo>>
         bucket_future;
     quota_manager_->proxy()->CreateBucketForTesting(
-        storage_key, name, type, base::SequencedTaskRunnerHandle::Get(),
+        storage_key, name, type, base::SequencedTaskRunner::GetCurrentDefault(),
         bucket_future.GetCallback());
     auto bucket = bucket_future.Take();
     EXPECT_TRUE(bucket.ok());

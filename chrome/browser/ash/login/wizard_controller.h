@@ -16,6 +16,7 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_screen.h"
+#include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/edu_coexistence_login_screen.h"
@@ -72,6 +74,7 @@
 class PrefService;
 
 namespace ash {
+
 class BaseScreen;
 class DemoSetupController;
 class ErrorScreen;
@@ -185,6 +188,10 @@ class WizardController : public OobeUI::Observer {
   DemoSetupController* demo_setup_controller() const {
     return demo_setup_controller_.get();
   }
+
+  // Returns CHOOBE flow controller (lazily initialized one if it doesn't exist
+  // already).
+  ChoobeFlowController* GetChoobeFlowController();
 
   // Returns a pointer to the current screen or nullptr if there's no such
   // screen.
@@ -305,6 +312,8 @@ class WizardController : public OobeUI::Observer {
   void ShowLacrosDataMigrationScreen();
   void ShowLacrosDataBackwardMigrationScreen();
   void ShowConsolidatedConsentScreen();
+  void ShowCryptohomeRecoverySetupScreen();
+  void ShowAuthenticationSetupScreen();
   void ShowGuestTosScreen();
   void ShowThemeSelectionScreen();
 
@@ -385,6 +394,8 @@ class WizardController : public OobeUI::Observer {
   void OnOsTrialScreenExit(OsTrialScreen::Result result);
   void OnConsolidatedConsentScreenExit(
       ConsolidatedConsentScreen::Result result);
+  void OnCryptohomeRecoverySetupScreenExit(
+      CryptohomeRecoverySetupScreen::Result result);
   void OnGuestTosScreenExit(GuestTosScreen::Result result);
   void OnHWDataCollectionScreenExit(HWDataCollectionScreen::Result result);
   void OnSmartPrivacyProtectionScreenExit(
@@ -488,6 +499,7 @@ class WizardController : public OobeUI::Observer {
   void MaybeTakeTPMOwnership();
 
   std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
+  std::unique_ptr<ChoobeFlowController> choobe_flow_controller_;
   std::unique_ptr<ScreenManager> screen_manager_;
 
   // The `BaseScreen*` here point to the objects owned by the `screen_manager_`.
@@ -567,11 +579,5 @@ class WizardController : public OobeUI::Observer {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::WizardController;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_WIZARD_CONTROLLER_H_

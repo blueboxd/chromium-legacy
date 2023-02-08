@@ -131,7 +131,7 @@ bool IsDictationOfflineAvailable() {
 
 BASE_FEATURE(kExperimentalAccessibilityDictationWithPumpkin,
              "ExperimentalAccessibilityDictationWithPumpkin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsExperimentalAccessibilityDictationWithPumpkinEnabled() {
   return base::FeatureList::IsEnabled(
@@ -140,7 +140,7 @@ bool IsExperimentalAccessibilityDictationWithPumpkinEnabled() {
 
 BASE_FEATURE(kExperimentalAccessibilityDictationMoreCommands,
              "ExperimentalAccessibilityDictationMoreCommands",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsExperimentalAccessibilityDictationMoreCommandsEnabled() {
   return base::FeatureList::IsEnabled(
@@ -167,36 +167,11 @@ bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
 
 BASE_FEATURE(kExperimentalAccessibilitySelectToSpeakVoiceSwitching,
              "ExperimentalAccessibilitySelectToSpeakVoiceSwitching",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsExperimentalAccessibilitySelectToSpeakVoiceSwitchingEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilitySelectToSpeakVoiceSwitching);
-}
-
-BASE_FEATURE(kEnhancedNetworkVoices,
-             "EnhancedNetworkVoices",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsEnhancedNetworkVoicesEnabled() {
-  return base::FeatureList::IsEnabled(::features::kEnhancedNetworkVoices);
-}
-
-BASE_FEATURE(kAccessibilityOSSettingsVisibility,
-             "AccessibilityOSSettingsVisibility",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsAccessibilityOSSettingsVisibilityEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kAccessibilityOSSettingsVisibility);
-}
-
-BASE_FEATURE(kAccessibilityService,
-             "AccessibilityService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsAccessibilityServiceEnabled() {
-  return base::FeatureList::IsEnabled(::features::kAccessibilityService);
 }
 
 BASE_FEATURE(kExperimentalAccessibilityColorEnhancementSettings,
@@ -228,7 +203,7 @@ bool IsAccessibilitySelectToSpeakPrefsMigrationEnabled() {
 
 BASE_FEATURE(kAccessibilitySelectToSpeakContextMenuOption,
              "AccessibilitySelectToSpeakContextMenuOption",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAccessibilitySelectToSpeakContextMenuOptionEnabled() {
   return base::FeatureList::IsEnabled(
@@ -237,7 +212,7 @@ bool IsAccessibilitySelectToSpeakContextMenuOptionEnabled() {
 
 BASE_FEATURE(kAccessibilitySelectToSpeakHoverTextImprovements,
              "AccessibilitySelectToSpeakHoverTextImprovements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAccessibilitySelectToSpeakHoverTextImprovementsEnabled() {
   return base::FeatureList::IsEnabled(
@@ -313,14 +288,8 @@ bool IsReadAnythingWithScreen2xEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x);
 }
 
-BASE_FEATURE(kScreenAI, "ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsScreenAIVisualAnnotationsEnabled() {
-  return base::FeatureList::IsEnabled(::features::kScreenAI);
-}
-
 bool IsScreenAIServiceNeeded() {
-  return IsPdfOcrEnabled() || IsScreenAIVisualAnnotationsEnabled() ||
+  return IsPdfOcrEnabled() || IsLayoutExtractionEnabled() ||
          IsReadAnythingWithScreen2xEnabled();
 }
 
@@ -334,19 +303,28 @@ bool IsScreenAIDebugModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kScreenAIDebugMode);
 }
 
-BASE_FEATURE(kScreenAIUseLayoutExtraction,
-             "ScreenAIUseLayoutExtraction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsScreenAIUseLayoutExtractionEnabled() {
-  return base::FeatureList::IsEnabled(::features::kScreenAIUseLayoutExtraction);
-}
-
 BASE_FEATURE(kPdfOcr, "PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsPdfOcrEnabled() {
   return base::FeatureList::IsEnabled(::features::kPdfOcr);
 }
+
+BASE_FEATURE(kLayoutExtraction,
+             "LayoutExtraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsLayoutExtractionEnabled() {
+  return base::FeatureList::IsEnabled(::features::kLayoutExtraction);
+}
+
+BASE_FEATURE(kAccessibilityService,
+             "AccessibilityService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityServiceEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityService);
+}
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace features

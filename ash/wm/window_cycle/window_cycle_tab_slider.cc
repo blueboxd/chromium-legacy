@@ -10,12 +10,13 @@
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/transform_util.h"
-#include "ui/views/accessibility/accessibility_paint_checks.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -105,13 +106,6 @@ WindowCycleTabSlider::WindowCycleTabSlider()
       Shell::Get()->window_cycle_controller()->IsAltTabPerActiveDesk();
   all_desks_tab_slider_button_->SetToggled(!per_desk);
   current_desk_tab_slider_button_->SetToggled(per_desk);
-
-  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
-  // able to submit accessibility checks. This crashes if fetching a11y node
-  // data during paint because `active_button_selector_` is null.
-  active_button_selector_->SetProperty(views::kSkipAccessibilityPaintChecks,
-                                       true);
-  active_button_selector_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 }
 
 void WindowCycleTabSlider::SetFocus(bool focus) {

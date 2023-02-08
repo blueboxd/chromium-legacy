@@ -49,14 +49,18 @@ class TabContainer : public views::View, public BrowserRootView::DropTarget {
   // Transfer the tab at `model_index` our of this container so it can be
   // parented elsewhere. Unlike RemoveTab, this method does not close the tab,
   // but it does remove it from the layout viewmodel.
-  // TODO(crbug.com/1346023): Find a better name for this once the full suite of
-  // ownership-transferring methods is in place.
   [[nodiscard]] virtual std::unique_ptr<Tab> TransferTabOut(
       int model_index) = 0;
 
-  // `view` is no longer being dragged. This TabContainer takes ownership of it
-  // in the view hierarchy.
-  virtual void StoppedDraggingView(TabSlotView* view) = 0;
+  // Adds the tab to the TabContainer's data structures, but does not transfer
+  // ownership of the actual view `tab`.
+  virtual Tab* AddTabToViewModel(Tab* tab,
+                                 int model_index,
+                                 TabPinned pinned) = 0;
+
+  // Returns `view` to this TabContainer in the view hierarchy. N.B. this
+  // may be called during `view`'s destruction.
+  virtual void ReturnTabSlotView(TabSlotView* view) = 0;
 
   // Scrolls so the tab at `model_index` is fully visible.
   virtual void ScrollTabToVisible(int model_index) = 0;
@@ -75,18 +79,23 @@ class TabContainer : public views::View, public BrowserRootView::DropTarget {
       const tab_groups::TabGroupId& group,
       const tab_groups::TabGroupVisualData* old_visuals,
       const tab_groups::TabGroupVisualData* new_visuals) = 0;
+  virtual void ToggleTabGroup(const tab_groups::TabGroupId& group,
+                              bool is_collapsing,
+                              ToggleTabGroupCollapsedStateOrigin origin) = 0;
   virtual void OnGroupClosed(const tab_groups::TabGroupId& group) = 0;
   virtual void UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) = 0;
   virtual void NotifyTabGroupEditorBubbleOpened() = 0;
   virtual void NotifyTabGroupEditorBubbleClosed() = 0;
 
-  virtual int GetModelIndexOf(const TabSlotView* slot_view) const = 0;
+  virtual absl::optional<int> GetModelIndexOf(
+      const TabSlotView* slot_view) const = 0;
   virtual Tab* GetTabAtModelIndex(int index) const = 0;
   virtual int GetTabCount() const = 0;
 
   // Returns the model index of the first tab after (or including) `tab` which
   // is not closing.
-  virtual int GetModelIndexOfFirstNonClosingTab(Tab* tab) const = 0;
+  virtual absl::optional<int> GetModelIndexOfFirstNonClosingTab(
+      Tab* tab) const = 0;
 
   virtual void UpdateHoverCard(
       Tab* tab,
@@ -109,8 +118,13 @@ class TabContainer : public views::View, public BrowserRootView::DropTarget {
   // (cough TabDragController cough) moves tabs directly.
   virtual void InvalidateIdealBounds() = 0;
 
-  // Returns true if any tabs are being animated, whether by |this| or by
-  // |drag_context_|.
+  // Animates tabs and group views from where they are to where they should be.
+  // Callers that want to do fancier things can manipulate starting bounds
+  // before calling this and/or replace the animation for some tabs or group
+  // views after calling this.
+  virtual void AnimateToIdealBounds() = 0;
+
+  // Returns true if any tabs are being animated by this TabContainer.
   virtual bool IsAnimating() const = 0;
 
   // Stops any ongoing animations, leaving tabs where they are.

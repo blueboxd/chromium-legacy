@@ -10,8 +10,9 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_frame_host.h"
@@ -28,7 +29,8 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     const GlobalRenderFrameHostId& id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   tracker_ = base::SequenceBound<WebContentsFrameTracker>(
-      GetUIThreadTaskRunner({}), base::ThreadTaskRunnerHandle::Get(),
+      GetUIThreadTaskRunner({}),
+      base::SingleThreadTaskRunner::GetCurrentDefault(),
       weak_ptr_factory_.GetWeakPtr(), cursor_controller());
   tracker_
       .AsyncCall(

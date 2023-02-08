@@ -14,10 +14,10 @@
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 #include "components/policy/test_support/client_storage.h"
-#include "components/policy/test_support/failing_request_handler.h"
 #include "components/policy/test_support/policy_storage.h"
 #include "components/policy/test_support/request_handler_for_api_authorization.h"
 #include "components/policy/test_support/request_handler_for_auto_enrollment.h"
+#include "components/policy/test_support/request_handler_for_cert_upload.h"
 #include "components/policy/test_support/request_handler_for_check_android_management.h"
 #include "components/policy/test_support/request_handler_for_chrome_desktop_report.h"
 #include "components/policy/test_support/request_handler_for_client_cert_provisioning.h"
@@ -61,9 +61,9 @@ std::unique_ptr<HttpResponse> LogStatusAndReturn(
   CustomHttpResponse* basic_response =
       static_cast<CustomHttpResponse*>(response.get());
   if (basic_response->code() == net::HTTP_OK) {
-    DLOG(INFO) << "Request succeeded: " << url;
+    LOG(INFO) << "Request succeeded: " << url;
   } else {
-    DLOG(INFO) << "Request failed with error code " << basic_response->code()
+    LOG(ERROR) << "Request failed with error code " << basic_response->code()
                << " (" << basic_response->content() << "): " << url;
   }
   return response;
@@ -80,12 +80,26 @@ EmbeddedPolicyTestServer::RequestHandler::RequestHandler(
 
 EmbeddedPolicyTestServer::RequestHandler::~RequestHandler() = default;
 
+struct EmbeddedPolicyTestServer::ServerState {
+  ClientStorage client_storage_;
+  PolicyStorage policy_storage_;
+  std::map<std::string, net::HttpStatusCode> configured_errors_map_;
+};
+
+ClientStorage* EmbeddedPolicyTestServer::client_storage() {
+  return &server_state_->client_storage_;
+}
+
+PolicyStorage* EmbeddedPolicyTestServer::policy_storage() {
+  return &server_state_->policy_storage_;
+}
+
 EmbeddedPolicyTestServer::EmbeddedPolicyTestServer()
-    : http_server_(EmbeddedTestServer::TYPE_HTTP),
-      client_storage_(std::make_unique<ClientStorage>()),
-      policy_storage_(std::make_unique<PolicyStorage>()) {
+    : http_server_(EmbeddedTestServer::TYPE_HTTP) {
+  ResetServerState();
   RegisterHandler(std::make_unique<RequestHandlerForApiAuthorization>(this));
   RegisterHandler(std::make_unique<RequestHandlerForAutoEnrollment>(this));
+  RegisterHandler(std::make_unique<RequestHandlerForCertUpload>(this));
   RegisterHandler(
       std::make_unique<RequestHandlerForCheckAndroidManagement>(this));
   RegisterHandler(std::make_unique<RequestHandlerForChromeDesktopReport>(this));
@@ -132,8 +146,8 @@ void EmbeddedPolicyTestServer::RegisterHandler(
 void EmbeddedPolicyTestServer::ConfigureRequestError(
     const std::string& request_type,
     net::HttpStatusCode error_code) {
-  RegisterHandler(
-      std::make_unique<FailingRequestHandler>(this, request_type, error_code));
+  server_state_->configured_errors_map_.insert(
+      std::pair<std::string, net::HttpStatusCode>(request_type, error_code));
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -162,14 +176,21 @@ void EmbeddedPolicyTestServer::UpdateExternalPolicy(
 std::unique_ptr<HttpResponse> EmbeddedPolicyTestServer::HandleRequest(
     const HttpRequest& request) {
   GURL url = request.GetURL();
-  DLOG(INFO) << "Request URL: " << url;
+  LOG(INFO) << "Request URL: " << url;
 
   if (url.path() == kExternalPolicyDataPath)
     return HandleExternalPolicyDataRequest(url);
 
   std::string request_type = KeyValueFromUrl(url, dm_protocol::kParamRequest);
-  auto it = request_handlers_.find(request_type);
-  if (it == request_handlers_.end()) {
+
+  auto it_errors = server_state_->configured_errors_map_.find(request_type);
+  if (it_errors != server_state_->configured_errors_map_.end()) {
+    return LogStatusAndReturn(
+        url, CreateHttpResponse(it_errors->second, "Preconfigured error"));
+  }
+
+  auto it_handlers = request_handlers_.find(request_type);
+  if (it_handlers == request_handlers_.end()) {
     LOG(ERROR) << "No request handler for: " << url;
     return nullptr;
   }
@@ -181,7 +202,7 @@ std::unique_ptr<HttpResponse> EmbeddedPolicyTestServer::HandleRequest(
                  "URL must define device type, app type, and device id."));
   }
 
-  return LogStatusAndReturn(url, it->second->HandleRequest(request));
+  return LogStatusAndReturn(url, it_handlers->second->HandleRequest(request));
 }
 
 std::unique_ptr<HttpResponse>
@@ -190,7 +211,7 @@ EmbeddedPolicyTestServer::HandleExternalPolicyDataRequest(const GURL& url) {
   std::string policy_type = KeyValueFromUrl(url, kExternalPolicyTypeParam);
   std::string entity_id = KeyValueFromUrl(url, kExternalEntityIdParam);
   std::string policy_payload =
-      policy_storage_->GetExternalPolicyPayload(policy_type, entity_id);
+      policy_storage()->GetExternalPolicyPayload(policy_type, entity_id);
   std::unique_ptr<HttpResponse> response;
   if (policy_payload.empty()) {
     response = CreateHttpResponse(
@@ -202,12 +223,8 @@ EmbeddedPolicyTestServer::HandleExternalPolicyDataRequest(const GURL& url) {
   return LogStatusAndReturn(url, std::move(response));
 }
 
-void EmbeddedPolicyTestServer::ResetPolicyStorage() {
-  policy_storage_ = std::make_unique<PolicyStorage>();
-}
-
-void EmbeddedPolicyTestServer::ResetClientStorage() {
-  client_storage_ = std::make_unique<ClientStorage>();
+void EmbeddedPolicyTestServer::ResetServerState() {
+  server_state_ = std::make_unique<ServerState>();
 }
 
 }  // namespace policy

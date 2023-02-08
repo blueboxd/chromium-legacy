@@ -154,7 +154,6 @@ template("system_webview_apk_or_module_tmpl") {
       }
       deps += [ "//third_party/icu:icu_assets" ]
     } else {
-      uncompress_shared_libraries = true
       app_as_shared_lib = true
 
       # Include placeholder libraries to ensure we are treated as the desired

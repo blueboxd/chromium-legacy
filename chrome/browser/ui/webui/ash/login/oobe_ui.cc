@@ -47,8 +47,10 @@
 #include "chrome/browser/ui/webui/ash/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/choobe_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/consolidated_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/debug/debug_overlay_handler.h"
 #include "chrome/browser/ui/webui/ash/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/demo_setup_screen_handler.h"
@@ -162,15 +164,11 @@ constexpr char kArcPlaystoreJSPath[] = "arc_support/playstore.js";
 constexpr char kArcPlaystoreLogoPath[] = "arc_support/icon/playstore.svg";
 constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kDebuggerMJSPath[] = "debug/debug.m.js";
-constexpr char kDebuggerUtilJSPath[] = "debug/debug_util.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kKeyboardUtilsForInjectionModulePath[] =
     "components/keyboard_utils_for_injection.m.js";
 
 constexpr char kProductLogoPath[] = "product-logo.png";
-// TODO(crbug.com/1261902): Clean-up old implementation once feature is
-// launched.
-constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJsMPath[] = "test_api/test_api.m.js";
 
 // Components
@@ -218,12 +216,6 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kArcPlaystoreLogoPath,
                           IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
 
-  // TODO(crbug.com/1261902): Clean-up old implementation once feature is
-  // launched.
-  if (!features::IsOobeNewRecommendAppsEnabled()) {
-    source->AddResourcePath(kRecommendAppListViewJSPath,
-                            IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
-  }
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kArcAppDownloadingVideoPath,
                           IDR_OOBE_ARC_APPS_DOWNLOADING_VIDEO);
@@ -234,7 +226,8 @@ void AddAssistantScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePaths(
       base::make_span(kAssistantOptinResources, kAssistantOptinResourcesSize));
   source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src blob: chrome://resources 'self';");
 }
 
 void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
@@ -243,7 +236,8 @@ void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
   source->AddResourcePath("multidevice_setup_dark.json",
                           IDR_MULTIDEVICE_SETUP_ANIMATION_DARK);
   source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src blob: chrome://resources 'self';");
 }
 
 void AddDebuggerResources(content::WebUIDataSource* source) {
@@ -256,12 +250,10 @@ void AddDebuggerResources(content::WebUIDataSource* source) {
   }
 
   if (enable_debugger) {
-    source->AddResourcePath(kDebuggerUtilJSPath, IDR_OOBE_DEBUGGER_UTIL_JS);
     source->AddResourcePath(kDebuggerMJSPath, IDR_OOBE_DEBUGGER_M_JS);
   } else {
     // Serve empty files under all resource paths.
     source->AddResourcePath(kDebuggerMJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
-    source->AddResourcePath(kDebuggerUtilJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
   }
 }
 
@@ -296,6 +288,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddBoolean("isOsInstallAllowed", switches::IsOsInstallAllowed());
   source->AddBoolean("isOobeFlow", is_oobe_flow);
   source->AddBoolean("isMaterialNext", features::IsOobeMaterialNextEnabled());
+  source->AddBoolean("isChoobeEnabled", features::IsOobeChoobeEnabled());
 
   // Configure shared resources
   AddProductLogoResources(source);
@@ -482,11 +475,17 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<ConsolidatedConsentScreenHandler>());
 
+  AddScreenHandler(std::make_unique<CryptohomeRecoverySetupScreenHandler>());
+
   AddScreenHandler(std::make_unique<GuestTosScreenHandler>());
 
   AddScreenHandler(std::make_unique<SmartPrivacyProtectionScreenHandler>());
 
   AddScreenHandler(std::make_unique<ThemeSelectionScreenHandler>());
+
+  if (features::IsOobeChoobeEnabled()) {
+    AddScreenHandler(std::make_unique<ChoobeScreenHandler>());
+  }
 
   AddScreenHandler(std::make_unique<LocalStateErrorScreenHandler>());
 
@@ -585,11 +584,8 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool enable_debugger = command_line->HasSwitch(switches::kShowOobeDevOverlay);
-  // TODO(crbug.com/1073095): Also enable for ChromeOS test images.
-  // Enable for ChromeOS-on-linux for developers.
-  bool test_mode = !base::SysInfo::IsRunningOnChromeOS();
-
-  if (enable_debugger && test_mode) {
+  if (enable_debugger) {
+    base::SysInfo::CrashIfChromeOSNonTestImage();
     AddWebUIHandler(std::make_unique<DebugOverlayHandler>());
   }
 
@@ -633,7 +629,8 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source) {
 
   source->AddResourcePath("spinner.json", IDR_LOGIN_SPINNER_ANIMATION);
   source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src blob: chrome://resources 'self';");
 }
 
 CoreOobeView* OobeUI::GetCoreOobeView() {
@@ -658,8 +655,8 @@ base::Value::Dict OobeUI::GetLocalizedStrings() {
   localized_strings.Set("buildType", "chromium");
 #endif
 
-  bool keyboard_driven_oobe =
-      system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
+  bool keyboard_driven_oobe = ash::system::InputDeviceSettings::Get()
+                                  ->ForceKeyboardDrivenUINavigation();
   localized_strings.Set("highlightStrength",
                         keyboard_driven_oobe ? "strong" : "normal");
 

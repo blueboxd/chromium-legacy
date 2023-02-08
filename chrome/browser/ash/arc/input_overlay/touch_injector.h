@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace aura {
 class Window;
@@ -25,9 +26,8 @@ namespace ui {
 class EventSource;
 }  // namespace ui
 
-namespace arc {
+namespace arc::input_overlay {
 class ArcInputOverlayManagerTest;
-namespace input_overlay {
 class DisplayOverlayController;
 class Action;
 
@@ -48,50 +48,13 @@ constexpr int kMaxDefaultActionID = 9999;
 class TouchInjector : public ui::EventRewriter {
  public:
   using OnSaveProtoFileCallback =
-      base::RepeatingCallback<void(std::unique_ptr<AppDataProto>,
-                                   const std::string&)>;
+      base::RepeatingCallback<void(std::unique_ptr<AppDataProto>, std::string)>;
   TouchInjector(aura::Window* top_level_window,
+                const std::string& package_name,
                 OnSaveProtoFileCallback save_file_callback);
   TouchInjector(const TouchInjector&) = delete;
   TouchInjector& operator=(const TouchInjector&) = delete;
   ~TouchInjector() override;
-
-  aura::Window* window() { return window_; }
-  const gfx::RectF& content_bounds() const { return content_bounds_; }
-  const gfx::Transform* rotation_transform() {
-    return rotation_transform_.get();
-  }
-  const std::vector<std::unique_ptr<Action>>& actions() const {
-    return actions_;
-  }
-  bool is_mouse_locked() const { return is_mouse_locked_; }
-
-  bool touch_injector_enable() const { return touch_injector_enable_; }
-  void store_touch_injector_enable(bool enable) {
-    touch_injector_enable_ = enable;
-  }
-
-  bool input_mapping_visible() const { return input_mapping_visible_; }
-  void store_input_mapping_visible(bool enable) {
-    input_mapping_visible_ = enable;
-  }
-
-  bool first_launch() const { return first_launch_; }
-  void set_first_launch(bool first_launch) { first_launch_ = first_launch; }
-
-  bool show_nudge() const { return show_nudge_; }
-  void set_show_nudge(bool show_nudge) { show_nudge_ = show_nudge; }
-
-  void set_display_mode(DisplayMode mode) { display_mode_ = mode; }
-  void set_display_overlay_controller(DisplayOverlayController* controller) {
-    display_overlay_controller_ = controller;
-  }
-
-  bool enable_mouse_lock() { return enable_mouse_lock_; }
-  void set_enable_mouse_lock(bool enable) { enable_mouse_lock_ = true; }
-
-  bool beta() const { return beta_; }
-  void set_beta(bool beta) { beta_ = beta; }
 
   // Parse Json to actions.
   // Json value format:
@@ -130,11 +93,15 @@ class TouchInjector : public ui::EventRewriter {
   void OnBindingCancel();
   // Set input binding back to original binding.
   void OnBindingRestore();
-  const std::string* GetPackageName() const;
   void OnProtoDataAvailable(AppDataProto& proto);
   // Save the input menu state when the menu is closed.
   void OnInputMenuViewRemoved();
   void NotifyFirstTimeLaunch();
+  // Save the menu entry view position when it's changed.
+  void SaveMenuEntryLocation(gfx::Point menu_entry_location_point);
+  absl::optional<gfx::Vector2dF> menu_entry_location() {
+    return menu_entry_location_;
+  }
 
   // Update |content_bounds_| and touch positions for each |actions_| for
   // different reasons.
@@ -161,8 +128,51 @@ class TouchInjector : public ui::EventRewriter {
       const ui::Event& event,
       const Continuation continuation) override;
 
+  aura::Window* window() { return window_; }
+  const std::string& package_name() const { return package_name_; }
+  const gfx::RectF& content_bounds() const { return content_bounds_; }
+  const gfx::Transform* rotation_transform() {
+    return rotation_transform_.get();
+  }
+  const std::vector<std::unique_ptr<Action>>& actions() const {
+    return actions_;
+  }
+  bool is_mouse_locked() const { return is_mouse_locked_; }
+
+  bool touch_injector_enable() const { return touch_injector_enable_; }
+  void store_touch_injector_enable(bool enable) {
+    touch_injector_enable_ = enable;
+  }
+
+  bool input_mapping_visible() const { return input_mapping_visible_; }
+  void store_input_mapping_visible(bool enable) {
+    input_mapping_visible_ = enable;
+  }
+
+  bool first_launch() const { return first_launch_; }
+  void set_first_launch(bool first_launch) { first_launch_ = first_launch; }
+
+  bool show_nudge() const { return show_nudge_; }
+  void set_show_nudge(bool show_nudge) { show_nudge_ = show_nudge; }
+
+  void set_display_mode(DisplayMode mode) { display_mode_ = mode; }
+  void set_display_overlay_controller(DisplayOverlayController* controller) {
+    display_overlay_controller_ = controller;
+  }
+
+  bool enable_mouse_lock() { return enable_mouse_lock_; }
+  void set_enable_mouse_lock(bool enable) { enable_mouse_lock_ = true; }
+
+  bool allow_reposition() const { return allow_reposition_; }
+  void set_allow_reposition(bool allow_reposition) {
+    allow_reposition_ = allow_reposition;
+  }
+
+  bool beta() const { return beta_; }
+  void set_beta(bool beta) { beta_ = beta; }
+
  private:
-  friend class ::arc::ArcInputOverlayManagerTest;
+  friend class ArcInputOverlayManagerTest;
   friend class TouchInjectorTest;
 
   struct TouchPointInfo {
@@ -224,6 +234,11 @@ class TouchInjector : public ui::EventRewriter {
   // Load menu state from |proto|. The default state is on for the toggles.
   void LoadMenuStateFromProto(AppDataProto& proto);
 
+  // Add the menu entry view position to |proto|, if it has been customized.
+  void AddMenuEntryToProtoIfCustomized(AppDataProto& proto) const;
+  // Load menu entry position from |proto|, if it exists.
+  void LoadMenuEntryFromProto(AppDataProto& proto);
+
   // Create Action by |action_type| without any input bindings.
   std::unique_ptr<Action> CreateRawAction(ActionType action_type);
   // Remove all user-added actions from |actions| and return the deleted
@@ -249,7 +264,8 @@ class TouchInjector : public ui::EventRewriter {
   // TouchInjector is created when targeted |window_| is created and is
   // registered only when |window_| is focused. And TouchInjector doesn't own
   // |window_| and it is destroyed when |window_| is destroyed.
-  raw_ptr<aura::Window> window_;
+  raw_ptr<aura::Window, DanglingUntriaged> window_;
+  std::string package_name_;
   gfx::RectF content_bounds_;
   base::WeakPtr<ui::EventRewriterContinuation> continuation_;
   std::vector<std::unique_ptr<Action>> actions_;
@@ -303,13 +319,21 @@ class TouchInjector : public ui::EventRewriter {
   // TODO(cuicuiruan): It can be removed after the mouse lock is enabled for
   // post MVP.
   bool enable_mouse_lock_ = false;
-  // TODO(cuicuiruan): This can be removed when removing the flag.
+
+  // TODO(b/260937747): Update or remove when removing flags
+  // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
+  bool allow_reposition_ = ash::features::IsArcInputOverlayAlphaV2Enabled() ||
+                           ash::features::IsArcInputOverlayBetaEnabled();
+  // Corresponds to |kArcInputOverlayBeta| flag to turn on/off the editor
+  // feature of adding or removing actions.
   bool beta_ = ash::features::IsArcInputOverlayBetaEnabled();
+
+  // Use default position if it is null.
+  absl::optional<gfx::Vector2dF> menu_entry_location_;
 
   base::WeakPtrFactory<TouchInjector> weak_ptr_factory_{this};
 };
 
-}  // namespace input_overlay
-}  // namespace arc
+}  // namespace arc::input_overlay
 
 #endif  // CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_TOUCH_INJECTOR_H_

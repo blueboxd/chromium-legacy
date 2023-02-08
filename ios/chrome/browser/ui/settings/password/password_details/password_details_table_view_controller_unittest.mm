@@ -171,8 +171,7 @@ class PasswordDetailsTableViewControllerTest
   ChromeTableViewController* InstantiateController() override {
     PasswordDetailsTableViewController* controller =
         [[PasswordDetailsTableViewController alloc]
-            initWithCredentialType:credential_type_
-                  syncingUserEmail:syncing_user_email_];
+            initWithSyncingUserEmail:syncing_user_email_];
     controller.handler = handler_;
     controller.delegate = delegate_;
     controller.reauthModule = reauthentication_module_;
@@ -193,13 +192,15 @@ class PasswordDetailsTableViewControllerTest
     form.username_element = u"email";
     form.scheme = password_manager::PasswordForm::Scheme::kHtml;
 
+    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
     PasswordDetails* passwordDetails = [[PasswordDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(form)];
     passwordDetails.compromised = isCompromised;
+    [passwords addObject:passwordDetails];
 
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPassword:passwordDetails];
+    [passwords_controller setPasswords:passwords andTitle:nil];
   }
 
   void SetFederatedPassword() {
@@ -210,11 +211,13 @@ class PasswordDetailsTableViewControllerTest
     form.signon_realm = form.url.spec();
     form.federation_origin =
         url::Origin::Create(GURL("http://www.example.com/"));
+    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
     PasswordDetails* password = [[PasswordDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(form)];
+    [passwords addObject:password];
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPassword:password];
+    [passwords_controller setPasswords:passwords andTitle:nil];
   }
 
   void SetBlockedOrigin() {
@@ -223,11 +226,13 @@ class PasswordDetailsTableViewControllerTest
     form.url = GURL("http://www.example.com/");
     form.blocked_by_user = true;
     form.signon_realm = form.url.spec();
+    NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
     PasswordDetails* password = [[PasswordDetails alloc]
         initWithCredential:password_manager::CredentialUIEntry(form)];
+    [passwords addObject:password];
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPassword:password];
+    [passwords_controller setPasswords:passwords andTitle:nil];
   }
 
   void CheckEditCellText(NSString* expected_text, int section, int item) {
@@ -279,37 +284,35 @@ class PasswordDetailsTableViewControllerTest
 // Tests that password is displayed properly.
 TEST_F(PasswordDetailsTableViewControllerTest, TestPassword) {
   SetPassword();
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  EXPECT_EQ(0, NumberOfItemsInSection(1));
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
   CheckEditCellText(@"http://www.example.com/", 0, 0);
-  CheckEditCellText(@"test@egmail.com", 2, 0);
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(@"test@egmail.com", 1, 0);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 }
 
 // Tests that compromised password is displayed properly.
 TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPassword) {
   SetPassword(kExampleCom, kUsername, kPassword, true);
-  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  EXPECT_EQ(0, NumberOfItemsInSection(1));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
   EXPECT_EQ(2, NumberOfItemsInSection(2));
-  EXPECT_EQ(2, NumberOfItemsInSection(3));
   CheckEditCellText(@"http://www.example.com/", 0, 0);
-  CheckEditCellText(@"test@egmail.com", 2, 0);
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(@"test@egmail.com", 1, 0);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::
               kIOSEnablePasswordManagerBrandingUpdate)) {
     CheckDetailItemTextWithId(
-        IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 3, 0);
-    CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 3, 1);
+        IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 2, 0);
+    CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 2, 1);
   } else {
-    CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 3, 0);
+    CheckTextCellTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD, 2, 0);
     CheckDetailItemTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION,
-                              3, 1);
+                              2, 1);
   }
 }
 
@@ -317,8 +320,8 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPassword) {
 TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
   SetPassword();
   NSIndexPath* indexOfPassword;
-  CheckEditCellText(kMaskedPassword, 2, 1);
-  indexOfPassword = [NSIndexPath indexPathForRow:1 inSection:2];
+  CheckEditCellText(kMaskedPassword, 1, 1);
+  indexOfPassword = [NSIndexPath indexPathForRow:1 inSection:1];
 
   TableViewTextEditCell* textFieldCell =
       base::mac::ObjCCastStrict<TableViewTextEditCell>([controller()
@@ -328,7 +331,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 
-  CheckEditCellText(@"test", 2, 1);
+  CheckEditCellText(@"test", 1, 1);
 
   EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW),
@@ -337,18 +340,18 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowHidePassword) {
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 }
 
 // Tests that passwords was not shown in case reauth failed.
 TEST_F(PasswordDetailsTableViewControllerTest, TestShowPasswordReauthFailed) {
   SetPassword();
 
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
   NSIndexPath* indexOfPassword;
-  indexOfPassword = [NSIndexPath indexPathForRow:1 inSection:2];
+  indexOfPassword = [NSIndexPath indexPathForRow:1 inSection:1];
 
   TableViewTextEditCell* textFieldCell =
       base::mac::ObjCCastStrict<TableViewTextEditCell>([controller()
@@ -358,14 +361,14 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestShowPasswordReauthFailed) {
   [textFieldCell.identifyingIconButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
 
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 }
 
 // Tests that password was revealed during editing.
 TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordShownDuringEditing) {
   SetPassword();
 
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 
   PasswordDetailsTableViewController* passwordDetails =
       base::mac::ObjCCastStrict<PasswordDetailsTableViewController>(
@@ -373,18 +376,18 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPasswordShownDuringEditing) {
   [passwordDetails editButtonPressed];
   EXPECT_TRUE(passwordDetails.tableView.editing);
 
-  CheckEditCellText(@"test", 2, 1);
+  CheckEditCellText(@"test", 1, 1);
 
   [passwordDetails editButtonPressed];
   EXPECT_FALSE(passwordDetails.tableView.editing);
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 }
 
 // Tests that editing mode was not entered because reauth failed.
 TEST_F(PasswordDetailsTableViewControllerTest, TestEditingReauthFailed) {
   SetPassword();
 
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
   PasswordDetailsTableViewController* passwordDetails =
@@ -392,7 +395,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditingReauthFailed) {
           controller());
   [passwordDetails editButtonPressed];
   EXPECT_FALSE(passwordDetails.tableView.editing);
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 }
 
 // Tests that delete button trigger showing password delete dialog.
@@ -443,7 +446,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordConfirmed) {
   EXPECT_FALSE(delegate().password);
   EXPECT_TRUE(passwordDetails.tableView.editing);
 
-  SetEditCellText(@"new_password", 2, 1);
+  SetEditCellText(@"new_password", 1, 1);
 
   [passwordDetails editButtonPressed];
   EXPECT_TRUE(handler().editingCalled);
@@ -466,7 +469,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordCancel) {
   EXPECT_FALSE(delegate().password);
   EXPECT_TRUE(passwordDetails.tableView.editing);
 
-  SetEditCellText(@"new_password", 2, 1);
+  SetEditCellText(@"new_password", 1, 1);
 
   [passwordDetails editButtonPressed];
   EXPECT_FALSE(delegate().password);
@@ -479,24 +482,23 @@ TEST_F(PasswordDetailsTableViewControllerTest,
        TestAndroidCompromisedCredential) {
   SetPassword(kAndroid, kUsername, kPassword, true);
 
-  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(3, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  EXPECT_EQ(0, NumberOfItemsInSection(1));
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
-  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 
   CheckEditCellText(@"com.example.my.app", 0, 0);
-  CheckEditCellText(@"test@egmail.com", 2, 0);
-  CheckEditCellText(kMaskedPassword, 2, 1);
+  CheckEditCellText(@"test@egmail.com", 1, 0);
+  CheckEditCellText(kMaskedPassword, 1, 1);
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::
               kIOSEnablePasswordManagerBrandingUpdate)) {
     CheckDetailItemTextWithId(
-        IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 3, 0);
+        IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED, 2, 0);
   } else {
     CheckDetailItemTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION,
-                              3, 0);
+                              2, 0);
   }
 }
 
@@ -505,14 +507,13 @@ TEST_F(PasswordDetailsTableViewControllerTest,
 TEST_F(PasswordDetailsTableViewControllerTest, TestFederatedCredential) {
   SetFederatedPassword();
 
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  EXPECT_EQ(0, NumberOfItemsInSection(1));
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
 
   CheckEditCellText(@"http://www.example.com/", 0, 0);
-  CheckEditCellText(@"test@egmail.com", 2, 0);
-  CheckEditCellText(@"www.example.com", 2, 1);
+  CheckEditCellText(@"test@egmail.com", 1, 0);
+  CheckEditCellText(@"www.example.com", 1, 1);
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
   PasswordDetailsTableViewController* passwordDetails =
@@ -527,10 +528,9 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestFederatedCredential) {
 TEST_F(PasswordDetailsTableViewControllerTest, TestBlockedOrigin) {
   SetBlockedOrigin();
 
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
   EXPECT_EQ(0, NumberOfItemsInSection(1));
-  EXPECT_EQ(0, NumberOfItemsInSection(2));
 
   CheckEditCellText(@"http://www.example.com/", 0, 0);
 
@@ -575,7 +575,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyUsername) {
           controller());
 
   [passwordDetails tableView:passwordDetails.tableView
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:2]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
 
   UIMenuController* menu = [UIMenuController sharedMenuController];
   EXPECT_EQ(1u, menu.menuItems.count);
@@ -602,7 +602,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordSuccess) {
           controller());
 
   [passwordDetails tableView:passwordDetails.tableView
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
 
   UIMenuController* menu = [UIMenuController sharedMenuController];
   EXPECT_EQ(1u, menu.menuItems.count);
@@ -632,7 +632,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyPasswordFail) {
 
   reauth().expectedResult = ReauthenticationResult::kFailure;
   [passwordDetails tableView:passwordDetails.tableView
-      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:2]];
+      didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:1 inSection:1]];
 
   UIMenuController* menu = [UIMenuController sharedMenuController];
   EXPECT_EQ(1u, menu.menuItems.count);
@@ -667,8 +667,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, CopyDetailsFailedEmitted) {
 // Tests that there are multiple sections in the edit view.
 TEST_F(PasswordDetailsTableViewControllerTest, TestSectionsInEdit) {
   SetPassword();
-  EXPECT_EQ(3, NumberOfSections());
+  EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
-  EXPECT_EQ(0, NumberOfItemsInSection(1));
-  EXPECT_EQ(2, NumberOfItemsInSection(2));
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
 }

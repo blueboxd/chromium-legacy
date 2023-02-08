@@ -14,8 +14,8 @@
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -188,7 +188,7 @@ class SupervisedUserServiceExtensionTestBase
 
     SupervisedUserURLFilter* url_filter = service->GetURLFilter();
     url_filter->SetBlockingTaskRunnerForTesting(
-        base::ThreadTaskRunnerHandle::Get());
+        base::SingleThreadTaskRunner::GetCurrentDefault());
     url_filter_observer_.Init(url_filter);
   }
 
@@ -199,10 +199,10 @@ class SupervisedUserServiceExtensionTestBase
 
  protected:
   scoped_refptr<const extensions::Extension> MakeThemeExtension() {
-    std::unique_ptr<base::DictionaryValue> source(new base::DictionaryValue());
-    source->SetStringKey(extensions::manifest_keys::kName, "Theme");
-    source->SetKey(extensions::manifest_keys::kTheme, base::DictionaryValue());
-    source->SetStringKey(extensions::manifest_keys::kVersion, "1.0");
+    base::Value::Dict source;
+    source.Set(extensions::manifest_keys::kName, "Theme");
+    source.Set(extensions::manifest_keys::kTheme, base::Value::Dict());
+    source.Set(extensions::manifest_keys::kVersion, "1.0");
     extensions::ExtensionBuilder builder;
     scoped_refptr<const extensions::Extension> extension =
         builder.SetManifest(std::move(source)).Build();

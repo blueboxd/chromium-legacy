@@ -281,6 +281,7 @@ struct PaymentsCustomerData;
 //   product_description
 //                      The product description for the card. Used to be shown
 //                      in the UI when card is presented. Added in version 102.
+//   card_issuer_id     The id of the card's issuer.
 //
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
@@ -571,6 +572,11 @@ class AutofillTable : public WebDatabaseTable,
   virtual bool RemoveAutofillProfile(const std::string& guid,
                                      AutofillProfile::Source profile_source);
 
+  // Removes all profiles from the given `profile_source`. Currently this is
+  // only supported for kAccount profiles, since they are cleared when the Sync
+  // data types gets disabled.
+  bool RemoveAllAutofillProfiles(AutofillProfile::Source profile_source);
+
   // Retrieves a profile with guid `guid` from `kAutofillProfilesTable` or
   // `kContactInfoTable`.
   std::unique_ptr<AutofillProfile> GetAutofillProfile(
@@ -738,11 +744,11 @@ class AutofillTable : public WebDatabaseTable,
                           syncer::MetadataBatch* metadata_batch);
 
   // syncer::SyncMetadataStore implementation.
-  bool UpdateSyncMetadata(syncer::ModelType model_type,
-                          const std::string& storage_key,
-                          const sync_pb::EntityMetadata& metadata) override;
-  bool ClearSyncMetadata(syncer::ModelType model_type,
-                         const std::string& storage_key) override;
+  bool UpdateEntityMetadata(syncer::ModelType model_type,
+                            const std::string& storage_key,
+                            const sync_pb::EntityMetadata& metadata) override;
+  bool ClearEntityMetadata(syncer::ModelType model_type,
+                           const std::string& storage_key) override;
   bool UpdateModelTypeState(
       syncer::ModelType model_type,
       const sync_pb::ModelTypeState& model_type_state) override;
@@ -781,6 +787,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion105AddAutofillIBANTable();
   bool MigrateToVersion106RecreateAutofillIBANTable();
   bool MigrateToVersion107AddContactInfoTables();
+  bool MigrateToVersion108AddCardIssuerIdColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

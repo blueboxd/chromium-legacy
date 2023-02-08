@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "base/callback_helpers.h"
 #include "base/notreached.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/grit/generated_resources.h"
@@ -38,8 +39,9 @@ std::unique_ptr<message_center::Notification> CreateNotification(
   }
 
   // TODO(crbug.com/1356101): Add "Don't show again" for managed sessions.
-  return ash::CreateSystemNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kMultiCaptureId,
+  return ash::CreateSystemNotificationPtr(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      base::StrCat({kMultiCaptureId, ":", host}),
       /*title=*/u"",
       /*message=*/
       l10n_util::GetStringFUTF16(IDS_MULTI_CAPTURE_NOTIFICATION_MESSAGE,
@@ -70,15 +72,30 @@ void MultiCaptureNotification::MultiCaptureStarted(const std::string& label,
                                                    const url::Origin& origin) {
   std::unique_ptr<message_center::Notification> notification =
       CreateNotification(origin);
+  notification_ids_[label] = notification->id();
   // TODO(crbug.com/1356102): Make sure the notification does not disappear
   // automatically after some time.
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
-void MultiCaptureNotification::MultiCaptureStopped(const std::string& label) {}
+void MultiCaptureNotification::MultiCaptureStopped(const std::string& label) {
+  const auto notification_id_iterator = notification_ids_.find(label);
+  if (notification_id_iterator == notification_ids_.end()) {
+    LOG(ERROR) << "Label could not be found";
+    return;
+  }
+  // TODO(crbug.com/1394023): Make sure the notification does not disappear
+  // within five seconds of its creation.
+  SystemNotificationHelper::GetInstance()->Close(
+      /*notification_id=*/notification_id_iterator->second);
+}
 
 void MultiCaptureNotification::MultiCaptureServiceClientDestroyed() {
   multi_capture_service_client_observation_.Reset();
+  for (const auto& notification_id : notification_ids_) {
+    MultiCaptureStopped(notification_id.first);
+  }
+  notification_ids_.clear();
 }
 
 }  // namespace ash

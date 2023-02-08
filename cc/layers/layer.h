@@ -26,6 +26,7 @@
 #include "cc/layers/touch_action_region.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
+#include "cc/paint/node_id.h"
 #include "cc/paint/paint_record.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/property_tree.h"
@@ -410,7 +411,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const {
     return layer_tree_inputs() ? layer_tree_inputs()->transform
-                               : gfx::Transform::Identity();
+                               : kIdentityTransform;
   }
 
   // Gets the transform, including transform origin and position, of this layer
@@ -1175,6 +1176,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   ProtectedSequenceWritable<std::unique_ptr<LayerDebugInfo>> debug_info_;
 
+  static constexpr gfx::Transform kIdentityTransform{};
   static constexpr gfx::RoundedCornersF kNoRoundedCornersF{};
 };
 

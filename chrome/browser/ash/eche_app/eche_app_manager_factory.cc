@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/apps_access_manager_impl.h"
 #include "ash/webui/eche_app_ui/eche_app_manager.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 #include "chromeos/ash/services/secure_channel/presence_monitor_impl.h"
 #include "chromeos/ash/services/secure_channel/public/cpp/client/presence_monitor_client_impl.h"
 #include "chromeos/ash/services/secure_channel/public/cpp/shared/presence_monitor.h"
@@ -50,16 +50,6 @@ namespace eche_app {
 
 namespace {
 
-// Enumeration of possible interactions with a PhoneHub notification. Keep in
-// sync with corresponding enum in tools/metrics/histograms/enums.xml. These
-// values are persisted to logs. Entries should not be renumbered and numeric
-// values should never be reused.
-enum class NotificationInteraction {
-  kUnknown = 0,
-  kOpenAppStreaming = 1,
-  kMaxValue = kOpenAppStreaming,
-};
-
 void EnsureStreamClose(Profile* profile) {
   EcheAppManager* eche_app_manager =
       EcheAppManagerFactory::GetForProfile(profile);
@@ -77,6 +67,7 @@ void LaunchWebApp(const std::string& package_name,
                   const std::u16string& visible_name,
                   const absl::optional<int64_t>& user_id,
                   const gfx::Image& icon,
+                  const std::u16string& phone_name,
                   Profile* profile) {
   EcheAppManagerFactory::GetInstance()->SetLastLaunchedAppInfo(
       LaunchedAppInfo::Builder()
@@ -84,6 +75,7 @@ void LaunchWebApp(const std::string& package_name,
           .SetVisibleName(visible_name)
           .SetUserId(user_id)
           .SetIcon(icon)
+          .SetPhoneName(phone_name)
           .Build());
   std::u16string url;
   // Use hash mark(#) to send params to webui so we don't need to reload the
@@ -111,7 +103,7 @@ void LaunchWebApp(const std::string& package_name,
   }
   const auto gurl = GURL(url);
 
-  return LaunchBubble(gurl, icon, visible_name,
+  return LaunchBubble(gurl, icon, visible_name, phone_name,
                       base::BindOnce(&EnsureStreamClose, profile),
                       base::BindRepeating(&StreamGoBack, profile));
 }
@@ -122,7 +114,7 @@ void RelaunchLast(Profile* profile) {
   EcheAppManagerFactory::LaunchEcheApp(
       profile, absl::nullopt, last_launched_app_info->package_name(),
       last_launched_app_info->visible_name(), last_launched_app_info->user_id(),
-      last_launched_app_info->icon());
+      last_launched_app_info->icon(), last_launched_app_info->phone_name());
 }
 
 }  // namespace
@@ -131,11 +123,13 @@ LaunchedAppInfo::~LaunchedAppInfo() = default;
 LaunchedAppInfo::LaunchedAppInfo(const std::string& package_name,
                                  const std::u16string& visible_name,
                                  const absl::optional<int64_t>& user_id,
-                                 const gfx::Image& icon) {
+                                 const gfx::Image& icon,
+                                 const std::u16string& phone_name) {
   package_name_ = package_name;
   visible_name_ = visible_name;
   user_id_ = user_id;
   icon_ = icon;
+  phone_name_ = phone_name;
 }
 
 LaunchedAppInfo::Builder::Builder() = default;
@@ -202,11 +196,10 @@ void EcheAppManagerFactory::LaunchEcheApp(
     const std::string& package_name,
     const std::u16string& visible_name,
     const absl::optional<int64_t>& user_id,
-    const gfx::Image& icon) {
+    const gfx::Image& icon,
+    const std::u16string& phone_name) {
   LaunchWebApp(package_name, notification_id, visible_name, user_id, icon,
-               profile);
-  base::UmaHistogramEnumeration("Eche.NotificationClicked",
-                                NotificationInteraction::kOpenAppStreaming);
+               phone_name, profile);
   EcheAppManagerFactory::GetInstance()
       ->CloseConnectionOrLaunchErrorNotifications();
 }

@@ -56,10 +56,10 @@ const char kSimpleFormFileName[] = "autocomplete_simple_form.html";
 class MockSuggestionsHandler
     : public AutocompleteHistoryManager::SuggestionsHandler {
  public:
-  MockSuggestionsHandler() {}
+  MockSuggestionsHandler() = default;
 
   void OnSuggestionsReturned(
-      int query_id,
+      FieldGlobalId field_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       const std::vector<Suggestion>& suggestions) override {
     last_suggestions_ = suggestions;
@@ -215,7 +215,7 @@ class AutofillAutocompleteTest : public InProcessBrowserTest {
     test::CreateTestFormField(/*label=*/"", input_name.c_str(), prefix.c_str(),
                               "input", &field);
     EXPECT_TRUE(autocomplete_history_manager()->OnGetSingleFieldSuggestions(
-        1, AutoselectFirstSuggestion(false), field, *autofill_client,
+        AutoselectFirstSuggestion(false), field, *autofill_client,
         handler.GetWeakPtr(), SuggestionsContext()));
 
     // Make sure the DB task gets executed.

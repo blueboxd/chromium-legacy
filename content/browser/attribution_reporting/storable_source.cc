@@ -12,10 +12,10 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -26,40 +26,42 @@ StorableSource::StorableSource(CommonSourceInfo common_info,
       is_within_fenced_frame_(is_within_fenced_frame),
       debug_reporting_(debug_reporting) {}
 
-StorableSource::StorableSource(attribution_reporting::SourceRegistration reg,
-                               base::Time source_time,
-                               url::Origin source_origin,
-                               AttributionSourceType source_type,
-                               bool is_within_fenced_frame)
+StorableSource::StorableSource(
+    attribution_reporting::SuitableOrigin reporting_origin,
+    attribution_reporting::SourceRegistration reg,
+    base::Time source_time,
+    attribution_reporting::SuitableOrigin source_origin,
+    AttributionSourceType source_type,
+    bool is_within_fenced_frame)
     : StorableSource(
           CommonSourceInfo(
-              reg.source_event_id_,
+              reg.source_event_id,
               std::move(source_origin),
-              std::move(reg.destination_),
-              std::move(reg.reporting_origin_),
+              std::move(reg.destination),
+              std::move(reporting_origin),
               source_time,
-              CommonSourceInfo::GetExpiryTime(reg.expiry_,
+              CommonSourceInfo::GetExpiryTime(reg.expiry,
                                               source_time,
                                               source_type),
-              reg.event_report_window_
-                  ? absl::make_optional(CommonSourceInfo::GetExpiryTime(
-                        reg.event_report_window_,
-                        source_time,
-                        source_type))
+              reg.event_report_window
+                  ? absl::make_optional(
+                        CommonSourceInfo::GetExpiryTime(reg.event_report_window,
+                                                        source_time,
+                                                        source_type))
                   : absl::nullopt,
-              reg.aggregatable_report_window_
+              reg.aggregatable_report_window
                   ? absl::make_optional(CommonSourceInfo::GetExpiryTime(
-                        reg.aggregatable_report_window_,
+                        reg.aggregatable_report_window,
                         source_time,
                         source_type))
                   : absl::nullopt,
               source_type,
-              reg.priority_,
-              std::move(reg.filter_data_),
-              reg.debug_key_,
-              std::move(reg.aggregation_keys_)),
+              reg.priority,
+              std::move(reg.filter_data),
+              reg.debug_key,
+              std::move(reg.aggregation_keys)),
           is_within_fenced_frame,
-          reg.debug_reporting_) {}
+          reg.debug_reporting) {}
 
 StorableSource::~StorableSource() = default;
 

@@ -5,12 +5,15 @@
 #include "ash/wm/desks/desk_animation_impl.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "base/barrier_closure.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/compositor/layer.h"
@@ -140,10 +143,6 @@ TEST_F(DeskActivationAnimationTest, CloseWindowDuringAnimation) {
 // Tests that if a fast swipe is detected, we will still wait for the ending
 // screenshot to be taken and animated to.
 TEST_F(DeskActivationAnimationTest, AnimatingAfterFastSwipe) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kEnableDesksTrackpadSwipeImprovements);
-
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -191,12 +190,52 @@ TEST_F(DeskActivationAnimationTest, StartAndEndSwipeBeforeScreenshotsTaken) {
 
   // Start and finish a animation without waiting for the screenshots to be
   // taken.
-  desks_controller->StartSwipeAnimation(/*moving_left=*/false);
+  desks_controller->StartSwipeAnimation(/*move_left=*/false);
   ASSERT_TRUE(desks_controller->animation());
 
   desks_controller->UpdateSwipeAnimation(10);
   desks_controller->EndSwipeAnimation();
   EXPECT_FALSE(desks_controller->animation());
+}
+
+class OverviewDeskNavigationTest : public AshTestBase {
+ public:
+  OverviewDeskNavigationTest()
+      : scoped_feature_list_(features::kOverviewDeskNavigation) {}
+  OverviewDeskNavigationTest(const OverviewDeskNavigationTest&) = delete;
+  OverviewDeskNavigationTest& operator=(const OverviewDeskNavigationTest&) =
+      delete;
+  ~OverviewDeskNavigationTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests when we switch between desks in overview that the desk switch animation
+// doesn't exit overview.
+TEST_F(OverviewDeskNavigationTest, SwitchDesksWithoutExitingOverview) {
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  NewDesk();
+  auto* desks_controller = DesksController::Get();
+  ASSERT_EQ(2u, desks_controller->desks().size());
+  EXPECT_TRUE(desks_controller->desks()[0].get()->is_active());
+
+  EnterOverview();
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  // Switch to the next desk while in overview and wait for the desk switch
+  // animation.
+  DeskSwitchAnimationWaiter waiter;
+  desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/false, DesksSwitchSource::kDeskSwitchShortcut);
+  waiter.Wait();
+
+  // Verify that we have switched desks and are still in overview.
+  EXPECT_TRUE(desks_controller->desks()[1].get()->is_active());
+  ASSERT_TRUE(overview_controller->InOverviewSession());
 }
 
 }  // namespace ash

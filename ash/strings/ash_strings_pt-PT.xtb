@@ -31,7 +31,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1148499908455722006">Abrir a caixa de diálogo de informações de <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendário</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
-<translation id="1165712434476988950">É necessário reiniciar o dispositivo para aplicar a atualização.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">O cabo USB-C pode não ser ligado a ecrãs corretamente</translation>
 <translation id="1175572348579024023">Deslocar</translation>
@@ -52,6 +51,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, aplicação da Play Store</translation>
 <translation id="1225748608451425081">O seu Chromebook está bloqueado devido a um problema conhecido. Poderá iniciar sessão dentro de <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Parar seleção</translation>
+<translation id="1235458158152011030">Redes conhecidas</translation>
 <translation id="1239161794459865856">A funcionalidade <ph name="FEATURE_NAME" /> está ligada.</translation>
 <translation id="1240638468526743569">Uma app</translation>
 <translation id="1246890715821376239">Apps não suportadas</translation>
@@ -357,7 +357,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="296762781903199866">Não foi possível transferir os ficheiros de voz em <ph name="LANGUAGE" /></translation>
 <translation id="2970920913501714344">Instalar aplicações, extensões e temas</translation>
 <translation id="2977598380246111477">Número seguinte</translation>
-<translation id="2981684127883932071">A apresentar sugestões</translation>
 <translation id="2985148236010982088">Ver todas as apps</translation>
 <translation id="2992327365391326550">O botão do microfone do dispositivo está desativado.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
@@ -386,7 +385,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3120421559657122717">Encerrar dispositivo?</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
-<translation id="3139382871451988441">Desativar o acesso à câmara.</translation>
 <translation id="3139942575505304791">Secretária 1</translation>
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="3151786313568798007">Orientação</translation>
@@ -519,7 +517,6 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="385300504083504382">Início</translation>
 <translation id="3861651314799684201">Prima Enter para gravar o ecrã inteiro</translation>
-<translation id="3885531177412808398">Permite o acesso ao microfone para todas as apps e Websites com a autorização do microfone</translation>
 <translation id="3886872229787704059">Aberto hoje</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
@@ -555,6 +552,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desa. p/ 1 ap.}other{Desa. p/ # ap.}}</translation>
 <translation id="4066027111132117168">Ativado, <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">Sinal médio</translation>
+<translation id="4086921558679520050">Ative o botão físico do microfone no dispositivo</translation>
 <translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4114315158543974537">Ative o Centro do telemóvel</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -607,6 +605,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="4378479437904450384"><ph name="WIRELESS_PROVIDER" />, intensidade do sinal a <ph name="SIGNAL_STRENGTH" /> por cento</translation>
 <translation id="4378551569595875038">A ligar...</translation>
 <translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
+<translation id="4381031910344220229">Isto permite o acesso ao microfone para a app <ph name="APP_NAME" /> e todas as apps e Websites com a autorização do microfone</translation>
 <translation id="4389184120735010762">Premiu o atalho de teclado da lupa ancorada. Pretende ativá-la?</translation>
 <translation id="439598569299422042">Em pausa, <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">Não é possível guardar a gravação de ecrã</translation>
@@ -648,11 +647,8 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="4573176682887762361">"Introduzir [palavra/expressão]"</translation>
 <translation id="4577274620589681794">Acabou o tempo · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Mostrar pré-visualizações</translation>
-<translation id="4578196883126898996">O seu microfone está desativado. Ative o botão do microfone do seu dispositivo.</translation>
 <translation id="4578906031062871102">Menu de definições aberto</translation>
-<translation id="4581047786858252841">O microfone está ativado</translation>
 <translation id="4585337515783392668">Parar a transmissão para um recetor desconhecido</translation>
-<translation id="4587299710837179226">O microfone está desativado</translation>
 <translation id="4596144739579517758">O tema escuro está desativado.</translation>
 <translation id="4611292653554630842">Iniciar sessão</translation>
 <translation id="4623167406982293031">Validar conta</translation>
@@ -669,7 +665,9 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4665114317261903604">Ative/desative o modo Não incomodar. <ph name="STATE_TEXT" /></translation>
 <translation id="4666082839192943839">Desative o acesso à câmara neste dispositivo para bloquear sempre todas as câmaras.</translation>
+<translation id="4666911709726371538">Mais apps</translation>
 <translation id="4667099493359681081">A transferir <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">Apps do telemóvel</translation>
 <translation id="4690510401873698237">Prateleira na parte inferior</translation>
 <translation id="4696813013609194136">Desbloquear o dispositivo com o código parental</translation>
 <translation id="4702647871202761252">O ecrã de privacidade está desligado</translation>
@@ -731,6 +729,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="4987738733603015246">Espaço de trabalho 16</translation>
 <translation id="5003993274120026347">Frase seguinte</translation>
 <translation id="5016558321564993266">Ative/desative o marcador. <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">O acesso ao microfone do dispositivo está ativado</translation>
 <translation id="5030687792513154421">Acabou o tempo</translation>
 <translation id="5033299697334913360">Clique em qualquer local para capturar o ecrã inteiro.</translation>
 <translation id="5035236842988137213">O dispositivo <ph name="DEVICE_NAME" /> estabeleceu ligação a um novo telemóvel.</translation>
@@ -895,7 +894,6 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="5958529069007801266">Utilizador supervisionado</translation>
 <translation id="5965524703725988602">Ative/desative o tema escuro. <ph name="STATE_TEXT" />.</translation>
 <translation id="5976112937189445008">Prima Enter para gravar a janela</translation>
-<translation id="5977415296283489383">Auscultador</translation>
 <translation id="5978382165065462689">A partilhar o controlo do seu ecrã através da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair sess. de conv.</translation>
 <translation id="598407983968395253">Utilizar modelo</translation>
@@ -926,12 +924,10 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="6103838137565245112">sistema</translation>
 <translation id="6107292179555508368">O acesso ao microfone e à câmara está desativado neste dispositivo</translation>
 <translation id="6114505516289286752">Ficheiros de voz em <ph name="LANGUAGE" /> transferidos</translation>
-<translation id="6116825164611323644">O acesso à câmara está desativado neste dispositivo</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">Confirmar transferência de <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">O Assistente Google não está disponível em sessões de convidado.</translation>
 <translation id="6129953537138746214">Espaço</translation>
-<translation id="6134259848159370930">Pesquise no dispositivo, nas apps, nas definições e na Web.</translation>
 <translation id="6137566720514957455">Abrir caixa de diálogo de remoção para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmar transferência</translation>
 <translation id="6154006699632741460">O periférico não é suportado</translation>
@@ -963,9 +959,11 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> é uma sessão gerida por <ph name="MANAGER" /></translation>
 <translation id="6344138931392227467">Dispositivo <ph name="DEVICE_NAME" /> ligado</translation>
 <translation id="6351032674660237738">SUGESTÕES DE APLICAÇÕES</translation>
+<translation id="6352082849089527770">Redes desconhecidas</translation>
 <translation id="6359587239691116345">Obtenha as funcionalidades e as melhorias de segurança mais recentes. Se recusar esta atualização, o seu dispositivo pode deixar de funcionar corretamente, e pode deparar-se com problemas de segurança e desempenho.</translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="6381109794406942707">Para desbloquear este dispositivo, introduza o seu PIN.</translation>
+<translation id="638716340450135524">Ativar acesso à câmara</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Assistente Google</translation>
@@ -973,6 +971,7 @@ Ligue o dispositivo à corrente.</translation>
 <translation id="642644398083277086">Limpar todas as notificações</translation>
 <translation id="643147933154517414">Tudo concluído</translation>
 <translation id="6431865393913628856">Gravação de ecrã</translation>
+<translation id="6442259747294754014">O acesso ao microfone do dispositivo está desativado</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> no recetor <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> evento</translation>
 <translation id="6449483711453944360">De momento, as apps para Linux e as janelas de navegação anónima não são suportadas</translation>
@@ -1024,6 +1023,7 @@ Nova instalação</translation>
 <translation id="6670153871843998651">Secretária 3</translation>
 <translation id="6671495933530132209">Copiar imagem</translation>
 <translation id="6671661918848783005">Não é possível desbloquear o Chromebook</translation>
+<translation id="6683022854667115063">Auscultadores</translation>
 <translation id="6696025732084565524">O teclado amovível necessita de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
 <translation id="6707693040195709527">Alteração do dispositivo para a versão anterior vencida</translation>
@@ -1136,6 +1136,7 @@ Nova instalação</translation>
 <translation id="7360036564632145207">A alteração da proteção do acesso aos dados para a definição dos periféricos pode otimizar o desempenho.</translation>
 <translation id="736045644501761622">Definir imagem de fundo e estilo</translation>
 <translation id="7371404428569700291">Gravar janela</translation>
+<translation id="737315737514430195">Isto permite o acesso ao microfone para todas as apps e Websites com a autorização do microfone</translation>
 <translation id="7377169924702866686">Caps Lock ativado.</translation>
 <translation id="7377481913241237033">Associar com um código</translation>
 <translation id="7378203170292176219">Arraste para selecionar uma área a gravar.</translation>
@@ -1204,12 +1205,14 @@ Nova instalação</translation>
 <translation id="7671610481353807627">As apps estão ordenadas por cor</translation>
 <translation id="7672095158465655885">Ligação estabelecida a <ph name="NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">Entrada da câmara definida como <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">Isto permite o acesso ao microfone para a app <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> e todas as apps e Websites com a autorização do microfone</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">Adicionar nova rede móvel</translation>
 <translation id="7720400844887872976">Ativada até à(s) <ph name="TIME" /></translation>
 <translation id="7720410380936703141">TENTAR NOVAMENTE</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificação}other{# notificações}}</translation>
 <translation id="7724603315864178912">Cortar</translation>
+<translation id="7742327441377685481">Sem notificações</translation>
 <translation id="7745560842763881396">Mostrar apps na prateleira</translation>
 <translation id="7749443890790263709">Atingiu o número máximo de espaços de trabalho.</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
@@ -1285,6 +1288,7 @@ Nova instalação</translation>
 <translation id="8142441511840089262">Clicar duas vezes</translation>
 <translation id="8142699993796781067">Rede privada</translation>
 <translation id="8144760705599030999">Guarde o dispositivo <ph name="NAME" /> em <ph name="EMAIL" /> para permitir uma sincronização mais rápida com os outros dispositivos</translation>
+<translation id="8144914663975476336">Selecione o formato de gravação</translation>
 <translation id="8149413265954228307">Veja as definições de Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="8152092012181020186">Prima Ctrl + W para fechar.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, preenchimento automático</translation>
@@ -1366,6 +1370,7 @@ Nova instalação</translation>
 <translation id="8598235756057743477">Ordene as suas apps por nome ou cor</translation>
 <translation id="8614517853887502247">As notificações das apps <ph name="APP_1_TITLE" /> e <ph name="APP_2_TITLE" /> estão ocultas porque a proteção da visualização está ativada</translation>
 <translation id="8627191004499078455">Ligado a <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">Desativar acesso à câmara</translation>
 <translation id="8631727435199967028">Definições de acessibilidade</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, gerida pelo administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
@@ -1381,8 +1386,6 @@ Nova instalação</translation>
 <translation id="8666856788528804727">Abra <ph name="NAME" /> para configurar o dispositivo</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8683506306463609433">O rastreio do desempenho está ativo.</translation>
-<translation id="8684405646663021166">Permite o acesso ao microfone para a app <ph name="APP_NAME" /> e todas as apps e Websites com a autorização do microfone</translation>
-<translation id="8685326675965865247">Pesquise no dispositivo, nas apps e na Web. Utilize as teclas de seta para navegar nas apps.</translation>
 <translation id="8703634754197148428">Inicie a gravação. Assim que a gravação for iniciada, utilize Alt + Shift + L para navegar até à prateleira e localize o botão para parar a gravação.</translation>
 <translation id="8721053961083920564">Ative/desative o volume. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">Captura de ecrã total</translation>
@@ -1391,7 +1394,6 @@ Nova instalação</translation>
 <translation id="8735678380411481005">Cor da retroiluminação do teclado</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />,
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">Ative o acesso à câmara para permitir que as apps e as páginas Web com autorização de acesso à câmara usem as câmaras associadas a este dispositivo.</translation>
 <translation id="8755498163081687682">Valide a sua identidade: <ph name="ORIGIN_NAME" /> pretende confirmar a sua identidade.</translation>
 <translation id="875593634123171288">Mostrar definições da VPN</translation>
 <translation id="8759408218731716181">Não é possível configurar o início de sessão integrado</translation>
@@ -1406,7 +1408,6 @@ Nova instalação</translation>
 <translation id="8819728065740986820">O carregamento adaptável está ativado</translation>
 <translation id="8825863694328519386">Deslize rapidamente a partir da esquerda para retroceder.</translation>
 <translation id="8834539327799336565">Atualmente ligados</translation>
-<translation id="8834657930627018205">Ativar acesso à câmara.</translation>
 <translation id="8841375032071747811">Botão Anterior</translation>
 <translation id="8843682306134542540">Ativar/desativar bloqueio de rotação. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
@@ -1459,7 +1460,6 @@ Nova instalação</translation>
 <translation id="9089416786594320554">Métodos de introd.</translation>
 <translation id="9091626656156419976">Ecrã <ph name="DISPLAY_NAME" /> removido</translation>
 <translation id="9098969848082897657">Silenciar telemóvel</translation>
-<translation id="9099154003160514616">Atualização do Lacros disponível</translation>
 <translation id="9100887602489003640">A adicionar o perfil. Aguarde alguns minutos.</translation>
 <translation id="9105450214093926548">Não é possível iniciar a sessão de um segundo utilizador enquanto o navegador Lacros estiver em execução. Em alternativa, utilize um segundo perfil de navegador no Lacros ou feche o Lacros e tente novamente.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> ou <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

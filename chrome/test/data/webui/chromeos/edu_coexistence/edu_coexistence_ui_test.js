@@ -8,7 +8,7 @@ import {EduCoexistenceBrowserProxyImpl} from 'chrome://chrome-signin/edu_coexist
 import {AuthMode, AuthParams} from 'chrome://chrome-signin/gaia_auth_host/authenticator.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getFakeAccountsList, TestEduCoexistenceBrowserProxy} from './edu_coexistence_test_util.js';
@@ -42,7 +42,7 @@ suite(edu_coexistence_ui_tests.suiteName, function() {
     });
 
 
-    PolymerTest.clearBody();
+    document.body.innerHTML = window.trustedTypes.emptyHTML;
     appComponent = document.createElement('edu-coexistence-ui');
     document.body.appendChild(appComponent);
     // The webview needs to be set explicitly in for the test because

@@ -26,7 +26,6 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -47,6 +46,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
@@ -127,7 +127,7 @@ class MockMediaStreamDispatcherHost
                                 int render_frame_id,
                                 MediaStreamManager* manager)
       : MediaStreamDispatcherHost(render_process_id, render_frame_id, manager),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+        task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {}
   ~MockMediaStreamDispatcherHost() override {}
 
   // A list of mock methods.
@@ -225,8 +225,11 @@ class MockMediaStreamDispatcherHost
     }
 
     OnStreamGenerationSuccess(request_id, *stream_devices_set);
-    // Simulate the stream started event back to host for UI testing.
-    OnStreamStarted(label);
+    if (!base::FeatureList::IsEnabled(
+            blink::features::kStartMediaStreamCaptureIndicatorInBrowser)) {
+      // Simulate the stream started event back to host for UI testing.
+      OnStreamStarted(label);
+    }
 
     // Notify that the event have occurred.
     task_runner_->PostTask(FROM_HERE, std::move(quit_closures_.front()));
@@ -360,7 +363,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                 info.descriptor.capture_api = kStubCaptureApi;
                 result.push_back(info);
               }
-              std::move(result_callback).Run(result);
+              std::move(result_callback)
+                  .Run(media::mojom::DeviceEnumerationResult::kSuccess, result);
             }));
 
     base::RunLoop run_loop;

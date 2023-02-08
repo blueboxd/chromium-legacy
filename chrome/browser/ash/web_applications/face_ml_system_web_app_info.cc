@@ -39,7 +39,7 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForFaceMLApp() {
       *info);
 
   // Support Dark/Light mode.
-  if (chromeos::features::IsDarkLightModeEnabled()) {
+  if (ash::features::IsDarkLightModeEnabled()) {
     info->theme_color = cros_styles::ResolveColor(
         cros_styles::ColorName::kBgColor, /*is_dark_mode=*/false);
     info->dark_mode_theme_color =
@@ -85,8 +85,4 @@ bool FaceMLSystemAppDelegate::ShouldCaptureNavigations() const {
 
 bool FaceMLSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
   return false;
-}
-
-bool FaceMLSystemAppDelegate::ShouldReuseExistingWindow() const {
-  return true;
 }

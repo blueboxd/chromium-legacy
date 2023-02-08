@@ -9,6 +9,7 @@
 
 #include "base/scoped_observation.h"
 #include "chromeos/ash/components/network/metrics/connection_info_metrics_logger.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
 namespace ash {
 
@@ -18,6 +19,29 @@ class NetworkMetadataStore;
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
     : public ConnectionInfoMetricsLogger::Observer {
  public:
+  // This enum is tied directly to the ApnTypes UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other).
+  enum class ApnTypes {
+    kDefault = 0,
+    kAttach = 1,
+    kDefaultAndAttach = 2,
+    kMaxValue = kDefaultAndAttach
+  };
+
+  static constexpr char kCreateCustomApnResultHistogram[] =
+      "Network.Ash.Cellular.Apn.CreateCustomApn.Result";
+  static constexpr char kCreateCustomApnAuthenticationTypeHistogram[] =
+      "Network.Ash.Cellular.Apn.CreateCustomApn.AuthenticationType";
+  static constexpr char kCreateCustomApnIpTypeHistogram[] =
+      "Network.Ash.Cellular.Apn.CreateCustomApn.IpType";
+  static constexpr char kCreateCustomApnApnTypesHistogram[] =
+      "Network.Ash.Cellular.Apn.CreateCustomApn.ApnTypes";
+  static constexpr char kRemoveCustomApnResultHistogram[] =
+      "Network.Ash.Cellular.Apn.RemoveCustomApn.Result";
+  static constexpr char kRemoveCustomApnApnTypesHistogram[] =
+      "Network.Ash.Cellular.Apn.RemoveCustomApn.ApnTypes";
+
   CellularNetworkMetricsLogger(
       NetworkStateHandler* network_state_handler,
       NetworkMetadataStore* network_metadata_store,
@@ -26,6 +50,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularNetworkMetricsLogger
   CellularNetworkMetricsLogger& operator=(const CellularNetworkMetricsLogger&) =
       delete;
   ~CellularNetworkMetricsLogger() override;
+
+  // Logs results from attempting operations related to custom APNs.
+  static void LogCreateCustomApnResult(
+      bool success,
+      chromeos::network_config::mojom::ApnPropertiesPtr apn);
+  static void LogRemoveCustomApnResult(
+      bool success,
+      std::vector<chromeos::network_config::mojom::ApnType> apn_types);
 
  private:
   // ConnectionInfoMetricsLogger::Observer:

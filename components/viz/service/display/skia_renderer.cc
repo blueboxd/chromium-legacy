@@ -39,6 +39,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/debugger/viz_debugger.h"
 #include "components/viz/service/display/delegated_ink_handler.h"
 #include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/display_resource_provider.h"
@@ -50,6 +51,7 @@
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -72,12 +74,15 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/modules/skcms/skcms.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/linear_gradient.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -630,7 +635,10 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     image_context->set_origin(origin);
   }
 
-  skia_renderer->skia_output_surface_->MakePromiseSkImage(image_context);
+  // We need the original TransferableResource.color_space for YUV => RGB
+  // conversion.
+  skia_renderer->skia_output_surface_->MakePromiseSkImage(
+      image_context, resource_provider->GetOverlayColorSpace(resource_id));
   paint_op_buffer_ = image_context->paint_op_buffer();
   clear_color_ = image_context->clear_color();
   sk_image_ = image_context->image().get();
@@ -903,12 +911,14 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   DCHECK(output_surface_->capabilities().supports_viewporter ||
          viewport_size_for_swap_buffers() == surface_size_for_swap_buffers());
   TRACE_EVENT0("viz,benchmark", "SkiaRenderer::SwapBuffers");
+
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(swap_frame_data.latency_info);
   output_frame.top_controls_visible_height_changed =
       swap_frame_data.top_controls_visible_height_changed;
   output_frame.choreographer_vsync_id = swap_frame_data.choreographer_vsync_id;
   output_frame.size = viewport_size_for_swap_buffers();
+  output_frame.data.seq = swap_frame_data.seq;
   if (use_partial_swap_) {
     swap_buffer_rect_.Intersect(gfx::Rect(surface_size_for_swap_buffers()));
     output_frame.sub_buffer_rect = swap_buffer_rect_;
@@ -976,12 +986,18 @@ void SkiaRenderer::SwapBuffersSkipped() {
   FlushOutputSurface();
 }
 
-void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
+void SkiaRenderer::SwapBuffersComplete(
+    const gpu::SwapBuffersCompleteParams& params,
+    gfx::GpuFenceHandle release_fence) {
   auto& read_lock_release_fence_overlay_locks =
       read_lock_release_fence_overlay_locks_.emplace_back();
   auto read_fence_lock_iter = committed_overlay_locks_.end();
 
   if (buffer_queue_) {
+    if (params.swap_response.result ==
+        gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+      buffer_queue_->RecreateBuffers();
+    }
     buffer_queue_->SwapBuffersComplete();
   }
   if (!release_fence.is_null()) {
@@ -3229,7 +3245,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
   // loop through the list in a reverse order since there might be multiple
   // render pass overlays with the same render pass id.
   RenderPassOverlayParams* overlay_found = nullptr;
-  bool Found_in_available_backings = false;
+  bool found_in_available_backings = false;
   for (auto rit = in_flight_render_pass_overlay_backings_.rbegin();
        rit != in_flight_render_pass_overlay_backings_.rend(); ++rit) {
     if (rit->render_pass_id == render_pass_id) {
@@ -3247,7 +3263,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
          rit != available_render_pass_overlay_backings_.rend();
          ++rit, ++index) {
       if (rit->render_pass_id == render_pass_id) {
-        Found_in_available_backings = true;
+        found_in_available_backings = true;
         // Cannot use reverse_iterator. Convert it to const_iterator.
         it_to_delete =
             available_render_pass_overlay_backings_.begin() +
@@ -3279,7 +3295,7 @@ bool SkiaRenderer::CanSkipRenderPassOverlay(
 
   if (no_change_in_rpdq && no_change_in_filters &&
       no_change_in_backdrop_filters) {
-    if (Found_in_available_backings) {
+    if (found_in_available_backings) {
       in_flight_render_pass_overlay_backings_.push_back(*overlay_found);
       available_render_pass_overlay_backings_.erase(it_to_delete);
       *output_render_pass_overlay =
@@ -3489,21 +3505,18 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       overlay_params->render_pass_backing;
   overlay->mailbox = dst_overlay_backing.mailbox;
 
-  // Still call BeginPaintRenderPass/EndPaint when skipping the render pass, so
-  // we get the notification (DidReceiveReleasedOverlays) for releaseing the
-  // mailbox of the skipped rendering.
-  current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
-      quad->render_pass_id, dst_overlay_backing.size,
-      dst_overlay_backing.format, /*mipmap=*/false,
-      RenderPassBackingSkColorSpace(dst_overlay_backing),
-      /*is_overlay=*/true, overlay->mailbox);
-  if (!current_canvas_) {
-    DLOG(ERROR)
-        << "BeginPaintRenderPass() in PrepareRenderPassOverlay() failed.";
-    return;
-  }
-
   if (!can_skip_render_pass) {
+    current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
+        quad->render_pass_id, dst_overlay_backing.size,
+        dst_overlay_backing.format, /*mipmap=*/false,
+        RenderPassBackingSkColorSpace(dst_overlay_backing),
+        /*is_overlay=*/true, overlay->mailbox);
+    if (!current_canvas_) {
+      DLOG(ERROR)
+          << "BeginPaintRenderPass() in PrepareRenderPassOverlay() failed.";
+      return;
+    }
+
     // Clear the backing to ARGB(0,0,0,0).
     current_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 
@@ -3557,10 +3570,10 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       DrawSingleImage(content_image.get(), valid_texel_bounds, &rpdq_params,
                       &paint, &params);
     }
-  }
-  current_canvas_ = nullptr;
 
-  EndPaint(/*failed=*/false);
+    current_canvas_ = nullptr;
+    EndPaint(/*failed=*/false);
+  }
 
 #if BUILDFLAG(IS_APPLE)
   // Adjust |bounds_rect| to contain the whole buffer and at the right location.
@@ -3580,10 +3593,18 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   // TODO(rivr): Handle the case where the overlay has an arbitrary transform
   // applied.
   if (absl::holds_alternative<gfx::OverlayTransform>(overlay->transform)) {
-    OverlayCandidate::ApplyClip(
-        *overlay,
-        gfx::RectF(gfx::SizeF(current_frame()->device_viewport_size)));
+    gfx::Rect apply_clip = gfx::Rect(current_frame()->device_viewport_size);
+    if (overlay->clip_rect.has_value())
+      apply_clip.Intersect(overlay->clip_rect.value());
+
+    OverlayCandidate::ApplyClip(*overlay, gfx::RectF(apply_clip));
+    overlay->clip_rect = absl::nullopt;
   }
+  // Assume full damage every time the pass is rendered.
+  overlay->damage_rect = gfx::RectF(filter_bounds);
+  // Fill in |format| and |color_space| information based on selected backing.
+  overlay->color_space = color_space;
+  overlay->format = BufferFormat(buffer_format);
 #endif  // BUILDFLAG(IS_APPLE)
 }
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
@@ -3598,7 +3619,7 @@ void SkiaRenderer::EndPaint(bool failed) {
     // finished.
     if (current_gpu_commands_completed_fence_->was_set()) {
       on_finished_callback = base::BindPostTask(
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           base::BindOnce(&FrameResourceGpuCommandsCompletedFence::Signal,
                          std::move(current_gpu_commands_completed_fence_)));
       current_gpu_commands_completed_fence_ =
@@ -3612,7 +3633,7 @@ void SkiaRenderer::EndPaint(bool failed) {
     // when the root render pass is finished.
     if (current_release_fence_->was_set()) {
       on_return_release_fence_cb = base::BindPostTask(
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           base::BindOnce(&FrameResourceReleaseFence::SetReleaseFenceCallback,
                          std::move(current_release_fence_)));
       current_release_fence_ =

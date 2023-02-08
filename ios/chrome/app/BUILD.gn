@@ -5,6 +5,7 @@
 import("//build/apple/compile_entitlements.gni")
 import("//build/apple/tweak_info_plist.gni")
 import("//build/buildflag_header.gni")
+import("//build/config/ios/config.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//build/ios/extension_bundle_data.gni")
@@ -83,6 +84,7 @@ source_set("unit_tests") {
     "//components/sync_preferences:sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/variations",
+    "//components/variations/service",
     "//ios/chrome/app:enterprise_app_agent",
     "//ios/chrome/app/application_delegate",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
@@ -104,6 +106,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/first_run:constants",
     "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main:scene_state_header",
+    "//ios/chrome/browser/ui/main:scene_testing",
     "//ios/chrome/browser/ui/main/test",
     "//ios/chrome/browser/ui/post_restore_signin:features",
     "//ios/chrome/browser/ui/safe_mode",
@@ -222,6 +225,7 @@ source_set("app_metrics_app_state_agent") {
 source_set("safe_mode_app_state_agent") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "safe_mode_app_state_agent+private.h",
     "safe_mode_app_state_agent.h",
     "safe_mode_app_state_agent.mm",
   ]
@@ -465,7 +469,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:browser_state_impl",
     "//ios/chrome/browser/browsing_data",
-    "//ios/chrome/browser/commerce",
+    "//ios/chrome/browser/commerce/push_notification",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/crash_report/breadcrumbs",
@@ -601,16 +605,35 @@ source_set("main") {
     deps += [ "//ios/chrome/app/startup:sandbox_dump" ]
   }
 
+  assert_no_deps = []
+
   if (ios_chrome_links_with_material_components_framework) {
     deps += [
       "//ios/third_party/material_components_ios:material_components_ios+bundle",
       "//ios/third_party/material_components_ios:material_components_ios+link",
     ]
   } else {
-    assert_no_deps = [
+    assert_no_deps += [
       "//ios/third_party/material_components_ios:material_components_ios+bundle",
       "//ios/third_party/material_components_ios:material_components_ios+link",
     ]
+  }
+
+  # Lottie links with GLKit which does not support macCatalyst environment
+  # (see https://crbug.com/1394553 for details of the build failure). This
+  # is a stop-gap solution.
+  if (target_environment != "catalyst") {
+    if (ios_chrome_links_with_lottie_framework) {
+      deps += [
+        "//ios/third_party/lottie:lottie+bundle",
+        "//ios/third_party/lottie:lottie+link",
+      ]
+    } else {
+      assert_no_deps += [
+        "//ios/third_party/lottie:lottie+bundle",
+        "//ios/third_party/lottie:lottie+link",
+      ]
+    }
   }
 }
 

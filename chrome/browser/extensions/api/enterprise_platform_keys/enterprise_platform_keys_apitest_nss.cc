@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/gtest_tags.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/platform_keys/platform_keys_service_factory.h"
@@ -271,6 +272,11 @@ class EnterprisePlatformKeysTest
            user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN;
   }
 
+  void AddScreenplayTag() {
+    base::AddTagToTestResult("feature_id",
+                             "screenplay-f9cdeb9c-d567-4d70-a2dc-9ee4203175e6");
+  }
+
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
 
  private:
@@ -294,10 +300,12 @@ class EnterprisePlatformKeysTest
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, PRE_Basic) {
+  AddScreenplayTag();
   RunPreTest();
 }
 
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
+  AddScreenplayTag();
   {
     base::RunLoop loop;
     NssServiceFactory::GetForContext(profile())
@@ -426,6 +434,11 @@ class EnterprisePlatformKeysLoginScreenTest
     return &extension_force_install_mixin_;
   }
 
+  void AddScreenplayTag() {
+    base::AddTagToTestResult("feature_id",
+                             "screenplay-f9cdeb9c-d567-4d70-a2dc-9ee4203175e6");
+  }
+
  private:
   void SetUp() override {
     ash::platform_keys::PlatformKeysServiceFactory::GetInstance()
@@ -463,10 +476,10 @@ class EnterprisePlatformKeysLoginScreenTest
 };
 
 IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysLoginScreenTest, Basic) {
-  base::DictionaryValue config;
-  config.SetStringKey("customArg",
-                      BuildCustomArg(/*user_session_test=*/false,
-                                     /*system_token_enabled=*/true));
+  AddScreenplayTag();
+  base::Value::Dict config;
+  config.Set("customArg", BuildCustomArg(/*user_session_test=*/false,
+                                         /*system_token_enabled=*/true));
   extensions::TestGetConfigFunction::set_test_config_state(&config);
 
   extensions::ResultCatcher catcher;

@@ -55,7 +55,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
         '/chromevox/common/custom_automation_event.js');
     await importModule(
         ['Spannable', 'MultiSpannable'], '/chromevox/common/spannable.js');
-    await importModule('QueueMode', '/chromevox/common/tts_interface.js');
+    await importModule('QueueMode', '/chromevox/common/tts_types.js');
     await importModule(
         'AutomationPredicate', '/common/automation_predicate.js');
     await importModule('AutomationUtil', '/common/automation_util.js');
@@ -63,6 +63,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
+    await importModule('LocalStorage', '/common/local_storage.js');
 
     window.doGesture = this.doGesture;
     window.simulateHitTestResult = this.simulateHitTestResult;
@@ -77,7 +78,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxNextE2ETest {
 
   simulateHitTestResult(node) {
     return () => {
-      GestureCommandHandler.pointerHandler_.handleHitTestResult(node);
+      GestureCommandHandler.instance_.pointerHandler_.handleHitTestResult(node);
     };
   }
 
@@ -2522,7 +2523,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'PhoneticsAndCommands', async function() {
 AX_TEST_F('ChromeVoxBackgroundTest', 'ToggleScreen', async function() {
   const mockFeedback = this.createMockFeedback();
   // Pretend we've already accepted the confirmation dialog once.
-  localStorage['acceptToggleScreen'] = 'true';
+  LocalStorage.set('acceptToggleScreen', true);
   await this.runWithLoadedTree('<div>Unimportant web content</div>');
   mockFeedback.call(doCmd('toggleScreen'))
       .expectSpeech('Screen off')
@@ -2748,12 +2749,12 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', async function() {
 
   // Fake a mouse explore event on the real text field. This should not
   // trigger the above mouse path.
-  GestureCommandHandler.pointerHandler_.onMouseMove(
+  GestureCommandHandler.instance_.pointerHandler_.onMouseMove(
       realTextField.location.left, realTextField.location.top);
 
   // Fake a touch explore gesture event on the fake window which should
   // trigger a mouse move.
-  GestureCommandHandler.onAccessibilityGesture_(
+  GestureCommandHandler.instance_.onAccessibilityGesture_(
       Gesture.TOUCH_EXPLORE, fakeWindow.location.left, fakeWindow.location.top);
 });
 
@@ -2847,9 +2848,12 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'TimeDateCommand', async function() {
   await mockFeedback.replay();
 });
 
-AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', async function() {
-  const mockFeedback = this.createMockFeedback();
-  const site = `
+// TODO(https://crbug.com/1395217): Re-enable the test.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'DISABLED_SwipeToScrollByPage',
+    async function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
@@ -2858,17 +2862,17 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeToScrollByPage', async function() {
     <p style="font-size: 200pt">This is a test</p>
     <p style="font-size: 200pt">This is a test</p>
   `;
-  const root = await this.runWithLoadedTree(site);
-  mockFeedback.call(doGesture(Gesture.SWIPE_UP3))
-      .expectSpeech(/Page 2 of/)
-      .call(doGesture(Gesture.SWIPE_UP3))
-      .expectSpeech(/Page 3 of/)
-      .call(doGesture(Gesture.SWIPE_DOWN3))
-      .expectSpeech(/Page 2 of/)
-      .call(doGesture(Gesture.SWIPE_DOWN3))
-      .expectSpeech(/Page 1 of/);
-  await mockFeedback.replay();
-});
+      const root = await this.runWithLoadedTree(site);
+      mockFeedback.call(doGesture(Gesture.SWIPE_UP3))
+          .expectSpeech(/Page 2 of/)
+          .call(doGesture(Gesture.SWIPE_UP3))
+          .expectSpeech(/Page 3 of/)
+          .call(doGesture(Gesture.SWIPE_DOWN3))
+          .expectSpeech(/Page 2 of/)
+          .call(doGesture(Gesture.SWIPE_DOWN3))
+          .expectSpeech(/Page 1 of/);
+      await mockFeedback.replay();
+    });
 
 AX_TEST_F(
     'ChromeVoxBackgroundTest', 'PointerOnOffOnRepeatsNode', async function() {
@@ -2889,9 +2893,9 @@ AX_TEST_F(
           .expectSpeech('hi', 'Button')
 
           // Touch slightly off of the button.
-          .call(GestureCommandHandler.onAccessibilityGesture_.bind(
-              null, Gesture.TOUCH_EXPLORE, button.location.left,
-              button.location.top + 60))
+          .call(GestureCommandHandler.instance_.onAccessibilityGesture_.bind(
+              GestureCommandHandler.instance_, Gesture.TOUCH_EXPLORE,
+              button.location.left, button.location.top + 60))
           .expectSpeech('range cleared!')
           .expectEarcon(Earcon.NO_POINTER_ANCHOR)
           .clearPendingOutput()
@@ -3055,26 +3059,54 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'AlertAnnouncement', async function() {
   await mockFeedback.replay();
 });
 
-AX_TEST_F(
-    'ChromeVoxBackgroundTest', 'SwipeLeftRight4ByContainers', async function() {
-      const mockFeedback = this.createMockFeedback();
-      const root = await this.runWithLoadedTree(`<p>test</p>`);
-      mockFeedback.call(doGesture(Gesture.SWIPE_RIGHT4))
-          .expectSpeech('Launcher', 'Button', 'Shelf', 'Tool bar', ', window')
-          .call(doGesture(Gesture.SWIPE_RIGHT4))
-          .expectSpeech('Shelf', 'Tool bar')
-          .call(doGesture(Gesture.SWIPE_RIGHT4))
-          .expectSpeech(/Calendar*/)
-          .call(doGesture(Gesture.SWIPE_RIGHT4))
-          .expectSpeech(/Address and search bar*/)
+/**
+ * Fixtures and tests that need to be parameterized based on whether the
+ * `ash::features::kHoldingSpacePredictability` feature flag is enabled.
+ *
+ * Generated fixtures are:
+ * - ChromeVoxBackgroundTestWithHoldingSpacePredictabilityEnabled
+ * - ChromeVoxBackgroundTestWithHoldingSpacePredictabilityDisabled
+ */
+[true, false].forEach((enabled) => {
+  const testFixture = `ChromeVoxBackgroundTestWithHoldingSpacePredictability${
+      enabled ? 'Enabled' : 'Disabled'}`;
 
-          .call(doGesture(Gesture.SWIPE_LEFT4))
-          .expectSpeech(/Calendar*/)
-          .call(doGesture(Gesture.SWIPE_LEFT4))
-          .expectSpeech('Shelf', 'Tool bar');
+  this[testFixture] = class extends ChromeVoxBackgroundTest {
+    /** @override */
+    testGenCppIncludes() {
+      super.testGenCppIncludes();
+      GEN('#include "ash/constants/ash_features.h"');
+    }
 
-      await mockFeedback.replay();
-    });
+    /** @override */
+    get featureList() {
+      const featureList = {enabled: [], disabled: []};
+      (enabled ? featureList.enabled : featureList.disabled)
+          .push('ash::features::kHoldingSpacePredictability');
+      return featureList;
+    }
+  };
+
+  AX_TEST_F(testFixture, 'SwipeLeftRight4ByContainers', async function() {
+    const mockFeedback = this.createMockFeedback();
+    const root = await this.runWithLoadedTree(`<p>test</p>`);
+    mockFeedback.call(doGesture(Gesture.SWIPE_RIGHT4))
+        .expectSpeech('Launcher', 'Button', 'Shelf', 'Tool bar', ', window')
+        .call(doGesture(Gesture.SWIPE_RIGHT4))
+        .expectSpeech('Shelf', 'Tool bar')
+        .call(doGesture(Gesture.SWIPE_RIGHT4))
+        .expectSpeech(enabled ? /Tote*/ : /Calendar*/)
+        .call(doGesture(Gesture.SWIPE_RIGHT4))
+        .expectSpeech(/Address and search bar*/)
+
+        .call(doGesture(Gesture.SWIPE_LEFT4))
+        .expectSpeech(enabled ? /Tote*/ : /Calendar*/)
+        .call(doGesture(Gesture.SWIPE_LEFT4))
+        .expectSpeech('Shelf', 'Tool bar');
+
+    await mockFeedback.replay();
+  });
+});
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', async function() {
   const mockFeedback = this.createMockFeedback();
@@ -3575,8 +3607,8 @@ AX_TEST_F(
       const nextObjectBraille = BrailleCommandHandler.onBrailleKeyEvent.bind(
           BrailleCommandHandler, {command: BrailleKeyCommand.PAN_RIGHT});
       const nextObjectGesture =
-          GestureCommandHandler.onAccessibilityGesture_.bind(
-              GestureCommandHandler, Gesture.SWIPE_RIGHT1);
+          GestureCommandHandler.instance_.onAccessibilityGesture_.bind(
+              GestureCommandHandler.instance_, Gesture.SWIPE_RIGHT1);
       const clearCurrentRange = ChromeVoxState.instance.setCurrentRange.bind(
           ChromeVoxState.instance, null);
       const toggleTalkBack = () => {
@@ -3630,7 +3662,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'DetailsChanged', async function() {
 
   // Make sure we're not testing reading of the hint from the button's output
   // below.
-  localStorage['useVerboseMode'] = false;
+  LocalStorage.set('useVerboseMode', false);
   const site = `
     <button id="click">ok</button>
     <p id="details">hello</p>

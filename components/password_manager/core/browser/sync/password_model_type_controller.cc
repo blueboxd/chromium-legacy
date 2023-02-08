@@ -8,7 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
@@ -33,7 +33,7 @@ enum class ClearedOnStartup {
 
 void RecordClearedOnStartup(ClearedOnStartup state) {
   base::UmaHistogramEnumeration(
-      "PasswordManager.AccountStorage.ClearedOnStartup", state);
+      "PasswordManager.AccountStorage.ClearedOnStartup2", state);
 }
 
 void PasswordStoreClearDone(bool cleared) {
@@ -67,15 +67,14 @@ PasswordModelTypeController::PasswordModelTypeController(
               base::Unretained(this))) {
   identity_manager_->AddObserver(this);
 
-  DCHECK_EQ(
-      base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage),
-      !!account_password_store_for_cleanup);
-  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage)) {
+  if (account_password_store_for_cleanup) {
+    DCHECK(
+        base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
     // Note: Right now, we're still in the middle of SyncService initialization,
     // so we can't check IsOptedInForAccountStorage() yet (SyncService might not
     // have determined the syncing account yet). Post a task do to it after the
     // initialization is complete.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&PasswordModelTypeController::MaybeClearStore,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   account_password_store_for_cleanup));

@@ -77,18 +77,21 @@ void NGContainerFragmentBuilder::PropagateChildAnchors(
     const NGPhysicalFragment& child,
     const LogicalOffset& child_offset) {
   absl::optional<NGLogicalAnchorQuery::SetOptions> options;
-  if (child.IsBox() && child.Style().AnchorName()) {
+  if (child.IsBox() &&
+      (child.Style().AnchorName() || child.IsImplicitAnchor())) {
     // Set the child's `anchor-name` before propagating its descendants', so
     // that ancestors have precedence over their descendants.
-    const ScopedCSSName& anchor_name = *child.Style().AnchorName();
     DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+    LogicalRect rect{child_offset,
+                     child.Size().ConvertToLogical(GetWritingMode())};
     options = AnchorQuerySetOptions(
         child, node_, IsBlockFragmentationContextRoot() || HasItems());
-    EnsureAnchorQuery().Set(
-        anchor_name, child,
-        LogicalRect{child_offset,
-                    child.Size().ConvertToLogical(GetWritingMode())},
-        *options);
+    if (child.Style().AnchorName()) {
+      EnsureAnchorQuery().Set(child.Style().AnchorName(), child, rect,
+                              *options);
+    }
+    if (child.IsImplicitAnchor())
+      EnsureAnchorQuery().Set(child.GetLayoutObject(), child, rect, *options);
   }
 
   // Propagate any descendants' anchor references.
@@ -509,9 +512,9 @@ void NGContainerFragmentBuilder::PropagateOOFPositionedInfo(
         fixedpos_containing_block_offset = converter.ToLogical(
             multicol_info->fixedpos_containing_block.Offset(),
             fixedpos_containing_block_fragment->Size());
-        fixedpos_containing_block_rel_offset = RelativeInsetToLogical(
+        fixedpos_containing_block_rel_offset = converter.ToLogical(
             multicol_info->fixedpos_containing_block.RelativeOffset(),
-            GetWritingDirection());
+            fixedpos_containing_block_fragment->Size());
         fixedpos_containing_block_rel_offset += relative_offset;
         // We want the fixedpos containing block offset to be the offset from
         // the containing block to the top of the fragmentation context root,
@@ -609,8 +612,9 @@ void NGContainerFragmentBuilder::PropagateOOFFragmentainerDescendants(
     LogicalOffset containing_block_offset =
         converter.ToLogical(descendant.containing_block.Offset(),
                             containing_block_fragment->Size());
-    LogicalOffset containing_block_rel_offset = RelativeInsetToLogical(
-        descendant.containing_block.RelativeOffset(), GetWritingDirection());
+    LogicalOffset containing_block_rel_offset =
+        converter.ToLogical(descendant.containing_block.RelativeOffset(),
+                            containing_block_fragment->Size());
     containing_block_rel_offset += relative_offset;
     if (!fragment.IsFragmentainerBox())
       containing_block_offset += offset;
@@ -654,9 +658,9 @@ void NGContainerFragmentBuilder::PropagateOOFFragmentainerDescendants(
       fixedpos_containing_block_offset =
           converter.ToLogical(descendant.fixedpos_containing_block.Offset(),
                               fixedpos_containing_block_fragment->Size());
-      fixedpos_containing_block_rel_offset = RelativeInsetToLogical(
+      fixedpos_containing_block_rel_offset = converter.ToLogical(
           descendant.fixedpos_containing_block.RelativeOffset(),
-          GetWritingDirection());
+          fixedpos_containing_block_fragment->Size());
       fixedpos_containing_block_rel_offset += relative_offset;
       if (!fragment.IsFragmentainerBox())
         fixedpos_containing_block_offset += offset;

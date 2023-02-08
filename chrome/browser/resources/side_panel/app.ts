@@ -11,7 +11,7 @@ import './bookmarks/bookmarks_list.js';
 import './bookmarks/power_bookmarks_list.js';
 import './read_anything/app.js'; /* <read-anything-app> */
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
@@ -72,7 +72,7 @@ export class SidePanelAppElement extends PolymerElement {
     }
 
     // Show the UI as soon as the app is connected.
-    this.apiProxy_.showUI();
+    this.apiProxy_.showUi();
   }
 
   private getTabNames_(): string[] {
@@ -84,7 +84,7 @@ export class SidePanelAppElement extends PolymerElement {
   }
 
   private onCloseClick_() {
-    this.apiProxy_.closeUI();
+    this.apiProxy_.closeUi();
   }
 
   private onSelectedTabChanged_(event: CustomEvent<{value: number}>) {

@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/webui/settings/ash/multidevice_section.h"
 
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/components/phonehub/pref_names.h"
-#include "ash/components/phonehub/screen_lock_manager.h"
-#include "ash/components/phonehub/url_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
@@ -28,6 +24,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/pref_names.h"
+#include "chromeos/ash/components/phonehub/screen_lock_manager.h"
+#include "chromeos/ash/components/phonehub/url_constants.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -45,7 +45,6 @@ namespace mojom {
 using ::chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath;
 using ::chromeos::settings::mojom::kMultiDeviceSectionPath;
 using ::chromeos::settings::mojom::kNearbyShareSubpagePath;
-using ::chromeos::settings::mojom::kSmartLockSubpagePath;
 using ::chromeos::settings::mojom::Section;
 using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
@@ -83,22 +82,11 @@ const std::vector<SearchConcept>& GetMultiDeviceOptedInSearchConcepts() {
         {.subpage = mojom::Subpage::kMultiDeviceFeatures},
         {IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1, SearchConcept::kAltTagEnd}},
        {IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK,
-        mojom::kSmartLockSubpagePath,
+        mojom::kMultiDeviceFeaturesSubpagePath,
         mojom::SearchResultIcon::kLock,
         mojom::SearchResultDefaultRank::kMedium,
         mojom::SearchResultType::kSetting,
         {.setting = mojom::Setting::kSmartLockOnOff}}});
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetSmartLockOptionsSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags(
-      {{IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS,
-        mojom::kSmartLockSubpagePath,
-        mojom::SearchResultIcon::kLock,
-        mojom::SearchResultDefaultRank::kMedium,
-        mojom::SearchResultType::kSetting,
-        {.setting = mojom::Setting::kSmartLockUnlockOrSignIn}}});
   return *tags;
 }
 
@@ -296,17 +284,6 @@ const std::vector<SearchConcept>& GetNearbyShareOffSearchConcepts() {
         SearchConcept::kAltTagEnd}},
   });
   return *tags;
-}
-
-void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
-      {"easyUnlockUnlockDeviceOnly",
-       IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_ONLY},
-      {"easyUnlockUnlockDeviceAndAllowSignin",
-       IDS_SETTINGS_EASY_UNLOCK_UNLOCK_DEVICE_AND_ALLOW_SIGNIN},
-  };
-  html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
 bool IsOptedIn(HostStatus host_status) {
@@ -628,8 +605,6 @@ void MultiDeviceSection::AddLoadTimeData(
           IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ACCESS_PROHIBITED_SUMMARY,
           GetHelpUrlWithBoard(phonehub::kPhoneHubLearnMoreLink)));
 
-  AddEasyUnlockStrings(html_source);
-
   // We still need to register strings even if Nearby Share is not supported.
   // For example, the HTML is always built but only displayed if Nearby Share is
   // supported.
@@ -667,21 +642,19 @@ void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
   if (profile()->IsGuestSession())
     return;
 
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::MultideviceHandler>(
-          pref_service_, multidevice_setup_client_,
-          phone_hub_manager_
-              ? phone_hub_manager_->GetMultideviceFeatureAccessManager()
-              : nullptr,
-          android_sms_service_
-              ? android_sms_service_->android_sms_pairing_state_tracker()
-              : nullptr,
-          android_sms_service_ ? android_sms_service_->android_sms_app_manager()
-                               : nullptr,
-          eche_app_manager_ ? eche_app_manager_->GetAppsAccessManager()
-                            : nullptr,
-          phone_hub_manager_ ? phone_hub_manager_->GetCameraRollManager()
-                             : nullptr));
+  web_ui->AddMessageHandler(std::make_unique<MultideviceHandler>(
+      pref_service_, multidevice_setup_client_,
+      phone_hub_manager_
+          ? phone_hub_manager_->GetMultideviceFeatureAccessManager()
+          : nullptr,
+      android_sms_service_
+          ? android_sms_service_->android_sms_pairing_state_tracker()
+          : nullptr,
+      android_sms_service_ ? android_sms_service_->android_sms_app_manager()
+                           : nullptr,
+      eche_app_manager_ ? eche_app_manager_->GetAppsAccessManager() : nullptr,
+      phone_hub_manager_ ? phone_hub_manager_->GetCameraRollManager()
+                         : nullptr));
 }
 
 int MultiDeviceSection::GetSectionNameMessageId() const {
@@ -736,20 +709,6 @@ void MultiDeviceSection::RegisterHierarchy(
   generator->RegisterNestedAltSetting(mojom::Setting::kInstantTetheringOnOff,
                                       mojom::Subpage::kMultiDeviceFeatures);
 
-  // Smart Lock.
-  generator->RegisterNestedSubpage(
-      IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE, mojom::Subpage::kSmartLock,
-      mojom::Subpage::kMultiDeviceFeatures, mojom::SearchResultIcon::kLock,
-      mojom::SearchResultDefaultRank::kMedium, mojom::kSmartLockSubpagePath);
-  static constexpr mojom::Setting kSmartLockSettings[] = {
-      mojom::Setting::kSmartLockOnOff,
-      mojom::Setting::kSmartLockUnlockOrSignIn,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kSmartLock, kSmartLockSettings,
-                            generator);
-  generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
-                                      mojom::Subpage::kMultiDeviceFeatures);
-
   // Nearby Share, registered regardless of the flag.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_NEARBY_SHARE_TITLE, mojom::Subpage::kNearbyShare,
@@ -786,17 +745,12 @@ void MultiDeviceSection::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
   SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-  updater.RemoveSearchTags(GetSmartLockOptionsSearchConcepts());
   updater.RemoveSearchTags(GetMultiDeviceOptedInPhoneHubSearchConcepts());
   updater.RemoveSearchTags(
       GetMultiDeviceOptedInPhoneHubCameraRollSearchConcepts());
   updater.RemoveSearchTags(GetMultiDeviceOptedInWifiSyncSearchConcepts());
   updater.RemoveSearchTags(GetMultiDeviceOptedInPhoneHubAppsSearchConcepts());
 
-  if (feature_states_map.at(Feature::kSmartLock) ==
-      FeatureState::kEnabledByUser) {
-    updater.AddSearchTags(GetSmartLockOptionsSearchConcepts());
-  }
   if (IsFeatureSupported(Feature::kPhoneHub)) {
     updater.AddSearchTags(GetMultiDeviceOptedInPhoneHubSearchConcepts());
     if (features::IsPhoneHubCameraRollEnabled() &&

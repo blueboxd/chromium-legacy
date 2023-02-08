@@ -2,26 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {PromiseResolver} from 'chrome://resources/ash/common/promise_resolver.js';
 import {fakeRsuChallengeQrCode} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {OnboardingEnterRsuWpDisableCodePage} from 'chrome://shimless-rma/onboarding_enter_rsu_wp_disable_code_page.js';
+import {ShimlessRma} from 'chrome://shimless-rma/shimless_rma.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertNotReached, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertDeepEquals, assertEquals, assertFalse, assertNotReached, assertTrue} from '../../chai_assert.js';
 
-
-/**
- * It is not possible to suppress visibility inline so this helper
- * function wraps the access to canvasSize_.
- * @suppress {visibility}
- */
-function suppressedComponentCanvasSize_(component) {
-  return component.canvasSize_;
-}
-
-export function onboardingEnterRsuWpDisableCodePageTest() {
+suite('onboardingEnterRsuWpDisableCodePageTest', function() {
   /** @type {?OnboardingEnterRsuWpDisableCodePage} */
   let component = null;
 
@@ -179,4 +170,4 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
 
     assertTrue(nextButtonEventFired);
   });
-}
+});

@@ -506,11 +506,6 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       policy_base->MakeTokens(&initial_token, &lockdown_token, &lowbox_token);
   if (SBOX_ALL_OK != result)
     return result;
-  if (lowbox_token.IsValid() &&
-      base::win::GetVersion() < base::win::Version::WIN8) {
-    // We don't allow lowbox_token below Windows 8.
-    return SBOX_ERROR_BAD_PARAMS;
-  }
 
   result = UpdateDesktopIntegrity(config_base->desktop(),
                                   config_base->integrity_level());
@@ -546,11 +541,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (container)
     startup_info->SetAppContainer(container);
 
-  // On Win10, jobs are associated via startup_info.
-  if (base::win::GetVersion() >= base::win::Version::WIN10 &&
-      policy_base->HasJob()) {
+  if (policy_base->HasJob())
     startup_info->AddJobToAssociate(policy_base->GetJobHandle());
-  }
 
   if (!startup_info->BuildStartupInformation())
     return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
@@ -566,8 +558,8 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     }
   }
   std::unique_ptr<TargetProcess> target = std::make_unique<TargetProcess>(
-      std::move(initial_token), std::move(lockdown_token),
-      policy_base->GetJobHandle(), thread_pool_, imp_caps);
+      std::move(initial_token), std::move(lockdown_token), thread_pool_,
+      imp_caps);
 
   result = target->Create(exe_path, command_line, std::move(startup_info),
                           &process_info, last_error);

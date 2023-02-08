@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
@@ -21,6 +21,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {getTemplate} from './checkup_section.html.js';
 import {CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerImpl} from './password_manager_proxy.js';
+import {CheckupSubpage, Page, Router} from './router.js';
 
 const CheckState = chrome.passwordsPrivate.PasswordCheckState;
 
@@ -74,7 +75,22 @@ export class CheckupSectionElement extends I18nMixin
        */
       status_: {
         type: Object,
-        value: () => ({state: chrome.passwordsPrivate.PasswordCheckState.IDLE}),
+        observer: 'onStatusChanged_',
+      },
+
+      compromisedPasswords_: {
+        type: Array,
+        observer: 'onCompromisedPasswordsChanged_',
+      },
+
+      reusedPasswords_: {
+        type: Array,
+        observer: 'onReusedPasswordsChanged_',
+      },
+
+      weakPasswords_: {
+        type: Array,
+        observer: 'onWeakPasswordsChanged_',
       },
 
       isCheckRunning_: {
@@ -86,6 +102,13 @@ export class CheckupSectionElement extends I18nMixin
         type: Boolean,
         computed: 'computeIsCheckSuccessful_(status_)',
       },
+
+      bannerImage_: {
+        type: Array,
+        value: 'checkup_result_banner_error',
+        computed: 'computeBannerImage_(status_, compromisedPasswords_, ' +
+            'reusedPasswords_, weakPasswords_)',
+      },
     };
   }
 
@@ -94,18 +117,14 @@ export class CheckupSectionElement extends I18nMixin
   private reusedPasswordsText_: string;
   private weakPasswordsText_: string;
   private status_: chrome.passwordsPrivate.PasswordCheckStatus;
-  private compromisedPasswords_: chrome.passwordsPrivate.PasswordUiEntry[] = [];
-  private weakPasswords_: chrome.passwordsPrivate.PasswordUiEntry[] = [];
-  private reusedPasswords_: chrome.passwordsPrivate.PasswordUiEntry[] = [];
+  private compromisedPasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
+  private weakPasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
+  private reusedPasswords_: chrome.passwordsPrivate.PasswordUiEntry[];
 
   private statusChangedListener_: PasswordCheckStatusChangedListener|null =
       null;
   private insecureCredentialsChangedListener_: CredentialsChangedListener|null =
       null;
-
-  override ready() {
-    super.ready();
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -135,8 +154,6 @@ export class CheckupSectionElement extends I18nMixin
           return type === chrome.passwordsPrivate.CompromiseType.WEAK;
         });
       });
-
-      this.fetchPluralizedStrings_();
     };
 
     PasswordManagerImpl.getInstance().getPasswordCheckStatus().then(
@@ -164,19 +181,28 @@ export class CheckupSectionElement extends I18nMixin
     this.insecureCredentialsChangedListener_ = null;
   }
 
-  private fetchPluralizedStrings_() {
-    const proxy = PluralStringProxyImpl.getInstance();
+  private async onStatusChanged_() {
+    this.checkedPasswordsText_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'checkedPasswords', this.status_.totalNumberOfPasswords || 0);
+  }
 
-    proxy.getPluralString('checkedPasswords', 6)
-        .then(result => this.checkedPasswordsText_ = result);
-    proxy
-        .getPluralString(
-            'compromisedPasswords', this.compromisedPasswords_.length)
-        .then(result => this.compromisedPasswordsText_ = result);
-    proxy.getPluralString('reusedPasswords', this.reusedPasswords_.length)
-        .then(result => this.reusedPasswordsText_ = result);
-    proxy.getPluralString('weakPasswords', this.weakPasswords_.length)
-        .then(result => this.weakPasswordsText_ = result);
+  private async onCompromisedPasswordsChanged_() {
+    this.compromisedPasswordsText_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'compromisedPasswords', this.compromisedPasswords_.length);
+  }
+
+  private async onReusedPasswordsChanged_() {
+    this.reusedPasswordsText_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'reusedPasswords', this.reusedPasswords_.length);
+  }
+
+  private async onWeakPasswordsChanged_() {
+    this.weakPasswordsText_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'weakPasswords', this.weakPasswords_.length);
   }
 
   /**
@@ -208,21 +234,32 @@ export class CheckupSectionElement extends I18nMixin
         PasswordCheckInteraction.START_CHECK_MANUALLY);
   }
 
-  private getBannerImageFileName_(): string {
+  private computeBannerImage_(): string {
+    if (!this.status_) {
+      return 'checkup_result_banner_error';
+    }
+
     if (this.computeIsCheckRunning_()) {
       return 'checkup_result_banner_running';
     }
     if (this.computeIsCheckSuccessful_()) {
-      const hasIssues = !!this.compromisedPasswords_.length ||
-          !!this.reusedPasswords_.length || !!this.weakPasswords_.length;
-      return hasIssues ? 'checkup_result_banner_compromised' :
-                         'checkup_result_banner_ok';
+      return this.hasAnyIssues_() ? 'checkup_result_banner_compromised' :
+                                    'checkup_result_banner_ok';
     }
     return 'checkup_result_banner_error';
   }
 
   private getIcon_(issues: chrome.passwordsPrivate.PasswordUiEntry[]): string {
     return issues.length ? 'cr:error' : 'cr:check-circle';
+  }
+
+  private hasAnyIssues_(): boolean {
+    if (!this.compromisedPasswords_ || !this.reusedPasswords_ ||
+        !this.weakPasswords_) {
+      return false;
+    }
+    return !!this.compromisedPasswords_.length ||
+        !!this.reusedPasswords_.length || !!this.weakPasswords_.length;
   }
 
   private hasIssues_(issues: chrome.passwordsPrivate.PasswordUiEntry[]):
@@ -244,6 +281,32 @@ export class CheckupSectionElement extends I18nMixin
   private getWeakSectionSublabel_(): string {
     return this.weakPasswords_.length ? this.i18n('weakPasswordsTitle') :
                                         this.i18n('weakPasswordsEmpty');
+  }
+
+  private onCompromisedClick_() {
+    if (!this.compromisedPasswords_.length) {
+      return;
+    }
+
+    Router.getInstance().navigateTo(
+        Page.CHECKUP_DETAILS, CheckupSubpage.COMPROMISED);
+  }
+
+  private onReusedClick_() {
+    if (!this.reusedPasswords_.length) {
+      return;
+    }
+
+    Router.getInstance().navigateTo(
+        Page.CHECKUP_DETAILS, CheckupSubpage.REUSED);
+  }
+
+  private onWeakClick_() {
+    if (!this.weakPasswords_.length) {
+      return;
+    }
+
+    Router.getInstance().navigateTo(Page.CHECKUP_DETAILS, CheckupSubpage.WEAK);
   }
 }
 

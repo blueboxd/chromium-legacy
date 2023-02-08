@@ -447,8 +447,7 @@ content::SSLHostStateDelegate* AwBrowserContext::GetSSLHostStateDelegate() {
   return ssl_host_state_delegate_.get();
 }
 
-content::PermissionControllerDelegate*
-AwBrowserContext::GetPermissionControllerDelegate() {
+AwPermissionManager* AwBrowserContext::GetPermissionControllerDelegate() {
   if (!permission_manager_.get())
     permission_manager_ = std::make_unique<AwPermissionManager>();
   return permission_manager_.get();
@@ -487,9 +486,9 @@ AwBrowserContext::GetReduceAcceptLanguageControllerDelegate() {
   return nullptr;
 }
 
-download::InProgressDownloadManager*
-AwBrowserContext::RetriveInProgressDownloadManager() {
-  return new download::InProgressDownloadManager(
+std::unique_ptr<download::InProgressDownloadManager>
+AwBrowserContext::RetrieveInProgressDownloadManager() {
+  return std::make_unique<download::InProgressDownloadManager>(
       nullptr, base::FilePath(), nullptr,
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenized_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -34,6 +35,8 @@ class StyleRuleCharset;
 class StyleRuleCounterStyle;
 class StyleRuleFontFace;
 class StyleRuleFontPaletteValues;
+class StyleRuleFontFeatureValues;
+class StyleRuleFontFeature;
 class StyleRuleImport;
 class StyleRuleKeyframe;
 class StyleRuleKeyframes;
@@ -132,7 +135,9 @@ class CORE_EXPORT CSSParserImpl {
                                             StyleSheetContents*,
                                             const CSSParserContext& context);
 
-  static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
+  static std::unique_ptr<Vector<KeyframeOffset>> ParseKeyframeKeyList(
+      const CSSParserContext*,
+      const String&);
 
   bool ConsumeSupportsDeclaration(CSSParserTokenStream&);
   const CSSParserContext* GetContext() const { return context_; }
@@ -197,6 +202,10 @@ class CORE_EXPORT CSSParserImpl {
   StyleRuleFontFace* ConsumeFontFaceRule(CSSParserTokenStream&);
   StyleRuleFontPaletteValues* ConsumeFontPaletteValuesRule(
       CSSParserTokenStream&);
+  StyleRuleFontFeatureValues* ConsumeFontFeatureValuesRule(
+      CSSParserTokenStream&);
+  StyleRuleFontFeature* ConsumeFontFeatureRule(CSSAtRuleID,
+                                               CSSParserTokenStream&);
   StyleRuleKeyframes* ConsumeKeyframesRule(bool webkit_prefixed,
                                            CSSParserTokenStream&);
   StyleRulePage* ConsumePageRule(CSSParserTokenStream&);
@@ -237,7 +246,8 @@ class CORE_EXPORT CSSParserImpl {
                             bool important,
                             bool is_animation_tainted);
 
-  static std::unique_ptr<Vector<double>> ConsumeKeyframeKeyList(
+  static std::unique_ptr<Vector<KeyframeOffset>> ConsumeKeyframeKeyList(
+      const CSSParserContext*,
       CSSParserTokenRange);
 
   // Finds a previously parsed MediaQuerySet for the given `prelude_string`

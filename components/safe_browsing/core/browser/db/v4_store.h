@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "components/safe_browsing/core/browser/db/hash_prefix_map.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/common/proto/webui.pb.h"
 
@@ -26,19 +27,12 @@ class V4Store;
 using UpdatedStoreReadyCallback =
     base::OnceCallback<void(std::unique_ptr<V4Store> new_store)>;
 
-// The sorted list of hash prefixes.
-using HashPrefixes = std::string;
-
-// Stores the list of sorted hash prefixes, by size.
-// For instance: {4: ["abcd", "bcde", "cdef", "gggg"], 5: ["fffff"]}
-using HashPrefixMap = std::unordered_map<PrefixSize, HashPrefixes>;
-
 // Stores the iterator to the last element merged from the HashPrefixMap for a
 // given prefix size.
 // For instance: {4:iter(3), 5:iter(1)} means that we have already merged
 // 3 hash prefixes of length 4, and 1 hash prefix of length 5.
 using IteratorMap =
-    std::unordered_map<PrefixSize, HashPrefixes::const_iterator>;
+    std::unordered_map<PrefixSize, HashPrefixesView::const_iterator>;
 
 // Enumerate different failure events while parsing the file read from disk for
 // histogramming purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -75,6 +69,9 @@ enum StoreReadResult {
   // Unable to generate the hash prefix map from the updates on disk.
   HASH_PREFIX_MAP_GENERATION_FAILURE = 8,
 
+  // There was a failure migrating between in-memory and mmap file formats.
+  MIGRATION_FAILURE = 9,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
   STORE_READ_RESULT_MAX
@@ -104,54 +101,6 @@ enum StoreWriteResult {
   STORE_WRITE_RESULT_MAX
 };
 
-// Enumerate different events while applying the update fetched fom the server
-// for histogramming purposes.
-// DO NOT CHANGE THE ORDERING OF THESE VALUES.
-enum ApplyUpdateResult {
-  // No errors.
-  APPLY_UPDATE_SUCCESS = 0,
-
-  // Reserved for errors in parsing this enum.
-  UNEXPECTED_APPLY_UPDATE_FAILURE = 1,
-
-  // Prefix size smaller than 4 (which is the lowest expected).
-  PREFIX_SIZE_TOO_SMALL_FAILURE = 2,
-
-  // Prefix size larger than 32 (length of a full SHA256 hash).
-  PREFIX_SIZE_TOO_LARGE_FAILURE = 3,
-
-  // The number of bytes in additions isn't a multiple of prefix size.
-  ADDITIONS_SIZE_UNEXPECTED_FAILURE = 4,
-
-  // The update received from the server contains a prefix that's already
-  // present in the map.
-  ADDITIONS_HAS_EXISTING_PREFIX_FAILURE = 5,
-
-  // The server sent a response_type that the client did not expect.
-  UNEXPECTED_RESPONSE_TYPE_FAILURE = 6,
-
-  // One of more index(es) in removals field of the response is greater than
-  // the number of hash prefixes currently in the (old) store.
-  REMOVALS_INDEX_TOO_LARGE_FAILURE = 7,
-
-  // Failed to decode the Rice-encoded additions/removals field.
-  RICE_DECODING_FAILURE = 8,
-
-  // Compression type other than RAW and RICE for additions.
-  UNEXPECTED_COMPRESSION_TYPE_ADDITIONS_FAILURE = 9,
-
-  // Compression type other than RAW and RICE for removals.
-  UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE = 10,
-
-  // The state of the store did not match the expected checksum sent by the
-  // server.
-  CHECKSUM_MISMATCH_FAILURE = 11,
-
-  // Memory space for histograms is determined by the max.  ALWAYS
-  // ADD NEW VALUES BEFORE THIS ONE.
-  APPLY_UPDATE_RESULT_MAX
-};
-
 // Factory for creating V4Store. Tests implement this factory to create fake
 // stores for testing.
 class V4StoreFactory {
@@ -175,6 +124,7 @@ class V4Store {
   // applying an update.
   V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
           const base::FilePath& store_path,
+          std::unique_ptr<HashPrefixMap> hash_prefix_map,
           int64_t old_file_size = 0);
   virtual ~V4Store();
 
@@ -227,7 +177,7 @@ class V4Store {
       const std::string& base_metric);
 
  protected:
-  HashPrefixMap hash_prefix_map_;
+  std::unique_ptr<HashPrefixMap> hash_prefix_map_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestReadFromEmptyFile);
@@ -296,6 +246,16 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestChecksumErrorOnStartup);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, WriteToDiskFails);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, FullUpdateFailsChecksumSynchronously);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, VerifyChecksumMmapFile);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, FailedMmapOnRead);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, MigrateToMmap);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, MigrateToInMemory);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, MigrateFileOffsets);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, MigrateToInMemoryFails);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, CleanUpOldFiles);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, FileSizeIncludesHashFiles);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, ReserveSpaceInPrefixMap);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, MergeUpdatesWithMmapHashPrefixMap);
   FRIEND_TEST_ALL_PREFIXES(V4StorePerftest, StressTest);
 
   friend class V4StoreTest;
@@ -325,12 +285,6 @@ class V4Store {
       const IteratorMap& iterator_map,
       HashPrefix* smallest_hash_prefix);
 
-  // Returns true if |hash_prefix| with PrefixSize |size| exists in |prefixes|.
-  // This small method is exposed in the header so it can be tested separately.
-  static bool HashPrefixMatches(base::StringPiece prefix,
-                                const HashPrefixes& prefixes,
-                                const PrefixSize& size);
-
   // For each key in |hash_prefix_map|, sets the iterator at that key
   // |iterator_map| to hash_prefix_map[key].begin().
   static void InitializeIteratorMap(const HashPrefixMap& hash_prefix_map,
@@ -341,7 +295,9 @@ class V4Store {
   // deletions specified in the update because it is non-trivial to calculate
   // those deletions upfront. This isn't so bad since deletions are supposed to
   // be small and infrequent.
-  static void ReserveSpaceInPrefixMap(const HashPrefixMap& other_prefixes_map,
+  static void ReserveSpaceInPrefixMap(const HashPrefixMap& old_map,
+                                      const HashPrefixMap& additions_map,
+                                      size_t removals_count,
                                       HashPrefixMap* prefix_map_to_update);
 
   // Same as the public GetMatchingHashPrefix method, but takes a StringPiece,
@@ -418,6 +374,13 @@ class V4Store {
   // Writes the hash_prefix_map_ to disk as a V4StoreFileFormat proto.
   // |checksum| is used to set the |checksum| field in the final proto.
   StoreWriteResult WriteToDisk(const Checksum& checksum);
+
+  // Same as above but uses a pre-populated |file_format|.
+  StoreWriteResult WriteToDisk(V4StoreFileFormat* file_format);
+
+  // Migrates between in-memory and on-disk file formats.
+  HashPrefixMap::MigrateResult MigrateFileFormatIfNeeded(
+      V4StoreFileFormat* file_format);
 
   // Records the status of the update being applied to the database.
   ApplyUpdateResult last_apply_update_result_ = APPLY_UPDATE_RESULT_MAX;

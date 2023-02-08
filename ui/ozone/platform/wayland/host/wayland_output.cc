@@ -42,10 +42,8 @@ void WaylandOutput::Instantiate(WaylandConnection* connection,
     return;
   }
 
-  auto output = wl::Bind<wl_output>(
-      registry, name,
-      wl::CalculateBindVersion(version, kMaxVersion,
-                               wl_output_interface.version));
+  auto output =
+      wl::Bind<wl_output>(registry, name, std::min(version, kMaxVersion));
   if (!output) {
     LOG(ERROR) << "Failed to bind to wl_output global";
     return;
@@ -118,14 +116,8 @@ void WaylandOutput::Initialize(Delegate* delegate) {
   DCHECK(!delegate_);
   delegate_ = delegate;
   static constexpr wl_output_listener output_listener = {
-      &OutputHandleGeometry,    &OutputHandleMode,
-      &OutputHandleDone,        &OutputHandleScale,
-#ifdef WL_OUTPUT_NAME_SINCE_VERSION
-      &OutputHandleName,
-#endif
-#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
-      &OutputHandleDescription,
-#endif
+      &OutputHandleGeometry, &OutputHandleMode, &OutputHandleDone,
+      &OutputHandleScale,    &OutputHandleName, &OutputHandleDescription,
 
   };
   wl_output_add_listener(output_.get(), &output_listener, this);
@@ -181,8 +173,12 @@ const std::string& WaylandOutput::name() const {
 }
 
 bool WaylandOutput::IsReady() const {
+  // The aura output requires both the logical size and the display ID
+  // to become ready. If a client that uses xdg_output but not aura_output
+  // needs different condition for readiness, this needs to be updated.
   return !physical_size_.IsEmpty() &&
-         (!aura_output_ || aura_output_->IsReady());
+         (!aura_output_ ||
+          (xdg_output_ && xdg_output_->IsReady() && aura_output_->IsReady()));
 }
 
 zaura_output* WaylandOutput::get_zaura_output() {
@@ -207,8 +203,10 @@ void WaylandOutput::TriggerDelegateNotifications() {
       scale_factor_ = max_physical_side / max_logical_side;
     }
   }
-  // Wait until the aura output receives the display id.
-  if (aura_output_ && !aura_output_->IsReady())
+
+  // Wait until the all outputs receives enough information to generate display
+  // information.
+  if (!IsReady())
     return;
 
   delegate_->OnOutputHandleMetrics(GetMetrics());
@@ -266,7 +264,6 @@ void WaylandOutput::OutputHandleScale(void* data,
     wayland_output->scale_factor_ = factor;
 }
 
-#ifdef WL_OUTPUT_NAME_SINCE_VERSION
 // static
 void WaylandOutput::OutputHandleName(void* data,
                                      struct wl_output* wl_output,
@@ -274,9 +271,7 @@ void WaylandOutput::OutputHandleName(void* data,
   if (WaylandOutput* wayland_output = static_cast<WaylandOutput*>(data))
     wayland_output->name_ = name ? std::string(name) : std::string{};
 }
-#endif
 
-#ifdef WL_OUTPUT_DESCRIPTION_SINCE_VERSION
 // static
 void WaylandOutput::OutputHandleDescription(void* data,
                                             struct wl_output* wl_output,
@@ -286,6 +281,5 @@ void WaylandOutput::OutputHandleDescription(void* data,
         description ? std::string(description) : std::string{};
   }
 }
-#endif
 
 }  // namespace ui

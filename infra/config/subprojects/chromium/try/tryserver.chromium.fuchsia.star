@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "reclient")
 load("//lib/consoles.star", "consoles")
 load("//lib/try.star", "try_")
 load("//project.star", "settings")
@@ -14,13 +14,16 @@ try_.defaults.set(
     builder_group = "tryserver.chromium.fuchsia",
     cores = 8,
     orchestrator_cores = 2,
-    compilator_cores = 32,
+    compilator_cores = 8,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J150,
     os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 
     # TODO(crbug.com/1362440): remove this.
@@ -46,6 +49,7 @@ try_.builder(
     mirrors = [
         "ci/fuchsia-arm64-cast-receiver-rel",
     ],
+    goma_backend = None,
 )
 
 try_.builder(
@@ -55,10 +59,10 @@ try_.builder(
     ],
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "fuchsia-arm64-rel",
+    compilator = "fuchsia-arm64-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
     mirrors = [
@@ -69,6 +73,16 @@ try_.builder(
         "weetbix.retry_weak_exonerations": 100,
         "weetbix.enable_weetbix_exonerations": 100,
     },
+)
+
+try_.compilator_builder(
+    name = "fuchsia-arm64-rel-compilator",
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
+    # TODO (gatong): Remove once we've migrated to n2s
+    cores = "8|16",
+    # TODO(crbug.com/1298110): Set to True once compilator bots are moved
+    ssd = None,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -89,6 +103,7 @@ try_.builder(
         },
     },
     tryjob = try_.job(),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -107,45 +122,33 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
 )
 
 try_.builder(
     name = "fuchsia-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
+    goma_backend = None,
 )
 
 try_.builder(
     name = "fuchsia-fyi-arm64-dbg",
     mirrors = ["ci/fuchsia-fyi-arm64-dbg"],
+    goma_backend = None,
 )
 
 try_.builder(
     name = "fuchsia-fyi-x64-dbg",
     mirrors = ["ci/fuchsia-fyi-x64-dbg"],
+    goma_backend = None,
 )
 
-try_.builder(
-    name = "fuchsia-x64-cast-receiver-rel",
-    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    builderless = not settings.is_main,
-    main_list_view = "try",
-    tryjob = try_.job(),
-    mirrors = [
-        "ci/fuchsia-x64-cast-receiver-rel",
-    ],
-    experiments = {
-        "enable_weetbix_queries": 100,
-        "weetbix.retry_weak_exonerations": 100,
-        "weetbix.enable_weetbix_exonerations": 100,
-    },
-)
-
-# TODO(crbug.com/1298111): Replace real builder above once verified
 try_.orchestrator_builder(
-    name = "fuchsia-x64-cast-receiver-rel-orchestrator",
+    name = "fuchsia-x64-cast-receiver-rel",
     compilator = "fuchsia-x64-cast-receiver-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     main_list_view = "try",
+    tryjob = try_.job(),
     mirrors = [
         "ci/fuchsia-x64-cast-receiver-rel",
     ],
@@ -159,9 +162,10 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "fuchsia-x64-cast-receiver-rel-compilator",
     branch_selector = branches.FUCHSIA_LTS_MILESTONE,
-    # TODO(crbug.com/1298111): Change to 16
-    cores = 8,
+    cores = "8|16",
+    ssd = True,
     main_list_view = "try",
+    goma_backend = None,
 )
 
 try_.builder(

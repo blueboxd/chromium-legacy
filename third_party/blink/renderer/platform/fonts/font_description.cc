@@ -51,6 +51,7 @@ struct SameSizeAsFontDescription {
   scoped_refptr<FontFeatureSettings> feature_settings_;
   scoped_refptr<FontVariationSettings> variation_settings_;
   scoped_refptr<FontPalette> palette_;
+  scoped_refptr<FontVariantAlternates> font_variant_alternates_;
   AtomicString locale;
   float sizes[6];
   FontSelectionRequest selection_request_;
@@ -112,6 +113,7 @@ FontDescription::FontDescription()
   fields_.font_synthesis_weight_ = kAutoFontSynthesisWeight;
   fields_.font_synthesis_style_ = kAutoFontSynthesisStyle;
   fields_.font_synthesis_small_caps_ = kAutoFontSynthesisSmallCaps;
+  fields_.variant_position_ = kNormalVariantPosition;
 }
 
 FontDescription::FontDescription(const FontDescription&) = default;
@@ -135,7 +137,9 @@ bool FontDescription::operator==(const FontDescription& other) const {
          (variation_settings_ == other.variation_settings_ ||
           (variation_settings_ && other.variation_settings_ &&
            *variation_settings_ == *other.variation_settings_)) &&
-         base::ValuesEquivalent(font_palette_, other.font_palette_);
+         base::ValuesEquivalent(font_palette_, other.font_palette_) &&
+         base::ValuesEquivalent(font_variant_alternates_,
+                                other.font_variant_alternates_);
 }
 
 // Compute a 'lighter' weight per
@@ -278,7 +282,8 @@ FontCacheKey FontDescription::CacheKey(
   FontCacheKey cache_key(creation_params, EffectiveFontSize(),
                          options | font_selection_request_.GetHash() << 9,
                          device_scale_factor_for_key, variation_settings_,
-                         font_palette_, is_unique_match);
+                         font_palette_, font_variant_alternates_,
+                         is_unique_match);
 #if BUILDFLAG(IS_ANDROID)
   if (const LayoutLocale* locale = Locale()) {
     if (FontCache::GetLocaleSpecificFamilyName(creation_params.Family()))
@@ -689,6 +694,18 @@ String FontDescription::FamilyDescription::ToString() const {
       family.ToString().Ascii().c_str());
 }
 
+String FontDescription::ToString(FontVariantPosition variant_position) {
+  switch (variant_position) {
+    case FontVariantPosition::kNormalVariantPosition:
+      return "Normal";
+    case FontVariantPosition::kSubVariantPosition:
+      return "Sub";
+    case FontVariantPosition::kSuperVariantPosition:
+      return "Super";
+  }
+  return "Unknown";
+}
+
 static const char* ToBooleanString(bool value) {
   return value ? "true" : "false";
 }
@@ -708,7 +725,8 @@ String FontDescription::ToString() const {
       "synthetic_bold=%s, synthetic_italic=%s, subpixel_positioning=%s, "
       "subpixel_ascent_descent=%s, variant_numeric=[%s], "
       "variant_east_asian=[%s], font_optical_sizing=%s, "
-      "font_synthesis_weight=%s, font_synthesis_style=%s",
+      "font_synthesis_weight=%s, font_synthesis_style=%s, "
+      "font_synthesis_small_caps=%s, font_variant_position=%s",
       family_list_.ToString().Ascii().c_str(),
       (feature_settings_ ? feature_settings_->ToString().Ascii().c_str() : ""),
       (variation_settings_ ? variation_settings_->ToString().Ascii().c_str()
@@ -739,7 +757,9 @@ String FontDescription::ToString() const {
       VariantEastAsian().ToString().Ascii().c_str(),
       blink::ToString(FontOpticalSizing()).Ascii().c_str(),
       FontDescription::ToString(GetFontSynthesisWeight()).Ascii().c_str(),
-      FontDescription::ToString(GetFontSynthesisStyle()).Ascii().c_str());
+      FontDescription::ToString(GetFontSynthesisStyle()).Ascii().c_str(),
+      FontDescription::ToString(GetFontSynthesisSmallCaps()).Ascii().c_str(),
+      FontDescription::ToString(VariantPosition()).Ascii().c_str());
 }
 
 }  // namespace blink

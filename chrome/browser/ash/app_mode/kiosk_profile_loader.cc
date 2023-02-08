@@ -15,7 +15,6 @@
 #include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
@@ -90,7 +89,7 @@ class KioskProfileLoader::CryptohomedChecker
     }
 
     const int retry_delay_in_milliseconds = 500 * (1 << retry_count_);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, base::BindOnce(&CryptohomedChecker::StartCheck, AsWeakPtr()),
         base::Milliseconds(retry_delay_in_milliseconds));
   }
@@ -155,8 +154,8 @@ void KioskProfileLoader::Start() {
 }
 
 void KioskProfileLoader::LoginAsKioskAccount() {
-  login_performer_ = std::make_unique<ChromeLoginPerformer>(
-      this, LoginDisplayHost::default_host()->metrics_recorder());
+  login_performer_ =
+      std::make_unique<ChromeLoginPerformer>(this, AuthMetricsRecorder::Get());
   switch (app_type_) {
     case KioskAppType::kArcApp:
       login_performer_->LoginAsArcKioskAccount(account_id_);
@@ -218,9 +217,9 @@ void KioskProfileLoader::PolicyLoadFailed() {
 }
 
 void KioskProfileLoader::OnOldEncryptionDetected(
-    const UserContext& user_context,
+    std::unique_ptr<UserContext> user_context,
     bool has_incomplete_migration) {
-  delegate_->OnOldEncryptionDetected(user_context);
+  delegate_->OnOldEncryptionDetected(std::move(user_context));
 }
 
 void KioskProfileLoader::OnProfilePrepared(Profile* profile,

@@ -21,10 +21,6 @@ namespace safe_browsing {
 // them to the ExperimentalFeaturesList below to start displaying their status
 // on the chrome://safe-browsing page.
 
-BASE_FEATURE(kAccuracyTipsFeature,
-             "AccuracyTips",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAdSamplerTriggerFeature,
              "SafeBrowsingAdSamplerTrigger",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -45,6 +41,10 @@ BASE_FEATURE(kClientSideDetectionReferrerChain,
              "ClientSideDetectionReferrerChain",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist,
+             "SafeBrowsingComponentUpdaterAndroidProtegoAllowlist",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kConnectorsScanningAccessToken,
              "ConnectorsScanningAccessToken",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -52,12 +52,6 @@ BASE_FEATURE(kConnectorsScanningAccessToken,
 BASE_FEATURE(kConnectorsScanningReportOnlyUI,
              "ConnectorsScanningReportOnlyUI",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kCreateSafebrowsingOnStartup,
-             "CreateSafebrowsingOnStartup",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
 
 BASE_FEATURE(kDelayedWarnings,
              "SafeBrowsingDelayedWarnings",
@@ -82,16 +76,6 @@ BASE_FEATURE(kDownloadTailoredWarnings,
              "DownloadTailoredWarnings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnhancedProtection,
-             "SafeBrowsingEnhancedProtection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if BUILDFLAG(IS_IOS)
-BASE_FEATURE(kEnhancedProtectionPhase2IOS,
-             "SafeBrowsingEnhancedProtectionPhase2IOS",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 BASE_FEATURE(kEsbIphBubbleAndCollapseSettings,
              "EsbIphBubbleAndCollapseSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -106,7 +90,7 @@ const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds{
 
 const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval{
     &kExtensionTelemetry, "NumberOfWritesInInterval",
-    /*default_value=*/4};
+    /*default_value=*/1};
 
 BASE_FEATURE(kExtensionTelemetryCookiesGetAllSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetAllSignal",
@@ -144,6 +128,10 @@ BASE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings,
              "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kMmapSafeBrowsingDatabase,
+             "MmapSafeBrowsingDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNestedArchives,
              "SafeBrowsingArchiveImprovements",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -166,7 +154,7 @@ BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
 
 BASE_FEATURE(kSafeBrowsingCsbrrWithToken,
              "SafeBrowsingCsbrrWithToken",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise,
              "SafeBrowsingDisableConsumerCsdForEnterprise",
@@ -211,7 +199,7 @@ BASE_FEATURE(kThreatDomDetailsTagAndAttributeFeature,
 
 BASE_FEATURE(kVisualFeaturesForReusePings,
              "VisualFeaturesInReusePings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kVisualFeaturesSizes,
              "VisualFeaturesSizes",
@@ -226,45 +214,45 @@ constexpr struct {
   // True if the feature's state should be listed on chrome://safe-browsing.
   bool show_state;
 } kExperimentalFeatures[]{
-  {&kAccuracyTipsFeature, true}, {&kAdSamplerTriggerFeature, false},
-      {&kClientSideDetectionKillswitch, true},
-      {&kClientSideDetectionModelIsFlatBuffer, true},
-      {&kClientSideDetectionReferrerChain, true},
-      {&kConnectorsScanningAccessToken, true},
-      {&kConnectorsScanningReportOnlyUI, true},
-#if BUILDFLAG(IS_ANDROID)
-      {&kCreateSafebrowsingOnStartup, true},
-#endif
-      {&kDelayedWarnings, true}, {&kDownloadBubble, true},
-      {&kDownloadBubbleV2, true}, {&kDownloadTailoredWarnings, true},
-      {&kEnhancedProtection, true},
-#if BUILDFLAG(IS_IOS)
-      {&kEnhancedProtectionPhase2IOS, true},
-#endif
-      {&kExtensionTelemetry, true},
-      {&kExtensionTelemetryCookiesGetAllSignal, true},
-      {&kExtensionTelemetryCookiesGetSignal, true},
-      {&kExtensionTelemetryPersistence, true},
-      {&kExtensionTelemetryPotentialPasswordTheft, true},
-      {&kExtensionTelemetryReportContactedHosts, true},
-      {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
-      {&kExtensionTelemetryTabsExecuteScriptSignal, true},
-      {&kFileTypePoliciesTag, true},
-      {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
-      {&kNestedArchives, true}, {&kOmitNonUserGesturesFromReferrerChain, true},
-      {&kRealTimeUrlFilteringForEnterprise, true},
-      {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
-      {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
-      {&kSafeBrowsingCsbrrWithToken, true},
-      {&kSafeBrowsingDisableConsumerCsdForEnterprise, true},
-      {&kSafeBrowsingEnterpriseCsd, true},
-      {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
-      {&kSevenZipEvaluationEnabled, true}, {&kSimplifiedUrlDisplay, true},
-      {&kSuspiciousSiteTriggerQuotaFeature, true},
-      {&kTailoredSecurityDesktopNotice, true},
-      {&kTailoredSecurityIntegration, true},
-      {&kThreatDomDetailsTagAndAttributeFeature, false},
-      {&kVisualFeaturesForReusePings, true}, {&kVisualFeaturesSizes, true},
+    {&kAdSamplerTriggerFeature, false},
+    {&kClientSideDetectionKillswitch, true},
+    {&kClientSideDetectionModelIsFlatBuffer, true},
+    {&kClientSideDetectionReferrerChain, true},
+    {&kComponentUpdaterAndroidProtegoAllowlist, true},
+    {&kConnectorsScanningAccessToken, true},
+    {&kConnectorsScanningReportOnlyUI, true},
+    {&kDelayedWarnings, true},
+    {&kDownloadBubble, true},
+    {&kDownloadBubbleV2, true},
+    {&kDownloadTailoredWarnings, true},
+    {&kExtensionTelemetry, true},
+    {&kExtensionTelemetryCookiesGetAllSignal, true},
+    {&kExtensionTelemetryCookiesGetSignal, true},
+    {&kExtensionTelemetryPersistence, true},
+    {&kExtensionTelemetryPotentialPasswordTheft, true},
+    {&kExtensionTelemetryReportContactedHosts, true},
+    {&kExtensionTelemetryReportHostsContactedViaWebSocket, true},
+    {&kExtensionTelemetryTabsExecuteScriptSignal, true},
+    {&kFileTypePoliciesTag, true},
+    {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
+    {&kMmapSafeBrowsingDatabase, true},
+    {&kNestedArchives, true},
+    {&kOmitNonUserGesturesFromReferrerChain, true},
+    {&kRealTimeUrlFilteringForEnterprise, true},
+    {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
+    {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
+    {&kSafeBrowsingCsbrrWithToken, true},
+    {&kSafeBrowsingDisableConsumerCsdForEnterprise, true},
+    {&kSafeBrowsingEnterpriseCsd, true},
+    {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
+    {&kSevenZipEvaluationEnabled, true},
+    {&kSimplifiedUrlDisplay, true},
+    {&kSuspiciousSiteTriggerQuotaFeature, true},
+    {&kTailoredSecurityDesktopNotice, true},
+    {&kTailoredSecurityIntegration, true},
+    {&kThreatDomDetailsTagAndAttributeFeature, false},
+    {&kVisualFeaturesForReusePings, true},
+    {&kVisualFeaturesSizes, true},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

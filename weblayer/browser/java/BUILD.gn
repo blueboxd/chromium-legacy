@@ -21,7 +21,6 @@ jinja_template("weblayer_bundle_utils") {
 android_resources("weblayer_resources") {
   sources = [
     "res/drawable/weblayer_tab_indicator.xml",
-    "res/layout/settings_layout.xml",
     "res/layout/weblayer_infobar_translate_compact_content.xml",
     "res/values-night/styles.xml",
     "res/values/colors.xml",
@@ -83,7 +82,6 @@ java_strings_grd("weblayer_strings_grd") {
 
 java_cpp_enum("generated_enums") {
   sources = [
-    "//weblayer/browser/controls_visibility_reason.h",
     "//weblayer/public/download.h",
     "//weblayer/public/navigation.h",
     "//weblayer/public/new_tab_delegate.h",
@@ -118,7 +116,6 @@ android_library("java") {
   sources = [
     "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
-    "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserFragmentImpl.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserList.java",
@@ -178,10 +175,6 @@ android_library("java") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebShareServiceFactory.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
-    "org/chromium/weblayer_private/autofill_assistant/WebLayerAssistantBrowserControls.java",
-    "org/chromium/weblayer_private/autofill_assistant/WebLayerAssistantDependencies.java",
-    "org/chromium/weblayer_private/autofill_assistant/WebLayerAssistantStaticDependencies.java",
-    "org/chromium/weblayer_private/autofill_assistant/WebLayerAssistantTabChangeObserver.java",
     "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
     "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouteDialogFragmentImpl.java",
@@ -195,7 +188,6 @@ android_library("java") {
     "org/chromium/weblayer_private/payments/WebLayerPaymentRequestService.java",
     "org/chromium/weblayer_private/permissions/PermissionRequestUtils.java",
     "org/chromium/weblayer_private/resources/ResourceMapper.java",
-    "org/chromium/weblayer_private/settings/SettingsFragmentImpl.java",
     "org/chromium/weblayer_private/settings/WebLayerAccessibilitySettingsDelegate.java",
     "org/chromium/weblayer_private/settings/WebLayerSiteSettingsDelegate.java",
     _bundle_utils_output,
@@ -214,7 +206,6 @@ android_library("java") {
     "//build/android:build_java",
     "//cc:cc_java",
     "//components/android_autofill/browser:java",
-    "//components/autofill_assistant/android:public_dependencies_java",
     "//components/browser_ui/accessibility/android:java",
     "//components/browser_ui/banners/android:java",
     "//components/browser_ui/bottomsheet/android:factory_java",
@@ -350,12 +341,6 @@ java_group("upstream_java") {
   ]
 }
 
-generate_jni_registration("weblayer_jni_registration") {
-  targets = [ ":java" ]
-  header_output = "$target_gen_dir/$target_name.h"
-  namespace = "weblayer"
-}
-
 android_resources("weblayer_test_resources") {
   sources = [
     "res_test/layout/test_layout.xml",
@@ -461,11 +446,19 @@ robolectric_binary("weblayer_junit_tests") {
   ]
 }
 
-generate_jni_registration("test_weblayer_jni_registration") {
-  testonly = true
-  targets = [ ":test_java" ]
-  header_output = "$target_gen_dir/$target_name.h"
-  namespace = "weblayer_test"
+if (current_toolchain == default_toolchain) {
+  generate_jni_registration("weblayer_jni_registration") {
+    targets = [ ":java" ]
+    manual_jni_registration = true
+    namespace = "weblayer"
+  }
+
+  generate_jni_registration("test_weblayer_jni_registration") {
+    testonly = true
+    targets = [ ":test_java" ]
+    manual_jni_registration = true
+    namespace = "weblayer_test"
+  }
 }
 
 generate_jni("test_jni") {
@@ -480,7 +473,6 @@ generate_jni("jni") {
   sources = [
     "org/chromium/weblayer_private/ApplicationInfoHelper.java",
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
-    "org/chromium/weblayer_private/BrowserControlsContainerView.java",
     "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/BrowserList.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -512,7 +504,6 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/WebappsHelper.java",
-    "org/chromium/weblayer_private/autofill_assistant/WebLayerAssistantStaticDependencies.java",
     "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothChooserAndroidDelegate.java",
     "org/chromium/weblayer_private/bluetooth/WebLayerBluetoothScanningPromptAndroidDelegate.java",
     "org/chromium/weblayer_private/media/MediaRouterClientImpl.java",
@@ -560,8 +551,6 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/RestrictedAPIException.java",
     "org/chromium/weblayer_private/interfaces/ScrollNotificationType.java",
     "org/chromium/weblayer_private/interfaces/SettingType.java",
-    "org/chromium/weblayer_private/interfaces/SettingsFragmentArgs.java",
-    "org/chromium/weblayer_private/interfaces/SettingsIntentHelper.java",
     "org/chromium/weblayer_private/interfaces/WebLayerVersionConstants.java",
   ]
 
@@ -649,8 +638,6 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/IProfile.aidl",
     "org/chromium/weblayer_private/interfaces/IProfileClient.aidl",
     "org/chromium/weblayer_private/interfaces/IRemoteFragment.aidl",
-    "org/chromium/weblayer_private/interfaces/ISettingsFragment.aidl",
-    "org/chromium/weblayer_private/interfaces/ISiteSettingsFragment.aidl",
     "org/chromium/weblayer_private/interfaces/ITab.aidl",
     "org/chromium/weblayer_private/interfaces/ITabClient.aidl",
     "org/chromium/weblayer_private/interfaces/IUserIdentityCallbackClient.aidl",

@@ -128,9 +128,7 @@ MojoResult MojoQueryHandleSignalsStateIpcz(
 
   auto* data_pipe = ipcz_driver::DataPipe::FromBox(handle);
   if (data_pipe) {
-    if (!data_pipe->GetSignals(*signals_state)) {
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    }
+    *signals_state = data_pipe->GetSignals();
     return MOJO_RESULT_OK;
   }
 

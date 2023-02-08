@@ -9,12 +9,14 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pending_task.h"
+#include "base/process/current_process.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -28,6 +30,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/partition_alloc_support.h"
 #include "content/common/skia_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -71,6 +74,10 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/system/core_scheduling.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "content/renderer/renderer_thread_type_handler.h"
+#endif
 
 #if BUILDFLAG(ENABLE_PPAPI)
 #include "content/renderer/pepper/pepper_plugin_registry.h"
@@ -133,7 +140,8 @@ int RendererMain(MainFunctionParams parameters) {
   // expect synchronous events around the main loop of a thread.
   TRACE_EVENT_INSTANT0("startup", "RendererMain", TRACE_EVENT_SCOPE_THREAD);
 
-  base::trace_event::TraceLog::GetInstance()->set_process_name("Renderer");
+  base::CurrentProcess::GetInstance().SetProcessType(
+      base::CurrentProcessType::PROCESS_RENDERER);
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
@@ -246,6 +254,15 @@ int RendererMain(MainFunctionParams parameters) {
       if (client) {
         client->PostSandboxInitialized();
       }
+    }
+#endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    // Thread type delegate of the process should be registered before
+    // first thread type change in ChildProcess constructor.
+    if (base::FeatureList::IsEnabled(
+            features::kHandleRendererThreadTypeChangesInBrowser)) {
+      RendererThreadTypeHandler::Create();
     }
 #endif
 

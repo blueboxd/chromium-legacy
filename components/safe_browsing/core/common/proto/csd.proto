@@ -238,7 +238,11 @@ message ClientPhishingRequest {
   // users.
   optional VisualFeatures visual_features = 26;
 
-  // next available tag number: 28.
+  // Carried over from realtime API response, this is used to identify cases
+  // where the scoring from protego requested this request.
+  optional ClientSideDetectionType client_side_detection_type = 28;
+
+  // next available tag number: 29.
 }
 
 message ClientPhishingResponse {
@@ -1107,6 +1111,12 @@ message ReferrerChainEntry {
   // next available tag number: 15.
 }  // End of ReferrerChainEntry
 
+enum ClientSideDetectionType {
+  CLIENT_SIDE_DETECTION_TYPE_UNSPECIFIED = 0;
+  // Send a CSD request regardless of the client side model's score values.
+  FORCE_REQUEST = 1;
+}
+
 message ClientDownloadResponse {
   enum Verdict {
     // Download is considered safe.
@@ -1596,7 +1606,7 @@ message ClientSafeBrowsingReportRequest {
   }
   optional SafeBrowsingClientProperties client_properties = 17;
 
-  // Only set if report type is DANGEROUS_DOWNLOAD_EXECUTION.
+  // Only set if report type is DANGEROUS_DOWNLOAD_OPENED.
   // True means user opened the folder where this download is in via browser.
   // False means user directly executed this download via download shelf or
   // other download UIs.
@@ -1642,7 +1652,7 @@ message ClientSafeBrowsingReportRequest {
     // go/chrome-download-warning-surfaces for details.
     enum Surface {
       SURFACE_UNSPECIFIED = 0;
-      // Applicable actions: DISCARD
+      // Applicable actions: DISCARD, OPEN_SUBPAGE
       BUBBLE_MAINPAGE = 1;
       // Applicable actions: PROCEED, DISCARD, DISMISS, CLOSE, BACK
       BUBBLE_SUBPAGE = 2;
@@ -1673,6 +1683,8 @@ message ClientSafeBrowsingReportRequest {
       // The user has clicked the back button on the bubble subpage to go back
       // to the bubble main page.
       BACK = 7;
+      // The user has opened the subpage from the main page.
+      OPEN_SUBPAGE = 8;
     }
     optional Action action = 2;
 
@@ -1820,6 +1832,21 @@ message ExtensionTelemetryReportRequest {
     // Bit positions are defined in extensions::disable_reason::DisableReason
     // (located in //extensions/browser/disable_reason.h)
     optional uint32 disable_reasons = 13;
+
+    // Manifest.json file associated with the extension. Only populated for
+    // off-store extensions.
+    optional string manifest_json = 14;
+
+    // Extension file names and hashes.
+    message FileInfo {
+      // Extension file name.
+      optional string name = 1;
+      // Extension file hash calculated with SHA256.
+      optional bytes hash = 2;
+    }
+
+    // Only populated for off-store extensions.
+    repeated FileInfo file_infos = 15;
   }
 
   // Information about the various telemetry signals.

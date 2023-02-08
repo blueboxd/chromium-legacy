@@ -12,8 +12,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_backend_client.h"
@@ -21,7 +21,6 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/sync/model/data_batch.h"
-#include "components/sync/model/sync_metadata_store.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
@@ -256,6 +255,7 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
   TestHistoryBackendDelegate& operator=(const TestHistoryBackendDelegate&) =
       delete;
 
+  bool CanAddURL(const GURL& url) const override { return true; }
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override {}
   void SetInMemoryBackend(
@@ -270,9 +270,6 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
                                       KeywordID keyword_id,
                                       const std::u16string& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
-  void NotifyContentModelAnnotationModified(
-      const URLRow& row,
-      const VisitContentModelAnnotations& model_annotations) override {}
   void DBLoaded() override {}
 };
 
@@ -282,7 +279,7 @@ class TestHistoryBackendForSync : public HistoryBackend {
       std::unique_ptr<HistoryBackendClient> backend_client)
       : HistoryBackend(std::make_unique<TestHistoryBackendDelegate>(),
                        std::move(backend_client),
-                       base::ThreadTaskRunnerHandle::Get()) {}
+                       base::SingleThreadTaskRunner::GetCurrentDefault()) {}
 
   bool IsExpiredVisitTime(const Time& time) const override {
     return time.ToDeltaSinceWindowsEpoch().InMicroseconds() == kExpiredVisit;

@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/user_agent.h"
+#include "extensions/browser/api/core_extensions_browser_api_provider.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/null_app_sorting.h"
@@ -35,7 +35,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #endif
 
 using content::BrowserContext;
@@ -118,9 +118,9 @@ content::BrowserContext* ShellExtensionsBrowserClient::GetRegularProfile(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 std::string ShellExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
-  if (!chromeos::LoginState::IsInitialized())
+  if (!ash::LoginState::IsInitialized())
     return "";
-  return chromeos::LoginState::Get()->primary_user_hash();
+  return ash::LoginState::Get()->primary_user_hash();
 }
 #endif
 

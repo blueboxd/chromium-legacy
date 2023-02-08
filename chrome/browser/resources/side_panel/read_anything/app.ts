@@ -23,13 +23,13 @@ const ReadAnythingElementBase = WebUiListenerMixin(PolymerElement);
 // check if chrome.readAnything exists prevents runtime errors when the feature
 // is disabled.
 if (chrome.readAnything) {
-  chrome.readAnything.updateContent = function() {
+  chrome.readAnything.updateContent = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateContent();
   };
 
-  chrome.readAnything.updateTheme = function() {
+  chrome.readAnything.updateTheme = () => {
     const readAnythingApp = document.querySelector('read-anything-app');
     assert(readAnythingApp);
     readAnythingApp.updateTheme();
@@ -89,12 +89,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     const url = chrome.readAnything.getUrl(nodeId);
     if (url && element.nodeName === 'A') {
       element.setAttribute('href', url);
-      element.onclick = function(e) {
-        if (e.target !== e.currentTarget) {
-          throw new Error(
-              'Target ' + e.target + ' does not match current target ' +
-              e.currentTarget);
-        }
+      element.onclick = () => {
         chrome.readAnything.onLinkClicked(nodeId);
       };
     }
@@ -134,11 +129,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     // would create a shadow node element representing each AXNode, because
     // experimentation found the shadow node creation to be ~8-10x slower than
     // constructing and appending nodes directly to the container element.
-    const displayRootId = chrome.readAnything.displayRootId;
-    if (!displayRootId) {
+    const rootId = chrome.readAnything.rootId;
+    if (!rootId) {
       return;
     }
-    const node = this.buildSubtree_(displayRootId);
+    const node = this.buildSubtree_(rootId);
     container.appendChild(node);
   }
 

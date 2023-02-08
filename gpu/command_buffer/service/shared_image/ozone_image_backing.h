@@ -12,7 +12,6 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -70,7 +69,8 @@ class OzoneImageBacking final : public ClearTrackingSharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device,
-      WGPUBackendType backend_type) override;
+      WGPUBackendType backend_type,
+      std::vector<WGPUTextureFormat> view_formats) override;
   std::unique_ptr<GLTextureImageRepresentation> ProduceGLTexture(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override;
@@ -120,8 +120,8 @@ class OzoneImageBacking final : public ClearTrackingSharedImageBacking {
 
   scoped_refptr<gfx::NativePixmap> pixmap_;
   scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
-  scoped_refptr<GLOzoneImageRepresentationShared::TextureHolder>
-      cached_texture_holder_;
+  std::vector<scoped_refptr<GLOzoneImageRepresentationShared::TextureHolder>>
+      cached_texture_holders_;
 
   // Write fence that is external and does not do Begin/EndAccess (eg. exo)
   gfx::GpuFenceHandle external_write_fence_;

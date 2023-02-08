@@ -40,13 +40,17 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/modules/skcms/skcms.h"
 
 class SkColorSpace;
+
+namespace gfx {
+struct HDRMetadata;
+}  // namespace gfx
 
 namespace blink {
 
@@ -212,6 +216,7 @@ class PLATFORM_EXPORT ImageDecoder {
       AnimationOption animation_option = AnimationOption::kUnspecified);
 
   virtual String FilenameExtension() const = 0;
+  virtual const AtomicString& MimeType() const = 0;
 
   bool IsAllDataReceived() const { return is_all_data_received_; }
 
@@ -292,6 +297,11 @@ class PLATFORM_EXPORT ImageDecoder {
   // Note: If an implementation advertises a bit depth > 8 it must support both
   // kA16_unorm_SkColorType and kA16_float_SkColorType ImagePlanes.
   virtual uint8_t GetYUVBitDepth() const { return 8; }
+
+  // Image decoders that support HDR metadata can override this.
+  virtual absl::optional<gfx::HDRMetadata> GetHDRMetadata() const {
+    return absl::nullopt;
+  }
 
   // Returns the information required to decide whether or not hardware
   // acceleration can be used to decode this image. Callers of this function

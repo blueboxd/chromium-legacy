@@ -8,14 +8,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/debug/stack_trace.h"
-#include "base/format_macros.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/strings/abseil_string_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/socket/stream_socket.h"
@@ -117,7 +115,7 @@ class Http2Connection::DataFrameSource
 
  private:
   const raw_ptr<Http2Connection> connection_;
-  const raw_ref<const StreamId> stream_id_;
+  const raw_ref<const StreamId, DanglingUntriaged> stream_id_;
   std::queue<std::string> chunks_;
   bool last_frame_ = false;
   base::OnceClosure send_completion_callback_;
@@ -253,15 +251,12 @@ bool Http2Connection::HandleData(int rv) {
   if (connection_listener_)
     connection_listener_->ReadFromSocket(*socket_, rv);
 
-  char* remaining_buffer = read_buf_->data();
-  int bytes_remaining = rv;
-  while (bytes_remaining > 0) {
-    int result = adapter_->ProcessBytes(
-        absl::string_view(remaining_buffer, bytes_remaining));
+  absl::string_view remaining_buffer(read_buf_->data(), rv);
+  while (!remaining_buffer.empty()) {
+    int result = adapter_->ProcessBytes(remaining_buffer);
     if (result < 0)
       return false;
-    remaining_buffer += result;
-    bytes_remaining -= result;
+    remaining_buffer = remaining_buffer.substr(result);
   }
 
   // Any frames and data sources will be queued up and sent all at once below
@@ -350,7 +345,7 @@ void Http2Connection::OnSendInternalDone(int rv) {
       adapter_->ResumeStream(stream_id);
 
     if (adapter_->want_write()) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&Http2Connection::SendIfNotProcessing,
                                     weak_factory_.GetWeakPtr()));
     }
@@ -377,11 +372,11 @@ bool Http2Connection::OnEndHeadersForStream(
     http2::adapter::Http2StreamId stream_id) {
   HttpRequest::HeaderMap header_map = header_map_[stream_id];
   auto request = std::make_unique<HttpRequest>();
+  // TODO(crbug.com/1375303): Handle proxy cases.
   request->relative_url = header_map[":path"];
   request->base_url = GURL(header_map[":authority"]);
   request->method_string = header_map[":method"];
-  request->method = HttpRequestParser::GetMethodType(
-      base::ToLowerASCII(request->method_string));
+  request->method = HttpRequestParser::GetMethodType(request->method_string);
   request->headers = header_map;
 
   request->has_content = false;
@@ -394,8 +389,9 @@ bool Http2Connection::OnEndHeadersForStream(
   return true;
 }
 
-void Http2Connection::OnEndStream(http2::adapter::Http2StreamId stream_id) {
+bool Http2Connection::OnEndStream(http2::adapter::Http2StreamId stream_id) {
   ready_streams_.push(stream_id);
+  return true;
 }
 
 bool Http2Connection::OnFrameHeader(StreamId /*stream_id*/,
@@ -416,11 +412,21 @@ bool Http2Connection::OnBeginDataForStream(StreamId stream_id,
 
 bool Http2Connection::OnDataForStream(StreamId stream_id,
                                       absl::string_view data) {
+  auto request = request_map_.find(stream_id);
+  if (request == request_map_.end()) {
+    // We should not receive data before receiving headers.
+    return false;
+  }
+
+  request->second->has_content = true;
+  request->second->content.append(data.data(), data.size());
+  adapter_->MarkDataConsumedForStream(stream_id, data.size());
   return true;
 }
 
 bool Http2Connection::OnDataPaddingLength(StreamId stream_id,
                                           size_t padding_length) {
+  adapter_->MarkDataConsumedForStream(stream_id, padding_length);
   return true;
 }
 

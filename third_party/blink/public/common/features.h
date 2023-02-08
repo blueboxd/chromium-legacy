@@ -77,14 +77,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFullUserAgent);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIs);
 
-enum class FencedFramesImplementationType {
-  kShadowDOM,
-  kMPArch,
-};
-BLINK_COMMON_EXPORT extern const base::FeatureParam<
-    FencedFramesImplementationType>
-    kFencedFramesImplementationTypeParam;
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
 // runURLSelectionOperation().
@@ -119,19 +111,19 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageBudgetInterval;
 // Initial interval from service startup after which
-// SharedStorageManager first checks for any stale origins, purging any that it
+// SharedStorageManager first checks for any stale entries, purging any that it
 // finds.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
-    kSharedStorageStaleOriginPurgeInitialInterval;
+    kSharedStorageStalePurgeInitialInterval;
 // Second and subsequent intervals from service startup after
-// which SharedStorageManager checks for any stale origins, purging any that it
+// which SharedStorageManager checks for any stale entries, purging any that it
 // finds.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
-    kSharedStorageStaleOriginPurgeRecurringInterval;
-// Length of time between origin creation and origin expiration. When an
-// origin's data is older than this threshold, it will be auto-purged.
+    kSharedStorageStalePurgeRecurringInterval;
+// Length of time between last key write access and key expiration. When an
+// entry's data is older than this threshold, it will be auto-purged.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
-    kSharedStorageOriginStalenessThreshold;
+    kSharedStorageStalenessThreshold;
 // Maximum depth of fenced frame where sharedStorage.selectURL() is allowed to
 // be invoked. The depth of a fenced frame is the number of the fenced frame
 // boundaries above that frame (i.e. the outermost main frame's frame tree has
@@ -174,8 +166,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // Enables to keep prerenderings alive in the background when their visibility
 // state changes to HIDDEN.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InBackground);
-// Returns true when Prerender2 feature is enabled.
-BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
+// Enables to run prerendering for new tabs (e.g., target="_blank").
+// See https://crbug.com/1350676.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
 // Returns true when the same-site cross origin Prerender2 feature is
 // enabled.
 BLINK_COMMON_EXPORT bool
@@ -186,17 +179,6 @@ BLINK_COMMON_EXPORT bool OSKResizesVisualViewportByDefault();
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
-// Note: This performs a string comparison on the feature param which is slow.
-// When possible, prefer to use the equivalent accessors on blink::Page in the
-// renderer and on content::FrameTree in the browser, which cache the value.
-BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
-BLINK_COMMON_EXPORT bool IsFencedFramesShadowDOMBased();
-
-// Whether we will create initial NavigationEntry or not on FrameTree creation,
-// which also impacts the session history replacement decisions made in the
-// renderer.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInitialNavigationEntry);
-BLINK_COMMON_EXPORT bool IsInitialNavigationEntryEnabled();
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kPreviewsResourceLoadingHintsSpecificResourceTypes);
@@ -276,6 +258,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDispatchBeforeUnloadOnFreeze);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLowLatencyCanvas2dImageChromium);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDiscardCodeCacheAfterFirstUse);
 
@@ -380,15 +364,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLoadingTasksUnfreezable);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTargetBlankImpliesNoOpener);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kMediaStreamTrackUseConfigMaxFrameRate);
-
 // Performs additional SubresourceFilter checks when CNAME aliases are found
 // for the host of a requested URL.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kSendCnameAliasesToSubresourceFilterFromRenderer);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisableDocumentDomainByDefault);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScopeMemoryCachePerContext);
 
@@ -399,16 +378,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEnablePenetratingImageSelection);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackgroundTracingPerformanceMark);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSanitizerAPINamespaces);
-
-// Kill switch for the blocking of the navigation of top from a cross origin
-// iframe to a different scheme. TODO(https://crbug.com/1151507): Remove in
-// M92.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kBlockCrossOriginTopNavigationToDiffentScheme);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kJXL);
 
 // Main controls for ad serving API features.
 //
@@ -423,6 +392,15 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInterestGroupStorageMaxOpsBeforeMaintenance;
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
+
+// Configures FLEDGE to consider k-anononymity. If both
+// kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
+// enforced; if only kFledgeConsiderKAnonymity is on it will be simulated.
+//
+// Turning on kFledgeEnforceKAnonymity alone does nothing.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeConsiderKAnonymity);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeEnforceKAnonymity);
+
 // Runtime flag that changes default Permissions Policy for features
 // join-ad-interest-group and run-ad-auction to a more restricted EnableForSelf.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -484,14 +462,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCORSErrorsIssueOnly);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kDelayLowPriorityRequestsAccordingToNetworkState);
 
-// When enabled, this turns off an LCP calculation optimization that's ignoring
-// initially invisible images, and resulting in LCP correctness issues. See
-// https://crbug.com/1249622
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIncludeInitiallyInvisibleImagesInLCP);
-
-// When enabled, this includes SVG background images in LCP calculation.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIncludeBackgroundSVGInLCP);
-
 // Number of the requests that can be handled in the tight mode.
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
@@ -525,12 +495,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsViewportWidth_DEPRECATED);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSetTimeoutWithoutClamp);
-// window.setTimeout() has a feature to remove 1ms clamp to improve performance
-// and battery life. Enterprise policy can override this to control the feature.
-// Normally, the result of this feature calculation is cached; allow tests
-// to clear the cache to recompute the feature value.
-BLINK_COMMON_EXPORT void
-ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMaxUnthrottledTimeoutNestingLevel);
@@ -547,10 +511,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTabSwitchMetrics2);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPAnimatedImagesReporting);
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyBodyLoad);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyCodeCache);
-
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
 // requesting an origin agent cluster, but in the same process.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultEnabled);
@@ -560,16 +520,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultEnabled);
 // (This is a transitory behaviour on the road to perma-enabling
 // kOriginAgentClusterDefaultEnabled above.)
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kOriginAgentClusterDefaultWarning);
-
-#if BUILDFLAG(IS_ANDROID)
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrefetchAndroidFonts);
-#endif
-
-// Allows pages that support App Install Banners to stay eligible for the
-// back/forward cache.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheAppBanner);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDefaultStyleSheetsEarlyInit);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSystemColorChooser);
 
@@ -982,6 +932,38 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSplitUserMediaQueues);
 // Use TextCodecCJK for encoding/decoding CJK except for Big5.
 // If the flag is disabled TextCodecICU would be used instead.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTextCodecCJKEnabled);
+
+// Make the browser decide when to turn on the capture indicator (red button)
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kStartMediaStreamCaptureIndicatorInBrowser);
+
+// Causes MediaStreamVideoSource video frames to be transported on a
+// SequencedTaskRunner backed by the threadpool instead of the normal IO thread.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kUseThreadPoolForMediaStreamVideoTaskRunner);
+
+// Forces same-process display:none cross-origin iframes to be throttled in the
+// same manner that OOPIFs are.
+// Note: this feature should never be accessed directly. Instead, use
+// IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled defined
+// below.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes);
+
+// Use to determine if iframe throttling is enabled via the feature
+// kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes and not disabled
+// via enterprise policy.
+BLINK_COMMON_EXPORT bool
+IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled();
+
+// Allows certain origin trials to be enabled using third-party tokens
+// associated with the origin of external speculation rules.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kSpeculationRulesHeaderEnableThirdPartyOriginTrial);
+
+// Controls whether the SpeculationRulesPrefetchFuture origin trial can be
+// enabled.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculationRulesPrefetchFuture);
 
 }  // namespace features
 }  // namespace blink

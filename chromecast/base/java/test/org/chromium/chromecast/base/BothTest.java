@@ -14,13 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
-import org.chromium.base.Consumer;
-import org.chromium.base.Function;
 import org.chromium.chromecast.base.Inheritance.Base;
 import org.chromium.chromecast.base.Inheritance.Derived;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Tests for Both.

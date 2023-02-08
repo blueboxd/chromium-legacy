@@ -14,10 +14,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
@@ -76,7 +77,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
     if (!db_)
       return;
     if (async) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&IndexedDBDatabaseTest::RunTasksForDatabase,
                                     weak_factory_.GetWeakPtr(), false));
       return;
@@ -189,9 +190,9 @@ class MockCallbacks : public IndexedDBCallbacks {
  public:
   MockCallbacks()
       : IndexedDBCallbacks(nullptr,
-                           storage::BucketLocator(),
+                           absl::nullopt,
                            mojo::NullAssociatedRemote(),
-                           base::ThreadTaskRunnerHandle::Get()) {}
+                           base::SingleThreadTaskRunner::GetCurrentDefault()) {}
 
   MockCallbacks(const MockCallbacks&) = delete;
   MockCallbacks& operator=(const MockCallbacks&) = delete;
@@ -517,7 +518,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     if (!db_)
       return;
     if (async) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&IndexedDBDatabaseOperationTest::RunTasksForDatabase,
                          base::Unretained(this), false));

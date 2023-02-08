@@ -52,11 +52,11 @@ std::string FieldTrialParamsRetrieverImpl::GetFieldTrialParamValueByFeature(
 
 ImeService::ImeService(
     mojo::PendingReceiver<mojom::ImeService> receiver,
-    ImeDecoder* ime_decoder,
+    ImeSharedLibraryWrapper* ime_shared_library_wrapper,
     std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever)
     : receiver_(this, std::move(receiver)),
-      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      ime_decoder_(ime_decoder),
+      main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
+      ime_shared_library_(ime_shared_library_wrapper),
       field_trial_params_retriever_(std::move(field_trial_params_retriever)) {}
 
 ImeService::~ImeService() = default;
@@ -101,20 +101,10 @@ void ImeService::ConnectToImeEngine(
   ResetAllBackendConnections();
 
   decoder_engine_ = std::make_unique<DecoderEngine>(
-      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
+      this, ime_shared_library_->MaybeLoadThenReturnEntryPoints());
   bool bound = decoder_engine_->BindRequest(
       ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
   std::move(callback).Run(bound);
-}
-
-void ImeService::ConnectToInputMethod(
-    const std::string& ime_spec,
-    mojo::PendingReceiver<mojom::InputMethod> input_method,
-    mojo::PendingRemote<mojom::InputMethodHost> input_method_host,
-    ConnectToInputMethodCallback callback) {
-  // This method is now deprecated and should not be used to connect to an
-  // input method.
-  std::move(callback).Run(/*bound=*/false);
 }
 
 void ImeService::InitializeConnectionFactory(
@@ -132,7 +122,7 @@ void ImeService::InitializeConnectionFactory(
     }
     case mojom::ConnectionTarget::kImeServiceLib: {
       system_engine_ = std::make_unique<SystemEngine>(
-          this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
+          this, ime_shared_library_->MaybeLoadThenReturnEntryPoints());
       bool bound =
           system_engine_->BindConnectionFactory(std::move(connection_factory));
       std::move(callback).Run(bound);
@@ -167,39 +157,42 @@ void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
 // base::Feature::name (instead of slightly-different bespoke names), and always
 // wire 1:1 to CrOS feature flags (instead of having any extra logic).
 bool ImeService::IsFeatureEnabled(const char* feature_name) {
-  if (strcmp(feature_name, "AssistiveEmojiEnhanced") == 0) {
-    return base::FeatureList::IsEnabled(
-        chromeos::features::kAssistEmojiEnhanced);
+  // TODO(b/218815885): Replace refs of AssistiveEmojiEnhanced with
+  // AssistEmojiEnhanced in internal code for consistency.
+  // Then remove the AssistiveEmojiEnhanced check.
+  if (strcmp(feature_name, "AssistiveEmojiEnhanced") == 0 ||
+      strcmp(feature_name, features::kAssistEmojiEnhanced.name) == 0) {
+    return base::FeatureList::IsEnabled(features::kAssistEmojiEnhanced);
   }
-  if (strcmp(feature_name, "AssistiveMultiWord") == 0) {
-    return chromeos::features::IsAssistiveMultiWordEnabled();
+  // TODO(b/218815885): Replace refs of AssistiveMultiWord with
+  // AssistMultiWord in internal code for consistency.
+  // Then remove the AssistiveMultiWord check.
+  if (strcmp(feature_name, "AssistiveMultiWord") == 0 ||
+      strcmp(feature_name, features::kAssistMultiWord.name) == 0) {
+    return features::IsAssistiveMultiWordEnabled();
   }
+  // TODO(b/218815885): Replace refs of this with true internally and delete.
   if (strcmp(feature_name, "AssistiveMultiWordLacrosSupport") == 0) {
     return true;
   }
-  if (strcmp(feature_name, chromeos::features::kAutocorrectParamsTuning.name) ==
-      0) {
-    return base::FeatureList::IsEnabled(
-        chromeos::features::kAutocorrectParamsTuning);
+  if (strcmp(feature_name, features::kAutocorrectParamsTuning.name) == 0) {
+    return base::FeatureList::IsEnabled(features::kAutocorrectParamsTuning);
   }
-  if (strcmp(feature_name, chromeos::features::kLacrosSupport.name) == 0) {
-    return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
+  if (strcmp(feature_name, features::kFirstPartyVietnameseInput.name) == 0) {
+    return base::FeatureList::IsEnabled(features::kFirstPartyVietnameseInput);
   }
-  if (strcmp(feature_name,
-             chromeos::features::kSystemChinesePhysicalTyping.name) == 0) {
-    return base::FeatureList::IsEnabled(
-        chromeos::features::kSystemChinesePhysicalTyping);
+  if (strcmp(feature_name, features::kLacrosSupport.name) == 0) {
+    return base::FeatureList::IsEnabled(features::kLacrosSupport);
   }
-  if (strcmp(feature_name,
-             chromeos::features::kSystemJapanesePhysicalTyping.name) == 0) {
-    return base::FeatureList::IsEnabled(
-        chromeos::features::kSystemJapanesePhysicalTyping);
+  if (strcmp(feature_name, "SystemChinesePhysicalTyping") == 0) {
+    return true;
   }
-  if (strcmp(feature_name,
-             chromeos::features::kSystemTransliterationPhysicalTyping.name) ==
-      0) {
+  if (strcmp(feature_name, features::kSystemJapanesePhysicalTyping.name) == 0) {
     return base::FeatureList::IsEnabled(
-        chromeos::features::kSystemTransliterationPhysicalTyping);
+        features::kSystemJapanesePhysicalTyping);
+  }
+  if (strcmp(feature_name, "SystemTransliterationPhysicalTyping") == 0) {
+    return true;
   }
   return false;
 }
@@ -209,11 +202,10 @@ const char* ImeService::GetFieldTrialParamValueByFeature(
     const char* param_name) {
   char* c_string_value;
 
-  if (strcmp(feature_name, chromeos::features::kAutocorrectParamsTuning.name) ==
-      0) {
+  if (strcmp(feature_name, features::kAutocorrectParamsTuning.name) == 0) {
     std::string string_value =
         field_trial_params_retriever_->GetFieldTrialParamValueByFeature(
-            chromeos::features::kAutocorrectParamsTuning, param_name);
+            features::kAutocorrectParamsTuning, param_name);
     c_string_value =
         new char[string_value.length() + 1];  // extra slot for NULL '\0' char
     strcpy(c_string_value, string_value.c_str());

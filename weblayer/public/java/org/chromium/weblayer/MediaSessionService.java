@@ -13,6 +13,7 @@ import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
 /**
@@ -21,7 +22,7 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
  * in turn manages a system notification and {@link MediaSession}. This service will be in the
  * foreground when the MediaSession is active.
  */
-class MediaSessionService extends MediaPlaybackBaseService {
+public class MediaSessionService extends MediaPlaybackBaseService {
     // A helper to automatically pause the media session when a user removes headphones.
     private BroadcastReceiver mAudioBecomingNoisyReceiver;
 
@@ -49,7 +50,7 @@ class MediaSessionService extends MediaPlaybackBaseService {
         };
 
         IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        registerReceiver(mAudioBecomingNoisyReceiver, filter);
+        ContextUtils.registerProtectedBroadcastReceiver(this, mAudioBecomingNoisyReceiver, filter);
     }
 
     @Override

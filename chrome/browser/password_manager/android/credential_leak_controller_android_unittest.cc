@@ -11,8 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
-#include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
-#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -24,12 +22,9 @@
 constexpr ukm::SourceId kTestSourceId = 0x1234;
 
 using password_manager::CreateLeakType;
-using password_manager::HasChangeScript;
 using password_manager::IsReused;
 using password_manager::IsSaved;
 using password_manager::IsSyncing;
-using password_manager::MockPasswordChangeSuccessTracker;
-using password_manager::PasswordChangeSuccessTracker;
 using password_manager::metrics_util::LeakDialogDismissalReason;
 using password_manager::metrics_util::LeakDialogMetricsRecorder;
 using password_manager::metrics_util::LeakDialogType;
@@ -42,20 +37,17 @@ constexpr char16_t kUsername[] = u"test_username";
 
 // The On*Dialog() methods used by the tests below all invoke `delete this;`,
 // thus there is no memory leak here.
-CredentialLeakControllerAndroid* MakeController(
-    IsSaved is_saved,
-    IsReused is_reused,
-    IsSyncing is_syncing,
-    HasChangeScript has_change_script,
-    PasswordChangeSuccessTracker* password_change_success_tracker = nullptr) {
+CredentialLeakControllerAndroid* MakeController(IsSaved is_saved,
+                                                IsReused is_reused,
+                                                IsSyncing is_syncing) {
   password_manager::CredentialLeakType leak_type =
-      CreateLeakType(is_saved, is_reused, is_syncing, has_change_script);
+      CreateLeakType(is_saved, is_reused, is_syncing);
   auto recorder = std::make_unique<LeakDialogMetricsRecorder>(
       kTestSourceId, password_manager::GetLeakDialogType(leak_type));
   // Set sampling rate to 100% to avoid flakiness.
   recorder->SetSamplingRateForTesting(1.0);
   return new CredentialLeakControllerAndroid(
-      leak_type, GURL(kOrigin), kUsername, password_change_success_tracker,
+      leak_type, GURL(kOrigin), kUsername,
       /*window_android=*/nullptr, std::move(recorder));
 }
 
@@ -83,8 +75,7 @@ TEST(CredentialLeakControllerAndroidTest, ClickedCancel) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  MakeController(IsSaved(false), IsReused(true), IsSyncing(true),
-                 HasChangeScript(false))
+  MakeController(IsSaved(false), IsReused(true), IsSyncing(true))
       ->OnCancelDialog();
 
   histogram_tester.ExpectUniqueSample(
@@ -105,8 +96,7 @@ TEST(CredentialLeakControllerAndroidTest, ClickedOk) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  MakeController(IsSaved(false), IsReused(false), IsSyncing(false),
-                 HasChangeScript(false))
+  MakeController(IsSaved(false), IsReused(false), IsSyncing(false))
       ->OnAcceptDialog();
 
   histogram_tester.ExpectUniqueSample(
@@ -126,8 +116,7 @@ TEST(CredentialLeakControllerAndroidTest, ClickedCheckPasswords) {
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  MakeController(IsSaved(true), IsReused(true), IsSyncing(true),
-                 HasChangeScript(false))
+  MakeController(IsSaved(true), IsReused(true), IsSyncing(true))
       ->OnAcceptDialog();
 
   histogram_tester.ExpectUniqueSample(
@@ -143,47 +132,12 @@ TEST(CredentialLeakControllerAndroidTest, ClickedCheckPasswords) {
       LeakDialogDismissalReason::kClickedCheckPasswords);
 }
 
-TEST(CredentialLeakControllerAndroidTest, ClickedChangePasswordAutomatically) {
-  base::test::TaskEnvironment task_environment;
-  base::test::ScopedFeatureList enable_password_change;
-  enable_password_change.InitAndEnableFeature(
-      password_manager::features::kPasswordChange);
-  base::HistogramTester histogram_tester;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
-  testing::NiceMock<MockPasswordChangeSuccessTracker>
-      password_change_success_tracker;
-  EXPECT_CALL(
-      password_change_success_tracker,
-      OnChangePasswordFlowStarted(
-          GURL(kOrigin), base::UTF16ToUTF8(kUsername),
-          PasswordChangeSuccessTracker::StartEvent::kAutomatedFlow,
-          PasswordChangeSuccessTracker::EntryPoint::kLeakWarningDialog));
-
-  MakeController(IsSaved(true), IsReused(false), IsSyncing(true),
-                 HasChangeScript(true), &password_change_success_tracker)
-      ->OnAcceptDialog();
-
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.LeakDetection.DialogDismissalReason",
-      LeakDialogDismissalReason::kClickedChangePasswordAutomatically, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.LeakDetection.DialogDismissalReason.ChangeAutomatically",
-      LeakDialogDismissalReason::kClickedChangePasswordAutomatically, 1);
-
-  CheckUkmMetricsExpectations(
-      test_ukm_recorder, LeakDialogType::kChangeAutomatically,
-      LeakDialogDismissalReason::kClickedChangePasswordAutomatically);
-}
-
 TEST(CredentialLeakControllerAndroidTest, NoDirectInteraction) {
   base::test::TaskEnvironment task_environment;
   base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
-  MakeController(IsSaved(false), IsReused(false), IsSyncing(false),
-                 HasChangeScript(false))
+  MakeController(IsSaved(false), IsReused(false), IsSyncing(false))
       ->OnCloseDialog();
 
   histogram_tester.ExpectUniqueSample(

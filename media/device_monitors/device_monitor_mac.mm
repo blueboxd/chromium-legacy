@@ -11,11 +11,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
-#include "base/task/task_runner_util.h"
 #include "base/threading/thread_checker.h"
 
 namespace {
@@ -121,6 +121,35 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
 // Forward declaration for use by CrAVFoundationDeviceObserver.
 class SuspendObserverDelegate;
 
+BASE_FEATURE(kUseAVCaptureDeviceDiscoverySessionDeviceMonitor,
+             "UseAVCaptureDeviceDiscoverySessionDeviceMonitor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+NSArray<AVCaptureDevice*>* ListCameras() {
+  // The awkward repeated if statements are required for the compiler to
+  // recognise that the contained code is protected by an API version check.
+  if (@available(macOS 10.15, *)) {
+    if (base::FeatureList::IsEnabled(
+            kUseAVCaptureDeviceDiscoverySessionDeviceMonitor)) {
+      // Query for all camera device types available on macOS. The others in the
+      // enum are only supported on iOS/iPadOS.
+      NSArray* captureDeviceType = @[
+        AVCaptureDeviceTypeBuiltInWideAngleCamera,
+        AVCaptureDeviceTypeExternalUnknown
+      ];
+
+      AVCaptureDeviceDiscoverySession* deviceDescoverySession =
+          [AVCaptureDeviceDiscoverySession
+              discoverySessionWithDeviceTypes:captureDeviceType
+                                    mediaType:AVMediaTypeVideo
+                                     position:
+                                         AVCaptureDevicePositionUnspecified];
+      return deviceDescoverySession.devices;
+    }
+  }
+  return [AVCaptureDevice devices];
+}
+
 }  // namespace
 
 // This class is a Key-Value Observer (KVO) shim. It is needed because C++
@@ -209,9 +238,9 @@ void SuspendObserverDelegate::StartObserver(
   // Enumerate the devices in Device thread and post the observers start to be
   // done on UI thread. The devices array is retained in |device_thread| and
   // released in DoStartObserver().
-  base::PostTaskAndReplyWithResult(
-      device_thread.get(), FROM_HERE, base::BindOnce(base::RetainBlock(^{
-        return [[AVCaptureDevice devices] retain];
+  device_thread->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(base::RetainBlock(^{
+        return [ListCameras() retain];
       })),
       base::BindOnce(&SuspendObserverDelegate::DoStartObserver, this));
 }
@@ -222,9 +251,9 @@ void SuspendObserverDelegate::OnDeviceChanged(
   // Enumerate the devices in Device thread and post the consolidation of the
   // new devices and the old ones to be done on main thread. The devices array
   // is retained in |device_thread| and released in DoOnDeviceChanged().
-  PostTaskAndReplyWithResult(
-      device_thread.get(), FROM_HERE, base::BindOnce(base::RetainBlock(^{
-        return [[AVCaptureDevice devices] retain];
+  device_thread->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(base::RetainBlock(^{
+        return [ListCameras() retain];
       })),
       base::BindOnce(&SuspendObserverDelegate::DoOnDeviceChanged, this));
 }

@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/settings/password/branded_navigation_item_title_view.h"
 #import "ios/chrome/browser/ui/settings/password/create_password_manager_title_view.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/password_manager_view_controller+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_manager_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
@@ -193,11 +194,8 @@ NSInteger kTrailingSymbolSize = 18;
     ChromeAccountManagerServiceObserver,
     PasswordExporterDelegate,
     PasswordExportActivityViewControllerDelegate,
-    PasswordsConsumer,
     PopoverLabelViewControllerDelegate,
-    TableViewIllustratedEmptyViewDelegate,
-    UISearchBarDelegate,
-    UISearchControllerDelegate> {
+    TableViewIllustratedEmptyViewDelegate> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* _passwordManagerEnabled;
@@ -404,11 +402,6 @@ NSInteger kTrailingSymbolSize = 18;
   searchBar.delegate = self;
   searchBar.backgroundColor = UIColor.clearColor;
   searchBar.accessibilityIdentifier = kPasswordsSearchBarId;
-  // Center search bar and cancel button vertically so it looks centered
-  // in the header when searching.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  searchBar.searchFieldBackgroundPositionAdjustment = offset;
 
   // TODO(crbug.com/1268684): Explicitly set the background color for the search
   // bar to match with the color of navigation bar in iOS 13/14 to work around
@@ -446,15 +439,6 @@ NSInteger kTrailingSymbolSize = 18;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  // Center search bar's cancel button vertically so it looks centered.
-  // We change the cancel button proxy styles, so we will return it to
-  // default in viewDidDisappear.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:offset
-                             forBarMetrics:UIBarMetricsDefault];
   self.navigationController.toolbarHidden = NO;
 }
 
@@ -463,12 +447,6 @@ NSInteger kTrailingSymbolSize = 18;
 
   // Record favicons metrics only if the feature is enabled.
   [self logMetricsForFavicons];
-
-  // Restore to default origin offset for cancel button proxy style.
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                             forBarMetrics:UIBarMetricsDefault];
 
   // Dismiss the search bar if presented; otherwise UIKit may retain it and
   // cause a memory leak. If this dismissal happens before viewWillDisappear
@@ -647,9 +625,6 @@ NSInteger kTrailingSymbolSize = 18;
 }
 
 - (void)reloadData {
-  // Clear the on-device encryption state so it is regenerated on loadModel and
-  // the items added to the tableViewModel if needed.
-  self.onDeviceEncryptionStateInModel = OnDeviceEncryptionStateNotShown;
   [super reloadData];
   [self updateExportPasswordsButton];
 }
@@ -1204,10 +1179,7 @@ NSInteger kTrailingSymbolSize = 18;
   if (!_didReceivePasswords) {
     _blockedSites = blockedSites;
     _affiliatedGroups = affiliatedGroups;
-    _didReceivePasswords = YES;
     [self hideLoadingSpinnerBackground];
-    [self updateUIForEditState];
-    [self reloadData];
   } else {
     if (_affiliatedGroups == affiliatedGroups &&
         _blockedSites == blockedSites) {
@@ -1296,18 +1268,12 @@ NSInteger kTrailingSymbolSize = 18;
 }
 
 - (void)updateOnDeviceEncryptionSessionAndUpdateTableView {
-  if (_tableIsInSearchMode) {
-    return;
-  }
-  // Only update this section after passwords were loaded.
-  // Once the load finishes, loadModel will update this section.
-  if (!_didReceivePasswords) {
-    return;
-  }
-
-  [self updateOnDeviceEncryptionSessionWithUpdateTableView:YES
+  if (!_tableIsInSearchMode) {
+    [self
+        updateOnDeviceEncryptionSessionWithUpdateTableView:YES
                                           withRowAnimation:
                                               UITableViewRowAnimationAutomatic];
+  }
 }
 
 #pragma mark - UISearchControllerDelegate
@@ -2237,11 +2203,19 @@ NSInteger kTrailingSymbolSize = 18;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
-      password_manager::CredentialUIEntry credential =
-          base::mac::ObjCCastStrict<PasswordFormContentItem>(
-              [model itemAtIndexPath:indexPath])
-              .credential;
-      [self.handler showDetailedViewForCredential:credential];
+      if (IsPasswordGroupingEnabled()) {
+        password_manager::AffiliatedGroup affiliatedGroup =
+            base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                [model itemAtIndexPath:indexPath])
+                .affiliatedGroup;
+        [self.handler showDetailedViewForAffiliatedGroup:affiliatedGroup];
+      } else {
+        password_manager::CredentialUIEntry credential =
+            base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                [model itemAtIndexPath:indexPath])
+                .credential;
+        [self.handler showDetailedViewForCredential:credential];
+      }
       break;
     }
     case ItemTypeBlocked: {

@@ -1369,17 +1369,10 @@ TEST_F(MediaEngagementContentsObserverTest, PlayerStateIsCleanedUp) {
 class MediaEngagementContentsObserverPrerenderTest
     : public MediaEngagementContentsObserverTest {
  public:
-  MediaEngagementContentsObserverPrerenderTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kPrerender2},
-        // Disable the memory requirement of Prerender2 so the test can run on
-        // any bot.
-        {blink::features::kPrerender2MemoryControls});
-  }
-  ~MediaEngagementContentsObserverPrerenderTest() override = default;
+  MediaEngagementContentsObserverPrerenderTest() = default;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  content::test::ScopedPrerenderFeatureList prerender_feature_list_;
 };
 
 TEST_F(MediaEngagementContentsObserverPrerenderTest,

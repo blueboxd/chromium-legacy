@@ -12,6 +12,10 @@ namespace message_center {
 class Notification;
 }  // namespace message_center
 
+namespace ui {
+class ImageModel;
+}  // namespace ui
+
 namespace views {
 class View;
 class Widget;
@@ -20,6 +24,7 @@ class Widget;
 namespace ash {
 
 class NotificationCenterBubble;
+class NotificationListView;
 class NotificationCenterTray;
 
 // Utility class to facilitate easier testing of the notification center.
@@ -31,18 +36,42 @@ class NotificationCenterTestApi {
       delete;
   ~NotificationCenterTestApi() = default;
 
+  // Toggles the `NotificationCenterBubble` by simulating a click on the
+  // `NotificationCenterTray` on the primary display.
+  void ToggleBubble();
+
   // Adds a notification and returns the associated id.
   std::string AddNotification();
+
+  // Adds a notification with custom parameters and returns the associated id.
+  std::string AddCustomNotification(const std::string& title,
+                                    const std::string& message,
+                                    const ui::ImageModel& icon);
 
   // Removes the notification associated with the provided id.
   void RemoveNotification(const std::string& id);
 
+  // Returns the number of notifications in the current notification list.
+  size_t GetNotificationCount() const;
+
   // Returns true if `NotificationCenterBubble` is shown, false otherwise.
   bool IsBubbleShown();
+
+  // Returns true if a popup associated with the provided `id` exists, false
+  // otherwise.
+  bool IsPopupShown(const std::string& id);
 
   // Returns true if `NotificationCenterTray`` is showing in the shelf, false
   // otherwise.
   bool IsTrayShown();
+
+  // Returns the notification view associated with the provided notification id.
+  // Should be only used when the notifications bubble is open.
+  views::View* GetNotificationViewForId(const std::string& id);
+
+  // Returns the popup view associated with the provided notification id,
+  // nullptr otherwise.
+  views::View* GetPopupViewForId(const std::string& id);
 
   // Returns the `NotificationCenterTray` in the shelf.
   NotificationCenterTray* GetTray();
@@ -55,14 +84,23 @@ class NotificationCenterTestApi {
   // and created when the notification center tray is shown.
   NotificationCenterBubble* GetBubble();
 
+  // Returns the top level view for the notification center.
+  views::View* GetNotificationCenterView();
+
   // Returns the clear all button in the bottom right corner of the notification
   // center UI.
   views::View* GetClearAllButton();
 
  private:
+  std::string GenerateNotificationId();
+
+  NotificationListView* GetNotificationListView();
+
   std::unique_ptr<message_center::Notification> CreateNotification(
       const std::string& id,
-      const std::string& title);
+      const std::string& title,
+      const std::string& message,
+      const ui::ImageModel& icon);
 
   int notification_id_ = 0;
   NotificationCenterTray* const notification_center_tray_;

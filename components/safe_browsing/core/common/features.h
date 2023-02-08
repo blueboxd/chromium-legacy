@@ -14,9 +14,6 @@
 namespace safe_browsing {
 // Features list, in alphabetical order.
 
-// Controls whether accuracy tips should be enabled.
-BASE_DECLARE_FEATURE(kAccuracyTipsFeature);
-
 // Controls various parameters related to occasionally collecting ad samples,
 // for example to control how often collection should occur.
 BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
@@ -42,6 +39,9 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 // Enables client side detection referrer chain.
 BASE_DECLARE_FEATURE(kClientSideDetectionReferrerChain);
 
+// Enables serving the Android Protego allowlist through the component updater.
+BASE_DECLARE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist);
+
 // Controls whether an access token is attached to scanning requests triggered
 // by enterprise Connectors.
 BASE_DECLARE_FEATURE(kConnectorsScanningAccessToken);
@@ -51,13 +51,6 @@ BASE_DECLARE_FEATURE(kConnectorsScanningAccessToken);
 // scanning will take place without UI when the policy is set to "non-blocking"
 // instead of just showing an "Open Now" button with the blocking UI.
 BASE_DECLARE_FEATURE(kConnectorsScanningReportOnlyUI);
-
-// Controls whether to connect to the Safe Browsing service early on startup.
-// The alternative is to connect as soon as the first Safe Browsing check is
-// made associated with a URK request. Android only. On this platform getting
-// the notification about the success of establishing the connection can be
-// delayed by several seconds.
-BASE_DECLARE_FEATURE(kCreateSafebrowsingOnStartup);
 
 // Controls whether the delayed warning experiment is enabled.
 BASE_DECLARE_FEATURE(kDelayedWarnings);
@@ -76,12 +69,6 @@ BASE_DECLARE_FEATURE(kDownloadBubbleV2);
 // The kill switch for download tailored warnings. The main control is on the
 // server-side.
 BASE_DECLARE_FEATURE(kDownloadTailoredWarnings);
-
-// Enables Enhanced Safe Browsing. Launched on all platforms in M106.
-BASE_DECLARE_FEATURE(kEnhancedProtection);
-
-// Phase 2 of Enhanced Safe Browsing changes.
-BASE_DECLARE_FEATURE(kEnhancedProtectionPhase2IOS);
 
 // Enables instructional improvements when users are directed to the security
 // settings page to enable Enhanced Safe Browsing. Enables the In-page help
@@ -136,6 +123,10 @@ const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);
+
+// If enabled, the Safe Browsing database will be stored in a separate file and
+// mapped into memory.
+BASE_DECLARE_FEATURE(kMmapSafeBrowsingDatabase);
 
 // Enables unpacking of nested archives during downloads.
 BASE_DECLARE_FEATURE(kNestedArchives);

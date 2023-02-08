@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,7 +81,7 @@ class DiceSignInStepController : public ProfileManagementStepController {
 
   ~DiceSignInStepController() override = default;
 
-  void Show(base::OnceCallback<void(bool)> step_shown_callback,
+  void Show(StepSwitchFinishedCallback step_shown_callback,
             bool reset_state) override {
     DCHECK(step_shown_callback);
     DCHECK(signed_in_callback_) << "Attempting to show Dice step again while "
@@ -151,8 +153,9 @@ class FinishSamlSignInStepController : public ProfileManagementStepController {
       finish_flow_callback_->Reset();
 
       // The profile setup did not continue. Schedule it for deletion.
-      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
-          profile_->GetPath());
+      g_browser_process->profile_manager()
+          ->GetDeleteProfileHelper()
+          .ScheduleEphemeralProfileForDeletion(profile_->GetPath());
     }
   }
 
@@ -199,7 +202,7 @@ class FinishSamlSignInStepController : public ProfileManagementStepController {
   }
 
   std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   std::unique_ptr<content::WebContents> contents_;
   absl::optional<SkColor> profile_color_;
   FinishFlowCallback finish_flow_callback_;

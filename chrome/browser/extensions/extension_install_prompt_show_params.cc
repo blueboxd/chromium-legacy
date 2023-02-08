@@ -9,8 +9,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/native_window_tracker.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/views/native_window_tracker.h"
 
 namespace {
 
@@ -31,7 +31,7 @@ ExtensionInstallPromptShowParams::ExtensionInstallPromptShowParams(
       parent_web_contents_(contents ? contents->GetWeakPtr() : nullptr),
       parent_window_(NativeWindowForWebContents(contents)) {
   if (parent_window_)
-    native_window_tracker_ = NativeWindowTracker::Create(parent_window_);
+    native_window_tracker_ = views::NativeWindowTracker::Create(parent_window_);
 }
 
 ExtensionInstallPromptShowParams::ExtensionInstallPromptShowParams(
@@ -41,7 +41,7 @@ ExtensionInstallPromptShowParams::ExtensionInstallPromptShowParams(
       parent_web_contents_(nullptr),
       parent_window_(parent_window) {
   if (parent_window_)
-    native_window_tracker_ = NativeWindowTracker::Create(parent_window_);
+    native_window_tracker_ = views::NativeWindowTracker::Create(parent_window_);
 }
 
 ExtensionInstallPromptShowParams::~ExtensionInstallPromptShowParams() = default;
@@ -52,7 +52,7 @@ content::WebContents* ExtensionInstallPromptShowParams::GetParentWebContents() {
 
 gfx::NativeWindow ExtensionInstallPromptShowParams::GetParentWindow() {
   return (native_window_tracker_ &&
-          !native_window_tracker_->WasNativeWindowClosed())
+          !native_window_tracker_->WasNativeWindowDestroyed())
              ? parent_window_
              : nullptr;
 }
@@ -62,5 +62,5 @@ bool ExtensionInstallPromptShowParams::WasParentDestroyed() {
       parent_web_contents_.WasInvalidated();
   return parent_web_contents_destroyed ||
          (native_window_tracker_ &&
-          native_window_tracker_->WasNativeWindowClosed());
+          native_window_tracker_->WasNativeWindowDestroyed());
 }

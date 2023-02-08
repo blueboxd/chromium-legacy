@@ -44,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
+#include "components/password_manager/content/common/web_ui_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
@@ -56,6 +57,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/resize_utils.h"
@@ -287,12 +289,11 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       // re-run with NEW_WINDOW.
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-      // We may receive a PiP request with the feature disabled if the user has
-      // explicitly turned on the Blink feature without turning on the
-      // browser-side feature.
-      if (!base::FeatureList::IsEnabled(features::kDocumentPictureInPictureAPI))
+#if !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_ANDROID)
+      if (!base::FeatureList::IsEnabled(
+              blink::features::kDocumentPictureInPictureAPI)) {
         return {nullptr, -1};
+      }
 
       // Picture in picture windows may not be opened by other picture in
       // picture windows.
@@ -313,16 +314,17 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
                   ->GetPictureInPictureInitialAspectRatio();
           browser_params.lock_aspect_ratio =
               params.contents_to_insert->GetPictureInPictureLockAspectRatio();
+          browser_params.omit_from_session_restore = true;
         }
 
         return {Browser::Create(browser_params), -1};
       }
-#else   // !IS_CHROMEOS_LACROS
-      // Picture in picture 2.0 is turned off in lacros.
-      // See crbug.com/1320453 .
-      NOTIMPLEMENTED_LOG_ONCE() << "TYPE_PICTURE_IN_PICTURE for lacros";
+#else   // !IS_CHROMEOS_LACROS && !IS_ANDROID
+      // TODO(crbug.com/1320453): Document Picture-in-Picture is turned off in
+      // lacros.
+      NOTIMPLEMENTED_LOG_ONCE() << "TYPE_PICTURE_IN_PICTURE";
       return {nullptr, -1};
-#endif  // !IS_CHROMEOS_LACROS
+#endif  // !IS_CHROMEOS_LACROS && !IS_ANDROID
     case WindowOpenDisposition::NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
@@ -870,6 +872,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     }
   }
 
+#if !BUILDFLAG(IS_ANDROID)
   // If this is a Picture in Picture window, then notify the pip manager about
   // it. This enables the opener and pip window to stay connected, so that (for
   // example), the pip window does not outlive the opener.
@@ -877,6 +880,7 @@ base::WeakPtr<content::NavigationHandle> Navigate(NavigateParams* params) {
     PictureInPictureWindowManager::GetInstance()->EnterDocumentPictureInPicture(
         params->source_contents, contents_to_navigate_or_insert);
   }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   params->navigated_or_inserted_contents = contents_to_navigate_or_insert;
   return navigation_handle;
@@ -913,7 +917,7 @@ bool IsHostAllowedInIncognito(const GURL& url) {
          host != chrome::kChromeUIHistoryHost &&
          host != chrome::kChromeUIExtensionsHost &&
          host != chrome::kChromeUIBookmarksHost &&
-         host != chrome::kChromeUIPasswordManagerHost;
+         host != password_manager::kChromeUIPasswordManagerHost;
 }
 
 bool IsURLAllowedInIncognito(const GURL& url,

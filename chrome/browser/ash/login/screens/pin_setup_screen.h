@@ -12,13 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chrome/browser/ash/login/wizard_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
 class PinSetupScreenView;
+class WizardContext;
 
 class PinSetupScreen : public BaseScreen {
  public:
@@ -66,6 +65,7 @@ class PinSetupScreen : public BaseScreen {
  protected:
   // BaseScreen:
   bool MaybeSkip(WizardContext& context) override;
+  bool ShouldBeSkipped(const WizardContext& context) const override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const base::Value::List& args) override;
@@ -81,7 +81,6 @@ class PinSetupScreen : public BaseScreen {
 
   base::OneShotTimer token_lifetime_timeout_;
 
-  bool SkipScreen(WizardContext& context);
   void ClearAuthData(WizardContext& context);
   void OnHasLoginSupport(bool login_available);
   void OnTokenTimedOut();
@@ -90,11 +89,5 @@ class PinSetupScreen : public BaseScreen {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::PinSetupScreen;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_PIN_SETUP_SCREEN_H_

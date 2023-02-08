@@ -7,9 +7,9 @@ import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 import {DialogType, SCREEN_MAX_LENGTH, TouchEventType} from 'chrome://diagnostics/touchscreen_tester.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {assertDeepEquals, assertEquals, assertTrue} from '../../chai_assert.js';
+import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chromeos/chai_assert.js';
 import {MockController} from '../mock_controller.m.js';
-import {eventToPromise} from '../../test_util.js';
+import {eventToPromise} from '../test_util.js';
 
 suite('touchscreenTesterTestSuite', function() {
   /** @type {?TouchscreenTesterElement} */

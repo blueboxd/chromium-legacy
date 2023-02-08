@@ -11,7 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/limits.h"
 #include "media/base/media_log.h"
@@ -52,6 +52,9 @@ constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_AV1_FRAME,
     // V4L2 stateful formats
     V4L2_PIX_FMT_H264,
+#if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
+    V4L2_PIX_FMT_HEVC,
+#endif  // BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
     V4L2_PIX_FMT_VP8,
     V4L2_PIX_FMT_VP9,
     V4L2_PIX_FMT_AV1,
@@ -145,7 +148,7 @@ V4L2VideoDecoder::~V4L2VideoDecoder() {
 }
 
 void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                  bool low_delay,
+                                  bool /*low_delay*/,
                                   CdmContext* cdm_context,
                                   InitCB init_cb,
                                   const OutputCB& output_cb,
@@ -230,11 +233,18 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
   profile_ = config.profile();
   aspect_ratio_ = config.aspect_ratio();
   color_space_ = config.color_space_info();
-  low_delay_ = low_delay;
 
   if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN) {
     VLOGF(1) << "Unknown profile.";
     SetState(State::kError);
+    std::move(init_cb).Run(
+        DecoderStatus(DecoderStatus::Codes::kNotInitialized)
+            .AddCause(V4L2Status(V4L2Status::Codes::kNoProfile)));
+    return;
+  }
+  if (VideoCodecProfileToVideoCodec(profile_) == VideoCodec::kAV1 &&
+      !base::FeatureList::IsEnabled(kChromeOSHWAV1Decoder)) {
+    VLOGF(1) << "AV1 hardware video decoding is disabled";
     std::move(init_cb).Run(
         DecoderStatus(DecoderStatus::Codes::kNotInitialized)
             .AddCause(V4L2Status(V4L2Status::Codes::kNoProfile)));
@@ -334,8 +344,7 @@ V4L2Status V4L2VideoDecoder::InitializeBackend() {
     VLOGF(1) << "Using a stateful API for profile: " << GetProfileName(profile_)
              << " and fourcc: " << FourccToString(input_format_fourcc);
     backend_ = std::make_unique<V4L2StatefulVideoDecoderBackend>(
-        this, device_, profile_, color_space_, low_delay_,
-        decoder_task_runner_);
+        this, device_, profile_, color_space_, decoder_task_runner_);
   } else {
     DCHECK_EQ(preferred_api_and_format.first, kStateless);
     VLOGF(1) << "Using a stateless API for profile: "
@@ -409,8 +418,10 @@ bool V4L2VideoDecoder::SetupInputFormat(uint32_t fourcc) {
   return true;
 }
 
-CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
-                                              const gfx::Rect& visible_rect) {
+CroStatus V4L2VideoDecoder::SetupOutputFormat(
+    const gfx::Size& size,
+    const gfx::Rect& visible_rect,
+    size_t num_codec_reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3) << "size: " << size.ToString()
             << ", visible_rect: " << visible_rect.ToString();
@@ -442,7 +453,7 @@ CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
   CroStatus::Or<PixelLayoutCandidate> status_or_output_format =
       client_->PickDecoderOutputFormat(
           candidates, visible_rect, aspect_ratio_.GetNaturalSize(visible_rect),
-          /*output_size=*/absl::nullopt, num_output_frames_,
+          /*output_size=*/absl::nullopt, num_codec_reference_frames,
           /*use+protected=*/false, /*need_aux_frame_pool=*/false,
           absl::nullopt);
   if (!status_or_output_format.has_value()) {
@@ -516,9 +527,10 @@ void V4L2VideoDecoder::Reset(base::OnceClosure closure) {
 
   // In order to preserve the order of the callbacks between Decode() and
   // Reset(), we also trampoline the callback of Reset().
-  auto trampoline_reset_cb = base::BindOnce(
-      &base::SequencedTaskRunner::PostTask,
-      base::SequencedTaskRunnerHandle::Get(), FROM_HERE, std::move(closure));
+  auto trampoline_reset_cb =
+      base::BindOnce(&base::SequencedTaskRunner::PostTask,
+                     base::SequencedTaskRunner::GetCurrentDefault(), FROM_HERE,
+                     std::move(closure));
 
   if (state_ == State::kInitialized) {
     std::move(trampoline_reset_cb).Run();
@@ -572,7 +584,7 @@ void V4L2VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
         this_sequence_runner->PostTask(
             FROM_HERE, base::BindOnce(std::move(decode_cb), status));
       },
-      base::SequencedTaskRunnerHandle::Get(), std::move(decode_cb));
+      base::SequencedTaskRunner::GetCurrentDefault(), std::move(decode_cb));
 
   if (state_ == State::kError) {
     std::move(trampoline_decode_cb).Run(DecoderStatus::Codes::kFailed);
@@ -670,7 +682,7 @@ void V4L2VideoDecoder::CompleteFlush() {
 
 void V4L2VideoDecoder::ChangeResolution(gfx::Size pic_size,
                                         gfx::Rect visible_rect,
-                                        size_t num_output_frames) {
+                                        size_t num_codec_reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
   DCHECK(!continue_change_resolution_cb_);
@@ -681,7 +693,7 @@ void V4L2VideoDecoder::ChangeResolution(gfx::Size pic_size,
   continue_change_resolution_cb_ =
       base::BindOnce(&V4L2VideoDecoder::ContinueChangeResolution,
                      base::Unretained(this), pic_size, visible_rect,
-                     num_output_frames)
+                     num_codec_reference_frames)
           .Then(base::BindOnce(&V4L2VideoDecoder::OnChangeResolutionDone,
                                base::Unretained(this)));
 
@@ -700,7 +712,7 @@ void V4L2VideoDecoder::ApplyResolutionChange() {
 CroStatus V4L2VideoDecoder::ContinueChangeResolution(
     const gfx::Size& pic_size,
     const gfx::Rect& visible_rect,
-    const size_t num_output_frames) {
+    const size_t num_codec_reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
@@ -715,10 +727,6 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
   if (state_ != State::kFlushing)
     return CroStatus::Codes::kResetRequired;
 
-  DCHECK_GT(num_output_frames,
-            static_cast<size_t>(limits::kMaxVideoFrames + 1));
-  num_output_frames_ = num_output_frames;
-
   // Stateful decoders require the input queue to keep running during resolution
   // changes, but stateless ones require it to be stopped.
   if (!StopStreamV4L2Queue(backend_->StopInputQueueOnResChange()))
@@ -729,12 +737,13 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
     return CroStatus::Codes::kFailedToChangeResolution;
   }
 
-  if (!backend_->ApplyResolution(pic_size, visible_rect, num_output_frames_)) {
+  if (!backend_->ApplyResolution(pic_size, visible_rect)) {
     SetState(State::kError);
     return CroStatus::Codes::kFailedToChangeResolution;
   }
 
-  const CroStatus status = SetupOutputFormat(pic_size, visible_rect);
+  const CroStatus status =
+      SetupOutputFormat(pic_size, visible_rect, num_codec_reference_frames);
   if (status == CroStatus::Codes::kResetRequired) {
     DVLOGF(2) << "SetupOutputFormat is aborted.";
     return CroStatus::Codes::kResetRequired;
@@ -753,9 +762,12 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
   const v4l2_memory type =
       use_v4l2_allocated_buffers ? V4L2_MEMORY_MMAP : V4L2_MEMORY_DMABUF;
   // If we don't use driver-allocated buffers, request as many as possible
-  // (VIDEO_MAX_FRAME) since they are shallow allocations.
-  const size_t v4l2_num_buffers =
-      use_v4l2_allocated_buffers ? num_output_frames_ : VIDEO_MAX_FRAME;
+  // (VIDEO_MAX_FRAME) since they are shallow allocations. Otherwise, allocate
+  // |num_codec_reference_frames| plus one for the video frame being decoded,
+  // and one for our client (presumably an ImageProcessor).
+  const size_t v4l2_num_buffers = use_v4l2_allocated_buffers
+                                      ? num_codec_reference_frames + 2
+                                      : VIDEO_MAX_FRAME;
 
   VLOGF(1) << "Requesting: " << v4l2_num_buffers << " CAPTURE buffers of type "
            << (use_v4l2_allocated_buffers ? "V4L2_MEMORY_MMAP"
@@ -922,15 +934,17 @@ void V4L2VideoDecoder::SetState(State new_state) {
       break;
   }
 
+  // |StopStreamV4L2Queue()| can call |SetState()|.  Update |state_|
+  // before calling so that calls to |SetState()| from
+  // |StopStreamV4L2Queue()| return quickly.
+  state_ = new_state;
+
   if (new_state == State::kError) {
     VLOGF(1) << "Error occurred, stopping queues.";
     StopStreamV4L2Queue(true);
     if (backend_)
       backend_->ClearPendingRequests(DecoderStatus::Codes::kFailed);
-    return;
   }
-  state_ = new_state;
-  return;
 }
 
 void V4L2VideoDecoder::OnBackendError() {

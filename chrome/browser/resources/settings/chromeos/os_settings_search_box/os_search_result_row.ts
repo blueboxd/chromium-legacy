@@ -6,22 +6,22 @@
  * @fileoverview 'os-search-result-row' is the container for one search result.
  */
 import 'chrome://resources/cr_elements/icons.html.js';
-import '../os_icons.js';
+import '../os_settings_icons.html.js';
 import '../../settings_shared.css.js';
 
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {FocusRowMixin} from 'chrome://resources/js/focus_row_mixin.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SearchResult as PersonalizationSearchResult} from '../../mojom-webui/personalization/search.mojom-webui.js';
 import {SearchResult as SettingsSearchResult, SearchResultIdentifier, SearchResultType} from '../../mojom-webui/search/search.mojom-webui.js';
 import {SearchResultIcon} from '../../mojom-webui/search/search_result_icon.mojom-webui.js';
 import {OpenWindowProxyImpl} from '../../open_window_proxy.js';
-import {Router} from '../../router.js';
-import {SearchResult} from '../combined_search_handler.js';
+import {Router} from '../router.js';
+import {SearchResult} from '../search/combined_search_handler.js';
 
 import {getTemplate} from './os_search_result_row.html.js';
 
@@ -613,7 +613,7 @@ export class OsSearchResultRowElement extends OsSearchResultRowElementBase {
   onSearchResultSelected() {
     if (isPersonalizationSearchResult(this.searchResult)) {
       this.recordSearchResultMetrics_();
-      OpenWindowProxyImpl.getInstance().openURL(
+      OpenWindowProxyImpl.getInstance().openUrl(
           loadTimeData.getString('personalizationAppUrl') +
           this.searchResult.relativeUrl);
       return;

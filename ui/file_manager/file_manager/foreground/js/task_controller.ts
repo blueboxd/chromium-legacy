@@ -22,7 +22,7 @@ import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
 
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
-import {AnnotatedTask, FileTasks, TaskPickerType} from './file_tasks.js';
+import {AnnotatedTask, FileTasks, getDefaultTask, TaskPickerType} from './file_tasks.js';
 import {FileTransferController} from './file_transfer_controller.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {MetadataUpdateController} from './metadata_update_controller.js';
@@ -86,13 +86,23 @@ export class TaskController {
     this.taskHistory_.addEventListener(
         TaskHistory.EventType.UPDATE, this.updateTasks_.bind(this));
     chrome.fileManagerPrivate.onIOTaskProgressStatus.addListener(
-        this.onIOTaskProgressStatus_.bind(this));
+        this.onIoTaskProgressStatus_.bind(this));
     chrome.fileManagerPrivate.onAppsUpdated.addListener(
         this.clearCacheAndUpdateTasks_.bind(this));
   }
 
   setFileTransferController(fileTransferController: FileTransferController) {
     this.fileTransferController_ = fileTransferController;
+  }
+
+  /**
+   * Exposes the TaskHistory instance for the ActionsProducer.
+   *
+   * NOTE: This is a temporary workaround until the TaskHistory is migrated to
+   * the store.
+   */
+  get taskHistory(): TaskHistory {
+    return this.taskHistory_;
   }
 
   /**
@@ -201,7 +211,7 @@ export class TaskController {
    */
   private updateTasksDropdown_(fileTasks: FileTasks) {
     const combobutton = this.ui_.taskMenuButton;
-    const tasks = fileTasks.getTaskItems();
+    const tasks = fileTasks.getAnnotatedTasks();
 
     combobutton.hidden =
         tasks.length == 0 || fileTasks.entries.some(e => e.isDirectory);
@@ -238,9 +248,12 @@ export class TaskController {
       // an item to change default task.
       if (defaultTask) {
         combobutton.addSeparator();
+        // TODO(greengrape): Ensure that the passed object is a `DropdownItem`.
         const changeDefaultMenuItem = combobutton.addDropDownItem({
           type: TaskMenuItemType.CHANGE_DEFAULT_TASK,
           label: str('CHANGE_DEFAULT_MENU_ITEM'),
+          isDefault: false,
+          isPolicyDefault: false,
         });
         changeDefaultMenuItem.classList.add('change-default');
 
@@ -265,14 +278,16 @@ export class TaskController {
    * @return Created array can be used to feed combobox, menus and so on.
    */
   createItems(fileTasks: FileTasks): DropdownItem[] {
-    const tasks = fileTasks.getTaskItems();
+    const tasks = fileTasks.getAnnotatedTasks();
     const items = [];
 
     // Create items.
     for (const task of tasks) {
       if (task === fileTasks.defaultTask) {
         const title = task.title + ' ' + str('DEFAULT_TASK_LABEL');
-        items.push(createDropdownItem(task, title, true, true));
+        items.push(createDropdownItem(
+            task, title, /*bold=*/ true, /*isDefault=*/ true,
+            /*isPolicyDefault=*/ !!fileTasks.getPolicyDefaultHandlerStatus()));
       } else {
         items.push(createDropdownItem(task));
       }
@@ -300,8 +315,7 @@ export class TaskController {
     return items;
   }
 
-
-  /** Executes default task.  */
+  /** Executes default task from the dropdown menu. */
   async executeDefaultTask() {
     try {
       const tasks = await this.getFileTasks();
@@ -360,13 +374,11 @@ export class TaskController {
       // Compare entries while ignoring changes inside directories.
       if (!util.isSameEntries(this.lastSelectedEntries_, selection.entries)) {
         // Update the context menu if selection changed.
-        this.updateContextMenuTaskItems_(
-            {tasks: [], policyDefaultHandlerStatus: undefined});
+        this.updateContextMenuTaskItems_([]);
       }
     } else {
       // Update context menu.
-      this.updateContextMenuTaskItems_(
-          {tasks: [], policyDefaultHandlerStatus: undefined});
+      this.updateContextMenuTaskItems_([]);
     }
     this.lastSelectedEntries_ = selection.entries;
   }
@@ -406,10 +418,9 @@ export class TaskController {
       const tasks = await this.getFileTasks();
       // Update the DOM.
       this.display_(tasks);
-      const openTaskItems = tasks.getTaskItems();
-      const policyDefaultHandlerStatus = tasks.getPolicyDefaultHandlerStatus();
+      const openTaskItems = tasks.getAnnotatedTasks();
       this.updateContextMenuTaskItems_(
-          {tasks: openTaskItems, policyDefaultHandlerStatus});
+          openTaskItems, tasks.getPolicyDefaultHandlerStatus());
       if (window.IN_TEST) {
         this.ui_.taskMenuButton.toggleAttribute('get-tasks-completed', true);
       }
@@ -475,13 +486,17 @@ export class TaskController {
    * @param openTasks List of OPEN tasks.
    */
   private updateContextMenuTaskItems_(
-      openTasks: chrome.fileManagerPrivate.ResultingTasks) {
-    const taskCount = openTasks.tasks.length;
+      tasks: AnnotatedTask[],
+      policyDefaultHandlerStatus?:
+          chrome.fileManagerPrivate.PolicyDefaultHandlerStatus) {
+    const taskCount = tasks.length;
+    const defaultTask =
+        getDefaultTask(tasks, policyDefaultHandlerStatus, this.taskHistory_);
+
     if (taskCount > 0) {
-      const defaultTask =
-          FileTasks.getDefaultTask(openTasks, this.taskHistory_);
       if (defaultTask) {
         const menuItem = this.ui_.defaultTaskMenuItem;
+        menuItem.setIsDefaultAttribute();
         /**
          * Menu icon can be controlled by either `iconEndImage` or
          * `iconEndFileType`, since the default task menu item DOM is shared,
@@ -502,14 +517,15 @@ export class TaskController {
           menuItem.setIconEndHidden(true);
         }
 
+        menuItem.toggleManagedIcon(/*visible=*/ !!policyDefaultHandlerStatus);
+
         menuItem.label = defaultTask.title;
         menuItem.descriptor = defaultTask.descriptor;
       }
-
-      this.canExecuteDefaultTask_ = defaultTask != null;
-      this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
     }
 
+    this.canExecuteDefaultTask_ = defaultTask != null;
+    this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
     this.canExecuteOpenActions_ = taskCount > 1;
     this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
 
@@ -537,7 +553,7 @@ export class TaskController {
     this.extractTasks_.delete(taskId);
   }
 
-  private onIOTaskProgressStatus_(
+  private onIoTaskProgressStatus_(
       event: chrome.fileManagerPrivate.ProgressStatus) {
     const taskId = event.taskId;
     if (!taskId) {
@@ -570,7 +586,7 @@ export class TaskController {
    * @param {!DirectoryEntry|!FilesAppDirEntry} destination
    * @return {!Promise<void>} resolved with taskId.
    */
-  async startExtractIOTask(
+  async startExtractIoTask(
       entries: Array<Entry|FilesAppEntry>,
       destination: DirectoryEntry|FilesAppDirEntry): Promise<void> {
     const params = {
@@ -659,6 +675,7 @@ export interface DropdownItem {
   task: chrome.fileManagerPrivate.FileTask;
   bold: boolean;
   isDefault: boolean;
+  isPolicyDefault: boolean;
   isGenericFileHandler?: boolean;
 }
 
@@ -669,7 +686,7 @@ export interface DropdownItem {
  */
 function createDropdownItem(
     task: chrome.fileManagerPrivate.FileTask, title?: string, bold?: boolean,
-    isDefault?: boolean): DropdownItem {
+    isDefault?: boolean, isPolicyDefault?: boolean): DropdownItem {
   return {
     type: TaskMenuItemType.RUN_TASK,
     label: title || task.title,
@@ -678,6 +695,7 @@ function createDropdownItem(
     task: task,
     bold: bold || false,
     isDefault: isDefault || false,
+    isPolicyDefault: isPolicyDefault || false,
     isGenericFileHandler: task.isGenericFileHandler,
   };
 }

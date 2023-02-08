@@ -60,6 +60,20 @@ rgbkbd::RgbKeyboardCapabilities RgbKeyboardManager::GetRgbKeyboardCapabilities()
   return capabilities_;
 }
 
+int RgbKeyboardManager::GetZoneCount() {
+  switch (capabilities_) {
+    case rgbkbd::RgbKeyboardCapabilities::kIndividualKey:
+      return 5;
+    case rgbkbd::RgbKeyboardCapabilities::kFourZoneFortyLed:
+    case rgbkbd::RgbKeyboardCapabilities::kFourZoneTwelveLed:
+    case rgbkbd::RgbKeyboardCapabilities::kFourZoneFourLed:
+      return 4;
+    case rgbkbd::RgbKeyboardCapabilities::kNone:
+      LOG(ERROR) << "Attempted to get zone count for a non-RGB keyboard.";
+      return 0;
+  }
+}
+
 void RgbKeyboardManager::SetStaticBackgroundColor(uint8_t r,
                                                   uint8_t g,
                                                   uint8_t b) {
@@ -78,6 +92,34 @@ void RgbKeyboardManager::SetStaticBackgroundColor(uint8_t r,
           kStaticBackgroundColorChanged,
       capabilities_);
   RgbkbdClient::Get()->SetStaticBackgroundColor(r, g, b);
+}
+
+void RgbKeyboardManager::SetZoneColor(int zone,
+                                      uint8_t r,
+                                      uint8_t g,
+                                      uint8_t b) {
+  DCHECK(RgbkbdClient::Get());
+  background_type_ = BackgroundType::kStaticZones;
+  zone_colors_[zone] = SkColorSetRGB(r, g, b);
+
+  if (zone < 0 || zone >= GetZoneCount()) {
+    LOG(ERROR) << "Attempted to set an invalid zone: " << zone;
+    return;
+  }
+  if (!IsRgbKeyboardSupported()) {
+    LOG(ERROR)
+        << "Attempted to set RGB keyboard zone color, but flag is disabled.";
+    return;
+  }
+
+  VLOG(1) << "Setting RGB keyboard zone " << zone
+          << " color to R:" << static_cast<int>(r)
+          << " G:" << static_cast<int>(g) << " B:" << static_cast<int>(b);
+  ash::rgb_keyboard::metrics::EmitRgbBacklightChangeType(
+      ash::rgb_keyboard::metrics::RgbKeyboardBacklightChangeType::
+          kStaticZoneColorChanged,
+      capabilities_);
+  RgbkbdClient::Get()->SetZoneColor(zone, r, g, b);
 }
 
 void RgbKeyboardManager::SetRainbowMode() {
@@ -164,6 +206,12 @@ void RgbKeyboardManager::InitializeRgbKeyboard() {
       SetStaticBackgroundColor(SkColorGetR(background_color_),
                                SkColorGetG(background_color_),
                                SkColorGetB(background_color_));
+      break;
+    case BackgroundType::kStaticZones:
+      for (auto const& [zone, color] : zone_colors_) {
+        SetZoneColor(zone, SkColorGetR(color), SkColorGetG(color),
+                     SkColorGetB(color));
+      }
       break;
     case BackgroundType::kStaticRainbow:
       SetRainbowMode();

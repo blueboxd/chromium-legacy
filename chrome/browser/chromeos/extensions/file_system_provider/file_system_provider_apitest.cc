@@ -6,11 +6,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/file_system_provider/observer.h"
+#include "chrome/browser/ash/file_system_provider/operation_request_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/file_system_provider/request_manager.h"
@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "content/public/test/browser_test.h"
-#include "extensions/common/extension_features.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
@@ -63,7 +62,7 @@ class NotificationButtonClicker : public RequestManager::Observer {
                          base::File::Error error) override {}
   void OnRequestTimeouted(int request_id) override {
     // Call asynchronously so the notification is setup is completed.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&NotificationButtonClicker::ClickButton,
                                   base::Unretained(this)));
   }
@@ -156,17 +155,7 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
   ash::FakeChromeUserManager user_manager_;
 };
 
-class FileSystemProviderServiceWorkerApiTest
-    : public FileSystemProviderApiTest {
- public:
-  FileSystemProviderServiceWorkerApiTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        extensions_features::kExtensionsFSPInServiceWorkers);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using FileSystemProviderServiceWorkerApiTest = FileSystemProviderApiTest;
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {
   ASSERT_TRUE(RunExtensionTest("file_system_provider/mount",

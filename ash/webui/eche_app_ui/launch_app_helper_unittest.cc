@@ -7,14 +7,14 @@
 #include <ostream>
 #include <string>
 
-#include "ash/components/phonehub/fake_phone_hub_manager.h"
-#include "ash/components/phonehub/screen_lock_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/screen_lock_manager.h"
 #include "chromeos/ash/components/test/ash_test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,7 +31,8 @@ class Callback {
       const std::string& package_name,
       const std::u16string& visible_name,
       const absl::optional<int64_t>& user_id,
-      const gfx::Image& icon) {
+      const gfx::Image& icon,
+      const std::u16string& phone_name) {
     launchEcheApp_ = true;
   }
 
@@ -73,7 +74,7 @@ class LaunchAppHelperTest : public ash::AshTestBase {
     AshTestSuite::LoadTestResources();
     AshTestBase::SetUp();
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chromeos::features::kEcheSWA},
+        /*enabled_features=*/{features::kEcheSWA},
         /*disabled_features=*/{});
 
     fake_phone_hub_manager_ = std::make_unique<phonehub::FakePhoneHubManager>();
@@ -111,9 +112,10 @@ class LaunchAppHelperTest : public ash::AshTestBase {
                      const std::string& package_name,
                      const std::u16string& visible_name,
                      const absl::optional<int64_t>& user_id,
-                     const gfx::Image& icon) {
+                     const gfx::Image& icon,
+                     const std::u16string& phone_name) {
     launch_app_helper_->LaunchEcheApp(notification_id, package_name,
-                                      visible_name, user_id, icon);
+                                      visible_name, user_id, icon, phone_name);
   }
 
   void ShowNotification(
@@ -173,9 +175,10 @@ TEST_F(LaunchAppHelperTest, LaunchEcheApp) {
   const std::string package_name = "package_name";
   const std::u16string visible_name = u"visible_name";
   const absl::optional<int64_t> user_id = 0;
+  const std::u16string phone_name = u"your phone";
 
   LaunchEcheApp(notification_id, package_name, visible_name, user_id,
-                gfx::Image());
+                gfx::Image(), phone_name);
 
   EXPECT_TRUE(Callback::getLaunchEcheApp());
 }

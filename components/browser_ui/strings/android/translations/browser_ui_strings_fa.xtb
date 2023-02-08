@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">مجاز بودن دسترسی سایت‌ها به حسگرهای حرکتی (توصیه می‌شود)</translation>
 <translation id="5050380848339752099">این سایت می‌خواهد خارج از «حالت ناشناس»، اطلاعاتی را با برنامه‌ای هم‌رسانی کند.</translation>
 <translation id="5063480226653192405">کاربر </translation>
-<translation id="5082281938627763039">با این کار کوکی‌ها و دیگر داده‌های سایت برای <ph name="FPS_MEMBER" /> و سایت‌های موجود در گروه <ph name="FPS_OWNER" /> حذف می‌شوند</translation>
 <translation id="5091013926750941408">سایت ویژه تلفن همراه</translation>
 <translation id="509133520954049755">درخواست نمای رایانه</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید.</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
-<translation id="5313967007315987356">افزودن سایت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
 <translation id="534295439873310000">‏دستگاه‌های NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5922967540311291836">مسدود کردن کوکی‌های شخص ثالث:</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
+<translation id="5968921426641056619">نشانی وب را وارد کنید</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">کنترل کردن دسترسی این سایت به دستگاه</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> و <ph name="PERMISSION_2" /> مجاز هستند</translation>
 <translation id="7302486331832100261">معمولاً اعلان‌ها را مسدود می‌کنید. برای مجاز کردن، روی «جزئیات» ضربه بزنید.</translation>
+<translation id="7366415735885268578">افزودن سایت</translation>
 <translation id="7383715096023715447">تنظیمات <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7423538860840206698">خواندن محتوای بریده‌دان مسدود شد</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
 <translation id="8409345997656833551">هرزمان که بتوان مقاله را در نمای ساده‌شده نشان داد، اعلان دریافت می‌کنید</translation>
+<translation id="8423565414844018592">تنظیم مقیاس‌گذاری نوشتار روی <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8441146129660941386">جستجو به عقب</translation>
 <translation id="8444433999583714703">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید به مکانتان دسترسی پیدا کند، مکان را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">‏NFC برای این دستگاه خاموش است. در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> آن را روشن کنید.</translation>
 <translation id="8928445016601307354">‏سایت‌ها اجازه نداشته باشند اطلاعات دستگاه‌های NFC را ببینند و تغییر دهند</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">کوکی‌ها را برای سایت خاصی مسدود کنید.</translation>
 <translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>
 <translation id="8986362086234534611">فراموش شود</translation>

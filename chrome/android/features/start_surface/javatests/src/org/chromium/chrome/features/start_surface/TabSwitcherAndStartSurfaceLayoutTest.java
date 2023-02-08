@@ -59,7 +59,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.ViewAssertion;
-import androidx.test.espresso.contrib.AccessibilityChecks;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -153,6 +152,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "force-fieldtrials=Study/Group"})
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+// TODO(1347089): make this test suite works for testing both TabSwitcherAndStartSurfaceLayout and
+// TabSwitcherLayout.
 @DisableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
@@ -198,7 +199,6 @@ public class TabSwitcherAndStartSurfaceLayoutTest {
 
     @Before
     public void setUp() throws ExecutionException {
-        AccessibilityChecks.enable();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         // After setUp, Chrome is launched and has one NTP.
         mActivityTestRule.startMainActivityWithURL(NTP_URL);

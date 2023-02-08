@@ -17,8 +17,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/escape.h"
@@ -27,8 +25,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_runner_util.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -243,7 +241,7 @@ std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
     Profile* profile,
     const std::string& extension_id,
-    std::unique_ptr<base::DictionaryValue> parsed_manifest,
+    base::Value::Dict parsed_manifest,
     bool strict_manifest_check) {
   std::unique_ptr<Approval> result(new Approval());
   result->extension_id = extension_id;
@@ -477,7 +475,6 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
       ReportFailure(kDownloadCanceledError, FAILURE_REASON_CANCELLED);
       break;
     case DownloadItem::INTERRUPTED:
-      RecordInterrupt(download);
       ReportFailure(
           GetErrorMessageForDownloadInterrupt(download->GetLastReason()),
           FAILURE_REASON_OTHER);
@@ -550,8 +547,8 @@ void WebstoreInstaller::DownloadCrx(
   base::FilePath download_directory(g_download_directory_for_tests ?
       *g_download_directory_for_tests : download_path);
 
-  base::PostTaskAndReplyWithResult(
-      GetExtensionFileTaskRunner().get(), FROM_HERE,
+  GetExtensionFileTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetDownloadFilePath, download_directory, extension_id),
       base::BindOnce(&WebstoreInstaller::StartDownload, this, extension_id));
 }
@@ -743,33 +740,6 @@ void WebstoreInstaller::ReportSuccess() {
   }
 
   Release();  // Balanced in Start().
-}
-
-void WebstoreInstaller::RecordInterrupt(const DownloadItem* download) const {
-  base::UmaHistogramSparse("Extensions.WebstoreDownload.InterruptReason",
-                           download->GetLastReason());
-
-  // Use logarithmic bin sizes up to 1 TB.
-  const int kNumBuckets = 30;
-  const int64_t kMaxSizeKb = 1 << kNumBuckets;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Extensions.WebstoreDownload.InterruptReceivedKBytes",
-      download->GetReceivedBytes() / 1024,
-      1,
-      kMaxSizeKb,
-      kNumBuckets);
-  int64_t total_bytes = download->GetTotalBytes();
-  if (total_bytes >= 0) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Extensions.WebstoreDownload.InterruptTotalKBytes",
-        total_bytes / 1024,
-        1,
-        kMaxSizeKb,
-        kNumBuckets);
-  }
-  UMA_HISTOGRAM_BOOLEAN(
-      "Extensions.WebstoreDownload.InterruptTotalSizeUnknown",
-      total_bytes <= 0);
 }
 
 }  // namespace extensions

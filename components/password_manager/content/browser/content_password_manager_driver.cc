@@ -111,7 +111,7 @@ ContentPasswordManagerDriver::GetForRenderFrameHost(
 void ContentPasswordManagerDriver::BindPendingReceiver(
     mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
         pending_receiver) {
-  if (render_frame_host_->IsAnonymous())
+  if (render_frame_host_->IsCredentialless())
     return;
   password_manager_receiver_.Bind(std::move(pending_receiver));
 }
@@ -198,6 +198,11 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
   GetAutofillAgent()->PreviewPasswordSuggestion(username, password);
+}
+
+void ContentPasswordManagerDriver::PreviewGenerationSuggestion(
+    const std::u16string& password) {
+  GetAutofillAgent()->PreviewPasswordGenerationSuggestion(password);
 }
 
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
@@ -484,7 +489,7 @@ ContentPasswordManagerDriver::GetAutofillAgent() {
 
 const mojo::AssociatedRemote<autofill::mojom::PasswordAutofillAgent>&
 ContentPasswordManagerDriver::GetPasswordAutofillAgent() {
-  if (render_frame_host_->IsAnonymous() ||
+  if (render_frame_host_->IsCredentialless() ||
       render_frame_host_->GetLifecycleState() ==
           content::RenderFrameHost::LifecycleState::kPrerendering) {
     password_autofill_agent_.reset();

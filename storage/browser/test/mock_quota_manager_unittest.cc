@@ -13,10 +13,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -58,7 +58,7 @@ class MockQuotaManagerTest : public testing::Test {
     policy_ = base::MakeRefCounted<MockSpecialStoragePolicy>();
     manager_ = base::MakeRefCounted<MockQuotaManager>(
         false /* is_incognito */, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get().get(), policy_.get());
+        base::SingleThreadTaskRunner::GetCurrentDefault().get(), policy_.get());
   }
 
   void TearDown() override {
@@ -537,20 +537,20 @@ TEST_F(MockQuotaManagerTest, QuotaAndUsage) {
   manager()->SetQuota(storage_key1, kTemporary, 1000);
   // Add usages in different buckets for the same storage key so that we can
   // ensure that these get added together correctly.
-  manager()->UpdateUsage(storage_key1_temp_default_bucket.id, 10);
-  manager()->UpdateUsage(storage_key1_temp_named_bucket.id, 100);
+  manager()->UpdateUsage(storage_key1_temp_default_bucket, 10);
+  manager()->UpdateUsage(storage_key1_temp_named_bucket, 100);
 
   // Set a quota for the same storage key using a different type to test that
   // these quotas don't affect one another.
   manager()->SetQuota(storage_key1, kSyncable, 2000);
   // Add usages for buckets tied to the same storage key but using a different
   // type to test that these don't affect one another.
-  manager()->UpdateUsage(storage_key1_sync_default_bucket.id, 20);
+  manager()->UpdateUsage(storage_key1_sync_default_bucket, 20);
 
   // Set a quota and add usage for a different storage key to test that this
   // doesn't affect the quota and usage of the other storage key.
   manager()->SetQuota(storage_key2, kTemporary, 3000);
-  manager()->UpdateUsage(storage_key2_temp_default_bucket.id, 30);
+  manager()->UpdateUsage(storage_key2_temp_default_bucket, 30);
 
   SCOPED_TRACE("Checking usage and quota for storage_key1 (kTemporary)");
   CheckUsageAndQuota(storage_key1, kTemporary, 110, 1000);
@@ -561,4 +561,5 @@ TEST_F(MockQuotaManagerTest, QuotaAndUsage) {
   SCOPED_TRACE("Checking usage and quota for storage_key2 (kTemporary)");
   CheckUsageAndQuota(storage_key2, kTemporary, 30, 3000);
 }
+
 }  // namespace storage

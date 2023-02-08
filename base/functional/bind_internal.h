@@ -13,10 +13,13 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/functional/callback_internal.h"
+#include "base/functional/disallow_unretained.h"
+#include "base/functional/unretained_traits.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_asan_bound_arg_tracker.h"
 #include "base/memory/raw_ptr_asan_service.h"
@@ -90,6 +93,11 @@ struct FunctorTraits;
 template <typename T, typename RawPtrType = base::RawPtrBanDanglingIfSupported>
 class UnretainedWrapper {
  public:
+  static_assert(TypeSupportsUnretainedV<T>,
+                "Callback cannot capture an unprotected C++ pointer since this "
+                "Type is annotated with DISALLOW_UNRETAINED(). Please see "
+                "base/functional/disallow_unretained.h for alternatives.");
+
   explicit UnretainedWrapper(T* o) : ptr_(o) {}
 
   // Trick to only instantiate these constructors if they are used. Otherwise,
@@ -120,7 +128,7 @@ class UnretainedWrapper {
   }
 
  private:
-#if defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   // When `MTECheckedPtr` is enabled as the backing implementation of
   // `raw_ptr`, there are too many different types that immediately
   // cause Chrome to crash. Some of these are inutterable as forward
@@ -131,7 +139,7 @@ class UnretainedWrapper {
   // As a compromise, we decay the wrapper to use `T*` only (rather
   // than `raw_ptr`) when `raw_ptr` is `MTECheckedPtr`.
   using ImplType = T*;
-#else   // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#else   // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   // `Unretained()` arguments often dangle by design (common design patterns
   // consists of managing objects lifetime inside the callbacks themselves using
   // stateful information), so disable direct dangling pointer detection of
@@ -143,7 +151,7 @@ class UnretainedWrapper {
   using ImplType = std::conditional_t<raw_ptr_traits::IsSupportedType<T>::value,
                                       raw_ptr<T, DisableDanglingPtrDetection>,
                                       T*>;
-#endif  // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
   ImplType ptr_;
 };
 
@@ -161,6 +169,12 @@ class UnretainedWrapper {
 template <typename T, bool = raw_ptr_traits::IsSupportedType<T>::value>
 class UnretainedRefWrapper {
  public:
+  static_assert(
+      TypeSupportsUnretainedV<T>,
+      "Callback cannot capture an unprotected C++ reference since this "
+      "type is annotated with DISALLOW_UNRETAINED(). Please see "
+      "base/functional/disallow_unretained.h for alternatives.");
+
   explicit UnretainedRefWrapper(T& o) : ref_(o) {}
   T& get() const { return ref_; }
 
@@ -168,11 +182,16 @@ class UnretainedRefWrapper {
   T& ref_;
 };
 
-#if !defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if !defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 // Implementation of UnretainedRefWrapper for `T` where raw_ref<T> is supported.
 template <typename T>
 class UnretainedRefWrapper<T, true> {
  public:
+  static_assert(TypeSupportsUnretainedV<T>,
+                "Callback cannot capture an unprotected C++ pointer since this "
+                "type is annotated with DISALLOW_UNRETAINED(). Please see "
+                "base/functional/disallow_unretained.h for alternatives.");
+
   explicit UnretainedRefWrapper(T& o) : ref_(o) {}
   T& get() const {
     // We can't use operator* here, we need to use raw_ptr's GetForExtraction
@@ -191,6 +210,12 @@ class UnretainedRefWrapper<T, true> {
 template <typename T, typename I, bool b>
 class UnretainedRefWrapper<raw_ref<T, I>, b> {
  public:
+  static_assert(
+      TypeSupportsUnretainedV<T>,
+      "Callback cannot capture an unprotected C++ reference since this "
+      "Type is annotated with DISALLOW_UNRETAINED(). Please see "
+      "base/functional/disallow_unretained.h for alternatives.");
+
   explicit UnretainedRefWrapper(const raw_ref<T, I>& ref) : ref_(ref) {}
   explicit UnretainedRefWrapper(raw_ref<T, I>&& ref) : ref_(std::move(ref)) {}
   T& get() const {
@@ -205,7 +230,7 @@ class UnretainedRefWrapper<raw_ref<T, I>, b> {
  private:
   const raw_ref<T, I> ref_;
 };
-#endif  // !defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#endif  // !defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 template <typename T>
 class RetainedRefWrapper {

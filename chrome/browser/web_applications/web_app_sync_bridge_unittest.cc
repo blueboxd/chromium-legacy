@@ -180,7 +180,7 @@ bool RemoveEntityDataAppFromAppsList(const std::string& storage_key,
 
 void RunCallbacksOnInstall(
     const std::vector<WebApp*>& apps,
-    const WebAppInstallManager::RepeatingInstallCallback& callback,
+    const WebAppSyncBridge::RepeatingInstallCallback& callback,
     webapps::InstallResultCode code) {
   for (WebApp* app : apps)
     callback.Run(app->app_id(), code);
@@ -193,16 +193,19 @@ class WebAppSyncBridgeTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    command_manager_ = std::make_unique<WebAppCommandManager>(
-        profile(), FakeWebAppProvider::Get(profile()));
+    FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
+    command_manager_ =
+        std::make_unique<WebAppCommandManager>(profile(), provider);
+    command_scheduler_ =
+        std::make_unique<WebAppCommandScheduler>(*profile(), provider);
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
     registrar_mutable_ = std::make_unique<WebAppRegistrarMutable>(profile());
     sync_bridge_ = std::make_unique<WebAppSyncBridge>(
         registrar_mutable_.get(), mock_processor_.CreateForwardingProcessor());
     database_factory_ = std::make_unique<FakeWebAppDatabaseFactory>();
 
-    sync_bridge_->SetSubsystems(database_factory_.get(), install_manager_.get(),
-                                command_manager_.get());
+    sync_bridge_->SetSubsystems(database_factory_.get(), command_manager_.get(),
+                                command_scheduler_.get());
 
     install_manager_->Start();
 
@@ -242,18 +245,18 @@ class WebAppSyncBridgeTest : public WebAppTest {
     return IsRegistryEqual(registrar_registry(), registry);
   }
 
-  void SetSyncInstallDelegateFailureIfCalled() {
-    install_manager().SetInstallWebAppsAfterSyncDelegateForTesting(
+  void SetSyncInstallCallbackFailureIfCalled() {
+    sync_bridge().SetInstallWebAppsAfterSyncCallbackForTesting(
         base::BindLambdaForTesting(
             [&](std::vector<WebApp*> apps_to_install,
-                WebAppInstallManager::RepeatingInstallCallback callback) {
+                WebAppSyncBridge::RepeatingInstallCallback callback) {
               ADD_FAILURE();
             }));
 
-    install_manager().SetUninstallFromSyncDelegateForTesting(
+    sync_bridge().SetUninstallFromSyncCallbackForTesting(
         base::BindLambdaForTesting(
             [&](const std::vector<AppId>& apps_to_uninstall,
-                WebAppInstallManager::RepeatingUninstallCallback callback) {
+                WebAppSyncBridge::RepeatingUninstallCallback callback) {
               ADD_FAILURE();
             }));
   }
@@ -274,6 +277,10 @@ class WebAppSyncBridgeTest : public WebAppTest {
     if (command_manager_) {
       command_manager_->Shutdown();
       command_manager_.reset();
+    }
+    if (command_scheduler_) {
+      command_scheduler_->Shutdown();
+      command_scheduler_.reset();
     }
     if (install_manager_) {
       install_manager_.reset();
@@ -302,6 +309,7 @@ class WebAppSyncBridgeTest : public WebAppTest {
 
  private:
   std::unique_ptr<WebAppCommandManager> command_manager_;
+  std::unique_ptr<WebAppCommandScheduler> command_scheduler_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppRegistrarMutable> registrar_mutable_;
   std::unique_ptr<WebAppSyncBridge> sync_bridge_;
@@ -479,10 +487,10 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetLessThanServerSet) {
 
   base::RunLoop run_loop;
   // This is called after apps are installed from sync in MergeSyncData() below.
-  install_manager().SetInstallWebAppsAfterSyncDelegateForTesting(
+  sync_bridge().SetInstallWebAppsAfterSyncCallbackForTesting(
       base::BindLambdaForTesting(
           [&](std::vector<WebApp*> apps_to_install,
-              WebAppInstallManager::RepeatingInstallCallback callback) {
+              WebAppSyncBridge::RepeatingInstallCallback callback) {
             for (WebApp* app_to_install : apps_to_install) {
               // The app must be registered.
               EXPECT_TRUE(registrar().GetAppById(app_to_install->app_id()));
@@ -535,7 +543,7 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_EmptyEntityChanges) {
   syncer::EntityChangeList entity_changes;
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
@@ -592,10 +600,10 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
   base::RepeatingClosure barrier_closure =
       base::BarrierClosure(2, run_loop.QuitClosure());
 
-  install_manager().SetInstallWebAppsAfterSyncDelegateForTesting(
+  sync_bridge().SetInstallWebAppsAfterSyncCallbackForTesting(
       base::BindLambdaForTesting(
           [&](std::vector<WebApp*> apps_to_install,
-              WebAppInstallManager::RepeatingInstallCallback callback) {
+              WebAppSyncBridge::RepeatingInstallCallback callback) {
             for (WebApp* app_to_install : apps_to_install) {
               // The app must be registered.
               EXPECT_TRUE(registrar().GetAppById(app_to_install->app_id()));
@@ -610,12 +618,11 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
             barrier_closure.Run();
           }));
 
-  install_manager().SetUninstallFromSyncDelegateForTesting(
+  sync_bridge().SetUninstallFromSyncCallbackForTesting(
       base::BindLambdaForTesting(
           [&](const std::vector<AppId>& apps_to_uninstall,
-              WebAppInstallManager::RepeatingUninstallCallback callback) {
+              WebAppSyncBridge::RepeatingUninstallCallback callback) {
             EXPECT_EQ(5ul, apps_to_uninstall.size());
-
             for (const AppId& app_to_uninstall : apps_to_uninstall) {
               // The app must be registered.
               const WebApp* app = registrar().GetAppById(app_to_uninstall);
@@ -669,12 +676,12 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_DeleteHappensExternally) {
 
   base::RunLoop run_loop;
   std::vector<AppId> to_uninstall;
-  WebAppInstallManager::RepeatingUninstallCallback uninstall_complete_callback;
+  WebAppSyncBridge::RepeatingUninstallCallback uninstall_complete_callback;
 
-  install_manager().SetUninstallFromSyncDelegateForTesting(
+  sync_bridge().SetUninstallFromSyncCallbackForTesting(
       base::BindLambdaForTesting(
           [&](const std::vector<AppId>& apps_to_uninstall,
-              WebAppInstallManager::RepeatingUninstallCallback callback) {
+              WebAppSyncBridge::RepeatingUninstallCallback callback) {
             to_uninstall = apps_to_uninstall;
             uninstall_complete_callback = callback;
             run_loop.Quit();
@@ -726,7 +733,7 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_UpdateOnly) {
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
 
   // No installs or uninstalls are made here, only app updates.
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
@@ -761,7 +768,7 @@ TEST_F(WebAppSyncBridgeTest,
 
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
@@ -815,7 +822,7 @@ TEST_F(WebAppSyncBridgeTest,
 
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
@@ -860,7 +867,7 @@ TEST_F(WebAppSyncBridgeTest,
 
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
                                  std::move(entity_changes));
@@ -1156,10 +1163,10 @@ TEST_F(WebAppSyncBridgeTest, InstallAppsFromSyncAndPendingInstallation) {
   database_factory().WriteRegistry(registry);
 
   base::RunLoop run_loop;
-  install_manager().SetInstallWebAppsAfterSyncDelegateForTesting(
+  sync_bridge().SetInstallWebAppsAfterSyncCallbackForTesting(
       base::BindLambdaForTesting(
           [&](std::vector<WebApp*> apps_to_install,
-              WebAppInstallManager::RepeatingInstallCallback callback) {
+              WebAppSyncBridge::RepeatingInstallCallback callback) {
             for (WebApp* app_to_install : apps_to_install) {
               // The app must be registered.
               EXPECT_TRUE(registrar().GetAppById(app_to_install->app_id()));
@@ -1247,10 +1254,10 @@ TEST_F(WebAppSyncBridgeTest, RetryIncompleteUninstalls) {
     initial_app_ids.push_back(app->app_id());
   }
 
-  SetSyncInstallDelegateFailureIfCalled();
+  SetSyncInstallCallbackFailureIfCalled();
 
   base::RunLoop run_loop;
-  install_manager().SetRetryIncompleteUninstallsDelegateForTesting(
+  sync_bridge().SetRetryIncompleteUninstallsCallbackForTesting(
       base::BindLambdaForTesting(
           [&](const base::flat_set<AppId>& apps_to_uninstall) {
             EXPECT_EQ(apps_to_uninstall.size(), 5ul);

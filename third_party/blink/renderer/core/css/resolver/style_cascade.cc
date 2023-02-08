@@ -25,6 +25,8 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
+#include "third_party/blink/renderer/core/css/property_bitsets.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion-inl.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
@@ -224,9 +226,9 @@ void StyleCascade::Apply(CascadeFilter filter) {
   if (resolver.AuthorFlags() & CSSProperty::kBorderRadius)
     state_.StyleBuilder().SetHasAuthorBorderRadius();
 
-  if ((state_.Style()->InsideLink() != EInsideLink::kInsideVisitedLink &&
+  if ((state_.StyleBuilder().InsideLink() != EInsideLink::kInsideVisitedLink &&
        (resolver.AuthorFlags() & CSSProperty::kHighlightColors)) ||
-      (state_.Style()->InsideLink() == EInsideLink::kInsideVisitedLink &&
+      (state_.StyleBuilder().InsideLink() == EInsideLink::kInsideVisitedLink &&
        (resolver.AuthorFlags() & CSSProperty::kVisitedHighlightColors))) {
     state_.StyleBuilder().SetHasAuthorHighlightColors();
   }
@@ -387,8 +389,11 @@ void StyleCascade::AnalyzeInterpolations() {
       // interpolation of the visited property, add the visited property to
       // the map as well.
       // TODO(crbug.com/1062217): Interpolate visited colors separately
-      if (const CSSProperty* visited = property.GetVisitedProperty())
-        map_.Add(visited->GetCSSPropertyName(), priority);
+      if (kPropertiesWithVisited.Has(property.PropertyID())) {
+        if (const CSSProperty* visited = property.GetVisitedProperty()) {
+          map_.Add(visited->GetCSSPropertyName(), priority);
+        }
+      }
     }
   }
 }
@@ -409,8 +414,8 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
   // direction/writing-mode. If either property ends up with another value,
   // our assumption was incorrect, and we have to Reanalyze with the correct
   // values on ComputedStyle.
-  auto direction = state_.Style()->Direction();
-  auto writing_mode = state_.Style()->GetWritingMode();
+  auto direction = state_.StyleBuilder().Direction();
+  auto writing_mode = state_.StyleBuilder().GetWritingMode();
 
   if (map_.NativeBitset().Has(CSSPropertyID::kDirection)) {
     LookupAndApply(GetCSSPropertyDirection(), resolver);
@@ -420,8 +425,8 @@ void StyleCascade::ApplyCascadeAffecting(CascadeResolver& resolver) {
   }
 
   if (depends_on_cascade_affecting_property_) {
-    if (direction != state_.Style()->Direction() ||
-        writing_mode != state_.Style()->GetWritingMode()) {
+    if (direction != state_.StyleBuilder().Direction() ||
+        writing_mode != state_.StyleBuilder().GetWritingMode()) {
       Reanalyze();
     }
   }
@@ -588,14 +593,15 @@ void StyleCascade::ApplyInterpolation(
     CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
 
+  CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
+                               state_.GetDocument());
+  CSSInterpolationEnvironment environment(map, state_, this, &resolver);
+
   const Interpolation& interpolation = *interpolations.front();
   if (IsA<InvalidatableInterpolation>(interpolation)) {
-    CSSInterpolationTypesMap map(state_.GetDocument().GetPropertyRegistry(),
-                                 state_.GetDocument());
-    CSSInterpolationEnvironment environment(map, state_, this, &resolver);
     InvalidatableInterpolation::ApplyStack(interpolations, environment);
   } else {
-    To<TransitionInterpolation>(interpolation).Apply(state_);
+    To<TransitionInterpolation>(interpolation).Apply(environment);
   }
 
   // Applying a color property interpolation will also unconditionally apply
@@ -605,15 +611,17 @@ void StyleCascade::ApplyInterpolation(
   // if its priority is higher.
   //
   // TODO(crbug.com/1062217): Interpolate visited colors separately
-  if (const CSSProperty* visited = property.GetVisitedProperty()) {
-    CascadePriority* visited_priority =
-        map_.Find(visited->GetCSSPropertyName());
-    if (visited_priority && priority < *visited_priority) {
-      DCHECK(visited_priority->IsImportant());
-      // Resetting generation to zero makes it possible to apply the
-      // visited property again.
-      *visited_priority = CascadePriority(*visited_priority, 0);
-      LookupAndApply(*visited, resolver);
+  if (kPropertiesWithVisited.Has(property.PropertyID())) {
+    if (const CSSProperty* visited = property.GetVisitedProperty()) {
+      CascadePriority* visited_priority =
+          map_.Find(visited->GetCSSPropertyName());
+      if (visited_priority && priority < *visited_priority) {
+        DCHECK(visited_priority->IsImportant());
+        // Resetting generation to zero makes it possible to apply the
+        // visited property again.
+        *visited_priority = CascadePriority(*visited_priority, 0);
+        LookupAndApply(*visited, resolver);
+      }
     }
   }
 }
@@ -1100,7 +1108,7 @@ CSSVariableData* StyleCascade::GetVariableData(
     const CustomProperty& property) const {
   const AtomicString& name = property.GetPropertyNameAtomicString();
   const bool is_inherited = property.IsInherited();
-  return state_.StyleRef().GetVariableData(name, is_inherited);
+  return state_.Style()->GetVariableData(name, is_inherited);
 }
 
 CSSVariableData* StyleCascade::GetEnvironmentVariable(
@@ -1188,8 +1196,9 @@ const CSSProperty& StyleCascade::ResolveSurrogate(const CSSProperty& property) {
   // currently a flag to distinguish such surrogates from e.g. css-logical
   // properties.
   depends_on_cascade_affecting_property_ = true;
-  const CSSProperty* original = property.SurrogateFor(
-      state_.Style()->Direction(), state_.Style()->GetWritingMode());
+  const CSSProperty* original =
+      property.SurrogateFor(state_.StyleBuilder().Direction(),
+                            state_.StyleBuilder().GetWritingMode());
   DCHECK(original);
   return *original;
 }

@@ -21,9 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -194,17 +192,6 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   std::unique_ptr<AudioDecoderConfig> audio_config;
   std::unique_ptr<VideoDecoderConfig> video_config;
 
-#if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(kDeprecateLowUsageCodecs)) {
-    const auto codec_id = stream->codecpar->codec_id;
-    if (codec_id == AV_CODEC_ID_AMR_NB || codec_id == AV_CODEC_ID_AMR_WB ||
-        codec_id == AV_CODEC_ID_GSM_MS) {
-      MEDIA_LOG(ERROR, media_log) << "AMR and GSM are deprecated on ChromeOS.";
-      return nullptr;
-    }
-  }
-#endif
-
   if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
     audio_config = std::make_unique<AudioDecoderConfig>();
 
@@ -261,7 +248,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
     std::unique_ptr<VideoDecoderConfig> video_config,
     MediaLog* media_log)
     : demuxer_(demuxer),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       stream_(stream),
       start_time_(kNoTimestamp),
       audio_config_(audio_config.release()),
@@ -978,8 +965,8 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   format_context->max_analyze_duration = 60 * AV_TIME_BASE;
 
   // Open the AVFormatContext using our glue layer.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
+  blocking_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&FFmpegGlue::OpenContext, base::Unretained(glue_.get()),
                      is_local_file_),
       base::BindOnce(&FFmpegDemuxer::OnOpenContextDone,
@@ -1258,8 +1245,8 @@ void FFmpegDemuxer::OnOpenContextDone(bool result) {
   }
 
   // Fully initialize AVFormatContext by parsing the stream a little.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
+  blocking_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&avformat_find_stream_info, glue_->format_context(),
                      static_cast<AVDictionary**>(nullptr)),
       base::BindOnce(&FFmpegDemuxer::OnFindStreamInfoDone,
@@ -1783,8 +1770,8 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
   AVPacket* packet_ptr = packet.get();
 
   pending_read_ = true;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
+  blocking_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ReadFrameAndDiscardEmpty, glue_->format_context(),
                      packet_ptr),
       base::BindOnce(&FFmpegDemuxer::OnReadFrameDone,

@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -326,7 +326,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
   // LoginScreenClientImpl is initialized as it is a common dependency.
   if (!LoginScreenClientImpl::HasInstance()) {
     // TODO(jdufault): Add a timeout here / make sure we do not post infinitely.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&LoginDisplayHostMojo::OnStartSignInScreen,
                                   weak_factory_.GetWeakPtr()));
     return;
@@ -654,7 +654,7 @@ void LoginDisplayHostMojo::OnPasswordChangeDetected(
 }
 
 void LoginDisplayHostMojo::OnOldEncryptionDetected(
-    const UserContext& user_context,
+    std::unique_ptr<UserContext> user_context,
     bool has_incomplete_migration) {}
 
 void LoginDisplayHostMojo::OnCurrentScreenChanged(OobeScreenId current_screen,

@@ -52,6 +52,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
   webui::SetJSModuleDefaults(source);
+  webui::EnableTrustedTypesCSP(source);
 
   static constexpr webui::ResourcePath kResources[] = {
       {"icons.html.js", IDR_SIGNIN_ICONS_HTML_JS},
@@ -199,14 +200,14 @@ void SyncConfirmationUI::InitializeForSyncConfirmation(
   AddStringResource(source, "syncConfirmationSyncInfoDesc", info_desc_id);
   AddStringResource(source, "syncConfirmationSettingsInfo",
                     IDS_SYNC_CONFIRMATION_SETTINGS_INFO);
-  AddStringResource(source, "syncConfirmationBookmarks",
+  AddStringResource(source, kSyncBenefitBookmarksStringName,
                     IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_BOOKMARKS);
-  AddStringResource(source, "syncConfirmationAutofill",
+  AddStringResource(source, kSyncBenefitAutofillStringName,
                     IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_AUTOFILL);
-  AddStringResource(source, "syncConfirmationHistory",
-                    IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_HISTORY);
-  AddStringResource(source, "syncConfirmationExtensionsAndMore",
-                    IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_EXTENSIONS_AND_MORE);
+  AddStringResource(source, kSyncBenefitExtensionsStringName,
+                    IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_EXTENSIONS);
+  AddStringResource(source, kSyncBenefitHistoryAndMoreStringName,
+                    IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_HISTORY_AND_MORE);
 
   source->AddResourcePath(illustration_path, illustration_id);
   source->AddResourcePath(illustration_dark_path, illustration_dark_id);

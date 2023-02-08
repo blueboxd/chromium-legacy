@@ -12,7 +12,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -87,6 +89,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/path_util.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/ui_util.h"
@@ -357,12 +360,10 @@ std::unique_ptr<const PermissionSet> GetExtensionGrantedPermissions(
     content::BrowserContext* context,
     const scoped_refptr<const Extension>& extension) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
-  if (PermissionsManager::Get(context)->HasWithheldHostPermissions(
-          extension->id())) {
-    return prefs->GetRuntimeGrantedPermissions(extension->id());
-  } else {
-    return prefs->GetGrantedPermissions(extension->id());
-  }
+  const PermissionsManager* manager = PermissionsManager::Get(context);
+  return manager->HasWithheldHostPermissions(*extension)
+             ? prefs->GetRuntimeGrantedPermissions(extension->id())
+             : prefs->GetGrantedPermissions(extension->id());
 }
 
 // Updates num_extensions counts in `site_groups` for `granted_hosts` from one
@@ -403,6 +404,52 @@ void UpdateSiteGroupCountsForExtensionHosts(
     if (can_run_on_site_group)
       entry.second.num_extensions++;
   }
+}
+
+// Adds `site` to the extension's set of runtime granted host permissions.
+void GrantPermissionsForSite(content::BrowserContext* context,
+                             const Extension& extension,
+                             const URLPattern& site,
+                             base::OnceClosure done_callback) {
+  URLPatternSet new_host_permissions({site});
+  PermissionsUpdater(context).GrantRuntimePermissions(
+      extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                    new_host_permissions.Clone(), new_host_permissions.Clone()),
+      std::move(done_callback));
+}
+
+// Revokes the extension's access to `site` in its host permissions.
+void RevokePermissionsForSite(content::BrowserContext* context,
+                              const Extension& extension,
+                              const URLPattern& site,
+                              base::OnceClosure done_callback) {
+  // Revoke all sites which have some intersection with `site` from the
+  // extension's set of runtime granted host permissions.
+  URLPatternSet hosts_to_withhold;
+  std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+      ExtensionPrefs::Get(context)->GetRuntimeGrantedPermissions(
+          extension.id());
+
+  for (const URLPattern& pattern :
+       runtime_granted_permissions->effective_hosts()) {
+    if (site.OverlapsWith(pattern))
+      hosts_to_withhold.AddPattern(pattern);
+  }
+
+  std::unique_ptr<const PermissionSet> permissions_to_remove =
+      PermissionSet::CreateIntersection(
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        hosts_to_withhold.Clone(), hosts_to_withhold.Clone()),
+          *PermissionsManager::Get(context)->GetRevokablePermissions(extension),
+          URLPatternSet::IntersectionBehavior::kDetailed);
+  if (permissions_to_remove->IsEmpty()) {
+    std::move(done_callback).Run();
+    return;
+  }
+
+  PermissionsUpdater(context).RevokeRuntimePermissions(
+      extension, *permissions_to_remove, std::move(done_callback));
 }
 
 }  // namespace
@@ -874,8 +921,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateAutoUpdateFunction::Run() {
     params.fetch_priority = DownloadFetchPriority::kForeground;
     params.install_immediately = true;
     params.callback =
-        base::BindOnce(&DeveloperPrivateAutoUpdateFunction::OnComplete,
-                       base::RetainedRef(this));
+        base::BindOnce(&DeveloperPrivateAutoUpdateFunction::OnComplete, this);
     updater->CheckNow(std::move(params));
   }
   return RespondLater();
@@ -912,8 +958,7 @@ DeveloperPrivateGetExtensionsInfoFunction::Run() {
   info_generator_->CreateExtensionsInfo(
       include_disabled, include_terminated,
       base::BindOnce(
-          &DeveloperPrivateGetExtensionsInfoFunction::OnInfosGenerated,
-          base::RetainedRef(this)));
+          &DeveloperPrivateGetExtensionsInfoFunction::OnInfosGenerated, this));
 
   return RespondLater();
 }
@@ -941,8 +986,7 @@ DeveloperPrivateGetExtensionInfoFunction::Run() {
   info_generator_->CreateExtensionInfo(
       params->id,
       base::BindOnce(
-          &DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated,
-          base::RetainedRef(this)));
+          &DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated, this));
 
   return RespondLater();
 }
@@ -973,8 +1017,7 @@ DeveloperPrivateGetExtensionSizeFunction::Run() {
   extensions::path_util::CalculateAndFormatExtensionDirectorySize(
       extension->path(), IDS_APPLICATION_INFO_SIZE_SMALL_LABEL,
       base::BindOnce(
-          &DeveloperPrivateGetExtensionSizeFunction::OnSizeCalculated,
-          base::RetainedRef(this)));
+          &DeveloperPrivateGetExtensionSizeFunction::OnSizeCalculated, this));
 
   return RespondLater();
 }
@@ -996,7 +1039,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateGetItemsInfoFunction::Run() {
   info_generator_->CreateExtensionsInfo(
       params->include_disabled, params->include_terminated,
       base::BindOnce(&DeveloperPrivateGetItemsInfoFunction::OnInfosGenerated,
-                     base::RetainedRef(this)));
+                     this));
 
   return RespondLater();
 }
@@ -1095,17 +1138,18 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
         extension->id(), *update.error_collection);
   }
   if (update.host_access != developer::HOST_ACCESS_NONE) {
-    ScriptingPermissionsModifier modifier(browser_context(), extension);
-    if (!modifier.CanAffectExtension())
+    PermissionsManager* manager = PermissionsManager::Get(browser_context());
+    if (!manager->CanAffectExtension(*extension))
       return RespondNow(Error(kCannotChangeHostPermissions));
 
+    ScriptingPermissionsModifier modifier(browser_context(), extension);
     switch (update.host_access) {
       case developer::HOST_ACCESS_ON_CLICK:
         modifier.SetWithholdHostPermissions(true);
         modifier.RemoveAllGrantedHostPermissions();
         break;
       case developer::HOST_ACCESS_ON_SPECIFIC_SITES:
-        if (modifier.HasBroadGrantedHostPermissions())
+        if (manager->HasBroadGrantedHostPermissions(*extension))
           modifier.RemoveBroadGrantedHostPermissions();
         modifier.SetWithholdHostPermissions(true);
         break;
@@ -2195,8 +2239,8 @@ DeveloperPrivateAddHostPermissionFunction::Run() {
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  if (!ScriptingPermissionsModifier(browser_context(), extension)
-           .CanAffectExtension()) {
+  if (!PermissionsManager::Get(browser_context())
+           ->CanAffectExtension(*extension)) {
     return RespondNow(Error(kCannotChangeHostPermissions));
   }
 
@@ -2209,7 +2253,7 @@ DeveloperPrivateAddHostPermissionFunction::Run() {
                         new_host_permissions.Clone()),
           base::BindOnce(&DeveloperPrivateAddHostPermissionFunction::
                              OnRuntimePermissionsGranted,
-                         base::RetainedRef(this)));
+                         this));
 
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
@@ -2238,8 +2282,8 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  ScriptingPermissionsModifier scripting_modifier(browser_context(), extension);
-  if (!scripting_modifier.CanAffectExtension())
+  PermissionsManager* manager = PermissionsManager::Get(browser_context());
+  if (!manager->CanAffectExtension(*extension))
     return RespondNow(Error(kCannotChangeHostPermissions));
 
   URLPatternSet host_permissions_to_remove({*pattern});
@@ -2248,7 +2292,7 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
           PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                         host_permissions_to_remove.Clone(),
                         host_permissions_to_remove.Clone()),
-          *scripting_modifier.GetRevokablePermissions(),
+          *manager->GetRevokablePermissions(*extension),
           URLPatternSet::IntersectionBehavior::kDetailed);
   if (permissions_to_remove->IsEmpty())
     return RespondNow(Error("Cannot remove a host that hasn't been granted."));
@@ -2258,7 +2302,7 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
           *extension, *permissions_to_remove,
           base::BindOnce(&DeveloperPrivateRemoveHostPermissionFunction::
                              OnRuntimePermissionsRevoked,
-                         base::RetainedRef(this)));
+                         this));
 
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
@@ -2392,10 +2436,9 @@ DeveloperPrivateGetUserAndExtensionSitesByEtldFunction::Run() {
     // the user cannot modify their permissions. These also need to be added to
     // another list so the frontend knows that their site access cannot be
     // modified.
-    ScriptingPermissionsModifier permissions_modifier(browser_context(),
-                                                      extension);
+    PermissionsManager* manager = PermissionsManager::Get(browser_context());
     if (!ui_util::ShouldDisplayInExtensionSettings(*extension) ||
-        !permissions_modifier.CanAffectExtension()) {
+        !manager->CanAffectExtension(*extension)) {
       continue;
     }
 
@@ -2511,6 +2554,94 @@ DeveloperPrivateGetMatchingExtensionsForSiteFunction::Run() {
   return RespondNow(
       ArgumentList(developer::GetMatchingExtensionsForSite::Results::Create(
           matching_extensions)));
+}
+
+DeveloperPrivateUpdateSiteAccessFunction::
+    DeveloperPrivateUpdateSiteAccessFunction() = default;
+DeveloperPrivateUpdateSiteAccessFunction::
+    ~DeveloperPrivateUpdateSiteAccessFunction() = default;
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateUpdateSiteAccessFunction::Run() {
+  std::unique_ptr<developer::UpdateSiteAccess::Params> params(
+      developer::UpdateSiteAccess::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  URLPattern parsed_site(Extension::kValidHostPermissionSchemes);
+  if (parsed_site.Parse(params->site) != URLPattern::ParseResult::kSuccess)
+    return RespondNow(Error("Invalid site: " + params->site));
+
+  base::RepeatingClosure done_callback = base::BarrierClosure(
+      params->updates.size(),
+      base::BindOnce(
+          &DeveloperPrivateUpdateSiteAccessFunction::OnSiteSettingsUpdated,
+          base::RetainedRef(this)));
+
+  // To ensure that this function is atomic, return with an error if any
+  // extension specified does not exist or cannot have its host permissions
+  // changed.
+  PermissionsManager* const permissions_manager =
+      PermissionsManager::Get(browser_context());
+  std::vector<std::pair<const Extension&, developer::HostAccess>>
+      extensions_to_modify;
+  extensions_to_modify.reserve(params->updates.size());
+  for (const auto& update : params->updates) {
+    const Extension* extension = GetExtensionById(update.id);
+    if (!extension)
+      return RespondNow(Error(kNoSuchExtensionError));
+    if (!permissions_manager->CanAffectExtension(*extension))
+      return RespondNow(Error(kCannotChangeHostPermissions));
+
+    extensions_to_modify.emplace_back(*extension, update.site_access);
+  }
+
+  for (const auto& update : extensions_to_modify) {
+    const Extension& extension = update.first;
+
+    std::unique_ptr<const PermissionSet> permissions;
+    ScriptingPermissionsModifier modifier(browser_context(), &extension);
+    bool has_withheld_permissions =
+        permissions_manager->HasWithheldHostPermissions(extension);
+    switch (update.second) {
+      case developer::HOST_ACCESS_ON_CLICK:
+        // If the extension has no withheld permissions and can run on all of
+        // its requested hosts, withhold all of its host permissions as a
+        // blocklist based model for runtime host permissions (i.e. run on all
+        // sites except these) is not currently supported.
+        if (!has_withheld_permissions) {
+          modifier.SetWithholdHostPermissions(true);
+          modifier.RemoveAllGrantedHostPermissions();
+          done_callback.Run();
+        } else {
+          RevokePermissionsForSite(browser_context(), extension, parsed_site,
+                                   done_callback);
+        }
+        break;
+      case developer::HOST_ACCESS_ON_SPECIFIC_SITES:
+        // If the extension has no withheld host permissions and can run on
+        // all of its requested hosts, withhold all of its permissions
+        // before granting `site`.
+        if (!has_withheld_permissions) {
+          modifier.SetWithholdHostPermissions(true);
+          modifier.RemoveAllGrantedHostPermissions();
+        }
+        GrantPermissionsForSite(browser_context(), extension, parsed_site,
+                                done_callback);
+        break;
+      case developer::HOST_ACCESS_ON_ALL_SITES:
+        modifier.SetWithholdHostPermissions(false);
+        done_callback.Run();
+        break;
+      case developer::HOST_ACCESS_NONE:
+        NOTREACHED();
+    }
+  }
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void DeveloperPrivateUpdateSiteAccessFunction::OnSiteSettingsUpdated() {
+  Respond(NoArguments());
 }
 
 }  // namespace api

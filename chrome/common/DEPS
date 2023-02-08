@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/browser/chrome_for_testing/buildflags.h",
   "+chrome/chrome_elf/chrome_elf_main.h",
   "+chrome/grit",
   "+chrome/install_static",
@@ -35,6 +36,7 @@ include_rules = [
   "+components/ntp_tiles",
   "+components/nux",
   "+components/offline_pages/buildflags",
+  "+components/password_manager/content/common",
   "+components/password_manager/core/common",
   "+components/pdf/common",
   "+components/policy/core/common",

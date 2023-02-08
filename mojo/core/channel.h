@@ -14,6 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/rand_util.h"
+#include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/connection_params.h"
@@ -471,18 +473,34 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                                 size_t payload_size,
                                 std::vector<PlatformHandle> handles);
 
+  enum class MessageType {
+    kSent,
+    kReceive,
+  };
+
+  // Calculates if the next sample should be recorded to an histogram
+  // sub-sampled for counting IPC metrics and records histograms for Sent
+  // and Receive message types. Records histogram randomly for ~1/1000 calls.
+  void MaybeLogHistogramForIPCMetrics(MessageType type);
+
  private:
   friend class base::RefCountedThreadSafe<Channel>;
 
   class ReadBuffer;
 
   const bool is_for_ipcz_;
-  raw_ptr<Delegate> delegate_;
+  raw_ptr<Delegate, DanglingUntriaged> delegate_;
   HandlePolicy handle_policy_;
   const std::unique_ptr<ReadBuffer> read_buffer_;
 
   // Handle to the process on the other end of this Channel, iff known.
   base::Process remote_process_;
+
+  mutable base::Lock lock_;
+  // base::MetricsSubSampler uses InsecureRandomGenerator to generate
+  // pseudo-random numbers which leaves the synchronization to the client and is
+  // not thread-safe, hence guarded by lock here.
+  base::MetricsSubSampler sub_sampler_ GUARDED_BY(lock_);
 };
 
 }  // namespace mojo::core

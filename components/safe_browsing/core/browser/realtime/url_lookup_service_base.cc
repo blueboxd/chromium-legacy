@@ -10,7 +10,7 @@
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
@@ -140,6 +140,8 @@ bool RealTimeUrlLookupServiceBase::CanCheckUrl(const GURL& url) {
   if (VerdictCacheManager::has_artificial_unsafe_url()) {
     return true;
   }
+  base::UmaHistogramBoolean("SafeBrowsing.RT.CannotCheckInvalidUrl",
+                            !url.is_valid());
   return CanGetReputationOfUrl(url);
 }
 
@@ -315,7 +317,7 @@ void RealTimeUrlLookupServiceBase::MayBeCacheRealTimeUrlVerdict(
     const GURL& url,
     RTLookupResponse response) {
   if (cache_manager_ && response.threat_info_size() > 0) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
                                   cache_manager_->GetWeakPtr(), url, response,
                                   base::Time::Now()));

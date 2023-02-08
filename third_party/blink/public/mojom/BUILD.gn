@@ -72,7 +72,7 @@ mojom("mojom_platform") {
     "drag/drag.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
-    "fenced_frame/fenced_frame.mojom",
+    "fenced_frame/fenced_frame_config.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
     "file/file_utilities.mojom",
@@ -139,6 +139,7 @@ mojom("mojom_platform") {
     "mime/mime_registry.mojom",
     "native_io/native_io.mojom",
     "navigation/navigation_api_history_entry_arrays.mojom",
+    "navigation/navigation_initiator_activation_and_ad_status.mojom",
     "navigation/navigation_policy.mojom",
     "navigation/prefetched_signed_exchange_info.mojom",
     "navigation/renderer_eviction_reason.mojom",
@@ -251,6 +252,7 @@ mojom("mojom_platform") {
     ":script_type_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//cc/mojom",
+    "//components/aggregation_service:mojom",
     "//components/payments/mojom",
     "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
@@ -546,9 +548,87 @@ mojom("mojom_platform") {
           mojom = "blink.mojom.AttributionTriggerDedupKey"
           cpp = "uint64_t"
         },
+        {
+          mojom = "blink.mojom.AttributionSuitableOrigin"
+          cpp = "::attribution_reporting::SuitableOrigin"
+
+          # Avoid expensive copies by forcing Mojo methods to take the type by
+          # value, not const ref
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.AttributionFilterData"
+          cpp = "::attribution_reporting::FilterData"
+        },
+        {
+          mojom = "blink.mojom.AttributionAggregationKeys"
+          cpp = "::attribution_reporting::AggregationKeys"
+        },
+        {
+          mojom = "blink.mojom.AttributionSourceData"
+          cpp = "::attribution_reporting::SourceRegistration"
+
+          # Avoid expensive copies by forcing Mojo methods to take the type by
+          # value, not const ref
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.AttributionFilters"
+          cpp = "::attribution_reporting::Filters"
+        },
+        {
+          mojom = "blink.mojom.EventTriggerData"
+          cpp = "::attribution_reporting::EventTriggerData"
+        },
+        {
+          mojom = "blink.mojom.AttributionAggregatableTriggerData"
+          cpp = "::attribution_reporting::AggregatableTriggerData"
+        },
+        {
+          mojom = "blink.mojom.AttributionTriggerData"
+          cpp = "::attribution_reporting::TriggerRegistration"
+
+          # Avoid expensive copies by forcing Mojo methods to take the type by
+          # value, not const ref
+          move_only = true
+        },
       ]
       traits_headers = [ "//third_party/blink/public/common/attribution_reporting/mojom_traits.h" ]
       traits_public_deps = [ "//components/attribution_reporting" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.Opaque"
+          cpp = "::blink::FencedFrame::Opaque"
+        },
+        {
+          mojom = "blink.mojom.AdAuctionData"
+          cpp = "::blink::FencedFrame::AdAuctionData"
+        },
+        {
+          mojom = "blink.mojom.SharedStorageBudgetMetadata"
+          cpp = "::blink::FencedFrame::SharedStorageBudgetMetadata"
+        },
+        {
+          mojom = "blink.mojom.ReportingDestination"
+          cpp = "::blink::FencedFrame::ReportingDestination"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameReporting"
+          cpp = "::blink::FencedFrame::FencedFrameReporting"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameConfig"
+          cpp = "::blink::FencedFrame::RedactedFencedFrameConfig"
+        },
+        {
+          mojom = "blink.mojom.FencedFrameProperties"
+          cpp = "::blink::FencedFrame::RedactedFencedFrameProperties"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config_mojom_traits.h" ]
+      traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
   ]
   cpp_typemaps = [
@@ -1069,6 +1149,7 @@ mojom("mojom_core") {
     "messaging/user_activation_snapshot.mojom",
 
     # Depends on frame_policy.mojom.
+    "fenced_frame/fenced_frame.mojom",
     "navigation/navigation_params.mojom",
 
     # Depends on transferable_message.mojom.
@@ -1111,6 +1192,7 @@ mojom("mojom_core") {
     "//services/service_manager/public/mojom",
     "//services/viz/public/mojom",
     "//skia/public/mojom",
+    "//third_party/blink/public/mojom/runtime_feature_state",
     "//third_party/blink/public/mojom/service_worker:storage",
     "//third_party/blink/public/mojom/storage_key",
     "//ui/base/dragdrop/mojom",
@@ -1152,6 +1234,19 @@ mojom("mojom_core") {
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/messaging/message_port_descriptor_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.TaskAttributionId"
+          cpp = "::blink::scheduler::TaskAttributionId"
+          move_only = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/scheduler/task_attribution_id.h",
+      ]
+      traits_private_headers = [ "//third_party/blink/public/common/messaging/task_attribution_id_mojom_traits.h" ]
     },
   ]
 
@@ -1196,16 +1291,6 @@ mojom("mojom_core") {
         "//third_party/blink/public/common/messaging/transferable_message.h",
       ]
       traits_private_headers = [ "//third_party/blink/public/common/messaging/transferable_message_mojom_traits.h" ]
-    },
-    {
-      types = [
-        {
-          mojom = "blink.mojom.TaskAttributionId"
-          cpp = "::blink::scheduler::TaskAttributionId"
-          move_only = true
-        },
-      ]
-      traits_private_headers = [ "//third_party/blink/public/common/messaging/task_attribution_id_mojom_traits.h" ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps
@@ -1643,21 +1728,4 @@ mojom("color_scheme_mojo_bindings") {
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
   export_header = "third_party/blink/public/common/common_export.h"
-}
-
-mojom("mobile_metrics") {
-  sources = [ "mobile_metrics/mobile_friendliness.mojom" ]
-  cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "blink.mojom.MobileFriendliness"
-          cpp = "::blink::MobileFriendliness"
-        },
-      ]
-      traits_headers = [ "//third_party/blink/common/mobile_metrics/mobile_friendliness_mojom_traits.h" ]
-      traits_sources = [ "//third_party/blink/common/mobile_metrics/mobile_friendliness_mojom_traits.cc" ]
-      traits_public_deps = [ "//third_party/blink/public/common:headers" ]
-    },
-  ]
 }

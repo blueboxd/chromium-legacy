@@ -28,7 +28,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -64,7 +64,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -100,7 +100,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -145,7 +145,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -190,7 +190,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -227,7 +227,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -263,7 +263,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -276,7 +276,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=android-chromium",
           "--passthrough",
@@ -301,7 +301,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -315,7 +315,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=android-chromium",
           "--passthrough",
@@ -340,7 +340,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
+              "device_os": "N2G48C",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
               "os": "Android"
@@ -629,7 +629,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl2_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -668,7 +668,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -974,7 +974,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl2_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -1013,7 +1013,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -1081,7 +1081,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1117,7 +1117,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1153,7 +1153,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1198,7 +1198,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1243,7 +1243,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1280,7 +1280,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1316,7 +1316,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1326,7 +1326,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl2_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -1355,7 +1355,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1366,7 +1366,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -1394,7 +1394,7 @@
               "cpu": "x86-64",
               "display_attached": "1",
               "gpu": "8086:3e9b",
-              "os": "Mac-12.4|Mac-12.5"
+              "os": "Mac-12.5"
             }
           ],
           "idempotent": false,
@@ -1853,7 +1853,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1889,7 +1889,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -1933,7 +1933,6 @@
       "net_unittests",
       "pdf_unittests",
       "pdfium_test",
-      "postmortem-metadata",
       "ppapi_unittests",
       "printing_unittests",
       "remoting_unittests",
@@ -2218,7 +2217,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl2_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",
@@ -2257,7 +2256,7 @@
       },
       {
         "args": [
-          "webgl_conformance",
+          "webgl1_conformance",
           "--show-stdout",
           "--browser=release",
           "--passthrough",

@@ -4,6 +4,12 @@
 
 #include "services/accessibility/assistive_technology_controller_impl.h"
 
+#include <memory>
+
+#include "services/accessibility/automation_impl.h"
+#include "services/accessibility/features/v8_manager.h"
+#include "services/accessibility/public/mojom/accessibility_service.mojom.h"
+
 namespace ax {
 
 AssistiveTechnologyControllerImpl::AssistiveTechnologyControllerImpl() =
@@ -15,24 +21,73 @@ AssistiveTechnologyControllerImpl::~AssistiveTechnologyControllerImpl() =
 void AssistiveTechnologyControllerImpl::Bind(
     mojo::PendingReceiver<mojom::AssistiveTechnologyController>
         at_controller_receiver) {
-  at_controller_receivers_.Add(this, std::move(at_controller_receiver));
+  DCHECK(!at_controller_receiver_.is_bound());
+  at_controller_receiver_.Bind(std::move(at_controller_receiver));
+}
+
+void AssistiveTechnologyControllerImpl::BindAccessibilityServiceClient(
+    mojo::PendingRemote<mojom::AccessibilityServiceClient>
+        accessibility_client_remote) {
+  DCHECK(!accessibility_service_client_remote_.is_bound());
+  accessibility_service_client_remote_.Bind(
+      std::move(accessibility_client_remote));
+}
+
+void AssistiveTechnologyControllerImpl::BindAutomation(
+    mojo::PendingRemote<mojom::Automation> automation,
+    mojo::PendingReceiver<mojom::AutomationClient> automation_client) {
+  accessibility_service_client_remote_->BindAutomation(
+      std::move(automation), std::move(automation_client));
 }
 
 void AssistiveTechnologyControllerImpl::EnableAssistiveTechnology(
-    mojom::AssistiveTechnologyType type,
-    bool enabled) {
-  if (enabled) {
-    enabled_ATs_.insert(type);
-  } else {
-    enabled_ATs_.erase(type);
+    const std::vector<mojom::AssistiveTechnologyType>& enabled_features) {
+  for (int i = static_cast<int>(mojom::AssistiveTechnologyType::kMinValue);
+       i <= static_cast<int>(mojom::AssistiveTechnologyType::kMaxValue); i++) {
+    mojom::AssistiveTechnologyType type =
+        static_cast<mojom::AssistiveTechnologyType>(i);
+    bool enabled = std::find(enabled_features.begin(), enabled_features.end(),
+                             type) != enabled_features.end();
+    auto it = enabled_ATs_.find(type);
+    if (enabled && it == enabled_ATs_.end()) {
+      enabled_ATs_[type] = GetOrMakeV8Manager(type);
+    } else if (!enabled && it != enabled_ATs_.end()) {
+      enabled_ATs_.erase(type);
+    }
   }
-  // TODO(crbug.com/1355633): Load or unload features from V8.
-  // Turn on/off V8 if enabled_ATs_ size changed between 0 and non-zero.
 }
 
 bool AssistiveTechnologyControllerImpl::IsFeatureEnabled(
     mojom::AssistiveTechnologyType type) const {
   return enabled_ATs_.find(type) != enabled_ATs_.end();
+}
+
+void AssistiveTechnologyControllerImpl::RunScriptForTest(
+    mojom::AssistiveTechnologyType type,
+    const std::string& script,
+    base::OnceClosure on_complete) {
+  enabled_ATs_[type]->ExecuteScript(script, std::move(on_complete));
+}
+
+scoped_refptr<V8Manager> AssistiveTechnologyControllerImpl::GetOrMakeV8Manager(
+    mojom::AssistiveTechnologyType type) {
+  // For the first one we can ask it to initialize v8.
+  if (!v8_initialized_) {
+    BindingsIsolateHolder::InitializeV8();
+    v8_initialized_ = true;
+  }
+
+  scoped_refptr<V8Manager> v8_manager = V8Manager::Create();
+
+  // Install bindings on the global context depending on the type.
+  // For example, some types may need TTS and some may not. All need Automation.
+  v8_manager->InstallAutomation(weak_ptr_factory_.GetWeakPtr());
+  // TODO(crbug.com/1355633): Install other bindings based on the type
+  // once they are implemented.
+
+  // After installing all bindings, initialize.
+  v8_manager->AddV8Bindings();
+  return v8_manager;
 }
 
 }  // namespace ax

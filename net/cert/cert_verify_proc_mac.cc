@@ -33,7 +33,6 @@
 #include "net/cert/known_roots_mac.h"
 #include "net/cert/pki/certificate_policies.h"
 #include "net/cert/pki/parsed_certificate.h"
-#include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -460,7 +459,7 @@ void GetCandidateEVPolicy(const X509Certificate* cert_input,
                           std::string* ev_policy_oid) {
   ev_policy_oid->clear();
 
-  scoped_refptr<ParsedCertificate> cert(ParsedCertificate::Create(
+  std::shared_ptr<const ParsedCertificate> cert(ParsedCertificate::Create(
       bssl::UpRef(cert_input->cert_buffer()), {}, nullptr));
   if (!cert)
     return;
@@ -502,7 +501,7 @@ bool CheckCertChainEV(const X509Certificate* cert,
   // Intermediates should have Certificate Policies extension with the EV policy
   // or AnyPolicy.
   for (size_t i = 0; i < cert_chain.size() - 1; ++i) {
-    scoped_refptr<ParsedCertificate> intermediate_cert(
+    std::shared_ptr<const ParsedCertificate> intermediate_cert(
         ParsedCertificate::Create(bssl::UpRef(cert_chain[i].get()), {},
                                   nullptr));
     if (!intermediate_cert)
@@ -898,33 +897,13 @@ int VerifyWithGivenFlags(X509Certificate* cert,
   // fail the connection.
   for (bool try_reordered_keychain : {false, true}) {
     ScopedCFTypeRef<CFArrayRef> scoped_alternate_keychain_search_list;
-    if (TestKeychainSearchList::HasInstance()) {
-      // Unit tests need to be able to hermetically simulate situations where a
-      // user has an undesirable certificate in a per-user keychain.
-      // Adding/Removing a Keychain using SecKeychainCreate/SecKeychainDelete
-      // has global side effects, which would break other tests and processes
-      // running on the same machine, so instead tests may load pre-created
-      // keychains using SecKeychainOpen and then inject them through
-      // TestKeychainSearchList.
+    if (try_reordered_keychain) {
       CFArrayRef keychain_search_list;
-      status = TestKeychainSearchList::GetInstance()->CopySearchList(
-          &keychain_search_list);
+      status = SecKeychainCopySearchList(&keychain_search_list);
       if (status)
         return NetErrorFromOSStatus(status);
       scoped_alternate_keychain_search_list.reset(keychain_search_list);
-    }
-    if (try_reordered_keychain) {
-      // If a TestKeychainSearchList is present, it will have already set
-      // |scoped_alternate_keychain_search_list|, which will be used as the
-      // basis for reordering the keychain. Otherwise, get the current keychain
-      // search list and use that.
-      if (!scoped_alternate_keychain_search_list) {
-        CFArrayRef keychain_search_list;
-        status = SecKeychainCopySearchList(&keychain_search_list);
-        if (status)
-          return NetErrorFromOSStatus(status);
-        scoped_alternate_keychain_search_list.reset(keychain_search_list);
-      }
+
       CFMutableArrayRef mutable_keychain_search_list = CFArrayCreateMutableCopy(
           kCFAllocatorDefault,
           CFArrayGetCount(scoped_alternate_keychain_search_list.get()) + 1,

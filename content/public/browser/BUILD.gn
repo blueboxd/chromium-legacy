@@ -170,10 +170,9 @@ source_set("browser_sources") {
     "favicon_status.cc",
     "favicon_status.h",
     "feature_observer_client.h",
-    "federated_identity_active_session_permission_context_delegate.h",
     "federated_identity_api_permission_context_delegate.cc",
     "federated_identity_api_permission_context_delegate.h",
-    "federated_identity_sharing_permission_context_delegate.h",
+    "federated_identity_permission_context_delegate.h",
     "file_select_listener.h",
     "file_system_access_entry_factory.h",
     "file_system_access_permission_context.h",
@@ -207,6 +206,8 @@ source_set("browser_sources") {
     "hid_delegate.h",
     "histogram_fetcher.h",
     "host_zoom_map.h",
+    "identity_request_account.cc",
+    "identity_request_account.h",
     "identity_request_dialog_controller.cc",
     "identity_request_dialog_controller.h",
     "installability_error.cc",
@@ -258,7 +259,6 @@ source_set("browser_sources") {
     "navigation_handle_user_data.h",
     "navigation_throttle.cc",
     "navigation_throttle.h",
-    "navigation_type.h",
     "navigation_ui_data.h",
     "network_context_client_base.h",
     "network_quality_observer_factory.h",
@@ -599,6 +599,7 @@ source_set("browser_sources") {
 
   if (is_fuchsia) {
     sources += [ "ax_inspect_factory_fuchsia.cc" ]
+    deps += [ "//media/fuchsia/mojom:fuchsia_media" ]
   }
 
   if (is_win) {

@@ -27,7 +27,6 @@ import {
   FakeCameraCaptureCandidate,
 } from './capture_candidate.js';
 import {CaptureCandidatePreferrer} from './capture_candidate_preferrer.js';
-import {DeviceInfoUpdater} from './device_info_updater.js';
 import {Modes, Video} from './mode/index.js';
 import {Preview} from './preview.js';
 import {StreamConstraints} from './stream_constraints.js';
@@ -226,11 +225,12 @@ class Reconfigurer {
         return false;
       }
 
+      let facing = c.deviceId !== null ?
+          cameraInfo.getCamera3DeviceInfo(c.deviceId)?.facing ?? null :
+          null;
       this.listener.onTryingNewConfig({
         deviceId: c.deviceId,
-        facing: c.deviceId !== null ?
-            cameraInfo.getCamera3DeviceInfo(c.deviceId)?.facing ?? null :
-            null,
+        facing,
         mode: c.mode,
         captureCandidate: c.captureCandidate,
       });
@@ -243,7 +243,7 @@ class Reconfigurer {
         await this.preview.open(c.constraints);
         // For non-ChromeOS VCD, the facing and device id can only be known
         // after preview is actually opened.
-        const facing = this.preview.getFacing();
+        facing = this.preview.getFacing();
         const deviceId = assertString(this.preview.getDeviceId());
 
         await this.checkEnablePTZ(c);
@@ -271,6 +271,13 @@ class Reconfigurer {
         let errorToReport: Error;
         // Since OverconstrainedError is not an Error instance.
         if (e instanceof OverconstrainedError) {
+          if (facing === Facing.EXTERNAL && e.constraint === 'deviceId') {
+            // External camera configuration failed with OverconstrainedError
+            // of deviceId means that the device is no longer available and is
+            // likely caused by external camera disconnected. Ignore this
+            // error.
+            continue;
+          }
           errorToReport =
               new Error(`${e.message} (constraint = ${e.constraint})`);
           errorToReport.name = 'OverconstrainedError';
@@ -357,7 +364,6 @@ export class OperationScheduler {
   private pendingReconfigureWaiters: Array<CancelableEvent<boolean>> = [];
 
   constructor(
-      private readonly infoUpdater: DeviceInfoUpdater,
       private readonly listener: EventListener,
       preview: Preview,
       defaultFacing: Facing|null,
@@ -371,8 +377,8 @@ export class OperationScheduler {
         defaultFacing,
     );
     this.capturer = new Capturer(this.modes);
-    this.infoUpdater.addDeviceChangeListener((updater) => {
-      const info = new CameraInfo(updater);
+    StreamManager.getInstance().addRealDeviceChangeListener((devices) => {
+      const info = new CameraInfo(devices);
       if (this.ongoingOperationType !== null) {
         this.pendingUpdateInfo = info;
         return;

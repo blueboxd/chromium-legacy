@@ -8,6 +8,11 @@ SUBMITTED_BUILDS_SUBQUERY = """\
   submitted_builds AS ({chromium_builds}
   ),""".format(chromium_builds=queries_module.SUBMITTED_BUILDS_TEMPLATE)
 
+SHERIFF_ROTATIONS_CI_BUILDS_SUBQUERY = """\
+  sheriff_rotations_ci_builds AS ({chromium_builds}
+  ),""".format(
+    chromium_builds=queries_module.SHERIFF_ROTATIONS_CI_BUILDS_TEMPLATE)
+
 # Gets all failures from the past |sample_period| days from CI bots that did not
 # already have an associated test suppression when the test ran.
 CI_FAILED_TEST_QUERY = """\
@@ -43,6 +48,91 @@ WHERE
   (STARTS_WITH(ARRAY_TO_STRING(step_name, ''), 'blink_wpt_tests') OR
    STARTS_WITH(ARRAY_TO_STRING(step_name, ''), 'blink_web_tests'))
 """
+
+# Gets all failing build culprit results from the past |sample_period| days
+# from CI bots that did not already have an associated test suppression when
+# the test ran, test with one pass in retry will consider as pass.
+# TODO(crbug.com/1382494): Update the query with multiple expectation types
+# such as CRASH.
+CI_FAILED_BUILD_CULPRIT_TEST_QUERY = """\
+WITH
+  {sheriff_rotations_ci_builds_subquery}
+  failed_tests AS (
+  SELECT
+    exported.id,
+    test_metadata.name,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "typ_tag") as typ_tags,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "raw_typ_expectation") as typ_expectations,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "step_name") as step_name,
+    ARRAY(
+          SELECT value
+          FROM tr.variant
+          WHERE key = "builder") as builder
+  FROM
+    `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr,
+    sheriff_rotations_ci_builds srcb
+  WHERE
+    status = "FAIL" AND
+    exported.realm = "chromium:ci" AND
+    builder = srcb.builder AND
+    partition_time > TIMESTAMP_SUB(CURRENT_TIMESTAMP(),
+                                          INTERVAL @sample_period DAY)
+  ),
+  passed_tests AS (
+  SELECT
+    exported.id,
+    test_metadata.name,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "typ_tag") as typ_tags,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "raw_typ_expectation") as typ_expectations,
+    ARRAY(
+          SELECT value
+          FROM tr.tags
+          WHERE key = "step_name") as step_name,
+    ARRAY(
+          SELECT value
+          FROM tr.variant
+          WHERE key = "builder") as builder
+  FROM
+    `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr,
+    sheriff_rotations_ci_builds srcb
+  WHERE
+    status = "PASS" AND
+    exported.realm = "chromium:ci" AND
+    builder = srcb.builder AND
+    partition_time > TIMESTAMP_SUB(CURRENT_TIMESTAMP(),
+                                          INTERVAL @sample_period DAY)
+  )
+SELECT
+  ft.name,
+  ft.id,
+  ft.builder,
+  ft.step_name,
+  ft.typ_expectations,
+  ft.typ_tags
+FROM failed_tests ft
+LEFT JOIN passed_tests pt ON (ft.name = pt.name AND ft.id = pt.id)
+WHERE
+  ARRAY_TO_STRING(ft.typ_expectations, '') = "Pass" AND
+  pt.name IS NULL AND
+  (STARTS_WITH(ARRAY_TO_STRING(ft.step_name, ''), 'blink_wpt_tests') OR
+   STARTS_WITH(ARRAY_TO_STRING(ft.step_name, ''), 'blink_web_tests'))
+""".format(
+    sheriff_rotations_ci_builds_subquery=SHERIFF_ROTATIONS_CI_BUILDS_SUBQUERY)
 
 # Gets all failures from the past |sample_period| days from trybots that did not
 # already have an associated test suppresssion when the test ran, only including
@@ -158,6 +248,9 @@ GROUP BY gr.name, ARRAY_TO_STRING(gr.typ_tags, '')
 class WebTestsBigQueryQuerier(queries_module.BigQueryQuerier):
     def GetFlakyOrFailingCiQuery(self) -> str:
         return CI_FAILED_TEST_QUERY
+
+    def GetFailingBuildCulpritFromCiQuery(self) -> str:
+        return CI_FAILED_BUILD_CULPRIT_TEST_QUERY
 
     def GetFlakyOrFailingTryQuery(self) -> str:
         return TRY_FAILED_TEST_QUERY

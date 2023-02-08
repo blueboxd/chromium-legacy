@@ -13,7 +13,9 @@
 #include "base/allocator/partition_alloc_support.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/functional/callback.h"
+#include "base/functional/disallow_unretained.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -37,7 +39,23 @@ using ::testing::StrictMock;
 namespace base {
 namespace {
 
-class IncompleteType;
+class AllowsUnretained {};
+
+class BansUnretained {
+ public:
+  DISALLOW_UNRETAINED();
+};
+
+class BansUnretainedInPrivate {
+  DISALLOW_UNRETAINED();
+};
+
+class DerivedButBaseBansUnretained : public BansUnretained {};
+
+static_assert(internal::TypeSupportsUnretainedV<AllowsUnretained>);
+static_assert(!internal::TypeSupportsUnretainedV<BansUnretained>);
+static_assert(!internal::TypeSupportsUnretainedV<BansUnretainedInPrivate>);
+static_assert(!internal::TypeSupportsUnretainedV<DerivedButBaseBansUnretained>);
 
 class NoRef {
  public:
@@ -1082,12 +1100,6 @@ TYPED_TEST(BindVariantsTest, ArgumentBinding) {
   p.value = 5;
   EXPECT_EQ(5, TypeParam::Bind(&UnwrapNoRefParent, p).Run());
 
-  IncompleteType* incomplete_ptr = reinterpret_cast<IncompleteType*>(123);
-  EXPECT_EQ(
-      incomplete_ptr,
-      TypeParam::Bind(&PolymorphicIdentity<IncompleteType*>, incomplete_ptr)
-          .Run());
-
   NoRefChild c;
   c.value = 6;
   EXPECT_EQ(6, TypeParam::Bind(&UnwrapNoRefParent, c).Run());
@@ -1798,7 +1810,7 @@ TEST(BindDeathTest, BanFirstOwnerOfRefCountedType) {
   });
 }
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
@@ -1939,7 +1951,7 @@ TEST_F(BindUnretainedDanglingDeathTest, UnretainedWeakReceiverDangling) {
 
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !BUILDFLAG(IS_ANDROID)
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 }  // namespace
 }  // namespace base

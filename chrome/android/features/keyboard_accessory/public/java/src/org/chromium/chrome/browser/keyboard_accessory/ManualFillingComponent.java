@@ -159,9 +159,10 @@ public interface ManualFillingComponent extends BackPressHandler {
             PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate);
 
     /**
-     * Signals that the accessory has permission to show if the user focuses a form field.
+     * Signals that the accessory has permission to show.
+     * @param waitForKeyboard signals if the keyboard is requested.
      */
-    void showWhenKeyboardIsVisible();
+    void show(boolean waitForKeyboard);
 
     /**
      * Requests to close the active tab in the keyboard accessory. If there is no active tab, this
@@ -175,7 +176,7 @@ public interface ManualFillingComponent extends BackPressHandler {
     void swapSheetWithKeyboard();
 
     /**
-     * Hides the sheet until undone with {@link #showWhenKeyboardIsVisible()}.
+     * Hides the sheet until undone with {@link #show()}.
      */
     void hide();
 
@@ -227,4 +228,17 @@ public interface ManualFillingComponent extends BackPressHandler {
      * @param confirmedCallback A {@link Runnable} to trigger upon confirmation.
      */
     void confirmOperation(String title, String message, Runnable confirmedCallback);
+
+    /**
+     * Returns the amount that the keyboard will be extended by the filling component when shown.
+     * i.e. The height of any accessories to be shown on top of the keyboard.
+     */
+    int getKeyboardExtensionHeight();
+
+    /**
+     * Will force the accessory to show when the keyboard is shown.
+     * TODO(crbug.com/1385400): Ideally this would live in a test utility like
+     * ManualFillingTestHelper.
+     */
+    void forceShowForTesting();
 }

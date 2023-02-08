@@ -53,6 +53,7 @@ class ThrottleService {
   void NotifyObserverStateChangedForTesting();
   void SetObserversForTesting(
       std::vector<std::unique_ptr<ThrottleObserver>> observers);
+  bool HasServiceObserverForTesting(ServiceObserver* candidate);
 
   bool should_throttle() const {
     // When `should_throttle_` hasn't been initialized, return true to throttle
@@ -105,10 +106,5 @@ class ThrottleService {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace chromeos {
-using ::ash::ThrottleService;
-}
 
 #endif  // CHROME_BROWSER_ASH_THROTTLE_SERVICE_H_

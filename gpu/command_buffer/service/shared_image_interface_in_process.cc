@@ -289,6 +289,18 @@ void SharedImageInterfaceInProcess::CreateSharedImageWithDataOnGpuThread(
 }
 
 Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
+    viz::SharedImageFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
+    uint32_t usage,
+    gfx::GpuMemoryBufferHandle buffer_handle) {
+  NOTREACHED();
+  return Mailbox();
+}
+
+Mailbox SharedImageInterfaceInProcess::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gfx::BufferPlane plane,
@@ -353,12 +365,9 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
     return;
 
   DCHECK(shared_image_factory_);
-  // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
-  SurfaceHandle surface_handle = kNullSurfaceHandle;
   if (!shared_image_factory_->CreateSharedImage(
           mailbox, kDisplayCompositorClientId, std::move(handle), format, plane,
-          surface_handle, size, color_space, surface_origin, alpha_type,
-          usage)) {
+          size, color_space, surface_origin, alpha_type, usage)) {
     context_state_->MarkContextLost();
     return;
   }

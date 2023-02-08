@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
@@ -132,7 +133,7 @@ class UserPerformanceTuningManagerTest : public testing::Test {
   raw_ptr<base::test::TestBatteryLevelProvider> battery_level_provider_;
   std::unique_ptr<base::BatteryStateSampler> battery_sampler_;
 
-  FakePowerMonitorSource* power_monitor_source_;
+  raw_ptr<FakePowerMonitorSource> power_monitor_source_;
   bool throttling_enabled_ = false;
   std::unique_ptr<UserPerformanceTuningManager> manager_;
 };
@@ -474,6 +475,24 @@ TEST_F(UserPerformanceTuningManagerTest, HasBatteryChanged) {
       }));
   sampling_source_->SimulateEvent();
   EXPECT_FALSE(manager()->DeviceHasBattery());
+}
+
+TEST_F(UserPerformanceTuningManagerTest,
+       BatteryPercentageWithoutFullChargedCapacity) {
+  local_state_.SetInteger(
+      performance_manager::user_tuning::prefs::kBatterySaverModeState,
+      static_cast<int>(performance_manager::user_tuning::prefs::
+                           BatterySaverModeState::kEnabledBelowThreshold));
+  StartManager();
+
+  battery_level_provider_->SetBatteryState(
+      base::BatteryLevelProvider::BatteryState({
+          .battery_count = 0,
+          .current_capacity = 100,
+          .full_charged_capacity = 0,
+      }));
+  sampling_source_->SimulateEvent();
+  EXPECT_EQ(100, manager()->SampledBatteryPercentage());
 }
 
 }  // namespace performance_manager::user_tuning

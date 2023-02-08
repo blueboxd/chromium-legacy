@@ -14,7 +14,7 @@ import './profile_picker_shared.css.js';
 import './strings.m.js';
 
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -85,6 +85,7 @@ export class ProfilePickerMainViewElement extends
   private manageProfilesBrowserProxy_: ManageProfilesBrowserProxy =
       ManageProfilesBrowserProxyImpl.getInstance();
   private resizeObserver_: ResizeObserver|null = null;
+  private previousRoute_: Routes|null = null;
 
   override ready() {
     super.ready();
@@ -95,14 +96,16 @@ export class ProfilePickerMainViewElement extends
     if (!isProfileCreationAllowed()) {
       this.$.addProfile.style.display = 'none';
     }
+
+    this.addEventListener('view-enter-finish', this.onViewEnterFinish_);
   }
 
   override connectedCallback() {
     super.connectedCallback();
     this.addResizeObserver_();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'profiles-list-changed', this.handleProfilesListChanged_.bind(this));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'profile-removed', this.handleProfileRemoved_.bind(this));
     this.manageProfilesBrowserProxy_.initializeMainView();
   }
@@ -110,6 +113,21 @@ export class ProfilePickerMainViewElement extends
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.resizeObserver_!.disconnect();
+  }
+
+  override onRouteChange(route: Routes) {
+    if (route === Routes.MAIN) {
+      return;
+    }
+    this.previousRoute_ = route;
+  }
+
+  private onViewEnterFinish_() {
+    if (this.previousRoute_ !== Routes.NEW_PROFILE) {
+      return;
+    }
+    // Focus the 'Add' button if coming back from the Add Profile flow.
+    this.$.addProfile.focus();
   }
 
   private addResizeObserver_() {

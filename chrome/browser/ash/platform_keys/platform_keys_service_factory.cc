@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "base/scoped_observation.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/net/client_cert_store_ash.h"
 #include "chrome/browser/ash/platform_keys/platform_keys_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -28,9 +27,6 @@ namespace ash {
 namespace platform_keys {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove when migrated to ash.
-using ::chromeos::ClientCertStoreAsh;
 
 // Invoked on the IO thread when a NSSCertDatabase is available, delegates back
 // to origin thread.
@@ -73,7 +69,8 @@ class DelegateForUser : public PlatformKeysServiceImplDelegate {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&GetCertDatabaseOnIoThread,
-                       base::ThreadTaskRunnerHandle::Get(), std::move(callback),
+                       base::SingleThreadTaskRunner::GetCurrentDefault(),
+                       std::move(callback),
                        NssServiceFactory::GetForContext(browser_context_)
                            ->CreateNSSCertDatabaseGetterForIOThread()));
   }

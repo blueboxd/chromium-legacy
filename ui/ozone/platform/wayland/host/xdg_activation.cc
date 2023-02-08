@@ -62,10 +62,8 @@ void XdgActivation::Instantiate(WaylandConnection* connection,
   if (connection->xdg_activation_)
     return;
 
-  auto instance = wl::Bind<::xdg_activation_v1>(
-      registry, name,
-      wl::CalculateBindVersion(version, kMaxVersion,
-                               xdg_activation_v1_interface.version));
+  auto instance = wl::Bind<::xdg_activation_v1>(registry, name,
+                                                std::min(version, kMaxVersion));
   if (!instance) {
     LOG(ERROR) << "Failed to bind " << kInterfaceName;
     return;
@@ -83,7 +81,7 @@ XdgActivation::~XdgActivation() = default;
 
 void XdgActivation::Activate(wl_surface* surface) const {
   const WaylandWindow* const active_window =
-      connection_->wayland_window_manager()->GetCurrentActiveWindow();
+      connection_->window_manager()->GetCurrentActiveWindow();
   if (!active_window) {
     LOG(WARNING) << "Cannot activate a window because no active windows found!";
     return;

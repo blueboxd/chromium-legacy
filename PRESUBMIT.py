@@ -228,6 +228,7 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
           r'.*Test[^a-z]',
           r'third_party/',
           'base/android/java/src/org/chromium/base/ContextUtils.java',
+          'chromecast/browser/android/apk/src/org/chromium/chromecast/shell/BroadcastReceiverScope.java',
       ),
     ),
     BanRule(
@@ -248,6 +249,32 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
       False,
       excluded_paths=(
           'ui/android/java/src/org/chromium/ui/base/ViewUtils.java',
+      ),
+    ),
+)
+
+_BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
+    BanRule(
+      r'/\bchrome\.send\b',
+      (
+       'The use of chrome.send is disallowed in Chrome (context: https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/security/handling-messages-from-web-content.md).',
+       'Please use mojo instead for new webuis. https://docs.google.com/document/d/1RF-GSUoveYa37eoyZ9EhwMtaIwoW7Z88pIgNZ9YzQi4/edit#heading=h.gkk22wgk6wff',
+      ),
+      True,
+      (
+          r'^(?!ash\/webui).+',
+          # TODO(crbug.com/1385601): pre-existing violations still need to be
+          # cleaned up.
+          'ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.js',
+          'ash/webui/common/resources/quick_unlock/lock_screen_constants.js',
+          'ash/webui/common/resources/smb_shares/smb_browser_proxy.js',
+          'ash/webui/connectivity_diagnostics/resources/connectivity_diagnostics.js',
+          'ash/webui/diagnostics_ui/resources/diagnostics_browser_proxy.ts',
+          'ash/webui/multidevice_debug/resources/logs.js',
+          'ash/webui/multidevice_debug/resources/webui.js',
+          'ash/webui/projector_app/resources/annotator/trusted/annotator_browser_proxy.js',
+          'ash/webui/projector_app/resources/app/trusted/projector_browser_proxy.js',
+          'ash/webui/scanning/resources/scanning_browser_proxy.js',
       ),
     ),
 )
@@ -728,14 +755,20 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chrome/services/sharing/nearby/',
        # Needed for interop with third-party library libunwindstack.
        '^base/profiler/libunwindstack_unwinder_android\.(cc|h)',
+       # Needed for interop with third-party boringssl cert verifier
+       '^third_party/boringssl/',
+       '^net/cert/',
+       '^net/tools/cert_verify_tool/',
+       '^services/cert_verifier/',
+       '^components/certificate_transparency/',
+       '^components/media_router/common/providers/cast/certificate/',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
        '^chromeos/ash/services/libassistant/grpc/',
        '^chromecast/cast_core/grpc',
        '^chromecast/cast_core/runtime/browser',
        '^ios/chrome/test/earl_grey/chrome_egtest_plugin_client\.(mm|h)',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
-       '^base/fuchsia/filtered_service_directory\.(cc|h)',
-       '^base/fuchsia/service_directory_test_base\.h',
+       '^base/fuchsia/.*\.(cc|h)',
        '.*fuchsia.*test\.(cc|h)',
        # Needed for clang plugin tests
        '^tools/clang/plugins/tests/',
@@ -925,6 +958,12 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Needed to use liburlpattern API.
         r'third_party/blink/renderer/core/url_pattern/.*',
+        # Needed to use QUICHE API.
+        r'net/quic/.*',
+        r'net/spdy/.*',
+        r'net/test/embedded_test_server/.*',
+        r'net/third_party/quiche/.*',
+        r'services/network/web_transport\.cc',
         # Not an error in third_party folders.
         _THIRD_PARTY_EXCEPT_BLINK
       ],
@@ -1091,25 +1130,9 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      ('base::ThreadRestrictions::ScopedAllowIO'),
-      (
-        'ScopedAllowIO is deprecated, use ScopedAllowBlocking instead.',
-      ),
-      False,
-      (),
-    ),
-    BanRule(
       r'/\bRunMessageLoop\b',
       (
           'RunMessageLoop is deprecated, use RunLoop instead.',
-      ),
-      False,
-      (),
-    ),
-    BanRule(
-      'RunThisRunLoop',
-      (
-          'RunThisRunLoop is deprecated, use RunLoop directly instead.',
       ),
       False,
       (),
@@ -1161,6 +1184,41 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       (
         r'^sql/initialization\.(cc|h)$',
         r'^third_party/sqlite/.*\.(c|cc|h)$',
+      ),
+    ),
+    BanRule(
+      'CREATE VIEW',
+      (
+        'SQL views are disabled in Chromium feature code',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/sql#no-views',
+      ),
+      True,
+      (
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # sql/ itself uses views when using memory-mapped IO.
+        r'^sql/.*',
+        # Various performance tools that do not build as part of Chrome.
+        r'^infra/.*',
+        r'^tools/perf.*',
+        r'.*perfetto.*',
+      ),
+    ),
+    BanRule(
+      'CREATE VIRTUAL TABLE',
+      (
+        'SQL virtual tables are disabled in Chromium feature code',
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/sql#no-virtual-tables',
+      ),
+      True,
+      (
+        _THIRD_PARTY_EXCEPT_BLINK,
+        # sql/ itself uses virtual tables in the recovery module and tests.
+        r'^sql/.*',
+        # TODO(https://crbug.com/695592): Remove once WebSQL is deprecated.
+        r'third_party/blink/web_tests/storage/websql/.*'
+        # Various performance tools that do not build as part of Chrome.
+        r'^tools/perf.*',
+        r'.*perfetto.*',
       ),
     ),
     BanRule(
@@ -1472,8 +1530,6 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/create_test_apk_wrapper_script.pydeps',
     'build/android/gyp/create_ui_locale_resources.pydeps',
     'build/android/gyp/dex.pydeps',
-    'build/android/gyp/dex_jdk_libs.pydeps',
-    'build/android/gyp/dexsplitter.pydeps',
     'build/android/gyp/dist_aar.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/flatc_java.pydeps',
@@ -2079,6 +2135,12 @@ def CheckNoBannedFunctions(input_api, output_api):
             for ban_rule in _BANNED_JAVA_FUNCTIONS:
                 CheckForMatch(f, line_num, line, ban_rule)
 
+    file_filter = lambda f: f.LocalPath().endswith(('.js', '.ts'))
+    for f in input_api.AffectedFiles(file_filter=file_filter):
+        for line_num, line in f.ChangedContents():
+            for ban_rule in _BANNED_JAVASCRIPT_FUNCTIONS:
+                CheckForMatch(f, line_num, line, ban_rule)
+
     file_filter = lambda f: f.LocalPath().endswith(('.mm', '.m', '.h'))
     for f in input_api.AffectedFiles(file_filter=file_filter):
         for line_num, line in f.ChangedContents():
@@ -2531,23 +2593,25 @@ def CheckChromeOsSyncedPrefRegistration(input_api, output_api):
     return results
 
 
-# TODO: add unit tests.
 def CheckNoAbbreviationInPngFileName(input_api, output_api):
     """Makes sure there are no abbreviations in the name of PNG files.
     The native_client_sdk directory is excluded because it has auto-generated PNG
     files for documentation.
     """
     errors = []
-    files_to_check = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
+    files_to_check = [r'.*\.png$']
     files_to_skip = [r'^native_client_sdk/',
                      r'^services/test/',
                      r'^third_party/blink/web_tests/',
                     ]
     file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=files_to_check, files_to_skip=files_to_skip)
+    abbreviation = input_api.re.compile('.+_[a-z]\.png|.+_[a-z]_.*\.png')
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=file_filter):
-        errors.append('    %s' % f.LocalPath())
+        file_name = input_api.os_path.split(f.LocalPath())[1]
+        if abbreviation.search(file_name):
+            errors.append('    %s' % f.LocalPath())
 
     results = []
     if errors:
@@ -2773,6 +2837,7 @@ def CheckSpamLogging(input_api, output_api):
     files_to_skip = (
         _EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
         input_api.DEFAULT_FILES_TO_SKIP + (
+            r"^base/fuchsia/scoped_fx_logger\.cc$",
             r"^base/logging\.h$",
             r"^base/logging\.cc$",
             r"^base/task/thread_pool/task_tracker\.cc$",
@@ -3159,10 +3224,9 @@ def CheckJavaStyle(input_api, output_api):
         # Restore sys.path to what it was before.
         sys.path = original_sys_path
 
-    return checkstyle.RunCheckstyle(
+    return checkstyle.run_presubmit(
         input_api,
         output_api,
-        'tools/android/checkstyle/chromium-style-5.0.xml',
         files_to_skip=_EXCLUDED_PATHS + input_api.DEFAULT_FILES_TO_SKIP)
 
 
@@ -5048,6 +5112,30 @@ def CheckAccessibilityTreeTestsAreIncludedForAndroid(input_api, output_api):
     return [output_api.PresubmitPromptWarning(message)]
 
 
+def CheckEsLintConfigChanges(input_api, output_api):
+    """Suggest using "git cl presubmit --files" when .eslintrc.js files are
+    modified. This is important because enabling an error in .eslintrc.js can
+    trigger errors in any .js or .ts files in its directory, leading to hidden
+    presubmit errors."""
+    results = []
+    eslint_filter = lambda f: input_api.FilterSourceFile(
+        f, files_to_check=[r'.*\.eslintrc\.js$'])
+    for f in input_api.AffectedFiles(include_deletes=False,
+                                     file_filter=eslint_filter):
+        local_dir = input_api.os_path.dirname(f.LocalPath())
+        # Use / characters so that the commands printed work on any OS.
+        local_dir = local_dir.replace(input_api.os_path.sep, '/')
+        if local_dir:
+            local_dir += '/'
+        results.append(
+            output_api.PresubmitNotifyResult(
+                '%(file)s modified. Consider running \'git cl presubmit --files '
+                '"%(dir)s*.js;%(dir)s*.ts"\' in order to check and fix the affected '
+                'files before landing this change.' %
+                { 'file' : f.LocalPath(), 'dir' : local_dir}))
+    return results
+
+
 # string pattern, sequence of strings to show when pattern matches,
 # error flag. True if match is a presubmit error, otherwise it's a warning.
 _NON_INCLUSIVE_TERMS = (
@@ -5763,6 +5851,7 @@ def CheckStrings(input_api, output_api):
     #   .sha1 files aren't removed, warn the developer to remove them.
     unnecessary_screenshots = []
     missing_sha1 = []
+    missing_sha1_modified = []
     unnecessary_sha1_files = []
 
     # This checks verifies that the ICU syntax of messages this CL touched is
@@ -5778,6 +5867,12 @@ def CheckStrings(input_api, output_api):
                                            message_id + '.png.sha1')
         if sha1_path not in new_or_added_paths:
             missing_sha1.append(sha1_path)
+
+    def _CheckScreenshotModified(screenshots_dir, message_id):
+        sha1_path = input_api.os_path.join(screenshots_dir,
+                                           message_id + '.png.sha1')
+        if sha1_path not in new_or_added_paths:
+            missing_sha1_modified.append(sha1_path)
 
     def _CheckScreenshotRemoved(screenshots_dir, message_id):
         sha1_path = input_api.os_path.join(screenshots_dir,
@@ -5994,7 +6089,7 @@ def CheckStrings(input_api, output_api):
                 _CheckScreenshotAdded(screenshots_dir, added_id)
 
             for modified_id in modified_ids:
-                _CheckScreenshotAdded(screenshots_dir, modified_id)
+                _CheckScreenshotModified(screenshots_dir, modified_id)
 
             for removed_id in removed_ids:
                 _CheckScreenshotRemoved(screenshots_dir, removed_id)
@@ -6018,10 +6113,18 @@ def CheckStrings(input_api, output_api):
         if missing_sha1:
             results.append(
                 output_api.PresubmitError(
-                    'You are adding or modifying UI strings.\n'
+                    'You are adding UI strings.\n'
                     'To ensure the best translations, take screenshots of the relevant UI '
                     '(https://g.co/chrome/translation) and add these files to your '
                     'changelist:', sorted(missing_sha1)))
+
+        if missing_sha1_modified:
+            results.append(
+                output_api.PresubmitError(
+                    'You are modifying UI strings or their meanings.\n'
+                    'To ensure the best translations, take screenshots of the relevant UI '
+                    '(https://g.co/chrome/translation) and add these files to your '
+                    'changelist:', sorted(missing_sha1_modified)))
 
         if unnecessary_sha1_files:
             results.append(

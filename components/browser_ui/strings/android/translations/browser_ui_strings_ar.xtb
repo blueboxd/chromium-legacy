@@ -32,7 +32,7 @@
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1743802530341753419">السؤال قبل السماح للمواقع الإلكترونية بالاتصال بجهاز (موصى به)</translation>
 <translation id="1779089405699405702">أداة فك ترميز الصور</translation>
-<translation id="1785415724048343560">ننصحك بهذا الخيار للحصول على أفضل تجربة</translation>
+<translation id="1785415724048343560">إجراء مُقترَح للحصول على أفضل تجربة</translation>
 <translation id="1818308510395330587">‏للسماح لتطبيق <ph name="APP_NAME" /> باستخدام ميزة الواقع المعزَّز، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1864927262126810325">من <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">يمكن للمواقع الإلكترونية ذات الصلة الاطّلاع على نشاطك في المجموعة.</translation>
@@ -69,7 +69,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> وإذن واحد (<ph name="NUM_MORE" />) آخر.}zero{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذن آخر.}two{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> وإذنَين (<ph name="NUM_MORE" />) آخرَين.}few{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> أذونات أخرى.}many{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذنًا آخر.}other{تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذن آخر.}}</translation>
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
-<translation id="2442870161001914531">دائمًا طلب الموقع الإلكتروني المتوافق مع أجهزة الكمبيوتر</translation>
+<translation id="2442870161001914531">طلب الموقع الإلكتروني المخصّص لأجهزة الكمبيوتر دومًا</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2490684707762498678">تتم إدارتها من خلال <ph name="APP_NAME" /></translation>
@@ -194,8 +194,7 @@
 <translation id="5048398596102334565">السماح للمواقع الإلكترونية بالوصول إلى مستشعرات الحركة (مُقترَح)</translation>
 <translation id="5050380848339752099">هذا الموقع الإلكتروني على وشك مشاركة معلومات مع أحد التطبيقات خارج وضع التصفُّح المتخفي.</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
-<translation id="5082281938627763039">يؤدي هذا الإجراء إلى حذف ملفات تعريف الارتباط وبيانات الموقع الإلكتروني الأخرى لـ "<ph name="FPS_MEMBER" />" ولمواقع إلكترونية مدرَجة في مجموعة مواقع "<ph name="FPS_OWNER" />" الإلكترونية.</translation>
-<translation id="5091013926750941408">إصدار الموقع الإلكتروني المتوافق مع الأجهزة الجوّالة</translation>
+<translation id="5091013926750941408">موقع إلكتروني متوافق مع الأجهزة الجوّالة</translation>
 <translation id="509133520954049755">طلب العرض المخصَّص للكمبيوتر المكتبي</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
@@ -208,7 +207,6 @@
 <translation id="528192093759286357">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5301954838959518834">حسنًا</translation>
-<translation id="5313967007315987356">إضافة موقع إلكتروني</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5335288049665977812">‏السماح للمواقع الإلكترونية بتشغيل JavaScript (موصى به)</translation>
 <translation id="534295439873310000">‏أجهزة NFC</translation>
@@ -242,6 +240,7 @@
 <translation id="5922853908706496913">جارٍ مشاركة شاشتك</translation>
 <translation id="5922967540311291836">حظر ملفات تعريف الارتباط التابعة لجهات خارجية:</translation>
 <translation id="5939518447894949180">إعادة الضبط</translation>
+<translation id="5968921426641056619">أدخِل عنوان الويب.</translation>
 <translation id="5975083100439434680">تصغير</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">يمكنك التحكّم بإمكانية وصول هذا الموقع إلى جهازك.</translation>
@@ -274,7 +273,7 @@
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> وإذن واحد (<ph name="NUM_MORE" />) آخر.}zero{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذن آخر.}two{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> وإذنَين (<ph name="NUM_MORE" />) آخرَين.}few{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> أذونات أخرى.}many{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذنًا آخر.}other{تم حظر <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" /> و<ph name="NUM_MORE" /> إذن آخر.}}</translation>
 <translation id="6554732001434021288">تمّت زيارة الموقع الإلكتروني آخر مرّة قبل <ph name="NUM_DAYS" /> يوم.</translation>
 <translation id="6561560012278703671">استخدام طريقة أقل بروزًا لإرسال الإشعارات (منع رسائل الإشعارات من إزعاجك)</translation>
-<translation id="6593061639179217415">إصدار الموقع الإلكتروني المخصّص لأجهزة الكمبيوتر</translation>
+<translation id="6593061639179217415">الموقع الإلكتروني المخصّص لأجهزة الكمبيوتر</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="662080504995468778">البقاء</translation>
@@ -308,6 +307,7 @@
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7260727271532453612">تم السماح بالوصول إلى <ph name="PERMISSION_1" /> و<ph name="PERMISSION_2" />.</translation>
 <translation id="7302486331832100261">أنت تحظر الإشعارات عادةً. للسماح بها، يُرجى النقر على "التفاصيل".</translation>
+<translation id="7366415735885268578">إضافة موقع إلكتروني</translation>
 <translation id="7383715096023715447">إعدادات النطاق <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7423538860840206698">تم الحظر من قراءة الحافظة</translation>
@@ -366,13 +366,14 @@
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
 <translation id="8409345997656833551">تلقّي إشعارات في حال كان خيار العرض المبسَّط متاحًا لمقالة</translation>
+<translation id="8423565414844018592">تم ضبط حجم النص على <ph name="TEXT_SCALING" />.</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8441146129660941386">الرجوع للوراء</translation>
 <translation id="8444433999583714703">‏للسماح لتطبيق <ph name="APP_NAME" /> بالوصول إلى موقعك الجغرافي، يُرجى أيضًا تفعيل الموقع الجغرافي في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{ملف تعريف ارتباط واحد قيد الاستخدام}zero{# ملف تعريف ارتباط قيد الاستخدام}two{ملفا تعريف ارتباط قيد الاستخدام}few{# ملفات تعريف ارتباط قيد الاستخدام}many{# ملف تعريف ارتباط قيد الاستخدام}other{# ملف تعريف ارتباط قيد الاستخدام}}</translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
-<translation id="848952951823693243">دائمًا طلب الموقع الإلكتروني المتوافق مع الأجهزة الجوّالة</translation>
+<translation id="848952951823693243">طلب موقع إلكتروني متوافق مع الأجهزة الجوّالة دومًا</translation>
 <translation id="8499083585497694743">إعادة صوت الميكروفون</translation>
 <translation id="851751545965956758">حظر المواقع الإلكترونية من الاتصال بأجهزة</translation>
 <translation id="8525306231823319788">ملء الشاشة</translation>
@@ -396,7 +397,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">‏تقنية NFC غير مفعّلة على هذا الجهاز. فعّلها في<ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">‏يتيح لك هذا الإعداد منع المواقع الإلكترونية من الاطّلاع على المعلومات وتعديلها على الأجهزة المزوَّدة بتقنية NFC.</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">حظر ملفات تعريف الارتباط لموقع إلكتروني مُحدَّد.</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
 <translation id="8986362086234534611">حذف</translation>

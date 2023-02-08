@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -31,7 +32,6 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
@@ -75,7 +75,7 @@ const storage::mojom::StorageType kStorageSync =
 const int64_t kAvailableSpaceForApp = 13377331U;
 const int64_t kMustRemainAvailableForSystem = kAvailableSpaceForApp / 2;
 const int64_t kDefaultPoolSize = 1000;
-const int64_t kDefaultPerHostQuota = 200;
+const int64_t kDefaultPerStorageKeyQuota = 200;
 const int64_t kGigabytes = QuotaManagerImpl::kGBytes;
 
 struct UsageAndQuotaResult {
@@ -176,10 +176,10 @@ class QuotaManagerImplTest : public testing::Test {
   void ResetQuotaManagerImpl(bool is_incognito) {
     quota_manager_impl_ = base::MakeRefCounted<QuotaManagerImpl>(
         is_incognito, data_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*quota_change_callback=*/base::DoNothing(),
         mock_special_storage_policy_.get(), GetQuotaSettingsFunc());
-    SetQuotaSettings(kDefaultPoolSize, kDefaultPerHostQuota,
+    SetQuotaSettings(kDefaultPoolSize, kDefaultPerStorageKeyQuota,
                      is_incognito ? INT64_C(0) : kMustRemainAvailableForSystem);
 
     // Don't (automatically) start the eviction for testing.
@@ -302,7 +302,7 @@ class QuotaManagerImplTest : public testing::Test {
 
   UsageAndQuotaResult GetUsageAndQuotaForBucket(const BucketInfo& bucket_info) {
     base::test::TestFuture<QuotaStatusCode, int64_t, int64_t> future;
-    quota_manager_impl_->GetBucketUsageAndQuota(bucket_info,
+    quota_manager_impl_->GetBucketUsageAndQuota(bucket_info.id,
                                                 future.GetCallback());
     return {future.Get<0>(), future.Get<1>(), future.Get<2>()};
   }
@@ -330,13 +330,13 @@ class QuotaManagerImplTest : public testing::Test {
   }
 
   void SetQuotaSettings(int64_t pool_size,
-                        int64_t per_host_quota,
+                        int64_t per_storage_key_quota,
                         int64_t must_remain_available) {
     QuotaSettings settings;
     settings.pool_size = pool_size;
-    settings.per_host_quota = per_host_quota;
-    settings.session_only_per_host_quota =
-        (per_host_quota > 0) ? (per_host_quota - 1) : 0;
+    settings.per_storage_key_quota = per_storage_key_quota;
+    settings.session_only_per_storage_key_quota =
+        (per_storage_key_quota > 0) ? (per_storage_key_quota - 1) : 0;
     settings.must_remain_available = must_remain_available;
     settings.refresh_interval = base::TimeDelta::Max();
     quota_manager_impl_->SetQuotaSettings(settings);
@@ -417,13 +417,30 @@ class QuotaManagerImplTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void NotifyStorageAccessed(const StorageKey& storage_key, StorageType type) {
-    quota_manager_impl_->NotifyStorageAccessed(storage_key, type,
-                                               IncrementMockTime());
+  void NotifyDefaultBucketAccessed(const StorageKey& storage_key,
+                                   StorageType type,
+                                   const base::Time& time) {
+    auto bucket = BucketLocator::ForDefaultBucket(storage_key);
+    bucket.type = type;
+    quota_manager_impl_->NotifyBucketAccessed(bucket, time);
   }
 
-  void NotifyBucketAccessed(BucketId bucket_id) {
-    quota_manager_impl_->NotifyBucketAccessed(bucket_id, IncrementMockTime());
+  void NotifyDefaultBucketAccessed(const StorageKey& storage_key,
+                                   StorageType type) {
+    NotifyDefaultBucketAccessed(storage_key, type, IncrementMockTime());
+  }
+
+  void NotifyBucketAccessed(const BucketLocator& bucket) {
+    quota_manager_impl_->NotifyBucketAccessed(bucket, IncrementMockTime());
+  }
+
+  void ModifyDefaultBucketAndNotify(MockQuotaClient* client,
+                                    const StorageKey& storage_key,
+                                    StorageType type,
+                                    int delta) {
+    auto bucket = BucketLocator::ForDefaultBucket(storage_key);
+    bucket.type = type;
+    client->ModifyBucketAndNotify(bucket, delta);
   }
 
   void GetEvictionBucket(StorageType type) {
@@ -1136,7 +1153,7 @@ TEST_F(QuotaManagerImplTest, GetUsageAndQuota_SingleBucket) {
     auto result = GetUsageAndQuotaForBucket(bucket.value());
     EXPECT_EQ(result.status, QuotaStatusCode::kOk);
     EXPECT_EQ(result.usage, 60);
-    EXPECT_EQ(result.quota, kDefaultPerHostQuota);
+    EXPECT_EQ(result.quota, kDefaultPerStorageKeyQuota);
   }
 }
 
@@ -1209,8 +1226,9 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_MultiStorageKeys) {
 
   // This time explicitly sets a temporary global quota.
   const int kPoolSize = 100;
-  const int kPerHostQuota = 20;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
@@ -1223,16 +1241,16 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_MultiStorageKeys) {
 
   // The host's quota should be its full portion of the global quota
   // since there's plenty of diskspace.
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://bar.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 5);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
   result = GetUsageAndQuotaForWebApps(ToStorageKey("https://bar.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 7);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsage_MultipleClients) {
@@ -1257,24 +1275,26 @@ TEST_F(QuotaManagerImplTest, GetUsage_MultipleClients) {
   RegisterClientBucketData(database_client, kData2);
 
   const int64_t kPoolSize = GetAvailableDiskSpaceForTest();
-  const int64_t kPerHostQuota = kPoolSize / 5;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int64_t kPerStorageKeyQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 1);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("https://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 128);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://bar.com/"), kSync);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 4);
-  EXPECT_EQ(result.quota, QuotaManagerImpl::kSyncableStorageDefaultHostQuota);
+  EXPECT_EQ(result.quota,
+            QuotaManagerImpl::kSyncableStorageDefaultStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
@@ -1284,7 +1304,8 @@ TEST_F(QuotaManagerImplTest, GetUsage_MultipleClients) {
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kSync);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 8);
-  EXPECT_EQ(result.quota, QuotaManagerImpl::kSyncableStorageDefaultHostQuota);
+  EXPECT_EQ(result.quota,
+            QuotaManagerImpl::kSyncableStorageDefaultStorageKeyQuota);
 
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 1 + 2 + 128 + 512);
@@ -1496,10 +1517,12 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsage_WithModify) {
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 20);
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com/"), kTemp, 30);
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com:1/"), kTemp,
-                                    -5);
-  client->ModifyStorageKeyAndNotify(ToStorageKey("https://foo.com/"), kTemp, 1);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://foo.com/"), kTemp,
+                               30);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://foo.com:1/"), kTemp,
+                               -5);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("https://foo.com/"), kTemp,
+                               1);
 
   // Database call to ensure modification calls have completed.
   GetBucket(ToStorageKey("http://foo.com"), kDefaultBucketName, kTemp);
@@ -1513,7 +1536,8 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsage_WithModify) {
   EXPECT_EQ(result.usage, 20 - 5);
   int foo1_usage = result.usage;
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://bar.com/"), kTemp, 40);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://bar.com/"), kTemp,
+                               40);
 
   // Database call to ensure modification calls have completed.
   GetBucket(ToStorageKey("http://foo.com"), kDefaultBucketName, kTemp);
@@ -1539,8 +1563,9 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   RegisterClientBucketData(fs_client, kData);
 
   const int kPoolSize = 100;
-  const int kPerHostQuota = 20;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
@@ -1548,12 +1573,12 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
   result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com:8080/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 20);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   set_additional_callback_count(0);
   RunAdditionalUsageAndQuotaTask(ToStorageKey("http://foo.com/"), kTemp);
@@ -1562,7 +1587,7 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
   EXPECT_EQ(2, additional_callback_count());
 }
 
@@ -1578,8 +1603,9 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_NukeManager) {
   RegisterClientBucketData(fs_client, kData);
 
   const int kPoolSize = 100;
-  const int kPerHostQuota = 20;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   set_additional_callback_count(0);
 
@@ -1612,8 +1638,9 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Overbudget) {
   RegisterClientBucketData(fs_client, kData);
 
   const int kPoolSize = 100;
-  const int kPerHostQuota = 20;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuota = 20;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   // Provided diskspace is not tight, global usage does not affect the
   // quota calculations for an individual storage key, so despite global usage
@@ -1625,18 +1652,18 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Overbudget) {
       GetUsageAndQuotaForWebApps(ToStorageKey("http://usage1/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 1);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage10/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage200/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 200);
   // Should be clamped to the nominal quota.
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Unlimited) {
@@ -1652,8 +1679,9 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Unlimited) {
   RegisterClientBucketData(fs_client, kData);
 
   // Test when not overbugdet.
-  const int kPerHostQuotaFor1000 = 200;
-  SetQuotaSettings(1000, kPerHostQuotaFor1000, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuotaFor1000 = 200;
+  SetQuotaSettings(1000, kPerStorageKeyQuotaFor1000,
+                   kMustRemainAvailableForSystem);
   auto global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 10 + 50 + 4000);
   EXPECT_EQ(global_usage_result.unlimited_usage, 4000);
@@ -1662,12 +1690,12 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Unlimited) {
       GetUsageAndQuotaForWebApps(ToStorageKey("http://usage10/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor1000);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor1000);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage50/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 50);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor1000);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor1000);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
@@ -1681,18 +1709,19 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Unlimited) {
   EXPECT_EQ(client_result.quota, QuotaManagerImpl::kNoLimit);
 
   // Test when overbudgeted.
-  const int kPerHostQuotaFor100 = 20;
-  SetQuotaSettings(100, kPerHostQuotaFor100, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuotaFor100 = 20;
+  SetQuotaSettings(100, kPerStorageKeyQuotaFor100,
+                   kMustRemainAvailableForSystem);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage10/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor100);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage50/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 50);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor100);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
@@ -1716,23 +1745,23 @@ TEST_F(QuotaManagerImplTest, GetTemporaryUsageAndQuota_Unlimited) {
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage10/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor100);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://usage50/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 50);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor100);
 
   result = GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 4000);
-  EXPECT_EQ(result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuotaFor100);
 
   client_result = GetUsageAndQuotaForStorageClient(
       ToStorageKey("http://unlimited/"), kTemp);
   EXPECT_EQ(client_result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(client_result.usage, 4000);
-  EXPECT_EQ(client_result.quota, kPerHostQuotaFor100);
+  EXPECT_EQ(client_result.quota, kPerStorageKeyQuotaFor100);
 }
 
 TEST_F(QuotaManagerImplTest, GetQuotaLowAvailableDiskSpace) {
@@ -1746,7 +1775,7 @@ TEST_F(QuotaManagerImplTest, GetQuotaLowAvailableDiskSpace) {
   RegisterClientBucketData(fs_client, kData);
 
   const int kPoolSize = 10000000;
-  const int kPerHostQuota = kPoolSize / 5;
+  const int kPerStorageKeyQuota = kPoolSize / 5;
 
   // In here, we expect the low available space logic branch
   // to be ignored. Doing so should have QuotaManagerImpl return the same
@@ -1754,13 +1783,13 @@ TEST_F(QuotaManagerImplTest, GetQuotaLowAvailableDiskSpace) {
   // low available space.
   const int kMustRemainAvailable =
       static_cast<int>(GetAvailableDiskSpaceForTest() - 65536);
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailable);
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota, kMustRemainAvailable);
 
   auto result =
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 100000);
-  EXPECT_EQ(result.quota, kPerHostQuota);
+  EXPECT_EQ(result.quota, kPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, GetSyncableQuota) {
@@ -1769,10 +1798,10 @@ TEST_F(QuotaManagerImplTest, GetSyncableQuota) {
   // Pre-condition check: available disk space (for testing) is less than
   // the default quota for syncable storage.
   EXPECT_LE(kAvailableSpaceForApp,
-            QuotaManagerImpl::kSyncableStorageDefaultHostQuota);
+            QuotaManagerImpl::kSyncableStorageDefaultStorageKeyQuota);
 
   // The quota manager should return
-  // QuotaManagerImpl::kSyncableStorageDefaultHostQuota as syncable quota,
+  // QuotaManagerImpl::kSyncableStorageDefaultStorageKeyQuota as syncable quota,
   // despite available space being less than the desired quota. Only
   // storage keys with unlimited storage, which is never the case for syncable
   // storage, shall have their quota calculation take into account the amount of
@@ -1782,7 +1811,8 @@ TEST_F(QuotaManagerImplTest, GetSyncableQuota) {
       GetUsageAndQuotaForWebApps(ToStorageKey("http://unlimited/"), kSync);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 0);
-  EXPECT_EQ(result.quota, QuotaManagerImpl::kSyncableStorageDefaultHostQuota);
+  EXPECT_EQ(result.quota,
+            QuotaManagerImpl::kSyncableStorageDefaultStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsage_Simple) {
@@ -1840,8 +1870,8 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
   EXPECT_EQ(global_usage_result.usage, 1 + 20 + 600000);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com/"), kSync,
-                                    80000000);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://foo.com/"), kSync,
+                               80000000);
 
   global_usage_result = GetGlobalUsage(kSync);
   EXPECT_EQ(global_usage_result.usage, 1 + 20 + 600000 + 80000000);
@@ -1851,7 +1881,8 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
   EXPECT_EQ(global_usage_result.usage, 300 + 4000 + 50000 + 7000000);
   EXPECT_EQ(global_usage_result.unlimited_usage, 0);
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://foo.com/"), kTemp, 1);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://foo.com/"), kTemp,
+                               1);
 
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 300 + 4000 + 50000 + 7000000 + 1);
@@ -1864,8 +1895,8 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
                        ToStorageKey("http://buz.com/"), kTemp)
                        .usage);
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://buz.com/"), kTemp,
-                                    900000000);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://buz.com/"), kTemp,
+                               900000000);
 
   EXPECT_EQ(4000, GetStorageKeyUsageWithBreakdown(
                       ToStorageKey("https://buz.com/"), kTemp)
@@ -1893,7 +1924,7 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
   auto foo_temp_bucket =
       GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
   ASSERT_TRUE(foo_temp_bucket.ok());
-  client->ModifyBucketAndNotify(foo_temp_bucket->id, 80000000);
+  client->ModifyBucketAndNotify(foo_temp_bucket->ToBucketLocator(), 80000000);
 
   global_usage_result = GetGlobalUsage(kTemp);
   EXPECT_EQ(global_usage_result.usage, 1 + 100 + 80000000);
@@ -1906,7 +1937,7 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
   auto foo_sync_bucket =
       GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kSync);
   ASSERT_TRUE(foo_sync_bucket.ok());
-  client->ModifyBucketAndNotify(foo_sync_bucket->id, 200);
+  client->ModifyBucketAndNotify(foo_sync_bucket->ToBucketLocator(), 200);
 
   global_usage_result = GetGlobalUsage(kSync);
   EXPECT_EQ(global_usage_result.usage, 50 + 200);
@@ -1919,7 +1950,7 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
   auto bar_temp_bucket =
       GetBucket(ToStorageKey("http://bar.com/"), "logs", kTemp);
   ASSERT_TRUE(bar_temp_bucket.ok());
-  client->ModifyBucketAndNotify(bar_temp_bucket->id, 900000000);
+  client->ModifyBucketAndNotify(bar_temp_bucket->ToBucketLocator(), 900000000);
 
   EXPECT_EQ(100 + 900000000, GetStorageKeyUsageWithBreakdown(
                                  ToStorageKey("http://bar.com/"), kTemp)
@@ -2007,12 +2038,12 @@ TEST_F(QuotaManagerImplTest, EvictBucketData) {
           .usage;
 
   for (const ClientBucketData& data : kData1) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   for (const ClientBucketData& data : kData2) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   task_environment_.RunUntilIdle();
 
@@ -2089,8 +2120,8 @@ TEST_F(QuotaManagerImplTest, EvictBucketDataHistogram) {
       QuotaManagerImpl::kEvictedBucketDaysSinceAccessHistogram, 1);
 
   // Change the use count.
-  quota_manager_impl()->NotifyStorageAccessed(ToStorageKey("http://bar.com/"),
-                                              kTemp, base::Time::Now());
+  NotifyDefaultBucketAccessed(ToStorageKey("http://bar.com/"), kTemp,
+                              base::Time::Now());
   task_environment_.RunUntilIdle();
 
   GetGlobalUsage(kTemp);
@@ -2135,7 +2166,7 @@ TEST_F(QuotaManagerImplTest, EvictBucketDataWithDeletionError) {
                      .usage);
 
   for (const ClientBucketData& data : kData)
-    NotifyStorageAccessed(ToStorageKey(data.origin), data.type);
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type);
   task_environment_.RunUntilIdle();
 
   auto bucket =
@@ -2197,8 +2228,9 @@ TEST_F(QuotaManagerImplTest, GetEvictionRoundInfo) {
   RegisterClientBucketData(client, kData);
 
   const int kPoolSize = 10000000;
-  const int kPerHostQuota = kPoolSize / 5;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
+  const int kPerStorageKeyQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
 
   GetEvictionRoundInfo();
   task_environment_.RunUntilIdle();
@@ -2509,12 +2541,12 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultiple) {
           .usage;
 
   for (const ClientBucketData& data : kData1) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   for (const ClientBucketData& data : kData2) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   task_environment_.RunUntilIdle();
 
@@ -2614,12 +2646,12 @@ TEST_F(QuotaManagerImplTest, DeleteBucketDataMultipleClientsDifferentTypes) {
           .usage;
 
   for (const ClientBucketData& data : kData1) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   for (const ClientBucketData& data : kData2) {
-    quota_manager_impl()->NotifyStorageAccessed(ToStorageKey(data.origin),
-                                                data.type, base::Time::Now());
+    NotifyDefaultBucketAccessed(ToStorageKey(data.origin), data.type,
+                                base::Time::Now());
   }
   task_environment_.RunUntilIdle();
 
@@ -2775,20 +2807,35 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
 }
 
 TEST_F(QuotaManagerImplTest, GetDiskAvailabilityAndTempPoolSize) {
-  const int kPoolSize = 1000;
-  const int kPerHostQuota = kPoolSize / 5;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, 0);
-  storage::StorageCapacityResult storage_capacity = GetStorageCapacity();
+  ResetQuotaManagerImpl(/*is_incognito=*/false);
 
   base::test::TestFuture<int64_t, int64_t, int64_t> quota_internals_future;
   quota_manager_impl()->GetDiskAvailabilityAndTempPoolSize(
       quota_internals_future.GetCallback());
   std::tuple quota_internals_result = quota_internals_future.Take();
 
-  EXPECT_EQ(storage_capacity.total_space, std::get<0>(quota_internals_result));
-  EXPECT_EQ(storage_capacity.available_space,
-            std::get<1>(quota_internals_result));
-  EXPECT_EQ(kPoolSize, std::get<2>(quota_internals_result));
+  int64_t available_space =
+      static_cast<uint64_t>(GetAvailableDiskSpaceForTest());
+  int64_t total_space = available_space * 2;
+
+  EXPECT_EQ(total_space, std::get<0>(quota_internals_result));
+  EXPECT_EQ(available_space, std::get<1>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<2>(quota_internals_result));
+}
+
+TEST_F(QuotaManagerImplTest, GetDiskAvailabilityAndTempPoolSize_Incognito) {
+  // Test to make sure total_space and available_space are retrieved
+  // as expected, without producing a crash.
+  ResetQuotaManagerImpl(/*is_incognito=*/true);
+
+  base::test::TestFuture<int64_t, int64_t, int64_t> quota_internals_future;
+  quota_manager_impl()->GetDiskAvailabilityAndTempPoolSize(
+      quota_internals_future.GetCallback());
+  std::tuple quota_internals_result = quota_internals_future.Take();
+
+  EXPECT_EQ(kDefaultPoolSize, std::get<0>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<1>(quota_internals_result));
+  EXPECT_EQ(kDefaultPoolSize, std::get<2>(quota_internals_result));
 }
 
 TEST_F(QuotaManagerImplTest, NotifyAndLRUBucket) {
@@ -2802,12 +2849,12 @@ TEST_F(QuotaManagerImplTest, NotifyAndLRUBucket) {
       CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kSync});
   RegisterClientBucketData(fs_client, kData);
 
-  quota_manager_impl()->NotifyStorageAccessed(ToStorageKey("http://b.com/"),
-                                              kSync, base::Time::Now());
-  quota_manager_impl()->NotifyStorageAccessed(ToStorageKey("http://a.com/"),
-                                              kTemp, base::Time::Now());
-  quota_manager_impl()->NotifyStorageAccessed(ToStorageKey("http://c.com/"),
-                                              kTemp, base::Time::Now());
+  NotifyDefaultBucketAccessed(ToStorageKey("http://b.com/"), kSync,
+                              base::Time::Now());
+  NotifyDefaultBucketAccessed(ToStorageKey("http://a.com/"), kTemp,
+                              base::Time::Now());
+  NotifyDefaultBucketAccessed(ToStorageKey("http://c.com/"), kTemp,
+                              base::Time::Now());
   task_environment_.RunUntilIdle();
 
   GetEvictionBucket(kTemp);
@@ -2846,23 +2893,23 @@ TEST_F(QuotaManagerImplTest, GetLruEvictableBucket) {
   ASSERT_TRUE(bucket.ok());
   BucketInfo bucket_c = bucket.value();
 
-  NotifyBucketAccessed(bucket_a.id);
-  NotifyBucketAccessed(bucket_b.id);
-  NotifyBucketAccessed(bucket_c.id);
+  NotifyBucketAccessed(bucket_a.ToBucketLocator());
+  NotifyBucketAccessed(bucket_b.ToBucketLocator());
+  NotifyBucketAccessed(bucket_c.ToBucketLocator());
 
   GetEvictionBucket(kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(bucket_a.ToBucketLocator(), eviction_bucket());
 
   // Notify that the `bucket_a` is accessed.
-  NotifyBucketAccessed(bucket_a.id);
+  NotifyBucketAccessed(bucket_a.ToBucketLocator());
   GetEvictionBucket(kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(bucket_b.ToBucketLocator(), eviction_bucket());
 
   // Notify that the `bucket_b` is accessed while GetEvictionBucket is running.
   GetEvictionBucket(kTemp);
-  NotifyBucketAccessed(bucket_b.id);
+  NotifyBucketAccessed(bucket_b.ToBucketLocator());
   task_environment_.RunUntilIdle();
   // Post-filtering must have excluded the returned storage key, so we will
   // see empty result here.
@@ -2886,12 +2933,17 @@ TEST_F(QuotaManagerImplTest, GetBucketsModifiedBetween) {
   EXPECT_EQ(4U, buckets.size());
 
   base::Time time1 = client->IncrementMockTime();
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://a.com/"), kTemp, 10);
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://a.com:1/"), kTemp, 10);
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://b.com/"), kSync, 10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://a.com/"), kTemp,
+                               10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://a.com:1/"), kTemp,
+                               10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://b.com/"), kSync,
+                               10);
   base::Time time2 = client->IncrementMockTime();
-  client->ModifyStorageKeyAndNotify(ToStorageKey("https://a.com/"), kTemp, 10);
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://c.com/"), kTemp, 10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("https://a.com/"), kTemp,
+                               10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://c.com/"), kTemp,
+                               10);
   base::Time time3 = client->IncrementMockTime();
 
   // Database call to ensure modification calls have completed.
@@ -2914,7 +2966,8 @@ TEST_F(QuotaManagerImplTest, GetBucketsModifiedBetween) {
   buckets = GetBucketsModifiedBetween(kTemp, time3, base::Time::Max());
   EXPECT_TRUE(buckets.empty());
 
-  client->ModifyStorageKeyAndNotify(ToStorageKey("http://a.com/"), kTemp, 10);
+  ModifyDefaultBucketAndNotify(client, ToStorageKey("http://a.com/"), kTemp,
+                               10);
 
   // Database call to ensure modification calls have completed.
   GetBucket(ToStorageKey("http://a.com"), kDefaultBucketName, kTemp);
@@ -2948,12 +3001,9 @@ TEST_F(QuotaManagerImplTest, DumpBucketTable) {
   CreateBucketForTesting(kStorageKey, kDefaultBucketName, kTemp);
   CreateBucketForTesting(kStorageKey, kDefaultBucketName, kSync);
 
-  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kTemp,
-                                              base::Time::Now());
-  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kSync,
-                                              base::Time::Now());
-  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kSync,
-                                              base::Time::Now());
+  NotifyDefaultBucketAccessed(kStorageKey, kTemp, base::Time::Now());
+  NotifyDefaultBucketAccessed(kStorageKey, kSync, base::Time::Now());
+  NotifyDefaultBucketAccessed(kStorageKey, kSync, base::Time::Now());
   task_environment_.RunUntilIdle();
 
   const BucketTableEntries& entries = DumpBucketTable();
@@ -2978,8 +3028,8 @@ TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
       CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kSync});
   RegisterClientBucketData(client, kData);
 
-  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kTemp, kAccessTime);
-  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kSync, kAccessTime);
+  NotifyDefaultBucketAccessed(kStorageKey, kTemp, kAccessTime);
+  NotifyDefaultBucketAccessed(kStorageKey, kSync, kAccessTime);
   const base::Time time1 = base::Time::Now();
 
   auto temp_bucket = GetBucket(kStorageKey, kDefaultBucketName, kTemp);
@@ -3141,8 +3191,8 @@ TEST_F(QuotaManagerImplTest, GetUsageAndQuota_Incognito) {
   GetGlobalUsage(kTemp);
 
   const int kPoolSize = 1000;
-  const int kPerHostQuota = kPoolSize / 5;
-  SetQuotaSettings(kPoolSize, kPerHostQuota, INT64_C(0));
+  const int kPerStorageKeyQuota = kPoolSize / 5;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota, INT64_C(0));
 
   auto storage_capacity = GetStorageCapacity();
   EXPECT_EQ(storage_capacity.total_space, kPoolSize);
@@ -3152,7 +3202,7 @@ TEST_F(QuotaManagerImplTest, GetUsageAndQuota_Incognito) {
       GetUsageAndQuotaForWebApps(ToStorageKey("http://foo.com/"), kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
   EXPECT_EQ(result.usage, 10);
-  EXPECT_GE(result.quota, kPerHostQuota);
+  EXPECT_GE(result.quota, kPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, GetUsageAndQuota_SessionOnly) {
@@ -3161,7 +3211,7 @@ TEST_F(QuotaManagerImplTest, GetUsageAndQuota_SessionOnly) {
       kEpheremalStorageKey.origin().GetURL());
 
   auto result = GetUsageAndQuotaForWebApps(kEpheremalStorageKey, kTemp);
-  EXPECT_EQ(quota_manager_impl()->settings().session_only_per_host_quota,
+  EXPECT_EQ(quota_manager_impl()->settings().session_only_per_storage_key_quota,
             result.quota);
 }
 
@@ -3232,7 +3282,7 @@ TEST_F(QuotaManagerImplTest, OverrideQuotaForStorageKey_Disable) {
 
   result = GetUsageAndQuotaForWebApps(storage_key, kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.quota, kDefaultPerHostQuota);
+  EXPECT_EQ(result.quota, kDefaultPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, WithdrawQuotaOverride) {
@@ -3271,7 +3321,7 @@ TEST_F(QuotaManagerImplTest, WithdrawQuotaOverride) {
   task_environment_.RunUntilIdle();
   result = GetUsageAndQuotaForWebApps(storage_key, kTemp);
   EXPECT_EQ(result.status, QuotaStatusCode::kOk);
-  EXPECT_EQ(result.quota, kDefaultPerHostQuota);
+  EXPECT_EQ(result.quota, kDefaultPerStorageKeyQuota);
 }
 
 TEST_F(QuotaManagerImplTest, QuotaChangeEvent_LargePartitionPressure) {

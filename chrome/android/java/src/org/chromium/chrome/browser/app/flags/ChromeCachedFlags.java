@@ -79,6 +79,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sAppMenuMobileSiteOption);
                 add(ChromeFeatureList.sBackGestureRefactorAndroid);
                 add(ChromeFeatureList.sCctBrandTransparency);
+                add(ChromeFeatureList.sCctFeatureUsage);
                 add(ChromeFeatureList.sCctIncognito);
                 add(ChromeFeatureList.sCctIncognitoAvailableToThirdParty);
                 add(ChromeFeatureList.sCctRemoveRemoteViewIds);
@@ -87,20 +88,19 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sCctResizableAlwaysShowNavBarButtons);
                 add(ChromeFeatureList.sCctResizableForFirstParties);
                 add(ChromeFeatureList.sCctResizableForThirdParties);
+                add(ChromeFeatureList.sCctResizableSideSheet);
                 add(ChromeFeatureList.sCctRetainableStateInMemory);
                 add(ChromeFeatureList.sCctToolbarCustomizations);
                 add(ChromeFeatureList.sCloseTabSuggestions);
                 add(ChromeFeatureList.sCommandLineOnNonRooted);
                 add(ChromeFeatureList.sConditionalTabStripAndroid);
                 add(ChromeFeatureList.sCommerceCoupons);
-                add(ChromeFeatureList.sCreateSafebrowsingOnStartup);
                 add(ChromeFeatureList.sCriticalPersistedTabData);
                 add(ChromeFeatureList.sDiscoverMultiColumn);
                 add(ChromeFeatureList.sTabStripRedesign);
                 add(ChromeFeatureList.sDiscardOccludedBitmaps);
                 add(ChromeFeatureList.sDownloadsAutoResumptionNative);
                 add(ChromeFeatureList.sEarlyLibraryLoad);
-                add(ChromeFeatureList.sElasticOverscroll);
                 add(ChromeFeatureList.sFeedLoadingPlaceholder);
                 add(ChromeFeatureList.sFoldableJankFix);
                 add(ChromeFeatureList.sGridTabSwitcherForTablets);
@@ -112,6 +112,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sNewWindowAppMenu);
                 add(ChromeFeatureList.sOmniboxMatchToolbarAndStatusBarColor);
                 add(ChromeFeatureList.sOmniboxModernizeVisualUpdate);
+                add(ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool);
                 add(ChromeFeatureList.sOmniboxRemoveExcessiveRecycledViewClearCalls);
                 add(ChromeFeatureList.sOptimizationGuidePushNotifications);
                 add(ChromeFeatureList.sOSKResizesVisualViewportByDefault);
@@ -147,7 +148,6 @@ public class ChromeCachedFlags {
                         add(BrandingController.BRANDING_CADENCE_MS);
                         add(BrandingController.MAX_BLANK_TOOLBAR_TIMEOUT_MS);
                         add(BrandingController.USE_TEMPORARY_STORAGE);
-                        add(BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION);
                         add(ChimeFeatures.ALWAYS_REGISTER);
                         add(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING);
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT);
@@ -200,6 +200,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
                         add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE);
+                        add(TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_BOOKMARKS);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_FOLIO);
                         add(TabUiFeatureUtilities.TAB_STRIP_REDESIGN_ENABLE_DETACHED);
                         add(VersionNumberGetter.MIN_SDK_VERSION);

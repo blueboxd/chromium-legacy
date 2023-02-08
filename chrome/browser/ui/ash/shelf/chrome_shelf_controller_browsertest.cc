@@ -121,6 +121,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
@@ -193,6 +194,17 @@ int64_t GetDisplayIdForBrowserWindow(BrowserWindow* window) {
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(window->GetNativeWindow())
       .id();
+}
+
+void ExecuteScriptInChromeVox(Browser* browser, const std::string& script) {
+  std::string execute_script = R"JS((async function() {
+      )JS" + script + R"JS(
+      window.domAutomationController.send('done');
+  })())JS";
+
+  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+      browser->profile(), extension_misc::kChromeVoxExtensionId,
+      execute_script);
 }
 
 void ExtendHotseat(Browser* browser) {
@@ -306,8 +318,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
  protected:
   ShelfAppBrowserTest() {
     // TODO(crbug.com/1258445): Update expectations to support Lacros.
-    scoped_feature_list_.InitAndDisableFeature(
-        chromeos::features::kLacrosSupport);
+    scoped_feature_list_.InitAndDisableFeature(ash::features::kLacrosSupport);
   }
   ShelfAppBrowserTest(const ShelfAppBrowserTest&) = delete;
   ShelfAppBrowserTest& operator=(const ShelfAppBrowserTest&) = delete;
@@ -2787,18 +2798,34 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
   speech_monitor.ExpectSpeechPattern("*");
   speech_monitor.Call([this]() {
     // Disable earcons (https://crbug.com/396507).
-    const std::string script("ChromeVox.earcons.playEarcon = function() {};");
-    extensions::ExtensionHost* host =
-        extensions::ProcessManager::Get(browser()->profile())
-            ->GetBackgroundHostForExtension(
-                extension_misc::kChromeVoxExtensionId);
-    content::ExecuteScriptAsync(host->host_contents(), script);
-  });
+    const std::string script(R"JS(
+        let module = await import('/chromevox/background/chromevox.js');
+        module.ChromeVox.earcons.playEarcon = function() {};
+        module = await import('/chromevox/background/chromevox_state.js');
+        await module.ChromeVoxState.ready();
 
-  // Wait for an utterance from the browser before the test starts traversal
-  // through shelf to ensure that the browser does not show mid shelf traversal,
-  // and causes the a11y focus to unexpectedly switch to the omnibox mid test.
-  speech_monitor.ExpectSpeech("about:blank");
+        // Wait for ChromeVox to have a current range before the test starts
+        // traversal through shelf to ensure that the browser does not show
+        // mid shelf traversal, and causes the a11y focus to unexpectedly
+        // switch to the omnibox mid test.
+        if (!module.ChromeVoxState.instance.currentRange) {
+          await new Promise(resolve => {
+              new (class {
+                  constructor() {
+                    module.ChromeVoxState.addObserver(this);
+                  }
+                  onCurrentRangeChanged(newRange) {
+                    if (newRange) {
+                        module.ChromeVoxState.removeObserver(this);
+                        resolve();
+                    }
+                  }
+              })();
+          });
+        }
+    )JS");
+    ExecuteScriptInChromeVox(browser(), script);
+  });
 
   ash::RootWindowController* controller =
       ash::Shell::GetRootWindowControllerWithDisplayId(

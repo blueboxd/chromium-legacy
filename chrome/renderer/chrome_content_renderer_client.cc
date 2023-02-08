@@ -17,10 +17,11 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/process/current_process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -70,7 +71,6 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill_assistant/content/renderer/autofill_assistant_agent.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
@@ -405,8 +405,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (is_extension) {
     // The process name was set to "Renderer" in RendererMain(). Update it to
     // "Extension Renderer" to highlight that it's hosting an extension.
-    base::trace_event::TraceLog::GetInstance()->set_process_name(
-        "Extension Renderer");
+    base::CurrentProcess::GetInstance().SetProcessType(
+        base::CurrentProcessType::PROCESS_RENDERER_EXTENSION);
   }
 
 #if BUILDFLAG(IS_WIN)
@@ -492,6 +492,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     // to the fetch API.
     WebSecurityPolicy::RegisterURLSchemeAsSupportingFetchAPI(
         isolated_app_scheme);
+    WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
+        isolated_app_scheme);
+    WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
+        isolated_app_scheme);
   }
 
   // The Instant process can only display the content but not read it.  Other
@@ -532,7 +536,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         HeapProfilerController::GetProfilingEnabled() ==
             HeapProfilerController::ProfilingEnabled::kEnabled) {
       ThreadProfiler::SetMainThreadTaskRunner(
-          base::ThreadTaskRunnerHandle::Get());
+          base::SingleThreadTaskRunner::GetCurrentDefault());
       mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
       thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
       metrics::CallStackProfileBuilder::
@@ -676,11 +680,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
                       password_generation_agent, autofill_assistant_agent,
                       associated_interfaces);
   }
-
-#if BUILDFLAG(IS_ANDROID)
-  new autofill_assistant::AutofillAssistantAgent(render_frame,
-                                                 associated_interfaces);
-#endif
 
   if (content_capture::features::IsContentCaptureEnabled()) {
     new content_capture::ContentCaptureSender(render_frame,
@@ -1066,8 +1065,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 #endif
             break;
           }
-          ReportNaClAppType(is_pnacl_mime_type, extension,
-                            extension ? extension->is_hosted_app() : false);
+          ReportNaClAppType(is_pnacl_mime_type, extension);
         }
 #endif  // BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -1254,36 +1252,69 @@ bool ChromeContentRendererClient::IsNativeNaClAllowed(
 }
 
 // static
-void ChromeContentRendererClient::ReportNaClAppType(bool is_pnacl,
-                                                    bool is_extension_or_app,
-                                                    bool is_hosted_app) {
+void ChromeContentRendererClient::ReportNaClAppType(
+    bool is_pnacl,
+    const Extension* extension) {
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
   enum class NaClAppType {
     kPNaClOpenWeb = 0,
     kPNaClHostedApp = 1,
-    kPNaClPackagedApp = 2,
-    kNaClOpenWeb = 3,
-    kNaClHostedApp = 4,
-    kNaClPackagedApp = 5,
-    kMaxValue = kNaClPackagedApp
+    kPNaClPlatformApp = 2,
+    kPNaClLegacyPackagedApp = 3,
+    kPNaClMv2Extension = 4,
+    kPNaClMv3Extension = 5,
+    kPNaClLoginScreenMv2Extension = 6,
+    kPNaClLoginScreenMv3Extension = 7,
+    kNaClOpenWeb = 8,
+    kNaClHostedApp = 9,
+    kNaClPlatformApp = 10,
+    kNaClLegacyPackagedApp = 11,
+    kNaClMv2Extension = 12,
+    kNaClMv3Extension = 13,
+    kNaClLoginScreenMv2Extension = 14,
+    kNaClLoginScreenMv3Extension = 15,
+    kMaxValue = kNaClLoginScreenMv3Extension
   };
-  // If it's not an extension/app, it can't be hosted.
-  DCHECK(!is_hosted_app || is_extension_or_app);
-  // Not all of the remaining combinations are allowed by default (e.g.
-  // kNaClOpenWeb) but they can be used with the --enable-nacl flag.
+
+  // Not all combinations are allowed by default (e.g. kNaClOpenWeb), but they
+  // can be used with the --enable-nacl flag.
   NaClAppType app_type =
       is_pnacl ? NaClAppType::kPNaClOpenWeb : NaClAppType::kNaClOpenWeb;
-  if (is_extension_or_app) {
-    if (is_pnacl) {
-      app_type = is_hosted_app ? NaClAppType::kPNaClHostedApp
-                               : NaClAppType::kPNaClPackagedApp;
+  if (extension) {
+    if (extension->is_extension()) {
+      if (extension->manifest_version() >= 3) {
+        app_type = is_pnacl ? NaClAppType::kPNaClMv3Extension
+                            : NaClAppType::kNaClMv3Extension;
+      } else {
+        app_type = is_pnacl ? NaClAppType::kPNaClMv2Extension
+                            : NaClAppType::kNaClMv2Extension;
+      }
+    } else if (extension->is_hosted_app()) {
+      app_type =
+          is_pnacl ? NaClAppType::kPNaClHostedApp : NaClAppType::kNaClHostedApp;
+    } else if (extension->is_legacy_packaged_app()) {
+      app_type = is_pnacl ? NaClAppType::kPNaClLegacyPackagedApp
+                          : NaClAppType::kNaClLegacyPackagedApp;
+    } else if (extension->is_platform_app()) {
+      app_type = is_pnacl ? NaClAppType::kPNaClPlatformApp
+                          : NaClAppType::kNaClPlatformApp;
+    } else if (extension->is_login_screen_extension()) {
+      if (extension->manifest_version() >= 3) {
+        app_type = is_pnacl ? NaClAppType::kPNaClLoginScreenMv3Extension
+                            : NaClAppType::kNaClLoginScreenMv3Extension;
+      } else {
+        app_type = is_pnacl ? NaClAppType::kPNaClLoginScreenMv2Extension
+                            : NaClAppType::kNaClLoginScreenMv2Extension;
+      }
     } else {
-      app_type = is_hosted_app ? NaClAppType::kNaClHostedApp
-                               : NaClAppType::kNaClPackagedApp;
+      // We found an extension that is not covered by any metric
+      NOTREACHED() << "Invalid NaCl usage in extension. Extension name: "
+                   << extension->name() << ", type: " << extension->GetType();
     }
   }
-  base::UmaHistogramEnumeration("NaCl.AppType", app_type);
+
+  base::UmaHistogramEnumeration("NaCl.EmbedderType", app_type);
 }
 #endif  // BUILDFLAG(ENABLE_NACL)
 
@@ -1594,10 +1625,9 @@ void ChromeContentRendererClient::
   // One of the features of kOmniboxTriggerForPrerender2 and
   // kSupportSearchSuggestionForPrerender2 should be enabled before telling the
   // blink side that chrome is enrolling the experinment.
-  if (blink::features::IsPrerender2Enabled() &&
-      (base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2) ||
-       base::FeatureList::IsEnabled(
-           features::kSupportSearchSuggestionForPrerender2))) {
+  if (base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2) ||
+      base::FeatureList::IsEnabled(
+          features::kSupportSearchSuggestionForPrerender2)) {
     blink::WebRuntimeFeatures::EnablePrerender2RelatedFeatures(true);
   }
 

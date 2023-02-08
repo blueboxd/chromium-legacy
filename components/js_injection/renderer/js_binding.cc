@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/functional/overloaded.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "components/js_injection/common/interfaces.mojom-forward.h"
@@ -16,13 +17,17 @@
 #include "gin/data_object_builder.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_message_port_converter.h"
+#include "v8-local-handle.h"
+#include "v8-value.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -88,7 +93,7 @@ JsBinding::JsBinding(content::RenderFrame* render_frame,
 
 JsBinding::~JsBinding() = default;
 
-void JsBinding::OnPostMessage(mojom::JsWebMessagePtr message) {
+void JsBinding::OnPostMessage(blink::WebMessagePayload message) {
   // If `js_communication_` is null, this object will soon be destroyed.
   if (!js_communication_)
     return;
@@ -110,12 +115,28 @@ void JsBinding::OnPostMessage(mojom::JsWebMessagePtr message) {
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
+  v8::Local<v8::Value> v8_message = absl::visit(
+      base::Overloaded{
+          [isolate](std::u16string& string_value) -> v8::Local<v8::Value> {
+            return gin::ConvertToV8(isolate, std::move(string_value));
+          },
+          [isolate](std::unique_ptr<blink::WebMessageArrayBufferPayload>&
+                        array_buffer_value) -> v8::Local<v8::Value> {
+            auto backing_store = v8::ArrayBuffer::NewBackingStore(
+                isolate, array_buffer_value->GetLength());
+            CHECK(backing_store->ByteLength() ==
+                  array_buffer_value->GetLength());
+            array_buffer_value->CopyInto(
+                base::make_span(static_cast<uint8_t*>(backing_store->Data()),
+                                backing_store->ByteLength()));
+            return v8::ArrayBuffer::New(isolate, std::move(backing_store));
+          }},
+      message);
+
   // Simulate MessageEvent's data property. See
   // https://html.spec.whatwg.org/multipage/comms.html#messageevent
   v8::Local<v8::Object> event =
-      gin::DataObjectBuilder(isolate)
-          .Set("data", std::move(message->get_string_value()))
-          .Build();
+      gin::DataObjectBuilder(isolate).Set("data", v8_message).Build();
   v8::Local<v8::Value> argv[] = {event};
 
   v8::Local<v8::Object> self = GetWrapper(isolate).ToLocalChecked();
@@ -187,8 +208,7 @@ void JsBinding::PostMessage(gin::Arguments* args) {
                         : nullptr;
   if (js_to_java_messaging) {
     js_to_java_messaging->PostMessage(
-        mojom::JsWebMessage::NewStringValue(std::move(message)),
-        blink::MessagePortChannel::ReleaseHandles(ports));
+        std::move(message), blink::MessagePortChannel::ReleaseHandles(ports));
   }
 }
 

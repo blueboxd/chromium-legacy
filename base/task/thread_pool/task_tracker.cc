@@ -23,11 +23,11 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_executor.h"
 #include "base/threading/sequence_local_storage_map.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/values.h"
@@ -329,7 +329,8 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-bool TaskTracker::WillPostTaskNow(const Task& task, TaskPriority priority) {
+bool TaskTracker::WillPostTaskNow(const Task& task,
+                                  TaskPriority priority) const {
   // Delayed tasks's TaskShutdownBehavior is implicitly capped at
   // SKIP_ON_SHUTDOWN. i.e. it cannot BLOCK_SHUTDOWN, TaskTracker will not wait
   // for a delayed task in a BLOCK_SHUTDOWN TaskSource and will also skip
@@ -388,6 +389,10 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   }
 
   if (task) {
+    // Skip delayed tasks if shutdown started.
+    if (!task->delayed_run_time.is_null() && state_->HasShutdownStarted())
+      task->task = base::DoNothingWithBoundArgs(std::move(task->task));
+
     // Run the |task| (whether it's a worker task or the Clear() closure).
     RunTask(std::move(task.value()), task_source.get(), traits);
   }
@@ -444,9 +449,12 @@ void TaskTracker::RunTask(Task task,
                 ? environment.sequence_local_storage.get()
                 : &local_storage_map.value());
 
-    // Set up TaskRunnerHandle as expected for the scope of the task.
-    absl::optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
-    absl::optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
+    // Set up TaskRunner CurrentDefaultHandle as expected for the scope of the
+    // task.
+    absl::optional<SequencedTaskRunner::CurrentDefaultHandle>
+        sequenced_task_runner_handle;
+    absl::optional<SingleThreadTaskRunner::CurrentDefaultHandle>
+        single_thread_task_runner_handle;
     switch (task_source->execution_mode()) {
       case TaskSourceExecutionMode::kJob:
       case TaskSourceExecutionMode::kParallel:

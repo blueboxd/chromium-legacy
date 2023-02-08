@@ -4,9 +4,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/microphone_mute_notification_delegate.h"
+#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
+#include "ash/public/cpp/test/test_system_tray_client.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/microphone_mute/microphone_mute_notification_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_metrics.h"
 #include "ash/test/ash_test_base.h"
@@ -16,25 +19,33 @@
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/dbus/audio/fake_cras_audio_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
 namespace ash {
 
-class FakeMicrophoneMuteNotificationDelegate
-    : public MicrophoneMuteNotificationDelegate {
+class FakeSensorDisabledNotificationDelegate
+    : public SensorDisabledNotificationDelegate {
  public:
-  absl::optional<std::u16string> GetAppAccessingMicrophone() override {
-    return app_name_;
+  std::vector<std::u16string> GetAppsAccessingSensor(Sensor sensor) override {
+    if (sensor == Sensor::kMicrophone) {
+      return apps_accessing_microphone_;
+    }
+    return {};
   }
 
-  void SetAppAccessingMicrophone(
+  void LaunchAppAccessingMicrophone(
       const absl::optional<std::u16string> app_name) {
-    app_name_ = app_name;
+    if (app_name.has_value()) {
+      apps_accessing_microphone_.insert(apps_accessing_microphone_.begin(),
+                                        app_name.value());
+    }
   }
 
-  absl::optional<std::u16string> app_name_;
+ private:
+  std::vector<std::u16string> apps_accessing_microphone_;
 };
 
 class MicrophoneMuteNotificationControllerTest : public AshTestBase {
@@ -48,7 +59,7 @@ class MicrophoneMuteNotificationControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     controller_ = std::make_unique<MicrophoneMuteNotificationController>();
-    delegate_ = std::make_unique<FakeMicrophoneMuteNotificationDelegate>();
+    delegate_ = std::make_unique<FakeSensorDisabledNotificationDelegate>();
   }
 
   void TearDown() override {
@@ -94,6 +105,11 @@ class MicrophoneMuteNotificationControllerTest : public AshTestBase {
         /*button_index=*/0);
   }
 
+  void ClickOnNotificationBody() {
+    message_center::MessageCenter::Get()->ClickOnNotification(
+        MicrophoneMuteNotificationController::kNotificationId);
+  }
+
   void SetMicrophoneMuteSwitchState(bool muted) {
     ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(muted);
   }
@@ -114,7 +130,7 @@ class MicrophoneMuteNotificationControllerTest : public AshTestBase {
   }
 
   void LaunchApp(absl::optional<std::u16string> app_name) {
-    delegate_->SetAppAccessingMicrophone(app_name);
+    delegate_->LaunchAppAccessingMicrophone(app_name);
   }
 
   const base::HistogramTester& histogram_tester() const {
@@ -125,7 +141,7 @@ class MicrophoneMuteNotificationControllerTest : public AshTestBase {
   const base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<MicrophoneMuteNotificationController> controller_;
-  std::unique_ptr<FakeMicrophoneMuteNotificationDelegate> delegate_;
+  std::unique_ptr<FakeSensorDisabledNotificationDelegate> delegate_;
 };
 
 TEST_F(MicrophoneMuteNotificationControllerTest, SimpleMuteUnMute) {
@@ -280,6 +296,34 @@ TEST_F(MicrophoneMuteNotificationControllerTest, MuteNotificationActionButton) {
             1);
 }
 
+TEST_F(MicrophoneMuteNotificationControllerTest, MuteNotificationActionBody) {
+  MuteMicrophone();
+  LaunchApp(u"junior");
+  SetNumberOfActiveInputStreams(1);
+
+  // The mute notification should have an action button.
+  message_center::Notification* notification = GetNotification();
+  ASSERT_TRUE(notification);
+  EXPECT_EQ(1u, notification->buttons().size());
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            0);
+
+  // Clicking the action button should unmute device.
+  ClickOnNotificationBody();
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 1);
+  EXPECT_TRUE(chromeos::CrasAudioHandler::Get()->IsInputMuted());
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            1);
+
+  EXPECT_FALSE(GetNotification());
+}
+
 TEST_F(MicrophoneMuteNotificationControllerTest,
        NoNotificationActionButtonIfMutedByHwSwitch) {
   SetMicrophoneMuteSwitchState(/*muted=*/true);
@@ -391,6 +435,81 @@ TEST_F(MicrophoneMuteNotificationControllerTest,
 
   EXPECT_TRUE(GetNotification());
   EXPECT_TRUE(GetPopupNotification());
+}
+
+TEST_F(MicrophoneMuteNotificationControllerTest, NotificationText) {
+  // No notification initially.
+  EXPECT_FALSE(GetNotification());
+
+  // Mute the mic using sw switch, still no notification.
+  MuteMicrophone();
+  EXPECT_FALSE(GetNotification());
+
+  // Launch an app that's not using the mic, should be no notification.
+  LaunchApp(absl::nullopt);
+  EXPECT_FALSE(GetNotification());
+
+  // Launch an app that's using the mic, but the name of the app can not be
+  // determined.
+  LaunchApp(absl::nullopt);
+  SetNumberOfActiveInputStreams(1);
+  EXPECT_TRUE(GetNotification());
+  EXPECT_TRUE(GetPopupNotification());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_MICROPHONE_MUTED_BY_SW_SWITCH_NOTIFICATION_TITLE),
+            GetNotification()->title());
+  // The notification body should not contain any app name.
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE),
+      GetNotification()->message());
+
+  // Launch an app that's using the mic, the name of the app can be determined.
+  LaunchApp(u"app1");
+  SetNumberOfActiveInputStreams(2);
+  EXPECT_TRUE(GetNotification());
+  EXPECT_TRUE(GetPopupNotification());
+  // The notification body should contain name of the app.
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME, u"app1"),
+      GetNotification()->message());
+
+  // Launch another app that's using the mic, the name of the app can be
+  // determined.
+  LaunchApp(u"app2");
+  SetNumberOfActiveInputStreams(3);
+  EXPECT_TRUE(GetNotification());
+  EXPECT_TRUE(GetPopupNotification());
+  // The notification body should contain the two available app names in the
+  // order of most recently launched.
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES,
+                u"app2", u"app1"),
+            GetNotification()->message());
+
+  // Launch yet another app that's using the mic, the name of the app can be
+  // determined.
+  LaunchApp(u"app3");
+  SetNumberOfActiveInputStreams(4);
+  EXPECT_TRUE(GetNotification());
+  EXPECT_TRUE(GetPopupNotification());
+  // As more that two apps are attempting to use the microphone, we fall back to
+  // displaying the generic message in the notification.
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE),
+      GetNotification()->message());
+
+  EXPECT_FALSE(
+      ui::MicrophoneMuteSwitchMonitor::Get()->microphone_mute_switch_on());
+  // Toggle the hw switch.
+  SetMicrophoneMuteSwitchState(/*muted=*/true);
+  EXPECT_TRUE(GetNotification());
+  EXPECT_TRUE(GetPopupNotification());
+  // The title of the notification should be different when microphone is muted
+  // by the hw switch.
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_MICROPHONE_MUTED_BY_HW_SWITCH_NOTIFICATION_TITLE),
+            GetNotification()->title());
 }
 
 TEST_F(MicrophoneMuteNotificationControllerTest, MetricCollection) {

@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -471,10 +471,10 @@ class LockScreenItemStorageTest : public ExtensionsTest {
     user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
     extensions_browser_client()->set_lock_screen_context(&lock_screen_context_);
 
-    chromeos::LoginState::Initialize();
-    chromeos::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-        chromeos::LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_REGULAR, kTestUserIdHash);
+    ash::LoginState::Initialize();
+    ash::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
+        ash::LoginState::LOGGED_IN_ACTIVE,
+        ash::LoginState::LOGGED_IN_USER_REGULAR, kTestUserIdHash);
 
     extension_ = CreateTestExtension(kTestExtensionId);
     item_registry_ = std::make_unique<ItemRegistry>(extension()->id());
@@ -510,7 +510,7 @@ class LockScreenItemStorageTest : public ExtensionsTest {
     item_registry_.reset();
     LockScreenItemStorage::SetItemProvidersForTesting(nullptr, nullptr,
                                                       nullptr);
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     ExtensionsTest::TearDown();
   }
 

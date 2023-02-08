@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/entity_change.h"
@@ -42,7 +43,7 @@ struct EntityData;
 namespace web_app {
 
 class AbstractWebAppDatabaseFactory;
-class SyncInstallDelegate;
+class AppLock;
 class WebAppCommandManager;
 class WebAppDatabase;
 class WebAppRegistryUpdate;
@@ -71,10 +72,16 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   ~WebAppSyncBridge() override;
 
   void SetSubsystems(AbstractWebAppDatabaseFactory* database_factory,
-                     SyncInstallDelegate* install_delegate,
-                     WebAppCommandManager* command_manager);
+                     WebAppCommandManager* command_manager,
+                     WebAppCommandScheduler* command_scheduler_);
 
   using CommitCallback = base::OnceCallback<void(bool success)>;
+  using RepeatingInstallCallback =
+      base::RepeatingCallback<void(const AppId& app_id,
+                                   webapps::InstallResultCode code)>;
+  using RepeatingUninstallCallback =
+      base::RepeatingCallback<void(const AppId& app_id,
+                                   webapps::UninstallResultCode code)>;
   // This is the writable API for the registry. Any updates will be written to
   // LevelDb and sync service. There can be only 1 update at a time.
   std::unique_ptr<WebAppRegistryUpdate> BeginUpdate();
@@ -87,7 +94,7 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
                              UserDisplayMode user_display_mode,
                              bool is_user_action);
 
-  void SetAppIsDisabled(const AppId& app_id, bool is_disabled);
+  void SetAppIsDisabled(AppLock& lock, const AppId& app_id, bool is_disabled);
 
   void UpdateAppsDisableMode();
 
@@ -110,12 +117,10 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void SetUserLaunchOrdinal(const AppId& app_id,
                             syncer::StringOrdinal user_launch_ordinal);
 
-  // These methods are used by web apps to add or remove allowed
-  // protocol schemes based on user approval or withdrawal of that approval.
-  // Allowed protocol schemes will allow web apps to handle launches from
-  // urls that start with that scheme without asking the user.
-  void AddAllowedLaunchProtocol(const AppId& app_id,
-                                const std::string& protocol_scheme);
+  // This method is used by web apps to remove allowed protocol schemes based
+  // on user withdrawal of that approval. Allowed protocol schemes will allow
+  // web apps to handle launches from urls that start with that scheme without
+  // asking the user.
   void RemoveAllowedLaunchProtocol(const AppId& app_id,
                                    const std::string& protocol_scheme);
 
@@ -123,12 +128,10 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void SetAppFileHandlerApprovalState(const AppId& app_id,
                                       ApiApprovalState state);
 
-  // These methods are used by web apps to add or remove disallowed
-  // protocol schemes based on user preference or withdrawal of that preference.
-  // Disallowed protocol schemes will never allow web apps to handle launches
-  // from urls that start with that scheme.
-  void AddDisallowedLaunchProtocol(const AppId& app_id,
-                                   const std::string& protocol_scheme);
+  // This method are used by web apps to remove disallowed protocol schemes
+  // based on user withdrawal of that preference. Disallowed protocol schemes
+  // will never allow web apps to handle launches from urls that start with that
+  // scheme.
   void RemoveDisallowedLaunchProtocol(const AppId& app_id,
                                       const std::string& protocol_scheme);
 
@@ -156,6 +159,23 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void set_disable_checks_for_testing(bool disable_checks_for_testing) {
     disable_checks_for_testing_ = disable_checks_for_testing;
   }
+
+  using RetryIncompleteUninstallsCallback = base::RepeatingCallback<void(
+      const base::flat_set<AppId>& apps_to_uninstall)>;
+  void SetRetryIncompleteUninstallsCallbackForTesting(
+      RetryIncompleteUninstallsCallback callback);
+
+  using InstallWebAppsAfterSyncCallback =
+      base::RepeatingCallback<void(std::vector<WebApp*> web_apps,
+                                   RepeatingInstallCallback callback)>;
+  void SetInstallWebAppsAfterSyncCallbackForTesting(
+      InstallWebAppsAfterSyncCallback callback);
+
+  using UninstallFromSyncCallback =
+      base::RepeatingCallback<void(const std::vector<AppId>& web_apps,
+                                   RepeatingUninstallCallback callback)>;
+  void SetUninstallFromSyncCallbackForTesting(
+      UninstallFromSyncCallback callback);
 
   WebAppDatabase* GetDatabaseForTesting() const { return database_.get(); }
 
@@ -192,13 +212,23 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void MaybeUninstallAppsPendingUninstall();
   void MaybeInstallAppsFromSyncAndPendingInstallation();
 
+  void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
+                               RepeatingInstallCallback callback);
+
   std::unique_ptr<WebAppDatabase> database_;
   const raw_ptr<WebAppRegistrarMutable, DanglingUntriaged> registrar_;
-  raw_ptr<SyncInstallDelegate, DanglingUntriaged> install_delegate_;
   raw_ptr<WebAppCommandManager, DanglingUntriaged> command_manager_;
+  raw_ptr<WebAppCommandScheduler, DanglingUntriaged> command_scheduler_;
 
   bool is_in_update_ = false;
   bool disable_checks_for_testing_ = false;
+
+  RetryIncompleteUninstallsCallback
+      retry_incomplete_uninstalls_callback_for_testing_;
+  InstallWebAppsAfterSyncCallback
+      install_web_apps_after_sync_callback_for_testing_;
+  UninstallFromSyncCallback
+      uninstall_from_sync_before_registry_update_callback_for_testing_;
 
   base::WeakPtrFactory<WebAppSyncBridge> weak_ptr_factory_{this};
 };

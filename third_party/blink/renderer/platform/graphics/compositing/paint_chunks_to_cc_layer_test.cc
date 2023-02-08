@@ -10,7 +10,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_op_buffer_iterator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
@@ -305,14 +305,14 @@ TEST_P(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
            cc::PaintOpType::Restore,                           // </e2>
            cc::PaintOpType::Restore,                           // </e1>
            cc::PaintOpType::Restore}));                        // </t1*t2>
-  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->SlowMatrix(), *output, 1);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->Matrix(), *output, 1);
   // chunk1.bounds + e2(t2^-1(chunk2.bounds))
   EXPECT_EFFECT_BOUNDS(0, 0, 155, 155, *output, 2);
   // t2^-1(chunk2.bounds)
   EXPECT_EFFECT_BOUNDS(70, 70, 70, 70, *output, 4);
   // t2^1
-  EXPECT_TRANSLATE(-t2->Translation2D().x(), -t2->Translation2D().y(), *output,
-                   6);
+  EXPECT_TRANSLATE(-t2->Get2dTranslation().x(), -t2->Get2dTranslation().y(),
+                   *output, 6);
 }
 
 TEST_P(PaintChunksToCcLayerTest, InterleavedClipEffect) {

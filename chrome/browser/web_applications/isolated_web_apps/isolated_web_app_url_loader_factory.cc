@@ -39,6 +39,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -125,8 +126,12 @@ void CompleteWithGeneratedHtmlResponse(
   loader_client->OnComplete(status);
 }
 
-void LogErrorMessageToConsole(int frame_tree_node_id,
+void LogErrorMessageToConsole(absl::optional<int> frame_tree_node_id,
                               const std::string& error_message) {
+  if (!frame_tree_node_id.has_value()) {
+    LOG(ERROR) << error_message;
+    return;
+  }
   // TODO(crbug.com/1365850): The console message will vanish from the console
   // if the user does not have the `Preserve Log` option enabled, since it is
   // triggered before the navigation commits. We should try to use a similar
@@ -136,7 +141,7 @@ void LogErrorMessageToConsole(int frame_tree_node_id,
   // Find the `RenderFrameHost` associated with the `FrameTreeNode`
   // corresponding to the `frame_tree_node_id`, and then log the message.
   content::WebContents* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+      content::WebContents::FromFrameTreeNodeId(*frame_tree_node_id);
   if (!web_contents) {
     // Log to the terminal if we can't log to the console.
     LOG(ERROR) << error_message;
@@ -161,7 +166,7 @@ FindIsolatedWebApp(Profile* profile, const IsolatedWebAppUrlInfo& url_info) {
   // WebAppProvider is ready to ensure we never fail this DCHECK.
   auto* web_app_provider = WebAppProvider::GetForWebApps(profile);
   DCHECK(web_app_provider->is_registry_ready());
-  const WebAppRegistrar& registrar = web_app_provider->registrar();
+  const WebAppRegistrar& registrar = web_app_provider->registrar_unsafe();
   const WebApp* iwa = registrar.GetAppById(url_info.app_id());
 
   if (iwa == nullptr || !iwa->is_locally_installed()) {
@@ -185,7 +190,7 @@ class IsolatedWebAppURLLoader : public network::mojom::URLLoader {
       web_package::SignedWebBundleId web_bundle_id,
       mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
       const network::ResourceRequest& resource_request,
-      int frame_tree_node_id)
+      absl::optional<int> frame_tree_node_id)
       : loader_client_(std::move(loader_client)),
         resource_request_(resource_request),
         frame_tree_node_id_(frame_tree_node_id) {
@@ -307,7 +312,7 @@ class IsolatedWebAppURLLoader : public network::mojom::URLLoader {
   int64_t header_length_;
   int64_t body_length_;
   const network::ResourceRequest resource_request_;
-  const int frame_tree_node_id_;
+  absl::optional<int> frame_tree_node_id_;
 
   base::WeakPtrFactory<IsolatedWebAppURLLoader> weak_factory_{this};
 };
@@ -315,7 +320,7 @@ class IsolatedWebAppURLLoader : public network::mojom::URLLoader {
 }  // namespace
 
 IsolatedWebAppURLLoaderFactory::IsolatedWebAppURLLoaderFactory(
-    int frame_tree_node_id,
+    absl::optional<int> frame_tree_node_id,
     Profile* profile,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
     : network::SelfDeletingURLLoaderFactory(std::move(factory_receiver)),
@@ -389,10 +394,15 @@ void IsolatedWebAppURLLoaderFactory::CreateLoaderAndStart(
             isolation_data.content);
       };
 
-  absl::optional<IsolationData> pending_install_isolation_data =
-      IsolatedWebAppPendingInstallInfo::FromWebContents(
-          *content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_))
-          .isolation_data();
+  absl::optional<IsolationData> pending_install_isolation_data = absl::nullopt;
+
+  if (frame_tree_node_id_.has_value()) {
+    pending_install_isolation_data =
+        IsolatedWebAppPendingInstallInfo::FromWebContents(
+            *content::WebContents::FromFrameTreeNodeId(*frame_tree_node_id_))
+            .isolation_data();
+  }
+
   if (pending_install_isolation_data.has_value()) {
     if (resource_request.url.path() == kInstallPagePath &&
         IsSupportedHttpMethod(resource_request.method)) {
@@ -468,6 +478,12 @@ void IsolatedWebAppURLLoaderFactory::HandleDevModeProxy(
   // Don't send cookies or HTTP authentication to the proxy server.
   proxy_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
 
+  std::string accept_header_value = network::kDefaultAcceptHeaderValue;
+  resource_request.headers.GetHeader(net::HttpRequestHeaders::kAccept,
+                                     &accept_header_value);
+  proxy_request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                  accept_header_value);
+
   content::StoragePartition* storage_partition = profile_->GetStoragePartition(
       url_info.storage_partition_config(profile_), /*can_create=*/false);
   if (storage_partition == nullptr) {
@@ -498,6 +514,21 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory>
 IsolatedWebAppURLLoaderFactory::Create(
     int frame_tree_node_id,
     content::BrowserContext* browser_context) {
+  return CreateInternal(frame_tree_node_id, browser_context);
+}
+
+// static
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+IsolatedWebAppURLLoaderFactory::CreateForServiceWorker(
+    content::BrowserContext* browser_context) {
+  return CreateInternal(/*frame_tree_node_id=*/absl::nullopt, browser_context);
+}
+
+// static
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+IsolatedWebAppURLLoaderFactory::CreateInternal(
+    absl::optional<int> frame_tree_node_id,
+    content::BrowserContext* browser_context) {
   DCHECK(browser_context);
   DCHECK(!browser_context->ShutdownStarted());
 
@@ -507,7 +538,8 @@ IsolatedWebAppURLLoaderFactory::Create(
   // more receivers - see the
   // network::SelfDeletingURLLoaderFactory::OnDisconnect method.
   new IsolatedWebAppURLLoaderFactory(
-      frame_tree_node_id, Profile::FromBrowserContext(browser_context),
+      /*frame_tree_node_id=*/frame_tree_node_id,
+      Profile::FromBrowserContext(browser_context),
       pending_remote.InitWithNewPipeAndPassReceiver());
 
   return pending_remote;

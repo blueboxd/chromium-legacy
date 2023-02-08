@@ -1,9 +1,14 @@
-<style include="cr-shared-style">
+<style include="cr-shared-style shared-style">
   cr-view-manager {
     display: block;
   }
 
-  .saving-step.active {
+  cr-view-manager .active:not(.saving-step) {
+    position: relative;
+  }
+
+  .saving-step.active,
+  .saving-step.closing {
     align-items: center;
     display: flex;
     justify-content: center;
@@ -16,19 +21,20 @@
   }
 </style>
 
-<cr-view-manager id="viewManager">
-  <div id="[[stepEnum_.CONSENT]]" slot="view">
-    Consent step
-    <button on-click="onConsentStepResolved_">Next</button>
-  </div>
+<cr-view-manager id="viewManager" aria-live="polite">
+
+  <privacy-sandbox-dialog-consent-step id="[[stepEnum_.CONSENT]]" slot="view"
+      fill-content
+      on-consent-resolved="onConsentStepResolved_">
+  </privacy-sandbox-dialog-consent-step>
 
   <div id="[[stepEnum_.SAVING]]" class="saving-step" slot="view">
     <paper-spinner-lite active></paper-spinner-lite>
-    Saving...
+    $i18n{m1ConsentSavingLabel}
   </div>
 
-  <div id="[[stepEnum_.NOTICE]]" slot="view">
-    Notice step
-    <button>Ok</button>
-  </div>
+  <privacy-sandbox-dialog-notice-step id="[[stepEnum_.NOTICE]]" slot="view"
+      fill-content>
+  </privacy-sandbox-dialog-notice-step>
+
 </cr-view-manager>

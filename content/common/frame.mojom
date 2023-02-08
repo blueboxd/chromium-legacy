@@ -6,7 +6,6 @@ module content.mojom;
 
 import "cc/mojom/browser_controls_state.mojom";
 import "content/common/frame_messages.mojom";
-import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/web_ui.mojom";
 import "content/public/common/extra_mojo_js_features.mojom";
@@ -43,6 +42,7 @@ import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_params.mojom";
+import "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom";
 import "third_party/blink/public/mojom/page/page.mojom";
 import "third_party/blink/public/mojom/picture_in_picture_window_options/picture_in_picture_window_options.mojom";
 import "third_party/blink/public/mojom/widget/platform_widget.mojom";
@@ -84,9 +84,6 @@ enum ChildFrameOwnerElementType {
   kObject,
   kEmbed,
   kFrame,
-  // Note that only Fenced Frames based on Shadow DOM may create child frames.
-  // See crbug.com/1123606.
-  kFencedframe
 };
 
 struct CreateViewParams {
@@ -204,6 +201,11 @@ struct CreateLocalMainFrameParams {
 
   // Subresource loader factories to be used by the initial empty document.
   blink.mojom.URLLoaderFactoryBundle subresource_loader_factories;
+
+  // The FrameToken of the previous LocalFrame that this new LocalFrame will
+  // replace. Will only be set when RenderDocument is enabled, for main frame
+  // LocalFrame <-> LocalFrame swap.
+  blink.mojom.FrameToken? previous_frame_token;
 };
 
 // Parameters used for brower-initiated remote main frame creation.
@@ -590,6 +592,10 @@ struct CreateNewWindowParams {
 
   // Additional parameters for creating picture-in-picture windows.
   blink.mojom.PictureInPictureWindowOptions? pip_options;
+
+  // The navigation initiator's user activation and ad status.
+  blink.mojom.NavigationInitiatorActivationAndAdStatus
+      initiator_activation_and_ad_status;
 };
 
 // Operation result when the renderer asks the browser to create a new window.
@@ -698,7 +704,8 @@ interface FrameHost {
                    bool is_created_by_script,
                    blink.mojom.FramePolicy frame_policy,
                    blink.mojom.FrameOwnerProperties frame_owner_properties,
-                   ChildFrameOwnerElementType child_frame_owner_element_type);
+                   ChildFrameOwnerElementType child_frame_owner_element_type,
+                   int64 document_ukm_source_id);
 
   // Sent by the renderer when a navigation commits in the frame.
 

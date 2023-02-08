@@ -22,6 +22,7 @@
 #include "base/notreached.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/updateable_sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_key.h"
 #include "content/browser/private_aggregation/private_aggregation_budget_storage.h"
@@ -126,12 +127,13 @@ GetHourlyBudgets(PrivateAggregationBudgetKey::Api api,
 }  // namespace
 
 PrivateAggregationBudgeter::PrivateAggregationBudgeter(
-    scoped_refptr<base::SequencedTaskRunner> db_task_runner,
+    scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner,
     bool exclusively_run_in_memory,
-    const base::FilePath& path_to_db_dir) {
-  DCHECK(db_task_runner);
+    const base::FilePath& path_to_db_dir)
+    : db_task_runner_(std::move(db_task_runner)) {
+  DCHECK(db_task_runner_);
   shutdown_initializing_storage_ = PrivateAggregationBudgetStorage::CreateAsync(
-      std::move(db_task_runner), exclusively_run_in_memory, path_to_db_dir,
+      db_task_runner_, exclusively_run_in_memory, path_to_db_dir,
       /*on_done_initializing=*/
       base::BindOnce(&PrivateAggregationBudgeter::OnStorageDoneInitializing,
                      weak_factory_.GetWeakPtr()));
@@ -173,6 +175,15 @@ void PrivateAggregationBudgeter::ClearData(
     base::Time delete_end,
     StoragePartition::StorageKeyMatcherFunction filter,
     base::OnceClosure done) {
+  // When a clear data task is queued or running, we use a higher priority. We
+  // do this even if the storage hasn't finished initializing.
+  ++num_pending_clear_data_tasks_;
+  db_task_runner_->UpdatePriority(base::TaskPriority::USER_VISIBLE);
+
+  done = base::BindOnce(&PrivateAggregationBudgeter::OnClearDataComplete,
+                        weak_factory_.GetWeakPtr())
+             .Then(std::move(done));
+
   if (storage_status_ == StorageStatus::kInitializing) {
     // To ensure that data deletion always succeeds, we don't check
     // `pending_calls.size()` here.
@@ -184,6 +195,15 @@ void PrivateAggregationBudgeter::ClearData(
   } else {
     ClearDataImpl(delete_begin, delete_end, std::move(filter), std::move(done));
   }
+}
+
+void PrivateAggregationBudgeter::OnClearDataComplete() {
+  DCHECK_GT(num_pending_clear_data_tasks_, 0);
+  --num_pending_clear_data_tasks_;
+
+  // No more clear data tasks, so we can reset the priority.
+  if (num_pending_clear_data_tasks_ == 0)
+    db_task_runner_->UpdatePriority(base::TaskPriority::BEST_EFFORT);
 }
 
 void PrivateAggregationBudgeter::OnStorageDoneInitializing(
@@ -339,9 +359,6 @@ void PrivateAggregationBudgeter::ClearDataImpl(
       break;
   }
 
-  // TODO(alexmt): Delay `done` being run until after the database task is
-  // complete.
-
   // Treat null times as unbounded lower or upper range. This is used by
   // browsing data remover.
   if (delete_begin.is_null())
@@ -354,7 +371,9 @@ void PrivateAggregationBudgeter::ClearDataImpl(
 
   if (is_all_time_covered && filter.is_null()) {
     storage_->budgets_data()->DeleteAllData();
-    std::move(done).Run();
+
+    // Runs `done` once flushing is complete.
+    storage_->budgets_data()->FlushDataToDisk(std::move(done));
     return;
   }
 
@@ -370,7 +389,9 @@ void PrivateAggregationBudgeter::ClearDataImpl(
 
   if (is_all_time_covered) {
     storage_->budgets_data()->DeleteData(origins_to_delete);
-    std::move(done).Run();
+
+    // Runs `done` once flushing is complete.
+    storage_->budgets_data()->FlushDataToDisk(std::move(done));
     return;
   }
 
@@ -406,11 +427,10 @@ void PrivateAggregationBudgeter::ClearDataImpl(
     storage_->budgets_data()->UpdateData(origin_key, budgets);
   }
 
-  // A no-op call to force the database to be flushed immediately instead of
-  // waiting up to `PrivateAggregationBudgetStorage::kFlushDelay`.
-  storage_->budgets_data()->DeleteData({});
-
-  std::move(done).Run();
+  // Force the database to be flushed immediately instead of waiting up to
+  // `PrivateAggregationBudgetStorage::kFlushDelay`. Runs the `done` callback
+  // once flushing is complete.
+  storage_->budgets_data()->FlushDataToDisk(std::move(done));
 }
 
 }  // namespace content

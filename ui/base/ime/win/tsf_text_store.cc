@@ -7,14 +7,17 @@
 
 #include <InputScope.h>
 #include <OleCtl.h>
+#include <tsattrs.h>
 #include <wrl/client.h>
 
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event_dispatcher.h"
@@ -399,6 +402,18 @@ HRESULT TSFTextStore::GetTextExt(TsViewCookie view_cookie,
   *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
                                                    result_rect.value())
               .ToRECT();
+
+  // Some IMEs such as Google Japanese Input does not support vertical
+  // writing text. So we shift the rectangle to the right side in order
+  // to avoid an IME candidate window over vertical text.
+  if ((text_input_client_->GetTextInputFlags() &
+       ui::TEXT_INPUT_FLAG_VERTICAL) &&
+      IsInputProcessorWithoutVerticalWriting()) {
+    int width = rect->right - rect->left;
+    rect->left += width;
+    rect->right += width;
+  }
+
   *clipped = FALSE;
   TRACE_EVENT1("ime", "TSFTextStore::GetTextExt", "screen rect",
                gfx::Rect(*rect).ToString());
@@ -754,7 +769,8 @@ HRESULT TSFTextStore::RequestSupportedAttrs(
   for (size_t i = 0; i < attribute_buffer_size; ++i) {
     const auto& attribute = attribute_buffer[i];
     if (IsEqualGUID(GUID_PROP_INPUTSCOPE, attribute) ||
-        IsEqualGUID(GUID_PROP_URL, attribute)) {
+        IsEqualGUID(GUID_PROP_URL, attribute) ||
+        IsEqualGUID(TSATTRID_Text_VerticalWriting, attribute)) {
       supported_attrs_.push_back(attribute);
     }
   }
@@ -805,6 +821,12 @@ HRESULT TSFTextStore::RetrieveRequestedAttrs(ULONG attribute_buffer_size,
       }
       attribute_buffer[i].varValue.bstrVal =
           SysAllocStringLen(wide_url.c_str(), wide_url.length());
+    } else if (IsEqualGUID(TSATTRID_Text_VerticalWriting,
+                           supported_attrs_[i])) {
+      attribute_buffer[i].varValue.vt = VT_BOOL;
+      attribute_buffer[i].varValue.boolVal =
+          !!(text_input_client_->GetTextInputFlags() &
+             ui::TEXT_INPUT_FLAG_VERTICAL);
     }
   }
   return S_OK;
@@ -1609,6 +1631,27 @@ bool TSFTextStore::IsInputIME() const {
            profile.dwProfileType == TF_PROFILETYPE_INPUTPROCESSOR;
   }
   return false;
+}
+
+bool TSFTextStore::IsInputProcessorWithoutVerticalWriting() const {
+  TF_INPUTPROCESSORPROFILE profile;
+  if (!SUCCEEDED(input_processor_profile_mgr_->GetActiveProfile(
+          GUID_TFCAT_TIP_KEYBOARD, &profile)))
+    return false;
+  if (profile.dwProfileType != TF_PROFILETYPE_INPUTPROCESSOR)
+    return false;
+  Microsoft::WRL::ComPtr<ITfInputProcessorProfiles> profiles;
+  if (!SUCCEEDED(::CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr,
+                                    CLSCTX_INPROC_SERVER,
+                                    IID_PPV_ARGS(&profiles))))
+    return false;
+  BSTR description = nullptr;
+  if (!SUCCEEDED(profiles->GetLanguageProfileDescription(
+          profile.clsid, profile.langid, profile.guidProfile, &description)))
+    return false;
+  bool result = base::StartsWith(description, L"Google Japanese Input");
+  ::SysFreeString(description);
+  return result;
 }
 
 }  // namespace ui

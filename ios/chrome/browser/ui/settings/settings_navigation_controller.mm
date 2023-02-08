@@ -404,7 +404,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     self.navigationBar.scrollEdgeAppearance = appearance;
   }
 
-  self.navigationBar.translucent = NO;
   self.toolbar.translucent = NO;
   self.navigationBar.barTintColor =
       [UIColor colorNamed:kSecondaryBackgroundColor];
@@ -731,7 +730,13 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 #pragma mark - UIResponder
 
-- (NSArray*)keyCommands {
+// To always be able to register key commands via -keyCommands, the VC must be
+// able to become first responder.
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
+- (NSArray<UIKeyCommand*>*)keyCommands {
   if ([self presentedViewController]) {
     return nil;
   }
@@ -835,12 +840,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 - (void)showSafeBrowsingSettings {
   [self showSafeBrowsing];
-}
-
-#pragma mark - UIResponder
-
-- (BOOL)canBecomeFirstResponder {
-  return YES;
 }
 
 @end

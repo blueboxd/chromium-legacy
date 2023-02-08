@@ -254,6 +254,12 @@ class MediaSessionImpl : public MediaSession,
   // Skip ad.
   CONTENT_EXPORT void SkipAd() override;
 
+  // Go back to previous slide.
+  CONTENT_EXPORT void PreviousSlide() override;
+
+  // Go to next slide.
+  CONTENT_EXPORT void NextSlide() override;
+
   // Seek the media session to a specific time.
   void SeekTo(base::TimeDelta seek_time) override;
 
@@ -288,6 +294,10 @@ class MediaSessionImpl : public MediaSession,
 
   // Mute or unmute the media player.
   void SetMute(bool mute) override;
+
+  // Request the media player to start Media Remoting once there are available
+  // sinks.
+  void RequestMediaRemoting() override;
 
   // PresentationObserver:
   void OnPresentationsChanged(bool has_presentation) override;

@@ -9,15 +9,15 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 
-class EventDrivenTelemetrySamplerPool;
+class EventDrivenTelemetryCollectorPool;
 class MetricData;
 class MetricEventObserver;
 class MetricReportingController;
@@ -33,7 +33,8 @@ class MetricEventObserverManager {
       ReportingSettings* reporting_settings,
       const std::string& enable_setting_path,
       bool setting_enabled_default_value,
-      EventDrivenTelemetrySamplerPool* sampler_pool);
+      EventDrivenTelemetryCollectorPool* collector_pool,
+      base::TimeDelta init_delay = base::TimeDelta());
 
   MetricEventObserverManager(const MetricEventObserverManager& other) = delete;
   MetricEventObserverManager& operator=(
@@ -42,18 +43,18 @@ class MetricEventObserverManager {
   virtual ~MetricEventObserverManager();
 
  private:
+  void SetReportingControllerCb();
+
   void SetReportingEnabled(bool is_enabled);
 
   void OnEventObserved(MetricData metric_data);
 
-  void MergeAndReport(MetricData event_metric_data,
-                      absl::optional<MetricData> telemetry_metric_data);
-
   const std::unique_ptr<MetricEventObserver> event_observer_;
 
-  const raw_ptr<MetricReportQueue> metric_report_queue_;
+  const raw_ptr<MetricReportQueue, DanglingUntriaged> metric_report_queue_;
 
-  const raw_ptr<EventDrivenTelemetrySamplerPool> sampler_pool_;
+  const raw_ptr<EventDrivenTelemetryCollectorPool, DanglingUntriaged>
+      collector_pool_;
 
   std::unique_ptr<MetricReportingController> reporting_controller_;
 

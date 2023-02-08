@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/notreached.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/aura_constants.h"
@@ -27,6 +27,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
@@ -357,7 +358,7 @@ void DesktopWindowTreeHostPlatform::Close() {
   // we don't destroy the window before the callback returned (as the caller
   // may delete ourselves on destroy and the ATL callback would still
   // dereference us when the callback returns).
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&DesktopWindowTreeHostPlatform::CloseNow,
                                 close_widget_factory_.GetWeakPtr()));
 }
@@ -702,14 +703,8 @@ void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
 
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen,
                                                   int64_t target_display_id) {
-  // TODO(crbug.com/1034783) Support `target_display_id` on this platform.
-  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
-
-  if (IsFullscreen() == fullscreen)
-    return;
-
   auto weak_ptr = GetWeakPtr();
-  platform_window()->ToggleFullscreen();
+  platform_window()->SetFullscreen(fullscreen, target_display_id);
   if (!weak_ptr)
     return;
 

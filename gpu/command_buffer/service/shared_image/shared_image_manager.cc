@@ -12,12 +12,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -26,6 +25,14 @@
 #if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "ui/gl/gl_angle_util_win.h"
+#endif
+
+#if BUILDFLAG(IS_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/android_hardware_buffer_compat.h"
 #endif
 
 #if DCHECK_IS_ON()
@@ -87,10 +94,11 @@ SharedImageManager::SharedImageManager(bool thread_safe,
   CALLED_ON_VALID_THREAD();
 
   // In tests there might not be a SingleThreadTaskRunner for this thread.
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
+  if (base::SingleThreadTaskRunner::HasCurrentDefault()) {
     is_registered_as_memory_dump_provider_ = true;
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "SharedImageManager", base::ThreadTaskRunnerHandle::Get());
+        this, "SharedImageManager",
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
 }
 
@@ -128,19 +136,6 @@ SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
   images_.emplace(std::move(backing));
 
   return factory_ref;
-}
-
-void SharedImageManager::OnContextLost(const Mailbox& mailbox) {
-  CALLED_ON_VALID_THREAD();
-
-  AutoLock autolock(this);
-  auto found = images_.find(mailbox);
-  if (found == images_.end()) {
-    LOG(ERROR) << "SharedImageManager::OnContextLost: Trying to mark constext "
-                  "lost on a non existent mailbox.";
-    return;
-  }
-  (*found)->OnContextLost();
 }
 
 std::unique_ptr<GLTextureImageRepresentation>
@@ -218,7 +213,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageManager::ProduceDawn(
     const Mailbox& mailbox,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   CALLED_ON_VALID_THREAD();
 
   AutoLock autolock(this);
@@ -229,8 +225,8 @@ std::unique_ptr<DawnImageRepresentation> SharedImageManager::ProduceDawn(
     return nullptr;
   }
 
-  auto representation =
-      (*found)->ProduceDawn(this, tracker, device, backend_type);
+  auto representation = (*found)->ProduceDawn(
+      this, tracker, device, backend_type, std::move(view_formats));
   if (!representation) {
     LOG(ERROR) << "SharedImageManager::ProduceDawn: Trying to produce a "
                   "Dawn representation from an incompatible mailbox.";
@@ -384,6 +380,16 @@ void SharedImageManager::OnRepresentationDestroyed(
   }
 }
 
+void SharedImageManager::SetPurgeable(const Mailbox& mailbox, bool purgeable) {
+  AutoLock autolock(this);
+  auto found = images_.find(mailbox);
+  if (found == images_.end()) {
+    LOG(ERROR) << "SharedImageManager::SetPurgeable: Non-existent mailbox.";
+    return;
+  }
+  (*found)->SetPurgeable(purgeable);
+}
+
 bool SharedImageManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -396,7 +402,7 @@ bool SharedImageManager::OnMemoryDump(
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     size_t total_size = 0;
     for (auto& backing : images_)
-      total_size += backing->EstimatedSizeForMemTracking();
+      total_size += backing->GetEstimatedSizeForMemoryDump();
 
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(base_dump_name);
@@ -439,6 +445,22 @@ scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
   if (found == images_.end())
     return nullptr;
   return (*found)->GetNativePixmap();
+}
+
+bool SharedImageManager::SupportsScanoutImages() {
+#if BUILDFLAG(IS_MAC)
+  return true;
+#elif BUILDFLAG(IS_ANDROID)
+  return base::AndroidHardwareBufferCompat::IsSupportAvailable();
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformRuntimeProperties()
+      .supports_native_pixmaps;
+#elif BUILDFLAG(IS_WIN)
+  return false;
+#else
+  return false;
+#endif
 }
 
 }  // namespace gpu

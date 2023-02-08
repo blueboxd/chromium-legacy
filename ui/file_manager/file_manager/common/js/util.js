@@ -1088,14 +1088,6 @@ util.isDlpEnabled = () => {
 };
 
 /**
- * Returns true if FilesExtractArchive flag is enabled.
- * @return {boolean}
- */
-util.isExtractArchiveEnabled = () => {
-  return loadTimeData.getBoolean('EXTRACT_ARCHIVE');
-};
-
-/**
  * Whether the Files app Experimental flag is enabled.
  * @returns {boolean}
  */
@@ -1115,19 +1107,19 @@ util.isFuseBoxDebugEnabled = () => {
 };
 
 /**
- * Returns true if FuseBox flag is enabled.
- * @return {boolean}
- */
-util.isFuseBoxEnabled = () => {
-  return loadTimeData.getBoolean('FUSEBOX');
-};
-
-/**
  * Returns true if GuestOsFiles flag is enabled.
  * @return {boolean}
  */
 util.isGuestOsEnabled = () => {
   return loadTimeData.getBoolean('GUEST_OS');
+};
+
+/**
+ * Returns true if Jelly flag is enabled.
+ * @return {boolean}
+ */
+util.isJellyEnabled = () => {
+  return loadTimeData.getBoolean('JELLY');
 };
 
 /**

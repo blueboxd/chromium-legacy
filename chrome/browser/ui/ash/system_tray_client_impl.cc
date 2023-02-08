@@ -70,12 +70,10 @@
 #include "chromeos/ash/components/network/tether_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 using session_manager::SessionManager;
@@ -96,12 +94,7 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
 }
 
 // Returns the severity of a pending update.
-ash::UpdateSeverity GetUpdateSeverity(ash::UpdateType update_type,
-                                      UpgradeDetector* detector) {
-  // Lacros is always "low", which is the same severity OS updates start with.
-  if (update_type == ash::UpdateType::kLacros)
-    return ash::UpdateSeverity::kLow;
-
+ash::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
   // OS updates use UpgradeDetector's severity mapping.
   switch (detector->upgrade_notification_stage()) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
@@ -290,14 +283,14 @@ SystemTrayClientImpl::SystemTrayClientImpl()
           std::make_unique<EnterpriseAccountObserver>(this)) {
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
-  chromeos::system::SystemClock* clock =
+  ash::system::SystemClock* clock =
       g_browser_process->platform_part()->GetSystemClock();
   clock->AddObserver(this);
   system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
 
   // If an upgrade is available at startup then tell ash about it.
   if (UpgradeDetector::GetInstance()->notify_upgrade())
-    HandleUpdateAvailable(ash::UpdateType::kSystem);
+    HandleUpdateAvailable();
 
   // If the device is enterprise managed then send ash the enterprise domain.
   policy::BrowserPolicyConnectorAsh* policy_connector =
@@ -344,16 +337,12 @@ SystemTrayClientImpl* SystemTrayClientImpl::Get() {
 void SystemTrayClientImpl::SetRelaunchNotificationState(
     const ash::RelaunchNotificationState& relaunch_notification_state) {
   relaunch_notification_state_ = relaunch_notification_state;
-  HandleUpdateAvailable(ash::UpdateType::kSystem);
+  HandleUpdateAvailable();
 }
 
 void SystemTrayClientImpl::ResetUpdateState() {
   relaunch_notification_state_ = {};
   system_tray_->ResetUpdateState();
-}
-
-void SystemTrayClientImpl::SetLacrosUpdateAvailable() {
-  HandleUpdateAvailable(ash::UpdateType::kLacros);
 }
 
 void SystemTrayClientImpl::SetPrimaryTrayEnabled(bool enabled) {
@@ -446,6 +435,11 @@ void SystemTrayClientImpl::ShowPrivacyAndSecuritySettings() {
       chromeos::settings::mojom::kPrivacyAndSecuritySectionPath);
 }
 
+void SystemTrayClientImpl::ShowPrivacyHubSettings() {
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kPrivacyHubSubpagePath);
+}
+
 void SystemTrayClientImpl::ShowSmartPrivacySettings() {
   ShowSettingsSubPageForActiveUser(
       chromeos::settings::mojom::kSmartPrivacySubpagePath);
@@ -504,14 +498,10 @@ void SystemTrayClientImpl::ShowAccessibilitySettings() {
   // mode, so users can't get to other OS Settings (such as Wi-Fi, Date / Time).
   // We plan to remove this after we add a standalone OS Accessibility page for
   // kiosk mode, which blocks access to other OS settings.
-  bool is_kiosk = user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp();
-  if (!is_kiosk && ::features::IsAccessibilityOSSettingsVisibilityEnabled()) {
-    ShowSettingsSubPageForActiveUser(
-        chromeos::settings::mojom::kAccessibilitySectionPath);
-  } else {
-    ShowSettingsSubPageForActiveUser(
-        chromeos::settings::mojom::kManageAccessibilitySubpagePath);
-  }
+  ShowSettingsSubPageForActiveUser(
+      user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()
+          ? chromeos::settings::mojom::kManageAccessibilitySubpagePath
+          : chromeos::settings::mojom::kAccessibilitySectionPath);
 }
 
 void SystemTrayClientImpl::ShowGestureEducationHelp() {
@@ -623,13 +613,8 @@ void SystemTrayClientImpl::ShowArcVpnCreate(const std::string& app_id) {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
-        app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
-  } else {
-    apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
-        app_id, ui::EF_NONE, apps::mojom::LaunchSource::kFromParentalControls);
-  }
+  apps::AppServiceProxyFactory::GetForProfile(profile)->Launch(
+      app_id, ui::EF_NONE, apps::LaunchSource::kFromParentalControls);
 }
 
 void SystemTrayClientImpl::ShowSettingsSimUnlock() {
@@ -796,7 +781,7 @@ SystemTrayClientImpl::SystemTrayClientImpl(SystemTrayClientImpl* mock_instance)
   g_system_tray_client_instance = mock_instance;
 }
 
-void SystemTrayClientImpl::HandleUpdateAvailable(ash::UpdateType update_type) {
+void SystemTrayClientImpl::HandleUpdateAvailable() {
   UpgradeDetector* detector = UpgradeDetector::GetInstance();
   if (detector->upgrade_notification_stage() ==
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE) {
@@ -805,26 +790,25 @@ void SystemTrayClientImpl::HandleUpdateAvailable(ash::UpdateType update_type) {
     return;
   }
 
-  if (update_type == ash::UpdateType::kSystem && !detector->notify_upgrade()) {
+  if (!detector->notify_upgrade()) {
     LOG(ERROR) << "Tried to show update notification when no update available";
     return;
   }
 
   // Show the system tray icon.
-  ash::UpdateSeverity severity = GetUpdateSeverity(update_type, detector);
+  ash::UpdateSeverity severity = GetUpdateSeverity(detector);
   system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required(),
-                               detector->is_rollback(), update_type);
+                               detector->is_rollback());
 
-  // Only overwrite title and body for system updates.
-  if (update_type == ash::UpdateType::kSystem)
-    system_tray_->SetRelaunchNotificationState(relaunch_notification_state_);
+  // Overwrite title and body.
+  system_tray_->SetRelaunchNotificationState(relaunch_notification_state_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // chromeos::system::SystemClockObserver:
 
 void SystemTrayClientImpl::OnSystemClockChanged(
-    chromeos::system::SystemClock* clock) {
+    ash::system::SystemClock* clock) {
   system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
 }
 
@@ -847,7 +831,7 @@ void SystemTrayClientImpl::OnUpdateOverCellularOneTimePermissionGranted() {
 }
 
 void SystemTrayClientImpl::OnUpgradeRecommended() {
-  HandleUpdateAvailable(ash::UpdateType::kSystem);
+  HandleUpdateAvailable();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

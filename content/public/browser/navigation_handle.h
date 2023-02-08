@@ -31,6 +31,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom-forward.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/page_transition_types.h"
 
@@ -115,6 +116,7 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // additional frame trees for prerendering pages in addition to the primary
   // frame tree (holding the page currently shown to the user). The return
   // value remains constant over the navigation lifetime.
+  // See docs/frame_trees.md for more details.
   virtual bool IsInPrimaryMainFrame() const = 0;
 
   // Whether the navigation is taking place in a main frame which does not have
@@ -161,6 +163,13 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   //  * navigations via browser UI: Ctrl-R, refresh/forward/back/home buttons
   //  * any other "explicit" URL navigations, e.g. bookmarks
   virtual bool IsRendererInitiated() = 0;
+
+  // The navigation initiator's user activation and ad status.
+  //
+  // TODO(yaoxia): this will be used for recording a page load UKM
+  // (https://crrev.com/c/4080612).
+  virtual blink::mojom::NavigationInitiatorActivationAndAdStatus
+  GetNavigationInitiatorActivationAndAdStatus() = 0;
 
   // Whether the previous document in this frame was same-origin with the new
   // one created by this navigation.
@@ -552,6 +561,10 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // `true` if the timeout is being started for the first time. Repeated calls
   // will be ignored (they won't reset the timeout) and will return `false`.
   virtual bool SetNavigationTimeout(base::TimeDelta timeout) = 0;
+
+  // Configures whether a Cookie header added to this request should not be
+  // overwritten by the network service.
+  virtual void SetAllowCookiesFromBrowser(bool allow_cookies_from_browser) = 0;
 
   // Prerender2:
   // Used for metrics.

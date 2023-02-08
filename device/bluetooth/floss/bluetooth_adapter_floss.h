@@ -19,6 +19,7 @@
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/floss/bluetooth_low_energy_scan_session_floss.h"
+#include "device/bluetooth/floss/bluetooth_socket_floss.h"
 #include "device/bluetooth/floss/floss_adapter_client.h"
 #include "device/bluetooth/floss/floss_battery_manager_client.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
@@ -29,6 +30,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
 #include "device/bluetooth/bluetooth_low_energy_scan_session.h"
+#include "device/bluetooth/floss/floss_admin_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace floss {
@@ -48,6 +50,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
       public floss::FlossAdapterClient::Observer,
       public floss::FlossBatteryManagerClient::
           FlossBatteryManagerClientObserver,
+#if BUILDFLAG(IS_CHROMEOS)
+      public FlossAdminClientObserver,
+#endif  // BUILDFLAG(IS_CHROMEOS)
       public ScannerClientObserver {
  public:
   static scoped_refptr<BluetoothAdapterFloss> CreateAdapter();
@@ -91,6 +96,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
                           const ServiceOptions& options,
                           CreateServiceCallback callback,
                           CreateServiceErrorCallback error_callback) override;
+
+  // Intercept errors when creating an RFCOMM or L2CAP service. This keeps
+  // a reference to the |socket| so that it does not go out of scope until after
+  // the error is completed.
+  void OnCreateServiceError(scoped_refptr<BluetoothSocketFloss> socket,
+                            CreateServiceErrorCallback error_callback,
+                            const std::string& error_message);
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
@@ -227,6 +239,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFloss final
   // override.
   void BatteryInfoUpdated(std::string remote_address,
                           BatterySet battery_set) override;
+#if BUILDFLAG(IS_CHROMEOS)
+  // floss::FlossAdminClientObserver override.
+  void DevicePolicyEffectChanged(
+      const FlossDeviceId& device_id,
+      const absl::optional<PolicyEffect>& effect) override;
+  void ServiceAllowlistChanged(
+      const std::vector<device::BluetoothUUID>& allowlist) override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // BluetoothAdapter:
   base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;

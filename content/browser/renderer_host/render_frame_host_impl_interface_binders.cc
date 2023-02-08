@@ -12,7 +12,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/accessibility/render_accessibility_host.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -126,7 +126,7 @@ class BackForwardCacheMessageFilter : public mojo::MessageFilter {
     }
 
     BackForwardCacheImpl::VlogUnexpectedRendererToBrowserMessage(
-        interface_name_, message->name());
+        interface_name_, message->name(), render_frame_host_);
 
     TRACE_EVENT2(
         "content", "BackForwardCacheMessageFilter::WillDispatch bad_message",
@@ -275,8 +275,8 @@ void RenderFrameHostImpl::SetUpMojoConnection() {
             base::Unretained(this)));
   }
 
-  // TODO(crbug.com/1047354): How to avoid binding if the
-  // BINDINGS_POLICY_DOM_AUTOMATION policy is not set?
+  // TODO(crbug.com/1395830): Avoid binding the DomAutomationControllerHost
+  // interface outside of tests.
   associated_registry_->AddInterface<mojom::DomAutomationControllerHost>(
       base::BindRepeating(
           [](RenderFrameHostImpl* impl,
@@ -360,7 +360,7 @@ void RenderFrameHostImpl::SetUpMojoConnection() {
       remote_interfaces.InitWithNewPipeAndPassReceiver());
 
   remote_interfaces_ = std::make_unique<service_manager::InterfaceProvider>(
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   remote_interfaces_->Bind(std::move(remote_interfaces));
 
   // Called to bind the receiver for this interface to the local frame. We need
@@ -388,6 +388,7 @@ void RenderFrameHostImpl::TearDownMojoConnection() {
   frame_.reset();
   frame_bindings_control_.reset();
   local_frame_host_receiver_.reset();
+  non_associated_local_frame_host_receiver_.reset();
   local_main_frame_host_receiver_.reset();
 
   broker_receiver_.reset();

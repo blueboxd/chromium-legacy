@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "build/chromeos_buildflags.h"
 #include "cc/base/region.h"
 #include "components/exo/buffer.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
@@ -182,6 +181,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Sets the surface's clip rectangle.
   void SetClipRect(const absl::optional<gfx::RectF>& clip_rect);
+
+  // Sets the surface's transformation matrix.
+  void SetSurfaceTransform(const gfx::Transform& transform);
 
   // Sets the background color that shall be associated with the next buffer
   // commit.
@@ -420,6 +422,12 @@ class Surface final : public ui::PropertyHandler {
   // Starts or ends throttling on the surface.
   void ThrottleFrameRate(bool on);
 
+  // Informs tooltip is shown.
+  void OnTooltipShown(const std::u16string& text, const gfx::Rect& bounds);
+
+  // Informs tooltip is hidden.
+  void OnTooltipHidden();
+
   // If true is set, if this window has a focus, key events should be sent to
   // the app, even if it is an ash shortcut (with some exceptions).
   // See exo::Keyboard for more details.
@@ -538,6 +546,10 @@ class Surface final : public ui::PropertyHandler {
     // should only be set for subsurfaces.
     // Persisted between commits.
     absl::optional<gfx::RectF> clip_rect;
+    // The transform to apply when drawing this surface. This should only be set
+    // for subsurfaces, and doesn't apply to children of this surface.
+    // Persisted between commits.
+    gfx::Transform surface_transform;
   };
 
   friend class subtle::PropertyHelper;

@@ -8,13 +8,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
 
 namespace blink {
 
@@ -24,7 +29,6 @@ class LocalFrame;
 class Resource;
 class ResourceRequest;
 class ResourceResponse;
-class SecurityOrigin;
 
 struct Impression;
 
@@ -60,8 +64,10 @@ class CORE_EXPORT AttributionSrcLoader
   // navigation, for example a click on an anchor tag. Returns an Impression
   // which identifies the attributionsrc request and notifies the browser to
   // begin tracking it.
-  absl::optional<Impression> RegisterNavigation(const KURL& attribution_src,
-                                                HTMLElement* element = nullptr);
+  absl::optional<Impression> RegisterNavigation(
+      const KURL& attribution_src,
+      mojom::blink::AttributionNavigationType nav_type,
+      HTMLElement* element = nullptr);
 
   // Returns true if `url` can be used as an attributionsrc: its scheme is HTTP
   // or HTTPS, its origin is potentially trustworthy, the document's permission
@@ -87,30 +93,36 @@ class CORE_EXPORT AttributionSrcLoader
  private:
   class ResourceClient;
 
-  // Represents what events are able to be registered from an attributionsrc.
-  enum class SrcType { kUndetermined, kSource, kTrigger };
-
-  ResourceClient* DoRegistration(const KURL& src_url,
-                                 SrcType src_type,
-                                 bool associated_with_navigation);
+  ResourceClient* DoRegistration(
+      const KURL& src_url,
+      mojom::blink::AttributionRegistrationType,
+      absl::optional<mojom::blink::AttributionNavigationType> nav_type);
 
   // Returns the reporting origin corresponding to `url` if its protocol is in
   // the HTTP family, its origin is potentially trustworthy, and attribution is
-  // allowed. Returns `nullptr` otherwise, and reports a DevTools issue using
-  // `element` and `request_id if `log_issues` is true.
-  scoped_refptr<const SecurityOrigin> ReportingOriginForUrlIfValid(
-      const KURL& url,
-      HTMLElement* element,
-      absl::optional<uint64_t> request_id,
-      bool log_issues = true);
+  // allowed. Returns `absl::nullopt` otherwise, and reports a DevTools issue
+  // using `element` and `request_id if `log_issues` is true.
+  absl::optional<attribution_reporting::SuitableOrigin>
+  ReportingOriginForUrlIfValid(const KURL& url,
+                               HTMLElement* element,
+                               absl::optional<uint64_t> request_id,
+                               bool log_issues = true);
 
-  ResourceClient* CreateAndSendRequest(const KURL& src_url,
-                                       HTMLElement* element,
-                                       SrcType src_type,
-                                       bool associated_with_navigation);
+  ResourceClient* CreateAndSendRequest(
+      const KURL& src_url,
+      HTMLElement* element,
+      mojom::blink::AttributionRegistrationType,
+      absl::optional<mojom::blink::AttributionNavigationType> nav_type);
 
   // Returns whether OS-level attribution is supported.
   bool HasOsSupport() const;
+
+  void RegisterAttributionHeaders(
+      mojom::blink::AttributionRegistrationType,
+      attribution_reporting::SuitableOrigin reporting_origin,
+      const AtomicString& source_json,
+      const AtomicString& trigger_json,
+      uint64_t request_id);
 
   const Member<LocalFrame> local_frame_;
   size_t num_resource_clients_ = 0;

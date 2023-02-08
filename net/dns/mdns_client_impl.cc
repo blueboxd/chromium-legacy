@@ -5,26 +5,28 @@
 #include "net/dns/mdns_client_impl.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
-#include "net/dns/dns_util.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/util.h"
 #include "net/dns/record_rdata.h"
 #include "net/socket/datagram_socket.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // TODO(gene): Remove this temporary method of disabling NSEC support once it
 // becomes clear whether this feature should be
@@ -179,7 +181,7 @@ void MDnsConnection::PostOnError(SocketHandler* loop, int rv) {
   }
   VLOG(1) << "Socket error. id=" << id << ", error=" << rv;
   // Post to allow deletion of this object by delegate.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&MDnsConnection::OnError,
                                 weak_ptr_factory_.GetWeakPtr(), rv));
 }
@@ -218,11 +220,12 @@ int MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
 }
 
 bool MDnsClientImpl::Core::SendQuery(uint16_t rrtype, const std::string& name) {
-  std::string name_dns;
-  if (!DNSDomainFromUnrestrictedDot(name, &name_dns))
+  absl::optional<std::vector<uint8_t>> name_dns =
+      dns_names_util::DottedNameToNetwork(name);
+  if (!name_dns.has_value())
     return false;
 
-  DnsQuery query(0, name_dns, rrtype);
+  DnsQuery query(0, name_dns.value(), rrtype);
   query.set_flags(0);  // Remove the RD flag from the query. It is unneeded.
 
   connection_->Send(query.io_buffer(), query.io_buffer()->size());
@@ -382,7 +385,7 @@ void MDnsClientImpl::Core::RemoveListener(MDnsListenerImpl* listener) {
   if (observer_list_iterator->second->empty()) {
     // Schedule the actual removal for later in case the listener removal
     // happens while iterating over the observer list.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&MDnsClientImpl::Core::CleanupObserverList,
                                   AsWeakPtr(), key));
   }
@@ -605,10 +608,10 @@ void MDnsListenerImpl::ScheduleNextRefresh() {
       base::Milliseconds(static_cast<int>(base::Time::kMillisecondsPerSecond *
                                           kListenerRefreshRatio2 * ttl_));
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, next_refresh_.callback(), next_refresh1 - clock_->Now());
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, next_refresh_.callback(), next_refresh2 - clock_->Now());
 }
 
@@ -749,7 +752,7 @@ bool MDnsTransactionImpl::QueryAndListen() {
 
   timeout_.Reset(
       base::BindOnce(&MDnsTransactionImpl::SignalTransactionOver, AsWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, timeout_.callback(), kTransactionTimeout);
 
   return true;

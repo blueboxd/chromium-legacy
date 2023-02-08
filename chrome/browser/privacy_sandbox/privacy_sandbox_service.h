@@ -52,7 +52,10 @@ class PrivacySandboxService : public KeyedService {
     kNone = 0,
     kNotice = 1,
     kConsent = 2,
-    kMaxValue = kConsent,
+    kM1Consent = 3,
+    kM1NoticeROW = 4,
+    kM1NoticeEEA = 5,
+    kMaxValue = kM1NoticeEEA,
   };
 
   // An exhaustive list of actions related to showing & interacting with the
@@ -84,7 +87,28 @@ class PrivacySandboxService : public KeyedService {
     // settings.
     kNoticeLearnMore = 11,
 
-    kMaxValue = kNoticeLearnMore,
+    // Interactions with M1 Notice ROW prompt and M1 Notice EEA prompt.
+    kNoticeMoreInfoOpened = 12,
+    kNoticeMoreInfoClosed = 13,
+
+    kMaxValue = kNoticeMoreInfoClosed,
+  };
+
+  // TODO(crbug.com/1378703): Integrate this when handling Notice and Consent
+  // logic for m1.
+  enum class PromptSuppressedReason {
+    // Prompt has never been suppressed
+    kNone = 0,
+    // User had the Privacy Sandbox restricted at confirmation
+    kRestricted = 1,
+    // User was blocking 3PC when we attempted consent
+    kThirdPartyCookiesBlocked = 2,
+    // User declined the trials consent
+    kTrialsConsentDeclined = 3,
+    // User saw trials notice, and then disabled trials
+    kTrialsDisabledAfterNotice = 4,
+    // A policy is suppressing any prompt
+    kPolicy = 5,
   };
 
   PrivacySandboxService(

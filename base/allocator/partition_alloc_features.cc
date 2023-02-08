@@ -4,6 +4,8 @@
 
 #include "base/allocator/partition_alloc_features.h"
 
+#include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/base_export.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
@@ -123,6 +125,8 @@ constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
      "disabled-but-2-way-split"},
     {BackupRefPtrMode::kDisabledButSplitPartitions3Way,
      "disabled-but-3-way-split"},
+    {BackupRefPtrMode::kDisabledButAddDummyRefCount,
+     "disabled-but-add-dummy-ref-count"},
 };
 
 const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
@@ -189,6 +193,13 @@ BASE_FEATURE(kPartitionAllocDCScan,
 BASE_FEATURE(kPartitionAllocSortActiveSlotSpans,
              "PartitionAllocSortActiveSlotSpans",
              FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN)
+// Whether to retry allocations when commit fails.
+BASE_FEATURE(kPageAllocatorRetryOnCommitFailure,
+             "PageAllocatorRetryOnCommitFailure",
+             FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 }  // namespace features
 }  // namespace base

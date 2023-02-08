@@ -20,6 +20,8 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/hdr_metadata.h"
 
 using base::test::RunClosure;
 using ::testing::_;
@@ -66,6 +68,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MOCK_CONST_METHOD0(GetProfile, VideoCodecProfile());
   MOCK_CONST_METHOD0(GetBitDepth, uint8_t());
   MOCK_CONST_METHOD0(GetChromaSampling, VideoChromaSampling());
+  MOCK_CONST_METHOD0(GetHDRMetadata, absl::optional<gfx::HDRMetadata>());
   MOCK_CONST_METHOD0(GetVisibleRect, gfx::Rect());
   MOCK_CONST_METHOD0(GetRequiredNumOfPictures, size_t());
   MOCK_CONST_METHOD0(GetNumReferenceFrames, size_t());
@@ -157,12 +160,11 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                                         public VideoDecodeAccelerator::Client {
  public:
   VaapiVideoDecodeAcceleratorTest()
-      : vda_(
-            base::BindRepeating([] { return true; }),
-            base::BindRepeating([](uint32_t client_texture_id,
-                                   uint32_t texture_target,
-                                   const scoped_refptr<gl::GLImage>& image,
-                                   bool can_bind_to_sampler) { return true; })),
+      : vda_(base::BindRepeating([] { return true; }),
+             base::BindRepeating(
+                 [](uint32_t client_texture_id,
+                    uint32_t texture_target,
+                    const scoped_refptr<gl::GLImage>& image) { return true; })),
         decoder_thread_("VaapiVideoDecodeAcceleratorTestThread"),
         mock_decoder_(new ::testing::StrictMock<MockAcceleratedVideoDecoder>),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
@@ -412,7 +414,6 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
   base::WeakPtrFactory<VaapiVideoDecodeAcceleratorTest> weak_ptr_factory_;
 };
 
-// Verify that it is possible to select DRM(egl) and TFP(glx) at runtime.
 TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
   EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationNone,
             mock_vaapi_picture_factory_->GetVaapiImplementation(
@@ -425,9 +426,6 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
   EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationAngle,
             mock_vaapi_picture_factory_->GetVaapiImplementation(
                 gl::kGLImplementationEGLANGLE));
-  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
-            mock_vaapi_picture_factory_->GetVaapiImplementation(
-                gl::kGLImplementationDesktopGL));
 #elif BUILDFLAG(IS_OZONE)
   EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationDrm,
             mock_vaapi_picture_factory_->GetVaapiImplementation(

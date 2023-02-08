@@ -4,51 +4,19 @@
 
 import 'chrome://os-settings/chromeos/lazy_load.js';
 
-import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {DevicePageBrowserProxyImpl, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender, waitBeforeNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {TestDevicePageBrowserProxy} from './test_device_page_browser_proxy.js';
 
 suite('ManageAccessibilityPageTests', function() {
   let page = null;
   let deviceBrowserProxy = null;
-
-  /** @implements {DevicePageBrowserProxy} */
-  class TestDevicePageBrowserProxy {
-    constructor() {
-      /** @private {boolean} */
-      this.hasMouse_ = true;
-      /** @private {boolean} */
-      this.hasTouchpad_ = true;
-    }
-
-    /** @param {boolean} hasMouse */
-    set hasMouse(hasMouse) {
-      this.hasMouse_ = hasMouse;
-      webUIListenerCallback('has-mouse-changed', this.hasMouse_);
-    }
-
-    /** @param {boolean} hasTouchpad */
-    set hasTouchpad(hasTouchpad) {
-      this.hasTouchpad_ = hasTouchpad;
-      webUIListenerCallback('has-touchpad-changed', this.hasTouchpad_);
-    }
-
-    /** @override */
-    initializePointers() {
-      webUIListenerCallback('has-mouse-changed', this.hasMouse_);
-      webUIListenerCallback('has-touchpad-changed', this.hasTouchpad_);
-    }
-
-    /** @override */
-    initializeKeyboardWatcher() {
-      webUIListenerCallback('has-hardware-keyboard', this.hasKeyboard_);
-    }
-  }
 
   function initPage(opt_prefs) {
     page = document.createElement('settings-manage-a11y-page');
@@ -87,9 +55,14 @@ suite('ManageAccessibilityPageTests', function() {
 
   setup(function() {
     deviceBrowserProxy = new TestDevicePageBrowserProxy();
+    deviceBrowserProxy.hasMouse = true;
+    deviceBrowserProxy.hasTouchpad = true;
+    deviceBrowserProxy.hasPointingStick = false;
     DevicePageBrowserProxyImpl.setInstanceForTesting(deviceBrowserProxy);
 
+    loadTimeData.overrideValues({isKioskModeActive: true});
     PolymerTest.clearBody();
+    Router.getInstance().navigateTo(routes.MANAGE_ACCESSIBILITY);
   });
 
   teardown(function() {
@@ -97,123 +70,6 @@ suite('ManageAccessibilityPageTests', function() {
       page.remove();
     }
     Router.getInstance().resetRouteForTesting();
-  });
-
-  test('Pointers row only visible if mouse/touchpad present', function() {
-    initPage();
-    const row = page.shadowRoot.querySelector('#pointerSubpageButton');
-    assertFalse(row.hidden);
-
-    // Has touchpad, doesn't have mouse ==> not hidden.
-    deviceBrowserProxy.hasMouse = false;
-    assertFalse(row.hidden);
-
-    // Doesn't have either ==> hidden.
-    deviceBrowserProxy.hasTouchpad = false;
-    assertTrue(row.hidden);
-
-    // Has mouse, doesn't have touchpad ==> not hidden.
-    deviceBrowserProxy.hasMouse = true;
-    assertFalse(row.hidden);
-
-    // Has both ==> not hidden.
-    deviceBrowserProxy.hasTouchpad = true;
-    assertFalse(row.hidden);
-  });
-
-  test('tablet mode buttons visible', function() {
-    loadTimeData.overrideValues({
-      isKioskModeActive: false,
-      showTabletModeShelfNavigationButtonsSettings: true,
-    });
-    initPage();
-    flush();
-
-    assertTrue(isVisible(page.shadowRoot.querySelector(
-        '#shelfNavigationButtonsEnabledControl')));
-  });
-
-  test('toggle tablet mode buttons', function() {
-    loadTimeData.overrideValues({
-      isKioskModeActive: false,
-      showTabletModeShelfNavigationButtonsSettings: true,
-    });
-    initPage();
-    flush();
-
-    const navButtonsToggle =
-        page.shadowRoot.querySelector('#shelfNavigationButtonsEnabledControl');
-    assertTrue(isVisible(navButtonsToggle));
-    // The default pref value is false.
-    assertFalse(navButtonsToggle.checked);
-
-    // Clicking the toggle should update the toggle checked value, and the
-    // backing preference.
-    navButtonsToggle.click();
-    flush();
-
-    assertTrue(navButtonsToggle.checked);
-    assertFalse(navButtonsToggle.disabled);
-    assertTrue(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
-
-    navButtonsToggle.click();
-    flush();
-
-    assertFalse(navButtonsToggle.checked);
-    assertFalse(navButtonsToggle.disabled);
-    assertFalse(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
-  });
-
-  test('tablet mode buttons toggle disabled with spoken feedback', function() {
-    loadTimeData.overrideValues({
-      isKioskModeActive: false,
-      showTabletModeShelfNavigationButtonsSettings: true,
-    });
-
-    const prefs = getDefaultPrefs();
-    // Enable spoken feedback.
-    prefs.settings.accessibility.value = true;
-
-    initPage(prefs);
-    flush();
-
-    const navButtonsToggle =
-        page.shadowRoot.querySelector('#shelfNavigationButtonsEnabledControl');
-    assertTrue(isVisible(navButtonsToggle));
-
-    // If spoken feedback is enabled, the shelf nav buttons toggle should be
-    // disabled and checked.
-    assertTrue(navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
-
-    // Clicking the toggle should have no effect.
-    navButtonsToggle.click();
-    flush();
-
-    assertTrue(navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
-    assertFalse(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
-
-    // The toggle should be enabled if the spoken feedback gets disabled.
-    page.set('prefs.settings.accessibility.value', false);
-    flush();
-
-    assertFalse(!!navButtonsToggle.disabled);
-    assertFalse(navButtonsToggle.checked);
-    assertFalse(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
-
-    // Clicking the toggle should update the backing pref.
-    navButtonsToggle.click();
-    flush();
-
-    assertFalse(!!navButtonsToggle.disabled);
-    assertTrue(navButtonsToggle.checked);
-    assertTrue(
-        page.prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value);
   });
 
   test('some parts are hidden in kiosk mode', function() {
@@ -251,26 +107,6 @@ suite('ManageAccessibilityPageTests', function() {
 
     // Additional features link is not visible.
     assertFalse(isVisible(page.$.additionalFeaturesLink));
-  });
-
-  test('Deep link to switch access', async () => {
-    loadTimeData.overrideValues({
-      isKioskModeActive: false,
-    });
-    initPage();
-
-    const params = new URLSearchParams();
-    params.append('settingId', '1522');
-    Router.getInstance().navigateTo(routes.MANAGE_ACCESSIBILITY, params);
-
-    flush();
-
-    const deepLinkElement = page.shadowRoot.querySelector('#enableSwitchAccess')
-                                .shadowRoot.querySelector('cr-toggle');
-    await waitAfterNextRender(deepLinkElement);
-    assertEquals(
-        deepLinkElement, getDeepActiveElement(),
-        'Switch access toggle should be focused for settingId=1522.');
   });
 
   test('Dictation labels', async () => {
@@ -390,54 +226,5 @@ suite('ManageAccessibilityPageTests', function() {
     assertEquals(
         'French (France) speech is sent to Google for processing',
         page.computeDictationLocaleSubtitle_());
-  });
-
-  [true, false].forEach(isAccessibilityOSSettingsVisibilityEnabled => {
-    loadTimeData.overrideValues({isAccessibilityOSSettingsVisibilityEnabled});
-
-    const selectorRouteList = [
-      {
-        selector: '#captionsSubpageButton',
-        route: routes.MANAGE_CAPTION_SETTINGS,
-      },
-      {selector: '#displaySubpageButton', route: routes.DISPLAY},
-      {selector: '#keyboardSubpageButton', route: routes.KEYBOARD},
-      {selector: '#pointerSubpageButton', route: routes.POINTERS},
-    ];
-
-    if (!isAccessibilityOSSettingsVisibilityEnabled) {
-      selectorRouteList.push(
-          {selector: '#ttsSubpageButton', route: routes.MANAGE_TTS_SETTINGS});
-    }
-
-    selectorRouteList.forEach(({selector, route}) => {
-      test(
-          `should focus ${selector} button when returning from ${
-              route.path} subpage`,
-          async () => {
-            initPage();
-            flush();
-            const router = Router.getInstance();
-
-            const subpageButton = page.shadowRoot.querySelector(selector);
-            assertTrue(!!subpageButton);
-
-            subpageButton.click();
-            assertEquals(route, router.getCurrentRoute());
-            assertNotEquals(
-                subpageButton, page.shadowRoot.activeElement,
-                `${selector} should not be focused`);
-
-            const popStateEventPromise = eventToPromise('popstate', window);
-            router.navigateToPreviousRoute();
-            await popStateEventPromise;
-            await waitBeforeNextRender(page);
-
-            assertEquals(routes.MANAGE_ACCESSIBILITY, router.getCurrentRoute());
-            assertEquals(
-                subpageButton, page.shadowRoot.activeElement,
-                `${selector} should be focused`);
-          });
-    });
   });
 });

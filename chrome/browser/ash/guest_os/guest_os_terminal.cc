@@ -268,8 +268,10 @@ void LaunchTerminalWithIntent(
       // would bring up the installer, so keep that behaviour. Only applies to
       // the default Crostini VM, anything else is only accessible if the target
       // VM is installed.
-      crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
-          crostini::CrostiniUISurface::kAppList);
+      auto* installer = crostini::CrostiniInstaller::GetForProfile(profile);
+      if (installer) {
+        installer->ShowDialog(crostini::CrostiniUISurface::kAppList);
+      }
       return std::move(callback).Run(false, "Crostini not installed");
     } else {
       // Could happen if, e.g. a guest got disabled between listing and
@@ -545,9 +547,11 @@ void AddTerminalMenuShortcuts(
     std::vector<gfx::ImageSkia> images) {
   ui::ColorProvider* color_provider =
       ui::ColorProviderManager::Get().GetColorProviderFor(
-          ui::NativeTheme::GetInstanceForWeb()->GetColorProviderKey(nullptr));
+          ui::NativeTheme::GetInstanceForNativeUi()->GetColorProviderKey(
+              nullptr));
   auto icon = [color_provider](const gfx::VectorIcon& icon) {
-    return ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
+    return ui::ImageModel::FromVectorIcon(icon,
+                                          apps::GetColorIdForMenuItemIcon(),
                                           apps::kAppShortcutIconSizeDip)
         .Rasterize(color_provider);
   };

@@ -14,7 +14,8 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
@@ -193,7 +194,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 }
 
 void IdentityTestEnvironment::Initialize() {
-  DCHECK(base::ThreadTaskRunnerHandle::Get())
+  DCHECK(base::SingleThreadTaskRunner::GetCurrentDefault())
       << "IdentityTestEnvironment requires a properly set up task "
          "environment. "
          "If your test has an existing one, move it to be initialized before "
@@ -592,7 +593,7 @@ void IdentityTestEnvironment::OnAccessTokenRequested(
   // production code, in which case this callback could be coming in ahead
   // of an invocation of WaitForAccessTokenRequestIfNecessary() that will be
   // made in this same iteration of the run loop.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&IdentityTestEnvironment::HandleOnAccessTokenRequested,
                      weak_ptr_factory_.GetWeakPtr(), account_id));

@@ -55,14 +55,8 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::MountError ReplyToMountError(const absl::optional<MountReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     cryptohome::MountError
-    ReplyToMountError(const absl::optional<MigrateKeyReply>&);
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    cryptohome::MountError
     ReplyToMountError(const absl::optional<GetKeyDataReply>&);
 
-template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
-    CryptohomeErrorCode
-    ReplyToCryptohomeError(const absl::optional<MountReply>&);
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<StartAuthSessionReply>&);
@@ -126,6 +120,9 @@ template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
 template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
     CryptohomeErrorCode
     ReplyToCryptohomeError(const absl::optional<GetRecoveryRequestReply>&);
+template COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_CRYPTOHOME)
+    CryptohomeErrorCode
+    ReplyToCryptohomeError(const absl::optional<StartMigrateToDircryptoReply>&);
 
 std::vector<cryptohome::KeyDefinition> GetKeyDataReplyToKeyDefinitions(
     const absl::optional<GetKeyDataReply>& reply) {

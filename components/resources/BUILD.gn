@@ -50,6 +50,7 @@ grit("components_resources") {
     ":about_credits",
     "//components/flags_ui/resources:build_ts",
     "//components/security_interstitials/content/resources:build_ts",
+    "//components/version_ui/resources:build_ts",
   ]
 
   if (!is_ios) {
@@ -72,6 +73,7 @@ grit("dev_ui_components_resources") {
   ]
 
   deps = [
+    "//components/crash/core/browser/resources:build_ts",
     "//components/local_state:build",
     "//components/policy/resources/webui:html_wrapper_files",
   ]
@@ -93,7 +95,7 @@ grit("components_scaled_resources") {
 }
 
 action("about_credits") {
-  script = "//tools/licenses.py"
+  script = "//tools/licenses/licenses.py"
   depfile = "$target_gen_dir/$target_name.d"
 
   inputs = [

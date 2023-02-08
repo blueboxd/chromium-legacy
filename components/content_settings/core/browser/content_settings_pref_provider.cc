@@ -256,10 +256,6 @@ bool PrefProvider::UpdateLastVisitTime(
     return false;
 
   auto it = GetRuleIterator(content_type, false);
-  if (!it) {
-    return false;
-  }
-
   Rule rule;
   while (it->HasNext()) {
     rule = it->Next();
@@ -286,7 +282,6 @@ void PrefProvider::ClearAllContentSettingsRules(
 
   if (supports_type(content_type))
     GetPref(content_type)->ClearAllContentSettingsRules();
-
 }
 
 void PrefProvider::ShutdownOnUIThread() {

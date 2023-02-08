@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -86,12 +87,13 @@ class GPU_GLES2_EXPORT TexturePassthrough final
                            gl::GLImage* stream_texture_image,
                            GLuint service_id);
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // Return true if and only if the decoder should BindTexImage / CopyTexImage
   // us before sampling.
   bool is_bind_pending() const { return is_bind_pending_; }
-  void set_is_bind_pending(bool is_bind_pending) {
-    is_bind_pending_ = is_bind_pending;
-  }
+  void set_bind_pending() { is_bind_pending_ = true; }
+  void clear_bind_pending() { is_bind_pending_ = false; }
+#endif
 
   void SetEstimatedSize(size_t size);
   size_t estimated_size() const { return estimated_size_; }
@@ -113,7 +115,9 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   const GLuint owned_service_id_ = 0;
 
   bool have_context_;
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   bool is_bind_pending_ = false;
+#endif
 
   size_t estimated_size_ = 0;
 
@@ -310,6 +314,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                      gl::GLImage* image,
                      ImageState state);
 
+#if BUILDFLAG(IS_ANDROID)
   // Set the GLImage for a particular level.  This is like SetLevelImage, but it
   // also makes it optional to override |service_id_| with a texture bound to
   // the stream texture. See SetStreamTextureServiceId() for the details of how
@@ -319,6 +324,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                                   gl::GLImage* image,
                                   ImageState state,
                                   GLuint service_id);
+#endif
 
   // Set the ImageState for the image bound to the given level.
   void SetLevelImageState(GLenum target, GLint level, ImageState state);
@@ -411,8 +417,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
                        const std::string& dump_name) const;
 
   void ApplyFormatWorkarounds(const FeatureInfo* feature_info);
-
-  bool EmulatingRGB();
 
   // In GLES2 "texture complete" means it has all required mips for filtering
   // down to a 1x1 pixel texture, they are in the correct order, they are all
@@ -631,10 +635,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // texture.
   void UpdateHasImages();
 
-  // Updates the flag that indicates whether this texture requires RGB
-  // emulation.
-  void UpdateEmulatingRGB();
-
   // Increment the framebuffer state change count in all the managers
   // referencing this texture.
   void IncAllFramebufferStateChangeCount();
@@ -739,8 +739,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   bool texture_max_anisotropy_initialized_ = false;
 
   raw_ptr<const CompatibilitySwizzle> compatibility_swizzle_ = nullptr;
-
-  bool emulating_rgb_ = false;
 };
 
 // This class represents a texture in a client context group. It's mostly 1:1
@@ -1113,12 +1111,14 @@ class GPU_GLES2_EXPORT TextureManager
                      gl::GLImage* image,
                      Texture::ImageState state);
 
+#if BUILDFLAG(IS_ANDROID)
   void SetLevelStreamTextureImage(TextureRef* ref,
                                   GLenum target,
                                   GLint level,
                                   gl::GLImage* image,
                                   Texture::ImageState state,
                                   GLuint service_id);
+#endif
 
   void SetLevelImageState(TextureRef* ref,
                           GLenum target,
@@ -1163,7 +1163,8 @@ class GPU_GLES2_EXPORT TextureManager
     GLint border;
     GLenum format;
     GLenum type;
-    const void* pixels;
+    // `pixels` is not a raw_ptr<...> to avoid adding an out-of-line destructor.
+    RAW_PTR_EXCLUSION const void* pixels;
     uint32_t pixels_size;
     uint32_t padding;
     CommandType command_type;
@@ -1200,7 +1201,8 @@ class GPU_GLES2_EXPORT TextureManager
     GLsizei depth;
     GLenum format;
     GLenum type;
-    const void* pixels;
+    // `pixels` is not a raw_ptr<...> to avoid adding an out-of-line destructor.
+    RAW_PTR_EXCLUSION const void* pixels;
     uint32_t pixels_size;
     uint32_t padding;
     CommandType command_type;

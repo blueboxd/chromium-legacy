@@ -6,7 +6,10 @@
 
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/hotseat_widget.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -14,8 +17,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/login/login_state/login_state.h"
-#include "chromeos/metrics/login_event_recorder.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/metrics/login_event_recorder.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/window.h"
@@ -24,7 +27,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/total_animation_throughput_reporter.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "ui/views/animation/bounds_animator_observer.h"
 
 namespace ash {
 namespace {
@@ -105,11 +107,10 @@ void ReportLogin(base::TimeTicks start,
     return;
   }
 
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
-      "LoginAnimationEnd",
-      /*send_to_uma=*/false,
-      /*write_to_file=*/false);
-  chromeos::LoginEventRecorder::Get()->RunScheduledWriteLoginTimes();
+  LoginEventRecorder::Get()->AddLoginTimeMarker("LoginAnimationEnd",
+                                                /*send_to_uma=*/false,
+                                                /*write_to_file=*/false);
+  LoginEventRecorder::Get()->RunScheduledWriteLoginTimes();
   RecordMetrics(start, data, "Ash.LoginAnimation.Smoothness.",
                 "Ash.LoginAnimation.Jank.", "Ash.LoginAnimation.Duration.");
 }
@@ -136,20 +137,19 @@ void OnRestoredWindowPresentationTimeReceived(
 
 LoginUnlockThroughputRecorder::LoginUnlockThroughputRecorder() {
   Shell::Get()->session_controller()->AddObserver(this);
-  chromeos::LoginState::Get()->AddObserver(this);
+  LoginState::Get()->AddObserver(this);
 }
 
 LoginUnlockThroughputRecorder::~LoginUnlockThroughputRecorder() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-  chromeos::LoginState::Get()->RemoveObserver(this);
+  LoginState::Get()->RemoveObserver(this);
 }
 
 void LoginUnlockThroughputRecorder::OnLockStateChanged(bool locked) {
-  auto logged_in_user = chromeos::LoginState::Get()->GetLoggedInUserType();
+  auto logged_in_user = LoginState::Get()->GetLoggedInUserType();
 
-  if (!locked &&
-      (logged_in_user == chromeos::LoginState::LOGGED_IN_USER_OWNER ||
-       logged_in_user == chromeos::LoginState::LOGGED_IN_USER_REGULAR)) {
+  if (!locked && (logged_in_user == LoginState::LOGGED_IN_USER_OWNER ||
+                  logged_in_user == LoginState::LOGGED_IN_USER_REGULAR)) {
     auto* primary_root = Shell::GetPrimaryRootWindow();
     new ui::TotalAnimationThroughputReporter(
         primary_root->GetHost()->compositor(),
@@ -159,7 +159,7 @@ void LoginUnlockThroughputRecorder::OnLockStateChanged(bool locked) {
 }
 
 void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
-  auto* login_state = chromeos::LoginState::Get();
+  auto* login_state = LoginState::Get();
   auto logged_in_user = login_state->GetLoggedInUserType();
 
   if (user_logged_in_)
@@ -168,8 +168,8 @@ void LoginUnlockThroughputRecorder::LoggedInStateChanged() {
   if (!login_state->IsUserLoggedIn())
     return;
 
-  if (logged_in_user != chromeos::LoginState::LOGGED_IN_USER_OWNER &&
-      logged_in_user != chromeos::LoginState::LOGGED_IN_USER_REGULAR) {
+  if (logged_in_user != LoginState::LOGGED_IN_USER_OWNER &&
+      logged_in_user != LoginState::LOGGED_IN_USER_REGULAR) {
     return;
   }
 
@@ -317,17 +317,14 @@ void LoginUnlockThroughputRecorder::OnLoginAnimationFinish(
   ReportLogin(start, data);
 }
 
-void LoginUnlockThroughputRecorder::SetShelfViewIfNotSet(
-    ShelfView* shelf_view) {
-  if (!shelf_view_)
-    shelf_view_ = shelf_view;
-}
-
 void LoginUnlockThroughputRecorder::ScheduleWaitForShelfAnimationEnd() {
-  DCHECK(shelf_view_);
-  if (!shelf_view_)
-    return;
-
+  ShelfView* shelf_view =
+      RootWindowController::ForWindow(
+          Shell::Get()->window_tree_host_manager()->GetPrimaryRootWindow())
+          ->shelf()
+          ->hotseat_widget()
+          ->scrollable_shelf_view()
+          ->shelf_view();
   base::OnceCallback on_animation_end = base::BindOnce(
       [](base::TimeTicks primary_user_logged_in) {
         const base::TimeDelta duration_ms =
@@ -338,7 +335,7 @@ void LoginUnlockThroughputRecorder::ScheduleWaitForShelfAnimationEnd() {
       },
       primary_user_logged_in_);
 
-  (new AnimationObserver(shelf_view_, on_animation_end))->StartObserving();
+  (new AnimationObserver(shelf_view, on_animation_end))->StartObserving();
 }
 
 void LoginUnlockThroughputRecorder::OnAllExpectedShelfIconsLoaded() {

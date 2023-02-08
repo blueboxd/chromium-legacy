@@ -33,6 +33,10 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void UnSetMaximized() override;
   void SetFullscreen() override;
   void UnSetFullscreen() override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void SetUseImmersiveMode(bool immersive) override;
+  bool SupportsTopLevelImmersiveStatus() const override;
+#endif
   void SetMinimized() override;
   void SurfaceMove(WaylandConnection* connection) override;
   void SurfaceResize(WaylandConnection* connection, uint32_t hittest) override;
@@ -58,6 +62,7 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   bool SupportsActivation() override;
   void Activate() override;
   void Deactivate() override;
+  void SetScaleFactor(float scale_factor) override;
 
   XDGSurfaceWrapperImpl* xdg_surface_wrapper() const;
 
@@ -69,19 +74,13 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
                                 int32_t height,
                                 struct wl_array* states);
   static void CloseTopLevel(void* data, struct xdg_toplevel* xdg_toplevel);
-
-#if defined(XDG_TOPLEVEL_CONFIGURE_BOUNDS_SINCE_VERSION)
   static void ConfigureBounds(void* data,
                               struct xdg_toplevel* xdg_toplevel,
                               int32_t width,
                               int32_t height);
-#endif
-
-#if defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
   static void WmCapabilities(void* data,
                              struct xdg_toplevel* xdg_toplevel,
                              struct wl_array* capabilities);
-#endif
 
   // zxdg_decoration_listener
   static void ConfigureDecoration(

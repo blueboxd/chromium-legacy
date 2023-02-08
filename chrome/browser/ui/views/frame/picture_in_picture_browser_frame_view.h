@@ -25,6 +25,7 @@
 #endif
 
 namespace views {
+class FrameBackground;
 class Label;
 }
 
@@ -34,7 +35,9 @@ class PictureInPictureBrowserFrameView
       public LocationIconView::Delegate,
       public IconLabelBubbleView::Delegate,
       public ContentSettingImageView::Delegate,
+#if BUILDFLAG(IS_MAC)
       public device::GeolocationManager::PermissionObserver,
+#endif
       public views::WidgetObserver {
  public:
   METADATA_HEADER(PictureInPictureBrowserFrameView);
@@ -67,6 +70,7 @@ class PictureInPictureBrowserFrameView
   void OnThemeChanged() override;
   void Layout() override;
   void AddedToWidget() override;
+  void RemovedFromWidget() override;
 #if BUILDFLAG(IS_LINUX)
   gfx::Insets MirroredFrameBorderInsets() const override;
   gfx::Insets GetInputInsets() const override;
@@ -99,9 +103,11 @@ class PictureInPictureBrowserFrameView
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
 
+#if BUILDFLAG(IS_MAC)
   // GeolocationManager::PermissionObserver:
   void OnSystemPermissionUpdated(
       device::LocationSystemPermissionStatus new_status) override;
+#endif
 
   // views::WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
@@ -142,6 +148,9 @@ class PictureInPictureBrowserFrameView
   // Returns the insets of the window frame borders.
   gfx::Insets FrameBorderInsets() const;
 
+  // Returns the insets of the window frame borders for resizing.
+  gfx::Insets ResizeBorderInsets() const;
+
   // Returns the height of the top bar area, including the window top border.
   int GetTopAreaHeight() const;
 
@@ -151,13 +160,18 @@ class PictureInPictureBrowserFrameView
 
   // Returns whether a client-side shadow should be drawn for the window.
   bool ShouldDrawFrameShadow() const;
+
+  // Gets the shadow metrics (radius, offset, and number of shadows) even if
+  // shadows are not drawn.
+  static gfx::ShadowValues GetShadowValues();
 #endif
+
+  views::View* GetBackToTabButtonForTesting();
 
  private:
   // A model required to use LocationIconView.
   std::unique_ptr<LocationBarModel> location_bar_model_;
 
-  raw_ptr<views::View> window_background_view_ = nullptr;
   raw_ptr<views::BoxLayoutView> controls_container_view_ = nullptr;
 
   // An icon to the left of the window title, which reuses the location icon in
@@ -181,6 +195,10 @@ class PictureInPictureBrowserFrameView
   // Used to draw window frame borders and shadow on Linux when GTK theme is
   // enabled.
   raw_ptr<ui::WindowFrameProvider> window_frame_provider_ = nullptr;
+
+  // Used to draw window frame borders and shadow on Linux when classic theme is
+  // enabled.
+  std::unique_ptr<views::FrameBackground> frame_background_;
 #endif
 };
 

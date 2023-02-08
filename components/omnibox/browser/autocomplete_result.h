@@ -219,13 +219,6 @@ class AutocompleteResult {
   // Gets common prefix from SEARCH_SUGGEST_TAIL matches
   std::u16string GetCommonPrefix();
 
-  // Populates tail_suggest_common_prefix on the matches as well as prepends
-  // ellipses.
-  void SetTailSuggestContentPrefixes();
-
-  // Populates tail_suggest_common_prefix on the matches.
-  void SetTailSuggestCommonPrefixes();
-
   // Estimates dynamic memory usage.
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
@@ -282,6 +275,8 @@ class AutocompleteResult {
   // This value should be comfortably larger than any max-autocomplete-matches
   // under consideration.
   static constexpr size_t kMaxAutocompletePositionValue = 30;
+
+  static void ClearDontCopyDoneProvidersForTesting();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,

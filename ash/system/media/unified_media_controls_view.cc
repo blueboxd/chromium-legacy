@@ -87,6 +87,8 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kHangUp:
     case MediaSessionAction::kRaise:
     case MediaSessionAction::kSetMute:
+    case MediaSessionAction::kPreviousSlide:
+    case MediaSessionAction::kNextSlide:
       NOTREACHED();
       break;
   }
@@ -116,7 +118,7 @@ UnifiedMediaControlsView::MediaActionButton::MediaActionButton(
               },
               controller,
               this),
-          IconButton::Type::kSmall,
+          IconButton::Type::kMedium,
           &GetVectorIconForMediaAction(action),
           accessible_name_id),
       action_(action) {

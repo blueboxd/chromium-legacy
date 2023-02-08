@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -18,6 +19,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/mojom/wayland_buffer_manager.mojom.h"
 
@@ -40,6 +42,7 @@ class WaylandWindow;
 class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
  public:
   WaylandBufferManagerGpu();
+  explicit WaylandBufferManagerGpu(const base::FilePath& drm_node_path);
   WaylandBufferManagerGpu(const WaylandBufferManagerGpu&) = delete;
   WaylandBufferManagerGpu& operator=(const WaylandBufferManagerGpu&) = delete;
 
@@ -122,6 +125,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void CommitBuffer(gfx::AcceleratedWidget widget,
                     uint32_t frame_id,
                     uint32_t buffer_id,
+                    gl::FrameData data,
                     const gfx::Rect& bounds_rect,
                     const gfx::RoundedCornersF& corners,
                     float surface_scale_factor,
@@ -130,6 +134,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // |widget|.
   void CommitOverlays(gfx::AcceleratedWidget widget,
                       uint32_t frame_id,
+                      gl::FrameData data,
                       std::vector<wl::WaylandOverlayConfig> overlays);
 
   // Asks Wayland to destroy a wl_buffer.
@@ -163,6 +168,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   // Allocates a unique buffer ID.
   uint32_t AllocateBufferID();
+
+  // Returns if a format is supported by current Wayland implementation.
+  bool SupportsFormat(gfx::BufferFormat buffer_format) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandSurfaceFactoryTest, CreateSurfaceCheckGbm);
@@ -223,13 +231,14 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                                   uint32_t buf_id);
   void CommitOverlaysTask(gfx::AcceleratedWidget widget,
                           uint32_t frame_id,
+                          gl::FrameData data,
                           std::vector<wl::WaylandOverlayConfig> overlays);
   void DestroyBufferTask(uint32_t buffer_id);
 
 #if defined(WAYLAND_GBM)
-  // Finds drm render node, opens it and stores the handle into
+  // Uses |drm_node_path| to open the handle and store it into
   // |drm_render_node_fd|.
-  void OpenAndStoreDrmRenderNodeFd();
+  void OpenAndStoreDrmRenderNodeFd(const base::FilePath& drm_node_path);
   // Used by the gbm_device for self creation.
   base::ScopedFD drm_render_node_fd_;
   // A DRM render node based gbm device.

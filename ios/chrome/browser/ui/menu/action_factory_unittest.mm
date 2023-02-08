@@ -8,6 +8,7 @@
 #import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
+#import "ios/chrome/browser/ui/menu/action_factory+protected.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -27,7 +28,7 @@
 #endif
 
 namespace {
-MenuScenario kTestMenuScenario = MenuScenario::kHistoryEntry;
+MenuScenarioHistogram kTestMenuScenario = MenuScenarioHistogram::kHistoryEntry;
 }  // namespace
 
 // Test fixture for the ActionFactory.
@@ -274,8 +275,8 @@ TEST_F(ActionFactoryTest, markAsUnreadAction) {
   ActionFactory* factory =
       [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
-  UIImage* expectedImage =
-      DefaultSymbolWithPointSize(kHideActionSymbol, kSymbolActionPointSize);
+  UIImage* expectedImage = DefaultSymbolWithPointSize(kMarkAsUnreadActionSymbol,
+                                                      kSymbolActionPointSize);
 
   NSString* expectedTitle =
       l10n_util::GetNSString(IDS_IOS_READING_LIST_MARK_AS_UNREAD_ACTION);
@@ -293,7 +294,7 @@ TEST_F(ActionFactoryTest, viewOfflineVersion) {
   ActionFactory* factory =
       [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
-  UIImage* expectedImage = DefaultSymbolWithPointSize(kCheckMarkCircleSymbol,
+  UIImage* expectedImage = DefaultSymbolWithPointSize(kCheckmarkCircleSymbol,
                                                       kSymbolActionPointSize);
 
   NSString* expectedTitle =
@@ -362,7 +363,7 @@ TEST_F(ActionFactoryTest, SelectTabsAction) {
   ActionFactory* factory =
       [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
-  UIImage* expectedImage = DefaultSymbolWithPointSize(kCheckMarkCircleSymbol,
+  UIImage* expectedImage = DefaultSymbolWithPointSize(kCheckmarkCircleSymbol,
                                                       kSymbolActionPointSize);
   NSString* expectedTitle =
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_SELECTTABS);

@@ -45,11 +45,6 @@ enum class RequestOutcome {
   kMaxValue = kReusedPreviousDecision,
 };
 
-enum class StorageAccessRequestType {
-  kRequestStorageAccess,
-  kRequestStorageAccessForOrigin
-};
-
 class StorageAccessGrantPermissionContext
     : public permissions::PermissionContextBase {
  public:
@@ -90,7 +85,8 @@ class StorageAccessGrantPermissionContext
                            permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting,
-                           bool is_one_time) override;
+                           bool is_one_time,
+                           bool is_final_decision) override;
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedding_origin,
                             ContentSetting content_setting,
@@ -115,7 +111,6 @@ class StorageAccessGrantPermissionContext
       const GURL& requesting_origin,
       const GURL& embedding_origin,
       bool user_gesture,
-      const StorageAccessRequestType request_type,
       permissions::BrowserPermissionCallback callback,
       net::FirstPartySetMetadata metadata);
 

@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/device_event_log/device_event_log.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -31,6 +32,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 namespace {
@@ -110,7 +112,7 @@ bool ParseServerResponse(const std::string& response_body,
                          mojom::Geoposition* position);
 void AddWifiData(const WifiData& wifi_data,
                  int age_milliseconds,
-                 base::DictionaryValue* request);
+                 base::Value::Dict& request);
 }  // namespace
 
 NetworkLocationRequest::NetworkLocationRequest(
@@ -127,9 +129,13 @@ bool NetworkLocationRequest::MakeRequest(
     const WifiData& wifi_data,
     const base::Time& wifi_timestamp,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
+  GEOLOCATION_LOG(DEBUG)
+      << "Sending a network location request: Number of Wi-Fi APs="
+      << wifi_data.access_point_data.size();
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
   RecordUmaAccessPoints(wifi_data.access_point_data.size());
   if (url_loader_) {
+    GEOLOCATION_LOG(DEBUG) << "Cancelling pending network location request";
     DVLOG(1) << "NetworkLocationRequest : Cancelling pending request";
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_CANCEL);
     url_loader_.reset();
@@ -188,6 +194,8 @@ void NetworkLocationRequest::OnRequestComplete(
   if (url_loader_->ResponseInfo())
     response_code = url_loader_->ResponseInfo()->headers->response_code();
   RecordUmaResponseCode(response_code);
+  GEOLOCATION_LOG(DEBUG) << "Got network location response: response_code="
+                         << response_code;
 
   mojom::Geoposition position;
   GetLocationFromResponse(net_error, response_code, std::move(data),
@@ -239,8 +247,8 @@ void FormUploadData(const WifiData& wifi_data,
       age = static_cast<int>(delta_ms);
   }
 
-  base::DictionaryValue request;
-  AddWifiData(wifi_data, age, &request);
+  base::Value::Dict request;
+  AddWifiData(wifi_data, age, request);
   base::JSONWriter::Write(request, upload_data);
 }
 
@@ -260,9 +268,7 @@ void AddInteger(const std::string& property_name,
 
 void AddWifiData(const WifiData& wifi_data,
                  int age_milliseconds,
-                 base::DictionaryValue* request) {
-  DCHECK(request);
-
+                 base::Value::Dict& request) {
   if (wifi_data.access_point_data.empty())
     return;
 
@@ -286,8 +292,7 @@ void AddWifiData(const WifiData& wifi_data,
     wifi_access_point_list.Append(std::move(wifi_dict));
   }
   if (!wifi_access_point_list.empty())
-    request->GetDict().Set("wifiAccessPoints",
-                           base::Value(std::move(wifi_access_point_list)));
+    request.Set("wifiAccessPoints", std::move(wifi_access_point_list));
 }
 
 void FormatPositionError(const GURL& server_url,
@@ -361,29 +366,6 @@ void GetLocationFromResponse(int net_error,
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_SUCCESS);
 }
 
-// Numeric values without a decimal point have type integer and IsDouble() will
-// return false. This is convenience function for detecting integer or floating
-// point numeric values. Note that isIntegral() includes boolean values, which
-// is not what we want.
-bool GetAsDouble(const base::DictionaryValue& object,
-                 const std::string& property_name,
-                 double* out) {
-  DCHECK(out);
-  const base::Value* value = NULL;
-  if (!object.Get(property_name, &value))
-    return false;
-  DCHECK(value);
-  if (value->is_int()) {
-    *out = value->GetInt();
-    return true;
-  }
-  if (value->is_double()) {
-    *out = value->GetDouble();
-    return true;
-  }
-  return false;
-}
-
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& wifi_timestamp,
                          mojom::Geoposition* position) {
@@ -408,25 +390,24 @@ bool ParseServerResponse(const std::string& response_body,
   }
   base::Value response_value = std::move(*response_result);
 
-  if (!response_value.is_dict()) {
+  const base::Value::Dict* response_object = response_value.GetIfDict();
+  if (!response_object) {
     VLOG(1) << "ParseServerResponse() : Unexpected response type "
             << response_value.type();
     return false;
   }
-  const base::DictionaryValue* response_object =
-      static_cast<base::DictionaryValue*>(&response_value);
 
   // Get the location
-  const base::Value* location_value = NULL;
-  if (!response_object->Get(kLocationString, &location_value)) {
+  const base::Value* location_value = response_object->Find(kLocationString);
+  if (!location_value) {
     VLOG(1) << "ParseServerResponse() : Missing location attribute.";
     // GLS returns a response with no location property to represent
     // no fix available; return true to indicate successful parse.
     return true;
   }
-  DCHECK(location_value);
 
-  if (!location_value->is_dict()) {
+  const base::Value::Dict* location_object = location_value->GetIfDict();
+  if (!location_object) {
     if (!location_value->is_none()) {
       VLOG(1) << "ParseServerResponse() : Unexpected location type "
               << location_value->type();
@@ -436,24 +417,27 @@ bool ParseServerResponse(const std::string& response_body,
     }
     return true;  // Successfully parsed response containing no fix.
   }
-  const base::DictionaryValue* location_object =
-      static_cast<const base::DictionaryValue*>(location_value);
 
   // latitude and longitude fields are always required.
-  double latitude = 0;
-  double longitude = 0;
-  if (!GetAsDouble(*location_object, kLatitudeString, &latitude) ||
-      !GetAsDouble(*location_object, kLongitudeString, &longitude)) {
+  absl::optional<double> latitude =
+      location_object->FindDouble(kLatitudeString);
+  absl::optional<double> longitude =
+      location_object->FindDouble(kLongitudeString);
+  if (!latitude || !longitude) {
     VLOG(1) << "ParseServerResponse() : location lacks lat and/or long.";
     return false;
   }
   // All error paths covered: now start actually modifying postion.
-  position->latitude = latitude;
-  position->longitude = longitude;
+  position->latitude = *latitude;
+  position->longitude = *longitude;
   position->timestamp = wifi_timestamp;
 
   // Other fields are optional.
-  GetAsDouble(*response_object, kAccuracyString, &position->accuracy);
+  absl::optional<double> accuracy =
+      response_object->FindDouble(kAccuracyString);
+  if (accuracy) {
+    position->accuracy = *accuracy;
+  }
 
   return true;
 }

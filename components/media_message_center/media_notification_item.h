@@ -34,9 +34,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
   // The name of the histogram used when recording the source.
   static const char kSourceHistogramName[];
 
-  // The name of the histogram used for recording starting and stopping casting.
-  static const char kCastStartStopHistogramName[];
-
   // The source of the media session. This is used in metrics so new values must
   // only be added to the end.
   enum class Source {
@@ -75,7 +72,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem {
 
   // Called by MediaNotificationService when a Remote Playback session is
   // started.
-  virtual void RequestMediaRemoting() = 0;
+  virtual bool RequestMediaRemoting() = 0;
 
   // Returns the type of source.
   virtual media_message_center::SourceType SourceType() = 0;

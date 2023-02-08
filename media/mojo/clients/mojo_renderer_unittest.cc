@@ -10,10 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
@@ -40,6 +40,7 @@ using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
@@ -56,7 +57,7 @@ ACTION_P2(GetMediaTime, start_time, elapsed_timer) {
 
 void WaitFor(base::TimeDelta duration) {
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), duration);
   run_loop.Run();
 }
@@ -474,9 +475,6 @@ TEST_F(MojoRendererTest, Destroy_PendingSetCdm) {
   Destroy();
 }
 
-// TODO(xhwang): Add more tests on OnError. For example, ErrorDuringFlush,
-// ErrorAfterFlush etc.
-
 TEST_F(MojoRendererTest, ErrorDuringPlayback) {
   Initialize();
 
@@ -489,6 +487,30 @@ TEST_F(MojoRendererTest, ErrorDuringPlayback) {
 
   EXPECT_CALL(*mock_renderer_, SetPlaybackRate(0.0)).Times(1);
   mojo_renderer_->SetPlaybackRate(0.0);
+  Flush();
+}
+
+TEST_F(MojoRendererTest, ErrorBeforeFlush) {
+  Initialize();
+  Play();
+
+  EXPECT_CALL(renderer_client_, OnError(HasStatusCode(PIPELINE_ERROR_DECODE)))
+      .Times(1);
+  remote_renderer_client_->OnError(PIPELINE_ERROR_DECODE);
+  Flush();
+}
+
+TEST_F(MojoRendererTest, ErrorDuringFlush) {
+  Initialize();
+  Play();
+
+  EXPECT_CALL(renderer_client_, OnError(HasStatusCode(PIPELINE_ERROR_DECODE)))
+      .Times(1);
+  EXPECT_CALL(*mock_renderer_, OnFlush(_))
+      .WillOnce(DoAll(InvokeWithoutArgs([&]() {
+                        remote_renderer_client_->OnError(PIPELINE_ERROR_DECODE);
+                      }),
+                      RunOnceClosure<0>()));
   Flush();
 }
 

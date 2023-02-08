@@ -21,10 +21,12 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/cellular_esim_profile_handler.h"
 #include "chromeos/ash/components/network/cellular_utils.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/metrics/cellular_network_metrics_logger.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_device_handler.h"
 #include "chromeos/ash/components/network/network_event_log.h"
@@ -39,7 +41,6 @@
 #include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/sync_wifi/network_eligibility_checker.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -47,6 +48,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/onc/onc_constants.h"
 #include "components/user_manager/user_manager.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/ip_address.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -412,6 +414,13 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
                 NetworkHandler::GetUiProxyConfigService()->ProxyModeForNetwork(
                     network))
           : mojom::ProxyMode::kDirect;
+  result->dns_queries_monitored =
+      NetworkHandler::IsInitialized() &&
+              NetworkHandler::Get()->network_metadata_store()
+          ? NetworkHandler::Get()
+                ->network_metadata_store()
+                ->secure_dns_templates_with_identifiers_active()
+          : false;
 
   switch (type) {
     case mojom::NetworkType::kCellular: {
@@ -2111,6 +2120,34 @@ base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
   return eap_dict;
 }
 
+base::Value::Dict MojoApnToOnc(const mojom::ApnProperties& apn_props) {
+  base::Value::Dict apn;
+  apn.Set(::onc::cellular_apn::kAccessPointName, apn_props.access_point_name);
+  SetString(::onc::cellular_apn::kAuthentication, apn_props.authentication,
+            &apn);
+  SetString(::onc::cellular_apn::kLanguage, apn_props.language, &apn);
+  SetString(::onc::cellular_apn::kLocalizedName, apn_props.localized_name,
+            &apn);
+  SetString(::onc::cellular_apn::kName, apn_props.name, &apn);
+  SetString(::onc::cellular_apn::kPassword, apn_props.password, &apn);
+  SetString(::onc::cellular_apn::kUsername, apn_props.username, &apn);
+  SetString(::onc::cellular_apn::kAttach, apn_props.attach, &apn);
+  if (ash::features::IsApnRevampEnabled()) {
+    SetString(::onc::cellular_apn::kId, apn_props.id, &apn);
+    apn.Set(::onc::cellular_apn::kState,
+            MojoApnStateTypeToOnc(apn_props.state));
+    apn.Set(::onc::cellular_apn::kAuthenticationType,
+            MojoApnAuthenticationTypeToOnc(apn_props.authentication_type));
+    apn.Set(::onc::cellular_apn::kIpType,
+            MojoApnIpTypeToOnc(apn_props.ip_type));
+    base::Value::List apn_types;
+    for (const std::string& apn_type : MojoApnTypesToOnc(apn_props.apn_types))
+      apn_types.Append(apn_type);
+    apn.Set(::onc::cellular_apn::kApnTypes, std::move(apn_types));
+  }
+  return apn;
+}
+
 absl::optional<base::Value::Dict> GetOncFromConfigProperties(
     const mojom::ConfigProperties* properties,
     absl::optional<std::string> guid) {
@@ -2135,30 +2172,7 @@ absl::optional<base::Value::Dict> GetOncFromConfigProperties(
     const mojom::CellularConfigProperties& cellular =
         *properties->type_config->get_cellular();
     if (cellular.apn) {
-      const mojom::ApnProperties& apn = *cellular.apn;
-      base::Value::Dict apn_dict;
-      apn_dict.Set(::onc::cellular_apn::kAccessPointName,
-                   apn.access_point_name);
-      SetString(::onc::cellular_apn::kAuthentication, apn.authentication,
-                &apn_dict);
-      SetString(::onc::cellular_apn::kLanguage, apn.language, &apn_dict);
-      SetString(::onc::cellular_apn::kLocalizedName, apn.localized_name,
-                &apn_dict);
-      SetString(::onc::cellular_apn::kName, apn.name, &apn_dict);
-      SetString(::onc::cellular_apn::kPassword, apn.password, &apn_dict);
-      SetString(::onc::cellular_apn::kUsername, apn.username, &apn_dict);
-      SetString(::onc::cellular_apn::kAttach, apn.attach, &apn_dict);
-      if (ash::features::IsApnRevampEnabled()) {
-        SetString(::onc::cellular_apn::kId, apn.id, &apn_dict);
-        SetString(::onc::cellular_apn::kAuthenticationType,
-                  MojoApnAuthenticationTypeToOnc(apn.authentication_type),
-                  &apn_dict);
-        SetString(::onc::cellular_apn::kIpType, MojoApnIpTypeToOnc(apn.ip_type),
-                  &apn_dict);
-        SetStringList(::onc::cellular_apn::kApnTypes,
-                      MojoApnTypesToOnc(apn.apn_types), &apn_dict);
-      }
-      type_dict.Set(::onc::cellular::kAPN, std::move(apn_dict));
+      type_dict.Set(::onc::cellular::kAPN, MojoApnToOnc(*cellular.apn));
     }
     if (cellular.roaming) {
       type_dict.Set(::onc::cellular::kAllowRoaming,
@@ -2631,7 +2645,7 @@ void CrosNetworkConfig::OnGetManagedProperties(
 
   if (managed_properties->type == mojom::NetworkType::kCellular) {
     std::vector<mojom::ApnPropertiesPtr> custom_apn_list =
-        GetCustomAPNList(guid);
+        GetCustomApnList(guid);
     if (!custom_apn_list.empty()) {
       managed_properties->type_properties->get_cellular()->custom_apn_list =
           std::move(custom_apn_list);
@@ -2728,9 +2742,10 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     network = eap_state;
   }
 
-  if (network->type() == shill::kTypeCellular &&
+  if (!ash::features::IsApnRevampEnabled() &&
+      network->type() == shill::kTypeCellular &&
       properties->type_config->is_cellular()) {
-    UpdateCustomAPNList(network, properties.get());
+    UpdateCustomApnList(network, properties.get());
   }
 
   absl::optional<base::Value::Dict> onc =
@@ -2741,7 +2756,14 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
     return;
   }
 
-  NET_LOG(DEBUG) << "Configuring properties for " << guid << ": " << *onc;
+  SetPropertiesInternal(guid, *network, std::move(*onc), std::move(callback));
+}
+
+void CrosNetworkConfig::SetPropertiesInternal(const std::string& guid,
+                                              const NetworkState& network,
+                                              base::Value::Dict onc,
+                                              SetPropertiesCallback callback) {
+  NET_LOG(DEBUG) << "Configuring properties for " << guid << ": " << onc;
 
   int callback_id = callback_id_++;
   set_properties_callbacks_[callback_id] = std::move(callback);
@@ -2749,13 +2771,13 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   // If the profile path is empty the network is not saved, so we need to call
   // CreateConfiguration(). This can happen for EthernetEAP where a default
   // service is generated by Shill but may not be saved.
-  if (network->profile_path().empty()) {
+  if (network.profile_path().empty()) {
     NET_LOG(USER) << "Configuring properties for " << guid
                   << " (no profile entry set)";
     std::string user_id_hash = LoginState::Get()->primary_user_hash();
 
     network_configuration_handler_->CreateConfiguration(
-        user_id_hash, base::Value(std::move(*onc)),
+        user_id_hash, base::Value(std::move(onc)),
         base::BindOnce(&CrosNetworkConfig::SetPropertiesConfigureSuccess,
                        weak_factory_.GetWeakPtr(), callback_id),
         base::BindOnce(&CrosNetworkConfig::SetPropertiesFailure,
@@ -2764,7 +2786,7 @@ void CrosNetworkConfig::SetProperties(const std::string& guid,
   }
 
   network_configuration_handler_->SetProperties(
-      network->path(), base::Value(std::move(*onc)),
+      network.path(), base::Value(std::move(onc)),
       base::BindOnce(&CrosNetworkConfig::SetPropertiesSuccess,
                      weak_factory_.GetWeakPtr(), callback_id),
       base::BindOnce(&CrosNetworkConfig::SetPropertiesFailure,
@@ -3081,9 +3103,11 @@ void CrosNetworkConfig::SelectCellularMobileNetworkFailure(
   select_cellular_mobile_network_callbacks_.erase(iter);
 }
 
-void CrosNetworkConfig::UpdateCustomAPNList(
+void CrosNetworkConfig::UpdateCustomApnList(
     const NetworkState* network,
     const mojom::ConfigProperties* properties) {
+  DCHECK(!ash::features::IsApnRevampEnabled());
+
   const mojom::CellularConfigProperties& cellular_config =
       *properties->type_config->get_cellular();
   if (!cellular_config.apn) {
@@ -3102,61 +3126,28 @@ void CrosNetworkConfig::UpdateCustomAPNList(
     return;
   }
 
-  base::Value custom_apn(base::Value::Type::DICTIONARY);
-  custom_apn.SetStringKey(::onc::cellular_apn::kAccessPointName,
-                          cellular_config.apn->access_point_name);
-  SetString(::onc::cellular_apn::kName, cellular_config.apn->name, &custom_apn);
-  SetString(::onc::cellular_apn::kUsername, cellular_config.apn->username,
-            &custom_apn);
-  SetString(::onc::cellular_apn::kPassword, cellular_config.apn->password,
-            &custom_apn);
-  SetString(::onc::cellular_apn::kAuthentication,
-            cellular_config.apn->authentication, &custom_apn);
-  SetString(::onc::cellular_apn::kLocalizedName,
-            cellular_config.apn->localized_name, &custom_apn);
-  SetString(::onc::cellular_apn::kLanguage, cellular_config.apn->language,
-            &custom_apn);
-  SetString(::onc::cellular_apn::kAttach, cellular_config.apn->attach,
-            &custom_apn);
-
-  if (ash::features::IsApnRevampEnabled()) {
-    SetString(::onc::cellular_apn::kId, cellular_config.apn->id, &custom_apn);
-    SetString(::onc::cellular_apn::kState,
-              MojoApnStateTypeToOnc(cellular_config.apn->state), &custom_apn);
-    SetString(::onc::cellular_apn::kAuthenticationType,
-              MojoApnAuthenticationTypeToOnc(
-                  cellular_config.apn->authentication_type),
-              &custom_apn);
-    SetString(::onc::cellular_apn::kIpType,
-              MojoApnIpTypeToOnc(cellular_config.apn->ip_type), &custom_apn);
-    SetStringList(::onc::cellular_apn::kApnTypes,
-                  MojoApnTypesToOnc(cellular_config.apn->apn_types),
-                  &custom_apn);
-  }
-
-  // The UI currently only supports setting a single custom apn.
-  base::Value custom_apn_list(base::Value::Type::LIST);
-  custom_apn_list.Append(std::move(custom_apn));
+  // The pre-revamp UI only supports setting a single custom apn.
+  base::Value::List custom_apn_list;
+  custom_apn_list.Append(MojoApnToOnc(*cellular_config.apn));
 
   NET_LOG(DEBUG) << "Saving Custom APN entry for " << network->guid();
   NetworkMetadataStore* network_metadata_store =
       NetworkHandler::Get()->network_metadata_store();
-  network_metadata_store->SetCustomAPNList(network->guid(),
+  network_metadata_store->SetCustomApnList(network->guid(),
                                            std::move(custom_apn_list));
 }
 
-std::vector<mojom::ApnPropertiesPtr> CrosNetworkConfig::GetCustomAPNList(
+std::vector<mojom::ApnPropertiesPtr> CrosNetworkConfig::GetCustomApnList(
     const std::string& guid) {
   NetworkMetadataStore* network_metadata_store =
       NetworkHandler::Get()->network_metadata_store();
   std::vector<mojom::ApnPropertiesPtr> mojo_custom_apns;
-  const base::Value* custom_apn_list =
-      network_metadata_store->GetCustomAPNList(guid);
+  const base::Value::List* custom_apn_list =
+      network_metadata_store->GetCustomApnList(guid);
   if (!custom_apn_list) {
     return mojo_custom_apns;
   }
-  DCHECK(custom_apn_list->is_list());
-  for (const auto& apn : custom_apn_list->GetList()) {
+  for (const auto& apn : *custom_apn_list) {
     DCHECK(apn.is_dict());
     mojom::ApnPropertiesPtr mojo_apn = mojom::ApnProperties::New();
     mojo_apn->access_point_name =
@@ -3605,6 +3596,220 @@ void CrosNetworkConfig::SetTrafficCountersAutoReset(
       ->SetDayOfTrafficCountersAutoReset(
           guid, day ? absl::optional<int>(day->value) : absl::nullopt);
   std::move(callback).Run(true);
+}
+
+void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
+                                        mojom::ApnPropertiesPtr apn) {
+  if (!ash::features::IsApnRevampEnabled()) {
+    receivers_.ReportBadMessage(
+        "CreateCustomApn cannot be called if the APN Revamp feature flag is "
+        "disabled.");
+    return;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "CreateCustomApn: Called with unconfigured network: "
+                   << network_guid << ".";
+    ash::CellularNetworkMetricsLogger::LogCreateCustomApnResult(
+        /*success=*/false, std::move(apn));
+    return;
+  }
+
+  NetworkMetadataStore* network_metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+  DCHECK(network_metadata_store);
+
+  base::Value::List new_apns;
+  if (const base::Value::List* old_custom_apns =
+          network_metadata_store->GetCustomApnList(network_guid)) {
+    if (old_custom_apns->size() >= mojom::kMaxNumCustomApns) {
+      NET_LOG(ERROR)
+          << "CreateCustomApn: Cannot create new custom APN for network: "
+          << network_guid << ". Network already has the max amount allowed: "
+          << mojom::kMaxNumCustomApns;
+      return;
+    }
+
+    new_apns = old_custom_apns->Clone();
+  }
+
+  // Set unique Id for custom APNs
+  apn->id = base::Token::CreateRandom().ToString();
+  // Insert the new custom APN at the beginning of the list to store them by
+  // insertion order
+  new_apns.Insert(new_apns.begin(), base::Value(MojoApnToOnc(*apn)));
+
+  NET_LOG(USER) << "CreateCustomApn: Setting user APNs for: " << network_guid
+                << ": " << new_apns.size();
+
+  network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
+
+  SetPropertiesInternal(
+      network_guid, *network, UserApnListToOnc(network_guid, &new_apns),
+      base::BindOnce(
+          [](const std::string& guid, mojom::ApnPropertiesPtr apn, bool success,
+             const std::string& message) {
+            if (!success) {
+              NET_LOG(ERROR)
+                  << "CreateCustomApn: Failed to update the user APN "
+                     "list in Shill for network: "
+                  << guid << ": [" << message << ']';
+            }
+            ash::CellularNetworkMetricsLogger::LogCreateCustomApnResult(
+                success, std::move(apn));
+          },
+          network_guid, std::move(apn)));
+}
+
+void CrosNetworkConfig::RemoveCustomApn(const std::string& network_guid,
+                                        const std::string& apn_id) {
+  if (!ash::features::IsApnRevampEnabled()) {
+    receivers_.ReportBadMessage(
+        "RemoveCustomApn: Cannot be called if the APN Revamp feature flag is "
+        "disabled.");
+    return;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called with unconfigured network: "
+                   << network_guid << ".";
+    ash::CellularNetworkMetricsLogger::LogRemoveCustomApnResult(
+        /*success=*/false, /*apn_types=*/{});
+    return;
+  }
+
+  NetworkMetadataStore* network_metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+  DCHECK(network_metadata_store);
+
+  const base::Value::List* current_apns =
+      network_metadata_store->GetCustomApnList(network_guid);
+  if (!current_apns || current_apns->empty()) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called for network: " << network_guid
+                   << " that does not have any user APNs.";
+    ash::CellularNetworkMetricsLogger::LogRemoveCustomApnResult(
+        /*success=*/false, /*apn_types=*/{});
+    return;
+  }
+
+  base::Value::List new_apns = current_apns->Clone();
+  std::vector<mojom::ApnType> removed_apn_apn_types;
+  if (!new_apns.EraseIf([&apn_id,
+                         &removed_apn_apn_types](const base::Value& item) {
+        const std::string* item_id =
+            item.GetDict().FindString(::onc::cellular_apn::kId);
+        if (item_id && apn_id == *item_id) {
+          removed_apn_apn_types = OncApnTypesToMojo(
+              GetRequiredStringList(&item, ::onc::cellular_apn::kApnTypes));
+          return true;
+        }
+        return false;
+      })) {
+    NET_LOG(ERROR) << "RemoveCustomApn: Called for network: " << network_guid
+                   << " that does have an user APNs with id: " << apn_id << '.';
+    ash::CellularNetworkMetricsLogger::LogRemoveCustomApnResult(
+        /*success=*/false, std::move(removed_apn_apn_types));
+    return;
+  }
+  NET_LOG(USER) << "RemoveCustomApn: Setting user APNs for: " << network_guid
+                << ": " << new_apns.size();
+
+  network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
+  SetPropertiesInternal(
+      network_guid, *network, UserApnListToOnc(network_guid, &new_apns),
+      base::BindOnce(
+          [](const std::string& guid, std::vector<mojom::ApnType> apn_types,
+             bool success, const std::string& message) {
+            if (!success) {
+              NET_LOG(ERROR)
+                  << "RemoveCustomApn: Failed to update the user APN "
+                     "list in Shill for network: "
+                  << guid << ": [" << message << ']';
+            }
+            ash::CellularNetworkMetricsLogger::LogRemoveCustomApnResult(
+                success, std::move(apn_types));
+          },
+          network_guid, std::move(removed_apn_apn_types)));
+}
+
+void CrosNetworkConfig::ModifyCustomApn(const std::string& network_guid,
+                                        mojom::ApnPropertiesPtr apn) {
+  if (!ash::features::IsApnRevampEnabled()) {
+    receivers_.ReportBadMessage(
+        "ModifyCustomApn: Cannot be called if the APN Revamp feature flag is "
+        "disabled.");
+    return;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+  if (!network || network->profile_path().empty()) {
+    NET_LOG(ERROR) << "ModifyCustomApn: Called with unconfigured network: "
+                   << network_guid << ".";
+    return;
+  }
+
+  if (!apn->id.has_value()) {
+    NET_LOG(ERROR)
+        << "ModifyCustomApn: Called with an APN without ID for network: "
+        << network_guid << '.';
+    return;
+  }
+
+  NetworkMetadataStore* network_metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+  DCHECK(network_metadata_store);
+
+  const base::Value::List* old_custom_apns =
+      network_metadata_store->GetCustomApnList(network_guid);
+  if (!old_custom_apns || old_custom_apns->empty()) {
+    NET_LOG(ERROR) << "ModifyCustomApn: Called for network: " << network_guid
+                   << " that does not have any user APNs.";
+    return;
+  }
+
+  base::Value::List new_custom_apns;
+  bool was_value_replaced = false;
+  for (const base::Value& old_apn : *old_custom_apns) {
+    const std::string* old_apn_id =
+        old_apn.GetDict().FindString(::onc::cellular_apn::kId);
+    DCHECK(old_apn_id);
+    if (*apn->id == *old_apn_id) {
+      new_custom_apns.Append(MojoApnToOnc(*apn));
+      was_value_replaced = true;
+    } else {
+      new_custom_apns.Append(old_apn.Clone());
+    }
+  }
+
+  if (!was_value_replaced) {
+    NET_LOG(ERROR) << "ModifyCustomApn: Called for network: " << network_guid
+                   << " that does have an user APNs with id: " << *apn->id
+                   << '.';
+    return;
+  }
+  NET_LOG(USER) << "ModifyCustomApn: Setting user APNs for: " << network_guid
+                << ": " << new_custom_apns.size();
+
+  network_metadata_store->SetCustomApnList(network_guid,
+                                           new_custom_apns.Clone());
+  SetPropertiesInternal(
+      network_guid, *network, UserApnListToOnc(network_guid, &new_custom_apns),
+      base::BindOnce(
+          [](const std::string& guid, bool success,
+             const std::string& message) {
+            if (!success) {
+              NET_LOG(ERROR)
+                  << "ModifyCustomApn: Failed to update the user APN "
+                     "list in Shill for network: "
+                  << guid << ": [" << message << ']';
+            }
+          },
+          network_guid));
 }
 
 // static

@@ -37,7 +37,7 @@ class NGGridTrackCollectionBaseTest : public NGGridTrackCollectionBase {
   };
 
   explicit NGGridTrackCollectionBaseTest(const Vector<wtf_size_t>& range_sizes)
-      : NGGridTrackCollectionBase(kForColumns) {
+      : NGGridTrackCollectionBase() {
     wtf_size_t start_line = 0;
     for (wtf_size_t size : range_sizes) {
       TestTrackRange range;
@@ -77,7 +77,13 @@ class NGGridTrackCollectionTest : public NGLayoutTest {
       const NGGridTrackList& explicit_tracks,
       const NGGridTrackList& implicit_tracks,
       NGGridSizingTrackCollection* sizing_collection) {
-    sizing_collection->InitializeSets(explicit_tracks, implicit_tracks);
+    sizing_collection->BuildSets(explicit_tracks, implicit_tracks);
+    sizing_collection->InitializeSets();
+  }
+
+  const NGGridRangeVector& GetRangesFrom(
+      const NGGridSizingTrackCollection& sizing_collection) {
+    return sizing_collection.ranges_;
   }
 
   NGGridSizingTrackCollection::SetIterator IteratorForRange(
@@ -323,7 +329,7 @@ TEST_F(NGGridTrackCollectionTest, TestNGGridSizingTrackCollectionSetIterator) {
   NGGridSizingTrackCollection track_collection(range_builder.FinalizeRanges());
   InitializeSetsForSizingCollection(explicit_tracks, implicit_tracks,
                                     &track_collection);
-  const auto& ranges = track_collection.Ranges();
+  const auto& ranges = GetRangesFrom(track_collection);
 
   // Test the set iterator for the entire collection.
   wtf_size_t set_count = 0;
@@ -384,7 +390,7 @@ TEST_F(NGGridTrackCollectionTest,
   NGGridSizingTrackCollection track_collection(range_builder.FinalizeRanges());
   InitializeSetsForSizingCollection(explicit_tracks, implicit_tracks,
                                     &track_collection);
-  const auto& ranges = track_collection.Ranges();
+  const auto& ranges = GetRangesFrom(track_collection);
 
   EXPECT_EQ(1u, range1_start);
   EXPECT_EQ(1u, range1_end);
@@ -490,7 +496,7 @@ TEST_F(NGGridTrackCollectionTest,
   NGGridSizingTrackCollection track_collection(range_builder.FinalizeRanges());
   InitializeSetsForSizingCollection(explicit_tracks, implicit_tracks,
                                     &track_collection);
-  const auto& ranges = track_collection.Ranges();
+  const auto& ranges = GetRangesFrom(track_collection);
 
   EXPECT_EQ(1u, range1_start);
   EXPECT_EQ(2u, range1_end);
@@ -562,7 +568,7 @@ TEST_F(NGGridTrackCollectionTest,
   NGGridSizingTrackCollection track_collection(range_builder.FinalizeRanges());
   InitializeSetsForSizingCollection(explicit_tracks, implicit_tracks,
                                     &track_collection);
-  const auto& ranges = track_collection.Ranges();
+  const auto& ranges = GetRangesFrom(track_collection);
 
   EXPECT_EQ(1u, range1_start);
   EXPECT_EQ(1u, range1_end);

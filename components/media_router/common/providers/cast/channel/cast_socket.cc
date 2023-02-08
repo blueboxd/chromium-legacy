@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/media_router/common/providers/cast/channel/cast_auth_util.h"
 #include "components/media_router/common/providers/cast/channel/cast_framer.h"
@@ -282,9 +281,13 @@ CastSocketImpl::GetNetworkTrafficAnnotationTag() {
         policy {
           cookies_allowed: NO
           setting:
-            "This request cannot be disabled, but it would not be sent if user "
-            "does not connect a Cast device to the local network."
-          policy_exception_justification: "Not implemented."
+            "This request cannot be disabled in settings, but it would not be "
+            "sent if user does not connect a Cast device to the local network."
+          chrome_policy {
+            EnableMediaRouter {
+              EnableMediaRouter: false
+            }
+          }
         })");
 }
 
@@ -307,7 +310,7 @@ void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   ResetConnectLoopCallback();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(connect_loop_callback_.callback(), result));
 }
 

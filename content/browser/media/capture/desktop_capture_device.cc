@@ -330,16 +330,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
   }
   DCHECK(frame);
 
-  base::TimeDelta capture_time(base::Milliseconds(frame->capture_time_ms()));
-
-  // The two UMA_ blocks must be put in its own scope since it creates a static
-  // variable which expected constant histogram name.
-  if (capturer_type_ == DesktopMediaID::TYPE_SCREEN) {
-    UMA_HISTOGRAM_TIMES(kUmaScreenCaptureTime, capture_time);
-  } else {
-    UMA_HISTOGRAM_TIMES(kUmaWindowCaptureTime, capture_time);
-  }
-
   // If the frame size has changed, drop the output frame (if any), and
   // determine the new output size.
   if (!previous_frame_size_.equals(frame->size())) {
@@ -523,8 +513,12 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
 
 #if BUILDFLAG(IS_WIN)
   options.set_allow_cropping_window_capturer(true);
-  if (base::FeatureList::IsEnabled(features::kWebRtcAllowWgcDesktopCapturer))
+  if (base::FeatureList::IsEnabled(features::kWebRtcAllowWgcDesktopCapturer)) {
     options.set_allow_wgc_capturer(true);
+
+    // We prefer to allow the WGC capturer to embed the cursor when possible.
+    options.set_prefer_cursor_embedded(true);
+  }
 #endif
 
   // For browser tests, to create a fake desktop capturer.

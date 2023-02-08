@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/frame/view_transition_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_view_transition_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -38,7 +39,6 @@ class Element;
 class LayoutObject;
 class PseudoElement;
 class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptState;
 
 class CORE_EXPORT ViewTransition : public ScriptWrappable,
@@ -94,6 +94,11 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // GC functionality.
   void Trace(Visitor* visitor) const override;
 
+  // Returns true if the pseudo element corresponding to the given id and name
+  // is the only child.
+  bool MatchForOnlyChild(PseudoId pseudo_id,
+                         AtomicString view_transition_name) const;
+
   // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override;
 
@@ -121,10 +126,10 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // Returns the effect. One needs to first call UpdateEffect().
   EffectPaintPropertyNode* GetEffect(const LayoutObject& object) const;
 
-  // We require shared elements to be contained. This check verifies that and
-  // removes it from the shared list if it isn't. See
-  // https://github.com/vmpstr/view-transitions/issues/17
-  void VerifySharedElements();
+  // Dispatched during a lifecycle update after prepaint has finished its work.
+  // This is only done if the lifecycle update was triggered outside of a main
+  // frame. For example by a script API like getComputedStyle.
+  void RunViewTransitionStepsOutsideMainFrame();
 
   // Dispatched during a lifecycle update after prepaint has finished its work.
   // This is only done if we're in the main lifecycle update that will produce
@@ -171,17 +176,26 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
     return creation_type_ == CreationType::kForSnapshot;
   }
 
+  // Returns true if this object was created for transitions in the same
+  // Document via document.startViewTransition(...).
+  bool IsCreatedViaScriptAPI() const {
+    return creation_type_ == CreationType::kScript;
+  }
+
   // Notifies before the compositor associated with this frame will initiate a
   // lifecycle update.
   void WillBeginMainFrame();
 
-  // Notifies when this Document will be detached from the associated
-  // LocalFrameView and will no longer be visible to the user.
-  void WillDetachFromView();
+  // Returns true if lifecycle updates should be throttled for the Document
+  // associated with this transition.
+  bool ShouldThrottleRendering() const;
 
  private:
   friend class ViewTransitionTest;
   friend class AXViewTransitionTest;
+
+  using PromiseProperty =
+      ScriptPromiseProperty<ToV8UndefinedGenerator, v8::Local<v8::Value>>;
 
   // Tracks how the ViewTransition object was created.
   enum class CreationType {
@@ -230,6 +244,30 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   };
   static const char* StateToString(State state);
 
+  // State which is created only when ViewTransition is accessed from
+  // script.
+  struct ScriptBoundState : public GarbageCollected<ScriptBoundState> {
+    ScriptBoundState(ExecutionContext* context,
+                     ScriptState*,
+                     V8ViewTransitionCallback*);
+
+    // Indicates how the promise should be handled.
+    enum class Response {
+      kResolve,
+      kRejectAbort,
+      kRejectInvalidState,
+      kRejectTimeout
+    };
+    void HandlePromise(Response response, PromiseProperty* property);
+    void Trace(Visitor* visitor) const;
+
+    Member<ScriptState> script_state;
+    Member<V8ViewTransitionCallback> update_dom_callback;
+    Member<PromiseProperty> dom_updated_promise_property;
+    Member<PromiseProperty> ready_promise_property;
+    Member<PromiseProperty> finished_promise_property;
+  };
+
   // Advance to the new state. This returns true if the state should be
   // processed immediately.
   bool AdvanceTo(State state);
@@ -250,20 +288,15 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // Invoked when ViewTransitionCallback finishes running.
   class DOMChangeFinishedCallback : public ScriptFunction::Callable {
    public:
-    explicit DOMChangeFinishedCallback(
-        ViewTransition* transition,
-        ScriptPromiseResolver* dom_updated_promise_resolver,
-        bool success);
+    explicit DOMChangeFinishedCallback(ViewTransition* transition,
+                                       bool success);
     ~DOMChangeFinishedCallback() override;
 
     ScriptValue Call(ScriptState*, ScriptValue) override;
     void Trace(Visitor* visitor) const override;
 
-    void Cancel();
-
    private:
-    WeakMember<ViewTransition> transition_;
-    Member<ScriptPromiseResolver> dom_updated_promise_resolver_;
+    Member<ViewTransition> transition_;
     const bool success_;
   };
 
@@ -271,7 +304,7 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
 
   // Dispatched when the ViewTransitionCallback has finished executing and
   // start phase of the animation can be initiated.
-  void NotifyDOMCallbackFinished(bool success);
+  void NotifyDOMCallbackFinished(bool success, ScriptValue value);
 
   // Used to defer visual updates between transition prepare dispatching and
   // transition start to allow the page to set up the final scene
@@ -280,14 +313,20 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   void OnRenderingPausedTimeout();
   void ResumeRendering();
 
-  // Returns true if we invoked the callback and the result was not nothing,
-  // and false otherwise. False would be returned if we failed to run the
-  // callback (the result was "Nothing"). Note that this returns true if there
-  // is no dom callback, since effectively we called "noop".
-  bool InvokeDOMChangeCallback();
+  // Returns the result of invoking the callback.
+  // kFailed: Indicates that there was a failure in running the callback and the
+  //          transition should be skipped.
+  // kFinished: Indicates that there was no callback to run so we can move to
+  //            finished state synchronously.
+  // kRunning: Indicates that the callback is in running state. Note that even
+  //           if the callback is synchronous, the notification that it has
+  //           finished running is async.
+  enum class DOMCallbackResult { kFailed, kFinished, kRunning };
+  DOMCallbackResult InvokeDOMChangeCallback();
 
-  void AtMicrotask(void callback(ScriptPromiseResolver*),
-                   ScriptPromiseResolver* resolver);
+  void AtMicrotask(ScriptBoundState::Response response,
+                   PromiseProperty* resolver);
+  void SkipTransitionInternal(ScriptBoundState::Response response);
 
   State state_ = State::kInitial;
   const CreationType creation_type_;
@@ -300,31 +339,35 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // belongs. It's unique among other local documents.
   uint32_t document_tag_ = 0u;
 
-  // State which is created only when ViewTransition is accessed from
-  // script.
-  struct ScriptBoundState : public GarbageCollected<ScriptBoundState> {
-    ScriptBoundState(ScriptState*, V8ViewTransitionCallback*);
-
-    void Trace(Visitor* visitor) const;
-
-    Member<ScriptState> script_state;
-    Member<V8ViewTransitionCallback> update_dom_callback;
-    Member<ScriptPromiseResolver> dom_updated_promise_resolver;
-    Member<ScriptPromiseResolver> ready_promise_resolver;
-    Member<ScriptPromiseResolver> finished_promise_resolver;
-  };
-
   Member<ScriptBoundState> script_bound_state_;
 
   Member<ViewTransitionStyleTracker> style_tracker_;
 
-  std::unique_ptr<cc::ScopedPauseRendering> rendering_paused_scope_;
+  // Manages pausing rendering of the Document between capture and updateDOM
+  // callback finishing.
+  // If the Document is the local root frame then the backing CC instance is
+  // paused which stops compositor driven animations, videos, offscreen canvas
+  // etc. Otherwise only main thread lifecycle updates are paused. We'd like to
+  // pause compositor/Viz driven effects for nested frames as well but
+  // selectively pausing animations for a CC instance is difficult.
+  class ScopedPauseRendering {
+   public:
+    explicit ScopedPauseRendering(const Document& document);
+    ~ScopedPauseRendering();
+
+    bool ShouldThrottleRendering() const;
+
+   private:
+    std::unique_ptr<cc::ScopedPauseRendering> cc_paused_;
+  };
+  absl::optional<ScopedPauseRendering> rendering_paused_scope_;
 
   ViewTransitionStateCallback transition_state_callback_;
 
   bool in_main_lifecycle_update_ = false;
   bool dom_callback_succeeded_ = false;
   bool first_animating_frame_ = true;
+  bool context_destroyed_ = false;
 };
 
 }  // namespace blink

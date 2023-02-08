@@ -7,8 +7,6 @@ module apps.mojom;
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/safe_base_name.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/image/mojom/image.mojom";
-import "url/mojom/url.mojom";
 
 // Information about an app. See components/services/app_service/README.md.
 // Mojom App struct is DEPRECATED. When adding new fields, please use the App
@@ -240,52 +238,6 @@ enum IconType {
   kStandard,
 };
 
-// Enumeration of possible app launch sources.
-// This should be kept in sync with metadata/apps/histograms.xml, and
-// LaunchSource in enums.xml.
-// Note the enumeration is used in UMA histogram so entries should not be
-// re-ordered or removed. New entries should be added at the bottom.
-// DEPRECATED. When adding new fields, please use the App struct in
-// components/services/app_service/public/cpp/app_launch_util.h.
-enum LaunchSource {
-  kUnknown = 0,
-  kFromAppListGrid = 1,               // Grid of apps, not the search box.
-  kFromAppListGridContextMenu = 2,    // Grid of apps; context menu.
-  kFromAppListQuery = 3,              // Query-dependent results (larger icons).
-  kFromAppListQueryContextMenu = 4,   // Query-dependent results; context menu.
-  kFromAppListRecommendation = 5,     // Query-less recommendations (smaller
-                                      // icons).
-  kFromParentalControls = 6,          // Parental Controls Settings Section and
-                                      // Per App time notification.
-  kFromShelf = 7,                     // Shelf.
-  kFromFileManager = 8,               // FileManager.
-  kFromLink = 9,                      // Left-clicking on links in the browser.
-  kFromOmnibox = 10,                  // Enter URL in the Omnibox in the
-                                      // browser.
-  kFromChromeInternal = 11,           // Chrome internal call.
-  kFromKeyboard = 12,                 // Keyboard shortcut for opening app.
-  kFromOtherApp = 13,                 // Clicking link in another app or webui.
-  kFromMenu = 14,                     // Menu.
-  kFromInstalledNotification = 15,    // Installed notification
-  kFromTest = 16,                     // Test
-  kFromArc = 17,                      // Arc.
-  kFromSharesheet = 18,               // Sharesheet.
-  kFromReleaseNotesNotification = 19, // Release Notes Notification.
-  kFromFullRestore = 20,              // Full restore.
-  kFromSmartTextContextMenu = 21,     // Smart text selection context menu.
-  kFromDiscoverTabNotification = 22,  // Discover Tab Notification.
-  kFromManagementApi = 23,            // Management API.
-  kFromKiosk = 24,                    // Kiosk.
-  kFromCommandLine = 25,              // Command line.
-  kFromBackgroundMode = 26,           // Background mode.
-  kFromNewTabPage = 27,               // New tab page.
-  kFromIntentUrl = 28,                // Intent URL.
-  kFromOsLogin = 29,                  // Run on OS login.
-  kFromProtocolHandler = 30,          // Protocol handler.
-  kFromUrlHandler = 31,               // Url handler.
-  kFromLockScreen = 32,               // Lock screen app launcher.
-};
-
 enum TriState {
   kAllow,
   kBlock,
@@ -295,66 +247,6 @@ enum TriState {
 union PermissionValue {
   bool bool_value;
   TriState tristate_value;
-};
-
-// MenuItems are used to populate context menus, e.g. in the app list or shelf.
-// Note: Some menu item types only support a subset of these item features.
-// Please update comments below (MenuItemType -> [fields expected for usage])
-// when anything changed to MenuItemType or MenuItem.
-//
-// kCommand    -> [command_id, string_id].
-// kRadio      -> [command_id, string_id, radio_group_id].
-// kSeparator  -> [command_id].
-// kSubmenu    -> [command_id, string_id, submenu].
-// kPublisherCommand -> [command_id, shortcut_id, label, image].
-//
-struct MenuItems {
-  array<MenuItem> items;
-};
-
-struct MenuItem {
-  // The type of the menu item.
-  MenuItemType type;
-
-  // The menu item command id. Used to identify the command when the menu item
-  // is executed.
-  int32 command_id;
-
-  // The grit id of the menu item label. Used when the menu item's type is
-  // kCommand, kRadio, or kSubmenu.
-  int32 string_id;
-
-  // The optional nested submenu item list.
-  array<MenuItem> submenu;
-
-  // The radio group id. All MenuItems with type kRadio will be grouped by this
-  // ID value in the menu.
-  int32 radio_group_id;
-
-  // Publisher-specific shortcut id. May be empty if not required.
-  string shortcut_id;
-
-  // The string label for this menu item. Used when the menu item's type is
-  // kPublisherCommand.
-  string label;
-
-  // The icon for the menu item. May be null if the item doesn't have an icon.
-  gfx.mojom.ImageSkia? image;
-};
-
-// The types of menu items shown in the app list or shelf.
-enum MenuItemType {
-  kCommand,    // Performs an action when selected.
-  kRadio,      // Can be selected/checked among a group of choices.
-  kSeparator,  // Shows a horizontal line separator.
-  kSubmenu,    // Presents a submenu within another menu.
-  kPublisherCommand, // Performs an app publisher shortcut action when selected.
-};
-
-// Which component requests context menus, the app list or shelf.
-enum MenuType {
-  kAppList,
-  kShelf,
 };
 
 // The intent filter matching condition types.
@@ -409,74 +301,8 @@ struct IntentFilter {
   string? activity_label;
 };
 
-// Metadata for a single file shared through an intent.
-// Mojom IntentFile struct is DEPRECATED. When adding new fields, please use
-// the IntentFile struct in components/services/app_service/public/cpp/intent.h.
-struct IntentFile {
-  // The URL of the file to share. Normally has the filesystem: scheme, but
-  // could be externalfile: or a different scheme, depending on the source.
-  url.mojom.Url url;
-
-  // The following optional fields can be provided to supply additional metadata
-  // information in cases where fetching the metadata through the file would be
-  // difficult or expensive.
-
-  // File MIME type.
-  string? mime_type;
-  // Human readable file name, including extension.
-  mojo_base.mojom.SafeBaseName? file_name;
-  // File size in bytes.
-  uint64 file_size;
-  // Whether this is a directory or not.
-  OptionalBool is_directory;
-};
-
-// Action and resource handling request. This should
-// be kept in sync with ConvertIntentToValue and ConvertValueToIntent in
-// components/services/app_service/public/cpp/intent_util.*
-// Mojom Intent struct is DEPRECATED. When adding new fields, please use
-// the Intent struct in components/services/app_service/public/cpp/intent.h.
-struct Intent {
-  string action; // Intent action. e.g. view, send.
-  url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
-  string? mime_type; // MIME type. e.g. text/plain, image/*.
-  array<IntentFile>? files; // The files to share.
-  string? activity_name; // The activity for the app to launch.
-
-  // The Drive share URL, this is only filled if the intent contains a file
-  // from Google Drive.
-  url.mojom.Url? drive_share_url;
-  string? share_text; // Text to share. e.g. Share link to other app.
-  string? share_title; // Title for the share.
-  string? start_type; // Start type.
-  array<string>? categories;
-  string? data;  // URI
-  OptionalBool ui_bypassed; // Whether or not the user saw the UI.
-  map<string, string>? extras; // Optional string extras.
-};
-
-// The preferred app represents by |app_id| for |intent_fitler|.
-struct PreferredApp {
-  IntentFilter intent_filter;
-  string app_id;
-};
-
 struct FilePaths {
   array<mojo_base.mojom.FilePath> file_paths;
-};
-
-// Don't remove items or change the order of this enum.  It's used in
-// histograms and preferences.
-//
-// This is DEPRECATED. When adding new fields, please use the App
-// struct in components/services/app_service/public/cpp/app_launch_util.h.
-enum LaunchContainer {
-  kLaunchContainerWindow = 0,
-  kLaunchContainerPanelDeprecated = 1,
-  kLaunchContainerTab = 2,
-  // For platform apps, which don't actually have a container (they just get a
-  // "onLaunched" event).
-  kLaunchContainerNone = 3,
 };
 
 // Information about whether an app is accessing some capability, e.g. camera,
@@ -494,24 +320,6 @@ struct CapabilityAccess {
 
   // When adding new fields, also update the Merge method and other helpers in
   // components/services/app_service/public/cpp/access_update.*
-};
-
-// The window bounds information.
-struct Rect {
-  int32 x;
-  int32 y;
-  int32 width;
-  int32 height;
-};
-
-// The window information to launch an app.
-// DEPRECATED. Please use the WindowInfo struct in
-// components/services/app_service/public/cpp/app_launch_util.h.
-struct WindowInfo {
-  int32 window_id = -1;
-  int32 state = 0;
-  int64 display_id = -1;
-  Rect? bounds;
 };
 
 // The window mode that each app will open in.

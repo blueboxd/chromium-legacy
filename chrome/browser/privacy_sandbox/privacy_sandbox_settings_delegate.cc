@@ -42,12 +42,10 @@ PrivacySandboxSettingsDelegate::PrivacySandboxSettingsDelegate(Profile* profile)
 
 PrivacySandboxSettingsDelegate::~PrivacySandboxSettingsDelegate() = default;
 
-bool PrivacySandboxSettingsDelegate::IsPrivacySandboxRestricted() {
-  // When the Privacy Sandbox 3 feature is enabled, the Sandbox is restricted
-  // based on account capabilities.
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
-    return PrivacySandboxRestrictedByAcccountCapability(profile_);
-  }
-  // No restrictions apply otherwise.
-  return false;
+bool PrivacySandboxSettingsDelegate::IsPrivacySandboxRestricted() const {
+  return PrivacySandboxRestrictedByAcccountCapability(profile_);
+}
+
+bool PrivacySandboxSettingsDelegate::IsIncognitoProfile() const {
+  return profile_->IsIncognitoProfile();
 }

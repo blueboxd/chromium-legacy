@@ -40,7 +40,7 @@
 <translation id="2161656808144014275">వచనం</translation>
 <translation id="2168039046890040389">Page Up</translation>
 <translation id="2190355936436201913">(ఖాళీ)</translation>
-<translation id="2192232475740621500">తక్కువ సాంద్రతను ఉపయోగించండి</translation>
+<translation id="2192232475740621500">తక్కువ సాంద్రతను ఉపయోగించు</translation>
 <translation id="2267918077332197517">ఈ సైట్ నుండి నోటిఫికేషన్‌లన్నీ బ్లాక్ చేయండి</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2289052229480071835">మీ స్క్రీన్‌పై ఉన్న స్పర్శ లక్ష్యాలను నొక్కండి.</translation>
@@ -50,10 +50,9 @@
 <translation id="2388990488038464401">మీ ఫోన్ నుండి ఈ నంబర్‌‌కు కాల్ చేయాలా?</translation>
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
 <translation id="24452542372838207">నోటిఫికేషన్‌ను విస్తరించు</translation>
-<translation id="2445449901874883781">ఎక్కువ సాంద్రతను ఉపయోగించండి</translation>
+<translation id="2445449901874883781">ఎక్కువ సాంద్రతను ఉపయోగించు</translation>
 <translation id="2482878487686419369">నోటిఫికేషన్‌లు</translation>
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
-<translation id="2498950423397131220">ఫ్లోట్</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">క్రమాంకనం పూర్తయింది</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
@@ -65,7 +64,7 @@
 <translation id="2701330563083355633"><ph name="DEVICE_NAME" /> నుండి షేర్ చేయబడింది</translation>
 <translation id="271033894570825754">కొత్తది</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 సంవత్సరం క్రితం}other{# సంవత్సరాల క్రితం}}</translation>
-<translation id="2878511608894704031">అన్నీ తొలగించండి</translation>
+<translation id="2878511608894704031">అన్నీ తొలగించు</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{1 రోజులో}other{# రోజులో}}</translation>
 <translation id="2922712708897119705"><ph name="COLUMN_NAME" /> నిలువు వరుస అవరోహణ క్రమపద్ధతిలో అమర్చబడింది.</translation>
 <translation id="3036649622769666520">ఫైళ్ళను తెరువు</translation>
@@ -101,10 +100,9 @@
 <translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 చదవని నోటిఫికేషన్ ఉంది}other{# చదవని నోటిఫికేషన్‌లు ఉన్నాయి}}</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 నెల క్రితం}other{# నెలల క్రితం}}</translation>
-<translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించండి</translation>
+<translation id="4289300219472526559">మాట్లాడటాన్ని ప్రారంభించు</translation>
 <translation id="4289540628985791613">స్థూలదృష్టి</translation>
 <translation id="4306392492252714209">క్లిప్‌బోర్డ్ నుండి తీసివేయండి.</translation>
-<translation id="4311195029067684288">సంపూర్ణం</translation>
 <translation id="4491109536499578614">చిత్రం</translation>
 <translation id="4565377596337484307">పాస్‌వర్డ్‌ను దాచిపెట్టు</translation>
 <translation id="4588090240171750605">కుడికి స్క్రోల్ చేయి</translation>
@@ -112,13 +110,10 @@
 <translation id="4746179598275229723">ఎక్స్‌టెన్షన్ అన్‌పిన్ చేయబడింది</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 నెల మిగిలి ఉంది}other{# నెలలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="4888938634149558681">కాల్ చేయి</translation>
-<translation id="4937657825850660613">సగం</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 సెకను}other{# సెకన్లు}}</translation>
 <translation id="4971687151119236543">మీడియా మునుపటి ట్రాక్</translation>
-<translation id="4971925105143343452">పాక్షికం</translation>
 <translation id="5046499563572181734">ఇక్కడ నొక్కండి</translation>
 <translation id="5076340679995252485">&amp;అతికించు</translation>
-<translation id="5123162024343028706">పైన తేలియాడేలా ఉంచు</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5278860589123563674">పంపడం విఫలమైంది</translation>
 <translation id="528468243742722775">ముగించు</translation>
@@ -156,7 +151,7 @@
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="654149438358937226">అన్ని నోటిఫికేషన్‌లను బ్లాక్ చేయండి</translation>
 <translation id="6612467943526193239">క్రమాంకనం నుండి నిష్క్రమించేందుకు, Esc నొక్కండి.</translation>
-<translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయండి</translation>
+<translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>
 <translation id="6845383723252244143">ఫోల్డర్‌ను ఎంచుకో</translation>

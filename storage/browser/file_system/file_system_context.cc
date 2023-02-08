@@ -17,8 +17,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/task/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/types/pass_key.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
@@ -433,18 +431,31 @@ void FileSystemContext::OpenFileSystem(
   }
 
   // Quota manager isn't provided by all tests.
-  if (quota_manager_proxy() && !bucket.has_value()) {
+  if (!quota_manager_proxy()) {
+    ResolveURLOnOpenFileSystem(storage_key, bucket, type, mode,
+                               std::move(callback));
+    return;
+  }
+
+  auto got_bucket = base::BindOnce(&FileSystemContext::OnGetOrCreateBucket,
+                                   weak_factory_.GetWeakPtr(), storage_key,
+                                   type, mode, std::move(callback));
+  if (bucket.has_value()) {
+    if (!bucket->id) {
+      // This branch can be hit if the bucket has been deleted but `BucketHost`
+      // is still alive.
+      std::move(got_bucket).Run(QuotaError::kUnknownError);
+    } else {
+      quota_manager_proxy()->GetBucketById(bucket->id, io_task_runner_.get(),
+                                           std::move(got_bucket));
+    }
+  } else {
     // Ensure default bucket for `storage_key` exists so that Quota API
     // is aware of the usage.
     quota_manager_proxy()->GetOrCreateBucketDeprecated(
         BucketInitParams::ForDefaultBucket(storage_key),
         FileSystemTypeToQuotaStorageType(type), io_task_runner_.get(),
-        base::BindOnce(&FileSystemContext::OnGetOrCreateBucket,
-                       weak_factory_.GetWeakPtr(), storage_key, type, mode,
-                       std::move(callback)));
-  } else {
-    ResolveURLOnOpenFileSystem(storage_key, bucket, type, mode,
-                               std::move(callback));
+        std::move(got_bucket));
   }
 }
 
@@ -510,8 +521,8 @@ void FileSystemContext::ResolveURL(const FileSystemURL& url,
   // If not on IO thread, forward before passing the task to the backend.
   if (!io_task_runner_->RunsTasksInCurrentSequence()) {
     ResolveURLCallback relay_callback = base::BindOnce(
-        &RelayResolveURLCallback, base::ThreadTaskRunnerHandle::Get(),
-        std::move(callback));
+        &RelayResolveURLCallback,
+        base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(callback));
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&FileSystemContext::ResolveURL, this, url,
                                   std::move(relay_callback)));
@@ -569,8 +580,8 @@ void FileSystemContext::DeleteFileSystem(const blink::StorageKey& storage_key,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      default_file_task_runner(), FROM_HERE,
+  default_file_task_runner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
       base::BindOnce(
           &FileSystemQuotaUtil::DeleteStorageKeyDataOnFileTaskRunner,

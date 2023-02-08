@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -333,7 +334,7 @@ metrics::ExtensionInstallProto ConstructInstallProto(
   }
   install.set_blacklist_state(GetBlacklistState(extension.id(), prefs));
   install.set_installed_in_this_sample_period(
-      prefs->GetInstallTime(extension.id()) >= last_sample_time);
+      prefs->GetLastUpdateTime(extension.id()) >= last_sample_time);
 
   return install;
 }
@@ -381,11 +382,16 @@ int ExtensionsMetricsProvider::HashExtension(const std::string& extension_id,
 
 std::unique_ptr<extensions::ExtensionSet>
 ExtensionsMetricsProvider::GetInstalledExtensions(Profile* profile) {
-  if (profile) {
-    return extensions::ExtensionRegistry::Get(profile)
-        ->GenerateInstalledExtensionsSet();
+  // Some profiles cannot have extensions, such as the System Profile.
+  if (!profile || extensions::ChromeContentBrowserClientExtensionsPart::
+                      AreExtensionsDisabledForProfile(profile)) {
+    return nullptr;
   }
-  return nullptr;
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  DCHECK(registry);
+  return registry->GenerateInstalledExtensionsSet();
 }
 
 uint64_t ExtensionsMetricsProvider::GetClientID() const {
@@ -435,13 +441,14 @@ void ExtensionsMetricsProvider::ProvideOffStoreMetric(
   // time when this metric is generated.
   std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
   for (size_t i = 0u; i < profiles.size() && state < OFF_STORE; ++i) {
-    extensions::InstallVerifier* verifier =
-        extensions::InstallVerifier::Get(profiles[i]);
-
     std::unique_ptr<extensions::ExtensionSet> extensions(
         GetInstalledExtensions(profiles[i]));
     if (!extensions)
       continue;
+
+    extensions::InstallVerifier* verifier =
+        extensions::InstallVerifier::Get(profiles[i]);
+    DCHECK(verifier);
 
     // Combine the state from each profile, always favoring the higher state as
     // defined by the order of ExtensionState.
@@ -484,6 +491,11 @@ void ExtensionsMetricsProvider::ProvideExtensionInstallsMetrics(
       g_browser_process->profile_manager()->GetLoadedProfiles();
   last_sample_time_ = base::Time::Now();
   for (Profile* profile : profiles) {
+    if (extensions::ChromeContentBrowserClientExtensionsPart::
+            AreExtensionsDisabledForProfile(profile)) {
+      continue;
+    }
+
     std::vector<ExtensionInstallProto> installs =
         GetInstallsForProfile(profile, last_sample_time_);
     for (ExtensionInstallProto& install : installs)

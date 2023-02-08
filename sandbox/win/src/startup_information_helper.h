@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/win/startup_information.h"
-#include "base/win/windows_version.h"
 #include "sandbox/win/src/app_container_base.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/security_capabilities.h"
@@ -44,8 +43,7 @@ class StartupInformationHelper {
   //        PROC_THREAD_ATTRIBUTE_ALL_APPLICATION_PACKAGES_POLICY
   // based on |container|. |container| should be valid.
   void SetAppContainer(scoped_refptr<AppContainer> container);
-  // Creates PROC_THREAD_ATTRIBUTE_JOB_LIST with |job_handle|. Not valid before
-  // Windows 10.
+  // Creates PROC_THREAD_ATTRIBUTE_JOB_LIST with |job_handle|.
   void AddJobToAssociate(HANDLE job_handle);
 
   // Will one or more jobs be associated via the wrapped StartupInformation.
@@ -66,7 +64,7 @@ class StartupInformationHelper {
   void operator=(const StartupInformationHelper&) = delete;
   StartupInformationHelper(const StartupInformationHelper&) = delete;
 
-  int CountAttributes();
+  DWORD CountAttributes();
 
   // Fields that are not passed into CreateProcessAsUserW().
   scoped_refptr<AppContainer> app_container_;

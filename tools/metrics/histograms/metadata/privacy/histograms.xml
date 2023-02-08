@@ -86,6 +86,9 @@ reviewer.
 
 <histogram name="Privacy.AccuracyTip.AccuracyTipInteraction"
     enum="AccuracyTipInteraction" expires_after="2022-08-21">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -96,6 +99,9 @@ reviewer.
 
 <histogram name="Privacy.AccuracyTip.AccuracyTipTimeOpen" units="ms"
     expires_after="M105">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -106,6 +112,9 @@ reviewer.
 
 <histogram name="Privacy.AccuracyTip.NumDialogsShown" units="dialogs"
     expires_after="2022-08-28">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>
@@ -116,6 +125,9 @@ reviewer.
 
 <histogram name="Privacy.AccuracyTip.PageStatus" enum="AccuracyTipStatus"
     expires_after="2022-10-09">
+  <obsolete>
+    Deprecated as of 12/2022.
+  </obsolete>
   <owner>dullweber@chromium.org</owner>
   <owner>eokoyomon@chromium.org</owner>
   <summary>The accuracy status of a page. Recorded on each page load.</summary>
@@ -128,6 +140,10 @@ reviewer.
   <summary>
     Interactions between sync and the cookies clear on exit setting. Only
     recorded when the user has cookies clear on exit enabled.
+
+    Recorded on all profiles, including for profiles such as guest profiles that
+    do not allow modification of this setting. (This value logged on those cases
+    is the default value for the setting.)
   </summary>
 </histogram>
 
@@ -191,7 +207,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.BounceCategory{DIPSRedirectType}{DIPSCookieMode}"
-    enum="DIPSRedirectCategory" expires_after="2022-12-01">
+    enum="DIPSRedirectCategory" expires_after="2023-05-01">
   <owner>bcl@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
@@ -271,7 +287,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromInteractionToStorage{DIPSCookieMode}"
-    units="ms" expires_after="2022-12-01">
+    units="ms" expires_after="2023-05-01">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
@@ -307,7 +323,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.TimeFromStorageToInteraction{DIPSCookieMode}"
-    units="ms" expires_after="2022-12-01">
+    units="ms" expires_after="2023-05-01">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
@@ -326,13 +342,31 @@ reviewer.
 
 <histogram name="Privacy.DoNotTrackSetting" enum="BooleanEnabled"
     expires_after="never">
+  <obsolete>
+    Logged on profile open, including for profiles such as guest profiles that
+    do not allow modification of this setting. (This value logged on those cases
+    is the default value for the setting.) Replaced in M-110 with the histogram
+    Privacy.DoNotTrackSetting2, which is similar but only emitted on regular
+    profiles.
+  </obsolete>
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>mkwst@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
-    Whether the Do Not Track setting is enabled. Recorded at the Profile
-    startup.
+    Whether the Do Not Track setting is enabled. Recorded at the profile open.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.DoNotTrackSetting2" enum="BooleanEnabled"
+    expires_after="never">
+<!-- expires-never: tracked as an important privacy metric. -->
+
+  <owner>mkwst@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Whether the Do Not Track setting is enabled. Recorded at the profile open,
+    only for regular profiles (not Incognito, Guest, etc.).
   </summary>
 </histogram>
 
@@ -384,7 +418,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.KeyFetcher.HttpResponseOrNetErrorCode"
-    enum="NetErrorCodes" expires_after="M117">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="M117">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -500,7 +534,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.Storage.Sql.ClearDataTaskDelay"
-    units="ms" expires_after="2023-02-04">
+    units="ms" expires_after="2023-05-14">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>

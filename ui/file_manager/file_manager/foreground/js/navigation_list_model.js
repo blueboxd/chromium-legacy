@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assertNotReached} from 'chrome://resources/js/assert.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {DialogType} from '../../common/js/dialog_type.js';
 import {EntryList, VolumeEntry} from '../../common/js/files_app_entry_types.js';
@@ -649,7 +649,10 @@ export class NavigationListModel extends EventTarget {
     if (androidVolume) {
       // Only add volume if MyFiles doesn't have it yet.
       if (myFilesEntry.findIndexByVolumeInfo(androidVolume.volumeInfo) === -1) {
-        myFilesEntry.addEntry(new VolumeEntry(androidVolume.volumeInfo));
+        const volumeEntry = new VolumeEntry(androidVolume.volumeInfo);
+        volumeEntry.disabled = this.volumeManager_.isDisabled(
+            VolumeManagerCommon.VolumeType.ANDROID_FILES);
+        myFilesEntry.addEntry(volumeEntry);
       }
     } else {
       myFilesEntry.removeByVolumeType(
@@ -666,7 +669,10 @@ export class NavigationListModel extends EventTarget {
       // Crostini is mounted so add it if MyFiles doesn't have it yet.
       if (myFilesEntry.findIndexByVolumeInfo(crostiniVolume.volumeInfo) ===
           -1) {
-        myFilesEntry.addEntry(new VolumeEntry(crostiniVolume.volumeInfo));
+        const volumeEntry = new VolumeEntry(crostiniVolume.volumeInfo);
+        volumeEntry.disabled = this.volumeManager_.isDisabled(
+            VolumeManagerCommon.VolumeType.CROSTINI);
+        myFilesEntry.addEntry(volumeEntry);
       }
     } else {
       myFilesEntry.removeByVolumeType(VolumeManagerCommon.VolumeType.CROSTINI);
@@ -700,7 +706,9 @@ export class NavigationListModel extends EventTarget {
       }
       for (const volume of guestOsVolumes) {
         if (myFilesEntry.findIndexByVolumeInfo(volume.volumeInfo) === -1) {
-          myFilesEntry.addEntry(new VolumeEntry(volume.volumeInfo));
+          const volumeEntry = new VolumeEntry(volume.volumeInfo);
+          volumeEntry.disabled = this.volumeManager_.isDisabled(volume.type);
+          myFilesEntry.addEntry(volumeEntry);
         }
       }
       // For each entry in the list, remove any for volumes that no longer

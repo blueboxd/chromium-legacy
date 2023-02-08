@@ -20,14 +20,21 @@ class LensRegionSearchControllerTest : public TestWithBrowserView {
  public:
   void SetUp() override {
     base::test::ScopedFeatureList features;
-    features.InitWithFeatures({features::kLensStandalone},
-                              {::features::kUnifiedSidePanel});
+    features.InitWithFeatures(
+        {features::kLensStandalone, ::features::kUnifiedSidePanel}, {});
     TestWithBrowserView::SetUp();
 
     // Create an active web contents.
     AddTab(browser_view()->browser(), GURL("about:blank"));
-    controller_ = std::make_unique<LensRegionSearchController>(
-        browser_view()->GetActiveWebContents(), browser_view()->browser());
+    controller_ =
+        std::make_unique<LensRegionSearchController>(browser_view()->browser());
+    controller_->SetWebContentsForTesting(
+        browser_view()->GetActiveWebContents());
+  }
+
+  void TearDown() override {
+    TestWithBrowserView::TearDown();
+    controller_.reset();
   }
 
  protected:

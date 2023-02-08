@@ -17,10 +17,8 @@
 #include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -259,8 +257,8 @@ void SpellcheckHunspellDictionary::OnSimpleLoaderComplete(
   }
 #endif
 
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE,
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SaveDictionaryData, std::move(data),
                      dictionary_file_.path),
       base::BindOnce(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
@@ -483,8 +481,8 @@ void SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete(
     // support this language. In either case, we must use Hunspell for this
     // language, unless we are on Android, which doesn't support Hunspell.
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(USE_RENDERER_SPELLCHECKER)
-    base::PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
+    task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&InitializeDictionaryLocation,
                        base::RetainedRef(task_runner_.get()), language_),
         base::BindOnce(
@@ -503,7 +501,7 @@ void SpellcheckHunspellDictionary::SpellCheckPlatformSetLanguageComplete(
     return;
 
   use_browser_spellchecker_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &SpellcheckHunspellDictionary::InformListenersOfInitialization,

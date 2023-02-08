@@ -32,6 +32,7 @@
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/in_app_to_home_nudge_controller.h"
 #include "ash/shelf/login_shelf_widget.h"
+#include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_metrics.h"
@@ -118,6 +119,14 @@ constexpr int kMaxAutoHideShowShelfRegionSize = 10;
 
 // Delay before showing the shelf. This is after the mouse stops moving.
 constexpr int kShelfPalmRejectionSwipeOffset = 80;
+
+// The minimum size of the area in the shelf where a user can perform the swipe
+// gesture to show the bubble launcher in clamshell mode. The user is able to
+// use a swipe upward gesture on screen or on the trackpad to show the bubble
+// launcher. The area allowed to recognize the gesture will be between the home
+// button and the first app in the shelf. When the scrollable shelf is full, we
+// allow a minimum width for the shelf to recognize the gesture.
+constexpr int kQuickShowMinAllowDistance = 100;
 
 const constexpr char* const kStylusAppIds[] = {
     "fhapgmpiiiigioilnjmkiohjhlegnceb",  // Cursive/A4 Dogfood
@@ -226,6 +235,13 @@ int GetOffset(int offset, const char* pref_name) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   return prefs->GetBoolean(pref_name) ? -offset : offset;
 }
+
+// Converts the offset to a relative value based on the allowed direction of
+// the swipe for a visible/hidden app list.
+int GetScrollOffsetInAllowedDirection(int offset, bool app_list_visible) {
+  return app_list_visible ? -offset : offset;
+}
+
 // Returns the window that can be dragged from shelf into home screen or
 // overview at |location_in_screen|. Returns nullptr if there is no such
 // window.
@@ -881,8 +897,12 @@ void ShelfLayoutManager::ProcessGestureEventFromShelfWidget(
 
 void ShelfLayoutManager::ProcessScrollOffset(int offset,
                                              const ui::LocatedEvent& event) {
-  if (offset <= ShelfConfig::Get()->mousewheel_scroll_offset_threshold())
+  const int adjusted_offset = GetScrollOffsetInAllowedDirection(
+      offset, Shell::Get()->app_list_controller()->IsVisible(display_.id()));
+  if (adjusted_offset <=
+      ShelfConfig::Get()->mousewheel_scroll_offset_threshold()) {
     return;
+  }
 
   if (app_list_features::IsQuickActionShowBubbleLauncherEnabled() &&
       !IsLocationInBubbleLauncherShowBounds(event.root_location())) {
@@ -919,8 +939,7 @@ bool ShelfLayoutManager::IsBubbleLauncherShowOnGestureScrollAvailable() {
   if (Shell::Get()->IsInTabletMode())
     return false;
 
-  return Shell::Get()->app_list_controller() &&
-         !Shell::Get()->app_list_controller()->IsVisible(display_.id());
+  return Shell::Get()->app_list_controller();
 }
 
 bool ShelfLayoutManager::MaybeHandleShelfFling(
@@ -932,7 +951,10 @@ bool ShelfLayoutManager::MaybeHandleShelfFling(
       -event_in_screen.AsGestureEvent()->details().velocity_x(),
       event_in_screen.AsGestureEvent()->details().velocity_x());
 
-  if (velocity > -kShelfFlingVelocityThresehold)
+  const int adjusted_velocity = GetScrollOffsetInAllowedDirection(
+      velocity, Shell::Get()->app_list_controller()->IsVisible(display_.id()));
+
+  if (adjusted_velocity > -kShelfFlingVelocityThresehold)
     return false;
 
   if (!IsLocationInBubbleLauncherShowBounds(drag_start_point_in_screen_))
@@ -949,31 +971,48 @@ bool ShelfLayoutManager::MaybeHandleShelfFling(
 
 bool ShelfLayoutManager::IsLocationInBubbleLauncherShowBounds(
     const gfx::Point& location_in_screen) {
-  gfx::Rect app_list_swipe_bounds =
+  const gfx::Rect shelf_bounds_in_screen =
       shelf_->shelf_widget()->GetWindowBoundsInScreen();
 
-  // We want to be able to recognize the swipe/fling action only on part of the
-  // shelf that is closer to the launcher button.
-  if (shelf_->IsHorizontalAlignment()) {
-    const int app_list_swipe_width = app_list_swipe_bounds.width() / 4;
-    // On the horizontal shelf, the poision of the launcher button may vary if
-    // the UI direction is RTL.
-    gfx::Insets insets;
-    const int non_actionable_insets =
-        app_list_swipe_bounds.width() - app_list_swipe_width;
-    if (base::i18n::IsRTL())
-      insets.set_left(non_actionable_insets);
-    else
-      insets.set_right(non_actionable_insets);
+  if (!shelf_bounds_in_screen.Contains(location_in_screen))
+    return false;
 
-    app_list_swipe_bounds.Inset(insets);
-  } else {
-    // On the vertical shelf, the launcher button is always on top regardless of
-    // locale.
-    app_list_swipe_bounds.set_height(app_list_swipe_bounds.height() / 4);
+  // Handle events that are close enough to the home button.
+  const int distance_from_start = shelf_->PrimaryAxisValue(
+      (base::i18n::IsRTL()
+           ? shelf_bounds_in_screen.right() - location_in_screen.x()
+           : location_in_screen.x() - shelf_bounds_in_screen.x()),
+      location_in_screen.y());
+
+  if (distance_from_start < kQuickShowMinAllowDistance)
+    return true;
+
+  // Don't handle swipes that would be outside app list bubble bounds.
+  if (shelf_->IsHorizontalAlignment() &&
+      distance_from_start >
+          Shell::Get()->app_list_controller()->GetPreferredBubbleWidth(
+              shelf_widget_->GetNativeWindow())) {
+    return false;
   }
 
-  return app_list_swipe_bounds.Contains(location_in_screen);
+  // For events that fall between min and max distance for swipes, only handle
+  // swipes that are outside hotseat bounds.
+  ScrollableShelfView* scrollable_shelf_view =
+      shelf_->hotseat_widget()->scrollable_shelf_view();
+  gfx::Rect available_bounds_in_screen =
+      scrollable_shelf_view->GetHotseatBackgroundBounds();
+  views::View::ConvertRectToScreen(scrollable_shelf_view,
+                                   &available_bounds_in_screen);
+
+  // Only handle swipes that would fall on the mirrored left side of the
+  // shelf before the hotseat.
+  const int mirrored_left_for_hotseat =
+      base::i18n::IsRTL()
+          ? shelf_bounds_in_screen.right() - available_bounds_in_screen.right()
+          : available_bounds_in_screen.x();
+  return distance_from_start <
+         shelf_->PrimaryAxisValue(mirrored_left_for_hotseat,
+                                  available_bounds_in_screen.y());
 }
 
 void ShelfLayoutManager::ProcessMouseWheelEventFromShelf(
@@ -1331,7 +1370,7 @@ void ShelfLayoutManager::LockAutoHideState(bool lock_auto_hide_state) {
   // If unlocking, recompute the current state, but do it after the current
   // event is processed.
   if (!is_auto_hide_state_locked_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&ShelfLayoutManager::UpdateAutoHideState,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -2391,8 +2430,10 @@ bool ShelfLayoutManager::StartGestureDrag(
     return true;
   }
 
-  if (Shell::Get()->app_list_controller()->IsVisible(display_.id()))
+  if (Shell::Get()->IsInTabletMode() &&
+      Shell::Get()->app_list_controller()->IsVisible(display_.id())) {
     return true;
+  }
 
   if (StartShelfDrag(gesture_in_screen,
                      gfx::Vector2dF(gesture_in_screen.details().scroll_x_hint(),
@@ -3002,7 +3043,7 @@ void ShelfLayoutManager::OnShelfTrayBubbleVisibilityChanged(bool bubble_shown) {
   // created/destructed. Meanwhile, we rely on the state of tray bubble to
   // calculate the auto-hide state.
   // Use ThreadTaskRunnerHandle to specify that the task runs on the UI thread.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, visibility_update_for_tray_callback_.callback());
 }
 

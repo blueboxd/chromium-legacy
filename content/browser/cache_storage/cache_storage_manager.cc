@@ -11,6 +11,7 @@
 #include <set>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_callback.h"
 #include "base/bind.h"
@@ -28,8 +29,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/constants.h"
@@ -58,7 +57,7 @@ void DeleteBucketDidDeleteDir(
     storage::mojom::QuotaClient::DeleteBucketDataCallback callback,
     bool rv) {
   // On scheduler sequence.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback),
                      rv ? blink::mojom::QuotaStatusCode::kOk
@@ -71,12 +70,12 @@ void DeleteStorageKeyDidDeleteAllData(
   // On scheduler sequence.
   for (auto result : results) {
     if (result != blink::mojom::QuotaStatusCode::kOk) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), result));
       return;
     }
   }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), blink::mojom::QuotaStatusCode::kOk));
 }
@@ -292,7 +291,7 @@ void GetStorageKeyAndLastModifiedGotBucket(
     bucket_locator = result->ToBucketLocator();
     DCHECK_EQ(info->storage_key, result->storage_key);
   }
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           std::move(callback),
@@ -438,7 +437,7 @@ void AllStorageKeySizesReported(
   }
 
   // On scheduler sequence.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(new_usages)));
 }
 
@@ -449,7 +448,7 @@ void OneStorageKeySizeReported(
     int64_t size) {
   // On scheduler sequence.
   DCHECK_NE(size, CacheStorage::kSizeUnknown);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 storage::mojom::StorageUsageInfo::New(
                                     storage_key, size, last_modified)));
@@ -676,14 +675,27 @@ void CacheStorageManager::GetAllStorageKeysUsageGetSizes(
     return;
   }
 
+  // If we weren't able to lookup a bucket ID that corresponds to this
+  // CacheStorage instance, skip reporting usage information about it.
+  int non_null_count = std::count_if(
+      usage_tuples.begin(), usage_tuples.end(),
+      [](const std::tuple<storage::BucketLocator,
+                          storage::mojom::StorageUsageInfoPtr>& usage_tuple) {
+        const storage::BucketLocator bucket_locator = std::get<0>(usage_tuple);
+        return !bucket_locator.is_null();
+      });
+
   const auto barrier_callback =
       base::BarrierCallback<storage::mojom::StorageUsageInfoPtr>(
-          usage_tuples.size(),
+          non_null_count,
           base::BindOnce(&AllStorageKeySizesReported, std::move(callback)));
 
   for (const auto& usage_tuple : usage_tuples) {
     const storage::BucketLocator& bucket_locator = std::get<0>(usage_tuple);
     const storage::mojom::StorageUsageInfoPtr& info = std::get<1>(usage_tuple);
+    if (bucket_locator.is_null()) {
+      continue;
+    }
     if (info->total_size_bytes != CacheStorage::kSizeUnknown ||
         !IsValidQuotaStorageKey(bucket_locator.storage_key)) {
       scheduler_task_runner_->PostTask(
@@ -832,7 +844,7 @@ void CacheStorageManager::DeleteStorageKeyDataGotAllBucketInfo(
         storage_key != bucket_locator.storage_key) {
       continue;
     }
-    if (bucket_locator.id) {
+    if (!bucket_locator.is_null()) {
       // The bucket locator is fully formed, so use the same steps to delete as
       // `DeleteBucketData()`.
       DeleteBucketDataDidGetExists(owner, barrier_callback, bucket_locator,
@@ -840,8 +852,8 @@ void CacheStorageManager::DeleteStorageKeyDataGotAllBucketInfo(
     } else {
       // This must be for an unmigrated cache storage instance using an origin
       // path, so just directly delete the directory.
-      PostTaskAndReplyWithResult(
-          cache_task_runner_.get(), FROM_HERE,
+      cache_task_runner_->PostTaskAndReplyWithResult(
+          FROM_HERE,
           base::BindOnce(&DeleteDir, CacheStorageManager::ConstructBucketPath(
                                          profile_path_, bucket_locator, owner)),
           base::BindOnce(&DeleteBucketDidDeleteDir, barrier_callback));
@@ -992,9 +1004,9 @@ void CacheStorageManager::DeleteBucketDidClose(
   cache_storage.reset();
 
   quota_manager_proxy_->NotifyBucketModified(
-      CacheStorageQuotaClient::GetClientTypeFromOwner(owner), bucket_locator.id,
-      -bucket_size, base::Time::Now(), base::SequencedTaskRunnerHandle::Get(),
-      base::DoNothing());
+      CacheStorageQuotaClient::GetClientTypeFromOwner(owner), bucket_locator,
+      -bucket_size, base::Time::Now(),
+      base::SequencedTaskRunner::GetCurrentDefault(), base::DoNothing());
 
   if (owner == storage::mojom::CacheStorageOwner::kCacheAPI)
     NotifyCacheListChanged(bucket_locator);
@@ -1006,8 +1018,8 @@ void CacheStorageManager::DeleteBucketDidClose(
     return;
   }
 
-  PostTaskAndReplyWithResult(
-      cache_task_runner_.get(), FROM_HERE,
+  cache_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&DeleteDir, CacheStorageManager::ConstructBucketPath(
                                      profile_path_, bucket_locator, owner)),
       base::BindOnce(&DeleteBucketDidDeleteDir, std::move(callback)));

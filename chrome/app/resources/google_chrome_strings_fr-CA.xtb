@@ -84,7 +84,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2401189691232800402">Système Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2494974097748878569">Assistant Google dans Chrome</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
 <translation id="2559253115192232574">Ultérieurement, un site que vous visitez peut demander à Chrome de voir vos centres d'intérêt afin de personnaliser les annonces que vous voyez. Chrome peut partager jusqu'à trois centres d'intérêt.</translation>
 <translation id="2563121210305478421">Relancer Chrome?</translation>
@@ -278,7 +277,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6412673304250309937">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
 <translation id="6418662306461808273">Passer au profil Chrome existant?</translation>
 <translation id="6506909944137591434">Chrome requiert l'autorisation d'accéder à l'appareil photo pour créer une carte 3D de votre environnement</translation>
-<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome pour les développeurs</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome pour les concepteurs</translation>
 <translation id="659498884637196217">Dans le gestionnaire de mots de passe Google sur cet appareil</translation>
 <translation id="6632473616050862500">Chrome OS Flex fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>
@@ -289,7 +288,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6739177684496155661">Continuer avec un nouveau profil Chrome?</translation>
 <translation id="6750954913813541382">Pour corriger les erreurs d'orthographe, Chrome envoie à Google le texte que vous tapez dans le navigateur</translation>
 <translation id="677276454032249905">Quitter Chrome quand même?</translation>
-<translation id="6785872064505734160">L'Assistant Google dans Chrome peut effectuer des actions dans différents sites Web pour vous</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS.</translation>
 <translation id="6881299373831449287">Mise à jour de Chrome</translation>
 <translation id="6885412569789873916">Applications Chrome bêta</translation>

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
+#include "chrome/browser/lookalikes/lookalike_test_helper.h"
 #include "chrome/browser/reputation/reputation_service.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/reputation/safety_tip_ui.h"
@@ -257,23 +258,7 @@ void ConfigureAllowlistWithScopes() {
 
 class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
  protected:
-  virtual bool digital_asset_links_enabled() const { return false; }
-
   void SetUp() override {
-    std::vector<base::test::FeatureRefAndParams> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    if (digital_asset_links_enabled()) {
-      enabled_features.emplace_back(
-          lookalikes::features::kLookalikeDigitalAssetLinks,
-          base::FieldTrialParams());
-    } else {
-      disabled_features.push_back(
-          lookalikes::features::kLookalikeDigitalAssetLinks);
-    }
-    feature_list_.InitWithFeaturesAndParameters(enabled_features,
-                                                disabled_features);
-
     reputation::InitializeSafetyTipConfig();
     InProcessBrowserTest::SetUp();
   }
@@ -283,6 +268,15 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    SetUpLookalikeTestParams();
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    InProcessBrowserTest::TearDownOnMainThread();
+    TearDownLookalikeTestParams();
+    ReputationService::Get(browser()->profile())
+        ->ResetWarningDismissedETLDPlusOnesForTesting();
   }
 
   GURL GetURL(const char* hostname) const {
@@ -869,37 +863,9 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(IsUIShowing());
 }
 
-// Tests that Character Swap for engaged sites is disabled by default.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       TriggersOnCharacterSwap_SiteEngagement_NotLaunched) {
-  const GURL kNavigatedUrl = GetURL("character-wsap.com");
-  const GURL kTargetUrl = GetURL("character-swap.com");
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(IsUIShowing());
-}
-
-// Tests that Character Swap for top domains is disabled by default.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       TriggersOnCharacterSwap_TopSite_NotLaunched) {
-  const GURL kNavigatedUrl = GetURL("goolge.com");
-  const GURL kTargetUrl = GetURL("google.com");
-  // Both the lookalike and the target have low engagement.
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kTargetUrl, kLowEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(IsUIShowing());
-}
-
-// Set a launch config with 100% rollout for Character Swap. This should show a
-// Character Swap warning for lookalikes matching engaged sites.
+// Tests that Character Swap is enabled for lookalikes matching engaged sites.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnCharacterSwap_SiteEngagement) {
-  reputation::AddSafetyTipHeuristicLaunchConfigForTesting(
-      reputation::HeuristicLaunchConfig::HEURISTIC_CHARACTER_SWAP_ENGAGED_SITES,
-      100);
-
   const GURL kNavigatedUrl = GetURL("character-wsap.com");
   const GURL kTargetUrl = GetURL("character-swap.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -908,14 +874,23 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(IsUIShowing());
 }
 
-// Set a launch config with 100% rollout for Character Swap. This should show a
-// Character Swap warning for lookalikes matching top sites.
+// Same as TriggersOnCharacterSwap_SiteEngagement, but this time
+// the match is on the actual hostnames and not skeletons. Note that
+// the skeletons of example.com and éxaplme.com don't have exactly
+// one character swap (exarnple.com and exaprnle.com)
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnCharacterSwap_SiteEngagement_HostnameMatch) {
+  const GURL kNavigatedUrl = GetURL("éxapmle.com");
+  const GURL kTargetUrl = GetURL("example.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(IsUIShowing());
+}
+
+// Tests that Character Swap is enabled for lookalikes matching top sites.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnCharacterSwap_TopSite) {
-  reputation::AddSafetyTipHeuristicLaunchConfigForTesting(
-      reputation::HeuristicLaunchConfig::HEURISTIC_CHARACTER_SWAP_TOP_SITES,
-      100);
-
   const GURL kNavigatedUrl = GetURL("goolge.com");
   const GURL kTargetUrl = GetURL("google.com");
   // Both the lookalike and the target have low engagement.
@@ -923,6 +898,38 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kTargetUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowing());
+}
+
+// Tests that a hostname on a safe TLD can spoof another hostname without a
+// lookalike warning.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       TriggersOnCharacterSwapSafeTLD_CanSpoof) {
+  const GURL kNavigatedUrl = GetURL("digitla.gov");
+  const GURL kTargetUrl = GetURL("digital.gov");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+}
+
+// Navigate to a domain within a character swap of 1 to a top domain,
+// but the character swap is at the registry. This should not be flagged
+// as a character swap match.
+IN_PROC_BROWSER_TEST_F(
+    SafetyTipPageInfoBubbleViewBrowserTest,
+    DoesntTriggerOnCharacterSwap_TopSiteWithDifferentRegistry) {
+  base::HistogramTester histograms;
+  // google.sr is within one character swap of google.rs which is a top domain.
+  const GURL kNavigatedUrl = GetURL("google.sr");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  // TestInterstitialNotShown(browser(), kNavigatedUrl);
+  // histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  // CheckNoUkm();
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
 }
 
 // Tests that Safety Tips trigger on lookalike domains with tail embedding when
@@ -1156,19 +1163,22 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
-// Ensure that the sensitive-keyword heuristic doesn't show up in PageInfo. Also
+// Ensure that a metrics-only heuristic doesn't show up in PageInfo. Also
 // a regression test for crbug/1061244.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       SensitiveKeywordHeuristicDoesntShowInPageInfo) {
-  const std::vector<const char*> kSensitiveKeywords = {"test"};
-  auto kNavigatedUrl = GetURL("test-secure.com");
-
-  ReputationService* rep_service = ReputationService::Get(browser()->profile());
-  rep_service->SetSensitiveKeywordsForTesting(kSensitiveKeywords.data(),
-                                              kSensitiveKeywords.size());
-
+                       MetricsOnlyHeuristicDoesntShowInPageInfo) {
+  // This URL will trigger Combo Squatting. Combo Squatting UI is disabled by
+  // default so this should only record metrics.
+  const GURL kNavigatedUrl = GetURL("google-login.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  base::HistogramTester histograms;
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+
+  // Make sure that the UI isn't showing but interstitial histogram is recorded.
+  ASSERT_FALSE(IsUIShowing());
+  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+                               NavigationSuggestionEvent::kComboSquatting, 1);
 
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
@@ -1176,12 +1186,9 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 // Tests that UKM data gets properly recorded when safety tip heuristics get
 // triggered.
 IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
-                       DISABLED_HeuristicsUkmRecorded) {
-  const std::vector<const char*> kSensitiveKeywords = {"test"};
-
-  ReputationService* rep_service = ReputationService::Get(browser()->profile());
-  rep_service->SetSensitiveKeywordsForTesting(kSensitiveKeywords.data(),
-                                              kSensitiveKeywords.size());
+                       HeuristicsUkmRecorded) {
+  SetEngagementScore(browser(), GURL("https://google.com"), kHighEngagement);
+  SetEngagementScore(browser(), GURL("https://youtube.com"), kHighEngagement);
 
   // Note that we only want the lookalike heuristic to trigger when our UI
   // status is fully enabled (if it's not, our lookalike heuristic shouldn't
@@ -1189,20 +1196,13 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   const std::vector<HeuristicsTestCase> test_cases = {
       /*blocklist*/ /*lookalike*/ /*keywords*/
       {GetURL("test.com"), {false, false, false}},
-      {GetURL("test-secure.com"), {false, false, true}},
-      {GetURL("test-insecure.com"), {false, false, true}},
-      {GetURL("test-blocklist.com"), {true, false, true}},
-      {GetURL("other.com"), {false, false, false}},
-      {GetURL("other-insecure.com"), {false, false, false}},
-      {GetURL("other-insecure.com"), {false, false, false}},
-      {GetURL("noblocklist.com"), {false, false, false}},
-      {GetURL("blocklist.com"), {true, false, false}},
-      {GetURL("a-normal-site.com"), {false, false, false}},
-      {GetURL("googlé.sk"), {false, true, false}},
-      {GetURL("test-secure.com"),
-       {true, false,
-        true}},  // This test case expects multiple heuristics to trigger.
-      {GetURL("googlé.sk"), {true, true, false}},
+      {GetURL("googlee.com"), {false, true, false}},
+      // Following tests are disabled because the blocklisted UI doesn't have a
+      // "Leave" button.
+      // TODO(crbug.com/1386300): Remove once the blocklist heuristic is
+      // deleted.
+      // {GetURL("youtubee.com"), {true, true, false}},
+      // {GetURL("blocklist.com"), {true, false, false}},
   };
 
   for (const HeuristicsTestCase& test_case : test_cases) {
@@ -1216,7 +1216,6 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
       NavigateToURL(browser(), test_case.navigated_url,
                     WindowOpenDisposition::CURRENT_TAB);
     }
-
     // If a warning should show, dismiss it to ensure UKM data gets recorded.
     if ((test_case.expected_results.lookalike_heuristic_triggered ||
          test_case.expected_results.blocklist_heuristic_triggered)) {
@@ -1352,10 +1351,10 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   ASSERT_FALSE(IsUIShowing());
 
   CheckRecordedHeuristicsUkmCount(1);
-  // Boolean values are /*blocklist*/ /*lookalike*/ /*keywords*/
-  // This test case expects triggering with lookalike heuristic and
-  // keywords heuristic.
-  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
+  CheckHeuristicsUkmRecord(
+      {kNavigatedUrl,
+       {/*blocklist=*/false, /*lookalike=*/true, /*keywords=*/false}},
+      0);
 
   // Navigate to the same site again, but close the warning with an ignore
   // instead of an accept. This should still record UKM data.
@@ -1365,13 +1364,22 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 
   // Make sure the already collected UKM data still exists.
   CheckRecordedHeuristicsUkmCount(1);
-  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
+  CheckHeuristicsUkmRecord(
+      {kNavigatedUrl,
+       {/*blocklist=*/false, /*lookalike=*/true, /*keywords=*/false}},
+      0);
 
   CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
   ASSERT_FALSE(IsUIShowing());
   CheckRecordedHeuristicsUkmCount(2);
-  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 0);
-  CheckHeuristicsUkmRecord({kNavigatedUrl, {false, true, true}}, 1);
+  CheckHeuristicsUkmRecord(
+      {kNavigatedUrl,
+       {/*blocklist=*/false, /*lookalike=*/true, /*keywords=*/false}},
+      0);
+  CheckHeuristicsUkmRecord(
+      {kNavigatedUrl,
+       {/*blocklist=*/false, /*lookalike=*/true, /*keywords=*/false}},
+      1);
 }
 
 // Test that a Safety Tip is shown and metrics are recorded when
@@ -1526,144 +1534,6 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   // recorded.
   ASSERT_FALSE(IsUIShowing());
   CheckRecordedHeuristicsUkmCount(0);
-}
-
-// Tests for Digital Asset Links for lookalike checks.
-// TODO(meacer): Refactor the DAL code in LookalikeNavigationThrottle tests and
-// reuse here.
-class SafetyTipPageInfoBubbleViewDigitalAssetLinksBrowserTest
-    : public SafetyTipPageInfoBubbleViewBrowserTest {
- protected:
-  struct TestSite {
-    std::string hostname;
-    std::string manifest;
-  };
-
-  bool digital_asset_links_enabled() const override { return true; }
-
-  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
-
-  void SetUpManifests(const std::vector<TestSite>& sites) {
-    url_loader_interceptor_ = std::make_unique<
-        content::URLLoaderInterceptor>(base::BindRepeating(
-        &SafetyTipPageInfoBubbleViewDigitalAssetLinksBrowserTest::OnIntercept,
-        base::Unretained(this), sites));
-  }
-
-  static std::string MakeManifestWithTarget(const char* target_domain,
-                                            bool invalid = false) {
-    const char* const format = R"([{
-        "relation": ["%s"],
-        "target": {
-          "namespace": "web",
-          "site": "https://%s"
-        }
-      }])";
-    // Go through MakeURL to convert target_domain to punycode.
-    return base::StringPrintf(format,
-                              (invalid ? "junkvalue" : "lookalikes/allowlist"),
-                              MakeURL(target_domain).host().c_str());
-  }
-
- private:
-  bool OnIntercept(const std::vector<TestSite>& sites,
-                   content::URLLoaderInterceptor::RequestParams* params) {
-    for (const TestSite& site : sites) {
-      if (params->url_request.url == MakeManifestURL(site.hostname)) {
-        DCHECK(!site.manifest.empty());
-        // Serve manifest contents:
-        std::string headers =
-            "HTTP/1.1 200 OK\nContent-Type: application/json; "
-            "charset=utf-8\n";
-        content::URLLoaderInterceptor::WriteResponse(headers, site.manifest,
-                                                     params->client.get());
-        return true;
-      }
-      // Serve site's contents:
-      if (params->url_request.url == MakeURL(site.hostname)) {
-        content::URLLoaderInterceptor::WriteResponse(
-            "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n",
-            "<html>Test page</html>", params->client.get());
-        return true;
-      }
-    }
-    return false;
-  }
-
-  static GURL MakeManifestURL(const std::string& hostname) {
-    return GURL("https://" + hostname + "/.well-known/assetlinks.json");
-  }
-
-  static GURL MakeURL(const std::string& hostname) {
-    return GURL("https://" + hostname);
-  }
-
-  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
-};
-
-// Lookalike and target sites' manifests don't match each other. Show the UI.
-// TODO(crbug.com/1191216): Check if there is already an existing manifest
-// validation happening and ignore new validation requests.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewDigitalAssetLinksBrowserTest,
-                       ShowOnDigitalAssetLinkMismatch) {
-  const GURL kNavigatedUrl("https://gooogle.com");
-  const GURL kTargetUrl("https://google.com");
-  const std::vector<TestSite> sites{
-      {kNavigatedUrl.host().c_str(), MakeManifestWithTarget("invalid.host")},
-      {kTargetUrl.host().c_str(), MakeManifestWithTarget("invalid.host")},
-  };
-  SetUpManifests(sites);
-
-  base::HistogramTester histograms;
-
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  ASSERT_TRUE(IsUIShowing());
-
-  histograms.ExpectTotalCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName, 2);
-  histograms.ExpectBucketCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName,
-      DigitalAssetLinkCrossValidator::Event::kStarted, 1);
-  histograms.ExpectBucketCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName,
-      DigitalAssetLinkCrossValidator::Event::kLookalikeManifestFailed, 1);
-}
-
-// Same as ShowOnDigitalAssetLinkMismatch but with valid manifests.
-// An edit distance match would normally display a Safety Tip, but the lookalike
-// site properly allowlisted the target site so the Safety Tip is suppressed.
-// TODO(crbug.com/1191216): Check if there is already an existing manifest
-// validation happening and ignore new validation requests.
-IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewDigitalAssetLinksBrowserTest,
-                       NoShowOnDigitalAssetLinkMatch) {
-  const GURL kNavigatedUrl("https://gooogle.com");
-  const GURL kTargetUrl("https://google.com");
-  const std::vector<TestSite> sites{
-      {kNavigatedUrl.host().c_str(),
-       MakeManifestWithTarget(kTargetUrl.host().c_str())},
-      {kTargetUrl.host().c_str(),
-       MakeManifestWithTarget(kNavigatedUrl.host().c_str())},
-  };
-  SetUpManifests(sites);
-
-  base::HistogramTester histograms;
-
-  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
-  SetEngagementScore(browser(), kTargetUrl, kHighEngagement);
-  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-
-  ASSERT_FALSE(IsUIShowing());
-
-  histograms.ExpectTotalCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName, 2);
-  histograms.ExpectBucketCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName,
-      DigitalAssetLinkCrossValidator::Event::kStarted, 1);
-  histograms.ExpectBucketCount(
-      DigitalAssetLinkCrossValidator::kEventHistogramName,
-      DigitalAssetLinkCrossValidator::Event::kValidationSucceeded, 1);
 }
 
 class SafetyTipPageInfoBubbleViewPrerenderBrowserTest

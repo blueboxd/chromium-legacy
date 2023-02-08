@@ -99,14 +99,12 @@ class BackgroundTracingActiveScenario::TracingSession {
         perfetto::Tracing::NewTrace(perfetto::BackendType::kCustomBackend);
     tracing_session_->Setup(perfetto_config);
 
-    auto category_preset = parent_scenario->GetConfig()->category_preset();
-    tracing_session_->SetOnStartCallback([category_preset] {
+    tracing_session_->SetOnStartCallback([] {
       GetUIThreadTaskRunner({})->PostTask(
           FROM_HERE,
           base::BindOnce(
               &BackgroundTracingManagerImpl::OnStartTracingDone,
-              base::Unretained(&BackgroundTracingManagerImpl::GetInstance()),
-              category_preset));
+              base::Unretained(&BackgroundTracingManagerImpl::GetInstance())));
     });
     tracing_session_->Start();
     // We check IsEnabled() before creating the LegacyTracingSession,
@@ -248,12 +246,14 @@ void BackgroundTracingActiveScenario::SetState(State new_state) {
     // we abort tracing here.
     DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     base::trace_event::TraceLog::GetInstance()->SetDisabled(
-        base::trace_event::TraceLog::GetInstance()->enabled_modes());
+        base::trace_event::TraceLog::RECORDING_MODE);
   }
 
   if (scenario_state_ == State::kAborted) {
     DCHECK_NE(config_->tracing_mode(), BackgroundTracingConfigImpl::SYSTEM);
     tracing_session_.reset();
+    tracing_timer_.reset();
+
     std::move(on_aborted_callback_).Run();
   }
 }
@@ -561,7 +561,7 @@ BackgroundTracingActiveScenario::GetRuleAbleToTriggerTracing(
   return nullptr;
 }
 
-base::Value::Dict BackgroundTracingActiveScenario::GenerateMetadataDict() {
+base::Value BackgroundTracingActiveScenario::GenerateMetadataDict() {
   base::Value::Dict metadata_dict;
   metadata_dict.Set("config", config_->ToDict());
   metadata_dict.Set("scenario_name", config_->scenario_name());
@@ -570,7 +570,7 @@ base::Value::Dict BackgroundTracingActiveScenario::GenerateMetadataDict() {
     metadata_dict.Set("last_triggered_rule", last_triggered_rule_->ToDict());
   }
 
-  return metadata_dict;
+  return base::Value(std::move(metadata_dict));
 }
 
 void BackgroundTracingActiveScenario::GenerateMetadataProto(

@@ -3749,17 +3749,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     new_shell = new_shell_observer.GetShell();
     new_contents = new_shell->web_contents();
     // Delaying popup holds the initial load of |url|.
-    if (blink::features::IsInitialNavigationEntryEnabled()) {
-      EXPECT_TRUE(WaitForLoadStop(new_contents));
-      EXPECT_TRUE(new_contents->GetController()
-                      .GetLastCommittedEntry()
-                      ->IsInitialEntry());
-    } else {
-      // If we don't have the initial NavigationEntry, WaitForLoadStop() will
-      // return false because there's no NavigationEntry.
-      EXPECT_FALSE(WaitForLoadStop(new_contents));
-      EXPECT_FALSE(new_contents->GetController().GetLastCommittedEntry());
-    }
+    EXPECT_TRUE(WaitForLoadStop(new_contents));
+    EXPECT_TRUE(new_contents->GetController()
+                    .GetLastCommittedEntry()
+                    ->IsInitialEntry());
     EXPECT_NE(url, new_contents->GetLastCommittedURL());
   }
 
@@ -4382,7 +4375,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Wait an action timeout and assert the URL is correct.
   {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop.Run();
   }
@@ -4413,7 +4406,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // Wait an action timeout and assert the URL is correct.
   {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
     run_loop.Run();
   }
@@ -4631,8 +4624,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Intentionally exclude inner frame trees based on multi-WebContents.
   web_contents->ForEachFrameTree(
-      base::BindLambdaForTesting([&](FrameTree* frame_tree) {
-        EXPECT_NE(frame_tree, &inner_contents->GetPrimaryFrameTree());
+      base::BindLambdaForTesting([&](FrameTree& frame_tree) {
+        EXPECT_NE(&frame_tree, &inner_contents->GetPrimaryFrameTree());
       }));
 }
 

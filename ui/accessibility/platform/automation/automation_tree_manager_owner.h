@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_PLATFORM_AUTOMATION_AUTOMATION_TREE_MANAGER_OWNER_H_
 
 #include <vector>
+#include "base/component_export.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_event_generator.h"
@@ -17,19 +18,13 @@
 #include "ui/gfx/geometry/point.h"
 #include "v8/include/v8-isolate.h"
 
-// TODO(crbug.com/1357889): Remove this after migrating test logic to
-// ui/accessibility.
-namespace extensions {
-class AutomationInternalCustomBindingsTest;
-}
-
 namespace ui {
 class AutomationV8Bindings;
 
 // Virtual class that owns one or more AutomationAXTreeWrappers.
 // TODO(crbug.com/1357889): Merge some of this interface with
 // AXTreeManager if possible.
-class AX_EXPORT AutomationTreeManagerOwner {
+class COMPONENT_EXPORT(AX_PLATFORM) AutomationTreeManagerOwner {
  public:
   AutomationTreeManagerOwner();
   virtual ~AutomationTreeManagerOwner();
@@ -170,7 +165,7 @@ class AX_EXPORT AutomationTreeManagerOwner {
   void SetDesktopTreeId(AXTreeID tree_id) { desktop_tree_id_ = tree_id; }
 
  protected:
-  friend class extensions::AutomationInternalCustomBindingsTest;
+  friend class AutomationTreeManagerOwnerTest;
 
   void OnAccessibilityEvents(const ui::AXTreeID& tree_id,
                              const std::vector<AXEvent>& events,

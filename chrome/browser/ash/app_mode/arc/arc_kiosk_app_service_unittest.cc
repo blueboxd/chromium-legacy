@@ -13,12 +13,12 @@
 #include "base/strings/strcat.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/ash/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -54,7 +54,6 @@ class FakeController : public KioskAppLauncher::Delegate {
   // KioskAppLauncher::Delegate:
   bool IsNetworkReady() const override { return true; }
   bool IsShowingNetworkConfigScreen() const override { return false; }
-  bool ShouldSkipAppInstallation() const override { return false; }
 
   void OnAppWindowCreated() override {
     window_created_semaphore_.AddValue(true);
@@ -123,7 +122,6 @@ class ArcKioskAppServiceTest : public testing::Test {
     package->last_backup_android_id = 1;
     package->last_backup_time = 1;
     package->sync = false;
-    package->system = false;
     return package;
   }
 
@@ -158,7 +156,7 @@ class ArcKioskAppServiceTest : public testing::Test {
   // Number of times app tried to be launched.
   size_t launch_requests_ = 0;
 
-  ash::AshTestHelper ash_test_helper_;
+  AshTestHelper ash_test_helper_;
 
   content::BrowserTaskEnvironment task_environment;
   ArcAppTest arc_app_test_;
@@ -245,7 +243,7 @@ TEST_F(ArcKioskAppServiceTest, AppLaunches) {
   other_window->Init(ui::LAYER_SOLID_COLOR);
   other_window.reset();
 
-  ash::TestWindowBuilder window_builder;
+  TestWindowBuilder window_builder;
   std::unique_ptr<aura::Window> app_window = window_builder.Build();
   exo::SetShellApplicationId(app_window.get(), kAppWindowAppId);
   NotifyWindowCreated(app_window.get());

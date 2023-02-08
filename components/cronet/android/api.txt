@@ -75,6 +75,7 @@ public class org.chromium.net.CronetEngine$Builder {
   public org.chromium.net.CronetEngine build();
 }
 public abstract class org.chromium.net.CronetEngine {
+  public static final int ACTIVE_REQUEST_COUNT_UNKNOWN;
   public static final int CONNECTION_METRIC_UNKNOWN;
   public static final int EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   public static final int EFFECTIVE_CONNECTION_TYPE_OFFLINE;
@@ -91,7 +92,7 @@ public abstract class org.chromium.net.CronetEngine {
   public abstract java.net.URLConnection openConnection(java.net.URL) throws java.io.IOException;
   public abstract java.net.URLStreamHandlerFactory createURLStreamHandlerFactory();
   public abstract org.chromium.net.UrlRequest$Builder newUrlRequestBuilder(java.lang.String, org.chromium.net.UrlRequest$Callback, java.util.concurrent.Executor);
-  public abstract org.chromium.net.BidirectionalStream$Builder newBidirectionalStreamBuilder(java.lang.String, org.chromium.net.BidirectionalStream$Callback, java.util.concurrent.Executor);
+  public int getActiveRequestCount();
   public void addRequestFinishedListener(org.chromium.net.RequestFinishedInfo$Listener);
   public void removeRequestFinishedListener(org.chromium.net.RequestFinishedInfo$Listener);
   public int getHttpRttMs();
@@ -185,11 +186,10 @@ public abstract class org.chromium.net.ExperimentalCronetEngine extends org.chro
   public static final int EFFECTIVE_CONNECTION_TYPE_4G;
   public static final long UNBIND_NETWORK_HANDLE;
   public org.chromium.net.ExperimentalCronetEngine();
-  public abstract org.chromium.net.ExperimentalBidirectionalStream$Builder newBidirectionalStreamBuilder(java.lang.String, org.chromium.net.BidirectionalStream$Callback, java.util.concurrent.Executor);
   public abstract org.chromium.net.ExperimentalUrlRequest$Builder newUrlRequestBuilder(java.lang.String, org.chromium.net.UrlRequest$Callback, java.util.concurrent.Executor);
+  public abstract org.chromium.net.ExperimentalBidirectionalStream$Builder newBidirectionalStreamBuilder(java.lang.String, org.chromium.net.BidirectionalStream$Callback, java.util.concurrent.Executor);
   public void bindToNetwork(long);
   public java.net.URLConnection openConnection(java.net.URL, java.net.Proxy) throws java.io.IOException;
-  public org.chromium.net.BidirectionalStream$Builder newBidirectionalStreamBuilder(java.lang.String, org.chromium.net.BidirectionalStream$Callback, java.util.concurrent.Executor);
   public org.chromium.net.UrlRequest$Builder newUrlRequestBuilder(java.lang.String, org.chromium.net.UrlRequest$Callback, java.util.concurrent.Executor);
 }
 public abstract class org.chromium.net.ExperimentalUrlRequest$Builder extends org.chromium.net.UrlRequest$Builder {
@@ -422,6 +422,11 @@ public abstract class org.chromium.net.apihelpers.ByteArrayCronetCallback extend
   public org.chromium.net.apihelpers.ImplicitFlowControlCallback addCompletionListener(org.chromium.net.apihelpers.CronetRequestCompletionListener);
   protected java.lang.Object transformBodyBytes(org.chromium.net.UrlResponseInfo, byte[]);
 }
+public interface org.chromium.net.apihelpers.CronetRequestCompletionListener<T> {
+  public abstract void onFailed(org.chromium.net.UrlResponseInfo, org.chromium.net.CronetException);
+  public abstract void onCanceled(org.chromium.net.UrlResponseInfo);
+  public abstract void onSucceeded(org.chromium.net.UrlResponseInfo, T);
+}
 public class org.chromium.net.apihelpers.CronetResponse<T> {
   public org.chromium.net.UrlResponseInfo getUrlResponseInfo();
   public T getResponseBody();
@@ -492,4 +497,4 @@ public class org.chromium.net.apihelpers.UrlRequestCallbacks {
   public static org.chromium.net.apihelpers.JsonCronetCallback forJsonBody(org.chromium.net.apihelpers.RedirectHandler, org.chromium.net.apihelpers.CronetRequestCompletionListener<org.json.JSONObject>);
   public static org.chromium.net.apihelpers.UrlRequestCallbacks$CallbackAndResponseFuturePair<org.json.JSONObject, org.chromium.net.apihelpers.JsonCronetCallback> forJsonBody(org.chromium.net.apihelpers.RedirectHandler);
 }
-Stamp: a7a2c4b25dbfbd4e36d9b28664e201f4
+Stamp: d165ac852578ae0246bfc6f360d65b13

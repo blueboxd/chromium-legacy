@@ -376,10 +376,13 @@ class CORE_EXPORT WebLocalFrameImpl final
       bool is_client_redirect,
       bool has_transient_user_activation,
       const WebSecurityOrigin& initiator_origin,
-      bool is_browser_initiated) override;
+      bool is_browser_initiated,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id) override;
   void SetIsNotOnInitialEmptyDocument() override;
   bool IsOnInitialEmptyDocument() override;
-  void WillPotentiallyStartNavigation(const WebURL&) const override;
+  void WillPotentiallyStartOutermostMainFrameNavigation(
+      const WebURL&) const override;
   bool WillStartNavigation(const WebNavigationInfo&) override;
   void DidDropNavigation() override;
   void DownloadURL(
@@ -428,9 +431,10 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebLocalFrameClient*,
       InterfaceRegistry*,
       const LocalFrameToken& frame_token,
-      WebFrame*,
+      WebFrame* previous_frame,
       const FramePolicy&,
-      const WebString& name);
+      const WebString& name,
+      WebView* web_view);
 
   WebLocalFrameImpl(base::PassKey<WebLocalFrameImpl>,
                     mojom::blink::TreeScopeType,
@@ -548,7 +552,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void RemoveObserver(WebLocalFrameObserver* observer);
 
   void WillSendSubmitEvent(const WebFormElement& form);
-  void DidChangeMobileFriendliness(const MobileFriendliness& mf);
 
  protected:
   // WebLocalFrame protected overrides:
@@ -612,6 +615,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const DocumentToken& document_token,
       std::unique_ptr<PolicyContainer> policy_container,
       const StorageKey& storage_key,
+      ukm::SourceId document_ukm_source_id,
       network::mojom::blink::WebSandboxFlags sandbox_flags =
           network::mojom::blink::WebSandboxFlags::kNone);
 

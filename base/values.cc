@@ -1041,14 +1041,6 @@ bool operator>=(const Value::List& lhs, const Value::List& rhs) {
   return !(lhs < rhs);
 }
 
-Value::ListView Value::GetListDeprecated() {
-  return list();
-}
-
-Value::ConstListView Value::GetListDeprecated() const {
-  return list();
-}
-
 void Value::Append(bool value) {
   GetList().Append(value);
 }
@@ -1079,10 +1071,6 @@ void Value::Append(StringPiece16 value) {
 
 void Value::Append(Value&& value) {
   GetList().Append(std::move(value));
-}
-
-void Value::ClearList() {
-  GetList().clear();
 }
 
 Value* Value::FindKey(StringPiece key) {
@@ -1122,10 +1110,6 @@ const std::string* Value::FindStringKey(StringPiece key) const {
 
 std::string* Value::FindStringKey(StringPiece key) {
   return GetDict().FindString(key);
-}
-
-const Value::BlobStorage* Value::FindBlobKey(StringPiece key) const {
-  return GetDict().FindBlob(key);
 }
 
 const Value* Value::FindDictKey(StringPiece key) const {
@@ -1368,20 +1352,8 @@ bool Value::DictEmpty() const {
   return GetDict().empty();
 }
 
-void Value::DictClear() {
-  GetDict().clear();
-}
-
 void Value::MergeDictionary(const Value* dictionary) {
   return GetDict().Merge(dictionary->GetDict().Clone());
-}
-
-bool Value::GetAsDictionary(DictionaryValue** out_value) {
-  if (out_value && is_dict()) {
-    *out_value = static_cast<DictionaryValue*>(this);
-    return true;
-  }
-  return is_dict();
 }
 
 bool Value::GetAsDictionary(const DictionaryValue** out_value) const {
@@ -1621,12 +1593,12 @@ const Value::Dict& DictAdapterForMigration::dict_for_test() const {
 // static
 std::unique_ptr<DictionaryValue> DictionaryValue::From(
     std::unique_ptr<Value> value) {
-  DictionaryValue* out;
-  if (value && value->GetAsDictionary(&out)) {
-    std::ignore = value.release();
-    return WrapUnique(out);
+  if (!value || !value->is_dict()) {
+    return nullptr;
   }
-  return nullptr;
+
+  DictionaryValue* out = static_cast<DictionaryValue*>(value.release());
+  return WrapUnique(out);
 }
 
 DictionaryValue::DictionaryValue() : Value(Type::DICTIONARY) {}
@@ -1690,11 +1662,6 @@ Value* DictionaryValue::SetString(StringPiece path, StringPiece in_value) {
 Value* DictionaryValue::SetString(StringPiece path,
                                   const std::u16string& in_value) {
   return Set(path, std::make_unique<Value>(in_value));
-}
-
-ListValue* DictionaryValue::SetList(StringPiece path,
-                                    std::unique_ptr<ListValue> in_value) {
-  return static_cast<ListValue*>(Set(path, std::move(in_value)));
 }
 
 bool DictionaryValue::Get(StringPiece path, const Value** out_value) const {
@@ -1769,11 +1736,6 @@ bool DictionaryValue::GetList(StringPiece path,
 bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
   return std::as_const(*this).GetList(path,
                                       const_cast<const ListValue**>(out_value));
-}
-
-void DictionaryValue::Swap(DictionaryValue* other) {
-  CHECK(other->is_dict());
-  dict().swap(other->dict());
 }
 
 ///////////////////// ListValue ////////////////////

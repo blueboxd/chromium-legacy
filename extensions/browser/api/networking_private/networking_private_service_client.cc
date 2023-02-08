@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -58,7 +58,7 @@ NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
       base::BindOnce(
           &WiFiService::SetEventObservers,
           base::Unretained(wifi_service_.get()),
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SingleThreadTaskRunner::GetCurrentDefault(),
           base::BindRepeating(
               &NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread,
               weak_factory_.GetWeakPtr()),
@@ -415,10 +415,8 @@ void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());
-  // TODO(https://crbug.com/1187001): Make callbacks take base::Value::List.
   std::move(service_callbacks->get_visible_networks_callback)
-      .Run(base::ListValue::From(
-          std::make_unique<base::Value>(std::move(*networks))));
+      .Run(std::move(*networks));
   RemoveServiceCallbacks(callback_id);
 }
 

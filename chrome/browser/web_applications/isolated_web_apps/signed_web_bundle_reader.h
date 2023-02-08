@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "services/data_decoder/public/cpp/safe_web_bundle_parser.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace network {
 struct ResourceRequest;
@@ -30,17 +31,21 @@ class Ed25519PublicKey;
 
 namespace web_app {
 
-// This class is a reader for Signed Web Bundles. Calling
-// `CreateAndStartReading` creates a new instance of this class and starts the
-// process to read the Signed Web Bundle's integrity block and metadata, as well
-// as to verify that the signatures contained in the integrity block sign the
-// bundle correctly. If everything is parsed successfully, then the caller can
-// make requests to responses contained in the Signed Web Bundle using
-// `ReadResponse` and `ReadResponseBody`. The caller can then also access the
-// metadata contained in the Signed Web Bundle. Potential errors occurring
+// This class is a reader for Signed Web Bundles.
+//
+// `Create` returns a new instance of this class.
+//
+// `StartReading` starts the process to read the Signed Web Bundle's integrity
+// block and metadata, as well as to verify that the signatures contained in the
+// integrity block sign the bundle correctly.
+//
+// If everything is parsed successfully, then
+// the caller can make requests to responses contained in the Signed Web Bundle
+// using `ReadResponse` and `ReadResponseBody`. The caller can then also access
+// the metadata contained in the Signed Web Bundle. Potential errors occurring
 // during initialization are irrecoverable. Whether initialization has completed
-// can be determined by either waiting for the callback passed to
-// `CreateAndStartReading` to run or by querying `GetState`.
+// can be determined by either waiting for the callback passed to `StartReading`
+// to run or by querying `GetState`.
 //
 // URLs passed to `ReadResponse` will be simplified to remove username,
 // password, and fragment before looking up the corresponding response inside
@@ -98,7 +103,7 @@ class SignedWebBundleReader {
     std::string message;
   };
 
-  using ReadError = absl::variant<
+  using ReadIntegrityBlockAndMetadataError = absl::variant<
       // Triggered when the integrity block of the Signed Web Bundle does not
       // exist or parsing it fails.
       web_package::mojom::BundleIntegrityBlockParseErrorPtr,
@@ -109,34 +114,43 @@ class SignedWebBundleReader {
       web_package::SignedWebBundleSignatureVerifier::Error,
       // Triggered when metadata parsing fails.
       web_package::mojom::BundleMetadataParseErrorPtr>;
-  using ReadErrorCallback =
-      base::OnceCallback<void(absl::optional<ReadError> result)>;
+  using ReadErrorCallback = base::OnceCallback<void(
+      absl::optional<ReadIntegrityBlockAndMetadataError> error)>;
 
-  // Create a new instance of this class and start reading the Signed Web
-  // Bundle. This will invoke `integrity_block_result_callback` after reading
-  // the integrity block, which must then, based on the public keys contained in
-  // the integrity block, determine whether this class should continue with
-  // signature verification and metadata reading, or abort altogether.
-  // In any case, `read_error_callback` will be called once reading integrity
-  // block and metadata has either succeeded, was aborted, or failed.
-  static std::unique_ptr<SignedWebBundleReader> CreateAndStartReading(
+  // Creates a new instance of this class. `base_url` is used inside the
+  // `WebBundleParser` to convert relative URLs contained in the Web Bundle into
+  // absolute URLs. If `base_url` is `absl::nullopt`, then relative URLs inside
+  // the Web Bundle will result in an error.
+  static std::unique_ptr<SignedWebBundleReader> Create(
       const base::FilePath& web_bundle_path,
-      IntegrityBlockReadResultCallback integrity_block_result_callback,
-      ReadErrorCallback read_error_callback,
+      const absl::optional<GURL>& base_url,
       std::unique_ptr<
           web_package::SignedWebBundleSignatureVerifier> signature_verifier =
           std::make_unique<web_package::SignedWebBundleSignatureVerifier>());
 
+  // Starts reading the Signed Web Bundle. This will invoke
+  // `integrity_block_result_callback` after reading the integrity block, which
+  // must then, based on the public keys contained in the integrity block,
+  // determine whether this class should continue with signature verification
+  // and metadata reading, or abort. In any case,
+  // `read_error_callback` will be called once reading integrity block and
+  // metadata has either succeeded, was aborted, or failed.
+  // Will CHECK if `GetState()` != `kUninitialized`.
+  void StartReading(
+      IntegrityBlockReadResultCallback integrity_block_result_callback,
+      ReadErrorCallback read_error_callback);
+
   // This class internally transitions through the following states:
   //
-  // kInitializing -> kInitialized
-  //       |
-  //       `--------> kError
+  // kUninitialized -> kInitializing -> kInitialized
+  //                         |
+  //                         `--------> kError
   //
-  // If initialization fails, the callback passed to `CreateAndStartReading()`
+  // If initialization fails, the callback passed to `StartReading`
   // is called with the corresponding error, and the state changes to `kError`.
   // Recovery from an initialization error is not possible.
   enum class State {
+    kUninitialized,
     kInitializing,
     kInitialized,
     kError,
@@ -153,7 +167,7 @@ class SignedWebBundleReader {
 
   // Returns the primary URL, as specified in the metadata of the Web Bundle.
   // Will CHECK if `GetState()` != `kInitialized`.
-  GURL GetPrimaryURL() const;
+  const absl::optional<GURL>& GetPrimaryURL() const;
 
   // Returns the URLs of all exchanges contained in the Web Bundle, as specified
   // in the metadata. Will CHECK if `GetState()` != `kInitialized`.
@@ -210,6 +224,7 @@ class SignedWebBundleReader {
  private:
   explicit SignedWebBundleReader(
       const base::FilePath& web_bundle_path,
+      const absl::optional<GURL>& base_url,
       std::unique_ptr<web_package::SignedWebBundleSignatureVerifier>
           signature_verifier);
 
@@ -242,7 +257,14 @@ class SignedWebBundleReader {
       web_package::SignedWebBundleIntegrityBlock integrity_block,
       ReadErrorCallback callback);
 
+  void OnFileLengthRead(
+      web_package::SignedWebBundleIntegrityBlock integrity_block,
+      ReadErrorCallback callback,
+      base::expected<uint64_t, base::File::Error> file_length);
+
   void OnSignaturesVerified(
+      const base::TimeTicks& verification_start_time,
+      uint64_t file_length,
       ReadErrorCallback callback,
       absl::optional<web_package::SignedWebBundleSignatureVerifier::Error>
           verification_error);
@@ -253,7 +275,8 @@ class SignedWebBundleReader {
                         web_package::mojom::BundleMetadataPtr metadata,
                         web_package::mojom::BundleMetadataParseErrorPtr error);
 
-  void FulfillWithError(ReadErrorCallback callback, ReadError error);
+  void FulfillWithError(ReadErrorCallback callback,
+                        ReadIntegrityBlockAndMetadataError error);
 
   void ReadResponseInternal(
       web_package::mojom::BundleResponseLocationPtr location,
@@ -272,10 +295,11 @@ class SignedWebBundleReader {
   void ReconnectForFile(base::File file);
   void DidReconnect(absl::optional<std::string> error);
 
-  State state_ = State::kInitializing;
+  State state_ = State::kUninitialized;
 
   bool is_disconnected_ = false;
   base::FilePath web_bundle_path_;
+  absl::optional<GURL> base_url_;
   std::unique_ptr<web_package::SignedWebBundleSignatureVerifier>
       signature_verifier_;
 
@@ -289,7 +313,7 @@ class SignedWebBundleReader {
   absl::optional<uint64_t> integrity_block_size_in_bytes_;
 
   // Metadata
-  GURL primary_url_;
+  absl::optional<GURL> primary_url_;
   base::flat_map<GURL, web_package::mojom::BundleResponseLocationPtr> entries_;
 
   // Accumulates `ReadResponse` requests while the parser is disconnected, and

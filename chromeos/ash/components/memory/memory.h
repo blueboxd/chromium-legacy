@@ -43,7 +43,6 @@ namespace memory {
 class COMPONENT_EXPORT(ASH_MEMORY) ZramMetrics
     : public base::RefCountedThreadSafe<ZramMetrics> {
  public:
-  static constexpr base::TimeDelta kZramMetricsPeriod = base::Seconds(10);
   // Max number of pages should be the max system memory divided by the smallest
   // possible page size, or: 16GB / 4096
   static constexpr uint64_t kMaxNumPages =
@@ -54,11 +53,11 @@ class COMPONENT_EXPORT(ASH_MEMORY) ZramMetrics
   ZramMetrics(const ZramMetrics&) = delete;
   ZramMetrics& operator=(const ZramMetrics&) = delete;
 
-  // Begins data collection.
-  void Start();
+  // Must be called on a background sequence. Updates the cached instance of
+  // orig_data_size_mb_. Returns false if there's an error.
+  bool CollectEvents();
 
-  // Ends data collection.
-  void Stop();
+  uint32_t orig_data_size_mb() const { return orig_data_size_mb_; }
 
  private:
   // Friend it so it can call our private destructor.
@@ -66,19 +65,16 @@ class COMPONENT_EXPORT(ASH_MEMORY) ZramMetrics
 
   ~ZramMetrics();
 
-  void StartOnSequence();
-  void StopOnSequence();
-  void CollectEvents();
-
-  base::TimeDelta period_;
-  base::RepeatingTimer timer_;
-
   // Last-time old-pages stats for delta computation
   // (only for kernel v5.15+), using |has_old_huge_pages_| to determine
   // whether |old_huge_pages_| and |old_huge_pages_since_| are valid.
   bool has_old_huge_pages_ = false;
   uint64_t old_huge_pages_ = 0;
   uint64_t old_huge_pages_since_ = 0;
+
+  // A cached instance of OrigDataSizeMB. Only valid if CollectEvents returns
+  // true.
+  uint32_t orig_data_size_mb_ = 0;
 
   // The background task runner where the collection takes place.
   scoped_refptr<base::SequencedTaskRunner> runner_;

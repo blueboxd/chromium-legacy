@@ -6,12 +6,12 @@
 
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/test_image_backing.h"
+#include "gpu/command_buffer/service/test_memory_tracker.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,10 +19,15 @@
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_types.h"
+
+#if BUILDFLAG(IS_WIN)
 #include "ui/gl/gl_image.h"
+#endif
 
 namespace gpu {
 namespace {
+
+constexpr uint32_t kTestBackingSize = 40000;
 
 class TestSharedImageBackingFactory : public SharedImageBackingFactory {
  public:
@@ -40,9 +45,9 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
     if (allocations_should_fail_)
       return nullptr;
 
-    return std::make_unique<TestImageBacking>(mailbox, format, size,
-                                              color_space, surface_origin,
-                                              alpha_type, usage, 0);
+    return std::make_unique<TestImageBacking>(
+        mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+        kTestBackingSize);
   }
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -61,7 +66,6 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
       gfx::BufferPlane plane,
-      SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
@@ -94,30 +98,25 @@ class TestSharedImageBackingFactory : public SharedImageBackingFactory {
 class CompoundImageBackingTest : public testing::Test {
  public:
   bool HasGpuBacking(CompoundImageBacking* backing) {
-    return !!backing->gpu_backing_;
+    return !!backing->elements_[1].backing;
   }
 
-  bool GpuBackingFactoryIsValid(CompoundImageBacking* backing) {
-    return !!backing->gpu_backing_factory_;
-  }
-
-  bool GpuBackingFactoryIsCleared(CompoundImageBacking* backing) {
-    return !backing->gpu_backing_factory_ &&
-           !backing->gpu_backing_factory_.WasInvalidated();
+  bool HasGpuCreateBackingCallback(CompoundImageBacking* backing) {
+    return !backing->elements_[1].create_callback.is_null();
   }
 
   TestImageBacking* GetGpuBacking(CompoundImageBacking* backing) {
-    auto* gpu_backing = backing->gpu_backing_.get();
+    auto* gpu_backing = backing->elements_[1].backing.get();
     DCHECK_EQ(gpu_backing->GetType(), SharedImageBackingType::kTest);
     return static_cast<TestImageBacking*>(gpu_backing);
   }
 
   bool GetShmHasLatestContent(CompoundImageBacking* backing) {
-    return backing->shm_has_latest_content_;
+    return backing->elements_[0].content_id_ == backing->latest_content_id_;
   }
 
   bool GetGpuHasLatestContent(CompoundImageBacking* backing) {
-    return backing->gpu_has_latest_content_;
+    return backing->elements_[1].content_id_ == backing->latest_content_id_;
   }
 
   // Create a compound backing containing shared memory + GPU backing.
@@ -135,17 +134,16 @@ class CompoundImageBackingTest : public testing::Test {
 
     return CompoundImageBacking::CreateSharedMemory(
         &test_factory_, allow_shm_overlays, Mailbox::GenerateForSharedImage(),
-        std::move(handle), buffer_format, gfx::BufferPlane::DEFAULT,
-        kNullSurfaceHandle, size, gfx::ColorSpace(),
-        kBottomLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
+        std::move(handle), buffer_format, gfx::BufferPlane::DEFAULT, size,
+        gfx::ColorSpace(), kBottomLeft_GrSurfaceOrigin, kOpaque_SkAlphaType,
         SHARED_IMAGE_USAGE_DISPLAY_READ);
   }
 
  protected:
   SharedImageManager manager_;
   TestSharedImageBackingFactory test_factory_;
-  gles2::MockMemoryTracker mock_memory_tracker_;
-  MemoryTypeTracker tracker_{&mock_memory_tracker_};
+  TestMemoryTracker memory_tracker_;
+  MemoryTypeTracker tracker_{&memory_tracker_};
 };
 
 TEST_F(CompoundImageBackingTest, References) {
@@ -161,6 +159,10 @@ TEST_F(CompoundImageBackingTest, References) {
 
   auto factory_rep = manager_.Register(std::move(backing), &tracker_);
 
+  // When the compound backing is first registered it will get a reference
+  // and add shared memory backing size to the memory tracker.
+  EXPECT_EQ(memory_tracker_.GetSize(), kTestBackingSize);
+
   // After register compound backing it should have a reference. The GPU
   // backing should never have any reference as it's owned by the compound
   // backing and isn't reference counted.
@@ -169,6 +171,10 @@ TEST_F(CompoundImageBackingTest, References) {
 
   auto overlay_rep =
       manager_.ProduceOverlay(compound_backing->mailbox(), &tracker_);
+
+  // On overlay access a GPU backing will be allocated and the recorded size
+  // will increase.
+  EXPECT_EQ(memory_tracker_.GetSize(), kTestBackingSize * 2);
 
   auto* gpu_backing = GetGpuBacking(compound_backing);
 
@@ -182,6 +188,10 @@ TEST_F(CompoundImageBackingTest, References) {
 
   // All the backings will be destroyed after this point.
   factory_rep.reset();
+
+  // When all references are dropped the total size of shared memory and gpu
+  // backings will be subtracted from memory tracker.
+  EXPECT_EQ(memory_tracker_.GetSize(), 0u);
 }
 
 TEST_F(CompoundImageBackingTest, UploadOnAccess) {
@@ -292,7 +302,6 @@ TEST_F(CompoundImageBackingTest, ReadbackToMemory) {
   EXPECT_TRUE(GetGpuHasLatestContent(compound_backing));
 }
 
-#if BUILDFLAG(IS_WIN)
 TEST_F(CompoundImageBackingTest, NoUploadOnOverlayMemoryAccess) {
   auto backing = CreateCompoundBacking(/*allow_shm_overlays=*/true);
   auto* compound_backing = static_cast<CompoundImageBacking*>(backing.get());
@@ -303,13 +312,15 @@ TEST_F(CompoundImageBackingTest, NoUploadOnOverlayMemoryAccess) {
       manager_.ProduceOverlay(compound_backing->mailbox(), &tracker_);
   auto access = overlay_rep->BeginScopedReadAccess();
 
+#if BUILDFLAG(IS_WIN)
   // This should produce a GLImageMemory but there will still be no GPU backing.
   auto* gl_image = access->gl_image();
   ASSERT_TRUE(gl_image);
   EXPECT_EQ(gl_image->GetType(), gl::GLImage::Type::MEMORY);
+#endif
+
   EXPECT_FALSE(HasGpuBacking(compound_backing));
 }
-#endif
 
 TEST_F(CompoundImageBackingTest, LazyAllocationFailsCreate) {
   auto backing = CreateCompoundBacking();
@@ -320,7 +331,7 @@ TEST_F(CompoundImageBackingTest, LazyAllocationFailsCreate) {
   // The compound backing shouldn't have GPU backing yet and should have
   // a valid factory to create one.
   EXPECT_FALSE(HasGpuBacking(compound_backing));
-  EXPECT_TRUE(GpuBackingFactoryIsValid(compound_backing));
+  EXPECT_TRUE(HasGpuCreateBackingCallback(compound_backing));
 
   test_factory_.SetAllocationsShouldFail(true);
 
@@ -333,7 +344,7 @@ TEST_F(CompoundImageBackingTest, LazyAllocationFailsCreate) {
 
   // The backing factory to create GPU backing should be reset so creation is
   // not retried.
-  EXPECT_TRUE(GpuBackingFactoryIsCleared(compound_backing));
+  EXPECT_FALSE(HasGpuCreateBackingCallback(compound_backing));
 }
 
 TEST_F(CompoundImageBackingTest, LazyAllocationFailsFactoryInvalidated) {
@@ -345,7 +356,7 @@ TEST_F(CompoundImageBackingTest, LazyAllocationFailsFactoryInvalidated) {
   // The compound backing shouldn't have GPU backing yet and should have
   // a valid factory to create one.
   EXPECT_FALSE(HasGpuBacking(compound_backing));
-  EXPECT_TRUE(GpuBackingFactoryIsValid(compound_backing));
+  EXPECT_TRUE(HasGpuCreateBackingCallback(compound_backing));
 
   test_factory_.InvalidateWeakPtrsForTesting();
 
@@ -358,7 +369,7 @@ TEST_F(CompoundImageBackingTest, LazyAllocationFailsFactoryInvalidated) {
 
   // The backing factory to create GPU backing should be reset to avoid logging
   // about destroyed image multiple times.
-  EXPECT_TRUE(GpuBackingFactoryIsCleared(compound_backing));
+  EXPECT_FALSE(HasGpuCreateBackingCallback(compound_backing));
 }
 
 }  // namespace gpu

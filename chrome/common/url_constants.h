@@ -217,7 +217,8 @@ extern const char kPasswordManagerLearnMoreURL[];
 // Help URL for the Payment methods page of the Google Pay site.
 extern const char kPaymentMethodsURL[];
 
-extern const char kPaymentMethodsLearnMoreURL[];
+// The URL for the "Fill out forms automatically" support page.
+extern const char kAddressesAndPaymentMethodsLearnMoreURL[];
 
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];
@@ -391,6 +392,10 @@ extern const char kOsSettingsSearchHelpURL[];
 // The URL for the "Learn more" link in the peripheral data access protection
 // settings.
 extern const char kPeripheralDataAccessHelpURL[];
+
+// The URL for the "Learn more" link for Enhanced network voices in Chrome OS
+// settings for Select-to-speak.
+extern const char kSelectToSpeakLearnMoreURL[];
 
 // The URL path to offline ARC++ Terms of Service.
 extern const char kArcTermsURLPath[];

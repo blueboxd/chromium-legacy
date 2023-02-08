@@ -502,7 +502,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
                              @"The script response is not iterable.");
 
   NSMutableDictionary* cookies = [NSMutableDictionary dictionary];
-  for (const auto& option : result.GetListDeprecated()) {
+  for (const auto& option : result.GetList()) {
     if (option.is_string()) {
       NSString* nameValuePair = base::SysUTF8ToNSString(option.GetString());
       NSMutableArray* cookieNameValue =
@@ -520,6 +520,15 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   }
 
   return cookies;
+}
+
+- (void)clearBrowsingCookies {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface clearBrowsingCookies]);
+
+  // After clearing browsing cookies via code, wait for the UI to be done
+  // with any updates. This includes icons from the new tab page being removed.
+  GREYWaitForAppToIdle(@"App failed to idle");
 }
 
 #pragma mark - WebState Utilities (EG2)
@@ -885,11 +894,18 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
       deleteAutofillProfileFromFakeSyncServerWithGUID:GUID];
 }
 
-- (void)waitForSyncInitialized:(BOOL)isInitialized
-                   syncTimeout:(base::TimeDelta)timeout {
+- (void)waitForSyncEngineInitialized:(BOOL)isInitialized
+                         syncTimeout:(base::TimeDelta)timeout {
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
-      waitForSyncInitialized:isInitialized
-                 syncTimeout:timeout]);
+      waitForSyncEngineInitialized:isInitialized
+                       syncTimeout:timeout]);
+}
+
+- (void)waitForSyncFeatureEnabled:(BOOL)isEnabled
+                      syncTimeout:(base::TimeDelta)timeout {
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForSyncFeatureEnabled:isEnabled
+                    syncTimeout:timeout]);
 }
 
 - (const std::string)syncCacheGUID {
@@ -1296,6 +1312,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (BOOL)isWebChannelsEnabled {
   return [ChromeEarlGreyAppInterface isWebChannelsEnabled];
+}
+
+- (BOOL)isSFSymbolEnabled {
+  return [ChromeEarlGreyAppInterface isSFSymbolEnabled];
 }
 
 #pragma mark - ContentSettings

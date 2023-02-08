@@ -8,12 +8,13 @@
 #include "base/json/json_reader.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/test_future.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/types/optional_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
+#include "url/origin.h"
 
 namespace content::test {
 
@@ -103,7 +104,7 @@ MockUDPSocket::~MockUDPSocket() {
 void MockUDPSocket::Connect(const net::IPEndPoint& remote_addr,
                             network::mojom::UDPSocketOptionsPtr socket_options,
                             ConnectCallback callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), net::OK,
                      net::IPEndPoint{net::IPAddress::IPv4Localhost(), 0}));
@@ -206,11 +207,15 @@ std::string AsyncJsRunner::MakeScriptSendResultToDomQueue(
       script.c_str(), token_.ToString().c_str()));
 }
 
+IsolatedWebAppContentBrowserClient::IsolatedWebAppContentBrowserClient(
+    const url::Origin& isolated_app_origin)
+    : isolated_app_origin_(isolated_app_origin) {}
+
 bool IsolatedWebAppContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     BrowserContext* browser_context,
     const GURL& url,
     bool origin_matches_flag) {
-  return origin_matches_flag;
+  return isolated_app_origin_ == url::Origin::Create(url);
 }
 
 absl::optional<blink::ParsedPermissionsPolicy>

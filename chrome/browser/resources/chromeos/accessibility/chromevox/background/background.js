@@ -7,14 +7,14 @@ import {AutomationUtil} from '../../common/automation_util.js';
 import {constants} from '../../common/constants.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {InstanceChecker} from '../../common/instance_checker.js';
+import {LocalStorage} from '../../common/local_storage.js';
 import {AbstractEarcons} from '../common/abstract_earcons.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
-import {CompositeTts} from '../common/composite_tts.js';
-import {ExtensionBridge} from '../common/extension_bridge.js';
+import {ContentScriptBridge} from '../common/content_script_bridge.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
-import {QueueMode, TtsInterface, TtsSpeechProperties} from '../common/tts_interface.js';
+import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
@@ -23,8 +23,8 @@ import {BrailleCommandHandler} from './braille/braille_command_handler.js';
 import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
+import {ClipboardHandler} from './clipboard_handler.js';
 import {CommandHandler} from './command_handler.js';
-import {CommandHandlerInterface} from './command_handler_interface.js';
 import {DesktopAutomationHandler} from './desktop_automation_handler.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 import {DownloadHandler} from './download_handler.js';
@@ -69,9 +69,6 @@ export class Background extends ChromeVoxState {
     /** @private {boolean} */
     this.isReadingContinuously_ = false;
 
-    /** @private {string|undefined} */
-    this.lastClipboardEvent_;
-
     /** @private {CursorRange} */
     this.pageSel_ = null;
 
@@ -113,24 +110,20 @@ export class Background extends ChromeVoxState {
     chrome.accessibilityPrivate.onShowChromeVoxTutorial.addListener(() => {
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
     });
-
-    chrome.clipboard.onClipboardDataChanged.addListener(() => {
-      this.onClipboardDataChanged_();
-    });
-    document.addEventListener('copy', event => {
-      this.onClipboardCopyEvent_(event);
-    });
   }
 
-  static init() {
-    ChromeVoxState.instance = new Background();
-
-    // Initialize legacy background page first.
+  static async init() {
+    // Initialize storage and legacy background first.
+    await LocalStorage.init();
     ChromeVoxBackground.init();
+
+    ChromeVoxState.instance = new Background();
 
     AutoScrollHandler.init();
     BackgroundKeyboardHandler.init();
     BrailleCommandHandler.init();
+    ClipboardHandler.init();
+    CommandHandler.init();
     DesktopAutomationHandler.init();
     DownloadHandler.init();
     EventStreamLogger.init();
@@ -144,10 +137,6 @@ export class Background extends ChromeVoxState {
     PageLoadSoundHandler.init();
     PanelBackground.init();
     RangeAutomationHandler.init();
-
-    // Set the darkScreen state to false, since the display will be on whenever
-    // ChromeVox starts.
-    sessionStorage.setItem('darkScreen', 'false');
 
     ChromeVoxState.resolveReadyPromise_();
   }
@@ -200,8 +189,8 @@ export class Background extends ChromeVoxState {
     this.previousRange_ = this.currentRange_;
     this.currentRange_ = newRange;
 
-    ChromeVoxState.observers.forEach(
-        observer => observer.onCurrentRangeChanged(newRange, opt_fromEditing));
+    ChromeVoxState.ready().then(ChromeVoxState.observers.forEach(
+        observer => observer.onCurrentRangeChanged(newRange, opt_fromEditing)));
 
     if (!this.currentRange_) {
       FocusBounds.set([]);
@@ -234,16 +223,6 @@ export class Background extends ChromeVoxState {
   /** @override */
   set pageSel(newPageSel) {
     this.pageSel_ = newPageSel;
-  }
-
-  /** @override */
-  get typingEcho() {
-    return parseInt(localStorage['typingEcho'], 10) || 0;
-  }
-
-  /** @override */
-  set typingEcho(newTypingEcho) {
-    localStorage['typingEcho'] = newTypingEcho;
   }
 
   /**
@@ -363,44 +342,6 @@ export class Background extends ChromeVoxState {
     if (!this.currentRange_ || !this.currentRange_.isValid()) {
       this.setCurrentRange(this.previousRange_);
     }
-  }
-
-  /** @override */
-  readNextClipboardDataChange() {
-    this.lastClipboardEvent_ = 'copy';
-  }
-
-  /**
-   * Processes the copy clipboard event.
-   * @param {!Event} evt
-   * @private
-   */
-  onClipboardCopyEvent_(evt) {
-    // This should always be 'copy', but is still important to set for the below
-    // extension event.
-    this.lastClipboardEvent_ = evt.type;
-  }
-
-  /** @private */
-  onClipboardDataChanged_() {
-    // A DOM-based clipboard event always comes before this Chrome extension
-    // clipboard event. We only care about 'copy' events, which gets set above.
-    if (!this.lastClipboardEvent_) {
-      return;
-    }
-
-    const eventType = this.lastClipboardEvent_;
-    this.lastClipboardEvent_ = undefined;
-
-    const textarea = document.createElement('textarea');
-    document.body.appendChild(textarea);
-    textarea.focus();
-    document.execCommand('paste');
-    const clipboardContent = textarea.value;
-    textarea.remove();
-    ChromeVox.tts.speak(
-        Msgs.getMsg(eventType, [clipboardContent]), QueueMode.FLUSH);
-    ChromeVoxState.instance.pageSel = null;
   }
 
   /** @private */

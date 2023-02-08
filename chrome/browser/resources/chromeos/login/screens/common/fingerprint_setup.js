@@ -10,7 +10,7 @@
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.js';
 import '../../components/oobe_icons.m.js';
-import '../../components/common_styles/common_styles.m.js';
+import '../../components/common_styles/oobe_common_styles.m.js';
 import '../../components/common_styles/oobe_dialog_host_styles.m.js';
 
 import {I18nBehavior} from '//resources/ash/common/i18n_behavior.js';
@@ -19,10 +19,10 @@ import {afterNextRender, dom, flush, html, mixinBehaviors, Polymer, PolymerEleme
 
 import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../components/behaviors/login_screen_behavior.m.js';
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.m.js';
-import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.m.js';
+import {OobeI18nBehavior, OobeI18nBehaviorInterface} from '../../components/behaviors/oobe_i18n_behavior.js';
 import {OobeTextButton} from '../../components/buttons/oobe_text_button.js';
 import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
-import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.m.js';
+import {OOBE_UI_STATE, SCREEN_GAIA_SIGNIN} from '../../components/display_manager_types.js';
 import {OobeCrLottie} from '../../components/oobe_cr_lottie.js';
 
 
@@ -126,14 +126,6 @@ class FingerprintSetup extends FingerprintSetupBase {
         type: Boolean,
         value: false,
       },
-      /**
-       * Indicates whether the fingerprint sensor location has a specific
-       * aria-label.
-       */
-      hasAriaLabel_: {
-        type: Boolean,
-        value: false,
-      },
     };
   }
 
@@ -168,7 +160,6 @@ class FingerprintSetup extends FingerprintSetupBase {
 
   onBeforeShow(data) {
     this.isChildAccount_ = data['isChildAccount'];
-    this.hasAriaLabel_ = data['hasAriaLabel'];
     this.setAnimationState_(true);
   }
 
@@ -291,24 +282,6 @@ class FingerprintSetup extends FingerprintSetupBase {
     }
 
     this.$.arc.setProgress(oldValue, newValue, newValue === 100);
-  }
-
-  /**
-   * Returns the aria-label for the dialog.
-   * New fingerprint positions do not require aria-labels since the exact
-   * fingerprint sensor location is included in the subtitle, for these
-   * locations use the screen title as the aria-label for the dialog.
-   * @private
-   */
-  getAriaLabel_(locale, hasAriaLabel, isChildAccount) {
-    if (hasAriaLabel) {
-      return this.i18n('setupFingerprintScreenAriaLabel');
-    }
-
-    if (isChildAccount) {
-      return this.i18n('setupFingerprintScreenTitleForChild');
-    }
-    return this.i18n('setupFingerprintScreenTitle');
   }
 }
 

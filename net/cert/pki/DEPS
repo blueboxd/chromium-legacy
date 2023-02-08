@@ -1,0 +1,18 @@
+include_rules = [
+  # Do not take new base/ dependencies in here.
+  # Please check with bbe@ if you run afoul of this
+  # TODO(crbug.com/1322914): Remove exceptions.
+  "-base",
+  "+base/base_paths.h",
+  "+base/callback_forward.h",
+  "+base/files/file_util.h",
+  "+base/numerics/clamped_math.h",
+  "+base/path_service.h",
+  "+base/supports_user_data.h",
+]
+specific_include_rules = {
+  "path_builder_unittest\.cc": [
+    "+base/test/bind.h",
+  ],
+}
+

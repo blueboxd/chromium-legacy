@@ -17,7 +17,7 @@
 #include "base/memory/values_equivalent.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner_helpers.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -290,7 +290,7 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
   // window to be refocused. Post a task to launch the app to ensure launching
   // happens after the tab closed, otherwise the opened app window might be
   // inactivated.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AppServiceProxy::LaunchAppWithUrl, proxy->GetWeakPtr(),
@@ -311,6 +311,13 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
   IntentHandlingMetrics::RecordPreferredAppLinkClickMetrics(
       GetMetricsPlatform(app_type));
   return true;
+}
+
+bool CommonAppsNavigationThrottle::ShouldOverrideUrlLoadingForOfficeExperiment(
+    const GURL& previous_url,
+    const GURL& current_url) {
+  return apps::ShouldOverrideUrlLoadingForOfficeExperiment(previous_url,
+                                                           current_url);
 }
 
 bool CommonAppsNavigationThrottle::ShouldShowDisablePage(

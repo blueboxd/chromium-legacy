@@ -34,7 +34,7 @@
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
 #include "base/process/memory.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/apple_apsl/CFBase.h"
@@ -542,7 +542,7 @@ void ShimNewMallocZonesAndReschedule(base::Time end_time,
     return;
 
   base::TimeDelta next_delay = delay * 2;
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ShimNewMallocZonesAndReschedule, end_time, next_delay),
       delay);
@@ -602,10 +602,21 @@ void ReplaceZoneFunctions(ChromeMallocZone* zone,
   if (zone->version >= 6 && functions->free_definite_size) {
     zone->free_definite_size = functions->free_definite_size;
   }
+  if (zone->version >= 10 && functions->claimed_address) {
+    zone->claimed_address = functions->claimed_address;
+  }
+  if (zone->version >= 13 && functions->try_free_default) {
+    zone->try_free_default = functions->try_free_default;
+  }
 
   // Cap the version to the max supported to ensure malloc doesn't try to call
   // functions that weren't replaced.
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 130000) || \
+    (__IPHONE_OS_VERSION_MAX_ALLOWED >= 160100)
+  zone->version = std::min(zone->version, 13U);
+#else
   zone->version = std::min(zone->version, 12U);
+#endif
 
   // Restore protection if it was active.
   if (reprotection_start) {

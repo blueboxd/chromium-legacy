@@ -7,19 +7,23 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "components/attribution_reporting/aggregation_keys.h"
-#include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 namespace content {
 namespace {
 
+using ::attribution_reporting::SuitableOrigin;
+
 TEST(StorableSourceTest, ReportWindows) {
+  const auto destination = *SuitableOrigin::Deserialize("https://dest.test");
+
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://report.test");
+
   const base::Time kSourceTime = base::Time::Now();
 
   const struct {
@@ -55,6 +59,15 @@ TEST(StorableSourceTest, ReportWindows) {
               kSourceTime + base::Days(30),
       },
       {
+          .desc = "clamp-event-report-window",
+          .expiry = base::Days(4),
+          .event_report_window = base::Days(30),
+          .expected_expiry_time = kSourceTime + base::Days(4),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
           .desc = "aggregatable-report-window",
           .aggregatable_report_window = base::Days(4),
           .expected_expiry_time = kSourceTime + base::Days(30),
@@ -63,31 +76,34 @@ TEST(StorableSourceTest, ReportWindows) {
               kSourceTime + base::Days(4),
       },
       {
+          .desc = "clamp-aggregatable-report-window",
+          .expiry = base::Days(4),
+          .aggregatable_report_window = base::Days(30),
+          .expected_expiry_time = kSourceTime + base::Days(4),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
           .desc = "all",
-          .expiry = base::Days(5),
+          .expiry = base::Days(9),
           .event_report_window = base::Days(7),
-          .aggregatable_report_window = base::Days(9),
-          .expected_expiry_time = kSourceTime + base::Days(5),
+          .aggregatable_report_window = base::Days(5),
+          .expected_expiry_time = kSourceTime + base::Days(9),
           .expected_event_report_window_time = kSourceTime + base::Days(7),
           .expected_aggregatable_report_window_time =
-              kSourceTime + base::Days(9),
+              kSourceTime + base::Days(5),
       },
   };
 
   for (const auto& test_case : kTestCases) {
-    auto reg = attribution_reporting::SourceRegistration::Create(
-        /*source_event_id=*/0,
-        /*destination=*/url::Origin::Create(GURL("https://dest.test")),
-        /*reporting_origin=*/url::Origin::Create(GURL("https://report.test")),
-        test_case.expiry, test_case.event_report_window,
-        test_case.aggregatable_report_window,
-        /*priority=*/0, attribution_reporting::FilterData(),
-        /*debug_key=*/absl::nullopt, attribution_reporting::AggregationKeys(),
-        /*debug_reporting=*/false);
-    ASSERT_TRUE(reg) << test_case.desc;
+    attribution_reporting::SourceRegistration reg(destination);
+    reg.expiry = test_case.expiry;
+    reg.event_report_window = test_case.event_report_window;
+    reg.aggregatable_report_window = test_case.aggregatable_report_window;
 
-    StorableSource actual(std::move(*reg), kSourceTime,
-                          url::Origin::Create(GURL("https://source.test")),
+    StorableSource actual(reporting_origin, std::move(reg), kSourceTime,
+                          *SuitableOrigin::Deserialize("https://source.test"),
                           AttributionSourceType::kNavigation,
                           /*is_within_fenced_frame=*/false);
 

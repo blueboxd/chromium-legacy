@@ -264,7 +264,7 @@ void PerformanceMetrics::WriteToFile() const {
   output_folder_path = base::MakeAbsoluteFilePath(output_folder_path);
 
   // Write performance metrics to json.
-  base::Value metrics(base::Value::Type::DICTIONARY);
+  base::Value metrics(base::Value::Type::DICT);
   metrics.SetKey("BitstreamsEncoded",
                  base::Value(base::checked_cast<int>(bitstreams_encoded_)));
   metrics.SetKey("TotalDurationMs",
@@ -356,8 +356,8 @@ struct BitstreamQualityMetrics {
                    uint32_t target_bitrate,
                    uint32_t actual_bitrate) const;
 
-  const PSNRVideoFrameValidator* const psnr_validator;
-  const SSIMVideoFrameValidator* const ssim_validator;
+  const raw_ptr<const PSNRVideoFrameValidator> psnr_validator;
+  const raw_ptr<const SSIMVideoFrameValidator> ssim_validator;
 };
 
 BitstreamQualityMetrics::BitstreamQualityMetrics(
@@ -457,7 +457,7 @@ void BitstreamQualityMetrics::WriteToFile(
     base::CreateDirectory(output_folder_path);
   output_folder_path = base::MakeAbsoluteFilePath(output_folder_path);
   // Write quality metrics to json.
-  base::Value metrics(base::Value::Type::DICTIONARY);
+  base::Value metrics(base::Value::Type::DICT);
   if (!svc_text.empty())
     metrics.SetKey("SVC", base::Value(svc_text));
   metrics.SetKey("Bitrate",

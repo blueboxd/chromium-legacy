@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "build/chromeos_buildflags.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_exchange_delegate.h"
@@ -249,7 +248,7 @@ void DataDevice::PerformDropOrExitDrag(
   // callback to aura::client::DragDropDelegate.
   base::WeakPtr<DataDevice> alive(weak_factory_.GetWeakPtr());
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), kDataOfferDestructionTimeout);
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();

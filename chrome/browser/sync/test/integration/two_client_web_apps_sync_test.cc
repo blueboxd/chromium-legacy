@@ -42,12 +42,16 @@ class DisplayModeChangeWaiter : public AppRegistrarObserver {
   explicit DisplayModeChangeWaiter(WebAppRegistrar& registrar) {
     observation_.Observe(&registrar);
   }
+
   void OnWebAppUserDisplayModeChanged(
       const AppId& app_id,
       UserDisplayMode user_display_mode) override {
     run_loop_.Quit();
   }
+
   void Wait() { run_loop_.Run(); }
+
+  void OnAppRegistrarDestroyed() override { NOTREACHED(); }
 
  private:
   base::RunLoop run_loop_;
@@ -74,7 +78,7 @@ class TwoClientWebAppsSyncTest : public WebAppsSyncTestBase {
   }
 
   const WebAppRegistrar& GetRegistrar(Profile* profile) {
-    return WebAppProvider::GetForTest(profile)->registrar();
+    return WebAppProvider::GetForTest(profile)->registrar_unsafe();
   }
 
   bool AllProfilesHaveSameWebAppIds() {
@@ -420,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientWebAppsSyncTest, SyncUserDisplayModeChange) {
   EXPECT_TRUE(AllProfilesHaveSameWebAppIds());
 
   auto* provider1 = WebAppProvider::GetForTest(GetProfile(1));
-  WebAppRegistrar& registrar1 = provider1->registrar();
+  WebAppRegistrar& registrar1 = provider1->registrar_unsafe();
   EXPECT_EQ(registrar1.GetAppUserDisplayMode(app_id),
             UserDisplayMode::kStandalone);
 

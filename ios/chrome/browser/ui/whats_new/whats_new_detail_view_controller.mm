@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/whats_new/whats_new_detail_view_controller.h"
 
+#import <ostream>
+
 #import "ios/chrome/browser/ui/elements/instruction_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -24,6 +26,7 @@
 namespace {
 
 constexpr CGFloat kDefaultMargin = 32;
+constexpr CGFloat kSubtitleTopMargin = 8;
 constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kContentWidthMultiplier = 0.8;
 constexpr CGFloat kButtonHorizontalMargin = 4;
@@ -201,7 +204,7 @@ NSString* const kWhatsNewScrollViewAccessibilityIdentifier =
     // Subtitle contraints.
     [self.subtitleLabel.topAnchor
         constraintEqualToAnchor:self.titleLabel.bottomAnchor
-                       constant:kDefaultMargin],
+                       constant:kSubtitleTopMargin],
     [self.subtitleLabel.centerXAnchor
         constraintEqualToAnchor:scrollContentView.centerXAnchor],
     [self.subtitleLabel.widthAnchor

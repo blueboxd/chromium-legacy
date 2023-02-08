@@ -6,12 +6,19 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalueorstringsequence_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_view_timeline.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_view_timeline_options.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_values.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -41,17 +48,15 @@ double ComputeOffset(LayoutBox* subject,
     return point.y() - source_element->ClientTopNoLayout();
 }
 
-bool IsBlockDirection(ScrollTimeline::ScrollDirection direction,
-                      WritingMode writing_mode) {
-  using ScrollDirection = ScrollTimeline::ScrollDirection;
-  switch (direction) {
-    case ScrollDirection::kBlock:
+bool IsBlockDirection(ViewTimeline::ScrollAxis axis, WritingMode writing_mode) {
+  switch (axis) {
+    case ViewTimeline::ScrollAxis::kBlock:
       return true;
-    case ScrollDirection::kInline:
+    case ViewTimeline::ScrollAxis::kInline:
       return false;
-    case ScrollDirection::kHorizontal:
+    case ViewTimeline::ScrollAxis::kHorizontal:
       return !blink::IsHorizontalWritingMode(writing_mode);
-    case ScrollDirection::kVertical:
+    case ViewTimeline::ScrollAxis::kVertical:
       return blink::IsHorizontalWritingMode(writing_mode);
   }
 }
@@ -65,7 +70,7 @@ bool IsBlockDirection(ScrollTimeline::ScrollDirection direction,
 // https://drafts.csswg.org/scroll-animations-1/#valdef-view-timeline-inset-auto
 ViewTimeline::Inset ResolveAuto(const ViewTimeline::Inset& inset,
                                 Element& source,
-                                ScrollTimeline::ScrollDirection direction) {
+                                ViewTimeline::ScrollAxis axis) {
   const ComputedStyle* style = source.GetComputedStyle();
   if (!style)
     return inset;
@@ -73,7 +78,7 @@ ViewTimeline::Inset ResolveAuto(const ViewTimeline::Inset& inset,
   const Length& start = inset.start_side;
   const Length& end = inset.end_side;
 
-  if (IsBlockDirection(direction, style->GetWritingMode())) {
+  if (IsBlockDirection(axis, style->GetWritingMode())) {
     return ViewTimeline::Inset(
         start.IsAuto() ? style->ScrollPaddingBlockStart() : start,
         end.IsAuto() ? style->ScrollPaddingBlockEnd() : end);
@@ -105,15 +110,29 @@ const CSSValue* ParseInset(const InsetValueSequence& array,
   const CSSPrimitiveValue* css_value =
       DynamicTo<CSSPrimitiveValue>(numeric_value->ToCSSValue());
   if (!css_value || (!css_value->IsLength() && !css_value->IsPercentage())) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Unsupported inset: value must be length or percent");
+    exception_state.ThrowTypeError("Invalid inset");
+    return nullptr;
   }
 
   return css_value;
 }
 
-bool IsStyleDependant(const CSSValue* value) {
+const CSSValuePair* ParseInsetPair(Document& document, const String str_value) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kViewTimelineInset, str_value,
+      document.ElementSheet().Contents()->ParserContext());
+
+  auto* value_list = DynamicTo<CSSValueList>(value);
+  if (!value_list || value_list->length() != 1)
+    return nullptr;
+
+  return &To<CSSValuePair>(value_list->Item(0));
+}
+
+bool IsStyleDependent(const CSSValue* value) {
+  if (!value)
+    return false;
+
   if (const CSSPrimitiveValue* css_primitive_value =
           DynamicTo<CSSPrimitiveValue>(value)) {
     return !css_primitive_value->IsPx() && !css_primitive_value->IsPercentage();
@@ -161,12 +180,9 @@ ViewTimeline* ViewTimeline::Create(Document& document,
                                    ExceptionState& exception_state) {
   Element* subject = options->subject();
 
-  ScrollDirection orientation;
-  if (!StringToScrollDirection(options->axis(), orientation)) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Invalid axis");
-    return nullptr;
-  }
+  ScrollAxis axis =
+      options->hasAxis() ? options->axis().AsEnum() : ScrollAxis::kBlock;
+
   if (subject) {
     // This ensures that Client[Left,Top]NoLayout (reached via SnapshotState)
     // returns up-to-date information.
@@ -175,30 +191,45 @@ ViewTimeline* ViewTimeline::Create(Document& document,
   }
 
   // Parse insets.
-  const InsetValueSequence inset_array = options->inset();
-  if (inset_array.size() > 2) {
-    exception_state.ThrowTypeError("Invalid inset");
-    return nullptr;
+  const V8UnionCSSNumericValueOrStringSequenceOrString* v8_inset =
+      options->inset();
+
+  absl::optional<const CSSValue*> start_inset_value;
+  absl::optional<const CSSValue*> end_inset_value;
+  if (v8_inset && v8_inset->IsCSSNumericValueOrStringSequence()) {
+    const InsetValueSequence inset_array =
+        v8_inset->GetAsCSSNumericValueOrStringSequence();
+    if (inset_array.size() > 2) {
+      exception_state.ThrowTypeError("Invalid inset");
+      return nullptr;
+    }
+
+    start_inset_value = ParseInset(inset_array, 0, exception_state);
+    end_inset_value = ParseInset(inset_array, 1, exception_state);
+  } else if (v8_inset && v8_inset->IsString()) {
+    const CSSValuePair* value_pair =
+        ParseInsetPair(document, v8_inset->GetAsString());
+    if (!value_pair) {
+      exception_state.ThrowTypeError("Invalid inset");
+      return nullptr;
+    }
+    start_inset_value = &value_pair->First();
+    end_inset_value = &value_pair->Second();
   }
 
   Inset inset;
-  const CSSValue* start_inset_value =
-      ParseInset(inset_array, 0, exception_state);
-  const CSSValue* end_inset_value = ParseInset(inset_array, 1, exception_state);
+  inset.start_side = InsetValueToLength(start_inset_value.value_or(nullptr),
+                                        subject, Length(Length::Type::kFixed));
+  inset.end_side = InsetValueToLength(end_inset_value.value_or(nullptr),
+                                      subject, inset.start_side);
 
-  inset.start_side = InsetValueToLength(start_inset_value, subject,
-                                        Length(Length::Type::kFixed));
+  ViewTimeline* view_timeline =
+      MakeGarbageCollected<ViewTimeline>(&document, subject, axis, inset);
 
-  inset.end_side =
-      InsetValueToLength(end_inset_value, subject, inset.start_side);
-
-  ViewTimeline* view_timeline = MakeGarbageCollected<ViewTimeline>(
-      &document, subject, orientation, inset);
-
-  if (IsStyleDependant(start_inset_value))
-    view_timeline->style_dependant_start_inset_ = start_inset_value;
-  if (IsStyleDependant(end_inset_value))
-    view_timeline->style_dependant_end_inset_ = end_inset_value;
+  if (start_inset_value && IsStyleDependent(start_inset_value.value()))
+    view_timeline->style_dependant_start_inset_ = start_inset_value.value();
+  if (end_inset_value && IsStyleDependent(end_inset_value.value()))
+    view_timeline->style_dependant_end_inset_ = end_inset_value.value();
 
   view_timeline->UpdateSnapshot();
   return view_timeline;
@@ -206,12 +237,9 @@ ViewTimeline* ViewTimeline::Create(Document& document,
 
 ViewTimeline::ViewTimeline(Document* document,
                            Element* subject,
-                           ScrollDirection orientation,
+                           ScrollAxis axis,
                            Inset inset)
-    : ScrollTimeline(document,
-                     ReferenceType::kNearestAncestor,
-                     subject,
-                     orientation),
+    : ScrollTimeline(document, ReferenceType::kNearestAncestor, subject, axis),
       inset_(inset) {
   // Ensure that the timeline stays alive as long as the subject.
   if (subject)
@@ -261,7 +289,7 @@ absl::optional<ScrollTimeline::ScrollOffsets> ViewTimeline::CalculateOffsets(
 
   viewport_size_ = viewport_size.ToDouble();
 
-  Inset inset = ResolveAuto(inset_, *source, GetOrientation());
+  Inset inset = ResolveAuto(inset_, *source, GetAxis());
 
   // Update inset lengths if style dependent.
   if (style_dependant_start_inset_) {
@@ -294,6 +322,54 @@ absl::optional<ScrollTimeline::ScrollOffsets> ViewTimeline::CalculateOffsets(
   }
 
   return absl::make_optional<ScrollOffsets>(start_offset, end_offset);
+}
+
+// https://www.w3.org/TR/scroll-animations-1/#named-range-getTime
+CSSNumericValue* ViewTimeline::getCurrentTime(const String& rangeName) {
+  if (!IsActive())
+    return nullptr;
+
+  Timing::Delay range_start;
+  Timing::Delay range_end;
+  if (rangeName == "cover") {
+    range_start.phase = Timing::TimelineNamedPhase::kCover;
+  } else if (rangeName == "contain") {
+    range_start.phase = Timing::TimelineNamedPhase::kContain;
+  } else if (rangeName == "enter") {
+    range_start.phase = Timing::TimelineNamedPhase::kEnter;
+  } else if (rangeName == "exit") {
+    range_start.phase = Timing::TimelineNamedPhase::kExit;
+  } else {
+    return nullptr;
+  }
+
+  range_start.relative_offset = 0;
+  range_end.phase = range_start.phase;
+  range_end.relative_offset = 1;
+
+  double relative_start_offset = ToFractionalOffset(range_start).value();
+  double relative_end_offset = ToFractionalOffset(range_end).value();
+  double range = relative_end_offset - relative_start_offset;
+
+  // TODO(https://github.com/w3c/csswg-drafts/issues/8114): Update and add tests
+  // once ratified in the spec.
+  if (range == 0)
+    return nullptr;
+
+  absl::optional<base::TimeDelta> current_time = CurrentPhaseAndTime().time;
+  // If current time is null then the timeline must be inactive, which is
+  // handled above.
+  DCHECK(current_time);
+  DCHECK(GetDuration());
+
+  double timeline_progress =
+      CurrentPhaseAndTime().time.value().InMillisecondsF() /
+      GetDuration().value().InMillisecondsF();
+
+  double named_range_progress =
+      (timeline_progress - relative_start_offset) / range;
+
+  return CSSUnitValues::percent(named_range_progress * 100);
 }
 
 absl::optional<double> ViewTimeline::ToFractionalOffset(
@@ -393,6 +469,22 @@ AnimationTimeline::TimeDelayPair ViewTimeline::TimelineOffsetsToTimeDelays(
   absl::optional<double> end_fraction = ToFractionalOffset(timing.end_delay);
   return std::make_pair(start_fraction.value_or(0) * duration.value(),
                         (1 - end_fraction.value_or(1)) * duration.value());
+}
+
+CSSNumericValue* ViewTimeline::startOffset() const {
+  absl::optional<ScrollOffsets> scroll_offsets = GetResolvedScrollOffsets();
+  if (!scroll_offsets)
+    return nullptr;
+
+  return CSSUnitValues::px(scroll_offsets->start);
+}
+
+CSSNumericValue* ViewTimeline::endOffset() const {
+  absl::optional<ScrollOffsets> scroll_offsets = GetResolvedScrollOffsets();
+  if (!scroll_offsets)
+    return nullptr;
+
+  return CSSUnitValues::px(scroll_offsets->end);
 }
 
 void ViewTimeline::Trace(Visitor* visitor) const {

@@ -539,6 +539,27 @@ void StyleEngine::UpdateCounterStyles() {
   counter_styles_need_update_ = false;
 }
 
+void StyleEngine::MarkPositionFallbackStylesDirty() {
+  // TODO(crbug.com/1381623): Currently invalidating all elements in the
+  // document with a position-fallback, regardless of where the
+  // @position-fallback rules are added. In order to make invalidation more
+  // targeted we would need to add per tree-scope dirtiness, but
+  // also adding at-rules in one tree-scope may affect multiple other tree
+  // scopes through :host, ::slotted, ::part, exportparts, and inheritance.
+  // Doing that is going to be a lot more complicated.
+  position_fallback_styles_dirty_ = true;
+  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
+}
+
+void StyleEngine::InvalidatePositionFallbackStyles() {
+  if (!position_fallback_styles_dirty_)
+    return;
+  position_fallback_styles_dirty_ = false;
+  const bool mark_style_dirty = true;
+  GetDocument().GetLayoutView()->InvalidateSubtreePositionFallback(
+      mark_style_dirty);
+}
+
 void StyleEngine::UpdateViewport() {
   if (viewport_resolver_)
     viewport_resolver_->UpdateViewport();
@@ -2070,6 +2091,8 @@ enum RuleSetFlags {
   kCounterStyleRules = 1 << 4,
   kLayerRules = 1 << 5,
   kFontPaletteValuesRules = 1 << 6,
+  kPositionFallbackRules = 1 << 7,
+  kFontFeatureValuesRules = 1 << 8
 };
 
 const unsigned kRuleSetFlagsAll = ~0u;
@@ -2084,6 +2107,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFontFaceRules;
     if (!rule_set->FontPaletteValuesRules().empty())
       flags |= kFontPaletteValuesRules;
+    if (!rule_set->FontFeatureValuesRules().empty())
+      flags |= kFontFeatureValuesRules;
     if (rule_set->NeedsFullRecalcForRuleSetInvalidation())
       flags |= kFullRecalcRules;
     if (!rule_set->PropertyRules().empty())
@@ -2092,6 +2117,8 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kCounterStyleRules;
     if (rule_set->HasCascadeLayers())
       flags |= kLayerRules;
+    if (!rule_set->PositionFallbackRules().empty())
+      flags |= kPositionFallbackRules;
   }
   return flags;
 }
@@ -2267,7 +2294,8 @@ void StyleEngine::ApplyUserRuleSetChanges(
     MarkCounterStylesNeedUpdate();
   }
 
-  if (changed_rule_flags & (kPropertyRules | kFontPaletteValuesRules)) {
+  if (changed_rule_flags &
+      (kPropertyRules | kFontPaletteValuesRules | kFontFeatureValuesRules)) {
     if (changed_rule_flags & kPropertyRules) {
       ClearPropertyRules();
       AtRuleCascadeMap cascade_map(GetDocument());
@@ -2281,6 +2309,12 @@ void StyleEngine::ApplyUserRuleSetChanges(
       MarkFontsNeedUpdate();
     }
 
+    if (changed_rule_flags & kFontFeatureValuesRules) {
+      font_feature_values_rule_map_.clear();
+      AddFontFeatureValuesRulesFromSheets(new_style_sheets);
+      MarkFontsNeedUpdate();
+    }
+
     // We just cleared all the rules, which includes any author rules. They
     // must be forcibly re-added.
     if (ScopedStyleResolver* scoped_resolver =
@@ -2288,6 +2322,12 @@ void StyleEngine::ApplyUserRuleSetChanges(
       scoped_resolver->SetNeedsAppendAllSheets();
       MarkDocumentDirty();
     }
+  }
+
+  if (changed_rule_flags & kPositionFallbackRules) {
+    // TODO(crbug.com/1383907): @position-fallback rules are not yet collected
+    // from user stylesheets.
+    MarkPositionFallbackStylesDirty();
   }
 
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
@@ -2385,12 +2425,23 @@ void StyleEngine::ApplyRuleSetChanges(
 
   if ((changed_rule_flags & kFontPaletteValuesRules) ||
       rebuild_at_font_palette_values_map) {
-    // TODO(https://crbug.com1296114): Support @font-palette-values in shadow
-    // trees and support scoping correctly.
+    // TODO(crbug.com/1296114): Support @font-palette-values in shadow trees and
+    // support scoping correctly.
     if (tree_scope.RootNode().IsDocumentNode()) {
       font_palette_values_rule_map_.clear();
       AddFontPaletteValuesRulesFromSheets(active_user_style_sheets_);
       AddFontPaletteValuesRulesFromSheets(new_style_sheets);
+    }
+  }
+
+  if ((changed_rule_flags & kFontFeatureValuesRules) ||
+      rebuild_at_font_palette_values_map) {
+    // TODO(https://crbug.com/1382722): Support @font-feature-values in shadow
+    // trees and support scoping correctly.
+    if (tree_scope.RootNode().IsDocumentNode()) {
+      font_feature_values_rule_map_.clear();
+      AddFontFeatureValuesRulesFromSheets(active_user_style_sheets_);
+      AddFontFeatureValuesRulesFromSheets(new_style_sheets);
     }
   }
 
@@ -2402,14 +2453,16 @@ void StyleEngine::ApplyRuleSetChanges(
     }
     if ((changed_rule_flags & kFontFaceRules) ||
         (changed_rule_flags & kFontPaletteValuesRules) ||
+        (changed_rule_flags & kFontFeatureValuesRules) ||
         has_rebuilt_font_face_cache) {
       GetFontSelector()->FontFaceInvalidated(
           FontInvalidationReason::kGeneralInvalidation);
     }
   }
 
-  // TODO(crbug.com/1309178): Invalidate style & layout for @position-fallback
-  // rule changes.
+  if (changed_rule_flags & kPositionFallbackRules) {
+    MarkPositionFallbackStylesDirty();
+  }
 
   if (!new_style_sheets.empty()) {
     tree_scope.EnsureScopedStyleResolver().AppendActiveStyleSheets(
@@ -2583,6 +2636,14 @@ void StyleEngine::AddFontPaletteValuesRulesFromSheets(
   }
 }
 
+void StyleEngine::AddFontFeatureValuesRulesFromSheets(
+    const ActiveStyleSheetVector& sheets) {
+  for (const ActiveStyleSheet& active_sheet : sheets) {
+    if (RuleSet* rule_set = active_sheet.second)
+      AddFontFeatureValuesRules(*rule_set);
+  }
+}
+
 bool StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
   if (!font_selector_)
     return false;
@@ -2638,6 +2699,16 @@ void StyleEngine::AddFontPaletteValuesRules(const RuleSet& rule_set) {
   }
 }
 
+void StyleEngine::AddFontFeatureValuesRules(const RuleSet& rule_set) {
+  const HeapVector<Member<StyleRuleFontFeatureValues>>
+      font_feature_values_rules = rule_set.FontFeatureValuesRules();
+  for (auto& rule : font_feature_values_rules) {
+    for (auto& font_family : rule->GetFamilies()) {
+      font_feature_values_rule_map_.Set(String(font_family).FoldCase(), rule);
+    }
+  }
+}
+
 void StyleEngine::AddPropertyRules(AtRuleCascadeMap& cascade_map,
                                    const RuleSet& rule_set,
                                    bool is_user_style) {
@@ -2690,6 +2761,18 @@ StyleRuleFontPaletteValues* StyleEngine::FontPaletteValuesForNameAndFamily(
   return it->value.Get();
 }
 
+StyleRuleFontFeatureValues* StyleEngine::FontFeatureValuesForFamily(
+    AtomicString font_family) {
+  if (font_feature_values_rule_map_.empty() || font_family.empty())
+    return nullptr;
+
+  auto it = font_feature_values_rule_map_.find(String(font_family).FoldCase());
+  if (it == font_feature_values_rule_map_.end())
+    return nullptr;
+
+  return it->value.Get();
+}
+
 DocumentStyleEnvironmentVariables& StyleEngine::EnsureEnvironmentVariables() {
   if (!environment_variables_) {
     environment_variables_ = DocumentStyleEnvironmentVariables::Create(
@@ -2732,9 +2815,6 @@ void StyleEngine::RecalcStyleForContainer(Element& container,
 void StyleEngine::RecalcStyleForNonLayoutNGContainerDescendants(
     Element& container) {
   DCHECK(InRebuildLayoutTree());
-
-  if (!RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    return;
 
   // This method is called from AttachLayoutTree() when we are forced to use
   // legacy layout for a query container. At the time of RecalcStyle, it is not
@@ -3470,6 +3550,7 @@ void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(active_user_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
   visitor->Trace(font_palette_values_rule_map_);
+  visitor->Trace(font_feature_values_rule_map_);
   visitor->Trace(user_counter_style_map_);
   visitor->Trace(user_cascade_layer_map_);
   visitor->Trace(inspector_style_sheet_);

@@ -8,6 +8,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -192,12 +193,14 @@ class BrowsingTopicsServiceImplTest
 
     auto privacy_sandbox_delegate = std::make_unique<
         privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
-    privacy_sandbox_delegate->SetUpDefaultResponse(/*restricted=*/false);
+    privacy_sandbox_delegate->SetUpIsPrivacySandboxRestrictedResponse(
+        /*restricted=*/false);
+    privacy_sandbox_delegate->SetUpIsIncognitoProfileResponse(
+        /*incognito=*/false);
     privacy_sandbox_settings_ =
         std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
             std::move(privacy_sandbox_delegate),
-            host_content_settings_map_.get(), cookie_settings_, &prefs_,
-            /*incognito_profile=*/false);
+            host_content_settings_map_.get(), cookie_settings_, &prefs_);
     privacy_sandbox_settings_->SetPrivacySandboxEnabled(true);
 
     history_service_ = std::make_unique<history::HistoryService>();
@@ -209,7 +212,7 @@ class BrowsingTopicsServiceImplTest
     page_content_annotations_service_ =
         std::make_unique<optimization_guide::PageContentAnnotationsService>(
             "en-US", optimization_guide_model_provider_.get(),
-            history_service_.get(), nullptr, base::FilePath(), nullptr,
+            history_service_.get(), nullptr, nullptr, base::FilePath(), nullptr,
             nullptr);
 
     page_content_annotations_service_->OverridePageContentAnnotatorForTesting(

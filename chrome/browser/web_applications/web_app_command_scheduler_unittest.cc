@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -32,7 +33,7 @@ class WebAppCommandSchedulerTest : public WebAppTest {
   }
 
  private:
-  FakeWebAppProvider* provider_;
+  raw_ptr<FakeWebAppProvider> provider_;
 };
 
 TEST_F(WebAppCommandSchedulerTest, FetchManifestAndInstall) {
@@ -53,8 +54,7 @@ TEST_F(WebAppCommandSchedulerTest, FetchManifestAndInstall) {
   base::Value::List* command_queue = log.FindList("command_queue");
 
   EXPECT_EQ(command_queue->size(), 1u);
-  EXPECT_EQ(*command_queue->front().GetDict().FindDict("value")->FindString(
-                "command_name"),
+  EXPECT_EQ(*command_queue->front().GetDict().FindString("name"),
             "FetchManifestAndInstallCommand");
 }
 
@@ -74,10 +74,8 @@ TEST_F(WebAppCommandSchedulerTest, PersistFileHandlersUserChoice) {
 
   EXPECT_EQ(command_queue->size(), 1u);
 
-  base::Value::Dict* command_log =
-      command_queue->front().GetDict().FindDict("value");
-  EXPECT_EQ(*command_log->FindString("name"), "UpdateFileHandlerCommand");
-  EXPECT_EQ(*command_log->FindString("user_choice_to_remember"), "allow");
+  const base::Value::Dict& command_log = command_queue->front().GetDict();
+  EXPECT_EQ(*command_log.FindString("name"), "UpdateFileHandlerCommand");
   provider()->command_manager().AwaitAllCommandsCompleteForTesting();
 
   provider()->Shutdown();
@@ -103,10 +101,8 @@ TEST_F(WebAppCommandSchedulerTest, UpdateFileHandlerOsIntegration) {
 
   EXPECT_EQ(command_queue->size(), 1u);
 
-  base::Value::Dict* command_log =
-      command_queue->front().GetDict().FindDict("value");
-  EXPECT_EQ(*command_log->FindString("name"), "UpdateFileHandlerCommand");
-  EXPECT_EQ(command_log->FindString("user_choice_to_remember"), nullptr);
+  const base::Value::Dict& command_log = command_queue->front().GetDict();
+  EXPECT_EQ(*command_log.FindString("name"), "UpdateFileHandlerCommand");
   provider()->command_manager().AwaitAllCommandsCompleteForTesting();
 
   provider()->Shutdown();

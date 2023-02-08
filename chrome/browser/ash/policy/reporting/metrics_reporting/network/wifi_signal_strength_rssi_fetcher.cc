@@ -15,9 +15,9 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -72,7 +72,7 @@ void FetchNextWifiSignalStrengthRssi(
   ::ash::NetworkHandler::Get()
       ->managed_network_configuration_handler()
       ->GetProperties(
-          ::chromeos::LoginState::Get()->primary_user_hash(), service_path,
+          ash::LoginState::Get()->primary_user_hash(), service_path,
           base::BindOnce(&OnGetProperties, std::move(service_path_queue),
                          std::move(path_rssi_map), std::move(cb)));
 }

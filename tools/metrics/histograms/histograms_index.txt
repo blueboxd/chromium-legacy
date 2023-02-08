@@ -43,6 +43,7 @@ tools/metrics/histograms/metadata/enterprise/histograms.xml
 tools/metrics/histograms/metadata/event/histograms.xml
 tools/metrics/histograms/metadata/extensions/histograms.xml
 tools/metrics/histograms/metadata/families/histograms.xml
+tools/metrics/histograms/metadata/fastpair/histograms.xml
 tools/metrics/histograms/metadata/feature_engagement/histograms.xml
 tools/metrics/histograms/metadata/file/histograms.xml
 tools/metrics/histograms/metadata/fingerprint/histograms.xml
@@ -123,6 +124,7 @@ tools/metrics/histograms/metadata/signin/histograms.xml
 tools/metrics/histograms/metadata/simple/histograms.xml
 tools/metrics/histograms/metadata/software/histograms.xml
 tools/metrics/histograms/metadata/stability/histograms.xml
+tools/metrics/histograms/metadata/start_surface/histograms.xml
 tools/metrics/histograms/metadata/startup/histograms.xml
 tools/metrics/histograms/metadata/storage/histograms.xml
 tools/metrics/histograms/metadata/subresource/histograms.xml

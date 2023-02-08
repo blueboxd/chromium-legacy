@@ -15,9 +15,9 @@ import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './peripheral_data_access_protection_dialog.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
-import '../../settings_page/settings_subpage.js';
+import '../os_settings_page/os_settings_subpage.js';
 import '../os_people_page/users_page.js';
-import '../../settings_page/settings_animated_pages.js';
+import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_people_page/lock_screen.js';
 import '../os_people_page/lock_screen_password_prompt_dialog.js';
 import './metrics_consent_toggle_button.js';
@@ -26,7 +26,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {LockStateBehavior, LockStateBehaviorInterface} from '../os_people_page/lock_state_behavior.js';
 import {routes} from '../os_route.js';
@@ -225,7 +225,8 @@ class OsSettingsPrivacyPageElement extends OsSettingsPrivacyPageElementBase {
         type: Boolean,
         readOnly: true,
         value: function() {
-          return loadTimeData.getBoolean('showPrivacyHubPage');
+          return loadTimeData.getBoolean('showPrivacyHubPage') &&
+              !loadTimeData.getBoolean('isGuest');
         },
       },
     };
@@ -360,7 +361,7 @@ class OsSettingsPrivacyPageElement extends OsSettingsPrivacyPageElementBase {
   }
 
   /** @private */
-  onPrivacyHub_() {
+  onPrivacyHubClick_() {
     chrome.metricsPrivate.recordEnumerationValue(
         'ChromeOS.PrivacyHub.Opened',
         PrivacyHubNavigationOrigin.SYSTEM_SETTINGS,

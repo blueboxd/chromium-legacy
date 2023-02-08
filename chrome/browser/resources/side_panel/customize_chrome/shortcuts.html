@@ -1,0 +1,42 @@
+<style>
+  #showShortcutsToggleContainer {
+    align-items: center;
+    display: flex;
+    margin-bottom: 16px;
+    margin-inline-start: 16px;
+  }
+
+  #options {
+    align-items: center;
+    display: flex;
+    margin-bottom: 24px;
+    margin-inline-start: 40px;
+  }
+</style>
+<div id="showShortcutsToggleContainer">
+  <div id="showShortcutsToggle">$i18n{showShortcutsToggle}</div>
+  <cr-toggle id="showShortcutsToggle" title="$i18n{showShortcutsToggle}"
+      checked="[[show_]]" on-change="onShowChange_"></cr-toggle>
+</div>
+<div id="options">
+  <cr-radio-group id="shortcutsRadioSelection" disabled="[[!show_]]"
+      selected="[[shortcutsRadioSelection_(customLinksEnabled_)]]"
+      on-selected-changed="onShortcutsRadioSelectionChanged_">
+    <cr-radio-button id="customLinksButton" name="customLinksOption">
+      <div id="customLinksTitleContainer">
+      <div id="customLinksTitle">$i18n{myShortcuts}</div>
+      <div id="customLinksDescription">
+        $i18n{shortcutsCurated}
+      </div>
+    </div>
+    </cr-radio-button>
+    <cr-radio-button id="mostVisitedButton" name="mostVisitedOption">
+      <div id="mostVisitedTitleContainer">
+        <div id="mostVisitedTitle">$i18n{mostVisited}</div>
+        <div id="mostVisitedDescription">
+          $i18n{shortcutsSuggested}
+        </div>
+      </div>
+    </cr-radio-button>
+  </cr-radio-group>
+</div>

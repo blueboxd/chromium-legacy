@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_instances.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
@@ -162,8 +163,10 @@ class TestCascade {
     DCHECK(ref.IsValid());
     const LayoutObject* layout_object = nullptr;
     bool allow_visited_style = false;
+    scoped_refptr<const ComputedStyle> style =
+        state_.StyleBuilder().CloneStyle();
     const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
-        *state_.Style(), layout_object, allow_visited_style);
+        *style, layout_object, allow_visited_style);
     return value ? value->CssText() : g_null_atom;
   }
 
@@ -180,6 +183,9 @@ class TestCascade {
   CascadeOrigin GetOrigin(String name) { return GetPriority(name).GetOrigin(); }
 
   void AddInterpolations() {
+    state_.StyleBuilder().SetBaseData(
+        StyleBaseData::Create(state_.StyleBuilder().CloneStyle(), nullptr));
+
     CalculateInterpolationUpdate();
 
     // Add to cascade:
@@ -262,10 +268,10 @@ class TestCascade {
 
   void CalculateInterpolationUpdate() {
     CSSAnimations::CalculateTransitionUpdate(
-        state_.AnimationUpdate(), state_.GetElement(), *state_.Style());
+        state_.AnimationUpdate(), state_.GetElement(), state_.StyleBuilder());
     CSSAnimations::CalculateAnimationUpdate(
         state_.AnimationUpdate(), state_.GetElement(), state_.GetElement(),
-        *state_.Style(), state_.ParentStyle(),
+        state_.StyleBuilder(), state_.ParentStyle(),
         &GetDocument().GetStyleResolver());
   }
 
@@ -329,10 +335,10 @@ class StyleCascadeTest : public PageTestBase {
                                                         String value) {
     CSSParserMode mode = kHTMLStandardMode;
     auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(mode);
-    set->SetProperty(name, value, /* important */ false,
-                     SecureContextMode::kSecureContext,
-                     /* context_style_sheet */ nullptr,
-                     /* is_animation_tainted */ true);
+    set->ParseAndSetCustomProperty(name, value, /* important */ false,
+                                   SecureContextMode::kSecureContext,
+                                   /* context_style_sheet */ nullptr,
+                                   /* is_animation_tainted */ true);
     return set;
   }
 
@@ -439,7 +445,7 @@ TEST_F(StyleCascadeTest, ApplyGenerations) {
   EXPECT_EQ("20px", cascade.ComputedValue("width"));
 
   cascade.State().StyleBuilder().SetWidth(Length::Auto());
-  cascade.State().StyleRef().SetVariableData("--x", nullptr, true);
+  cascade.State().StyleBuilder().SetVariableData("--x", nullptr, true);
   EXPECT_EQ(g_null_atom, cascade.ComputedValue("--x"));
   EXPECT_EQ("auto", cascade.ComputedValue("width"));
 
@@ -3090,7 +3096,7 @@ TEST_F(StyleCascadeTest, InternalVisitedColorLonghand) {
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("color"));
 
   Color red(255, 0, 0);
-  const CSSProperty& color = GetCSSPropertyColor();
+  const css_longhand::Color& color = GetCSSPropertyColor();
   EXPECT_EQ(red, cascade.TakeStyle()->VisitedDependentColor(color));
 }
 
@@ -3108,7 +3114,8 @@ TEST_F(StyleCascadeTest, VarInInternalVisitedColorShorthand) {
   EXPECT_EQ("rgb(0, 128, 0)", cascade.ComputedValue("outline-color"));
 
   Color red(255, 0, 0);
-  const CSSProperty& outline_color = GetCSSPropertyOutlineColor();
+  const css_longhand::OutlineColor& outline_color =
+      GetCSSPropertyOutlineColor();
   EXPECT_EQ(red, cascade.TakeStyle()->VisitedDependentColor(outline_color));
 }
 
@@ -3347,7 +3354,7 @@ TEST_F(StyleCascadeTest, MarkHasReferenceLonghand) {
   cascade.Apply();
 
   EXPECT_TRUE(cascade.State()
-                  .StyleRef()
+                  .StyleBuilder()
                   .HasVariableReferenceFromNonInheritedProperty());
 }
 
@@ -3359,7 +3366,7 @@ TEST_F(StyleCascadeTest, MarkHasReferenceShorthand) {
   cascade.Apply();
 
   EXPECT_TRUE(cascade.State()
-                  .StyleRef()
+                  .StyleBuilder()
                   .HasVariableReferenceFromNonInheritedProperty());
 }
 
@@ -3373,7 +3380,7 @@ TEST_F(StyleCascadeTest, NoMarkHasReferenceForInherited) {
   cascade.Apply();
 
   EXPECT_FALSE(cascade.State()
-                   .StyleRef()
+                   .StyleBuilder()
                    .HasVariableReferenceFromNonInheritedProperty());
 }
 
@@ -3588,7 +3595,7 @@ TEST_F(StyleCascadeTest, GetCascadedValuesInterpolated) {
   cascade.Add("animation-name: test");
   cascade.Add("animation-timing-function: linear");
   cascade.Add("animation-duration: 10s");
-  cascade.Add("animation-delay: -5s");
+  cascade.Add("animation-delay-start: -5s");
   cascade.Apply();
 
   cascade.AddInterpolations();
@@ -3606,7 +3613,7 @@ TEST_F(StyleCascadeTest, GetCascadedValuesInterpolated) {
   EXPECT_EQ("test", CssTextAt(map, "animation-name"));
   EXPECT_EQ("linear", CssTextAt(map, "animation-timing-function"));
   EXPECT_EQ("10s", CssTextAt(map, "animation-duration"));
-  EXPECT_EQ("-5s", CssTextAt(map, "animation-delay"));
+  EXPECT_EQ("-5s", CssTextAt(map, "animation-delay-start"));
 }
 
 TEST_F(StyleCascadeTest, RevertOrigin) {

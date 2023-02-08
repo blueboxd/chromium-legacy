@@ -22,14 +22,12 @@ namespace {
 
 const std::vector<mojom::XRSessionFeature>& GetSupportedFeatures() {
   static base::NoDestructor<std::vector<mojom::XRSessionFeature>>
-      kSupportedFeatures{{
-    mojom::XRSessionFeature::REF_SPACE_VIEWER,
-    mojom::XRSessionFeature::REF_SPACE_LOCAL,
-    mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
-    mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
-    mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
-    mojom::XRSessionFeature::ANCHORS,
-  }};
+      kSupportedFeatures{{mojom::XRSessionFeature::REF_SPACE_VIEWER,
+                          mojom::XRSessionFeature::REF_SPACE_LOCAL,
+                          mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+                          mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR,
+                          mojom::XRSessionFeature::REF_SPACE_UNBOUNDED,
+                          mojom::XRSessionFeature::ANCHORS}};
 
   return *kSupportedFeatures;
 }
@@ -59,6 +57,10 @@ OpenXrDevice::OpenXrDevice(
   // Only support hand input if the feature flag is enabled.
   if (base::FeatureList::IsEnabled(features::kWebXrHandInput))
     device_features.emplace_back(mojom::XRSessionFeature::HAND_INPUT);
+
+  // Only support layers if the feature flag is enabled.
+  if (base::FeatureList::IsEnabled(features::kWebXrLayers))
+    device_features.emplace_back(mojom::XRSessionFeature::LAYERS);
 
   // Only support hit test if the feature flag is enabled.
   if (base::FeatureList::IsEnabled(features::kWebXrHitTest) &&
@@ -158,16 +160,11 @@ void OpenXrDevice::RequestSession(
   auto on_visibility_state_changed = base::BindRepeating(
       &OpenXrDevice::OnVisibilityStateChanged, weak_ptr_factory_.GetWeakPtr());
 
-  // OpenXr doesn't need to handle anything when presentation has ended, but
-  // the mojo interface to call to XRCompositorCommon::RequestSession requires
-  // a method and cannot take nullptr, so passing in base::DoNothing()
-  // for on_presentation_ended
   render_loop_->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&XRCompositorCommon::RequestSession,
-                     base::Unretained(render_loop_.get()), base::DoNothing(),
-                     std::move(on_visibility_state_changed), std::move(options),
-                     std::move(my_callback)));
+      FROM_HERE, base::BindOnce(&XRCompositorCommon::RequestSession,
+                                base::Unretained(render_loop_.get()),
+                                std::move(on_visibility_state_changed),
+                                std::move(options), std::move(my_callback)));
 
   request_session_callback_ = std::move(callback);
 }
@@ -198,17 +195,27 @@ void OpenXrDevice::OnRequestSessionResult(
                      base::Unretained(this)));
 }
 
-void OpenXrDevice::OnPresentingControllerMojoConnectionError() {
+void OpenXrDevice::ForceEndSession(ExitXrPresentReason reason) {
   // This method is called when the rendering process exit presents.
 
   if (render_loop_) {
     render_loop_->task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&XRCompositorCommon::ExitPresent,
-                                  base::Unretained(render_loop_.get()),
-                                  ExitXrPresentReason::kMojoConnectionError));
+        FROM_HERE,
+        base::BindOnce(&XRCompositorCommon::ExitPresent,
+                       base::Unretained(render_loop_.get()), reason));
   }
   OnExitPresent();
   exclusive_controller_receiver_.reset();
+}
+
+void OpenXrDevice::OnPresentingControllerMojoConnectionError() {
+  ForceEndSession(ExitXrPresentReason::kMojoConnectionError);
+}
+
+void OpenXrDevice::ShutdownSession(
+    mojom::XRRuntime::ShutdownSessionCallback callback) {
+  ForceEndSession(ExitXrPresentReason::kBrowserShutdown);
+  std::move(callback).Run();
 }
 
 void OpenXrDevice::SetFrameDataRestricted(bool restricted) {

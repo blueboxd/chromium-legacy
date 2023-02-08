@@ -88,10 +88,10 @@
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/scoped_user_manager.h"
 #endif
 
@@ -182,9 +182,9 @@ class AsyncFunctionRunner {
     RunMessageLoopUntilResponse();
     EXPECT_TRUE(function->GetError().empty())
         << "Unexpected error: " << function->GetError();
-    EXPECT_NE(nullptr, function->GetResultList());
+    EXPECT_NE(nullptr, function->GetResultListForTest());
 
-    const auto& result_list = *function->GetResultList();
+    const auto& result_list = *function->GetResultListForTest();
     EXPECT_EQ(1ul, result_list.size());
 
     *result = result_list[0].Clone();
@@ -587,7 +587,8 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
       return GenerateFailureResult(gaia_ids, nullptr)
              << "getAccounts did not return a result.";
     }
-    const base::Value::List* callback_arguments_list = func->GetResultList();
+    const base::Value::List* callback_arguments_list =
+        func->GetResultListForTest();
     if (!callback_arguments_list)
       return GenerateFailureResult(gaia_ids, nullptr) << "NULL result";
 
@@ -2758,12 +2759,11 @@ class GetAuthTokenFunctionDeviceLocalAccountTestPlatformHelper {
       : session_type_(session_type), user_manager_(new ash::MockUserManager) {}
 
   void SetUpOnMainThread() {
-    chromeos::LoginState::Get()->SetLoggedInState(
-        chromeos::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
+    ash::LoginState::Get()->SetLoggedInState(
+        ash::LoginState::LoggedInState::LOGGED_IN_ACTIVE,
         session_type_ == DeviceLocalAccountSessionType::kPublic
-            ? chromeos::LoginState::LoggedInUserType::
-                  LOGGED_IN_USER_PUBLIC_ACCOUNT
-            : chromeos::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
+            ? ash::LoginState::LoggedInUserType::LOGGED_IN_USER_PUBLIC_ACCOUNT
+            : ash::LoginState::LoggedInUserType::LOGGED_IN_USER_KIOSK);
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
         .WillRepeatedly(
             Return(session_type_ == DeviceLocalAccountSessionType::kAppKiosk));

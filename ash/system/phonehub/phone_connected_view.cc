@@ -6,9 +6,6 @@
 
 #include <memory>
 
-#include "ash/components/phonehub/multidevice_feature_access_manager.h"
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/components/phonehub/user_action_recorder.h"
 #include "ash/constants/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/camera_roll_view.h"
@@ -20,6 +17,10 @@
 #include "ash/system/phonehub/task_continuation_view.h"
 #include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/tray_constants.h"
+#include "chromeos/ash/components/phonehub/multidevice_feature_access_manager.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/ping_manager.h"
+#include "chromeos/ash/components/phonehub/user_action_recorder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -85,8 +86,13 @@ PhoneConnectedView::PhoneConnectedView(
   auto* recent_apps_handler =
       phone_hub_manager->GetRecentAppsInteractionHandler();
   if (features::IsEcheSWAEnabled() && recent_apps_handler) {
-    setup_layered_view(AddChildView(
-        std::make_unique<PhoneHubRecentAppsView>(recent_apps_handler)));
+    setup_layered_view(AddChildView(std::make_unique<PhoneHubRecentAppsView>(
+        recent_apps_handler, phone_hub_manager)));
+  }
+
+  auto* ping_manager = phone_hub_manager->GetPingManager();
+  if (features::IsPhoneHubPingOnBubbleOpenEnabled() && ping_manager) {
+    ping_manager->SendPingRequest();
   }
 
   phone_hub_manager->GetUserActionRecorder()->RecordUiOpened();

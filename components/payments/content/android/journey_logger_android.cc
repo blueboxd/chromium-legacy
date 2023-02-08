@@ -56,6 +56,12 @@ void JourneyLoggerAndroid::SetHasEnrolledInstrumentValue(
   journey_logger_.SetHasEnrolledInstrumentValue(jvalue);
 }
 
+void JourneyLoggerAndroid::SetOptOutOffered(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  journey_logger_.SetOptOutOffered();
+}
+
 void JourneyLoggerAndroid::SetSkippedShow(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
@@ -154,6 +160,12 @@ void JourneyLoggerAndroid::SetNotShown(
   DCHECK_LT(jreason, JourneyLogger::NotShownReason::NOT_SHOWN_REASON_MAX);
   journey_logger_.SetNotShown(
       static_cast<JourneyLogger::NotShownReason>(jreason));
+}
+
+void JourneyLoggerAndroid::SetNoMatchingCredentialsShown(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  journey_logger_.SetNoMatchingCredentialsShown();
 }
 
 void JourneyLoggerAndroid::RecordCheckoutStep(

@@ -27,6 +27,10 @@
 #include "device/bluetooth/floss/floss_dbus_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "device/bluetooth/floss/fake_floss_admin_client.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 namespace {
 // Use this gatt client id for all interaction.
 constexpr int kGattClientId = 39;
@@ -73,6 +77,9 @@ class BluetoothGattFlossTest : public testing::Test {
         std::make_unique<FakeFlossAdvertiserClient>());
     dbus_setter->SetFlossBatteryManagerClient(
         std::make_unique<FakeFlossBatteryManagerClient>());
+#if BUILDFLAG(IS_CHROMEOS)
+    dbus_setter->SetFlossAdminClient(std::make_unique<FakeFlossAdminClient>());
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
     // Always initialize and enable adapter for Gatt tests.
     InitializeAdapter();
@@ -143,6 +150,12 @@ class BluetoothGattFlossTest : public testing::Test {
                              const std::vector<GattService>& services,
                              GattStatus status) {
     fake_floss_gatt_client_->GattSearchComplete(address, services, status);
+  }
+
+  void SetGattConfigureMtu(std::string address,
+                           int32_t mtu,
+                           GattStatus status) {
+    fake_floss_gatt_client_->GattConfigureMtu(address, mtu, status);
   }
 
   GattService CreateFakeServiceFor(const device::BluetoothUUID& uuid) {
@@ -222,6 +235,9 @@ TEST_F(BluetoothGattFlossTest, UpgradeToFullDiscovery) {
 
   // Create a gatt connection with partial service discovery.
   paired_device->CreateGattConnection(base::DoNothing(), fake_uuid_optional);
+
+  // Fake a successful configure MTU.
+  SetGattConfigureMtu(paired_device->GetAddress(), 500, GattStatus::kSuccess);
 
   // Fake a connection completion.
   SetGattConnectionState(GattStatus::kSuccess, /*connected=*/true,

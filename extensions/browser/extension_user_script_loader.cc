@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/one_shot_event.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -155,6 +156,47 @@ void ForwardVerifyContentToIO(VerifyContentInfo info) {
       FROM_HERE, base::BindOnce(&VerifyContent, std::move(info)));
 }
 
+void RecordContentScriptLength(const std::string& script_content) {
+  // Max bucket at 10 GB, which is way above the reasonable maximum size of a
+  // script.
+  static constexpr int kMaxUmaLengthInKB = 1024 * 1024 * 10;
+  static constexpr int kMinUmaLengthInKB = 1;
+  static constexpr int kBucketCount = 50;
+
+  size_t content_script_length_kb = script_content.length() / 1024;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ContentScripts.ContentScriptLength",
+                              content_script_length_kb, kMinUmaLengthInKB,
+                              kMaxUmaLengthInKB, kBucketCount);
+}
+
+// Records the total size in kb of all manifest and dynamic scripts that were
+// loaded in a single load.
+void RecordTotalContentScriptLengthForLoad(size_t manifest_scripts_length,
+                                           size_t dynamic_scripts_length) {
+  // Max bucket at 10 GB, which is way above the reasonable maximum size of all
+  // scripts from a single extension.
+  static constexpr int kMaxUmaLengthInKB = 1024 * 1024 * 10;
+  static constexpr int kMinUmaLengthInKB = 1;
+  static constexpr int kBucketCount = 50;
+
+  // Only record a UMA entry if scripts were actually loaded, by checking if
+  // the total scripts length is positive.
+  if (manifest_scripts_length > 0u) {
+    size_t manifest_scripts_length_kb = manifest_scripts_length / 1024;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Extensions.ContentScripts.ManifestContentScriptsLengthPerLoad",
+        manifest_scripts_length_kb, kMinUmaLengthInKB, kMaxUmaLengthInKB,
+        kBucketCount);
+  }
+  if (dynamic_scripts_length > 0u) {
+    size_t dynamic_scripts_length_kb = dynamic_scripts_length / 1024;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Extensions.ContentScripts.DynamicContentScriptsLengthPerLoad",
+        dynamic_scripts_length_kb, kMinUmaLengthInKB, kMaxUmaLengthInKB,
+        kBucketCount);
+  }
+}
+
 // Loads user scripts from the extension who owns these scripts.
 void LoadScriptContent(const mojom::HostID& host_id,
                        UserScript::File* script_file,
@@ -194,8 +236,12 @@ void LoadScriptContent(const mojom::HostID& host_id,
   // Remove BOM from the content.
   if (base::StartsWith(*content, base::kUtf8ByteOrderMark,
                        base::CompareCase::SENSITIVE)) {
-    script_file->set_content(content->substr(strlen(base::kUtf8ByteOrderMark)));
+    std::string trimmed_content =
+        content->substr(strlen(base::kUtf8ByteOrderMark));
+    RecordContentScriptLength(trimmed_content);
+    script_file->set_content(trimmed_content);
   } else {
+    RecordContentScriptLength(*content);
     script_file->set_content(*content);
   }
 }
@@ -225,15 +271,26 @@ void LoadUserScripts(
     const ExtensionUserScriptLoader::PathAndLocaleInfo& host_info,
     const std::set<std::string>& added_script_ids,
     const scoped_refptr<ContentVerifier>& verifier) {
+  // Tracks the total size in bytes for `user_scripts` for this script load.
+  // These counts are separate for manifest and dynamic scripts. All scripts in
+  // `user_scripts` are from the same extension.
+  size_t manifest_script_length = 0u;
+  size_t dynamic_script_length = 0u;
+
   for (const std::unique_ptr<UserScript>& script : *user_scripts) {
+    size_t script_files_length = 0u;
+
     if (added_script_ids.count(script->id()) == 0)
       continue;
     for (const std::unique_ptr<UserScript::File>& script_file :
          script->js_scripts()) {
-      if (script_file->GetContent().empty())
+      if (script_file->GetContent().empty()) {
         LoadScriptContent(script->host_id(), script_file.get(),
                           script_resource_ids[script_file.get()], nullptr,
                           verifier);
+      }
+
+      script_files_length += script_file->GetContent().length();
     }
     if (script->css_scripts().size() > 0) {
       std::unique_ptr<SubstitutionMap> localization_messages(
@@ -248,9 +305,20 @@ void LoadUserScripts(
                             script_resource_ids[script_file.get()],
                             localization_messages.get(), verifier);
         }
+
+        script_files_length += script_file->GetContent().length();
       }
     }
+
+    if (script->IsIDGenerated()) {
+      manifest_script_length += script_files_length;
+    } else {
+      dynamic_script_length += script_files_length;
+    }
   }
+
+  RecordTotalContentScriptLengthForLoad(manifest_script_length,
+                                        dynamic_script_length);
 }
 
 void LoadScriptsOnFileTaskRunner(

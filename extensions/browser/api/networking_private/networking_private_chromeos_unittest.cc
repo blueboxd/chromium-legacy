@@ -14,13 +14,13 @@
 #include "chromeos/ash/components/dbus/shill/shill_device_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_profile_client.h"
 #include "chromeos/ash/components/dbus/shill/shill_service_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/api_unittest.h"
@@ -69,10 +69,10 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
   void SetUp() override {
     ApiUnitTest::SetUp();
 
-    chromeos::LoginState::Initialize();
-    chromeos::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-        chromeos::LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_KIOSK, kUserHash);
+    ash::LoginState::Initialize();
+    ash::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
+        ash::LoginState::LOGGED_IN_ACTIVE,
+        ash::LoginState::LOGGED_IN_USER_KIOSK, kUserHash);
     base::RunLoop().RunUntilIdle();
 
     device_test()->ClearDevices();
@@ -85,7 +85,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
   }
 
   void TearDown() override {
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
 
     ApiUnitTest::TearDown();
   }
@@ -538,7 +538,7 @@ TEST_F(NetworkingPrivateApiTest, CreateSharedNetworkWebUI) {
              "Security": "None"
            }
          })";
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(), base::StringPrintf("[true, %s]", kNetworkConfig));
 
   ASSERT_TRUE(result);
@@ -563,7 +563,7 @@ TEST_F(NetworkingPrivateApiTest, CreatePrivateNetwork) {
              "Security": "WPA-PSK"
            }
          })";
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       new NetworkingPrivateCreateNetworkFunction(),
       base::StringPrintf("[false, %s]", kNetworkConfig));
 
@@ -676,7 +676,7 @@ TEST_F(NetworkingPrivateApiTest, CreateL2TPVpnFromWebUi) {
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
   create_network->set_source_url(GURL("chrome://os-settings/networkDetail"));
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(),
       base::StringPrintf("[false, %s]", kL2tpIpsecConfig));
 
@@ -736,7 +736,7 @@ TEST_F(NetworkingPrivateApiTest, CreateOpenVpnFromWebUiAndSetProperties) {
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
   create_network->set_source_url(GURL("chrome://os-settings/networkDetail"));
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(), base::StringPrintf("[false, %s]", kOpenVpnConfig));
 
   ASSERT_TRUE(result);
@@ -887,7 +887,7 @@ TEST_F(NetworkingPrivateApiTest,
       new NetworkingPrivateCreateNetworkFunction();
   create_network->set_source_context_type(Feature::WEBUI_CONTEXT);
   create_network->set_source_url(GURL("chrome://os-settings/networkDetail"));
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       create_network.get(), base::StringPrintf("[false, %s]", kNetworkConfig));
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_string());
@@ -921,7 +921,7 @@ TEST_F(NetworkingPrivateApiTest, CreatePrivateNetwork_NonMatchingSsids) {
            }
          })";
 
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       new NetworkingPrivateCreateNetworkFunction(),
       base::StringPrintf(
           "[false, %s]",
@@ -1070,7 +1070,7 @@ TEST_F(NetworkingPrivateApiTest,
 TEST_F(NetworkingPrivateApiTest, GetCellularProperties) {
   SetUpCellular();
 
-  std::unique_ptr<base::Value> result =
+  absl::optional<base::Value> result =
       RunFunctionAndReturnValue(new NetworkingPrivateGetPropertiesFunction(),
                                 base::StringPrintf(R"(["%s"])", kCellularGuid));
 
@@ -1114,7 +1114,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
   get_properties->set_source_context_type(Feature::WEBUI_CONTEXT);
   get_properties->set_source_url(GURL("chrome://os-settings/networkDetail"));
 
-  std::unique_ptr<base::Value> result = RunFunctionAndReturnValue(
+  absl::optional<base::Value> result = RunFunctionAndReturnValue(
       get_properties.get(), base::StringPrintf(R"(["%s"])", kCellularGuid));
 
   ASSERT_TRUE(result);

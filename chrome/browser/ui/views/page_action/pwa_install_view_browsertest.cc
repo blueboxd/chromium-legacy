@@ -58,9 +58,9 @@
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/constants/ash_features.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/common/chrome_features.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -124,7 +124,7 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         {
             features::kWebAppsCrosapi,
-            chromeos::features::kLacrosPrimary,
+            ash::features::kLacrosPrimary,
         }
 #else
         {}
@@ -200,7 +200,8 @@ class PwaInstallViewBrowserTest : public extensions::ExtensionBrowserTest {
 
   struct OpenTabResult {
     raw_ptr<content::WebContents> web_contents;
-    raw_ptr<webapps::TestAppBannerManagerDesktop> app_banner_manager;
+    raw_ptr<webapps::TestAppBannerManagerDesktop, DanglingUntriaged>
+        app_banner_manager;
     bool installable;
   };
 

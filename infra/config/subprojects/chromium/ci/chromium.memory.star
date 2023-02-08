@@ -23,9 +23,6 @@ ci.defaults.set(
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
     sheriff_rotations = sheriff_rotations.CHROMIUM,
     tree_closing = True,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 consoles.console_view(
@@ -321,6 +318,7 @@ linux_memory_builder(
         short_name = "bld",
     ),
     ssd = True,
+    os = os.LINUX_FOCAL,
 )
 
 linux_memory_builder(
@@ -348,6 +346,7 @@ linux_memory_builder(
     ),
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
     triggered_by = ["Linux MSan Builder"],
+    os = os.LINUX_FOCAL,
 )
 
 linux_memory_builder(

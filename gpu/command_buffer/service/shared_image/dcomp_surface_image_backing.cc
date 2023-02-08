@@ -9,6 +9,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "third_party/angle/include/EGL/eglext_angle.h"
@@ -104,8 +105,8 @@ class DCompSurfaceImageBacking::D3DTextureGLSurfaceEGL
         display_->GetDisplay(), EGL_D3D_TEXTURE_ANGLE, buffer, GetConfig(),
         pbuffer_attribs.data());
     if (!surface_) {
-      DLOG(ERROR) << "eglCreatePbufferFromClientBuffer failed with error "
-                  << ui::GetLastEGLErrorString();
+      LOG(ERROR) << "eglCreatePbufferFromClientBuffer failed with error "
+                 << ui::GetLastEGLErrorString();
       return false;
     }
 
@@ -181,7 +182,7 @@ DCompSurfaceImageBacking::DCompSurfaceImageBacking(
           surface_origin,
           alpha_type,
           usage,
-          gfx::BufferSizeForBufferFormat(size, viz::BufferFormat(format)),
+          gfx::BufferSizeForBufferFormat(size, ToBufferFormat(format)),
           false /* is_thread_safe */),
       gl_surface_(scoped_refptr(
           new D3DTextureGLSurfaceEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
@@ -239,7 +240,7 @@ sk_sp<SkSurface> DCompSurfaceImageBacking::BeginDraw(
   }
 
   if (!IsCleared() && gfx::Rect(size()) != update_rect) {
-    DLOG(ERROR) << "First draw to surface must draw to everything";
+    LOG(ERROR) << "First draw to surface must draw to everything";
     return nullptr;
   }
 
@@ -256,7 +257,7 @@ sk_sp<SkSurface> DCompSurfaceImageBacking::BeginDraw(
         << "Concurrent writes to multiple DCompSurfaceImageBacking "
            "not allowed.";
 
-    DLOG(ERROR) << "BeginDraw failed: " << logging::SystemErrorCodeToString(hr);
+    LOG(ERROR) << "BeginDraw failed: " << logging::SystemErrorCodeToString(hr);
     return nullptr;
   }
 
@@ -280,7 +281,7 @@ sk_sp<SkSurface> DCompSurfaceImageBacking::BeginDraw(
   GrGLFramebufferInfo framebuffer_info = {0};
   DCHECK_EQ(gl_surface_->GetBackingFramebufferObject(), 0u);
 
-  SkColorType color_type = viz::ResourceFormatToClosestSkColorType(
+  SkColorType color_type = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, format());
   switch (color_type) {
     case kRGBA_8888_SkColorType:
@@ -309,7 +310,10 @@ sk_sp<SkSurface> DCompSurfaceImageBacking::BeginDraw(
                                       final_msaa_count, 0, framebuffer_info);
   auto surface = SkSurface::MakeFromBackendRenderTarget(
       context_state->gr_context(), render_target, surface_origin(), color_type,
-      color_space().ToSkColorSpace(), &surface_props);
+      color_space().ToSkColorSpace(
+          // TODO(crbug/1385874): Read SDR white level from current frame
+          gfx::ColorSpace::kDefaultSDRWhiteLevel),
+      &surface_props);
   DCHECK(surface);
 
   return surface;

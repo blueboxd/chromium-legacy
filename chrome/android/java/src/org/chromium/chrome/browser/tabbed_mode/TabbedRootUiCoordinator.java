@@ -14,10 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.CommandLine;
-import org.chromium.base.Function;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.jank_tracker.JankTracker;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -67,6 +65,8 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceIphController;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeMessageController;
+import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
+import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionRationaleDialogController;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerV2;
@@ -76,6 +76,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogController;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogLaunchContext;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -130,6 +131,9 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.IntentRequestTracker;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+
 /**
  * A {@link RootUiCoordinator} variant that controls tabbed-mode specific UI.
  */
@@ -153,6 +157,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private AddToHomescreenMostVisitedTileClickObserver mAddToHomescreenMostVisitedTileObserver;
     private AppBannerInProductHelpController mAppBannerInProductHelpController;
     private PwaBottomSheetController mPwaBottomSheetController;
+    private NotificationPermissionController mNotificationPermissionController;
     private HistoryNavigationCoordinator mHistoryNavigationCoordinator;
     private NavigationSheet mNavigationSheet;
     private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
@@ -389,6 +394,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         if (mCommerceSubscriptionsService != null) {
             mCommerceSubscriptionsService.destroy();
             mCommerceSubscriptionsService = null;
+        }
+
+        if (mNotificationPermissionController != null) {
+            NotificationPermissionController.detach(mNotificationPermissionController);
+            mNotificationPermissionController = null;
         }
 
         if (mTabSwitcherCustomViewManagerCallbackController != null) {
@@ -660,10 +670,27 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)) {
-            didTriggerPromo = PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
-                    mActivity, new SettingsLauncherImpl(),
-                    mTabModelSelectorSupplier.get().isIncognitoSelected(),
-                    getBottomSheetController());
+            // hasNewNoticeBeenShownInCurrentSession is needed to assure a PrivacySandbox promo
+            // already ran in this session, outside the initializeIPH promo logic (e.g. in a NTP
+            // page), and thus avoiding other different promos to run in the same session.
+            // NB: This logic holds as long as the Privacy Sandbox promo has the highest priority,
+            // we need to update the logic otherwise.
+            didTriggerPromo = PrivacySandboxDialogController.hasNewNoticeBeenShownInCurrentSession()
+                    || PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
+                            PrivacySandboxDialogLaunchContext.BROWSER_START, mActivity,
+                            new SettingsLauncherImpl(),
+                            mTabModelSelectorSupplier.get().isIncognitoSelected(),
+                            getBottomSheetController());
+        }
+
+        if (!didTriggerPromo) {
+            mNotificationPermissionController = new NotificationPermissionController(mWindowAndroid,
+                    new NotificationPermissionRationaleDialogController(
+                            mActivity, mModalDialogManagerSupplier.get()));
+            NotificationPermissionController.attach(
+                    mWindowAndroid, mNotificationPermissionController);
+            didTriggerPromo = mNotificationPermissionController.requestPermissionIfNeeded(
+                    false /* contextual */);
         }
 
         if (!didTriggerPromo) {

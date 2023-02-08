@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isRTL} from 'chrome://resources/js/util.js';
+import {isRTL} from 'chrome://resources/ash/common/util.js';
 
 export class BaseDialog {
   constructor(parentNode) {
@@ -112,12 +112,14 @@ export class BaseDialog {
     this.frame.appendChild(this.buttons);
 
     this.okButton = doc.createElement('button');
+    this.okButton.setAttribute('tabindex', 0);
     this.okButton.className = 'cr-dialog-ok';
     this.okButton.textContent = BaseDialog.OK_LABEL;
     this.okButton.addEventListener('click', this.onOkClick_.bind(this));
     this.buttons.appendChild(this.okButton);
 
     this.cancelButton = doc.createElement('button');
+    this.cancelButton.setAttribute('tabindex', 1);
     this.cancelButton.className = 'cr-dialog-cancel';
     this.cancelButton.textContent = BaseDialog.CANCEL_LABEL;
     this.cancelButton.addEventListener('click', this.onCancelClick_.bind(this));

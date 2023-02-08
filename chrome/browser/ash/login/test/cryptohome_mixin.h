@@ -18,7 +18,7 @@ namespace ash {
 // Mixin that acts as a broker between tests and FakeUserDataAuthClient,
 // handling all interactions and transformations.
 class CryptohomeMixin : public InProcessBrowserTestMixin,
-                        public ash::FakeUserDataAuthClient::TestApi {
+                        public FakeUserDataAuthClient::TestApi {
  public:
   explicit CryptohomeMixin(InProcessBrowserTestMixinHost* host);
   CryptohomeMixin(const CryptohomeMixin&) = delete;
@@ -26,8 +26,11 @@ class CryptohomeMixin : public InProcessBrowserTestMixin,
   ~CryptohomeMixin() override;
 
   void MarkUserAsExisting(const AccountId& user);
+  std::string AddSession(const AccountId& user, bool authenticated);
   void AddGaiaPassword(const AccountId& user, std::string password);
   bool HasPinFactor(const AccountId& user);
+  void AddRecoveryFactor(const AccountId& user);
+  bool HasRecoveryFactor(const AccountId& user);
 };
 
 }  // namespace ash

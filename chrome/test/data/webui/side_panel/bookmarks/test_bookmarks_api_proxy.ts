@@ -10,7 +10,6 @@ import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestBookmarksApiProxy extends TestBrowserProxy implements
     BookmarksApiProxy {
-  private topLevelBookmarks_: chrome.bookmarks.BookmarkTreeNode[] = [];
   private folders_: chrome.bookmarks.BookmarkTreeNode[] = [];
   callbackRouter: {
     onChanged: FakeChromeEvent,
@@ -18,19 +17,21 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
     onCreated: FakeChromeEvent,
     onMoved: FakeChromeEvent,
     onRemoved: FakeChromeEvent,
+    onTabActivated: FakeChromeEvent,
+    onTabUpdated: FakeChromeEvent,
   };
 
   constructor() {
     super([
-      'getTopLevelBookmarks',
+      'getActiveUrl',
       'getFolders',
-      'bookmarkCurrentTab',
+      'bookmarkCurrentTabInFolder',
       'openBookmark',
       'cutBookmark',
       'copyBookmark',
       'pasteToBookmark',
       'showContextMenu',
-      'showUI',
+      'showUi',
     ]);
 
     this.callbackRouter = {
@@ -39,12 +40,14 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
       onCreated: new FakeChromeEvent(),
       onMoved: new FakeChromeEvent(),
       onRemoved: new FakeChromeEvent(),
+      onTabActivated: new FakeChromeEvent(),
+      onTabUpdated: new FakeChromeEvent(),
     };
   }
 
-  getTopLevelBookmarks() {
-    this.methodCalled('getTopLevelBookmarks');
-    return Promise.resolve(this.topLevelBookmarks_);
+  getActiveUrl() {
+    this.methodCalled('getActiveUrl');
+    return Promise.resolve('http://www.test.com');
   }
 
   getFolders() {
@@ -52,18 +55,14 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
     return Promise.resolve(this.folders_);
   }
 
-  bookmarkCurrentTab() {
-    this.methodCalled('bookmarkCurrentTab');
+  bookmarkCurrentTabInFolder() {
+    this.methodCalled('bookmarkCurrentTabInFolder');
   }
 
   openBookmark(
       id: string, depth: number, clickModifiers: ClickModifiers,
       source: ActionSource) {
     this.methodCalled('openBookmark', id, depth, clickModifiers, source);
-  }
-
-  setTopLevelBookmarks(topLevelBookmarks: chrome.bookmarks.BookmarkTreeNode[]) {
-    this.topLevelBookmarks_ = topLevelBookmarks;
   }
 
   setFolders(folders: chrome.bookmarks.BookmarkTreeNode[]) {
@@ -88,7 +87,7 @@ export class TestBookmarksApiProxy extends TestBrowserProxy implements
     this.methodCalled('showContextMenu', id, x, y, source);
   }
 
-  showUI() {
-    this.methodCalled('showUI');
+  showUi() {
+    this.methodCalled('showUi');
   }
 }

@@ -568,7 +568,7 @@ enum CSSSampleId {
     kFontDisplay = 516,
     kContain = 517,
     kD = 518,
-    kLineHeightStep = 519,
+    // kLineHeightStep = 519,
     kBreakAfter = 520,
     kBreakBefore = 521,
     kBreakInside = 522,
@@ -787,6 +787,8 @@ enum CSSSampleId {
     kHyphenateLimitChars = 734,
     kAnimationDelayStart = 735,
     kAnimationDelayEnd = 736,
+    kFontVariantPosition = 737,
+    kFontVariantAlternates = 738,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

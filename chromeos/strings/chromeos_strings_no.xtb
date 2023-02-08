@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">Prøv feilsøkingstrinn</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">Koble til et nettverk og last inn siden på nytt for å se skjermspareren.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Flere innstillinger</translation>
 <translation id="2085089206770112532">Skjermlysstyrke ned</translation>
 <translation id="2105810540595158374">Enheten er en spillkontroller.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">Avbryt utskriftsjobben</translation>
 <translation id="2163937499206714165">Slå på mørk modus</translation>
 <translation id="2180197493692062006">Noe gikk galt. Prøv å åpne appen på nytt.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Tilbakestill trafikktellere</translation>
 <translation id="2212733584906323460">Navneoppslag</translation>
 <translation id="2217935453350629363">Nåværende hastighet</translation>
@@ -163,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Send tilbakemeldingsrapport</translation>
 <translation id="2407209115954268704">Status for SIM-låsing</translation>
+<translation id="241419523391571119">Åpne lokket igjen for å teste</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2418150275289244458">Åpne i innstillingene</translation>
 <translation id="2421798028054665193">Bilde <ph name="CURRENT_PAGE" /> av <ph name="TOTAL_PAGES" /></translation>
@@ -173,6 +176,7 @@
 <translation id="2491955442992294626">Taster blir ikke testet når du bruker andre vinduer</translation>
 <translation id="2493126929778606526">De beste bildene dine, valgt automatisk</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">Løsne</translation>
 <translation id="2505327257735685095">Last inn det nåværende bakgrunnsbildet på nytt</translation>
 <translation id="2513396635448525189">Påloggingsbilde</translation>
 <translation id="2517472476991765520">Skann</translation>
@@ -201,7 +205,9 @@
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2878387241690264070">Ladet ut <ph name="RATE" /> på <ph name="NUM_SECONDS" /> sekunder.</translation>
+<translation id="2902312830803030883">Flere handlinger</translation>
 <translation id="2926057806159140518">Oppgi brukernavn og passord, eller skann QR-koden din</translation>
+<translation id="2940811910881150316">Kan ikke teste enheten. Åpne lokket igjen for å teste.</translation>
 <translation id="3008341117444806826">OPPDATER</translation>
 <translation id="3009958530611748826">Velg mappen du vil lagre i</translation>
 <translation id="3017079585324758401">Bakgrunn</translation>
@@ -243,6 +249,7 @@
 <translation id="3413935475507503304">For å gå videre med oppdateringen, klikk på Neste.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
+<translation id="3435896845095436175">Aktivér</translation>
 <translation id="3456078764689556234">Skrev ut side <ph name="PRINTED_PAGES" /> av <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Skanner side <ph name="PAGE_NUM" />. <ph name="PERCENTAGE_VALUE" /> % fullført.</translation>
 <translation id="3459509316159669723">Utskrift</translation>
@@ -267,7 +274,6 @@
 <translation id="360565022852130722">Wifi-nettverket er sikret med den svake protokollen WEP 802.1x</translation>
 <translation id="3606583719724308068">Høy tidsforsinkelse til HTTPS-nettsteder</translation>
 <translation id="361575905210396100">Takk for tilbakemeldingen</translation>
-<translation id="3621202678540785336">Inndata</translation>
 <translation id="3632579075709132555">Personvernskjerm av/på</translation>
 <translation id="3651050199673793219">Velg en temperaturenhet</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />test</translation>
@@ -282,6 +288,7 @@
 <translation id="3820172043799983114">Ugyldig PIN-kode</translation>
 <translation id="3824259034819781947">Legg ved filer</translation>
 <translation id="3838338534323494292">Nytt passord</translation>
+<translation id="3845880861638660475">Trykk på <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" /> for å lukke dialogboksen.</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3862598938296403232">En beskrivelse er nødvendig</translation>
@@ -289,6 +296,7 @@
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="387301095347517405">Antall ganger batteriet har gjennomgått en fullstendig ladesyklus</translation>
 <translation id="3885327323343477505">Bytt skjermsparer</translation>
+<translation id="391412459402535266">Kan ikke teste enheten. Bytt til laptopmodus for å teste.</translation>
 <translation id="3923184630988645767">Databruk</translation>
 <translation id="3932043219784172185">Ingen enheter er koblet til</translation>
 <translation id="3941014780699102620">Kunne ikke finne tilknytning til verten</translation>
@@ -301,6 +309,7 @@
 <translation id="39823212440917567">Utskriftsjobber som er eldre enn <ph name="NUMBER_OF_DAYS" /> dager, blir fjernet</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> er nå oppdatert</translation>
 <translation id="4003384961948020559">Mislykket – utskriftsmottaket er fullt</translation>
+<translation id="4021031199988160623">Bytt til laptopmodus for å teste</translation>
 <translation id="4034824040120875894">Skriver</translation>
 <translation id="4044093238444069296">Kan ikke kontakte gatewayen</translation>
 <translation id="4046123991198612571">Neste spor</translation>
@@ -333,11 +342,13 @@
 <translation id="4289849978083912975">Lysbildefremvisning</translation>
 <translation id="4297501883039923494">Stoppet – ukjent feil</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> bilder</translation>
+<translation id="4311195029067684288">Full</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" />-tasten trykkes på</translation>
 <translation id="435692326371619097">Administrer APN-innstillingene for nettverket. APN oppretter en tilkobling mellom et mobilnettverk og internett. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Ikke kjørt</translation>
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4382484599443659549">PDF</translation>
+<translation id="4394049700291259645">Deaktiver</translation>
 <translation id="439429847087949098">Starter <ph name="DEVICE_NAME" /> på nytt</translation>
 <translation id="4415951057168511744">Nåværende brukerbilde</translation>
 <translation id="4425149324548788773">Min disk</translation>
@@ -352,6 +363,7 @@
 <translation id="4503223151711056411">Venstrepil</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Samsvarende alternativt emnenavn</translation>
+<translation id="4522570452068850558">Detaljer</translation>
 <translation id="4536864596629708641">IP-konfigurasjon</translation>
 <translation id="4546131424594385779">Opprett en gjentakende video</translation>
 <translation id="4548483925627140043">Fant ikke noe signal</translation>
@@ -382,6 +394,7 @@
 <translation id="4793756956024303490">Algoritme for komprimering</translation>
 <translation id="4794140124556169553">Kjøring av en prosessortest kan påvirke systemets ytelse</translation>
 <translation id="4800589996161293643">Chromebook-fellesskapet</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Avbrøt utskriftsjobben <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4809927044794281115">Lyst tema</translation>
 <translation id="4813136279048157860">Mine bilder</translation>
@@ -393,6 +406,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> er valgt – trykk på Enter for å velge <ph name="TOPIC_SOURCE" />-album</translation>
 <translation id="484790837831576105">(Android) DNS-oppslag</translation>
 <translation id="4848429997038228357">KJØRER</translation>
+<translation id="4854586501323951986">Innebygd berøringsskjerm</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} forsøk igjen}other{<ph name="ERROR_MESSAGE" /> {0} forsøk igjen}}</translation>
 <translation id="4873827928179867585">Algoritme for autentisering</translation>
 <translation id="4880328057631981605">Navn på tilgangspunkt</translation>
@@ -401,13 +415,16 @@
 <translation id="4891842000192098784">Stress</translation>
 <translation id="4897058166682006107">Enheten har <ph name="BATTERY_PERCENTAGE" /> % batteri i venstre øreplugg.</translation>
 <translation id="4905998861748258752">Slå på funksjonen for å velge alternativer for skjermsparer</translation>
+<translation id="4910858703033903787">APN-typer</translation>
 <translation id="4917385247580444890">Sterkt</translation>
 <translation id="4917889632206600977">Stoppet – tom for papir</translation>
 <translation id="491791267030419270">Tips om å skrive tilbakemeldinger</translation>
 <translation id="4921665434385737356">Ladet <ph name="RATE" /> på <ph name="NUM_SECONDS" /> sekunder.</translation>
 <translation id="4930320165497208503">For å konfigurere eller oppdatere en tilkobling, gå til <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Dato</translation>
+<translation id="4937657825850660613">Halv</translation>
 <translation id="4950314376641394653">Fastvaren for <ph name="DEVICE_NAME" /> er oppdatert til versjon <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">Delvis</translation>
 <translation id="498186245079027698">Sjekk skanneren, og prøv på nytt. Sørg for at det er nok lokal lagringsplass til å lagre skannede filer.</translation>
 <translation id="4985509611418653372">Kjør</translation>
 <translation id="4987769320337599931">Brannmur</translation>
@@ -456,6 +473,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5358174242040570474">Noe gikk galt. Prøv å velge en bakgrunn igjen eller åpne appen på nytt.</translation>
 <translation id="5372659122375744710">Wifi-nettverket er ikke sikkert</translation>
 <translation id="5376354385557966694">Automatisk lys modus</translation>
+<translation id="5378184552853359930">IP-type</translation>
 <translation id="5389159777326897627">Bakgrunn og stil</translation>
 <translation id="5389224261615877010">Regnbue</translation>
 <translation id="5400907029458559844">Enheten kobler seg til.</translation>
@@ -470,6 +488,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5499114900554609492">Kunne ikke fullføre skanningen</translation>
 <translation id="5499762266711462226">Tastaturfargen er basert på bakgrunnen</translation>
 <translation id="5502931783115429516">Android kjører ikke</translation>
+<translation id="551689408806449779">Enheten er koblet fra. Prøv å koble til på nytt for å teste</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">Bytt automatisk til mørkt tema ved solnedgang</translation>
@@ -484,6 +503,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familie</translation>
+<translation id="5695599963893094957">Trykk på en valgfri tast på tastaturet. Du kan trykke på opptil fire taster samtidig.</translation>
 <translation id="5701381305118179107">Midtstill</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> av <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Oppdater <ph name="DEVICE_NAME" /></translation>
@@ -499,10 +519,12 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5860491529813859533">Slå på</translation>
 <translation id="5866840822086176774">Veldig sterk</translation>
+<translation id="5876385649737594562">Slå på for å velge alternativer</translation>
 <translation id="588258955323874662">Fullskjerm</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5903200662178656908">Enheten er en kombinasjon av tastatur og mus.</translation>
+<translation id="5904994456462260490">Legg til et nytt APN</translation>
 <translation id="5907649332524363701">tastefarge</translation>
 <translation id="5916084858004523819">Forbudt</translation>
 <translation id="5916664084637901428">På</translation>
@@ -563,6 +585,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6394634179843537518">Legg til fil</translation>
 <translation id="6410257289063177456">Bildefiler</translation>
 <translation id="641081527798843608">Emnetreff</translation>
+<translation id="6412715219990689313">Innebygd tastatur</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Svak (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Gå til kontoinnstillingene</translation>
@@ -607,7 +630,6 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6766275201586212568">Mislykkede DNS-oppslag</translation>
 <translation id="6768237774506518020">Høy feilfrekvens for DNS-oppslag</translation>
 <translation id="6791471867139427246">farge på tastaturlys</translation>
-<translation id="6793680441750437230">Trykk på en valgfri tast på tastaturet. Du kan trykke på opptil fire taster samtidig. Trykk på Alt + Esc for å lukke dialogboksen.</translation>
 <translation id="680983167891198932">Nøkkel</translation>
 <translation id="6816797338148849397">Informasjon om det du har markert, er tilgjengelig. Bruk oppoverpilen for å se informasjonen.</translation>
 <translation id="6853312040151791195">Utladingsfrekvens</translation>
@@ -661,11 +683,13 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7359657277149375382">Filtype</translation>
 <translation id="73631062356239394">Del diagnostikkdata</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">Innebygd styreflate</translation>
 <translation id="7397270852490618635">Slå av lyst tema</translation>
 <translation id="741244894080940828">omregning</translation>
 <translation id="7415801143053185905">Svært høy HTTP-tidsforsinkelse</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Skanningen er fullført. 1 side er skannet}other{Skanningen er fullført. {NUMBER_OF_PAGES} sider er skannet}}</translation>
+<translation id="7458970041932198923">Koble til et nettverk og last inn siden på nytt for å se og angi brukerbilder.</translation>
 <translation id="7469648432129124067">Oppdaget en portal</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7487067081878637334">Teknologi</translation>
@@ -709,7 +733,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Leverandørtype</translation>
 <translation id="7882501334836096755">Offentlig nøkkel</translation>
-<translation id="7890841768028788197">Intern berøringsskjerm</translation>
+<translation id="7915220255123750251">Administrer APN-innstillingene for nettverket. APN oppretter en tilkobling mellom et mobilnettverk og internett.</translation>
 <translation id="7936303884198020182">Fant ingen navnetjenere</translation>
 <translation id="7942349550061667556">Rød</translation>
 <translation id="7943235353293548836">Vedvarende keepalive-intervall</translation>
@@ -734,6 +758,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Velg <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="8183974620058026102">Tilknytt</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8208861521865154048">Fordeler</translation>
 <translation id="8226628635270268143">Velg favorittbildene og -albumene dine</translation>
@@ -754,9 +779,9 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8372477600026034341">Tilleggsverter</translation>
 <translation id="8395584934117017006">Denne <ph name="DEVICE_TYPE" />-enheten er bedriftsadministrert</translation>
 <translation id="8398927464629426868">Hvor raskt enheten lades eller utlades for øyeblikket</translation>
+<translation id="8410244574650205435">Identifisert automatisk</translation>
 <translation id="8420955526972171689">Kjør tester og feilsøking for maskinvareproblemer</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">Internt tastatur</translation>
 <translation id="8431300646573772016">Dette er nytt i ChromeOS</translation>
 <translation id="843568408673868420">Internettilkobling</translation>
 <translation id="844521431886043384">DNS er ikke konfigurert</translation>
@@ -813,17 +838,18 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="8930521118335213258">Motpart</translation>
 <translation id="8930622219860340959">Trådløs</translation>
 <translation id="8936793075252196307">Klient-IP-adresse</translation>
-<translation id="8945750210906526975">Intern styreflate</translation>
 <translation id="894617464444543719">Enheten er en telefon.</translation>
 <translation id="8968751544471797276">Ladefrekvens</translation>
 <translation id="8970109610781093811">Kjør på nytt</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Skann}=1{Skann side {NUMBER_OF_PAGES}}other{Skann side {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Enheten har <ph name="BATTERY_PERCENTAGE" /> % batteri.</translation>
+<translation id="8998289560386111590">Ikke tilgjengelig på enheten din</translation>
 <translation id="9003704114456258138">Frekvens</translation>
 <translation id="9025198690966128418">Bruk som personlig enhet</translation>
 <translation id="9028832514430399253">Slå på av/på-knappen for å velge skjermspareralternativene</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">DNS-oppslag har høy tidsforsinkelse</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -831,6 +857,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="9087578468327036362">Rapportér dette søket</translation>
 <translation id="9088306295921699330">Nåværende bruk</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">Avanserte innstillinger</translation>
 <translation id="910415269708673980">Oppdater saken for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Skanner side <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Lås opp</translation>

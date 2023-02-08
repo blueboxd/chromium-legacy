@@ -113,26 +113,27 @@ def CheckSvgsOptimized(input_api, output_api):
   return results
 
 
-def CheckWebDevStyle(input_api, output_api):
-  results = []
-
+def _ImportWebDevStyle(input_api):
   try:
     import sys
     old_sys_path = sys.path[:]
     cwd = input_api.PresubmitLocalPath()
     sys.path += [input_api.os_path.join(cwd, '..', '..', '..', 'tools')]
     from web_dev_style import presubmit_support
-    results += presubmit_support.CheckStyle(input_api, output_api)
   finally:
     sys.path = old_sys_path
+  return presubmit_support
 
-  return results
+
+def CheckWebDevStyle(input_api, output_api):
+  presubmit_support = _ImportWebDevStyle(input_api)
+  return presubmit_support.CheckStyle(input_api, output_api)
+
 
 def CheckNoNewJs(input_api, output_api):
   EXCLUDED_PATHS = [
     'chrome/browser/resources/.eslintrc',
     'chrome/browser/resources/about_sys/',
-    'chrome/browser/resources/apc_internals/',
     'chrome/browser/resources/bluetooth_internals/',
     'chrome/browser/resources/chromeos/',
     'chrome/browser/resources/device_log_ui/',
@@ -171,7 +172,7 @@ def CheckNoNewJs(input_api, output_api):
         return True
     return False
 
-  from web_dev_style import presubmit_support
+  presubmit_support = _ImportWebDevStyle(input_api)
   return presubmit_support.DisallowNewJsFiles(input_api, output_api,
                                               lambda f: not excluded_path(f))
 

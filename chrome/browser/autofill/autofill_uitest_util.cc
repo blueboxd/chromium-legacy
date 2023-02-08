@@ -84,7 +84,7 @@ void SetTestProfile(Profile* base_profile, const AutofillProfile& profile) {
 void SetTestProfiles(Profile* base_profile,
                      std::vector<AutofillProfile>* profiles) {
   PdmChangeWaiter observer(base_profile);
-  GetPersonalDataManager(base_profile)->SetProfiles(profiles);
+  GetPersonalDataManager(base_profile)->SetProfilesForAllSources(profiles);
   observer.Wait();
 }
 
@@ -129,7 +129,6 @@ void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
 
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
-  int query_id = 1;
   FormData form;
   form.url = GURL("https://foo.com/bar");
   form.fields.emplace_back();
@@ -139,18 +138,23 @@ void GenerateTestAutofillPopup(
 
   ContentAutofillDriver* driver = static_cast<ContentAutofillDriver*>(
       absl::get<AutofillDriver*>(autofill_external_delegate->GetDriver()));
+  AutofillManager* manager = driver->autofill_manager();
   mojom::AutofillDriver* mojo_driver = driver;
   TestAutofillManagerWaiter waiter(
-      *driver->autofill_manager(),
-      {&AutofillManager::Observer::OnAfterAskForValuesToFill});
-  mojo_driver->AskForValuesToFill(form, form.fields.front(), bounds, query_id,
+      *manager, {&AutofillManager::Observer::OnAfterAskForValuesToFill});
+  mojo_driver->AskForValuesToFill(form, form.fields.front(), bounds,
                                   AutoselectFirstSuggestion(false),
                                   FormElementWasClicked(false));
   ASSERT_TRUE(waiter.Wait());
+  ASSERT_EQ(1u, manager->form_structures().size());
+  // `form.host_frame` and `form.url` have only been set by
+  // ContentAutofillDriver::AskForValuesToFill().
+  form = manager->form_structures().begin()->second->ToFormData();
 
   std::vector<Suggestion> suggestions = {Suggestion(u"Test suggestion")};
   autofill_external_delegate->OnSuggestionsReturned(
-      query_id, suggestions, AutoselectFirstSuggestion(false));
+      form.fields.front().global_id(), suggestions,
+      AutoselectFirstSuggestion(false));
 }
 
 }  // namespace autofill

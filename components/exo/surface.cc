@@ -21,7 +21,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/exo/buffer.h"
 #include "components/exo/frame_sink_resource_manager.h"
 #include "components/exo/shell_surface_util.h"
@@ -110,6 +109,54 @@ bool FormatHasAlpha(gfx::BufferFormat format) {
     default:
       return true;
   }
+}
+
+Transform InvertY(Transform transform) {
+  switch (transform) {
+    case Transform::NORMAL:
+      return Transform::FLIPPED_ROTATE_180;
+    case Transform::ROTATE_90:
+      return Transform::FLIPPED_ROTATE_270;
+    case Transform::ROTATE_180:
+      return Transform::FLIPPED;
+    case Transform::ROTATE_270:
+      return Transform::FLIPPED_ROTATE_90;
+    case Transform::FLIPPED:
+      return Transform::ROTATE_180;
+    case Transform::FLIPPED_ROTATE_90:
+      return Transform::ROTATE_270;
+    case Transform::FLIPPED_ROTATE_180:
+      return Transform::NORMAL;
+    case Transform::FLIPPED_ROTATE_270:
+      return Transform::ROTATE_90;
+  }
+  NOTREACHED();
+}
+
+// Returns a gfx::Transform that can transform a (0,0 1x1) rect to the same
+// rect while rotate/flip the contents about (0.5, 0.5) origin. It's equivalent
+// to rotating/flipping about (0, 0) origin then translating by
+// (0 or 1, 0 or 1). Note that the rotations are counter-clockwise.
+gfx::Transform ToBufferTransformMatrix(Transform transform, bool invert_y) {
+  switch (invert_y ? InvertY(transform) : transform) {
+    case Transform::NORMAL:
+      return gfx::Transform();
+    case Transform::ROTATE_90:
+      return gfx::Transform::Affine(0, -1, 1, 0, 0, 1);
+    case Transform::ROTATE_180:
+      return gfx::Transform::Affine(-1, 0, 0, -1, 1, 1);
+    case Transform::ROTATE_270:
+      return gfx::Transform::Affine(0, 1, -1, 0, 1, 0);
+    case Transform::FLIPPED:
+      return gfx::Transform::Affine(-1, 0, 0, 1, 1, 0);
+    case Transform::FLIPPED_ROTATE_90:
+      return gfx::Transform::Affine(0, 1, 1, 0, 0, 0);
+    case Transform::FLIPPED_ROTATE_180:
+      return gfx::Transform::Affine(1, 0, 0, -1, 0, 1);
+    case Transform::FLIPPED_ROTATE_270:
+      return gfx::Transform::Affine(0, -1, -1, 0, 1, 1);
+  }
+  NOTREACHED();
 }
 
 // Helper function that returns |size| after adjusting for |transform|.
@@ -546,6 +593,15 @@ void Surface::SetClipRect(const absl::optional<gfx::RectF>& clip_rect) {
   pending_state_.clip_rect = clip_rect;
 }
 
+void Surface::SetSurfaceTransform(const gfx::Transform& transform) {
+  TRACE_EVENT1("exo", "Surface::SetSurfaceTransform", "transform",
+               transform.ToString());
+  if (pending_state_.surface_transform != transform) {
+    has_pending_contents_ = true;
+    pending_state_.surface_transform = transform;
+  }
+}
+
 void Surface::SetBackgroundColor(absl::optional<SkColor4f> background_color) {
   TRACE_EVENT0("exo", "Surface::SetBackgroundColor");
   pending_state_.basic_state.background_color = background_color;
@@ -756,10 +812,8 @@ void Surface::SetEmbeddedSurfaceSize(const gfx::Size& size) {
 }
 
 void Surface::SetAcquireFence(std::unique_ptr<gfx::GpuFence> gpu_fence) {
-#if BUILDFLAG(IS_POSIX)
   TRACE_EVENT1("exo", "Surface::SetAcquireFence", "fence_fd",
                gpu_fence ? gpu_fence->GetGpuFenceHandle().owned_fd.get() : -1);
-#endif  // BUILDFLAG(IS_POSIX)
 
   pending_state_.acquire_fence = std::move(gpu_fence);
 }
@@ -804,6 +858,7 @@ void Surface::Commit() {
   cached_state_.rounded_corners_bounds = pending_state_.rounded_corners_bounds;
   cached_state_.overlay_priority_hint = pending_state_.overlay_priority_hint;
   cached_state_.clip_rect = pending_state_.clip_rect;
+  cached_state_.surface_transform = pending_state_.surface_transform;
   cached_state_.acquire_fence = std::move(pending_state_.acquire_fence);
   cached_state_.per_commit_explicit_release_callback_ =
       std::move(pending_state_.per_commit_explicit_release_callback_);
@@ -941,6 +996,7 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
       state_.rounded_corners_bounds = cached_state_.rounded_corners_bounds;
       state_.overlay_priority_hint = cached_state_.overlay_priority_hint;
       state_.clip_rect = cached_state_.clip_rect;
+      state_.surface_transform = cached_state_.surface_transform;
       state_.acquire_fence = std::move(cached_state_.acquire_fence);
       state_.per_commit_explicit_release_callback_ =
           std::move(cached_state_.per_commit_explicit_release_callback_);
@@ -1263,43 +1319,12 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
 }
 
 void Surface::UpdateBufferTransform(bool y_invert) {
-  SkMatrix buffer_matrix;
-  Transform transform = state_.basic_state.buffer_transform;
-  switch (transform) {
-    case Transform::ROTATE_90:
-    case Transform::FLIPPED_ROTATE_90:
-      buffer_matrix.setSinCos(-1, 0, 0.5f, 0.5f);
-      break;
-    case Transform::ROTATE_180:
-    case Transform::FLIPPED_ROTATE_180:
-      buffer_matrix.setSinCos(0, -1, 0.5f, 0.5f);
-      break;
-    case Transform::ROTATE_270:
-    case Transform::FLIPPED_ROTATE_270:
-      buffer_matrix.setSinCos(1, 0, 0.5f, 0.5f);
-      break;
-    default:
-      break;
+  buffer_transform_ =
+      ToBufferTransformMatrix(state_.basic_state.buffer_transform, y_invert);
+  if (state_.basic_state.buffer_scale != 0) {
+    buffer_transform_.PostScale(1.0f / state_.basic_state.buffer_scale,
+                                1.0f / state_.basic_state.buffer_scale);
   }
-  bool x_invert = false;
-  switch (transform) {
-    case Transform::FLIPPED:
-    case Transform::FLIPPED_ROTATE_90:
-    case Transform::FLIPPED_ROTATE_180:
-    case Transform::FLIPPED_ROTATE_270:
-      x_invert = true;
-      break;
-    default:
-      break;
-  }
-  if (x_invert)
-    buffer_matrix.preScale(-1, 1, 0.5f, 0.5f);
-  if (y_invert)
-    buffer_matrix.preScale(1, -1, 0.5f, 0.5f);
-  if (state_.basic_state.buffer_scale != 0)
-    buffer_matrix.postScale(1.0f / state_.basic_state.buffer_scale,
-                            1.0f / state_.basic_state.buffer_scale);
-  buffer_transform_ = gfx::SkMatrixToTransform(buffer_matrix);
 }
 
 // Try to share the |SharedQuadState| (sqs) when a single layer can be
@@ -1396,7 +1421,7 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
 
   state_.damage.Clear();
 
-  gfx::PointF scale(content_size_.width(), content_size_.height());
+  gfx::Vector2dF scale(content_size_.width(), content_size_.height());
 
   gfx::Vector2dF translate(0.0f, 0.0f);
 
@@ -1404,7 +1429,7 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
   // use the shared quad clip rect.
   if (get_current_surface_id_) {
     quad_rect = gfx::Rect(embedded_surface_size_);
-    scale = gfx::PointF(1.0f, 1.0f);
+    scale = gfx::Vector2dF(1.0f, 1.0f);
 
     if (!state_.basic_state.crop.IsEmpty()) {
       // In order to crop an AxB rect to CxD we need to scale by A/C, B/D.
@@ -1423,18 +1448,16 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
 
   // Compute the total transformation from post-transform buffer coordinates to
   // target coordinates.
-  SkMatrix viewport_to_target_matrix;
   // Scale and offset the normalized space to fit the content size rectangle.
-  viewport_to_target_matrix.setScale(scale.x(), scale.y());
-
-  gfx::PointF target = gfx::PointF(origin) + translate;
-  viewport_to_target_matrix.postTranslate(target.x(), target.y());
+  gfx::Transform viewport_to_target_transform(
+      gfx::AxisTransform2d::FromScaleAndTranslation(
+          scale, origin.OffsetFromOrigin() + translate));
+  viewport_to_target_transform.PostConcat(state_.surface_transform);
   // Convert from DPs to pixels.
-  viewport_to_target_matrix.postScale(device_scale_factor, device_scale_factor);
+  viewport_to_target_transform.PostScale(device_scale_factor);
 
   gfx::Transform quad_to_target_transform(buffer_transform_);
-  quad_to_target_transform.PostConcat(
-      gfx::SkMatrixToTransform(viewport_to_target_matrix));
+  quad_to_target_transform.PostConcat(viewport_to_target_transform);
 
   bool are_contents_opaque =
       !current_resource_has_alpha_ ||
@@ -1459,17 +1482,18 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
   // work with 0,0 1x1 quads. This also means that quads that do not fall on
   // pixel boundaries (rotated or subpixel rects) cannot be removed by the
   // algorithm.
-  gfx::RectF target_space_rect =
-      quad_to_target_transform.MapRect(gfx::RectF(quad_rect));
-  CHECK(quad_to_target_transform.Preserves2dAxisAlignment());
-  // This simple rect representation cannot mathematically express a rotation
-  // (and currently does not express flip/mirror) hence the
-  // 'IsPositiveScaleOrTranslation' check.
-  if (gfx::IsNearestRectWithinDistance(target_space_rect, 0.001f) &&
-      quad_to_target_transform.IsPositiveScaleOrTranslation()) {
-    quad_rect = gfx::ToNearestRect(target_space_rect);
-    // Later in 'SurfaceAggregator' this transform will have 2d translation.
-    quad_to_target_transform = gfx::Transform();
+  if (quad_to_target_transform.Preserves2dAxisAlignment()) {
+    gfx::RectF target_space_rect =
+        quad_to_target_transform.MapRect(gfx::RectF(quad_rect));
+    // This simple rect representation cannot mathematically express a rotation
+    // (and currently does not express flip/mirror) hence the
+    // 'IsPositiveScaleOrTranslation' check.
+    if (gfx::IsNearestRectWithinDistance(target_space_rect, 0.001f) &&
+        quad_to_target_transform.IsPositiveScaleOrTranslation()) {
+      quad_rect = gfx::ToNearestRect(target_space_rect);
+      // Later in 'SurfaceAggregator' this transform will have 2d translation.
+      quad_to_target_transform = gfx::Transform();
+    }
   }
 
   if (current_resource_.id) {
@@ -1606,8 +1630,10 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
                           : SkColors::kBlack;
     viz::SolidColorDrawQuad* solid_quad =
         render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
+    // TODO(crbug.com/1339335): Support AA quads coming from exo.
+    constexpr bool kForceAntiAliasingOff = true;
     solid_quad->SetNew(quad_state, quad_rect, quad_rect, color,
-                       false /* force_anti_aliasing_off */);
+                       kForceAntiAliasingOff);
   }
 
   render_pass->damage_rect.Union(gfx::ToEnclosedRect(damage_rect));
@@ -1674,6 +1700,17 @@ void Surface::OnWindowOcclusionChanged() {
 void Surface::OnDeskChanged(int state) {
   for (SurfaceObserver& observer : observers_)
     observer.OnDeskChanged(this, state);
+}
+
+void Surface::OnTooltipShown(const std::u16string& text,
+                             const gfx::Rect& bounds) {
+  for (SurfaceObserver& observer : observers_)
+    observer.OnTooltipShown(this, text, bounds);
+}
+
+void Surface::OnTooltipHidden() {
+  for (SurfaceObserver& observer : observers_)
+    observer.OnTooltipHidden(this);
 }
 
 void Surface::MoveToDesk(int desk_index) {

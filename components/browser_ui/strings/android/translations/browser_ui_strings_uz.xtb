@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Saytlarga harakat sensorlaridan foydalanish uchun ruxsat berish (tavsiya etiladi)</translation>
 <translation id="5050380848339752099">Bu sayt inkognito oynasidan tashqaridagi ilova bilan axborot ulashmoqchi.</translation>
 <translation id="5063480226653192405">Sarfi</translation>
-<translation id="5082281938627763039">Bu <ph name="FPS_MEMBER" /> va <ph name="FPS_OWNER" /> saytlari guruhidagi saytlar uchun cookie fayllari va boshqa sayt maʼlumotlarini oʻchirib tashlaydi</translation>
 <translation id="5091013926750941408">Mobil sayt</translation>
 <translation id="509133520954049755">Kompyuter versiyasi</translation>
 <translation id="5100237604440890931">Yig‘ilgan - Kengaytirish uchun bosing</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">To‘liq ekran rejimidan chiqish uchun ekranni tepadan pastga torting va “Orqaga” tugmasini bosing.</translation>
 <translation id="5300589172476337783">Ko‘rsatish</translation>
 <translation id="5301954838959518834">OK</translation>
-<translation id="5313967007315987356">Sayt qo‘shish</translation>
 <translation id="5317780077021120954">Saqlash</translation>
 <translation id="5335288049665977812">Saytlarga JavaScript ishga tushirishiga ruxsat berish (tavsiya etiladi)</translation>
 <translation id="534295439873310000">NFC qurilmalar</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Ekran namoyish qilinmoqda</translation>
 <translation id="5922967540311291836">Tashqi cookie fayllarni bloklash:</translation>
 <translation id="5939518447894949180">Asliga qaytarish</translation>
+<translation id="5968921426641056619">Veb-manzilni kiriting</translation>
 <translation id="5975083100439434680">Kichiklashtirish</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Bu saytning qurilmangizni boshqarish ruxsatlarini boshqaring</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ta element tanlandi</translation>
 <translation id="7260727271532453612">Ruxsat berildi: <ph name="PERMISSION_1" /> va <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Odatda bildirishnomalarni bloklaysiz. Ruxsat berish uchun Tafsilotlar ustiga bosing.</translation>
+<translation id="7366415735885268578">Sayt qo‘shish</translation>
 <translation id="7383715096023715447"><ph name="DOMAIN" /> sozlamalari</translation>
 <translation id="7423098979219808738">Avval so‘ralsin</translation>
 <translation id="7423538860840206698">Klipborddan o‘qish taqiqlangan</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Bu saytda yoqimsiz yoki befoyda reklamalar chiqadi</translation>
 <translation id="8394832520002899662">Saytga qaytish uchun bosing</translation>
 <translation id="8409345997656833551">Maqolani soddalashgan shaklda koʻrish mumkin boʻlganda xabar berilsin</translation>
+<translation id="8423565414844018592">Matn oʻlchami sozlandi: <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Sozlamalar</translation>
 <translation id="8441146129660941386">Orqaga qaytarish</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> joylashuvingizni aniqlay olishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali Joylashuvni aniqlash xizmatini yoqing.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Telefonda NFC yoqilmagan. Uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
 <translation id="8928445016601307354">Saytlarga NFC qurilmalarni koʻrish va ulardagi axborotni oʻzgartirishni taqiqlash</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Muayyan saytlar uchun cookie-fayllarni bloklang.</translation>
 <translation id="8959122750345127698">Sahifa topilmadi: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Olib tashlash</translation>

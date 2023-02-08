@@ -20,13 +20,6 @@ namespace blink {
 FencedFrameMPArchDelegate::FencedFrameMPArchDelegate(
     HTMLFencedFrameElement* outer_element)
     : HTMLFencedFrameElement::FencedFrameDelegate(outer_element) {
-  DCHECK_EQ(outer_element->GetDocument()
-                .GetFrame()
-                ->GetPage()
-                ->FencedFramesImplementationType()
-                .value(),
-            features::FencedFramesImplementationType::kMPArch);
-
   DocumentFencedFrames::GetOrCreate(GetElement().GetDocument())
       .RegisterFencedFrame(&GetElement());
   mojo::PendingAssociatedRemote<mojom::blink::FencedFrameOwnerHost> remote;
@@ -77,6 +70,12 @@ void FencedFrameMPArchDelegate::FreezeFrameSize() {
   // update the CSS on the inner iframe element as the outer container's
   // size changes.
   GetElement().StopResizeObserver();
+}
+
+void FencedFrameMPArchDelegate::DidChangeFramePolicy(
+    const FramePolicy& frame_policy) {
+  DCHECK(remote_);
+  remote_->DidChangeFramePolicy(frame_policy);
 }
 
 }  // namespace blink

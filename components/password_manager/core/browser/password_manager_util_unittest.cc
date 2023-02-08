@@ -228,14 +228,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (const autofill::FormData&, const autofill::FormFieldData&),
               (override));
   MOCK_METHOD(bool,
-              FastCheckoutScriptSupportsConsentlessExecution,
-              (const url::Origin& origin),
-              (override));
-  MOCK_METHOD(bool,
-              FastCheckoutClientSupportsConsentlessExecution,
-              (),
-              (override));
-  MOCK_METHOD(bool,
               ShowFastCheckout,
               (base::WeakPtr<autofill::FastCheckoutDelegate>),
               (override));
@@ -292,7 +284,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               (),
               (const, override));
 #if BUILDFLAG(IS_IOS)
-  MOCK_METHOD(bool, IsQueryIDRelevant, (int), (override));
+  MOCK_METHOD(bool, IsLastQueriedField, (autofill::FieldGlobalId), (override));
 #endif
   MOCK_METHOD(void,
               LoadRiskData,

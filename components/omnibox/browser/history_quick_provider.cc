@@ -175,7 +175,7 @@ absl::optional<int> HistoryQuickProvider::MaxMatchScore() {
   // for these inputs.
   const bool can_have_url_what_you_typed_match_first =
       (autocomplete_input_.type() != metrics::OmniboxInputType::QUERY) &&
-      (!autocomplete_input_.parts().username.is_nonempty() ||
+      (autocomplete_input_.parts().username.is_empty() ||
        autocomplete_input_.parts().password.is_nonempty() ||
        autocomplete_input_.parts().path.is_nonempty());
   if (can_have_url_what_you_typed_match_first) {
@@ -220,13 +220,13 @@ absl::optional<int> HistoryQuickProvider::MaxMatchScore() {
           url_what_you_typed_match_score =
               HistoryURLProvider::kScoreForBestInlineableResult;
         } else if (url_db->IsTypedHost(host, /*scheme=*/nullptr) &&
-                   (!autocomplete_input_.parts().path.is_nonempty() ||
+                   (autocomplete_input_.parts().path.is_empty() ||
                     ((autocomplete_input_.parts().path.len == 1) &&
                      (autocomplete_input_
                           .text()[autocomplete_input_.parts().path.begin] ==
                       '/'))) &&
-                   !autocomplete_input_.parts().query.is_nonempty() &&
-                   !autocomplete_input_.parts().ref.is_nonempty()) {
+                   autocomplete_input_.parts().query.is_empty() &&
+                   autocomplete_input_.parts().ref.is_empty()) {
           // Not visited, but we've seen the host before.
           will_have_url_what_you_typed_match_first = true;
           if (net::registry_controlled_domains::HostHasRegistryControlledDomain(
@@ -310,7 +310,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.contents = url_formatter::FormatUrl(
         info.url(),
         AutocompleteMatch::GetFormatTypes(
-            autocomplete_input_.parts().scheme.len > 0 ||
+            autocomplete_input_.parts().scheme.is_nonempty() ||
                 history_match.match_in_scheme,
             history_match.match_in_subdomain),
         base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
@@ -350,6 +350,16 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     match.from_keyword = true;
   }
 
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    // Propagate scoring signals to AC Match for ML Model training data.
+    // `allowed_to_be_default_match` is set in this function, after the ACMatch
+    // is constructed, rather than in ScoredHistoryMatch. We have to propagate
+    // that signal to `scoring_signals` in addition to all signals calculated in
+    // the ScoredHistoryMatch.
+    match.scoring_signals = history_match.scoring_signals;
+    match.scoring_signals.set_allowed_to_be_default_match(
+        match.allowed_to_be_default_match);
+  }
   match.RecordAdditionalInfo("typed count", info.typed_count());
   match.RecordAdditionalInfo("visit count", info.visit_count());
   match.RecordAdditionalInfo("last visit", info.last_visit());

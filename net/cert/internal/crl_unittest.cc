@@ -16,13 +16,14 @@ namespace net {
 
 namespace {
 
-constexpr base::TimeDelta kAgeOneWeek = base::Days(7);
+constexpr int64_t kAgeOneWeek = 7 * 24 * 60 * 60;
 
 std::string GetFilePath(base::StringPiece file_name) {
   return std::string("net/data/crl_unittest/") + std::string(file_name);
 }
 
-scoped_refptr<ParsedCertificate> ParseCertificate(base::StringPiece data) {
+std::shared_ptr<const ParsedCertificate> ParseCertificate(
+    base::StringPiece data) {
   CertErrors errors;
   return ParsedCertificate::Create(
       bssl::UniquePtr<CRYPTO_BUFFER>(CRYPTO_BUFFER_new(
@@ -138,13 +139,14 @@ TEST_P(CheckCRLTest, FromFile) {
 
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
 
-  scoped_refptr<ParsedCertificate> cert = ParseCertificate(cert_data);
+  std::shared_ptr<const ParsedCertificate> cert = ParseCertificate(cert_data);
   ASSERT_TRUE(cert);
-  scoped_refptr<ParsedCertificate> issuer_cert = ParseCertificate(ca_data);
+  std::shared_ptr<const ParsedCertificate> issuer_cert =
+      ParseCertificate(ca_data);
   ASSERT_TRUE(issuer_cert);
   ParsedCertificateList certs = {cert, issuer_cert};
   if (!ca_data_2.empty()) {
-    scoped_refptr<ParsedCertificate> issuer_cert_2 =
+    std::shared_ptr<const ParsedCertificate> issuer_cert_2 =
         ParseCertificate(ca_data_2);
     ASSERT_TRUE(issuer_cert_2);
     certs.push_back(issuer_cert_2);
@@ -173,7 +175,7 @@ TEST_P(CheckCRLTest, FromFile) {
   ASSERT_TRUE(cert_dp);
 
   // Mar 9 00:00:00 2017 GMT
-  base::Time kVerifyTime = base::Time::UnixEpoch() + base::Seconds(1489017600);
+  int64_t kVerifyTime = 1489017600;
 
   CRLRevocationStatus expected_revocation_status = CRLRevocationStatus::UNKNOWN;
   if (base::StartsWith(file_name, "good"))

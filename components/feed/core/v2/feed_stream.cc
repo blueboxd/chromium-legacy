@@ -20,7 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/store.pb.h"
@@ -485,7 +485,7 @@ void FeedStream::ScheduleModelUnloadIfNoSurfacesAttached(
   if (!stream.surfaces.empty())
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FeedStream::AddUnloadModelIfNoSurfacesAttachedTask,
                      GetWeakPtr(), stream.type,
@@ -507,7 +507,7 @@ void FeedStream::AddUnloadModelIfNoSurfacesAttachedTask(
   // If this is a SingleWebFeed stream, remove it and delete stream data on a
   // delay.
   if (stream_type.IsSingleWebFeed()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&FeedStream::ClearStream, GetWeakPtr(), stream_type,
                        sequence_number),
@@ -938,10 +938,25 @@ LaunchResult FeedStream::ShouldMakeFeedQueryRequest(
             feedwire::DiscoverLaunchResult::NO_CARDS_REQUEST_ERROR_NO_INTERNET};
   }
 
-  if (consume_quota &&
-      !request_throttler_.RequestQuota((load_type != LoadType::kLoadMore)
-                                           ? NetworkRequestType::kFeedQuery
-                                           : NetworkRequestType::kNextPage)) {
+  NetworkRequestType request_type;
+  switch (stream_type.GetKind()) {
+    case StreamKind::kUnknown:
+      DLOG(ERROR) << "Unknown stream kind";
+      [[fallthrough]];
+    case StreamKind::kForYou:
+      request_type = (load_type != LoadType::kLoadMore)
+                         ? NetworkRequestType::kFeedQuery
+                         : NetworkRequestType::kNextPage;
+      break;
+    case StreamKind::kFollowing:
+      request_type = NetworkRequestType::kWebFeedListContents;
+      break;
+    case StreamKind::kSingleWebFeed:
+      request_type = NetworkRequestType::kSingleWebFeedListContents;
+      break;
+  }
+
+  if (consume_quota && !request_throttler_.RequestQuota(request_type)) {
     return {LoadStreamStatus::kCannotLoadFromNetworkThrottled,
             feedwire::DiscoverLaunchResult::NO_CARDS_REQUEST_ERROR_OTHER};
   }

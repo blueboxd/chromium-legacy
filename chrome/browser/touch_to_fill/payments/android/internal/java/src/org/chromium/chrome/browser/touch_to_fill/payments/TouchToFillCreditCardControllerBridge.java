@@ -38,8 +38,35 @@ class TouchToFillCreditCardControllerBridge implements TouchToFillCreditCardComp
         }
     }
 
+    @Override
+    public void scanCreditCard() {
+        if (mNativeTouchToFillCreditCardViewController != 0) {
+            TouchToFillCreditCardControllerBridgeJni.get().scanCreditCard(
+                    mNativeTouchToFillCreditCardViewController);
+        }
+    }
+
+    @Override
+    public void showCreditCardSettings() {
+        if (mNativeTouchToFillCreditCardViewController != 0) {
+            TouchToFillCreditCardControllerBridgeJni.get().showCreditCardSettings(
+                    mNativeTouchToFillCreditCardViewController);
+        }
+    }
+
+    @Override
+    public void suggestionSelected(String uniqueId) {
+        if (mNativeTouchToFillCreditCardViewController != 0) {
+            TouchToFillCreditCardControllerBridgeJni.get().suggestionSelected(
+                    mNativeTouchToFillCreditCardViewController, uniqueId);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void onDismissed(long nativeTouchToFillCreditCardViewController);
+        void scanCreditCard(long nativeTouchToFillCreditCardViewController);
+        void showCreditCardSettings(long nativeTouchToFillCreditCardViewController);
+        void suggestionSelected(long nativeTouchToFillCreditCardViewController, String uniqueId);
     }
 }

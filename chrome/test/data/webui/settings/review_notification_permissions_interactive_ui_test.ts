@@ -10,7 +10,7 @@ import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_brow
 
 import {SettingsReviewNotificationPermissionsElement, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 // clang-format on
 
 suite('CrSettingsReviewNotificationPermissionsInteractiveUITest', function() {
@@ -36,7 +36,8 @@ suite('CrSettingsReviewNotificationPermissionsInteractiveUITest', function() {
   ];
 
   function assertExpandButtonFocus() {
-    const expandButton = testElement.shadowRoot!.querySelector('#expandButton');
+    const expandButton =
+        testElement.shadowRoot!.querySelector('cr-expand-button');
     assert(expandButton);
     assertTrue(expandButton.matches(':focus-within'));
   }
@@ -44,7 +45,7 @@ suite('CrSettingsReviewNotificationPermissionsInteractiveUITest', function() {
   function waitForFocusEventOnExpandButton(): Promise<void> {
     return new Promise((resolve) => {
       const expandButton =
-          testElement.shadowRoot!.querySelector('#expandButton');
+          testElement.shadowRoot!.querySelector('cr-expand-button');
       assert(expandButton);
       const callback = () => {
         expandButton.removeEventListener('focus', callback);
@@ -81,8 +82,7 @@ suite('CrSettingsReviewNotificationPermissionsInteractiveUITest', function() {
   }
 
   function getEntries() {
-    return testElement.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    return testElement.shadowRoot!.querySelectorAll('.site-list .site-entry');
   }
 
   /**

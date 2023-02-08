@@ -65,9 +65,12 @@ class ViewTransitionStyleTracker
   ViewTransitionStyleTracker(Document& document, ViewTransitionState);
   ~ViewTransitionStyleTracker();
 
-  void AddSharedElement(Element*, const AtomicString&);
-  void RemoveSharedElement(Element*);
   void AddSharedElementsFromCSS();
+
+  // Returns true if the pseudo element corresponding to the given id and name
+  // is the only child.
+  bool MatchForOnlyChild(PseudoId pseudo_id,
+                         AtomicString view_transition_name) const;
 
   // Indicate that capture was requested. This verifies that the combination of
   // set elements and names is valid. Returns true if capture phase started, and
@@ -109,7 +112,9 @@ class ViewTransitionStyleTracker
 
   // Dispatched after the pre-paint lifecycle stage after each rendering
   // lifecycle update when a transition is in progress.
-  void RunPostPrePaintSteps();
+  // Returns false if the transition constraints were broken and the transition
+  // should be skipped.
+  bool RunPostPrePaintSteps();
 
   // Provides a UA stylesheet applied to ::transition* pseudo elements.
   const String& UAStyleSheet();
@@ -132,8 +137,6 @@ class ViewTransitionStyleTracker
 
   EffectPaintPropertyNode* GetEffect(Element* element) const;
   EffectPaintPropertyNode* GetRootEffect() const;
-
-  void VerifySharedElements();
 
   int CapturedTagCount() const { return captured_name_count_; }
 
@@ -233,6 +236,7 @@ class ViewTransitionStyleTracker
   void EndTransition();
 
   void AddConsoleError(String message, Vector<DOMNodeId> related_nodes = {});
+  void AddSharedElement(Element*, const AtomicString&);
   bool FlattenAndVerifyElements(VectorOf<Element>&,
                                 VectorOf<AtomicString>&,
                                 absl::optional<RootData>&);

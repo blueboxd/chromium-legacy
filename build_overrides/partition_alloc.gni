@@ -16,6 +16,7 @@
 # - put_ref_count_in_previous_slot
 # - enable_backup_ref_ptr_slow_checks
 # - enable_dangling_raw_ptr_checks
+# - backup_ref_ptr_poison_oob_ptr
 #
 # Temporarily defines use_allocator_shim here. After deciding what
 # allocator_shim should be (e.g. a part of PartitionAlloc, a new component:

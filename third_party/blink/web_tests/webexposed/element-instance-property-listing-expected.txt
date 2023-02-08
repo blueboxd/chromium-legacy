@@ -111,7 +111,6 @@ namespace http://www.w3.org/1999/xhtml
     property contains
     property contentEditable
     property dataset
-    property defaultOpen
     property dir
     property dispatchEvent
     property draggable
@@ -186,6 +185,7 @@ namespace http://www.w3.org/1999/xhtml
     property onbeforeinput
     property onbeforematch
     property onbeforepaste
+    property onbeforetoggle
     property onbeforexrselect
     property onblur
     property oncancel
@@ -674,9 +674,9 @@ html element iframe
     property allow
     property allowFullscreen
     property allowPaymentRequest
-    property anonymous
     property contentDocument
     property contentWindow
+    property credentialless
     property csp
     property featurePolicy
     property frameBorder
@@ -1079,6 +1079,7 @@ html element td
     property width
 html element template
     property content
+    property shadowRootMode
 html element textarea
     property autocomplete
     property checkValidity
@@ -1187,7 +1188,6 @@ html element video
     property NETWORK_NO_SOURCE
     property addTextTrack
     property audioTracks
-    property autoPictureInPicture
     property autoplay
     property buffered
     property canPlayType
@@ -1418,6 +1418,7 @@ namespace http://www.w3.org/2000/svg
     property onbeforeinput
     property onbeforematch
     property onbeforepaste
+    property onbeforetoggle
     property onbeforexrselect
     property onblur
     property oncancel

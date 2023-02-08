@@ -75,10 +75,10 @@ base::TimeDelta ComputeRefreshIntervalFromBounds(
 
 // MediaStreamVideoTrack::FrameDeliverer is a helper class used for registering
 // VideoCaptureDeliverFrameCB/EncodedVideoFrameCB callbacks on the main render
-// thread to receive video frames on the IO-thread. Frames are only delivered to
-// the sinks if the track is enabled. If the track is disabled, a black frame is
-// instead forwarded to the sinks at the same frame rate. A disabled track does
-// not forward data to encoded sinks.
+// thread to receive video frames on the video task runner. Frames are only
+// delivered to the sinks if the track is enabled. If the track is disabled, a
+// black frame is instead forwarded to the sinks at the same frame rate. A
+// disabled track does not forward data to encoded sinks.
 class MediaStreamVideoTrack::FrameDeliverer
     : public WTF::ThreadSafeRefCounted<FrameDeliverer> {
  public:
@@ -86,7 +86,7 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   FrameDeliverer(
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> video_task_runner,
       base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
       bool enabled,
       uint32_t crop_version);
@@ -99,7 +99,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // it resumes producing encoded data.
   void SetEnabled(bool enabled, bool await_key_frame);
 
-  // Add |callback| to receive video frames on the IO-thread.
+  // Add |callback| to receive video frames on the video task runner.
   // Must be called on the main render thread.
   void AddCallback(VideoSinkId id, VideoCaptureDeliverFrameCB callback);
 
@@ -107,7 +107,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   void SetNotifyFrameDroppedCallback(VideoSinkId id,
                                      VideoCaptureNotifyFrameDroppedCB callback);
 
-  // Add |callback| to receive encoded video frames on the IO-thread.
+  // Add |callback| to receive encoded video frames on the video task runner.
   // Must be called on the main render thread.
   void AddEncodedCallback(VideoSinkId id, EncodedVideoFrameCB callback);
 
@@ -124,26 +124,27 @@ class MediaStreamVideoTrack::FrameDeliverer
   void RemoveEncodedCallback(VideoSinkId id);
 
   // Triggers all registered callbacks with |frame| and |estimated_capture_time|
-  // as parameters. Must be called on the IO-thread.
-  void DeliverFrameOnIO(
+  // as parameters. Must be called on the video task runner.
+  void DeliverFrameOnVideoTaskRunner(
       scoped_refptr<media::VideoFrame> frame,
       std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
       base::TimeTicks estimated_capture_time);
 
   // Triggers all registered dropped frame callbacks. Must be called on the
-  // IO-thread.
-  void NotifyFrameDroppedOnIO();
+  // video task runner.
+  void NotifyFrameDroppedOnVideoTaskRunner();
 
   // Triggers all encoded callbacks with |frame| and |estimated_capture_time|.
-  // Must be called on the IO-thread.
-  void DeliverEncodedVideoFrameOnIO(scoped_refptr<EncodedVideoFrame> frame,
-                                    base::TimeTicks estimated_capture_time);
+  // Must be called on the video task runner.
+  void DeliverEncodedVideoFrameOnVideoTaskRunner(
+      scoped_refptr<EncodedVideoFrame> frame,
+      base::TimeTicks estimated_capture_time);
 
   // Called when a crop-version is acknowledged by the capture module.
   // After this, it is guaranteed that all subsequent frames will be
   // associated with a crop-version that is >= |crop_version|.
-  // Must be called on the IO-thread.
-  void NewCropVersionOnIO(uint32_t crop_version);
+  // Must be called on the video task runner.
+  void NewCropVersionOnVideoTaskRunner(uint32_t crop_version);
 
   void SetIsRefreshingForMinFrameRate(bool is_refreshing_for_min_frame_rate);
 
@@ -162,30 +163,33 @@ class MediaStreamVideoTrack::FrameDeliverer
   };
 
   virtual ~FrameDeliverer();
-  void AddCallbackOnIO(VideoSinkId id,
-                       VideoCaptureDeliverFrameInternalCallback callback);
-  void SetNotifyFrameDroppedCallbackOnIO(
+  void AddCallbackOnVideoTaskRunner(
+      VideoSinkId id,
+      VideoCaptureDeliverFrameInternalCallback callback);
+  void SetNotifyFrameDroppedCallbackOnVideoTaskRunner(
       VideoSinkId id,
       VideoCaptureNotifyFrameDroppedInternalCallback callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-  void RemoveCallbackOnIO(
+  void RemoveCallbackOnVideoTaskRunner(
       VideoSinkId id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  void AddEncodedCallbackOnIO(VideoSinkId id,
-                              EncodedVideoFrameInternalCallback callback);
-  void RemoveEncodedCallbackOnIO(
+  void AddEncodedCallbackOnVideoTaskRunner(
+      VideoSinkId id,
+      EncodedVideoFrameInternalCallback callback);
+  void RemoveEncodedCallbackOnVideoTaskRunner(
       VideoSinkId id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
-  void SetEnabledOnIO(bool enabled, bool await_key_frame);
+  void SetEnabledOnVideoTaskRunner(bool enabled, bool await_key_frame);
 
-  void SetIsRefreshingForMinFrameRateOnIO(
+  void SetIsRefreshingForMinFrameRateOnVideoTaskRunner(
       bool is_refreshing_for_min_frame_rate);
 
-  void AddCropVersionCallbackOnIO(uint32_t crop_version,
-                                  WTF::CrossThreadOnceClosure callback);
-  void RemoveCropVersionCallbackOnIO(uint32_t crop_version);
+  void AddCropVersionCallbackOnVideoTaskRunner(
+      uint32_t crop_version,
+      WTF::CrossThreadOnceClosure callback);
+  void RemoveCropVersionCallbackOnVideoTaskRunner(uint32_t crop_version);
 
   // Returns a black frame where the size and time stamp is set to the same as
   // as in |reference_frame|.
@@ -195,7 +199,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
   // Render Thread.
   THREAD_CHECKER(main_render_thread_checker_);
-  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> video_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner_;
 
   base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track_;
@@ -209,13 +213,13 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // Callbacks that will be invoked a single time when a crop-version
   // is observed that is at least equal to the key.
-  // The map itself (crop_version_callbacks_) is bound to the IO thread.
+  // The map itself (crop_version_callbacks_) is bound to the video task runner.
   // The callbacks are bound to their respective threads (BindPostTask).
   HashMap<uint32_t, WTF::CrossThreadOnceClosure> crop_version_callbacks_;
 
   bool await_next_key_frame_;
 
-  // This should only be accessed on the IO thread.
+  // This should only be accessed on the video task runner.
   bool is_refreshing_for_min_frame_rate_ = false;
 
   // This monotonously increasing value indicates which crop-version
@@ -225,18 +229,18 @@ class MediaStreamVideoTrack::FrameDeliverer
 
 MediaStreamVideoTrack::FrameDeliverer::FrameDeliverer(
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> video_task_runner,
     base::WeakPtr<MediaStreamVideoTrack> media_stream_video_track,
     bool enabled,
     uint32_t crop_version)
-    : io_task_runner_(std::move(io_task_runner)),
+    : video_task_runner_(std::move(video_task_runner)),
       main_render_task_runner_(main_render_task_runner),
       media_stream_video_track_(media_stream_video_track),
       enabled_(enabled),
       emit_frame_drop_events_(true),
       await_next_key_frame_(false),
       crop_version_(crop_version) {
-  DCHECK(io_task_runner_.get());
+  DCHECK(video_task_runner_.get());
   DCHECK(main_render_task_runner_);
 }
 
@@ -249,16 +253,16 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCallback(
     VideoCaptureDeliverFrameCB callback) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::AddCallbackOnIO,
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::AddCallbackOnVideoTaskRunner,
                           WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           CrossThreadBindRepeating(std::move(callback))));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::AddCallbackOnVideoTaskRunner(
     VideoSinkId id,
     VideoCaptureDeliverFrameInternalCallback callback) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   callbacks_.push_back(VideoIdCallbacks{id, std::move(callback),
                                         CrossThreadBindRepeating([] {})});
 }
@@ -268,18 +272,20 @@ void MediaStreamVideoTrack::FrameDeliverer::SetNotifyFrameDroppedCallback(
     VideoCaptureNotifyFrameDroppedCB callback) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::SetNotifyFrameDroppedCallbackOnIO,
-                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
-                          CrossThreadBindRepeating(std::move(callback)),
-                          main_render_task_runner_));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &FrameDeliverer::SetNotifyFrameDroppedCallbackOnVideoTaskRunner,
+          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
+          CrossThreadBindRepeating(std::move(callback)),
+          main_render_task_runner_));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::SetNotifyFrameDroppedCallbackOnIO(
-    VideoSinkId id,
-    VideoCaptureNotifyFrameDroppedInternalCallback callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    SetNotifyFrameDroppedCallbackOnVideoTaskRunner(
+        VideoSinkId id,
+        VideoCaptureNotifyFrameDroppedInternalCallback callback,
+        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << __func__;
   for (auto& entry : callbacks_) {
     if (entry.id == id) {
@@ -300,32 +306,32 @@ void MediaStreamVideoTrack::FrameDeliverer::AddEncodedCallback(
     EncodedVideoFrameCB callback) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::AddEncodedCallbackOnIO,
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::AddEncodedCallbackOnVideoTaskRunner,
                           WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           CrossThreadBindRepeating(std::move(callback))));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::AddEncodedCallbackOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::AddEncodedCallbackOnVideoTaskRunner(
     VideoSinkId id,
     EncodedVideoFrameInternalCallback callback) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   encoded_callbacks_.insert(id, std::move(callback));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCallback(VideoSinkId id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::RemoveCallbackOnIO,
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::RemoveCallbackOnVideoTaskRunner,
                           WrapRefCounted(this), WTF::CrossThreadUnretained(id),
                           main_render_task_runner_));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::RemoveCallbackOnVideoTaskRunner(
     VideoSinkId id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   auto* it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->id == id) {
@@ -347,16 +353,18 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveEncodedCallback(
     VideoSinkId id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::RemoveEncodedCallbackOnIO,
-                          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
-                          main_render_task_runner_));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &FrameDeliverer::RemoveEncodedCallbackOnVideoTaskRunner,
+          WrapRefCounted(this), WTF::CrossThreadUnretained(id),
+          main_render_task_runner_));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::RemoveEncodedCallbackOnIO(
-    VideoSinkId id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    RemoveEncodedCallbackOnVideoTaskRunner(
+        VideoSinkId id,
+        const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
 
   // Callback destruction needs to happen on the specified task runner.
   auto it = encoded_callbacks_.find(id);
@@ -373,15 +381,15 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabled(bool enabled,
                                                        bool await_key_frame) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::SetEnabledOnIO, WrapRefCounted(this),
-                          enabled, await_key_frame));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&FrameDeliverer::SetEnabledOnVideoTaskRunner,
+                          WrapRefCounted(this), enabled, await_key_frame));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnVideoTaskRunner(
     bool enabled,
     bool await_key_frame) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   if (enabled != enabled_) {
     enabled_ = enabled;
     emit_frame_drop_events_ = true;
@@ -396,10 +404,10 @@ void MediaStreamVideoTrack::FrameDeliverer::SetIsRefreshingForMinFrameRate(
     bool is_refreshing_for_min_frame_rate) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::SetIsRefreshingForMinFrameRateOnIO,
-                          WrapRefCounted(this),
-                          is_refreshing_for_min_frame_rate));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &FrameDeliverer::SetIsRefreshingForMinFrameRateOnVideoTaskRunner,
+          WrapRefCounted(this), is_refreshing_for_min_frame_rate));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::AddCropVersionCallback(
@@ -408,10 +416,11 @@ void MediaStreamVideoTrack::FrameDeliverer::AddCropVersionCallback(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::AddCropVersionCallbackOnIO,
-                          WrapRefCounted(this), crop_version,
-                          CrossThreadBindOnce(std::move(callback))));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &FrameDeliverer::AddCropVersionCallbackOnVideoTaskRunner,
+          WrapRefCounted(this), crop_version,
+          CrossThreadBindOnce(std::move(callback))));
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::RemoveCropVersionCallback(
@@ -419,40 +428,43 @@ void MediaStreamVideoTrack::FrameDeliverer::RemoveCropVersionCallback(
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
 
   PostCrossThreadTask(
-      *io_task_runner_, FROM_HERE,
-      CrossThreadBindOnce(&FrameDeliverer::RemoveCropVersionCallbackOnIO,
-                          WrapRefCounted(this), crop_version));
+      *video_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(
+          &FrameDeliverer::RemoveCropVersionCallbackOnVideoTaskRunner,
+          WrapRefCounted(this), crop_version));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::SetIsRefreshingForMinFrameRateOnIO(
-    bool is_refreshing_for_min_frame_rate) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    SetIsRefreshingForMinFrameRateOnVideoTaskRunner(
+        bool is_refreshing_for_min_frame_rate) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   is_refreshing_for_min_frame_rate_ = is_refreshing_for_min_frame_rate;
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::AddCropVersionCallbackOnIO(
-    uint32_t crop_version,
-    WTF::CrossThreadOnceClosure callback) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    AddCropVersionCallbackOnVideoTaskRunner(
+        uint32_t crop_version,
+        WTF::CrossThreadOnceClosure callback) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!base::Contains(crop_version_callbacks_, crop_version));
 
   crop_version_callbacks_.Set(crop_version, std::move(callback));
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::RemoveCropVersionCallbackOnIO(
-    uint32_t crop_version) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    RemoveCropVersionCallbackOnVideoTaskRunner(uint32_t crop_version) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
 
   // Note: Might or might not be here, depending on whether a later crop
   // version has already been observed or not.
   crop_version_callbacks_.erase(crop_version);
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner(
     scoped_refptr<media::VideoFrame> frame,
     std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
     base::TimeTicks estimated_capture_time) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
 
   // TODO(crbug.com/1369085): Understand why we sometimes see old crop versions.
   if (frame->metadata().crop_version != crop_version_) {
@@ -506,17 +518,19 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
   }
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::NotifyFrameDroppedOnIO() {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    NotifyFrameDroppedOnVideoTaskRunner() {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << __func__;
   for (const auto& entry : callbacks_)
     entry.notify_frame_dropped.Run();
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO(
-    scoped_refptr<EncodedVideoFrame> frame,
-    base::TimeTicks estimated_capture_time) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+void MediaStreamVideoTrack::FrameDeliverer::
+    DeliverEncodedVideoFrameOnVideoTaskRunner(
+        scoped_refptr<EncodedVideoFrame> frame,
+        base::TimeTicks estimated_capture_time) {
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   if (!enabled_) {
     return;
   }
@@ -529,9 +543,9 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO(
   }
 }
 
-void MediaStreamVideoTrack::FrameDeliverer::NewCropVersionOnIO(
+void MediaStreamVideoTrack::FrameDeliverer::NewCropVersionOnVideoTaskRunner(
     uint32_t crop_version) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   DCHECK_GT(crop_version, crop_version_);
 
   crop_version_ = crop_version;
@@ -550,7 +564,7 @@ void MediaStreamVideoTrack::FrameDeliverer::NewCropVersionOnIO(
 scoped_refptr<media::VideoFrame>
 MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
     const media::VideoFrame& reference_frame) {
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(video_task_runner_->RunsTasksInCurrentSequence());
   if (!black_frame_.get() ||
       black_frame_->natural_size() != reference_frame.natural_size()) {
     black_frame_ =
@@ -627,22 +641,25 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       source_(source->GetWeakPtr()) {
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
-          source->GetTaskRunner(), source->io_task_runner(),
+          source->GetTaskRunner(), source->video_task_runner(),
           weak_factory_.GetWeakPtr(), enabled, source->GetCropVersion());
   source->AddTrack(
       this, VideoTrackAdapterSettings(),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
+          &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner,
           frame_deliverer_)),
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
+                                       NotifyFrameDroppedOnVideoTaskRunner,
+                                   frame_deliverer_)),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::NotifyFrameDroppedOnIO,
+          &MediaStreamVideoTrack::FrameDeliverer::
+              DeliverEncodedVideoFrameOnVideoTaskRunner,
           frame_deliverer_)),
-      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO,
-          frame_deliverer_)),
-      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::NewCropVersionOnIO,
-          frame_deliverer_)),
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
+                                       NewCropVersionOnVideoTaskRunner,
+                                   frame_deliverer_)),
       media::BindToCurrentLoop(WTF::BindRepeating(
           &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
           weak_factory_.GetWeakPtr())),
@@ -676,22 +693,25 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       source_(source->GetWeakPtr()) {
   frame_deliverer_ =
       base::MakeRefCounted<MediaStreamVideoTrack::FrameDeliverer>(
-          source->GetTaskRunner(), source->io_task_runner(),
+          source->GetTaskRunner(), source->video_task_runner(),
           weak_factory_.GetWeakPtr(), enabled, source->GetCropVersion());
   source->AddTrack(
       this, adapter_settings,
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
+          &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnVideoTaskRunner,
           frame_deliverer_)),
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
+                                       NotifyFrameDroppedOnVideoTaskRunner,
+                                   frame_deliverer_)),
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::NotifyFrameDroppedOnIO,
+          &MediaStreamVideoTrack::FrameDeliverer::
+              DeliverEncodedVideoFrameOnVideoTaskRunner,
           frame_deliverer_)),
-      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::DeliverEncodedVideoFrameOnIO,
-          frame_deliverer_)),
-      ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-          &MediaStreamVideoTrack::FrameDeliverer::NewCropVersionOnIO,
-          frame_deliverer_)),
+      ConvertToBaseRepeatingCallback(
+          CrossThreadBindRepeating(&MediaStreamVideoTrack::FrameDeliverer::
+                                       NewCropVersionOnVideoTaskRunner,
+                                   frame_deliverer_)),
       media::BindToCurrentLoop(WTF::BindRepeating(
           &MediaStreamVideoTrack::SetSizeAndComputedFrameRate,
           weak_factory_.GetWeakPtr())),
@@ -733,6 +753,8 @@ void MediaStreamVideoTrack::AddSink(
   secure_tracker_.Add(sink, is_secure == MediaStreamVideoSink::IsSecure::kYes);
   if (uses_alpha == MediaStreamVideoSink::UsesAlpha::kDefault) {
     alpha_using_sinks_.insert(sink);
+  } else if (uses_alpha == MediaStreamVideoSink::UsesAlpha::kNo) {
+    alpha_discarding_sinks_.insert(sink);
   }
 
   // Ensure sink gets told about any constraints set.
@@ -746,8 +768,10 @@ void MediaStreamVideoTrack::AddSink(
   RequestRefreshFrame();
   source_->UpdateCapturingLinkSecure(this,
                                      secure_tracker_.is_capturing_secure());
-  // Alpha can be discarded only if no sink need to use alpha.
-  const bool can_discard_alpha = alpha_using_sinks_.empty();
+  // Alpha can't be discarded if any sink uses alpha, or if the only sinks
+  // connected are kDependsOnOtherSinks.
+  const bool can_discard_alpha =
+      alpha_using_sinks_.empty() && !alpha_discarding_sinks_.empty();
   source_->SetCanDiscardAlpha(can_discard_alpha);
   if (is_screencast_)
     StartTimerForRequestingFrames();
@@ -775,6 +799,7 @@ void MediaStreamVideoTrack::RemoveSink(WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   RemoveSinkInternal(&sinks_, sink);
   alpha_using_sinks_.erase(sink);
+  alpha_discarding_sinks_.erase(sink);
   frame_deliverer_->RemoveCallback(sink);
   secure_tracker_.Remove(sink);
   if (!source_)
@@ -782,8 +807,9 @@ void MediaStreamVideoTrack::RemoveSink(WebMediaStreamSink* sink) {
   UpdateSourceHasConsumers();
   source_->UpdateCapturingLinkSecure(this,
                                      secure_tracker_.is_capturing_secure());
-  // Alpha can be discarded only if no sink uses alpha or no sink exists.
-  const bool can_discard_alpha = sinks_.empty() || alpha_using_sinks_.empty();
+  const bool can_discard_alpha =
+      sinks_.empty() ||
+      (alpha_using_sinks_.empty() && !alpha_discarding_sinks_.empty());
   source_->SetCanDiscardAlpha(can_discard_alpha);
   // Restart the timer with existing sinks.
   if (is_screencast_)

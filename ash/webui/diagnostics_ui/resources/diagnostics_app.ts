@@ -5,6 +5,7 @@
 import 'chrome://resources/ash/common/navigation_view_panel.js';
 import 'chrome://resources/ash/common/page_toolbar.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './diagnostics_sticky_banner.js';
 import './diagnostics_shared.css.js';
 import './input_list.js';
@@ -16,6 +17,7 @@ import {SelectorItem} from 'chrome://resources/ash/common/navigation_selector.js
 import {NavigationViewPanelElement} from 'chrome://resources/ash/common/navigation_view_panel.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -30,6 +32,14 @@ export interface DiagnosticsAppElement {
     navigationPanel: NavigationViewPanelElement,
     toast: CrToastElement,
   };
+}
+
+export type ShowToastEvent = CustomEvent<{message: string}>;
+
+declare global {
+  interface HTMLElementEventMap {
+    'show-toast': ShowToastEvent;
+  }
 }
 
 // TODO(michaelcheco): Update |InputDataProvider::GetConnectedDevices()| to
@@ -116,6 +126,17 @@ export class DiagnosticsAppElement extends DiagnosticsAppElementBase {
   }
 
   /**
+   * Event callback for 'show-toast' which is triggered from input-list. Event
+   * will contain message to display on message property of event found on
+   * event found on path `e.detail.message`.
+   */
+  private showToastHandler = (e: ShowToastEvent) => {
+    assert(e.detail.message);
+    this.toastText_ = e.detail.message;
+    this.$.toast.show();
+  };
+
+  /**
    * Implements ConnectedDevicesObserver.OnKeyboardConnected.
    */
   onKeyboardConnected(): void {
@@ -185,6 +206,14 @@ export class DiagnosticsAppElement extends DiagnosticsAppElementBase {
   override connectedCallback() {
     super.connectedCallback();
     this.createNavigationPanel();
+    window.addEventListener(
+        'show-toast', (e) => this.showToastHandler((e as ShowToastEvent)));
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener(
+        'show-toast', (e) => this.showToastHandler((e as ShowToastEvent)));
   }
 
   protected onSessionLogClick_(): void {
@@ -211,7 +240,7 @@ export class DiagnosticsAppElement extends DiagnosticsAppElementBase {
   // the input page to the navigation panel.
   private createInputSelector(): SelectorItem {
     return this.$.navigationPanel.createSelectorItem(
-        loadTimeData.getString('inputText'), 'input-list',
+        loadTimeData.getString('keyboardText'), 'input-list',
         getDiagnosticsIcon('keyboard'), 'input');
   }
 }

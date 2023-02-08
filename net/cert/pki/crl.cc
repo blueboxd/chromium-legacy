@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/pki/crl.h"
+#include <algorithm>
 
-#include "base/stl_util.h"
-#include "base/types/optional_util.h"
 #include "net/cert/pki/cert_errors.h"
+#include "net/cert/pki/crl.h"
 #include "net/cert/pki/revocation_util.h"
 #include "net/cert/pki/signature_algorithm.h"
 #include "net/cert/pki/verify_name_match.h"
@@ -38,7 +37,10 @@ bool ContainsExactMatchingName(std::vector<std::string_view> a,
                                std::vector<std::string_view> b) {
   std::sort(a.begin(), a.end());
   std::sort(b.begin(), b.end());
-  return !base::STLSetIntersection<std::vector<std::string_view>>(a, b).empty();
+  std::vector<std::string_view> names_in_common;
+  std::set_intersection(a.begin(), a.end(), b.begin(), b.end(),
+                        std::back_inserter(names_in_common));
+  return !names_in_common.empty();
 }
 
 }  // namespace
@@ -365,8 +367,8 @@ CRLRevocationStatus CheckCRL(std::string_view raw_crl,
                              const ParsedCertificateList& valid_chain,
                              size_t target_cert_index,
                              const ParsedDistributionPoint& cert_dp,
-                             const base::Time& verify_time,
-                             const base::TimeDelta& max_age) {
+                             int64_t verify_time_epoch_seconds,
+                             int64_t max_age_seconds) {
   DCHECK_LT(target_cert_index, valid_chain.size());
 
   if (cert_dp.reasons) {
@@ -421,8 +423,10 @@ CRLRevocationStatus CheckCRL(std::string_view raw_crl,
   // Check CRL dates. Roughly corresponds to 6.3.3 (a) (1) but does not attempt
   // to update the CRL if it is out of date.
   if (!CheckRevocationDateValid(tbs_cert_list.this_update,
-                                base::OptionalToPtr(tbs_cert_list.next_update),
-                                verify_time, max_age)) {
+                                tbs_cert_list.next_update.has_value()
+                                    ? &tbs_cert_list.next_update.value()
+                                    : nullptr,
+                                verify_time_epoch_seconds, max_age_seconds)) {
     return CRLRevocationStatus::UNKNOWN;
   }
 

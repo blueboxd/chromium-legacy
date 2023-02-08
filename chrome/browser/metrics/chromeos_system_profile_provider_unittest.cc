@@ -19,13 +19,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/multidevice/remote_device_test_util.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -123,13 +123,13 @@ class ChromeOSSystemProfileProviderTest : public testing::Test {
         &fake_statistics_provider_);
 
     // Initialize the login state trackers.
-    if (!chromeos::LoginState::IsInitialized())
-      chromeos::LoginState::Initialize();
+    if (!ash::LoginState::IsInitialized())
+      ash::LoginState::Initialize();
   }
 
   void TearDown() override {
     // Destroy the login state tracker if it was initialized.
-    chromeos::LoginState::Shutdown();
+    ash::LoginState::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     ash::multidevice_setup::MultiDeviceSetupClientImpl::Factory::

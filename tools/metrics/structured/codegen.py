@@ -109,6 +109,14 @@ class ProjectInfo:
           self.event_type = 'RAW_STRING'
           break
 
+    # Check if event is part of an event sequence. Note that this goes after the
+    # raw string check since the type has higher priority.
+    if project.is_event_sequence_project:
+      self.is_event_sequence = 'true'
+      self.event_type = 'SEQUENCE'
+    else:
+      self.is_event_sequence = 'false'
+
     self.key_rotation_period = project.key_rotation_period
 
   def build_event_map(self) -> str:
@@ -141,6 +149,7 @@ class EventInfo:
     self.validator_name = '{}EventValidator'.format(self.name)
     self.validator_snake_name = Util.camel_to_snake(self.validator_name)
     self.project_name = project_info.name
+    self.is_event_sequence = project_info.is_event_sequence
     self.metrics = event.metrics
 
   def build_metric_hash_map(self) -> str:
@@ -155,8 +164,13 @@ class EventInfo:
                                     self.validator_snake_name)
 
   def build_validator_code(self) -> str:
+    if len(self.metrics) > 0:
+      metadata_impl = validator_tmpl.IMPL_GET_METRICS_METADATA.format(
+          metric_hash_map=self.build_metric_hash_map())
+    else:
+      metadata_impl = "  return absl::nullopt;"
     return validator_tmpl.IMPL_EVENT_VALIDATOR_TEMPLATE.format(
-        event=self, metric_hash_map=self.build_metric_hash_map())
+        event=self, get_metrics_metadata_impl=metadata_impl)
 
 
 class MetricInfo:

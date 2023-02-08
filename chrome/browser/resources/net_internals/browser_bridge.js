@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+import {sendWithPromise} from 'chrome://resources/js/cr.js';
 
 /** @type {?BrowserBridge} */
 let instance = null;
@@ -43,18 +43,6 @@ export class BrowserBridge {
 
   sendDomainSecurityPolicyDelete(domain) {
     chrome.send('domainSecurityPolicyDelete', [domain]);
-  }
-
-  sendExpectCTQuery(domain) {
-    return sendWithPromise('expectCTQuery', domain);
-  }
-
-  sendExpectCTAdd(domain, report_uri, enforce) {
-    chrome.send('expectCTAdd', [domain, report_uri, enforce]);
-  }
-
-  sendExpectCTTestReport(report_uri) {
-    return sendWithPromise('expectCTTestReport', report_uri);
   }
 
   sendCloseIdleSockets() {

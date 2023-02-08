@@ -226,12 +226,6 @@ BASE_FEATURE(kElasticOverscroll,
 );
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_ANDROID)
-const char kElasticOverscrollType[] = "type";
-const char kElasticOverscrollTypeFilter[] = "filter";
-const char kElasticOverscrollTypeTransform[] = "transform";
-#endif  // BUILDFLAG(IS_ANDROID)
-
 // Enables focus follow follow cursor (sloppyfocus).
 BASE_FEATURE(kFocusFollowsCursor,
              "FocusFollowsCursor",
@@ -438,6 +432,14 @@ BASE_FEATURE(kLacrosColorManagement,
 
 bool IsLacrosColorManagementEnabled() {
   return base::FeatureList::IsEnabled(kLacrosColorManagement);
+}
+
+BASE_FEATURE(kChromeRefresh2023,
+             "ChromeRefresh2023",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsChromeRefresh2023() {
+  return base::FeatureList::IsEnabled(kChromeRefresh2023);
 }
 
 }  // namespace features

@@ -29,8 +29,7 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
   // Implements PasswordReuseManager interface.
   void Init(PrefService* prefs,
             PasswordStoreInterface* profile_store,
-            PasswordStoreInterface* account_store = nullptr) override;
-  void AccountStoreStateChanged() override;
+            PasswordStoreInterface* account_store) override;
   void ReportMetrics(const std::string& username,
                      bool is_under_advanced_protection) override;
   void PreparePasswordHashData(const std::string& sync_username,
@@ -61,6 +60,9 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
   void ScheduleEnterprisePasswordURLUpdate() override;
 
  private:
+  // Executed deferred on Android in order avoid high startup latencies.
+  void RequestLoginsFromStores();
+
   // Implements PasswordStoreConsumer interface.
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
@@ -85,6 +87,10 @@ class PasswordReuseManagerImpl : public PasswordReuseManager,
 
   // Schedules the given |task| to be run on the 'background_task_runner_'.
   bool ScheduleTask(base::OnceClosure task);
+
+  // Clears existing cached passwords stored on the account store and schedules
+  // a request to re-fetch.
+  void AccountStoreStateChanged();
 
   // TaskRunner for tasks that run on the main sequence (the UI thread).
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;

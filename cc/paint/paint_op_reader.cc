@@ -77,7 +77,7 @@ bool PaintOpReader::ReadAndValidateOpHeader(const volatile void* input,
 
   if (input_size < *skip)
     return false;
-  if (*skip % PaintOpBuffer::PaintOpAlign != 0)
+  if (*skip % PaintOpBuffer::kPaintOpAlign != 0)
     return false;
   if (*type > static_cast<uint8_t>(PaintOpType::LastPaintOpType))
     return false;
@@ -858,9 +858,6 @@ void PaintOpReader::Read(sk_sp<PaintFilter>* filter) {
     case PaintFilter::Type::kLightingSpot:
       ReadLightingSpotPaintFilter(filter, crop_rect);
       break;
-    case PaintFilter::Type::kStretch:
-      ReadStretchPaintFilter(filter, crop_rect);
-      break;
   }
 }
 
@@ -1365,32 +1362,10 @@ void PaintOpReader::ReadLightingSpotPaintFilter(
       std::move(input), base::OptionalToPtr(crop_rect)));
 }
 
-void PaintOpReader::ReadStretchPaintFilter(
-    sk_sp<PaintFilter>* filter,
-    const absl::optional<PaintFilter::CropRect>& crop_rect) {
-  SkScalar stretch_x = 0.f;
-  SkScalar stretch_y = 0.f;
-  SkScalar width = 0.f;
-  SkScalar height = 0.f;
-  sk_sp<PaintFilter> input;
-
-  Read(&stretch_x);
-  Read(&stretch_y);
-  Read(&width);
-  Read(&height);
-  Read(&input);
-
-  if (!valid_)
-    return;
-  filter->reset(new StretchPaintFilter(stretch_x, stretch_y, width, height,
-                                       std::move(input),
-                                       base::OptionalToPtr(crop_rect)));
-}
-
 size_t PaintOpReader::Read(sk_sp<PaintRecord>* record) {
   size_t size_bytes = 0;
   ReadSize(&size_bytes);
-  AlignMemory(PaintOpBuffer::PaintOpAlign);
+  AlignMemory(PaintOpBuffer::kPaintOpAlign);
   if (enable_security_constraints_) {
     // Validate that the record was not serialized if security constraints are
     // enabled.

@@ -36,7 +36,7 @@
 #include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
 #include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-forward.h"
-#include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
@@ -57,6 +57,10 @@
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom-forward.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_FUCHSIA)
+#include "media/fuchsia/mojom/fuchsia_media.mojom-forward.h"
+#endif
 
 class GURL;
 
@@ -388,7 +392,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //   1. IO thread, |ChildProcessImpl::BindReceiver()| (child_thread_impl.cc)
   //   2. IO thread ,|ContentClient::BindChildProcessInterface()|
   //   3. Main thread, |ChildThreadImpl::OnBindReceiver()| (virtual)
-  //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
+  //   4. Possibly more steps, depending on the ChildThreadImpl subclass.
   virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
@@ -583,7 +587,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessManager>
           receiver) = 0;
-
+  virtual void GetSandboxedFileSystemForBucket(
+      const storage::BucketLocator& bucket_locator,
+      blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+          callback) = 0;
   virtual void BindIndexedDB(
       const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
@@ -596,6 +603,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
           receiver) = 0;
   virtual void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
+#if BUILDFLAG(IS_FUCHSIA)
+  virtual void BindMediaCodecProvider(
+      mojo::PendingReceiver<media::mojom::FuchsiaMediaCodecProvider>
+          receiver) = 0;
+#endif
   virtual void CreateOneShotSyncService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
@@ -623,7 +635,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void CreateNotificationService(
       GlobalRenderFrameHostId rfh_id,
       NotificationServiceCreatorType creator_type,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver) = 0;
   virtual void CreateWebSocketConnector(
       const blink::StorageKey& storage_key,

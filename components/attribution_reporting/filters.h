@@ -10,13 +10,12 @@
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/types/expected.h"
+#include "base/values.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace base {
-class Value;
-}  // namespace base
 
 namespace attribution_reporting {
 
@@ -45,6 +44,8 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) FilterData {
 
   const FilterValues& filter_values() const { return filter_values_; }
 
+  base::Value::Dict ToJson() const;
+
  private:
   explicit FilterData(FilterValues);
 
@@ -54,8 +55,14 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) FilterData {
 // Set on triggers.
 class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) Filters {
  public:
+  static constexpr char kFilters[] = "filters";
+  static constexpr char kNotFilters[] = "not_filters";
+
   // Filters are allowed to contain a `source_type` filter.
   static absl::optional<Filters> Create(FilterValues);
+
+  static base::expected<Filters, mojom::TriggerRegistrationError> FromJSON(
+      base::Value*);
 
   Filters();
 
@@ -68,6 +75,10 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) Filters {
   Filters& operator=(Filters&&);
 
   const FilterValues& filter_values() const { return filter_values_; }
+
+  base::Value::Dict ToJson() const;
+
+  void SerializeIfNotEmpty(base::Value::Dict&, base::StringPiece key) const;
 
  private:
   explicit Filters(FilterValues);

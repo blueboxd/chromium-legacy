@@ -10,16 +10,15 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
-#include "base/json/string_escape.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/apdu/apdu_response.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
@@ -37,7 +36,6 @@
 #include "device/fido/fido_types.h"
 #include "device/fido/large_blob.h"
 #include "device/fido/opaque_attestation_statement.h"
-#include "device/fido/p256_public_key.h"
 #include "device/fido/pin.h"
 #include "device/fido/pin_internal.h"
 #include "device/fido/public_key.h"
@@ -49,7 +47,6 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
-#include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -139,7 +136,7 @@ void ReturnCtap2Response(
     FidoDevice::DeviceCallback cb,
     CtapDeviceResponseCode response_code,
     absl::optional<base::span<const uint8_t>> data = absl::nullopt) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(cb),
                      ConstructResponse(response_code,
@@ -1305,7 +1302,8 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   AuthenticatorData authenticator_data(
       rp_id_hash, !mutable_state()->unset_up_bit,
-      mutable_state()->unset_uv_bit ? false : user_verified, 01ul,
+      mutable_state()->unset_uv_bit ? false : user_verified,
+      config_.backup_eligible, 01ul,
       ConstructAttestedCredentialData(key_handle, std::move(public_key)),
       std::move(extensions));
 
@@ -1374,7 +1372,7 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
       std::move(attestation_cert), sig, std::move(authenticator_data),
       enterprise_attestation_requested, large_blob_key, dpk_sig);
   RegistrationData registration(std::move(private_key), rp_id_hash,
-                                1 /* signature counter */);
+                                /*counter=*/1);
 
   if (request.resident_key_required) {
     // If there's already a registration for this RP and user ID, delete it.
@@ -1702,8 +1700,8 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
         rp_id_hash,
         mutable_state()->unset_up_bit ? false : request.user_presence_required,
         mutable_state()->unset_uv_bit ? false : user_verified,
-        registration.second->counter, std::move(opt_attested_cred_data),
-        std::move(extensions));
+        config_.backup_eligible, registration.second->counter,
+        std::move(opt_attested_cred_data), std::move(extensions));
 
     std::vector<uint8_t> signature_buffer;
     if (config_.always_uv && !user_verified) {
@@ -1780,6 +1778,7 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
       request_state_.pending_assertions.emplace_back(EncodeGetAssertionResponse(
           assertion, config_.allow_invalid_utf8_in_credential_entities));
     }
+    mutable_state()->NotifyAssertion(registration);
   }
 
   return CtapDeviceResponseCode::kSuccess;

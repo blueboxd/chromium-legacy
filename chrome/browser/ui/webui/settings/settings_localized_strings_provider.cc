@@ -91,7 +91,6 @@
 #include "net/net_buildflags.h"
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/common/features_generated.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -116,6 +115,7 @@
 #include "ui/chromeos/devicetype_utils.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/settings/system_handler.h"
+#include "ui/accessibility/accessibility_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -266,11 +266,7 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  html_source->AddBoolean("isAccessibilityOSSettingsVisibilityEnabled",
-                          base::FeatureList::IsEnabled(
-                              features::kAccessibilityOSSettingsVisibility));
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean(
       "showFocusHighlightOption",
       base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
@@ -701,6 +697,8 @@ void AddResetStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},
     {"resetProfileBannerButton", IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT},
     {"resetProfileBannerDescription", IDS_SETTINGS_RESET_BANNER_TEXT},
+    {"resetLearnMoreAccessibilityText",
+     IDS_SETTINGS_RESET_LEARN_MORE_ACCESSIBILITY_TEXT},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetCleanupComputerTrigger",
      IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER},
@@ -1186,6 +1184,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORDS_IMPORT_LONG_PASSWORD},
     {"importPasswordsLongUsername",
      IDS_SETTINGS_PASSWORDS_IMPORT_LONG_USERNAME},
+    {"importPasswordsLongNote", IDS_SETTINGS_PASSWORDS_IMPORT_LONG_NOTE},
     {"importPasswordsConflictDevice",
      IDS_SETTINGS_PASSWORDS_IMPORT_CONFLICT_DEVICE},
     {"importPasswordsConflictAccount",
@@ -1306,8 +1305,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                              base::UTF8ToUTF16(chrome::kPaymentMethodsURL)));
   html_source->AddString("manageCreditCardsUrl",
                          autofill::payments::GetManageInstrumentsUrl().spec());
-  html_source->AddString("paymentMethodsLearnMoreURL",
-                         chrome::kPaymentMethodsLearnMoreURL);
+  html_source->AddString("addressesAndPaymentMethodsLearnMoreURL",
+                         chrome::kAddressesAndPaymentMethodsLearnMoreURL);
   html_source->AddString(
       "weakPasswordsDescription",
       l10n_util::GetStringFUTF16(
@@ -1456,6 +1455,120 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
 #endif
 }
 
+void AddSyncAccountControlStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"syncingTo", IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT},
+      {"peopleSignIn", IDS_PROFILES_DICE_SIGNIN_BUTTON},
+      {"syncPaused", IDS_SETTINGS_PEOPLE_SYNC_PAUSED},
+      {"turnOffSync", IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF},
+      {"settingsCheckboxLabel", IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL},
+      {"syncNotWorking", IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING},
+      {"syncDisabled", IDS_PROFILES_DICE_SYNC_DISABLED_TITLE},
+      {"syncPasswordsNotWorking",
+       IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING},
+      {"peopleSignOut", IDS_SETTINGS_PEOPLE_SIGN_OUT},
+      {"useAnotherAccount", IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT},
+      {"syncAdvancedPageTitle", IDS_SETTINGS_NEW_SYNC_ADVANCED_PAGE_TITLE},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
+void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"urlKeyedAnonymizedDataCollection",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION},
+    {"urlKeyedAnonymizedDataCollectionDesc",
+     IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC},
+    {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
+#if !BUILDFLAG(IS_CHROMEOS)
+    {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
+    {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
+#endif
+    {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
+    {"enablePersonalizationLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
+    {"enablePersonalizationLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
+    {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
+    {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
+    {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
+    {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
+    {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
+    {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
+    {"priceEmailNotificationsPref", IDS_PRICE_TRACKING_SETTINGS_TITLE},
+    {"priceEmailNotificationsPrefDesc",
+     IDS_PRICE_TRACKING_SETTINGS_EMAIL_DESCRIPTION},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
+#if BUILDFLAG(IS_CHROMEOS)
+std::string BuildOSSettingsUrl(const std::string& sub_page) {
+  std::string os_settings_url = chrome::kChromeUIOSSettingsURL;
+  os_settings_url.append(sub_page);
+  return os_settings_url;
+}
+#endif
+
+void AddBrowserSyncPageStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+    {"passwordsCheckboxLabel", IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL},
+    {"peopleSignInSyncPagePromptSecondaryWithAccount",
+     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+    {"peopleSignInSyncPagePromptSecondaryWithNoAccount",
+     IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT_SECONDARY_WITH_ACCOUNT},
+    {"bookmarksCheckboxLabel", IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL},
+    {"readingListCheckboxLabel", IDS_SETTINGS_READING_LIST_CHECKBOX_LABEL},
+    {"cancelSync", IDS_SETTINGS_SYNC_SETTINGS_CANCEL_SYNC},
+    {"syncSetupCancelDialogTitle", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_TITLE},
+    {"syncSetupCancelDialogBody", IDS_SETTINGS_SYNC_SETUP_CANCEL_DIALOG_BODY},
+    {"personalizeGoogleServicesTitle",
+     IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
+    {"themeCheckboxLabel", IDS_SETTINGS_THEME_CHECKBOX_LABEL},
+#if BUILDFLAG(IS_CHROMEOS)
+    {"browserSyncFeatureLabel", IDS_BROWSER_SETTINGS_SYNC_FEATURE_LABEL},
+#endif
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddString("activityControlsUrl",
+                         chrome::kGoogleAccountActivityControlsURL);
+  html_source->AddString(
+      "activityControlsUrlInPrivacyGuide",
+      chrome::kGoogleAccountActivityControlsURLInPrivacyGuide);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  html_source->AddString(
+      "osSyncSetupSettingsUrl",
+      BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSetupSubpagePath));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  html_source->AddString(
+      "osSyncSettingsUrl",
+      BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSubpagePath));
+#endif
+}
+
+void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"autofillCheckboxLabel", IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL},
+      {"historyCheckboxLabel", IDS_SETTINGS_HISTORY_CHECKBOX_LABEL},
+      {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},
+      {"openTabsCheckboxLabel", IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL},
+      {"wifiConfigurationsCheckboxLabel",
+       IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
+      {"syncEverythingCheckboxLabel",
+       IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL},
+      {"appCheckboxLabel", IDS_SETTINGS_APPS_CHECKBOX_LABEL},
+      {"enablePaymentsIntegrationCheckboxLabel",
+       IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
+      {"nonPersonalizedServicesSectionLabel",
+       IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
+      {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
+      {"syncData", IDS_SETTINGS_SYNC_DATA},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
 void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     // Top level people strings:
@@ -1539,12 +1652,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS)
   AddPasswordPromptDialogStrings(html_source);
 #endif
-  AddSyncPageStrings(html_source);
+  AddBrowserSyncPageStrings(html_source);
+  AddSharedSyncPageStrings(html_source);
 }
 
 bool ShouldLinkSecureDnsOsSettings() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(chromeos::features::kEnableDnsProxy) &&
+  return base::FeatureList::IsEnabled(ash::features::kEnableDnsProxy) &&
          base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   return true;
@@ -1714,7 +1828,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   html_source->AddBoolean(
       "showChromeRootStoreCertificates",
-      GetChromeCertVerifierServiceParams()->use_chrome_root_store);
+      GetChromeCertVerifierServiceParams(/*localstate=*/nullptr)
+          ->use_chrome_root_store);
 
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);
@@ -1852,6 +1967,46 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_2},
       {"privacySandboxSpamAndFraudDialogDescription3",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_3},
+      {"adPrivacyLinkRowLabel", IDS_SETTINGS_AD_PRIVACY_LINK_ROW_LABEL},
+      {"adPrivacyLinkRowSubLabel", IDS_SETTINGS_AD_PRIVACY_LINK_ROW_SUB_LABEL},
+      {"adPrivacyPageTitle", IDS_SETTINGS_AD_PRIVACY_PAGE_TITLE},
+      {"adPrivacyPageTopicsLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_LABEL},
+      {"adPrivacyPageTopicsLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageTopicsLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_TOPICS_LINK_ROW_SUB_LABEL_DISABLED},
+      {"adPrivacyPageFledgeLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_LABEL},
+      {"adPrivacyPageFledgeLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageFledgeLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_FLEDGE_LINK_ROW_SUB_LABEL_DISABLED},
+      {"adPrivacyPageAdMeasurementLinkRowLabel",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_LABEL},
+      {"adPrivacyPageAdMeasurementLinkRowSubLabelEnabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_ENABLED},
+      {"adPrivacyPageAdMeasurementLinkRowSubLabelDisabled",
+       IDS_SETTINGS_AD_PRIVACY_PAGE_AD_MEASUREMENT_LINK_ROW_SUB_LABEL_DISABLED},
+      {"topicsPageTitle", IDS_SETTINGS_TOPICS_PAGE_TITLE},
+      {"topicsPageToggleLabel", IDS_SETTINGS_TOPICS_PAGE_TOGGLE_LABEL},
+      {"topicsPageToggleSubLabel", IDS_SETTINGS_TOPICS_PAGE_TOGGLE_SUB_LABEL},
+      {"fledgePageTitle", IDS_SETTINGS_FLEDGE_PAGE_TITLE},
+      {"adMeasurementPageTitle", IDS_SETTINGS_AD_MEASUREMENT_PAGE_TITLE},
+      {"adMeasurementPageToggleLabel",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_LABEL},
+      {"adMeasurementPageToggleSubLabel",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_TOGGLE_SUB_LABEL},
+      {"adMeasurementPageEnabledHeading",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_HEADING},
+      {"adMeasurementPageConsiderHeading",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_CONSIDER_HEADING},
+      {"adMeasurementPageEnabledBullet1",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_BULLET_1},
+      {"adMeasurementPageEnabledBullet2",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_ENABLED_BULLET_2},
+      {"adMeasurementPageConsiderBullet1",
+       IDS_SETTINGS_AD_MEASUREMENT_PAGE_CONSIDER_BULLET_1},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -1996,8 +2151,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
     {"safetyCheckIconWarningAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_ICON_WARNING_ARIA_LABEL},
     {"safetyCheckReview", IDS_SETTINGS_SAFETY_CHECK_REVIEW},
-    {"safetyCheckUnusedSitePermissionsPrimaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_PRIMARY_LABEL},
     {"safetyCheckUpdatesPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_UPDATES_PRIMARY_LABEL},
     {"safetyCheckUpdatesButtonAriaLabel", IDS_UPDATE_RECOMMENDED_DIALOG_TITLE},
@@ -2011,8 +2164,6 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_PRIMARY_LABEL},
     {"safetyCheckExtensionsButtonAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL},
-    {"safetyCheckNotificationPermissionReviewSecondaryLabel",
-     IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_SECONDARY_LABEL},
     {"safetyCheckNotificationPermissionReviewIgnoredToastLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_IGNORED_TOAST_LABEL},
     {"safetyCheckNotificationPermissionReviewBlockedToastLabel",
@@ -2034,11 +2185,26 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
     {"safetyCheckNotificationPermissionReviewMoreActionsAriaLabel",
      IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_MORE_ACTIONS_ARIA_LABEL},
     {"safetyCheckNotificationPermissionReviewUndo",
-     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_UNDO},
+     IDS_SETTINGS_SAFETY_CHECK_TOAST_UNDO_BUTTON_LABEL},
     {"safetyCheckNotificationPermissionReviewDoneLabel",
-     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_DONE_LABEL},
+     IDS_SETTINGS_SAFETY_CHECK_SITE_PERMISSIONS_REVIEW_DONE_LABEL},
     {"safetyCheckNotificationPermissionReviewBlockAllLabel",
      IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSION_REVIEW_BLOCK_ALL_LABEL},
+    {"safetyCheckUnusedSitePermissionsHeaderAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_HEADER_ARIA_LABEL},
+    {"safetyCheckNotificationPermissionReviewButtonAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_NOTIFICATION_PERMISSIONS_REVIEW_BUTTON_ARIA_LABEL},
+    {"safetyCheckUnusedSitePermissionsAllowAgainAriaLabel",
+     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_ALLOW_AGAIN_ARIA_LABEL},
+    {"safetyCheckUnusedSitePermissionsAllowAgainLabel",
+     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_ALLOW_AGAIN_LABEL},
+    {"safetyCheckUnusedSitePermissionsDoneLabel",
+     IDS_SETTINGS_SAFETY_CHECK_SITE_PERMISSIONS_REVIEW_DONE_LABEL},
+    {"safetyCheckUnusedSitePermissionsGotItLabel", IDS_SETTINGS_GOT_IT},
+    {"safetyCheckUnusedSitePermissionsToastLabel",
+     IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL},
+    {"safetyCheckUnusedSitePermissionsUndoAllowAgainLabel",
+     IDS_SETTINGS_SAFETY_CHECK_TOAST_UNDO_BUTTON_LABEL},
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"safetyCheckChromeCleanerPrimaryLabel",
      IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL},

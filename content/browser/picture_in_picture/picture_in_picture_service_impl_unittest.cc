@@ -71,12 +71,11 @@ class TestOverlayWindow : public VideoOverlayWindow {
     return std::unique_ptr<VideoOverlayWindow>(new TestOverlayWindow());
   }
 
-  bool IsActive() override { return false; }
+  bool IsActive() const override { return false; }
   void Close() override {}
   void ShowInactive() override {}
   void Hide() override {}
-  bool IsVisible() override { return false; }
-  bool IsAlwaysOnTop() override { return false; }
+  bool IsVisible() const override { return false; }
   gfx::Rect GetBounds() override { return gfx::Rect(size_); }
   void UpdateNaturalSize(const gfx::Size& natural_size) override {
     size_ = natural_size;
@@ -91,8 +90,9 @@ class TestOverlayWindow : public VideoOverlayWindow {
   void SetToggleMicrophoneButtonVisibility(bool is_visible) override {}
   void SetToggleCameraButtonVisibility(bool is_visible) override {}
   void SetHangUpButtonVisibility(bool is_visible) override {}
+  void SetNextSlideButtonVisibility(bool is_visible) override {}
+  void SetPreviousSlideButtonVisibility(bool is_visible) override {}
   void SetSurfaceId(const viz::SurfaceId& surface_id) override {}
-  cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
   gfx::Size size_;
@@ -139,6 +139,7 @@ class PictureInPictureMediaPlayerReceiver : public media::mojom::MediaPlayer {
   void SetPowerExperimentState(bool enabled) override {}
   void SetAudioSinkId(const std::string& sink_id) override {}
   void SuspendForFrameClosed() override {}
+  void RequestMediaRemoting() override {}
 
  private:
   mojo::AssociatedReceiver<media::mojom::MediaPlayer> receiver_{this};

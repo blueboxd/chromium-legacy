@@ -252,12 +252,6 @@ void MessageCenterImpl::AddNotification(
   for (NotificationBlocker* blocker : blockers_)
     blocker->CheckState();
 
-  auto* parent = FindParentNotification(notification.get());
-  if (notification->allow_group() && parent && !notification->group_parent()) {
-    parent->SetGroupParent();
-    notification->SetGroupChild();
-  }
-
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
@@ -265,6 +259,12 @@ void MessageCenterImpl::AddNotification(
   if (already_exists) {
     UpdateNotification(id, std::move(notification));
     return;
+  }
+
+  auto* parent = FindParentNotification(notification.get());
+  if (notification->allow_group() && parent && !notification->group_parent()) {
+    parent->SetGroupParent();
+    notification->SetGroupChild();
   }
 
   notification_list_->AddNotification(std::move(notification));
@@ -280,6 +280,17 @@ void MessageCenterImpl::UpdateNotification(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (NotificationBlocker* blocker : blockers_)
     blocker->CheckState();
+
+  auto* old_notification = notification_list_->GetNotificationById(old_id);
+  if (old_notification) {
+    DCHECK(old_notification->notifier_id() == new_notification->notifier_id());
+
+    // Copy grouping metadata to the new notification.
+    if (old_notification->group_parent())
+      new_notification->SetGroupParent();
+    if (old_notification->group_child())
+      new_notification->SetGroupChild();
+  }
 
   std::string new_id = new_notification->id();
   notification_list_->UpdateNotificationMessage(old_id,
@@ -459,6 +470,12 @@ void MessageCenterImpl::ClickOnNotificationUnlocked(
       notification_list_->GetNotificationDelegate(id);
   if (delegate)
     delegate->Click(button_index, reply);
+
+  if (const Notification* notification =
+          notification_list_->GetNotificationById(id);
+      notification && notification->rich_notification_data().remove_on_click) {
+    RemoveNotification(id, /*by_user=*/true);
+  }
 }
 
 void MessageCenterImpl::ClickOnSettingsButton(const std::string& id) {

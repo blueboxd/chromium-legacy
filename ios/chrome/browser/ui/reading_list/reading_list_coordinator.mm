@@ -412,11 +412,11 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         ReadingListCoordinator* strongSelf = weakSelf;
 
         // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::kReadingListEntry);
+        RecordMenuShown(MenuScenarioHistogram::kReadingListEntry);
 
         BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
             initWithBrowser:strongSelf.browser
-                   scenario:MenuScenario::kReadingListEntry];
+                   scenario:MenuScenarioHistogram::kReadingListEntry];
 
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
@@ -453,7 +453,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
         [menuElements addObject:openInNewIncognitoTab];
 
         const ReadingListEntry* entry = [self.mediator entryFromItem:item];
-        if (entry && entry->DistilledState() == ReadingListEntry::PROCESSED) {
+        if (entry->DistilledState() == ReadingListEntry::PROCESSED) {
           [menuElements
               addObject:[actionFactory
                             actionToOpenOfflineVersionInNewTabWithBlock:^{

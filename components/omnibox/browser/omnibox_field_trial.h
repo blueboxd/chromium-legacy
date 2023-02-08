@@ -315,6 +315,38 @@ extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsCounterfactual;
 extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsLowEndBypass;
 // Indicates whether to support transpose edit operations in fuzzy search.
 extern const base::FeatureParam<bool> kFuzzyUrlSuggestionsTranspose;
+// The minimum length of input that will be checked for fuzzy URL
+// suggestions. Note, this is a threshold independent of the fuzzy
+// search tolerance schedule.
+extern const base::FeatureParam<int> kFuzzyUrlSuggestionsMinInputLength;
+
+// The *Penalty* parameters below provide control over how fuzzy matches
+// are penalized according to input length. The relevance from the source
+// match is reduced because the match is inexact (typo-corrected) but
+// when the input is very short, such corrections are more likely and
+// therefore confidence is lower. Hence the high penalty is applied
+// to the shortest inputs and the low is applied to longer inputs, with
+// a linear taper for input length to smooth the effect.
+
+// Highest penalty percentage that will be applied to fuzzy URL suggestions.
+extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyHigh;
+// Lowest penalty percentage that will be applied to fuzzy URL suggestions.
+extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyLow;
+// The number of input characters between where the high penalty will be
+// applied and where the low penalty will be applied.
+extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyTaperLength;
+
+// Returns true if the default browser pedal feature is enabled.
+bool IsDefaultBrowserPedalEnabled();
+
+// Indicates whether the default browser pedal can be used when the
+// shell_integration API indicates the system sets default browser
+// interactively, e.g. by bringing up system settings.
+extern const base::FeatureParam<bool> kDefaultBrowserPedalInteractive;
+// Indicates whether the default browser pedal can be used when the
+// shell_integration API indicates the system sets default browser
+// without any further user interaction, i.e. "unattended".
+extern const base::FeatureParam<bool> kDefaultBrowserPedalUnattended;
 
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
@@ -343,6 +375,9 @@ bool IsSiteSearchStarterPackEnabled();
 bool IsUniformRowHeightEnabled();
 // Specifies the row height in pixels for omnibox suggestions.
 extern const base::FeatureParam<int> kSuggestionRowHeight;
+// Specifies the vertical margin to use in one-line rich entity and answer
+// suggestions.
+extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
 
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
@@ -579,6 +614,14 @@ extern const base::FeatureParam<int> kDomainSuggestionsTypedVisitCapPerVisit;
 extern const base::FeatureParam<int> kDomainSuggestionsMinInputLength;
 // The maximum number of matches per domain to suggest.
 extern const base::FeatureParam<int> kDomainSuggestionsMaxMatchesPerDomain;
+// The scoring factor used to boost HQP suggestions from highly visited domains.
+// A value of 1 is the control behavior. A value of 2 will boost scores, but not
+// necessarily double them due to how HQP maps the factors to actual scores.
+extern const base::FeatureParam<double> kDomainSuggestionsScoreFactor;
+
+// ---------------------------------------------------------
+// For logging Omnibox scoring signals for training machine learning models.
+bool IsLogUrlScoringSignalsEnabled();
 
 // New params should be inserted above this comment. They should be ordered
 // consistently with `omnibox_features.h`. They should be formatted as:

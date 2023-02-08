@@ -19,11 +19,11 @@
 #include "ash/app_list/grid_index.h"
 #include "ash/app_list/model/app_list_item_list_observer.h"
 #include "ash/app_list/model/app_list_model_observer.h"
-#include "ash/app_list/paged_view_structure.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/ash_export.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -394,8 +394,10 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Returns the size of the entire tile grid.
   virtual gfx::Size GetTileGridSize() const = 0;
 
-  // Returns the max number of rows the grid can have on a page.
-  virtual int GetMaxRowsInPage(int page) const = 0;
+  // Returns the max number of rows the grid can have on a page. Returns nullopt
+  // if apps grid does not have limit on number of rows (which currently implies
+  // scrollable, single-page apps grid).
+  virtual absl::optional<int> GetMaxRowsInPage(int page) const = 0;
 
   // Calculates the offset distance to center the grid in the container.
   virtual gfx::Vector2d GetGridCenteringOffset(int page) const = 0;
@@ -405,6 +407,22 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Returns the current selected page, or zero if the grid does not use pages.
   virtual int GetSelectedPage() const = 0;
+
+  // Returns whether the page at `page_index` is full (and no more app list
+  // items can be appended to the page).
+  virtual bool IsPageFull(size_t page_index) const = 0;
+
+  // Give an item index in the apps grid view model, returns the item's grid
+  // index (the page the items belongs to, and the item index within that page).
+  virtual GridIndex GetGridIndexFromIndexInViewModel(int index) const = 0;
+
+  // Returns the number of pulsing block views should be added to the grid given
+  // the number of items in the app list model. Pulsing blocks are added to the
+  // app list during initial app list model sync to indicate the app list is
+  // still syncing/finalizing. They get appended to the end of the app list.
+  // This method will only get called when app list model is syncing (i.e. in
+  // state that calls for pulsing blocks).
+  virtual int GetNumberOfPulsingBlocksToShow(int item_count) const = 0;
 
   // Records the different ways to move an app in app list's apps grid for UMA
   // histograms.
@@ -417,7 +435,7 @@ class ASH_EXPORT AppsGridView : public views::View,
   virtual void MaybeEndCardifiedView() {}
 
   // Starts a page flip if the subclass supports it.
-  virtual void MaybeStartPageFlip() {}
+  virtual bool MaybeStartPageFlip();
 
   // Stops a page flip (by ending its timer) if the subclass supports it.
   virtual void MaybeStopPageFlip() {}
@@ -471,9 +489,14 @@ class ASH_EXPORT AppsGridView : public views::View,
   gfx::Rect GetExpectedTileBounds(const GridIndex& index) const;
 
   // Returns the number of app tiles per page. Takes a page number as an
-  // argument as the first page might have less apps shown. Folder grids may
-  // have different numbers of tiles from the main grid.
-  int TilesPerPage(int page) const;
+  // argument as the first page might have less apps shown.
+  // Returns nullopt if number of tiles per page is not limited (which currently
+  // implies scrollable, single-page apps grid).
+  absl::optional<int> TilesPerPage(int page) const;
+
+  // Converts an app list item position in app list grid to its index in the
+  // apps grid `view_model_`.
+  int GetIndexInViewModel(const GridIndex& index) const;
 
   GridIndex GetIndexOfView(const AppListItemView* view) const;
   AppListItemView* GetViewAtIndex(const GridIndex& index) const;
@@ -504,9 +527,16 @@ class ASH_EXPORT AppsGridView : public views::View,
   // Ensures layer for all app items before animations are started.
   void PrepareItemsForBoundsAnimation();
 
+  // Whether the apps grid has an extra slot, in addition to slots for views in
+  // `view_model_`, specially for drag item placeholder. Generally, the
+  // placeholder will take the hidden drag view's slot, but during reparent
+  // drag, the target apps grid view model may not contain a view for the drag
+  // item. In this case the placeholder will have it's own grid slot.
+  bool HasExtraSlotForReorderPlaceholder() const;
+
   bool ignore_layout() const { return ignore_layout_; }
   views::View* items_container() { return items_container_; }
-  views::ViewModelT<PulsingBlockView>& pulsing_blocks_model() {
+  const views::ViewModelT<PulsingBlockView>& pulsing_blocks_model() const {
     return pulsing_blocks_model_;
   }
   const gfx::Point& last_drag_point() const { return last_drag_point_; }
@@ -516,9 +546,6 @@ class ASH_EXPORT AppsGridView : public views::View,
     return app_list_view_delegate_;
   }
   const AppListItemList* item_list() const { return item_list_; }
-
-  // View structure used only for non-folder.
-  PagedViewStructure view_structure_{this};
 
   // The `AppListItemView` that is being dragged within the apps grid (i.e. the
   // AppListItemView for `drag_item_`) if the drag item is currently part of the
@@ -571,7 +598,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   friend class test::AppsGridViewTestApi;
   friend class test::AppsGridViewTest;
   friend class PagedAppsGridView;
-  friend class PagedViewStructure;
   friend class AppsGridRowChangeAnimator;
   friend class PagedAppsGridViewTest;
 
@@ -808,11 +834,6 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // Returns model index of the item view of the specified item.
   size_t GetModelIndexOfItem(const AppListItem* item) const;
-
-  // Returns the target model index based on item index. (Item index is the
-  // index of an item in item list.) This should be used when the item is
-  // updated in item list but its item view has not been updated in view model.
-  size_t GetTargetModelIndexFromItemIndex(size_t item_index);
 
   // Returns the target GridIndex for a keyboard move.
   GridIndex GetTargetGridIndexForKeyboardMove(ui::KeyboardCode key_code) const;

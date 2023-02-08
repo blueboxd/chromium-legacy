@@ -992,7 +992,7 @@ policies:
   991: OnFileTransferEnterpriseConnector
   992: ChromeRootStoreEnabled
   993: WebSQLNonSecureContextEnabled
-  994: IdleProfileCloseTimeout
+  994: IdleTimeout
   995: NewWindowsInKioskAllowed
   996: EncryptedClientHelloEnabled
   997: DeviceAutofillSAMLUsername
@@ -1028,9 +1028,19 @@ policies:
   1027: LensDesktopNTPSearchEnabled
   1028: AccessControlAllowMethodsInCORSPreflightSpecConformant
   1029: AllowWebAuthnWithBrokenTlsCerts
-  1030: ''
+  1030: ExtensionManifestV2Availability
   1031: OffsetParentNewSpecBehaviorEnabled
   1032: SendMouseEventsDisabledFormControlsEnabled
+  1033: BruschettaVMConfiguration
+  1034: DnsOverHttpsSalt
+  1035: DnsOverHttpsTemplatesWithIdentifiers
+  1036: IdleTimeoutActions
+  1037: ThrottleNonVisibleCrossOriginIframesAllowed
+  1038: PdfLocalFileAccessAllowedForDomains
+  1039: FloatingWorkspaceV2Enabled
+  1040: ''
+  1041: NewBaseUrlInheritanceBehaviorAllowed
+  1042: ShowCastSessionsStartedByOtherDevices
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1075,3 +1085,4 @@ atomic_groups:
   41: ScreenCaptureSettings
   42: WindowPlacementSettings
   43: LocalFontsSettings
+  44: BrowserIdle

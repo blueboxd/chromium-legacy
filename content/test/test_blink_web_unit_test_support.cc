@@ -42,6 +42,7 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/blink.h"
+#include "tools/v8_context_snapshot/buildflags.h"
 #include "v8/include/v8.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -91,7 +92,7 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
 };
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
+#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
 constexpr gin::V8SnapshotFileType kSnapshotType =
     gin::V8SnapshotFileType::kWithAdditionalContext;
 #else
@@ -122,7 +123,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
 
   blink::Platform::InitializeBlink();
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
-  std::unique_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
+  std::unique_ptr<base::SingleThreadTaskRunner::CurrentDefaultHandle>
+      dummy_task_runner_handle;
   if (scheduler_type == SchedulerType::kMockScheduler) {
     main_thread_scheduler_ =
         blink::scheduler::CreateWebMainThreadSchedulerForTests();
@@ -135,7 +137,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     // TestBlinkWebUnitTestSupport would introduce a conflict.
     dummy_task_runner = base::MakeRefCounted<base::NullTaskRunner>();
     dummy_task_runner_handle =
-        std::make_unique<base::ThreadTaskRunnerHandle>(dummy_task_runner);
+        std::make_unique<base::SingleThreadTaskRunner::CurrentDefaultHandle>(
+            dummy_task_runner);
     // Force V8 to run single threaded.
     v8_flags += " --single-threaded";
   } else {

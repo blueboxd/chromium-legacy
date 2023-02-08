@@ -15,6 +15,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/test_future.h"
@@ -43,24 +45,24 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/test_event_router.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
-using extensions::ExternalInstallInfoFile;
-using extensions::ExternalInstallInfoUpdateUrl;
-using extensions::Manifest;
-using extensions::mojom::ManifestLocation;
-using ::testing::AssertionFailure;
-using ::testing::AssertionResult;
-using ::testing::AssertionSuccess;
-using ::testing::ElementsAre;
-
 namespace ash {
 
 namespace {
+
+using ::extensions::ExternalInstallInfoFile;
+using ::extensions::ExternalInstallInfoUpdateUrl;
+using ::extensions::Manifest;
+using ::extensions::mojom::ManifestLocation;
+using ::testing::AssertionFailure;
+using ::testing::AssertionResult;
+using ::testing::AssertionSuccess;
 
 constexpr char kTestPrimaryAppId[] = "abcdefghabcdefghabcdefghabcdefgh";
 
@@ -89,9 +91,6 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
   KioskAppLaunchError::Error launch_error() const { return launch_error_; }
 
   void set_network_ready(bool network_ready) { network_ready_ = network_ready; }
-  void set_should_skip_app_installation(bool skip_app_installation) {
-    should_skip_app_installation_ = skip_app_installation;
-  }
   void set_showing_network_config_screen(bool showing) {
     showing_network_config_screen_ = showing;
   }
@@ -115,9 +114,6 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
     SetLaunchState(LaunchState::kInitializingNetwork);
   }
   bool IsNetworkReady() const override { return network_ready_; }
-  bool ShouldSkipAppInstallation() const override {
-    return should_skip_app_installation_;
-  }
   void OnAppInstalling() override {
     SetLaunchState(LaunchState::kInstallingApp);
   }
@@ -142,8 +138,6 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
 
   bool network_ready_ = false;
   bool showing_network_config_screen_ = false;
-
-  bool should_skip_app_installation_ = false;
 
   base::test::RepeatingTestFuture<LaunchState> launch_state_changes_;
 };
@@ -394,7 +388,8 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
         std::make_unique<AppLaunchTracker>(kTestPrimaryAppId, event_router);
 
     startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
-        profile(), kTestPrimaryAppId, &startup_launch_delegate_);
+        profile(), kTestPrimaryAppId, /*should_skip_install=*/false,
+        &startup_launch_delegate_);
   }
 
   void TearDown() override {
@@ -466,7 +461,7 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
       return AssertionFailure() << "Download not pending: " << app_id;
 
     if (!external_cache_->SimulateExtensionDownloadFinished(
-            app_id, GetExtensionPath(app_id), version)) {
+            app_id, GetExtensionPath(app_id), version, /*is_update=*/false)) {
       return AssertionFailure() << " Finish download attempt failed";
     }
 
@@ -608,7 +603,7 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
   bool kiosk_app_session_initialized_ = false;
 
  private:
-  ash::AshTestHelper ash_test_helper_;
+  AshTestHelper ash_test_helper_;
   base::test::ScopedCommandLine command_line_;
 
   std::unique_ptr<ScopedCrosSettingsTestHelper> accounts_settings_helper_;
@@ -742,13 +737,15 @@ TEST_F(StartupAppLauncherTest,
 }
 
 TEST_F(StartupAppLauncherTest, PrimaryAppDownloadFailure) {
+  base::HistogramTester histogram;
   InitializeLauncherWithNetworkReady();
 
   ASSERT_TRUE(external_cache_);
   EXPECT_EQ(std::set<std::string>({kTestPrimaryAppId}),
             external_cache_->pending_downloads());
-  ASSERT_TRUE(
-      external_cache_->SimulateExtensionDownloadFailed(kTestPrimaryAppId));
+  ASSERT_TRUE(external_cache_->SimulateExtensionDownloadFailed(
+      kTestPrimaryAppId,
+      extensions::ExtensionDownloaderDelegate::Error::CRX_FETCH_FAILED));
 
   EXPECT_TRUE(external_apps_loader_handler_->pending_update_urls().empty());
   EXPECT_TRUE(external_apps_loader_handler_->pending_crx_files().empty());
@@ -760,6 +757,11 @@ TEST_F(StartupAppLauncherTest, PrimaryAppDownloadFailure) {
             startup_launch_delegate_.launch_error());
 
   EXPECT_FALSE(kiosk_app_session_initialized_);
+
+  histogram.ExpectUniqueSample(
+      kKioskPrimaryAppInstallErrorHistogram,
+      KioskAppManager::PrimaryAppDownloadResult::kCrxFetchFailed,
+      /*expected_bucket_count=*/1);
 }
 
 TEST_F(StartupAppLauncherTest, PrimaryAppCrxInstallFailure) {
@@ -1439,7 +1441,10 @@ TEST_F(StartupAppLauncherTest, SecondaryExtensionStateOnSessionRestore) {
 
   // This matches the delegate settings during session restart (e.g. after a
   // browser process crash).
-  startup_launch_delegate_.set_should_skip_app_installation(true);
+  startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
+      profile(), kTestPrimaryAppId, /*should_skip_install=*/true,
+      &startup_launch_delegate_);
+
   startup_launch_delegate_.set_network_ready(true);
   startup_app_launcher_->Initialize();
 

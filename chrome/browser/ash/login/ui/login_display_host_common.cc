@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
+
 #include <memory>
 
 #include "ash/constants/ash_features.h"
@@ -15,12 +16,14 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
+#include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
 #include "chrome/browser/ash/login/oobe_quick_start/target_device_bootstrap_controller.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
+#include "chrome/browser/ash/login/screens/recovery_eligibility_screen.h"
 #include "chrome/browser/ash/login/screens/reset_screen.h"
 #include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
@@ -35,6 +38,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
@@ -51,6 +55,7 @@
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -59,6 +64,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
 namespace {
 
 // The delay of triggering initialization of the device policy subsystem
@@ -71,8 +77,8 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
     if (callback.is_null())
       continue;
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
   }
 }
 
@@ -188,6 +194,7 @@ LoginDisplayHostCommon::LoginDisplayHostCommon()
       browser_shutdown::AddAppTerminatingCallback(base::BindOnce(
           &LoginDisplayHostCommon::OnAppTerminating, base::Unretained(this)));
   BrowserList::AddObserver(this);
+  AuthMetricsRecorder::Get()->ResetLoginData();
 }
 
 LoginDisplayHostCommon::~LoginDisplayHostCommon() {
@@ -264,6 +271,9 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
                                         bool is_auto_launch) {
   VLOG(1) << "Login >> start kiosk of type "
           << static_cast<int>(kiosk_app_id.type);
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kAttemptToLaunch);
+
   SetStatusAreaVisible(false);
 
   // Wait for the `CrosSettings` to become either trusted or permanently
@@ -288,6 +298,8 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
     // shown by the DeviceDisablingManager.
     return;
   }
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kStartLaunch);
 
   OnStartAppLaunch();
 
@@ -478,6 +490,14 @@ void LoginDisplayHostCommon::StartUserOnboarding() {
 
 void LoginDisplayHostCommon::ResumeUserOnboarding(OobeScreenId screen_id) {
   SetScreenAfterManagedTos(screen_id);
+
+  if (features::IsOobeChoobeEnabled()) {
+    if (ChoobeFlowController::IsOptionalScreen(screen_id)) {
+      GetWizardController()->GetChoobeFlowController()->MaybeResumeChoobe(
+          *ProfileManager::GetActiveUserProfile()->GetPrefs());
+    }
+  }
+
   // Try to show TermsOfServiceScreen first
   StartWizard(TermsOfServiceScreenView::kScreenId);
 }
@@ -503,7 +523,9 @@ void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
-  if (PinSetupScreen::ShouldSkipBecauseOfPolicy())
+  if (PinSetupScreen::ShouldSkipBecauseOfPolicy() &&
+      !features::IsCryptohomeRecoverySetupEnabled() &&
+      RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy())
     return;
 
   wizard_context_->extra_factors_auth_session =
@@ -515,16 +537,16 @@ void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
 }
 
 void LoginDisplayHostCommon::StartEncryptionMigration(
-    const UserContext& user_context,
+    std::unique_ptr<UserContext> user_context,
     EncryptionMigrationMode migration_mode,
-    base::OnceCallback<void(const UserContext&)> on_skip_migration) {
+    base::OnceCallback<void(std::unique_ptr<UserContext>)> on_skip_migration) {
   StartWizard(EncryptionMigrationScreenView::kScreenId);
 
   EncryptionMigrationScreen* migration_screen =
       GetWizardController()->GetScreen<EncryptionMigrationScreen>();
 
   DCHECK(migration_screen);
-  migration_screen->SetUserContext(user_context);
+  migration_screen->SetUserContext(std::move(user_context));
   migration_screen->SetMode(migration_mode);
   migration_screen->SetSkipMigrationCallback(std::move(on_skip_migration));
   migration_screen->SetupInitialView();
@@ -624,7 +646,8 @@ void LoginDisplayHostCommon::ShutdownDisplayHost() {
   shutting_down_ = true;
 
   Cleanup();
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE,
+                                                                this);
 }
 
 void LoginDisplayHostCommon::OnStartSignInScreenCommon() {

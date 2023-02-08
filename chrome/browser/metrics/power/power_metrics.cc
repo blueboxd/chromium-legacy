@@ -16,16 +16,13 @@
 
 namespace {
 
-constexpr const char* kBatteryDischargeRateHistogramName =
-    "Power.BatteryDischargeRate2";
-constexpr const char* kBatteryDischargeModeHistogramName =
-    "Power.BatteryDischargeMode2";
-
-constexpr const char* kAlignedBatteryDischargeRateMilliwattsHistogramName =
+constexpr const char* kBatteryDischargeRateMilliwattsHistogramName =
     "Power.BatteryDischargeRateMilliwatts5";
-constexpr const char* kAlignedBatteryDischargeRateRelativeHistogramName =
+constexpr const char* kAltBatteryDischargeRateMilliwattsHistogramName =
+    "Power.AltBatteryDischargeRateMilliwatts5";
+constexpr const char* kBatteryDischargeRateRelativeHistogramName =
     "Power.BatteryDischargeRateRelative5";
-constexpr const char* kAlignedBatteryDischargeModeHistogramName =
+constexpr const char* kBatteryDischargeModeHistogramName =
     "Power.BatteryDischargeMode5";
 
 #if BUILDFLAG(IS_MAC)
@@ -56,6 +53,21 @@ constexpr int kMaxCPUProportion = 2;
 constexpr int kMaxGPUProportion = 1;
 #endif  // BUILDFLAG(IS_MAC)
 
+// Returns the current capacity of |battery_state| in milliwatt-hours.
+uint64_t GetBatteryCapacityinMWh(
+    const base::BatteryLevelProvider::BatteryState& battery_state) {
+  if (battery_state.charge_unit ==
+      base::BatteryLevelProvider::BatteryLevelUnit::kMWh) {
+    return battery_state.current_capacity.value();
+  }
+
+  DCHECK_EQ(battery_state.charge_unit.value(),
+            base::BatteryLevelProvider::BatteryLevelUnit::kMAh);
+  DCHECK(battery_state.voltage_mv.has_value());
+  return battery_state.current_capacity.value() *
+         battery_state.voltage_mv.value() / 1000;
+}
+
 }  // namespace
 
 void ReportAggregatedProcessMetricsHistograms(
@@ -68,22 +80,17 @@ void ReportAggregatedProcessMetricsHistograms(
   }
 }
 
-// Returns the discharge rate in milliwatts.
 int64_t CalculateDischargeRateMilliwatts(
-    const absl::optional<base::BatteryLevelProvider::BatteryState>&
-        previous_battery_state,
-    const absl::optional<base::BatteryLevelProvider::BatteryState>&
-        new_battery_state,
+    const base::BatteryLevelProvider::BatteryState& previous_battery_state,
+    const base::BatteryLevelProvider::BatteryState& new_battery_state,
     base::TimeDelta interval_duration) {
-  DCHECK(previous_battery_state &&
-         previous_battery_state->charge_unit ==
-             base::BatteryLevelProvider::BatteryLevelUnit::kMWh);
-  DCHECK(new_battery_state &&
-         previous_battery_state->charge_unit ==
-             base::BatteryLevelProvider::BatteryLevelUnit::kMWh);
+  DCHECK_EQ(previous_battery_state.charge_unit.value(),
+            new_battery_state.charge_unit.value());
+
   const uint64_t previous_capacity =
-      previous_battery_state->current_capacity.value();
-  const uint64_t new_capacity = new_battery_state->current_capacity.value();
+      GetBatteryCapacityinMWh(previous_battery_state);
+  const uint64_t new_capacity = GetBatteryCapacityinMWh(new_battery_state);
+
   // The capacity is in mWh. Divide by hours to get mW. Note that there is no
   // InHoursF() method.
   const double interval_duration_in_hours =
@@ -92,24 +99,57 @@ int64_t CalculateDischargeRateMilliwatts(
   return (previous_capacity - new_capacity) / interval_duration_in_hours;
 }
 
-// Returns the discharge rate in one hundredth of a percent of full capacity per
-// minute.
+int64_t CalculateAltDischargeRateMilliwatts(
+    const base::BatteryLevelProvider::BatteryState& previous_battery_state,
+    const base::BatteryLevelProvider::BatteryState& new_battery_state,
+    base::TimeDelta interval_duration) {
+  DCHECK(previous_battery_state.charge_unit.has_value());
+  DCHECK(new_battery_state.charge_unit.has_value());
+  DCHECK_EQ(previous_battery_state.charge_unit.value(),
+            new_battery_state.charge_unit.value());
+
+  const int64_t discharge_capacity =
+      (new_battery_state.full_charged_capacity.value() -
+       new_battery_state.current_capacity.value()) -
+      (previous_battery_state.full_charged_capacity.value() -
+       previous_battery_state.current_capacity.value());
+
+  const int64_t discharge_capacity_mwh = [&]() -> int64_t {
+    if (new_battery_state.charge_unit.value() ==
+        base::BatteryLevelProvider::BatteryLevelUnit::kMWh) {
+      return discharge_capacity;
+    }
+
+    DCHECK_EQ(new_battery_state.charge_unit.value(),
+              base::BatteryLevelProvider::BatteryLevelUnit::kMAh);
+    const uint64_t average_mv = (previous_battery_state.voltage_mv.value() +
+                                 new_battery_state.voltage_mv.value()) /
+                                2;
+    return discharge_capacity * average_mv / 1000;
+  }();
+
+  // The capacity is in mWh. Divide by hours to get mW. Note that there is no
+  // InHoursF() method.
+  const double interval_duration_in_hours =
+      interval_duration.InSecondsF() / base::Time::kSecondsPerHour;
+
+  return discharge_capacity_mwh / interval_duration_in_hours;
+}
+
 int64_t CalculateDischargeRateRelative(
-    const absl::optional<base::BatteryLevelProvider::BatteryState>&
-        previous_battery_state,
-    const absl::optional<base::BatteryLevelProvider::BatteryState>&
-        new_battery_state,
+    const base::BatteryLevelProvider::BatteryState& previous_battery_state,
+    const base::BatteryLevelProvider::BatteryState& new_battery_state,
     base::TimeDelta interval_duration) {
   // The battery discharge rate is reported per minute with 1/10000 of full
   // charge resolution.
   static constexpr int64_t kDischargeRateFactor = 10000;
 
   const double previous_level =
-      static_cast<double>(previous_battery_state->current_capacity.value()) /
-      previous_battery_state->full_charged_capacity.value();
+      static_cast<double>(previous_battery_state.current_capacity.value()) /
+      previous_battery_state.full_charged_capacity.value();
   const double new_level =
-      static_cast<double>(new_battery_state->current_capacity.value()) /
-      new_battery_state->full_charged_capacity.value();
+      static_cast<double>(new_battery_state.current_capacity.value()) /
+      new_battery_state.full_charged_capacity.value();
 
   const double interval_duration_in_minutes =
       interval_duration.InSecondsF() / base::Time::kSecondsPerMinute;
@@ -172,36 +212,22 @@ BatteryDischarge GetBatteryDischargeDuringInterval(
     return {BatteryDischargeMode::kFullChargedCapacityIsZero, absl::nullopt};
   }
 
-  const auto discharge_rate_relative = CalculateDischargeRateRelative(
-      previous_battery_state, new_battery_state, interval_duration);
   const auto discharge_rate_mw = CalculateDischargeRateMilliwatts(
-      previous_battery_state, new_battery_state, interval_duration);
+      *previous_battery_state, *new_battery_state, interval_duration);
+  const auto alt_discharge_rate_mw = CalculateAltDischargeRateMilliwatts(
+      *previous_battery_state, *new_battery_state, interval_duration);
 
-  if (discharge_rate_relative < 0 || discharge_rate_mw < 0)
+  const auto discharge_rate_relative = CalculateDischargeRateRelative(
+      *previous_battery_state, *new_battery_state, interval_duration);
+
+  if (discharge_rate_relative < 0 || discharge_rate_mw < 0) {
     return {BatteryDischargeMode::kBatteryLevelIncreased, absl::nullopt};
+  }
   return {BatteryDischargeMode::kDischarging, discharge_rate_mw,
-          discharge_rate_relative};
+          alt_discharge_rate_mw, discharge_rate_relative};
 }
 
 void ReportBatteryHistograms(
-    base::TimeDelta interval_duration,
-    BatteryDischarge battery_discharge,
-    const std::vector<const char*>& scenario_suffixes) {
-  for (const char* scenario_suffix : scenario_suffixes) {
-    base::UmaHistogramEnumeration(
-        base::StrCat({kBatteryDischargeModeHistogramName, scenario_suffix}),
-        battery_discharge.mode);
-
-    if (battery_discharge.mode == BatteryDischargeMode::kDischarging) {
-      DCHECK(battery_discharge.rate_relative.has_value());
-      base::UmaHistogramCounts1000(
-          base::StrCat({kBatteryDischargeRateHistogramName, scenario_suffix}),
-          *battery_discharge.rate_relative);
-    }
-  }
-}
-
-void ReportAlignedBatteryHistograms(
     base::TimeDelta interval_duration,
     BatteryDischarge battery_discharge,
     bool is_initial_interval,
@@ -212,19 +238,24 @@ void ReportAlignedBatteryHistograms(
   for (const char* scenario_suffix : scenario_suffixes) {
     for (const char* interval_type_suffix : interval_type_suffixes) {
       base::UmaHistogramEnumeration(
-          base::StrCat({kAlignedBatteryDischargeModeHistogramName,
-                        scenario_suffix, interval_type_suffix}),
+          base::StrCat({kBatteryDischargeModeHistogramName, scenario_suffix,
+                        interval_type_suffix}),
           battery_discharge.mode);
 
       if (battery_discharge.mode == BatteryDischargeMode::kDischarging) {
         DCHECK(battery_discharge.rate_milliwatts.has_value());
         base::UmaHistogramCounts100000(
-            base::StrCat({kAlignedBatteryDischargeRateMilliwattsHistogramName,
+            base::StrCat({kBatteryDischargeRateMilliwattsHistogramName,
                           scenario_suffix, interval_type_suffix}),
             *battery_discharge.rate_milliwatts);
+        DCHECK(battery_discharge.alt_rate_milliwatts.has_value());
+        base::UmaHistogramCounts100000(
+            base::StrCat({kAltBatteryDischargeRateMilliwattsHistogramName,
+                          scenario_suffix, interval_type_suffix}),
+            *battery_discharge.alt_rate_milliwatts);
         DCHECK(battery_discharge.rate_relative.has_value());
         base::UmaHistogramCounts1000(
-            base::StrCat({kAlignedBatteryDischargeRateRelativeHistogramName,
+            base::StrCat({kBatteryDischargeRateRelativeHistogramName,
                           scenario_suffix, interval_type_suffix}),
             *battery_discharge.rate_relative);
       }

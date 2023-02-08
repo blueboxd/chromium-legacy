@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_switcher/alternative_browser_driver.h"
@@ -92,8 +92,6 @@ content::WebUIDataSource* CreateBrowserSwitchUIHTMLSource(
     content::WebUI* web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBrowserSwitchHost);
-
-  source->DisableTrustedTypesCSP();
 
   auto* service = GetBrowserSwitcherService(web_ui);
   source->AddInteger("launchDelay", service->prefs().GetDelay());
@@ -420,7 +418,7 @@ void BrowserSwitchHandler::OnLaunchFinished(base::TimeTicks start,
   if (service->prefs().KeepLastTab() && IsLastTab(profile)) {
     GotoNewTabPage(web_ui()->GetWebContents());
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,
                                   web_ui()->GetWebContents()->GetWeakPtr()));
   }

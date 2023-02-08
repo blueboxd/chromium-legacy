@@ -11,6 +11,7 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/app_list/app_list_public_test_util.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/components/arc/mojom/system_ui.mojom-shared.h"
@@ -66,7 +67,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -74,6 +75,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
@@ -99,10 +102,13 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_context.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
@@ -121,8 +127,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/default_pinned_apps.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -150,12 +154,12 @@
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
+#include "chromeos/ash/components/metrics/login_event_recorder.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
-#include "chromeos/metrics/login_event_recorder.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -166,7 +170,9 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_properties.h"
 #include "components/policy/core/browser/policy_conversions.h"
+#include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/policy/core/common/remote_commands/remote_commands_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
@@ -179,6 +185,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/variations/pref_names.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -199,6 +206,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/filename_util.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -248,7 +256,8 @@ NOINLINE int AccessArray(const int arr[], const int* index) {
   return arr[*index];
 }
 
-base::ListValue GetHostPermissions(const Extension* ext, bool effective_perm) {
+base::Value::List GetHostPermissions(const Extension* ext,
+                                     bool effective_perm) {
   const PermissionsData* permissions_data = ext->permissions_data();
 
   const URLPatternSet* pattern_set = nullptr;
@@ -260,15 +269,15 @@ base::ListValue GetHostPermissions(const Extension* ext, bool effective_perm) {
     pattern_set = &permissions_data->active_permissions().explicit_hosts();
   }
 
-  base::ListValue permissions;
+  base::Value::List permissions;
   for (const auto& perm : *pattern_set)
     permissions.Append(perm.GetAsString());
 
   return permissions;
 }
 
-base::ListValue GetAPIPermissions(const Extension* ext) {
-  base::ListValue permissions;
+base::Value::List GetAPIPermissions(const Extension* ext) {
+  base::Value::List permissions;
   std::set<std::string> perm_list =
       ext->permissions_data()->active_permissions().GetAPIsAsStrings();
   for (const auto& perm : perm_list) {
@@ -1005,6 +1014,20 @@ std::string ResolutionToString(
   DCHECK(false);
 }
 
+std::string CompositorFrameSinkTypeToString(
+    viz::mojom::CompositorFrameSinkType type) {
+  switch (type) {
+    case viz::mojom::CompositorFrameSinkType::kUnspecified:
+      return "unspecified";
+    case viz::mojom::CompositorFrameSinkType::kVideo:
+      return "video";
+    case viz::mojom::CompositorFrameSinkType::kMediaStream:
+      return "media-stream";
+    case viz::mojom::CompositorFrameSinkType::kLayerTree:
+      return "layer-tree";
+  }
+}
+
 }  // namespace
 
 class WindowStateChangeObserver : public aura::WindowObserver {
@@ -1453,6 +1476,39 @@ void AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateRefreshRemoteCommandsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateRefreshRemoteCommandsFunction::
+    ~AutotestPrivateRefreshRemoteCommandsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRefreshRemoteCommandsFunction::Run() {
+  DVLOG(1) << "AutotestPrivateRefreshRemoteCommandsFunction";
+  // Allow tests to manually fetch remote commands. Useful for testing or when
+  // the invalidation service is not working properly.
+  policy::CloudPolicyManager* const device_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_ash()
+          ->GetDeviceCloudPolicyManager();
+  policy::CloudPolicyManager* const user_manager =
+      Profile::FromBrowserContext(browser_context())
+          ->GetUserCloudPolicyManagerAsh();
+
+  // Fetch both device and user remote commands.
+  for (policy::CloudPolicyManager* manager : {device_manager, user_manager}) {
+    if (manager) {
+      policy::RemoteCommandsService* const remote_commands_service =
+          manager->core()->remote_commands_service();
+      if (remote_commands_service)
+        remote_commands_service->FetchRemoteCommands();
+    }
+  }
+  // TODO(b/260972611): Wait till remote commands are fetched.
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateGetExtensionsInfoFunction
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1553,7 +1609,7 @@ AutotestPrivateSetTouchpadSensitivityFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTouchpadSensitivityFunction " << params->value;
 
-  chromeos::system::InputDeviceSettings::Get()->SetTouchpadSensitivity(
+  ash::system::InputDeviceSettings::Get()->SetTouchpadSensitivity(
       params->value);
   return RespondNow(NoArguments());
 }
@@ -1571,7 +1627,7 @@ ExtensionFunction::ResponseAction AutotestPrivateSetTapToClickFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTapToClickFunction " << params->enabled;
 
-  chromeos::system::InputDeviceSettings::Get()->SetTapToClick(params->enabled);
+  ash::system::InputDeviceSettings::Get()->SetTapToClick(params->enabled);
   return RespondNow(NoArguments());
 }
 
@@ -1589,8 +1645,7 @@ AutotestPrivateSetThreeFingerClickFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetThreeFingerClickFunction " << params->enabled;
 
-  chromeos::system::InputDeviceSettings::Get()->SetThreeFingerClick(
-      params->enabled);
+  ash::system::InputDeviceSettings::Get()->SetThreeFingerClick(params->enabled);
   return RespondNow(NoArguments());
 }
 
@@ -1607,7 +1662,7 @@ ExtensionFunction::ResponseAction AutotestPrivateSetTapDraggingFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetTapDraggingFunction " << params->enabled;
 
-  chromeos::system::InputDeviceSettings::Get()->SetTapDragging(params->enabled);
+  ash::system::InputDeviceSettings::Get()->SetTapDragging(params->enabled);
   return RespondNow(NoArguments());
 }
 
@@ -1625,8 +1680,7 @@ AutotestPrivateSetNaturalScrollFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetNaturalScrollFunction " << params->enabled;
 
-  chromeos::system::InputDeviceSettings::Get()->SetNaturalScroll(
-      params->enabled);
+  ash::system::InputDeviceSettings::Get()->SetNaturalScroll(params->enabled);
   return RespondNow(NoArguments());
 }
 
@@ -1644,8 +1698,7 @@ AutotestPrivateSetMouseSensitivityFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetMouseSensitivityFunction " << params->value;
 
-  chromeos::system::InputDeviceSettings::Get()->SetMouseSensitivity(
-      params->value);
+  ash::system::InputDeviceSettings::Get()->SetMouseSensitivity(params->value);
   return RespondNow(NoArguments());
 }
 
@@ -1663,8 +1716,7 @@ AutotestPrivateSetPrimaryButtonRightFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   DVLOG(1) << "AutotestPrivateSetPrimaryButtonRightFunction " << params->right;
 
-  chromeos::system::InputDeviceSettings::Get()->SetPrimaryButtonRight(
-      params->right);
+  ash::system::InputDeviceSettings::Get()->SetPrimaryButtonRight(params->right);
   return RespondNow(NoArguments());
 }
 
@@ -1683,7 +1735,7 @@ AutotestPrivateSetMouseReverseScrollFunction::Run() {
   DVLOG(1) << "AutotestPrivateSetMouseReverseScrollFunction "
            << params->enabled;
 
-  chromeos::system::InputDeviceSettings::Get()->SetMouseReverseScroll(
+  ash::system::InputDeviceSettings::Get()->SetMouseReverseScroll(
       params->enabled);
   return RespondNow(NoArguments());
 }
@@ -2111,7 +2163,6 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
                           base::Microseconds(package_info->last_backup_time))
                           .ToJsTime());
     package_value.Set("shouldSync", package_info->should_sync);
-    package_value.Set("system", package_info->system);
     package_value.Set("vpnProvider", package_info->vpn_provider);
   }
   return RespondNow(WithArguments(std::move(package_value)));
@@ -2233,7 +2284,7 @@ void AutotestPrivateGetRegisteredSystemWebAppsFunction::
     if (app_id) {
       system_web_app.start_url =
           ash::SystemWebAppManager::GetWebAppProvider(profile)
-              ->registrar()
+              ->registrar_unsafe()
               .GetAppLaunchUrl(*app_id)
               .spec();
     }
@@ -2290,31 +2341,6 @@ void AutotestPrivateIsSystemWebAppOpenFunction::OnSystemWebAppsInstalled() {
 
   Respond(WithArguments(ash::FindSystemWebAppBrowser(profile, *app_type) !=
                         nullptr));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateLaunchArcIntentFunction
-///////////////////////////////////////////////////////////////////////////////
-
-AutotestPrivateLaunchArcAppFunction::~AutotestPrivateLaunchArcAppFunction() =
-    default;
-
-ExtensionFunction::ResponseAction AutotestPrivateLaunchArcAppFunction::Run() {
-  std::unique_ptr<api::autotest_private::LaunchArcApp::Params> params(
-      api::autotest_private::LaunchArcApp::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  DVLOG(1) << "AutotestPrivateLaunchArcIntentFunction " << params->app_id << "/"
-           << params->intent;
-
-  absl::optional<std::string> launch_intent;
-  if (!params->intent.empty())
-    launch_intent = params->intent;
-  const bool result = arc::LaunchAppWithIntent(
-      Profile::FromBrowserContext(browser_context()), params->app_id,
-      launch_intent, 0 /* event_flags */,
-      arc::UserInteractionType::APP_STARTED_FROM_EXTENSION_API,
-      nullptr /* window_info */);
-  return RespondNow(WithArguments(result));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3009,7 +3035,7 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
   // We have to respond in separate task on the same thread, because it will
   // cause a destruction of CupsPrintersManager which needs to happen after
   // we return and on the same thread.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&AutotestPrivateGetPrinterListFunction::RespondWithSuccess,
                      this));
@@ -3863,6 +3889,26 @@ ExtensionFunction::ResponseAction AutotestPrivateGetShelfItemsFunction::Run() {
 
   return RespondNow(ArgumentList(
       api::autotest_private::GetShelfItems::Results::Create(result_items)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetLauncherSearchBoxStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetLauncherSearchBoxStateFunction::
+    AutotestPrivateGetLauncherSearchBoxStateFunction() = default;
+
+AutotestPrivateGetLauncherSearchBoxStateFunction::
+    ~AutotestPrivateGetLauncherSearchBoxStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetLauncherSearchBoxStateFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetLauncherSearchBoxStateFunction";
+
+  api::autotest_private::LauncherSearchBoxState launcher_search_box_state;
+  launcher_search_box_state.ghost_text = ash::GetSearchBoxGhostTextForTest();
+
+  return RespondNow(WithArguments(launcher_search_box_state.ToValue()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6018,7 +6064,7 @@ AutotestPrivateStartLoginEventRecorderDataCollectionFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateStartLoginEventRecorderDataCollectionFunction::Run() {
-  chromeos::LoginEventRecorder::Get()
+  ash::LoginEventRecorder::Get()
       ->PrepareEventCollectionForTesting();  // IN-TEST
   return RespondNow(NoArguments());
 }
@@ -6036,14 +6082,14 @@ AutotestPrivateGetLoginEventRecorderLoginEventsFunction::
 ExtensionFunction::ResponseAction
 AutotestPrivateGetLoginEventRecorderLoginEventsFunction::Run() {
   const auto& collected_data =
-      chromeos::LoginEventRecorder::Get()
+      ash::LoginEventRecorder::Get()
           ->GetCollectedLoginEventsForTesting();  // IN-TEST
   std::vector<api::autotest_private::LoginEventRecorderData> result_data;
   for (const auto& data : collected_data) {
     api::autotest_private::LoginEventRecorderData event_data;
     event_data.name = data.name();
     event_data.microsecnods_since_unix_epoch =
-        (data.time() - base::Time::UnixEpoch()).InMicroseconds();
+        (data.time() - base::TimeTicks::UnixEpoch()).InMicroseconds();
     result_data.emplace_back(std::move(event_data));
   }
 
@@ -6064,7 +6110,7 @@ AutotestPrivateAddLoginEventForTestingFunction::
 
 ExtensionFunction::ResponseAction
 AutotestPrivateAddLoginEventForTestingFunction::Run() {
-  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
+  ash::LoginEventRecorder::Get()->AddLoginTimeMarker(
       /*marker_name=*/"AutotestPrivateTestMarker",
       /*send_to_uma=*/false,
       /*write_to_file=*/false);
@@ -6266,6 +6312,85 @@ AutotestPrivateRemoveComponentExtensionFunction::Run() {
   extension_service->component_loader()->Remove(params->extension_id);
 
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartFrameCountingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartFrameCountingFunction::
+    AutotestPrivateStartFrameCountingFunction() = default;
+
+AutotestPrivateStartFrameCountingFunction::
+    ~AutotestPrivateStartFrameCountingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartFrameCountingFunction::Run() {
+  std::unique_ptr<api::autotest_private::StartFrameCounting::Params> params(
+      api::autotest_private::StartFrameCounting::Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->bucket_size_in_seconds <= 0) {
+    return RespondNow(
+        Error("Param bucketSizeInSeconds must be greater than 0s"));
+  }
+
+  // "viz.mojom.FrameCountingPerSinkData" uses uint16 to store frame counts.
+  // Limit the max bucket size so that the max frame count does not go beyond
+  // uint16 max. 500s is safe even for a 120fps system.
+  constexpr int kMaxBucketSizeInSeconds = 500;
+  if (params->bucket_size_in_seconds > kMaxBucketSizeInSeconds) {
+    return RespondNow(
+        Error("Param bucketSizeInSeconds must be less than 500s"));
+  }
+
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->StartFrameCountingForTest(  // IN-TEST
+          base::Seconds(params->bucket_size_in_seconds));
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopFrameCountingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopFrameCountingFunction::
+    AutotestPrivateStopFrameCountingFunction() = default;
+
+AutotestPrivateStopFrameCountingFunction::
+    ~AutotestPrivateStopFrameCountingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStopFrameCountingFunction::Run() {
+  auto callback = base::BindOnce(
+      &AutotestPrivateStopFrameCountingFunction::OnDataReceived, this);
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->StopFrameCountingForTest(std::move(callback));  // IN-TEST
+  return RespondLater();
+}
+
+void AutotestPrivateStopFrameCountingFunction::OnDataReceived(
+    viz::mojom::FrameCountingDataPtr data_ptr) {
+  std::vector<api::autotest_private::FrameCountingPerSinkData> result;
+  for (const auto& per_sink_data : data_ptr->per_sink_data) {
+    api::autotest_private::FrameCountingPerSinkData result_per_sink_data;
+    result_per_sink_data.sink_type =
+        CompositorFrameSinkTypeToString(per_sink_data->type);
+    result_per_sink_data.is_root = per_sink_data->is_root;
+
+    std::copy(per_sink_data->presented_frames.begin(),
+              per_sink_data->presented_frames.end(),
+              std::back_inserter(result_per_sink_data.presented_frames));
+
+    result.emplace_back(std::move(result_per_sink_data));
+  }
+
+  Respond(ArgumentList(
+      api::autotest_private::StopFrameCounting::Results::Create(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

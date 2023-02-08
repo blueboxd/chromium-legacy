@@ -84,10 +84,8 @@ void DebugLogsManager::ChangeDebugLogsState(bool should_debug_logs_be_enabled) {
 }
 
 bool DebugLogsManager::AreDebugLogsSupported() const {
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kShowBluetoothDebugLogToggle)) {
+  if (!base::FeatureList::IsEnabled(features::kShowBluetoothDebugLogToggle))
     return false;
-  }
 
   return gaia::IsGoogleInternalAccountEmail(primary_user_email_);
 }
@@ -136,7 +134,7 @@ void DebugLogsManager::OnVerboseLogsEnableError(
   if (!should_retry)
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DebugLogsManager::SendDBusVerboseLogsMessage,
                      weak_ptr_factory_.GetWeakPtr(), enable,
@@ -183,7 +181,7 @@ void DebugLogsManager::OnSetBluetoothQualityReportError(
   if (!should_retry)
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DebugLogsManager::SetBluetoothQualityReport,
                      weak_ptr_factory_.GetWeakPtr(), enable,

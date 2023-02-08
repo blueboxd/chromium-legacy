@@ -2,21 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export function makePasswordCheckStatus(
-    state?: chrome.passwordsPrivate.PasswordCheckState, checked?: number,
-    remaining?: number,
-    lastCheck?: string): chrome.passwordsPrivate.PasswordCheckStatus {
+export interface PasswordCheckParams {
+  state?: chrome.passwordsPrivate.PasswordCheckState;
+  totalNumber?: number;
+  checked?: number;
+  remaining?: number;
+  lastCheck?: string;
+}
+
+export function makePasswordCheckStatus(params: PasswordCheckParams):
+    chrome.passwordsPrivate.PasswordCheckStatus {
   return {
-    state: state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
-    alreadyProcessed: checked,
-    remainingInQueue: remaining,
-    elapsedTimeSinceLastCheck: lastCheck,
+    state: params.state || chrome.passwordsPrivate.PasswordCheckState.IDLE,
+    totalNumberOfPasswords: params.totalNumber,
+    alreadyProcessed: params.checked,
+    remainingInQueue: params.remaining,
+    elapsedTimeSinceLastCheck: params.lastCheck,
   };
 }
 
 export interface PasswordEntryParams {
   url?: string;
   username?: string;
+  password?: string;
   federationText?: string;
   id?: number;
   inAccountStore?: boolean;
@@ -54,9 +62,9 @@ export function createPasswordEntry(params?: PasswordEntryParams):
 
   return {
     urls: {
-      signonRealm: 'http://' + url + '/login',
+      signonRealm: 'https://' + url + '/login',
       shown: url,
-      link: 'http://' + url + '/login',
+      link: 'https://' + url + '/login',
     },
     username: username,
     federationText: params.federationText,
@@ -64,8 +72,7 @@ export function createPasswordEntry(params?: PasswordEntryParams):
     storedIn: storeType,
     isAndroidCredential: params.isAndroidCredential || false,
     note: note,
-    password: '',
-    hasStartableScript: false,
+    password: params.password || '',
   };
 }
 
@@ -156,7 +163,6 @@ export function makeInsecureCredential(params: InsecureCredentialsParams):
     id: id || 0,
     storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
     changePasswordUrl: `http://${url}/`,
-    hasStartableScript: false,
     urls: {
       signonRealm: `http://${url}/`,
       shown: url,

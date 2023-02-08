@@ -21,8 +21,8 @@
 #include "base/one_shot_event.h"
 #include "base/scoped_observation_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/app_list/reorder/app_list_reorder_delegate.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/browser/ui/app_list/reorder/app_list_reorder_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync/model/sync_change.h"
@@ -233,8 +233,6 @@ class AppListSyncableService : public syncer::SyncableService,
     return oem_folder_name_;
   }
 
-  void InstallDefaultPageBreaksForTest();
-
   void PopulateSyncItemsForTest(std::vector<std::unique_ptr<SyncItem>>&& items);
 
   SyncItem* GetMutableSyncItemForTest(const std::string& id);
@@ -387,10 +385,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // level item list.
   void PruneRedundantPageBreakItems();
 
-  // Installs the default page break items. This is only called for first time
-  // users.
-  void InstallDefaultPageBreaks();
-
   // Applies sync changes to the local item.
   void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
                               AppListSyncableService::SyncItem* item);
@@ -449,9 +443,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // this variable is used to detect this state.
   bool oem_folder_using_provisional_default_position_ = false;
   std::string oem_folder_name_;
-  // Callback to install default page breaks.
-  // Only set for first time user for tablet form devices.
-  base::OnceClosure install_default_page_breaks_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // List of observers.

@@ -16,21 +16,36 @@ class Profile;
 
 namespace ash::cloud_upload {
 
-// Either OneDrive for the Office PWA or Drive for Web Drive editing.
-enum class UploadType {
-  kOneDrive,
-  kDrive,
-};
-
 // The string conversions of ash::cloud_upload::mojom::UserAction.
 const char kUserActionCancel[] = "cancel";
-const char kUserActionUpload[] = "upload";
+const char kUserActionSetUpGoogleDrive[] = "setup-drive";
+const char kUserActionSetUpOneDrive[] = "setup-onedrive";
+const char kUserActionUploadToGoogleDrive[] = "upload-drive";
+const char kUserActionUploadToOneDrive[] = "upload-onedrive";
+const char kUserActionConfirmOrUploadToGoogleDrive[] =
+    "confirm-or-upload-google-drive";
+const char kUserActionConfirmOrUploadToOneDrive[] =
+    "confirm-or-upload-onedrive";
 
-// Initiates the upload workflow.
-bool UploadAndOpen(Profile* profile,
-                   const std::vector<storage::FileSystemURL>& file_urls,
-                   const mojom::CloudProvider cloud_provider,
-                   bool show_dialog);
+// Either OneDrive for the Office PWA or Drive for Drive Web editing.
+enum class CloudProvider {
+  kGoogleDrive,
+  kOneDrive,
+};
+
+// Opens the `file_urls` from the `cloud_provider`. Runs setup for for Office
+// files if it has not been run before. Uploads the files to the cloud if
+// needed.
+bool OpenFilesWithCloudProvider(
+    Profile* profile,
+    const std::vector<storage::FileSystemURL>& file_urls,
+    const CloudProvider cloud_provider);
+
+// Open office files if they are in the correct cloud already.
+// Otherwise move the files before opening.
+void OpenOrMoveFiles(Profile* profile,
+                     const std::vector<storage::FileSystemURL>& file_urls,
+                     const CloudProvider cloud_provider);
 
 // Defines the web dialog used to help users upload Office files to the cloud.
 class CloudUploadDialog : public SystemWebDialogDelegate {
@@ -45,20 +60,24 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
   // if a new dialog has been effectively created.
   static bool Show(Profile* profile,
                    const std::vector<storage::FileSystemURL>& file_urls,
-                   const mojom::CloudProvider cloud_provider);
+                   const mojom::DialogPage dialog_page);
 
   void OnDialogShown(content::WebUI* webui) override;
   void OnDialogClosed(const std::string& json_retval) override;
 
  protected:
-  CloudUploadDialog(mojom::DialogArgsPtr args, UploadRequestCallback callback);
+  CloudUploadDialog(mojom::DialogArgsPtr args,
+                    UploadRequestCallback callback,
+                    const mojom::DialogPage dialog_page);
   ~CloudUploadDialog() override;
+  bool ShouldCloseDialogOnEscape() const override;
   bool ShouldShowCloseButton() const override;
   void GetDialogSize(gfx::Size* size) const override;
 
  private:
   mojom::DialogArgsPtr dialog_args_;
   UploadRequestCallback callback_;
+  mojom::DialogPage dialog_page_;
 };
 
 }  // namespace ash::cloud_upload

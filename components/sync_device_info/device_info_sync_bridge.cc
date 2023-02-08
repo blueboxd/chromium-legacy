@@ -30,6 +30,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info_prefs.h"
+#include "components/sync_device_info/device_info_proto_enum_util.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"
 
@@ -144,56 +145,29 @@ bool IsChromeClient(const DeviceInfoSpecifics& specifics) {
   return specifics.has_chrome_version_info() || specifics.has_chrome_version();
 }
 
-DeviceInfo::OsType DeriveOSfromDeviceType(
-    const sync_pb::SyncEnums_DeviceType& device_type,
-    const std::string& manufacturer_name) {
-  switch (device_type) {
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_CROS:
-      return DeviceInfo::OsType::kChromeOsAsh;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_LINUX:
-      return DeviceInfo::OsType::kLinux;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC:
-      return DeviceInfo::OsType::kMac;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_WIN:
-      return DeviceInfo::OsType::kWindows;
-    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
-    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-      if (manufacturer_name == "Apple Inc.")
-        return DeviceInfo::OsType::kIOS;
-      return DeviceInfo::OsType::kAndroid;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_OTHER:
-      return DeviceInfo::OsType::kUnknown;
-  }
-}
-
-DeviceInfo::FormFactor DeriveFormFactorfromDeviceType(
-    const sync_pb::SyncEnums_DeviceType& device_type) {
-  switch (device_type) {
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_CROS:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_LINUX:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_WIN:
-      return DeviceInfo::FormFactor::kDesktop;
-    case sync_pb::SyncEnums_DeviceType_TYPE_PHONE:
-      return DeviceInfo::FormFactor::kPhone;
-    case sync_pb::SyncEnums_DeviceType_TYPE_TABLET:
-      return DeviceInfo::FormFactor::kTablet;
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET:
-    case sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_OTHER:
-      return DeviceInfo::FormFactor::kUnknown;
-  }
-}
-
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
+  DeviceInfo::FormFactor device_form_factor;
+  if (specifics.has_device_form_factor()) {
+    device_form_factor = ToDeviceInfoFormFactor(specifics.device_form_factor());
+  } else {
+    // Fallback to derive from old device type enum.
+    device_form_factor =
+        DeriveFormFactorFromDeviceType(specifics.device_type());
+  }
+  DeviceInfo::OsType os_type;
+  if (specifics.has_os_type()) {
+    os_type = ToDeviceInfoOsType(specifics.os_type());
+  } else {
+    // Fallback to derive from old device type enum.
+    os_type = DeriveOsFromDeviceType(specifics.device_type(),
+                                     specifics.manufacturer());
+  }
   return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       GetVersionNumberFromSpecifics(specifics), specifics.sync_user_agent(),
-      specifics.device_type(),
-      DeriveOSfromDeviceType(specifics.device_type(), specifics.manufacturer()),
-      DeriveFormFactorfromDeviceType(specifics.device_type()),
+      specifics.device_type(), os_type, device_form_factor,
       specifics.signin_scoped_device_id(), specifics.manufacturer(),
       specifics.model(), specifics.full_hardware_class(),
       ProtoTimeToTime(specifics.last_updated_timestamp()),
@@ -239,6 +213,9 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
       info.chrome_version());
   specifics->set_sync_user_agent(info.sync_user_agent());
   specifics->set_device_type(info.device_type());
+  specifics->set_os_type(ToOsTypeProto(info.os_type()));
+  specifics->set_device_form_factor(
+      ToDeviceFormFactorProto(info.form_factor()));
   specifics->set_signin_scoped_device_id(info.signin_scoped_device_id());
   specifics->set_manufacturer(info.manufacturer_name());
   specifics->set_model(info.model_name());
@@ -330,6 +307,8 @@ bool StoredDeviceInfoStillAccurate(const DeviceInfo* stored,
          current->chrome_version() == stored->chrome_version() &&
          current->sync_user_agent() == stored->sync_user_agent() &&
          current->device_type() == stored->device_type() &&
+         current->os_type() == stored->os_type() &&
+         current->form_factor() == stored->form_factor() &&
          current->signin_scoped_device_id() ==
              stored->signin_scoped_device_id() &&
          current->manufacturer_name() == stored->manufacturer_name() &&
@@ -895,22 +874,26 @@ void DeviceInfoSyncBridge::CommitAndNotify(std::unique_ptr<WriteBatch> batch,
   }
 }
 
-std::map<sync_pb::SyncEnums_DeviceType, int>
+std::map<DeviceInfo::FormFactor, int>
 DeviceInfoSyncBridge::CountActiveDevicesByType() const {
   // The algorithm below leverages sync timestamps to give a tight lower bound
   // (modulo clock skew) on how many distinct devices are currently active
   // (where active means being used recently enough as specified by
   // DeviceInfoUtil::kActiveThreshold).
   //
-  // Devices of the same type that have no overlap between their time-of-use are
-  // likely to be the same device (just with a different cache GUID). Thus, the
-  // algorithm counts, for each device type separately, the maximum number of
-  // devices observed concurrently active. Then returns the maximum.
+  // Devices of the same OsType and FormFactor that have no overlap
+  // between their time-of-use are likely to be the same device (just with a
+  // different cache GUID). Thus, the algorithm counts, for each device type
+  // separately, the maximum number of devices observed concurrently active.
+  // Then returns the maximum. Then aggregates by form factor. Note ASH and
+  // LACROS are both counted in desktop, as they have different OsType entries,
+  // yet it's probably the same device.
 
   // The series of relevant events over time, the value being +1 when a device
   // was seen for the first time, and -1 when a device was seen last.
   const base::Time now = base::Time::Now();
-  std::map<sync_pb::SyncEnums_DeviceType, std::multimap<base::Time, int>>
+  std::map<std::pair<DeviceInfo::FormFactor, DeviceInfo::OsType>,
+           std::multimap<base::Time, int>>
       relevant_events;
 
   for (const auto& [cache_guid, specifics] : all_data_) {
@@ -928,12 +911,24 @@ DeviceInfoSyncBridge::CountActiveDevicesByType() const {
       if (begin > end) {
         continue;
       }
-      relevant_events[specifics->device_type()].emplace(begin, 1);
-      relevant_events[specifics->device_type()].emplace(end, -1);
+      DeviceInfo::OsType os_type;
+      DeviceInfo::FormFactor form_factor;
+      if (specifics->has_os_type() && specifics->has_device_form_factor()) {
+        form_factor = ToDeviceInfoFormFactor(specifics->device_form_factor());
+        os_type = ToDeviceInfoOsType(specifics->os_type());
+      } else {
+        // Fallback to derive from old device type enum.
+        form_factor = DeriveFormFactorFromDeviceType(specifics->device_type());
+        os_type = DeriveOsFromDeviceType(specifics->device_type(),
+                                         specifics->manufacturer());
+      }
+      relevant_events[{form_factor, os_type}].emplace(begin, 1);
+      relevant_events[{form_factor, os_type}].emplace(end, -1);
     }
   }
 
-  std::map<sync_pb::SyncEnums_DeviceType, int> device_count_by_type;
+  std::map<std::pair<DeviceInfo::FormFactor, DeviceInfo::OsType>, int>
+      device_count_by_type;
   for (const auto& [type, events] : relevant_events) {
     int max_overlapping = 0;
     int overlapping = 0;
@@ -946,7 +941,12 @@ DeviceInfoSyncBridge::CountActiveDevicesByType() const {
     DCHECK_EQ(overlapping, 0);
   }
 
-  return device_count_by_type;
+  std::map<DeviceInfo::FormFactor, int> device_count_by_form_factor;
+  for (const auto& [type, counts] : device_count_by_type) {
+    device_count_by_form_factor[type.first] += counts;
+  }
+
+  return device_count_by_form_factor;
 }
 
 void DeviceInfoSyncBridge::ExpireOldEntries() {

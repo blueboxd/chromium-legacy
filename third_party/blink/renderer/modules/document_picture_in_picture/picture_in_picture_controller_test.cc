@@ -18,14 +18,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -42,11 +40,16 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/renderer/bindings/modules/v8/v8_document_picture_in_picture_options.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 using ::testing::_;
 
 namespace blink {
 
 namespace {
+#if !BUILDFLAG(IS_ANDROID)
 KURL GetOpenerURL() {
   return KURL("https://example.com/");
 }
@@ -112,6 +115,7 @@ LocalDOMWindow* OpenDocumentPictureInPictureWindow(
 
   return controller.documentPictureInPictureWindow();
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -637,87 +641,7 @@ TEST_F(PictureInPictureControllerTestWithWidget, VideoIsNotAllowedIfAutoPip) {
                 .IsElementAllowed(*Video(), /*report_failure=*/false));
 }
 
-TEST_F(PictureInPictureControllerTestWithWidget,
-       AutoEnterAndExitPictureInPicture) {
-  WebMediaPlayer* player = Video()->GetWebMediaPlayer();
-  EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), _, TestSurfaceId(),
-                           player->NaturalSize(), true, _, _, _));
-
-  auto& controller = PictureInPictureControllerImpl::From(GetDocument());
-
-  // Video element must be on the auto-enter list, and playing in full screen.
-  controller.AddToAutoPictureInPictureElementsList(Video());
-  Video()->Play();
-  LocalFrame::NotifyUserActivation(
-      &GetFrame(), mojom::UserActivationNotificationType::kTest);
-  Fullscreen::RequestFullscreen(*Video());
-  GetWebView()->DidEnterFullscreen();
-  ASSERT_EQ(*Video(), Fullscreen::FullscreenElementFrom(GetDocument()));
-
-  // Hiding the page should trigger auto PiP.
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::blink::PageVisibilityState::kHidden, /*is_initial_state=*/false);
-  MakeGarbageCollected<WaitForEvent>(Video(),
-                                     event_type_names::kEnterpictureinpicture);
-  EXPECT_TRUE(PictureInPictureControllerImpl::From(GetDocument())
-                  .IsPictureInPictureElement(Video()));
-
-  EXPECT_CALL(Service().Session(), Stop(_));
-
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::blink::PageVisibilityState::kVisible, /*is_initial_state=*/false);
-  MakeGarbageCollected<WaitForEvent>(Video(),
-                                     event_type_names::kLeavepictureinpicture);
-  EXPECT_FALSE(PictureInPictureControllerImpl::From(GetDocument())
-                   .IsPictureInPictureElement(Video()));
-
-  PictureInPictureControllerImpl::From(GetDocument())
-      .RemoveFromAutoPictureInPictureElementsList(Video());
-
-  EXPECT_EQ(nullptr, PictureInPictureControllerImpl::From(GetDocument())
-                         .PictureInPictureElement());
-}
-
-TEST_F(PictureInPictureControllerTestWithWidget,
-       AutoEnterPictureInPictureDuringDocumentPiP) {
-  WebMediaPlayer* player = Video()->GetWebMediaPlayer();
-  EXPECT_CALL(Service(),
-              StartSession(player->GetDelegateId(), _, TestSurfaceId(),
-                           player->NaturalSize(), true, _, _, _))
-      .Times(0);
-
-  auto& controller = PictureInPictureControllerImpl::From(GetDocument());
-
-  // Video element must be on the auto-enter list, and playing in full screen.
-  controller.AddToAutoPictureInPictureElementsList(Video());
-  Video()->Play();
-  LocalFrame::NotifyUserActivation(
-      &GetFrame(), mojom::UserActivationNotificationType::kTest);
-  Fullscreen::RequestFullscreen(*Video());
-  GetWebView()->DidEnterFullscreen();
-  ASSERT_EQ(*Video(), Fullscreen::FullscreenElementFrom(GetDocument()));
-
-  // Hiding the page should not trigger auto PiP if there is a document PiP
-  // window open.
-  V8TestingScope v8_scope;
-  ScriptState* script_state =
-      ToScriptStateForMainWorld(GetDocument().GetFrame());
-  ScriptState::Scope entered_context_scope(script_state);
-  LocalFrame::NotifyUserActivation(
-      &GetFrame(), mojom::UserActivationNotificationType::kTest);
-  auto* window = OpenDocumentPictureInPictureWindow(v8_scope, GetDocument(),
-                                                    CopyStyleSheetOptions::kNo);
-  ASSERT_TRUE(window);
-  GetDocument().GetPage()->SetVisibilityState(
-      mojom::blink::PageVisibilityState::kHidden, /*is_initial_state=*/false);
-
-  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*Video()));
-  EXPECT_EQ(nullptr, PictureInPictureControllerImpl::From(GetDocument())
-                         .PictureInPictureElement());
-  base::RunLoop().RunUntilIdle();
-}
-
+#if !BUILDFLAG(IS_ANDROID)
 TEST_F(PictureInPictureControllerTestWithWidget,
        DocumentPiPDoesNotAllowVizThrottling) {
   EXPECT_TRUE(GetWidget()->GetMayThrottleIfUndrawnFramesForTesting());
@@ -870,11 +794,9 @@ TEST_F(PictureInPictureControllerTestWithChromeClient,
     ScriptState* script_state =
         ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope entered_context_scope(script_state);
-    EXPECT_EQ(
-        pictureInPictureWindow,
-        DocumentPictureInPicture::From(ExecutionContext::From(script_state),
-                                       *GetDocument().domWindow()->navigator())
-            ->window(script_state));
+    EXPECT_EQ(pictureInPictureWindow,
+              DocumentPictureInPicture::From(*GetDocument().domWindow())
+                  ->window(script_state));
   }
 }
 
@@ -939,5 +861,6 @@ TEST_F(PictureInPictureControllerTestWithChromeClient,
   EXPECT_NE(nullptr, pictureInPictureWindow1);
   EXPECT_NE(nullptr, pictureInPictureWindow2);
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace blink

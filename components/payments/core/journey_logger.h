@@ -43,6 +43,7 @@ class JourneyLogger {
     COMPLETION_STATUS_USER_ABORTED = 1,
     COMPLETION_STATUS_OTHER_ABORTED = 2,
     COMPLETION_STATUS_COULD_NOT_SHOW = 3,
+    COMPLETION_STATUS_USER_OPTED_OUT = 4,
     COMPLETION_STATUS_MAX,
   };
 
@@ -144,6 +145,10 @@ class JourneyLogger {
     kOtherAborted = 1 << 6,
     // Whether or not any requested method is available.
     kHadInitialFormOfPayment = 1 << 7,
+    // An opt-out experience was offered to the user as part of the flow.
+    kOptOutOffered = 1 << 8,
+    // The user elected to opt-out of the flow (and future flows).
+    kUserOptedOut = 1 << 9,
 
     // Correspond to the merchant specifying requestShipping,
     // requestPayerName,
@@ -170,6 +175,7 @@ class JourneyLogger {
     kCouldNotShow = 1 << 23,
 
     // Bits for secure-payment-confirmation method.
+    kNoMatchingCredentials = 1 << 29,
     kRequestMethodSecurePaymentConfirmation = 1 << 30,
     kSelectedSecurePaymentConfirmation = 1 << 31,
 
@@ -191,6 +197,7 @@ class JourneyLogger {
     ABORT_REASON_OTHER = 8,
     ABORT_REASON_USER_NAVIGATION = 9,
     ABORT_REASON_MERCHANT_NAVIGATION = 10,
+    ABORT_REASON_USER_OPTED_OUT = 11,
     ABORT_REASON_MAX,
   };
 
@@ -261,6 +268,10 @@ class JourneyLogger {
   // its return value.
   void SetHasEnrolledInstrumentValue(bool value);
 
+  // Records that an Opt Out experience is being offered to the user in the
+  // current UI flow.
+  void SetOptOutOffered();
+
   // Records that a payment app has been shown without payment UIs being shown
   // before that.
   void SetSkippedShow();
@@ -305,6 +316,9 @@ class JourneyLogger {
   // Records that the Payment Request was not shown to the user, along with the
   // reason.
   void SetNotShown(NotShownReason reason);
+
+  // Records that the SPC No Matching Credentials UX was shown to the user.
+  void SetNoMatchingCredentialsShown();
 
   // Increments the bucket count for the given checkout step.
   void RecordCheckoutStep(CheckoutFunnelStep step);

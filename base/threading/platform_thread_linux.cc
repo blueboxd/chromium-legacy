@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "base/threading/thread_type_delegate.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -45,6 +46,10 @@ BASE_FEATURE(kSchedUtilHints,
 #endif
 
 namespace {
+
+#if !BUILDFLAG(IS_NACL)
+ThreadTypeDelegate* g_thread_type_delegate = nullptr;
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 std::atomic<bool> g_use_sched_util(true);
@@ -142,6 +147,7 @@ FilePath ThreadTypeToCgroupDirectory(const FilePath& cgroup_filepath,
                                      ThreadType thread_type) {
   switch (thread_type) {
     case ThreadType::kBackground:
+    case ThreadType::kUtility:
     case ThreadType::kResourceEfficient:
       return cgroup_filepath.Append(FILE_PATH_LITERAL("non-urgent"));
     case ThreadType::kDefault:
@@ -241,6 +247,7 @@ void SetThreadLatencySensitivity(ProcessId process_id,
 
   switch (thread_type) {
     case ThreadType::kBackground:
+    case ThreadType::kUtility:
     case ThreadType::kResourceEfficient:
     case ThreadType::kDefault:
       break;
@@ -312,23 +319,24 @@ const struct sched_param kRealTimePrio = {8};
 }  // namespace
 
 const ThreadPriorityToNiceValuePairForTest
-    kThreadPriorityToNiceValueMapForTest[4] = {
+    kThreadPriorityToNiceValueMapForTest[5] = {
         {ThreadPriorityForTest::kRealtimeAudio, -10},
         {ThreadPriorityForTest::kDisplay, -8},
         {ThreadPriorityForTest::kNormal, 0},
+        {ThreadPriorityForTest::kUtility, 1},
         {ThreadPriorityForTest::kBackground, 10},
 };
 
-const ThreadTypeToNiceValuePair kThreadTypeToNiceValueMap[6] = {
-    {ThreadType::kBackground, 10},      {ThreadType::kResourceEfficient, 0},
-    {ThreadType::kDefault, 0},
+const ThreadTypeToNiceValuePair kThreadTypeToNiceValueMap[7] = {
+    {ThreadType::kBackground, 10},       {ThreadType::kUtility, 1},
+    {ThreadType::kResourceEfficient, 0}, {ThreadType::kDefault, 0},
 #if BUILDFLAG(IS_CHROMEOS)
     {ThreadType::kCompositing, -8},
 #else
     // TODO(1329208): Experiment with bringing IS_LINUX inline with IS_CHROMEOS.
     {ThreadType::kCompositing, 0},
 #endif
-    {ThreadType::kDisplayCritical, -8}, {ThreadType::kRealtimeAudio, -10},
+    {ThreadType::kDisplayCritical, -8},  {ThreadType::kRealtimeAudio, -10},
 };
 
 bool CanSetThreadTypeToRealtimeAudio() {
@@ -345,8 +353,15 @@ bool CanSetThreadTypeToRealtimeAudio() {
 bool SetCurrentThreadTypeForPlatform(ThreadType thread_type,
                                      MessagePumpType pump_type_hint) {
 #if !BUILDFLAG(IS_NACL)
+  const PlatformThreadId tid = PlatformThread::CurrentId();
+
+  if (g_thread_type_delegate &&
+      g_thread_type_delegate->HandleThreadTypeChange(tid, thread_type)) {
+    return true;
+  }
+
   // For legacy schedtune interface
-  SetThreadCgroupsForThreadType(PlatformThread::CurrentId(), thread_type);
+  SetThreadCgroupsForThreadType(tid, thread_type);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // For upstream uclamp interface. We try both legacy (schedtune, as done
@@ -401,6 +416,17 @@ void PlatformThread::SetName(const std::string& name) {
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";
 #endif  //  !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 }
+
+#if !BUILDFLAG(IS_NACL)
+// static
+void PlatformThread::SetThreadTypeDelegate(ThreadTypeDelegate* delegate) {
+  // A component cannot override a delegate set by another component, thus
+  // disallow setting a delegate when one already exists.
+  DCHECK(!g_thread_type_delegate || !delegate);
+
+  g_thread_type_delegate = delegate;
+}
+#endif
 
 #if !BUILDFLAG(IS_NACL) && !BUILDFLAG(IS_AIX)
 // static

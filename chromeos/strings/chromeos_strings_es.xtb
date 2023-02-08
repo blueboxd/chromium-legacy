@@ -126,6 +126,7 @@
 <translation id="2016697457005847575">Sigue los pasos para solucionar el problema</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2047316797244836561">Conéctate a una red y vuelve a cargar la página para ver el salvapantallas.</translation>
+<translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Más ajustes</translation>
 <translation id="2085089206770112532">Reducir el brillo de la pantalla</translation>
 <translation id="2105810540595158374">El dispositivo es un mando de juegos.</translation>
@@ -139,6 +140,7 @@
 <translation id="2161394479394250669">Cancelar trabajo de impresión</translation>
 <translation id="2163937499206714165">Activar modo Oscuro</translation>
 <translation id="2180197493692062006">Algo ha fallado. Prueba a abrir de nuevo la aplicación.</translation>
+<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">Restablecer contadores de tráfico</translation>
 <translation id="2212733584906323460">Resolución de nombres</translation>
 <translation id="2217935453350629363">Velocidad actual</translation>
@@ -163,6 +165,7 @@
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Enviar informe de opinión</translation>
 <translation id="2407209115954268704">Estado de bloqueo de la SIM</translation>
+<translation id="241419523391571119">Vuelve a abrir la tapa para hacer la prueba</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2418150275289244458">Abrir en Ajustes</translation>
 <translation id="2421798028054665193">Imagen <ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
@@ -173,6 +176,7 @@
 <translation id="2491955442992294626">Las teclas no se prueban mientras usas otra ventana</translation>
 <translation id="2493126929778606526">Tus mejores fotos, seleccionadas automáticamente</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
+<translation id="2498950423397131220">Flotante</translation>
 <translation id="2505327257735685095">Actualizar la imagen de fondo de pantalla actual</translation>
 <translation id="2513396635448525189">Imagen de inicio de sesión</translation>
 <translation id="2517472476991765520">Escanear</translation>
@@ -201,7 +205,9 @@
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2878387241690264070">Se ha descargado un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segundos.</translation>
+<translation id="2902312830803030883">Más acciones</translation>
 <translation id="2926057806159140518">Escribe tu nombre de usuario y tu contraseña o escanea tu código QR</translation>
+<translation id="2940811910881150316">No se puede probar el dispositivo. Vuelve a abrir la tapa para hacer la prueba.</translation>
 <translation id="3008341117444806826">RENOVAR</translation>
 <translation id="3009958530611748826">Selecciona la carpeta donde quieras guardar</translation>
 <translation id="3017079585324758401">Fondo</translation>
@@ -243,6 +249,7 @@
 <translation id="3413935475507503304">Para continuar con la actualización, haz clic en Siguiente.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Seguridad</translation>
+<translation id="3435896845095436175">Habilitar</translation>
 <translation id="3456078764689556234">Se ha impreso la página <ph name="PRINTED_PAGES" /> de <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Escaneando página <ph name="PAGE_NUM" />. <ph name="PERCENTAGE_VALUE" /> % completado.</translation>
 <translation id="3459509316159669723">Imprimir</translation>
@@ -267,7 +274,6 @@
 <translation id="360565022852130722">La red Wi-Fi está protegida con un protocolo poco seguro WEP 802.1x</translation>
 <translation id="3606583719724308068">Latencia alta a sitios web HTTPS</translation>
 <translation id="361575905210396100">Gracias por tus comentarios</translation>
-<translation id="3621202678540785336">Entrada</translation>
 <translation id="3632579075709132555">Activar o desactivar Pantalla de privacidad</translation>
 <translation id="3651050199673793219">Selecciona una unidad de temperatura</translation>
 <translation id="3689839747745352263">Prueba <ph name="TEST_NAME" /></translation>
@@ -282,6 +288,7 @@
 <translation id="3820172043799983114">PIN no válido.</translation>
 <translation id="3824259034819781947">Adjuntar archivos</translation>
 <translation id="3838338534323494292">Contraseña nueva</translation>
+<translation id="3845880861638660475">Pulsa <ph name="ALT_SHORTCUT_START" />Alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />Esc<ph name="ESC_SHORTCUT_END" /> para cerrar el cuadro de diálogo.</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="3858860766373142691">Nombre</translation>
 <translation id="3862598938296403232">Se necesita una descripción</translation>
@@ -289,6 +296,7 @@
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="387301095347517405">El número de veces que la batería ha tenido un ciclo de carga completo</translation>
 <translation id="3885327323343477505">Cambiar salvapantallas</translation>
+<translation id="391412459402535266">No se puede probar el dispositivo. Cambia al modo Portátil para hacer la prueba.</translation>
 <translation id="3923184630988645767">Uso de datos</translation>
 <translation id="3932043219784172185">Ningún dispositivo conectado</translation>
 <translation id="3941014780699102620">No se ha podido resolver el host</translation>
@@ -301,6 +309,7 @@
 <translation id="39823212440917567">Los trabajos de impresión con más de <ph name="NUMBER_OF_DAYS" /> días de antigüedad se eliminarán</translation>
 <translation id="3993704782688964914">Tu <ph name="DEVICE_NAME" /> está actualizado</translation>
 <translation id="4003384961948020559">No se ha podido imprimir - Salida llena</translation>
+<translation id="4021031199988160623">Cambia al modo Portátil para hacer la prueba</translation>
 <translation id="4034824040120875894">Impresora</translation>
 <translation id="4044093238444069296">No se puede contactar con la pasarela</translation>
 <translation id="4046123991198612571">Pista siguiente</translation>
@@ -333,11 +342,13 @@
 <translation id="4289849978083912975">Presentación</translation>
 <translation id="4297501883039923494">Detenido: error desconocido</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imágenes</translation>
+<translation id="4311195029067684288">Vista completa</translation>
 <translation id="4333390807948134856">Tecla <ph name="KEY_NAME" /> pulsada</translation>
 <translation id="435692326371619097">Gestiona los ajustes de APN de la red. Los APN establecen una conexión entre una red móvil e Internet. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="4378373042927530923">Sin ejecutar</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4382484599443659549">PDF</translation>
+<translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="439429847087949098">Reiniciando <ph name="DEVICE_NAME" /></translation>
 <translation id="4415951057168511744">Avatar actual</translation>
 <translation id="4425149324548788773">Mi unidad</translation>
@@ -352,6 +363,7 @@
 <translation id="4503223151711056411">Flecha hacia la izquierda</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Coincidencia de nombre alternativo del sujeto</translation>
+<translation id="4522570452068850558">Detalles</translation>
 <translation id="4536864596629708641">Configuración de IP</translation>
 <translation id="4546131424594385779">Crear vídeo en bucle</translation>
 <translation id="4548483925627140043">Señal no encontrada</translation>
@@ -382,6 +394,7 @@
 <translation id="4793756956024303490">Algoritmo de compresión</translation>
 <translation id="4794140124556169553">Si ejecutas una prueba de CPU, es posible que el rendimiento del sistema se vea afectado</translation>
 <translation id="4800589996161293643">Comunidad de Chromebook</translation>
+<translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341">Trabajo de impresión <ph name="DOCUMENT_TITLE" /> cancelado</translation>
 <translation id="4809927044794281115">Tema claro</translation>
 <translation id="4813136279048157860">Mis imágenes</translation>
@@ -393,6 +406,7 @@
 <translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> seleccionado, pulsa Intro para seleccionar los álbumes de <ph name="TOPIC_SOURCE" /></translation>
 <translation id="484790837831576105">(Android) Resolución de DNS</translation>
 <translation id="4848429997038228357">EN CURSO</translation>
+<translation id="4854586501323951986">Pantalla táctil integrada</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intento.}other{<ph name="ERROR_MESSAGE" /> Quedan {0} intentos.}}</translation>
 <translation id="4873827928179867585">Algoritmo de autenticación</translation>
 <translation id="4880328057631981605">Nombre del punto de acceso</translation>
@@ -401,13 +415,16 @@
 <translation id="4891842000192098784">Esfuerzo</translation>
 <translation id="4897058166682006107">Nivel de batería del auricular izquierdo del dispositivo: <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="4905998861748258752">Activa la función para seleccionar las opciones del salvapantallas</translation>
+<translation id="4910858703033903787">Tipos de APN</translation>
 <translation id="4917385247580444890">Buena</translation>
 <translation id="4917889632206600977">Detenido: sin papel</translation>
 <translation id="491791267030419270">Consejos sobre cómo escribir comentarios</translation>
 <translation id="4921665434385737356">Se ha cargado un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segundos.</translation>
 <translation id="4930320165497208503">Para configurar o actualizar una conexión, ve a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="4932733599132424254">Fecha</translation>
+<translation id="4937657825850660613">Mitad</translation>
 <translation id="4950314376641394653">El firmware de <ph name="DEVICE_NAME" /> se ha actualizado a la versión <ph name="VERSION" /></translation>
+<translation id="4971925105143343452">Vista parcial</translation>
 <translation id="498186245079027698">Revisa el escáner e inténtalo de nuevo. Comprueba que tienes suficiente espacio local para guardar los archivos escaneados.</translation>
 <translation id="4985509611418653372">Ejecutar</translation>
 <translation id="4987769320337599931">Cortafuegos</translation>
@@ -455,6 +472,7 @@
 <translation id="5358174242040570474">Se ha producido un error. Prueba a elegir un fondo de pantalla de nuevo o vuelve a abrir la aplicación.</translation>
 <translation id="5372659122375744710">La red Wi-Fi no es segura</translation>
 <translation id="5376354385557966694">Modo Claro automático</translation>
+<translation id="5378184552853359930">Tipo de IP</translation>
 <translation id="5389159777326897627">Fondo de pantalla y estilo</translation>
 <translation id="5389224261615877010">Arcoíris</translation>
 <translation id="5400907029458559844">El dispositivo se está conectando.</translation>
@@ -469,6 +487,7 @@
 <translation id="5499114900554609492">No se ha podido terminar de escanear</translation>
 <translation id="5499762266711462226">El color del teclado se basa en el fondo de pantalla</translation>
 <translation id="5502931783115429516">Android no se está ejecutando</translation>
+<translation id="551689408806449779">El dispositivo se ha desconectado. Prueba a conectarlo de nuevo para probarlo.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">Cambiar automáticamente al tema oscuro al anochecer</translation>
@@ -483,6 +502,7 @@
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Familia</translation>
+<translation id="5695599963893094957">Pulsa cualquier tecla del teclado. Puedes pulsar hasta 4 teclas al mismo tiempo.</translation>
 <translation id="5701381305118179107">Centrar</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Actualizar <ph name="DEVICE_NAME" /></translation>
@@ -498,10 +518,12 @@
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5860491529813859533">Activar</translation>
 <translation id="5866840822086176774">Óptima</translation>
+<translation id="5876385649737594562">Actívalo para seleccionar opciones</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901630391730855834">Amarillo</translation>
 <translation id="5903200662178656908">El dispositivo es una combinación de teclado y ratón.</translation>
+<translation id="5904994456462260490">Añadir un nuevo APN</translation>
 <translation id="5907649332524363701">color de las teclas</translation>
 <translation id="5916084858004523819">Prohibida</translation>
 <translation id="5916664084637901428">Activado</translation>
@@ -562,6 +584,7 @@
 <translation id="6394634179843537518">Añadir archivo</translation>
 <translation id="6410257289063177456">Archivos de imagen</translation>
 <translation id="641081527798843608">Coincidencia de asunto</translation>
+<translation id="6412715219990689313">Teclado integrado</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Débil (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Ir a la configuración de la cuenta</translation>
@@ -606,7 +629,6 @@
 <translation id="6766275201586212568">Errores de resoluciones de DNS</translation>
 <translation id="6768237774506518020">Tasa de errores de resolución de DNS alta</translation>
 <translation id="6791471867139427246">color de la luz del teclado</translation>
-<translation id="6793680441750437230">Pulsa cualquier tecla del teclado. Puedes pulsar hasta 4 teclas al mismo tiempo. Pulsa Alt + Esc para cerrar el cuadro de diálogo.</translation>
 <translation id="680983167891198932">Clave</translation>
 <translation id="6816797338148849397">Hay disponible información relacionada con tu selección. Utiliza la flecha hacia arriba para consultarla.</translation>
 <translation id="6853312040151791195">Velocidad de descarga</translation>
@@ -660,6 +682,7 @@
 <translation id="7359657277149375382">Tipo de archivo</translation>
 <translation id="73631062356239394">Compartir datos de diagnóstico</translation>
 <translation id="7375053625150546623">EAP</translation>
+<translation id="7388959671917308825">Panel táctil integrado</translation>
 <translation id="7397270852490618635">Desactivar tema claro</translation>
 <translation id="741244894080940828">conversión</translation>
 <translation id="7415801143053185905">Latencia de HTTP muy alta</translation>
@@ -708,7 +731,7 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Tipo de proveedor</translation>
 <translation id="7882501334836096755">Clave pública</translation>
-<translation id="7890841768028788197">Pantalla táctil interna</translation>
+<translation id="7915220255123750251">Gestiona los ajustes de APN de la red. Los APNs establecen una conexión entre una red móvil e Internet.</translation>
 <translation id="7936303884198020182">No se han encontrado servidores de nombres</translation>
 <translation id="7942349550061667556">Rojo</translation>
 <translation id="7943235353293548836">Intervalo keepalive persistente</translation>
@@ -733,6 +756,7 @@
 <translation id="8138405288920084977">LTE Advanced</translation>
 <translation id="8143951647992294073">Seleccionar <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8179976553408161302">Intro</translation>
+<translation id="8183974620058026102">Attach</translation>
 <translation id="8206859287963243715">Móvil</translation>
 <translation id="8208861521865154048">Ventajas</translation>
 <translation id="8226628635270268143">Elige tus fotos y álbumes favoritos</translation>
@@ -753,9 +777,9 @@
 <translation id="8372477600026034341">Hosts adicionales</translation>
 <translation id="8395584934117017006">Este dispositivo <ph name="DEVICE_TYPE" /> lo gestiona una empresa</translation>
 <translation id="8398927464629426868">La velocidad a la que se carga o descarga el dispositivo en este momento</translation>
+<translation id="8410244574650205435">Detectado automáticamente</translation>
 <translation id="8420955526972171689">Ejecuta pruebas y soluciona problemas de hardware</translation>
 <translation id="8422748173858722634">IMEI</translation>
-<translation id="8428073762635678092">Teclado interno</translation>
 <translation id="8431300646573772016">Novedades de ChromeOS</translation>
 <translation id="843568408673868420">Conexión a Internet</translation>
 <translation id="844521431886043384">No se ha configurado el DNS</translation>
@@ -812,7 +836,6 @@
 <translation id="8930521118335213258">Emparejamiento</translation>
 <translation id="8930622219860340959">Conexión inalámbrica</translation>
 <translation id="8936793075252196307">Dirección IP de cliente</translation>
-<translation id="8945750210906526975">Panel táctil interno</translation>
 <translation id="894617464444543719">El dispositivo es un teléfono.</translation>
 <translation id="8968751544471797276">Velocidad de carga</translation>
 <translation id="8970109610781093811">Volver a ejecutar</translation>
@@ -823,6 +846,7 @@
 <translation id="9025198690966128418">Usar como dispositivo personal</translation>
 <translation id="9028832514430399253">Activa el interruptor para seleccionar las opciones del salvapantallas</translation>
 <translation id="9039663905644212491">PEAP</translation>
+<translation id="9058932992221914855">IPv6</translation>
 <translation id="9062831201344759865">La resolución de DNS tiene una latencia alta</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
@@ -830,6 +854,7 @@
 <translation id="9087578468327036362">Denunciar esta consulta</translation>
 <translation id="9088306295921699330">Uso actual</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="9100765901046053179">Configuración avanzada</translation>
 <translation id="910415269708673980">Actualiza el ticket de <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Escaneando página <ph name="PAGE_NUMBER" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>

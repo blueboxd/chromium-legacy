@@ -4,19 +4,16 @@
 
 import 'chrome://os-settings/chromeos/lazy_load.js';
 
-import {Router, routes, SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
+import {Router, routes, SwitchAccessSubpageBrowserProxyImpl} from 'chrome://os-settings/chromeos/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
-/**
- * @implements {SwitchAccessSubpageBrowserProxy}
- */
 class TestSwitchAccessSubpageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([

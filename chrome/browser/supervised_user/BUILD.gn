@@ -35,7 +35,6 @@ if (is_android) {
   android_resources("java_resources") {
     sources = [
       "android/java/res/drawable/ic_family_link.xml",
-      "android/java/res/drawable/ic_googleg_32dp.xml",
       "android/java/res/layout/website_approval_bottom_sheet.xml",
       "android/java/res/values/dimens.xml",
     ]
@@ -96,6 +95,7 @@ if (is_android) {
       "//components/url_formatter/android:url_formatter_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_appcompat_appcompat_java",
+      "//ui/android:ui_java",
       "//ui/android:ui_no_recycler_view_java",
       "//url:gurl_java",
     ]

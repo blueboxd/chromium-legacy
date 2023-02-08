@@ -13,10 +13,10 @@
 #include "base/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_manager_browsertest_base.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
@@ -35,8 +35,10 @@
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fenced_frame_test_util.h"
@@ -123,8 +125,8 @@ class AppBannerManagerTest : public AppBannerManager {
     install_source_ =
         std::make_unique<WebappInstallSource>(WebappInstallSource::COUNT);
     if (on_done_)
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(on_done_));
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, std::move(on_done_));
   }
 
   void ShowBannerUi(WebappInstallSource install_source) override {
@@ -136,8 +138,8 @@ class AppBannerManagerTest : public AppBannerManager {
     ASSERT_FALSE(banner_shown_.get());
     banner_shown_ = std::make_unique<bool>(true);
     install_source_ = std::make_unique<WebappInstallSource>(install_source);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(on_done_));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(on_done_));
   }
 
   void UpdateState(AppBannerManager::State state) override {
@@ -146,8 +148,8 @@ class AppBannerManagerTest : public AppBannerManager {
         state == AppBannerManager::State::PENDING_PROMPT_CANCELED ||
         state == AppBannerManager::State::PENDING_PROMPT_NOT_CANCELED) {
       if (on_done_)
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(on_done_));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(on_done_));
     }
   }
 
@@ -169,7 +171,7 @@ class AppBannerManagerTest : public AppBannerManager {
       blink::mojom::AppBannerPromptReply reply) override {
     AppBannerManager::OnBannerPromptReply(std::move(controller), reply);
     if (on_banner_prompt_reply_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, std::move(on_banner_prompt_reply_));
     }
   }
@@ -270,7 +272,6 @@ class AppBannerManagerBrowserTest : public AppBannerManagerBrowserTestBase {
                 manager->state() == State::INACTIVE);
 
     // If in incognito, ensure that nothing is recorded.
-    histograms.ExpectTotalCount(kMinutesHistogram, 0);
     if (browser->profile()->IsOffTheRecord() || !expected_code_for_histogram) {
       histograms.ExpectTotalCount(kInstallableStatusCodeHistogram, 0);
     } else {
@@ -489,7 +490,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                                   false /* expected_will_show */,
                                   State::INACTIVE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 INSUFFICIENT_ENGAGEMENT, 1);
 }
@@ -514,7 +514,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerNotCreated) {
                                   false /* expected_will_show */,
                                   State::INACTIVE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 RENDERER_CANCELLED, 1);
 }
@@ -542,7 +541,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerCancelled) {
                                   false /* expected_will_show */,
                                   State::INACTIVE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 0);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 RENDERER_CANCELLED, 1);
 }
@@ -570,7 +568,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                      "callStashedPrompt();", true /* with_gesture */),
       true /* expected_will_show */, State::COMPLETE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
 }
@@ -610,7 +607,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                      "callStashedPrompt();", true /* with_gesture */),
       true /* expected_will_show */, State::COMPLETE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
 }
@@ -652,7 +648,6 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerReprompt) {
                      "callStashedPrompt();", true /* with_gesture */),
       true /* expected_will_show */, State::COMPLETE);
 
-  histograms.ExpectTotalCount(kMinutesHistogram, 1);
   histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                 SHOWING_WEB_APP_BANNER, 1);
 }
@@ -732,8 +727,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerTerminated) {
 }
 
 class AppBannerManagerBrowserTestWithChromeBFCache
-    : public AppBannerManagerBrowserTest,
-      public testing::WithParamInterface<bool> {
+    : public AppBannerManagerBrowserTest {
  public:
   AppBannerManagerBrowserTestWithChromeBFCache() = default;
   ~AppBannerManagerBrowserTestWithChromeBFCache() override = default;
@@ -757,13 +751,6 @@ class AppBannerManagerBrowserTestWithChromeBFCache
                               "true");
     // Allow BackForwardCache for all devices regardless of their memory.
     DisableFeature(::features::kBackForwardCacheMemoryControls);
-
-    if (GetParam()) {
-      EnableFeatureAndSetParams(blink::features::kBackForwardCacheAppBanner, "",
-                                "");
-    } else {
-      DisableFeature(blink::features::kBackForwardCacheAppBanner);
-    }
 
     SetupFeaturesAndParameters();
   }
@@ -801,15 +788,15 @@ class AppBannerManagerBrowserTestWithChromeBFCache
     return embedded_test_server()->GetURL("/banners/nested_sw_test_page.html");
   }
 
-  bool IsBackForwardCacheAppBannerEnabled() {
-    return base::FeatureList::IsEnabled(
-        blink::features::kBackForwardCacheAppBanner);
+  bool IsRenderHostStoredInBackForwardCache(content::RenderFrameHost* rfh) {
+    return rfh->IsInLifecycleState(
+        content::RenderFrameHost::LifecycleState::kInBackForwardCache);
   }
 
-  bool IsRenderHostStoredInBackForwardCache(
-      content::RenderFrameHost::LifecycleState state) {
-    return state ==
-           content::RenderFrameHost::LifecycleState::kInBackForwardCache;
+  void AssertBackForwardCacheIsUsedAsExpected(
+      const content::RenderFrameHostWrapper& rfh) {
+    ASSERT_EQ(IsRenderHostStoredInBackForwardCache(rfh.get()),
+              content::BackForwardCache::IsBackForwardCacheFeatureEnabled());
   }
 
  private:
@@ -819,8 +806,8 @@ class AppBannerManagerBrowserTestWithChromeBFCache
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(AppBannerManagerBrowserTestWithChromeBFCache,
-                       VerifyBFCacheBehaviorWithFlag) {
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTestWithChromeBFCache,
+                       VerifyBFCacheBehavior) {
   ASSERT_TRUE(embedded_test_server()->Start());
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
@@ -831,7 +818,7 @@ IN_PROC_BROWSER_TEST_P(AppBannerManagerBrowserTestWithChromeBFCache,
                                   /*expected_will_show=*/false,
                                   State::PENDING_PROMPT_NOT_CANCELED);
   content::RenderFrameHostWrapper rfh_a(current_frame_host());
-  EXPECT_EQ(manager->state(),
+  ASSERT_EQ(manager->state(),
             AppBannerManager::State::PENDING_PROMPT_NOT_CANCELED);
   histograms.ExpectTotalCount(kInstallableStatusCodeHistogram, 0);
 
@@ -840,38 +827,26 @@ IN_PROC_BROWSER_TEST_P(AppBannerManagerBrowserTestWithChromeBFCache,
   TriggerBannerFlowWithNavigation(browser(), manager.get(),
                                   Get2ndInstallableURL(),
                                   /*expected_will_show=*/false, absl::nullopt);
+  AssertBackForwardCacheIsUsedAsExpected(rfh_a);
+
   content::RenderFrameHostWrapper rfh_b(current_frame_host());
 
-  EXPECT_EQ(IsRenderHostStoredInBackForwardCache(rfh_a->GetLifecycleState()),
-            IsBackForwardCacheAppBannerEnabled());
-
-  // Navigate backward.
+  // Navigate backward to 1st installable URL.
   web_contents()->GetController().GoBack();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
   // Verify pipeline has been triggered for new page load.
   EXPECT_NE(manager->state(), AppBannerManager::State::INACTIVE);
 
-  // Depending on whether kBackForwardCacheAppBanner is enabled or disabled, the
-  // corresponding RenderFrameHost will also be either stored in the
-  // BackForwardCache or not.
-  EXPECT_EQ(IsRenderHostStoredInBackForwardCache(rfh_b->GetLifecycleState()),
-            IsBackForwardCacheAppBannerEnabled());
+  AssertBackForwardCacheIsUsedAsExpected(rfh_b);
 
-  // Navigate forward.
+  // Navigate forward to 2nd installable URL.
   web_contents()->GetController().GoForward();
-  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
+  ASSERT_TRUE(content::WaitForLoadStop(web_contents()));
   // Verify pipeline has been triggered for new page load.
   EXPECT_NE(manager->state(), AppBannerManager::State::INACTIVE);
 
-  // Navigating back to B, A should either be stored in the BFCache or not
-  // depending on whether kBackForwardCacheAppBanner is enabled or disabled.
-  EXPECT_EQ(IsRenderHostStoredInBackForwardCache(rfh_a->GetLifecycleState()),
-            IsBackForwardCacheAppBannerEnabled());
+  AssertBackForwardCacheIsUsedAsExpected(rfh_a);
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         AppBannerManagerBrowserTestWithChromeBFCache,
-                         ::testing::Bool());
 
 namespace {
 class FailingInstallableManager : public InstallableManager {
@@ -959,7 +934,6 @@ IN_PROC_BROWSER_TEST_F(
                        "callStashedPrompt();", true /* with_gesture */),
         true /* expected_will_show */, State::COMPLETE);
 
-    histograms.ExpectTotalCount(kMinutesHistogram, 1);
     histograms.ExpectUniqueSample(kInstallableStatusCodeHistogram,
                                   SHOWING_WEB_APP_BANNER, 1);
   }
@@ -1234,8 +1208,8 @@ class PendingWorkerAppBannerManager : public AppBannerManagerTest {
     AppBannerManagerTest::UpdateState(state);
     if (state == AppBannerManager::State::PENDING_WORKER) {
       if (on_done_)
-        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                      std::move(on_done_));
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+            FROM_HERE, std::move(on_done_));
     }
   }
 };

@@ -451,8 +451,8 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 }
 
 // Tests that Clear Browsing Data can be successfully done from tab grid.
-// TODO(crbug.com/1379374):
-- (void)DISABLED_testClearBrowsingData {
+// TODO(crbug.com/1379374): test is flaky on the clear browsing data page.
+- (void)FLAKY_testClearBrowsingData {
   // Load history
   [self loadTestURLs];
 
@@ -2022,11 +2022,11 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   NSString* query = [NSString stringWithFormat:@"%s\n", kTitle2];
   [[EarlGrey selectElementWithMatcher:TabGridSearchBar()]
       performAction:grey_typeText(query)];
-  // Verify that the RegularGridView is visible, use 60% for the visibility
+  // Verify that the RegularGridView is visible, use 50% for the visibility
   // percentage as in smaller devices the toolbars can occupy more space on the
   // screen.
   [[EarlGrey selectElementWithMatcher:RegularTabGrid()]
-      assertWithMatcher:grey_minimumVisiblePercent(0.6)];
+      assertWithMatcher:grey_minimumVisiblePercent(0.5)];
 
   // Tap on search recent tabs.
   [[self scrollDownViewMatcher:RegularTabGrid()
@@ -2058,7 +2058,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
                                           base::SysUTF8ToNSString(kTitle2))]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:RegularTabGrid()]
-      assertWithMatcher:grey_minimumVisiblePercent(0.6)];
+      assertWithMatcher:grey_minimumVisiblePercent(0.5)];
   [[EarlGrey selectElementWithMatcher:RecentTabsTable()]
       assertWithMatcher:grey_notVisible()];
 }

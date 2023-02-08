@@ -13,7 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
@@ -29,6 +29,7 @@
 #include "components/viz/common/surfaces/video_capture_target.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/frame_counter.h"
 #include "components/viz/service/frame_sinks/frame_sink_bundle_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -431,6 +432,11 @@ void CompositorFrameSinkSupport::InitializeCompositorFrameSinkType(
     return;
   }
   frame_sink_type_ = type;
+
+  if (frame_sink_manager_->frame_counter()) {
+    frame_sink_manager_->frame_counter()->SetFrameSinkType(frame_sink_id_,
+                                                           frame_sink_type_);
+  }
 }
 
 void CompositorFrameSinkSupport::SetThreadIds(
@@ -751,6 +757,11 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
   DCHECK(frame_timing_details_.find(frame_token) ==
          frame_timing_details_.end());
   frame_timing_details_.emplace(frame_token, details);
+
+  if (!feedback.failed() && frame_sink_manager_->frame_counter()) {
+    frame_sink_manager_->frame_counter()->AddPresentedFrame(frame_sink_id_,
+                                                            feedback.timestamp);
+  }
 
   UpdateNeedsBeginFramesInternal();
 }
@@ -1262,7 +1273,7 @@ void CompositorFrameSinkSupport::DestroySelf() {
 }
 
 void CompositorFrameSinkSupport::ScheduleSelfDestruction() {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&CompositorFrameSinkSupport::DestroySelf,
                                 weak_factory_.GetWeakPtr()));
 }

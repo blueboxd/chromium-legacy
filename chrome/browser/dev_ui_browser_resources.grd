@@ -21,9 +21,6 @@ This file specifies browser resources for developer-facing chrome:// pages
       <include name="IDR_ACCESSIBILITY_HTML" file="resources\accessibility\accessibility.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_CSS" file="resources\accessibility\accessibility.css" type="BINDATA" />
       <include name="IDR_ACCESSIBILITY_JS" file="${root_gen_dir}\chrome\browser\resources\accessibility\tsc\accessibility.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_APC_INTERNALS_HTML" file="resources\apc_internals\apc_internals.html" type="BINDATA" />
-      <include name="IDR_APC_INTERNALS_JS" file="resources\apc_internals\apc_internals.js" preprocess="true" type="BINDATA" />
-      <include name="IDR_APC_INTERNALS_CSS" file="resources\apc_internals\apc_internals.css" type="BINDATA" />
       <include name="IDR_COMPONENTS_COMPONENTS_HTML" file="resources\components\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_COMPONENTS_COMPONENTS_JS" file="${root_gen_dir}\chrome\browser\resources\components\tsc\components.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_DEVICE_LOG_UI_HTML" file="resources\device_log_ui\device_log_ui.html" type="BINDATA" />
@@ -50,13 +47,9 @@ This file specifies browser resources for developer-facing chrome:// pages
       <include name="IDR_SITE_ENGAGEMENT_DETAILS_MOJOM_WEBUI_JS" file="${root_gen_dir}\chrome\browser\resources\engagement\tsc\site_engagement_details.mojom-webui.js" use_base_dir="false" type="BINDATA" />
 
       <if expr="is_android">
-        <include name="IDR_FEED_INTERNALS_HTML" file="resources\feed_internals\feed_internals.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_FEED_INTERNALS_CSS" file="resources\feed_internals\feed_internals.css" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_FEED_INTERNALS_JS" file="resources\feed_internals\feed_internals.js" type="BINDATA" />
-        <include name="IDR_FEED_INTERNALS_MOJO_JS" file="${root_gen_dir}\mojom-webui\chrome\browser\ui\webui\feed_internals\feed_internals.mojom-webui.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_QUERY_TILES_INTERNALS_HTML" file="resources\internals\query_tiles\query_tiles_internals.html" type="BINDATA" />
-        <include name="IDR_QUERY_TILES_INTERNALS_JS" file="resources\internals\query_tiles\query_tiles_internals.js" type="BINDATA" />
-        <include name="IDR_QUERY_TILES_INTERNALS_BROWSER_PROXY_JS" file="resources\internals\query_tiles\query_tiles_internals_browser_proxy.js" type="BINDATA" />
+        <include name="IDR_QUERY_TILES_INTERNALS_JS" file="${root_gen_dir}\chrome\browser\resources\internals\query_tiles\tsc\query_tiles_internals.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_QUERY_TILES_INTERNALS_BROWSER_PROXY_JS" file="${root_gen_dir}\chrome\browser\resources\internals\query_tiles\tsc\query_tiles_internals_browser_proxy.js" use_base_dir="false" type="BINDATA" />
       </if>
 
       <if expr="enable_supervised_users">

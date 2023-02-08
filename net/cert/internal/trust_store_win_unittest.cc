@@ -38,7 +38,7 @@ constexpr char kMultiRootDByD[] = "multi-root-D-by-D.pem";
 constexpr char kMultiRootEByE[] = "multi-root-E-by-E.pem";
 constexpr char kMultiRootFByE[] = "multi-root-F-by-E.pem";
 
-scoped_refptr<ParsedCertificate> ParseCertFromFile(
+std::shared_ptr<const ParsedCertificate> ParseCertFromFile(
     base::StringPiece file_name) {
   const scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(net::GetTestCertsDirectory(), file_name);
@@ -46,7 +46,7 @@ scoped_refptr<ParsedCertificate> ParseCertFromFile(
     return nullptr;
   }
   CertErrors errors;
-  scoped_refptr<ParsedCertificate> parsed = ParsedCertificate::Create(
+  std::shared_ptr<const ParsedCertificate> parsed = ParsedCertificate::Create(
       bssl::UpRef(cert->cert_buffer()),
       x509_util::DefaultParseCertificateOptions(), &errors);
   EXPECT_TRUE(parsed) << errors.ToDebugString();
@@ -116,6 +116,19 @@ std::unique_ptr<TrustStoreWin> CreateTrustStoreWin() {
   return TrustStoreWin::CreateForTesting(std::move(root_store),
                                          std::move(intermediate_store),
                                          std::move(disallowed_store));
+}
+
+TEST(TrustStoreWin, GetTrustInitializationError) {
+  // Simulate an initialization error by using null stores.
+  std::unique_ptr<TrustStoreWin> trust_store_win =
+      TrustStoreWin::CreateForTesting(crypto::ScopedHCERTSTORE(),
+                                      crypto::ScopedHCERTSTORE(),
+                                      crypto::ScopedHCERTSTORE());
+  ASSERT_TRUE(trust_store_win);
+  auto parsed_cert = ParseCertFromFile(kMultiRootDByD);
+  CertificateTrust trust =
+      trust_store_win->GetTrust(parsed_cert.get(), nullptr);
+  EXPECT_EQ(CertificateTrustType::UNSPECIFIED, trust.type);
 }
 
 TEST(TrustStoreWin, GetTrust) {
@@ -294,10 +307,25 @@ MATCHER_P(ParsedCertEq, expected_cert, "") {
                              expected_cert->der_cert().AsSpan());
 }
 
+TEST(TrustStoreWin, GetIssuersInitializationError) {
+  // Simulate an initialization error by using null stores.
+  std::unique_ptr<TrustStoreWin> trust_store_win =
+      TrustStoreWin::CreateForTesting(crypto::ScopedHCERTSTORE(),
+                                      crypto::ScopedHCERTSTORE(),
+                                      crypto::ScopedHCERTSTORE());
+  ASSERT_TRUE(trust_store_win);
+  ParsedCertificateList issuers;
+  std::shared_ptr<const ParsedCertificate> cert =
+      ParseCertFromFile("multi-root-B-by-F.pem");
+  ASSERT_TRUE(cert);
+  trust_store_win->SyncGetIssuersOf(cert.get(), &issuers);
+  ASSERT_EQ(0U, issuers.size());
+}
+
 TEST(TrustStoreWin, GetIssuersNoIssuerFound) {
   std::unique_ptr<TrustStoreWin> trust_store_win = CreateTrustStoreWin();
   ParsedCertificateList issuers;
-  scoped_refptr<ParsedCertificate> cert =
+  std::shared_ptr<const ParsedCertificate> cert =
       ParseCertFromFile("multi-root-A-by-B.pem");
   ASSERT_TRUE(cert);
   trust_store_win->SyncGetIssuersOf(cert.get(), &issuers);
@@ -307,7 +335,7 @@ TEST(TrustStoreWin, GetIssuersNoIssuerFound) {
 TEST(TrustStoreWin, GetIssuersSingleIssuerFoundFromIntermediates) {
   std::unique_ptr<TrustStoreWin> trust_store_win = CreateTrustStoreWin();
   ParsedCertificateList issuers;
-  scoped_refptr<ParsedCertificate> cert =
+  std::shared_ptr<const ParsedCertificate> cert =
       ParseCertFromFile("multi-root-B-by-F.pem");
   ASSERT_TRUE(cert);
   trust_store_win->SyncGetIssuersOf(cert.get(), &issuers);
@@ -319,7 +347,8 @@ TEST(TrustStoreWin, GetIssuersSingleIssuerFoundFromIntermediates) {
 TEST(TrustStoreWin, GetIssuersSingleIssuerFoundFromRoot) {
   std::unique_ptr<TrustStoreWin> trust_store_win = CreateTrustStoreWin();
   ParsedCertificateList issuers;
-  scoped_refptr<ParsedCertificate> cert = ParseCertFromFile(kMultiRootDByD);
+  std::shared_ptr<const ParsedCertificate> cert =
+      ParseCertFromFile(kMultiRootDByD);
   ASSERT_TRUE(cert);
   trust_store_win->SyncGetIssuersOf(cert.get(), &issuers);
   ASSERT_EQ(1U, issuers.size());
@@ -329,7 +358,7 @@ TEST(TrustStoreWin, GetIssuersSingleIssuerFoundFromRoot) {
 TEST(TrustStoreWin, GetIssuersMultipleIssuersFound) {
   std::unique_ptr<TrustStoreWin> trust_store_win = CreateTrustStoreWin();
   ParsedCertificateList issuers;
-  scoped_refptr<ParsedCertificate> cert =
+  std::shared_ptr<const ParsedCertificate> cert =
       ParseCertFromFile("multi-root-B-by-C.pem");
   ASSERT_TRUE(cert);
   trust_store_win->SyncGetIssuersOf(cert.get(), &issuers);

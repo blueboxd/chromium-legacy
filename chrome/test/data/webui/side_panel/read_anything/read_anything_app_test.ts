@@ -14,7 +14,7 @@ suite('ReadAnythingAppTest', () => {
   // Do not call the real `onConnected()`. As defined in
   // ReadAnythingAppController, onConnected creates mojo pipes to connect to the
   // rest of the Read Anything feature, which we are not testing here.
-  chrome.readAnything.onConnected = function() {};
+  chrome.readAnything.onConnected = () => {};
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -23,26 +23,26 @@ suite('ReadAnythingAppTest', () => {
     chrome.readAnything.setThemeForTesting('default', 18.0, 0, 0, 1, 0);
   });
 
-  function assertFontName(fontFamily: string) {
+  const assertFontName = (fontFamily: string) => {
     const container = readAnythingApp.shadowRoot!.getElementById('container');
     assertEquals(fontFamily, getComputedStyle(container!).fontFamily);
-  }
+  };
 
-  function assertFontSize(fontSize: string) {
+  const assertFontSize = (fontSize: string) => {
     const container = readAnythingApp.shadowRoot!.getElementById('container');
     assertEquals(fontSize, getComputedStyle(container!).fontSize);
-  }
+  };
 
-  function assertLineSpacing(lineSpacing: string) {
+  const assertLineSpacing = (lineSpacing: string) => {
     const container = readAnythingApp.shadowRoot!.getElementById('container');
     assertEquals(lineSpacing, getComputedStyle(container!).lineHeight);
-  }
+  };
 
-  function assertContainerInnerHTML(expected: string) {
+  const assertContainerInnerHTML = (expected: string) => {
     const actual =
         readAnythingApp.shadowRoot!.getElementById('container')!.innerHTML;
     assertEquals(actual, expected);
-  }
+  };
 
   test('updateTheme fontName', () => {
     chrome.readAnything.setThemeForTesting('Standard font', 18.0, 0, 0, 1, 0);
@@ -252,9 +252,9 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2]);
-    const expected =
-        '<p lang="en">This is in English<a href="http://www.google.com/">' +
-        'This link has no language set</a></p>';
+    const expected = '<div><p lang="en">This is in English' +
+        '<a href="http://www.google.com/">This link has no language set</a>' +
+        '</p></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -495,7 +495,8 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2]);
-    assertContainerInnerHTML('');
+    const expected = '<div></div>';
+    assertContainerInnerHTML(expected);
   });
 
   // The container clears its old content when it receives new content.
@@ -520,7 +521,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree1, [2]);
-    const expected1 = 'First set of content.';
+    const expected1 = '<div>First set of content.</div>';
     assertContainerInnerHTML(expected1);
 
     // Fake chrome.readAnything methods for the following AXTree
@@ -543,7 +544,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree2, [2]);
-    const expected2 = 'Second set of content.';
+    const expected2 = '<div>Second set of content.</div>';
     assertContainerInnerHTML(expected2);
   });
 
@@ -785,8 +786,9 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, [2]);
-    const expected = '<p dir="ltr">This is ltr' +
-        '<a dir="rtl" href="http://www.google.com/">This link is rtl</a></p>';
+    const expected = '<div><p dir="ltr">This is ltr' +
+        '<a dir="rtl" href="http://www.google.com/">' +
+        'This link is rtl</a></p></div>';
     assertContainerInnerHTML(expected);
   });
 
@@ -858,7 +860,7 @@ suite('ReadAnythingAppTest', () => {
       ],
     };
     chrome.readAnything.setContentForTesting(axTree, []);
-    const expected = '';
+    const expected = '<div></div>';
     assertContainerInnerHTML(expected);
   });
 });

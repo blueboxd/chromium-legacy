@@ -100,10 +100,7 @@ component("common") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [
-    "RTC_USE_H264=$rtc_use_h264",
-    "ENABLE_JXL_DECODER=$enable_jxl_decoder",
-  ]
+  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
 source_set("common_export") {
@@ -155,6 +152,8 @@ source_set("headers") {
     "dom_storage/session_storage_namespace_id.h",
     "features.h",
     "fenced_frame/fenced_frame_utils.h",
+    "fenced_frame/redacted_fenced_frame_config.h",
+    "fenced_frame/redacted_fenced_frame_config_mojom_traits.h",
     "fetch/fetch_api_request_headers_map.h",
     "fetch/fetch_api_request_headers_mojom_traits.h",
     "forcedark/forcedark_switches.h",
@@ -241,7 +240,6 @@ source_set("headers") {
     "metrics/form_element_pii_type.h",
     "metrics/post_message_counter.h",
     "mime_util/mime_util.h",
-    "mobile_metrics/mobile_friendliness.h",
     "native_io/native_io_utils.h",
     "navigation/impression.h",
     "navigation/navigation_params.h",
@@ -328,7 +326,6 @@ source_set("headers") {
     "//third_party/blink/public:runtime_features_for_public",
     "//third_party/blink/public/common/privacy_budget",
     "//third_party/blink/public/common/tokens:tokens_headers",
-    "//third_party/blink/public/mojom:mobile_metrics_shared_cpp_sources",
     "//third_party/blink/public/mojom:mojom_modules_headers",
     "//third_party/blink/public/mojom:mojom_platform_shared",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_headers",

@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -426,10 +425,10 @@ void ExtensionActionRunner::RunPendingScriptsForExtension(
 
   content::NavigationEntry* visible_entry =
       web_contents()->GetController().GetVisibleEntry();
-  // Refuse to run if there's no visible entry that is not the initial
-  // NavigationEntry, because we have no way of determining if it's the proper
-  // page. This should rarely, if ever, happen.
-  if (!visible_entry || visible_entry->IsInitialEntry())
+  // Refuse to run if the visible entry is the initial NavigationEntry, because
+  // we have no way of determining if it's the proper page. This should rarely,
+  // if ever, happen.
+  if (visible_entry->IsInitialEntry())
     return;
 
   // We add this to the list of permitted extensions and erase pending entries
@@ -521,7 +520,7 @@ void ExtensionActionRunner::ShowReloadPageBubble(
   // callback, or rejected by skipping the callback.
   if (accept_bubble_for_testing_.has_value()) {
     if (*accept_bubble_for_testing_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback)));
     }
     return;
@@ -611,25 +610,27 @@ void ExtensionActionRunner::UpdatePageAccessSettings(
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   ScriptingPermissionsModifier modifier(browser_context_, extension);
-  DCHECK(modifier.CanAffectExtension());
+  PermissionsManager* permissions_manager =
+      PermissionsManager::Get(browser_context_);
+  DCHECK(permissions_manager->CanAffectExtension(*extension));
 
   switch (new_access) {
     case SitePermissionsHelper::SiteAccess::kOnClick:
-      if (modifier.HasBroadGrantedHostPermissions())
+      if (permissions_manager->HasBroadGrantedHostPermissions(*extension))
         modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
-      if (modifier.HasGrantedHostPermission(url))
+      if (permissions_manager->HasGrantedHostPermission(*extension, url))
         modifier.RemoveGrantedHostPermission(url);
       break;
     case SitePermissionsHelper::SiteAccess::kOnSite:
-      if (modifier.HasBroadGrantedHostPermissions())
+      if (permissions_manager->HasBroadGrantedHostPermissions(*extension))
         modifier.RemoveBroadGrantedHostPermissions();
       // Note: SetWithholdHostPermissions() is a no-op if host permissions are
       // already being withheld.
       modifier.SetWithholdHostPermissions(true);
-      if (!modifier.HasGrantedHostPermission(url))
+      if (!permissions_manager->HasGrantedHostPermission(*extension, url))
         modifier.GrantHostPermission(url);
       break;
     case SitePermissionsHelper::SiteAccess::kOnAllSites:

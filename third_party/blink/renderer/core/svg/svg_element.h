@@ -176,6 +176,7 @@ class CORE_EXPORT SVGElement : public Element {
   MutableCSSPropertyValueSet* AnimatedSMILStyleProperties() const;
   MutableCSSPropertyValueSet* EnsureAnimatedSMILStyleProperties();
 
+  virtual void BuildPendingResource() {}
   virtual bool HaveLoadedRequiredResources();
 
   void InvalidateRelativeLengthClients(SubtreeLayoutScope* = nullptr);
@@ -189,7 +190,6 @@ class CORE_EXPORT SVGElement : public Element {
   void AddReferenceTo(SVGElement*);
   template <typename InvalidationFunction>
   void NotifyIncomingReferences(InvalidationFunction&&);
-  void RebuildAllIncomingReferences();
   void RemoveAllIncomingReferences();
   void RemoveAllOutgoingReferences();
 

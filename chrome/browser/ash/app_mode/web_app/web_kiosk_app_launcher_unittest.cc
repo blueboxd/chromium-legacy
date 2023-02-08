@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -34,14 +35,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace ash {
+
+namespace {
+
 using ::base::test::TestFuture;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
-
-namespace ash {
-
-namespace {
 
 // TODO(crbug/1379290): Use `TestFuture<void>` in all these tests
 #define EXEC_AND_WAIT_FOR_CALL(exec, mock, method)    \
@@ -70,7 +71,6 @@ class MockAppLauncherDelegate : public WebKioskAppLauncher::Delegate {
 
   MOCK_CONST_METHOD0(IsNetworkReady, bool());
   MOCK_CONST_METHOD0(IsShowingNetworkConfigScreen, bool());
-  MOCK_CONST_METHOD0(ShouldSkipAppInstallation, bool());
 };
 
 const char kAppEmail[] = "lala@example.com";
@@ -125,14 +125,11 @@ class WebKioskAppLauncherTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    app_manager_ = std::make_unique<WebKioskAppManager>();
-    launcher_ = std::make_unique<WebKioskAppLauncher>(
-        profile(), &delegate_, AccountId::FromUserEmail(kAppEmail));
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
 
-    launcher_->SetBrowserWindowForTesting(window());
-    url_loader_ = new web_app::TestWebAppUrlLoader();
-    launcher_->SetUrlLoaderForTesting(
-        std::unique_ptr<web_app::TestWebAppUrlLoader>(url_loader_));
+    app_manager_ = std::make_unique<WebKioskAppManager>();
+
+    ConstructLauncher(/*should_skip_install=*/false);
 
     closer_ = std::make_unique<AppWindowCloser>();
   }
@@ -141,7 +138,18 @@ class WebKioskAppLauncherTest : public BrowserWithTestWindowTest {
     closer_.reset();
     launcher_.reset();
     app_manager_.reset();
+    network_handler_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
+  }
+
+  void ConstructLauncher(bool should_skip_install) {
+    launcher_ = std::make_unique<WebKioskAppLauncher>(
+        profile(), AccountId::FromUserEmail(kAppEmail), should_skip_install,
+        &delegate_);
+    launcher_->SetBrowserWindowForTesting(window());
+    auto url_loader = std::make_unique<web_app::TestWebAppUrlLoader>();
+    url_loader_ = url_loader.get();
+    launcher_->SetUrlLoaderForTesting(std::move(url_loader));
   }
 
   void SetupAppData(bool installed) {
@@ -194,6 +202,7 @@ class WebKioskAppLauncherTest : public BrowserWithTestWindowTest {
 
  private:
   std::unique_ptr<WebKioskAppManager> app_manager_;
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
 
   MockAppLauncherDelegate delegate_;
   std::unique_ptr<WebKioskAppLauncher> launcher_;
@@ -202,8 +211,8 @@ class WebKioskAppLauncherTest : public BrowserWithTestWindowTest {
 
 TEST_F(WebKioskAppLauncherTest, NormalFlowNotInstalled) {
   SetupAppData(/*installed*/ false);
+  ConstructLauncher(/*should_skip_install=*/false);
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(false));
   EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
@@ -234,7 +243,6 @@ TEST_F(WebKioskAppLauncherTest, NormalFlowAlreadyInstalled) {
 TEST_F(WebKioskAppLauncherTest, NormalFlowBadLaunchUrl) {
   SetupAppData(/*installed*/ false);
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(false));
   EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
@@ -253,7 +261,6 @@ TEST_F(WebKioskAppLauncherTest, InstallationRestarted) {
   // Freezes url requests until they are manually processed.
   url_loader_->SaveLoadUrlRequests();
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(false));
   EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
@@ -262,7 +269,6 @@ TEST_F(WebKioskAppLauncherTest, InstallationRestarted) {
   EXPECT_CALL(delegate(), OnAppInstalling());
   launcher()->ContinueWithNetworkReady();
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(false));
   EXPECT_CALL(delegate(), InitializeNetwork()).Times(1);
   launcher()->RestartLauncher();
 
@@ -294,7 +300,6 @@ TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
 
   SetupAppData(/*installed*/ false);
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(false));
   EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(),
                          InitializeNetwork());
 
@@ -316,7 +321,8 @@ TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
 TEST_F(WebKioskAppLauncherTest, SkipInstallation) {
   SetupAppData(/*installed*/ false);
 
-  EXPECT_CALL(delegate(), ShouldSkipAppInstallation()).WillOnce(Return(true));
+  ConstructLauncher(/*should_skip_install=*/true);
+
   EXEC_AND_WAIT_FOR_CALL(launcher()->Initialize(), delegate(), OnAppPrepared());
 
   EXPECT_EQ(app_data()->status(), WebKioskAppData::Status::kInit);
@@ -331,7 +337,7 @@ class WebKioskAppLauncherUsingLacrosTest : public WebKioskAppLauncherTest {
  public:
   WebKioskAppLauncherUsingLacrosTest()
       : browser_manager_(std::make_unique<crosapi::FakeBrowserManager>()),
-        fake_user_manager_(new ash::FakeChromeUserManager()),
+        fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_(base::WrapUnique(fake_user_manager_)),
         wm_helper_(std::make_unique<exo::WMHelperChromeOS>()) {
     scoped_feature_list_.InitAndEnableFeature(features::kWebKioskEnableLacros);
@@ -354,7 +360,7 @@ class WebKioskAppLauncherUsingLacrosTest : public WebKioskAppLauncherTest {
     return browser_manager_.get();
   }
 
-  ash::FakeChromeUserManager* fake_user_manager() const {
+  FakeChromeUserManager* fake_user_manager() const {
     return fake_user_manager_;
   }
 
@@ -367,7 +373,7 @@ class WebKioskAppLauncherUsingLacrosTest : public WebKioskAppLauncherTest {
       crosapi::browser_util::SetLacrosPrimaryBrowserForTest(true);
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<crosapi::FakeBrowserManager> browser_manager_;
-  ash::FakeChromeUserManager* fake_user_manager_;
+  FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
   std::unique_ptr<exo::WMHelper> wm_helper_;
 };

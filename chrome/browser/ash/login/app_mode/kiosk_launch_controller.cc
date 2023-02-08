@@ -21,7 +21,6 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_service_launcher.h"
-#include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/app_mode/force_install_observer.h"
@@ -38,6 +37,7 @@
 #include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/common/chrome_features.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/network_service_instance.h"
 
 namespace ash {
@@ -139,6 +139,29 @@ class ArcKioskAppServiceWrapper : public KioskAppLauncher {
 
 }  // namespace
 
+const char kKioskLaunchStateCrashKey[] = "kiosk-launch-state";
+
+std::string KioskLaunchStateToString(KioskLaunchState state) {
+  switch (state) {
+    case KioskLaunchState::kAttemptToLaunch:
+      return "attempt-to-launch";
+    case KioskLaunchState::kStartLaunch:
+      return "start-launch";
+    case KioskLaunchState::kLauncherStarted:
+      return "launcher-started";
+    case KioskLaunchState::kLaunchFailed:
+      return "launch-failed";
+    case KioskLaunchState::kAppWindowCreated:
+      return "app-window-created";
+  }
+}
+
+void SetKioskLaunchStateCrashKey(KioskLaunchState state) {
+  static crash_reporter::CrashKeyString<32> crash_key(
+      kKioskLaunchStateCrashKey);
+  crash_key.Set(KioskLaunchStateToString(state));
+}
+
 KioskLaunchController::KioskLaunchController(OobeUI* oobe_ui)
     : host_(LoginDisplayHost::default_host()),
       splash_screen_view_(oobe_ui->GetView<AppLaunchSplashScreenHandler>()) {}
@@ -158,6 +181,7 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
   launcher_start_time_ = base::Time::Now();
 
   RecordKioskLaunchUMA(auto_launch);
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kLauncherStarted);
 
   if (host_)
     host_->GetLoginDisplay()->SetUIEnabled(true);
@@ -247,11 +271,12 @@ void KioskLaunchController::OnProfileLoaded(Profile* profile) {
         // ArcKioskAppService lifetime is bound to the profile, therefore
         // wrap it into a separate object.
         app_launcher_ = std::make_unique<ArcKioskAppServiceWrapper>(
-            ArcKioskAppService::Get(profile_), this);
+            ArcKioskAppService::Get(profile_), /*delegate=*/this);
         break;
       case KioskAppType::kChromeApp:
         app_launcher_ = std::make_unique<StartupAppLauncher>(
-            profile_, *kiosk_app_id_.app_id, this);
+            profile_, *kiosk_app_id_.app_id, /*should_skip_install=*/false,
+            /*delegate=*/this);
         break;
       case KioskAppType::kWebApp:
         // Make keyboard config sync with the `VirtualKeyboardFeatures` policy.
@@ -261,10 +286,11 @@ void KioskLaunchController::OnProfileLoaded(Profile* profile) {
         if (base::FeatureList::IsEnabled(features::kKioskEnableAppService) &&
             !crosapi::browser_util::IsLacrosEnabled()) {
           app_launcher_ = std::make_unique<WebKioskAppServiceLauncher>(
-              profile, this, *kiosk_app_id_.account_id);
+              profile, *kiosk_app_id_.account_id, /*delegate=*/this);
         } else {
           app_launcher_ = std::make_unique<WebKioskAppLauncher>(
-              profile, this, *kiosk_app_id_.account_id);
+              profile, *kiosk_app_id_.account_id,
+              /*should_skip_install=*/false, /*delegate=*/this);
         }
         break;
     }
@@ -470,13 +496,11 @@ bool KioskLaunchController::IsShowingNetworkConfigScreen() const {
   return network_ui_state_ == NetworkUIState::kShowing;
 }
 
-bool KioskLaunchController::ShouldSkipAppInstallation() const {
-  return false;
-}
-
 void KioskLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   if (cleaned_up_)
     return;
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kLaunchFailed);
 
   DCHECK_NE(KioskAppLaunchError::Error::kNone, error);
   SYSLOG(ERROR) << "Kiosk launch failed, error=" << static_cast<int>(error);
@@ -568,6 +592,9 @@ void KioskLaunchController::OnAppLaunched() {
 
 void KioskLaunchController::OnAppWindowCreated() {
   SYSLOG(INFO) << "App window created, closing splash screen.";
+
+  SetKioskLaunchStateCrashKey(KioskLaunchState::kAppWindowCreated);
+
   // If timer is running, do not remove splash screen for a few
   // more seconds to give the user ability to exit kiosk session.
   if (splash_wait_timer_.IsRunning())
@@ -590,7 +617,7 @@ void KioskLaunchController::OnProfileLoadFailed(
 }
 
 void KioskLaunchController::OnOldEncryptionDetected(
-    const UserContext& user_context) {
+    std::unique_ptr<UserContext> user_context) {
   if (kiosk_app_id_.type != KioskAppType::kArcApp) {
     NOTREACHED();
     return;
@@ -600,7 +627,7 @@ void KioskLaunchController::OnOldEncryptionDetected(
       static_cast<EncryptionMigrationScreen*>(
           host_->GetWizardController()->current_screen());
   DCHECK(migration_screen);
-  migration_screen->SetUserContext(user_context);
+  migration_screen->SetUserContext(std::move(user_context));
   migration_screen->SetupInitialView();
 }
 

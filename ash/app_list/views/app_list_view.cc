@@ -403,8 +403,8 @@ void AppListView::InitContents() {
       AddChildView(std::make_unique<views::View>()));
 
   auto app_list_main_view = std::make_unique<AppListMainView>(delegate_, this);
-  search_box_view_ =
-      new SearchBoxView(app_list_main_view.get(), delegate_, this);
+  search_box_view_ = new SearchBoxView(app_list_main_view.get(), delegate_,
+                                       /*is_app_list_bubble=*/false);
   search_box_view_->InitializeForFullscreenLauncher();
 
   // Assign |app_list_main_view_| here since it is accessed during Init().
@@ -736,22 +736,11 @@ void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
 }
 
 void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
-  // TODO(crbug.com/1371211): Check if we still need this function in
-  // productivity launcher
-  if (new_state == app_list_state_)
+  if (new_state == app_list_state_ || !delegate_->AppListTargetVisibility())
     return;
 
-  if (!delegate_->AppListTargetVisibility())
-    return;
-
-  switch (new_state) {
-    case AppListViewState::kFullscreenAllApps:
-      a11y_announcer_->AnnounceFullscreenState();
-      break;
-    case AppListViewState::kClosed:
-    case AppListViewState::kFullscreenSearch:
-      break;
-  }
+  if (new_state == AppListViewState::kFullscreenAllApps)
+    a11y_announcer_->AnnounceAppListShown();
 }
 
 void AppListView::EnsureWidgetBoundsMatchCurrentState() {
@@ -898,7 +887,6 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void AppListView::OnTabletModeChanged(bool started) {
-  search_box_view_->OnTabletModeChanged(started);
   app_list_main_view_->contents_view()->OnTabletModeChanged(started);
 
   // Refresh the state if the view is not in a fullscreen state.

@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">साइटना मोशन सेन्सर ॲक्सेस करण्याची अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="5050380848339752099">ही साइट गुप्त मोडबाहेरील अ‍ॅपबरोबर माहिती शेअर करणार आहे.</translation>
 <translation id="5063480226653192405">वापर</translation>
-<translation id="5082281938627763039">हे <ph name="FPS_MEMBER" /> साठी आणि <ph name="FPS_OWNER" /> च्या साइटच्या गटातील साइटकरिता कुकी व इतर साइट डेटा हटवते</translation>
 <translation id="5091013926750941408">मोबाइल साइट</translation>
 <translation id="509133520954049755">डेस्कटॉप दृश्याची विनंती करा</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">शीर्ष पासून ड्रॅग करा आणि फुलस्क्रीन मधून बाहेर पडण्यासाठी परत बटणास स्पर्श करा.</translation>
 <translation id="5300589172476337783">दर्शवा</translation>
 <translation id="5301954838959518834">ठीक आहे, समजले</translation>
-<translation id="5313967007315987356">साइट जोडा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5335288049665977812">साइटना JavaScript रन करण्याची अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="534295439873310000">NFC डिव्हाइस</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">तुमची स्क्रीन शेअर करत आहे</translation>
 <translation id="5922967540311291836">तृतीय पक्ष कुकी ब्लॉक करा:</translation>
 <translation id="5939518447894949180">रीसेट करा</translation>
+<translation id="5968921426641056619">वेब अ‍ॅड्रेस एंटर करा</translation>
 <translation id="5975083100439434680">झूम कमी करा</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">या साइटला तुमच्‍या डिव्हाइसचा असलेला अ‍ॅक्सेस नियंत्रित करा</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> निवडले</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> आणि <ph name="PERMISSION_2" /> ला अनुमती दिली</translation>
 <translation id="7302486331832100261">तुम्ही सहसा सूचना ब्लॉक करता. अनुमती देण्यासाठी, तपशील वर टॅप करा.</translation>
+<translation id="7366415735885268578">एक साइट जोडा</translation>
 <translation id="7383715096023715447"><ph name="DOMAIN" /> साठी सेटिंग्ज</translation>
 <translation id="7423098979219808738">प्रथम विचारा</translation>
 <translation id="7423538860840206698">क्लिपबोर्ड वाचणे ब्लॉक केले</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
 <translation id="8409345997656833551">एखादा लेख हा सुलभ दृश्यात दाखवला जाऊ शकत असल्यास, सूचना मिळवा</translation>
+<translation id="8423565414844018592">मजकूर स्केलिंग <ph name="TEXT_SCALING" /> वर सेट केले आहे</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8441146129660941386">मागे शोधा</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> ला तुमचे स्थान अ‍ॅक्सेस करू देण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्येदेखील स्थान सुरू करा.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">या डिव्हाइससाठी NFC बंद केले आहे. ते <ph name="BEGIN_LINK" />Android सेटिंग्जमध्ये<ph name="END_LINK" /> सुरू करा.</translation>
 <translation id="8928445016601307354">NFC डिव्हाइसवर माहिती पाहण्यापासून आणि बदलण्यापासून साइटना ब्लॉक करा</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">विशिष्ट साइटसाठी कुकी ब्लॉक करा.</translation>
 <translation id="8959122750345127698">नेव्हिगेशन आवाक्याबाहेर आहे: <ph name="URL" /></translation>
 <translation id="8986362086234534611">विसरा</translation>

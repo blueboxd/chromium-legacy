@@ -102,6 +102,10 @@ std::ostream& operator<<(std::ostream& os, DIPSRedirectType type);
 struct TimestampRange {
   absl::optional<base::Time> first;
   absl::optional<base::Time> last;
+
+  // Expand the range to include `time` if necessary. Returns true iff the range
+  // was modified.
+  bool Update(base::Time time);
 };
 
 inline bool operator==(const TimestampRange& lhs, const TimestampRange& rhs) {
@@ -122,6 +126,8 @@ inline bool operator==(const StateValue& lhs, const StateValue& rhs) {
          std::tie(rhs.site_storage_times, rhs.user_interaction_times,
                   rhs.stateful_bounce_times, rhs.stateless_bounce_times);
 }
+
+enum class DIPSTriggeringAction { kStorage, kBounce, kStatefulBounce };
 
 // Return the number of seconds in `td`, clamped to [0, 10].
 // i.e. 11 linearly-sized buckets.

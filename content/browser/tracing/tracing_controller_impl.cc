@@ -21,7 +21,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/tracing/protos/grit/tracing_proto_resources.h"
@@ -189,14 +190,14 @@ TracingControllerImpl::TracingControllerImpl()
 #endif
 
   tracing::PerfettoTracedProcess::Get()->SetConsumerConnectionFactory(
-      &GetTracingService, base::ThreadTaskRunnerHandle::Get());
+      &GetTracingService, base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 TracingControllerImpl::~TracingControllerImpl() = default;
 
 void TracingControllerImpl::AddAgents() {
   tracing::TracedProcessImpl::GetInstance()->SetTaskRunner(
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   agents_.push_back(std::make_unique<CrOSTracingAgent>());
@@ -204,19 +205,21 @@ void TracingControllerImpl::AddAgents() {
   agents_.push_back(std::make_unique<CastTracingAgent>());
 #endif
 
+  // Ensure the TraceEventAgent has been created.
+  tracing::TraceEventAgent::GetInstance();
+
   // For adding general CPU, network, OS, and other system information to the
   // metadata.
-  auto* trace_event_agent = tracing::TraceEventAgent::GetInstance();
-  trace_event_agent->AddMetadataGeneratorFunction(base::BindRepeating(
+  auto* metadata_source = tracing::TraceEventMetadataSource::GetInstance();
+  metadata_source->AddGeneratorFunction(base::BindRepeating(
       &TracingControllerImpl::GenerateMetadataDict, base::Unretained(this)));
   if (delegate_) {
-    trace_event_agent->AddMetadataGeneratorFunction(
+    metadata_source->AddGeneratorFunction(
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
-  tracing::TraceEventMetadataSource::GetInstance()->AddGeneratorFunction(
-      base::BindRepeating(&TracingControllerImpl::GenerateMetadataPacket,
-                          base::Unretained(this)));
+  metadata_source->AddGeneratorFunction(base::BindRepeating(
+      &TracingControllerImpl::GenerateMetadataPacket, base::Unretained(this)));
 #if BUILDFLAG(IS_ANDROID)
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       tracing::JavaHeapProfiler::GetInstance());
@@ -249,8 +252,7 @@ void TracingControllerImpl::GenerateMetadataPacket(
 }
 
 // Can be called on any thread.
-absl::optional<base::Value::Dict>
-TracingControllerImpl::GenerateMetadataDict() {
+absl::optional<base::Value> TracingControllerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Value::Dict metadata_dict;
 
@@ -375,7 +377,7 @@ TracingControllerImpl::GenerateMetadataDict() {
     }
   }
 
-  return metadata_dict;
+  return base::Value(std::move(metadata_dict));
 }
 
 TracingControllerImpl* TracingControllerImpl::GetInstance() {
@@ -560,8 +562,11 @@ void TracingControllerImpl::OnReadBuffersComplete() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void TracingControllerImpl::OnMachineStatisticsLoaded() {
-  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      chromeos::system::kHardwareClassKey, &hardware_class_);
+  if (const absl::optional<base::StringPiece> hardware_class =
+          chromeos::system::StatisticsProvider::GetInstance()
+              ->GetMachineStatistic(chromeos::system::kHardwareClassKey)) {
+    hardware_class_ = std::string(hardware_class.value());
+  }
   are_statistics_loaded_ = true;
 }
 #endif

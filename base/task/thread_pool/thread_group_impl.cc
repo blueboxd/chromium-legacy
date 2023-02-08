@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/clamped_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_token.h"
@@ -195,8 +196,10 @@ class ThreadGroupImpl::ScopedCommandsExecutor
 class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
                                                   public BlockingObserver {
  public:
-  // |outer| owns the worker for which this delegate is constructed.
-  explicit WorkerThreadDelegateImpl(TrackedRef<ThreadGroupImpl> outer);
+  // |outer| owns the worker for which this delegate is constructed. If
+  // |is_excess| is true, this worker will be eligible for reclaim.
+  explicit WorkerThreadDelegateImpl(TrackedRef<ThreadGroupImpl> outer,
+                                    bool is_excess);
   WorkerThreadDelegateImpl(const WorkerThreadDelegateImpl&) = delete;
   WorkerThreadDelegateImpl& operator=(const WorkerThreadDelegateImpl&) = delete;
 
@@ -211,6 +214,7 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   void DidProcessTask(RegisteredTaskSource task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(WorkerThread* worker) override;
+  void RecordUnnecessaryWakeup() override;
 
   // BlockingObserver:
   void BlockingStarted(BlockingType blocking_type) override;
@@ -223,7 +227,7 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
 
   // Returns true iff the worker can get work. Cleans up the worker or puts it
-  // on the idle stack if it can't get work.
+  // on the idle set if it can't get work.
   bool CanGetWorkLockRequired(ScopedCommandsExecutor* executor,
                               WorkerThread* worker)
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_);
@@ -240,6 +244,9 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
       EXCLUSIVE_LOCKS_REQUIRED(outer_->lock_) {
     return *read_any().current_task_priority;
   }
+
+  // True if this worker is be eligible for reclaim.
+  bool is_excess() const { return is_excess_; }
 
   // Exposed for AnnotateAcquiredLockAlias
   const CheckedLock& lock() const LOCK_RETURNED(outer_->lock_) {
@@ -314,6 +321,8 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
 
   const TrackedRef<ThreadGroupImpl> outer_;
 
+  const bool is_excess_;
+
   // Whether |outer_->max_tasks_|/|outer_->max_best_effort_tasks_| were
   // incremented due to a ScopedBlockingCall on the thread.
   bool incremented_max_tasks_since_blocked_ GUARDED_BY(outer_->lock_) = false;
@@ -332,11 +341,15 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
                                  StringPiece thread_group_label,
                                  ThreadType thread_type_hint,
                                  TrackedRef<TaskTracker> task_tracker,
-                                 TrackedRef<Delegate> delegate)
-    : ThreadGroup(std::move(task_tracker), std::move(delegate)),
+                                 TrackedRef<Delegate> delegate,
+                                 ThreadGroup* predecessor_thread_group)
+    : ThreadGroup(std::move(task_tracker),
+                  std::move(delegate),
+                  predecessor_thread_group),
+      histogram_label_(histogram_label),
       thread_group_label_(thread_group_label),
       thread_type_hint_(thread_type_hint),
-      idle_workers_stack_cv_for_testing_(lock_.CreateConditionVariable()),
+      idle_workers_set_cv_for_testing_(lock_.CreateConditionVariable()),
       tracked_ref_factory_(this) {
   DCHECK(!thread_group_label_.empty());
 }
@@ -357,12 +370,13 @@ void ThreadGroupImpl::Start(
   in_start().no_worker_reclaim = FeatureList::IsEnabled(kNoWorkerThreadReclaim);
   in_start().may_block_threshold =
       may_block_threshold ? may_block_threshold.value()
-                          : (thread_type_hint_ == ThreadType::kDefault
+                          : (thread_type_hint_ != ThreadType::kBackground
                                  ? kForegroundMayBlockThreshold
                                  : kBackgroundMayBlockThreshold);
   in_start().blocked_workers_poll_period =
-      thread_type_hint_ == ThreadType::kDefault ? kForegroundBlockedWorkersPoll
-                                                : kBackgroundBlockedWorkersPoll;
+      thread_type_hint_ != ThreadType::kBackground
+          ? kForegroundBlockedWorkersPoll
+          : kBackgroundBlockedWorkersPoll;
 
   ScopedCommandsExecutor executor(this);
   CheckedAutoLock auto_lock(lock_);
@@ -499,12 +513,13 @@ size_t ThreadGroupImpl::GetMaxBestEffortTasksForTesting() const {
 
 size_t ThreadGroupImpl::NumberOfIdleWorkersForTesting() const {
   CheckedAutoLock auto_lock(lock_);
-  return idle_workers_stack_.Size();
+  return idle_workers_set_.Size();
 }
 
 ThreadGroupImpl::WorkerThreadDelegateImpl::WorkerThreadDelegateImpl(
-    TrackedRef<ThreadGroupImpl> outer)
-    : outer_(std::move(outer)) {
+    TrackedRef<ThreadGroupImpl> outer,
+    bool is_excess)
+    : outer_(std::move(outer)), is_excess_(is_excess) {
   // Bound in OnMainEntry().
   DETACH_FROM_THREAD(worker_thread_checker_);
 }
@@ -592,7 +607,7 @@ RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
 
   // Running task bookkeeping.
   outer_->IncrementTasksRunningLockRequired(priority);
-  DCHECK(!outer_->idle_workers_stack_.Contains(worker));
+  DCHECK(!outer_->idle_workers_set_.Contains(worker));
   write_worker().current_task_priority = priority;
   write_worker().current_shutdown_behavior = task_source->shutdown_behavior();
 
@@ -651,7 +666,7 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidProcessTask(
 
 TimeDelta ThreadGroupImpl::WorkerThreadDelegateImpl::GetSleepTimeout() {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  if (outer_->after_start().no_worker_reclaim)
+  if (!is_excess())
     return TimeDelta::Max();
   // Sleep for an extra 10% to avoid the following pathological case:
   //   0) A task is running on a timer which matches
@@ -659,13 +674,13 @@ TimeDelta ThreadGroupImpl::WorkerThreadDelegateImpl::GetSleepTimeout() {
   //   1) The timer fires and this worker is created by
   //      MaintainAtLeastOneIdleWorkerLockRequired() because the last idle
   //      worker was assigned the task.
-  //   2) This worker begins sleeping |after_start().suggested_reclaim_time| (on
-  //      top of the idle stack).
+  //   2) This worker begins sleeping |after_start().suggested_reclaim_time| (at
+  //      the front of the idle set).
   //   3) The task assigned to the other worker completes and the worker goes
-  //      back on the idle stack (this worker is now second on the idle stack;
+  //      back in the idle set (this worker may now second on the idle set;
   //      its GetLastUsedTime() is set to Now()).
   //   4) The sleep in (2) expires. Since (3) was fast this worker is likely to
-  //      have been second on the idle stack long enough for
+  //      have been second on the idle set long enough for
   //      CanCleanupLockRequired() to be satisfied in which case this worker is
   //      cleaned up.
   //   5) The timer fires at roughly the same time and we're back to (1) if (4)
@@ -687,7 +702,7 @@ TimeDelta ThreadGroupImpl::WorkerThreadDelegateImpl::GetSleepTimeout() {
 bool ThreadGroupImpl::WorkerThreadDelegateImpl::CanCleanupLockRequired(
     const WorkerThread* worker) const {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  if (outer_->after_start().no_worker_reclaim)
+  if (!is_excess())
     return false;
 
   const TimeTicks last_used_time = worker->GetLastUsedTime();
@@ -705,8 +720,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
 
   worker->Cleanup();
 
-  if (outer_->IsOnIdleStackLockRequired(worker))
-    outer_->idle_workers_stack_.Remove(worker);
+  if (outer_->IsOnIdleSetLockRequired(worker))
+    outer_->idle_workers_set_.Remove(worker);
 
   // Remove the worker from |workers_|.
   auto worker_iter = ranges::find(outer_->workers_, worker);
@@ -718,23 +733,12 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnWorkerBecomesIdleLockRequired(
     ScopedCommandsExecutor* executor,
     WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  DCHECK(!outer_->idle_workers_stack_.Contains(worker));
+  DCHECK(!outer_->idle_workers_set_.Contains(worker));
 
-  if (outer_->after_start().no_worker_reclaim) {
-    // Under NoWorkerThreadReclaim, immediately cleanup excess workers that were
-    // going to sleep. Only 1 worker is cleaned up at a time, which is enough
-    // because each worker who caused |max_tasks_| to increase will eventually
-    // go through this.
-    if (outer_->workers_.size() > outer_->max_tasks_) {
-      CleanupLockRequired(executor, worker);
-      return;
-    }
-  }
-
-  // Add the worker to the idle stack.
-  outer_->idle_workers_stack_.Push(worker);
-  DCHECK_LE(outer_->idle_workers_stack_.Size(), outer_->workers_.size());
-  outer_->idle_workers_stack_cv_for_testing_->Broadcast();
+  // Add the worker to the idle set.
+  outer_->idle_workers_set_.Insert(worker);
+  DCHECK_LE(outer_->idle_workers_set_.Size(), outer_->workers_.size());
+  outer_->idle_workers_set_cv_for_testing_->Broadcast();
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
@@ -746,12 +750,12 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
     bool shutdown_complete = outer_->task_tracker_->IsShutdownComplete();
     CheckedAutoLock auto_lock(outer_->lock_);
 
-    // |worker| should already have been removed from the idle workers stack and
+    // |worker| should already have been removed from the idle workers set and
     // |workers_| by the time the thread is about to exit. (except in the cases
     // where the thread group is no longer going to be used - in which case,
     // it's fine for there to be invalid workers in the thread group.
     if (!shutdown_complete && !outer_->join_for_testing_started_) {
-      DCHECK(!outer_->idle_workers_stack_.Contains(worker));
+      DCHECK(!outer_->idle_workers_set_.Contains(worker));
       DCHECK(!ContainsWorker(outer_->workers_, worker));
     }
   }
@@ -773,6 +777,15 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
 #endif
   if (outer_->num_workers_cleaned_up_for_testing_cv_)
     outer_->num_workers_cleaned_up_for_testing_cv_->Signal();
+}
+
+void ThreadGroupImpl::WorkerThreadDelegateImpl::RecordUnnecessaryWakeup() {
+  base::BooleanHistogram::FactoryGet(
+      std::string("ThreadPool.UnnecessaryWakeup.") + outer_->histogram_label_,
+      base::Histogram::kUmaTargetedHistogramFlag)
+      ->Add(true);
+
+  TRACE_EVENT_INSTANT("wakeup.flow", "ThreadPool.UnnecessaryWakeup");
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingStarted(
@@ -881,35 +894,21 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnShutdownStartedLockRequired(
 bool ThreadGroupImpl::WorkerThreadDelegateImpl::CanGetWorkLockRequired(
     ScopedCommandsExecutor* executor,
     WorkerThread* worker) {
-  const bool is_on_idle_workers_stack =
-      outer_->IsOnIdleStackLockRequired(worker);
-  DCHECK_EQ(is_on_idle_workers_stack,
-            outer_->idle_workers_stack_.Contains(worker));
+  const bool is_on_idle_workers_set = outer_->IsOnIdleSetLockRequired(worker);
+  DCHECK_EQ(is_on_idle_workers_set, outer_->idle_workers_set_.Contains(worker));
 
-  if (outer_->after_start().no_worker_reclaim) {
-    DCHECK(!is_on_idle_workers_stack);
-    // Under NoWorkerThreadReclaim, immediately cleanup excess workers. Only 1
-    // worker is cleaned up at a time, which is enough because each worker who
-    // caused |max_tasks_| to increase will eventually go through this.
-    if (outer_->GetNumAwakeWorkersLockRequired() > outer_->max_tasks_) {
+  if (is_on_idle_workers_set) {
+    if (CanCleanupLockRequired(worker))
       CleanupLockRequired(executor, worker);
-      return false;
-    }
-  } else {
-    if (is_on_idle_workers_stack) {
-      if (CanCleanupLockRequired(worker))
-        CleanupLockRequired(executor, worker);
-      return false;
-    }
+    return false;
+  }
 
-    // Excess workers should not get work, until they are no longer excess (i.e.
-    // max tasks increases). This ensures that if we have excess workers in the
-    // thread group, they get a chance to no longer be excess before being
-    // cleaned up.
-    if (outer_->GetNumAwakeWorkersLockRequired() > outer_->max_tasks_) {
-      OnWorkerBecomesIdleLockRequired(executor, worker);
-      return false;
-    }
+  // If too many workers are running, this worker should not get work, until
+  // tasks are no longer in excess (i.e. max tasks increases). This ensures that
+  // if this worker is in excess, it gets a chance to being cleaned up.
+  if (outer_->GetNumAwakeWorkersLockRequired() > outer_->max_tasks_) {
+    OnWorkerBecomesIdleLockRequired(executor, worker);
+    return false;
   }
 
   return true;
@@ -950,8 +949,8 @@ void ThreadGroupImpl::WaitForWorkersIdleLockRequiredForTesting(size_t n) {
   // Make sure workers do not cleanup while watching the idle count.
   AutoReset<bool> ban_cleanups(&worker_cleanup_disallowed_for_testing_, true);
 
-  while (idle_workers_stack_.Size() < n)
-    idle_workers_stack_cv_for_testing_->Wait();
+  while (idle_workers_set_.Size() < n)
+    idle_workers_set_cv_for_testing_->Wait();
 }
 
 void ThreadGroupImpl::MaintainAtLeastOneIdleWorkerLockRequired(
@@ -960,7 +959,7 @@ void ThreadGroupImpl::MaintainAtLeastOneIdleWorkerLockRequired(
     return;
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
 
-  if (!idle_workers_stack_.IsEmpty())
+  if (!idle_workers_set_.IsEmpty())
     return;
 
   if (workers_.size() >= max_tasks_)
@@ -969,7 +968,7 @@ void ThreadGroupImpl::MaintainAtLeastOneIdleWorkerLockRequired(
   scoped_refptr<WorkerThread> new_worker =
       CreateAndRegisterWorkerLockRequired(executor);
   DCHECK(new_worker);
-  idle_workers_stack_.Push(new_worker.get());
+  idle_workers_set_.Insert(new_worker.get());
 }
 
 scoped_refptr<WorkerThread>
@@ -978,16 +977,19 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
   DCHECK(!join_for_testing_started_);
   DCHECK_LT(workers_.size(), max_tasks_);
   DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
-  DCHECK(idle_workers_stack_.IsEmpty());
+  DCHECK(idle_workers_set_.IsEmpty());
 
   // WorkerThread needs |lock_| as a predecessor for its thread lock
   // because in WakeUpOneWorker, |lock_| is first acquired and then
   // the thread lock is acquired when WakeUp is called on the worker.
-  scoped_refptr<WorkerThread> worker =
-      MakeRefCounted<WorkerThread>(thread_type_hint_,
-                                   std::make_unique<WorkerThreadDelegateImpl>(
-                                       tracked_ref_factory_.GetTrackedRef()),
-                                   task_tracker_, &lock_);
+  scoped_refptr<WorkerThread> worker = MakeRefCounted<WorkerThread>(
+      thread_type_hint_,
+      std::make_unique<WorkerThreadDelegateImpl>(
+          tracked_ref_factory_.GetTrackedRef(),
+          /* is_excess=*/after_start().no_worker_reclaim
+              ? workers_.size() >= after_start().initial_max_tasks
+              : true),
+      task_tracker_, worker_sequence_num_++, &lock_);
 
   workers_.push_back(worker);
   executor->ScheduleStart(worker);
@@ -997,8 +999,8 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
 }
 
 size_t ThreadGroupImpl::GetNumAwakeWorkersLockRequired() const {
-  DCHECK_GE(workers_.size(), idle_workers_stack_.Size());
-  size_t num_awake_workers = workers_.size() - idle_workers_stack_.Size();
+  DCHECK_GE(workers_.size(), idle_workers_set_.Size());
+  size_t num_awake_workers = workers_.size() - idle_workers_set_.Size();
   DCHECK_GE(num_awake_workers, num_running_tasks_);
   return num_awake_workers;
 }
@@ -1076,7 +1078,7 @@ void ThreadGroupImpl::EnsureEnoughWorkersLockRequired(
   // Wake up the appropriate number of workers.
   for (size_t i = 0; i < num_workers_to_wake_up; ++i) {
     MaintainAtLeastOneIdleWorkerLockRequired(executor);
-    WorkerThread* worker_to_wakeup = idle_workers_stack_.Pop();
+    WorkerThread* worker_to_wakeup = idle_workers_set_.Take();
     DCHECK(worker_to_wakeup);
     executor->ScheduleWakeUp(worker_to_wakeup);
   }
@@ -1179,11 +1181,11 @@ void ThreadGroupImpl::UpdateMinAllowedPriorityLockRequired() {
   }
 }
 
-bool ThreadGroupImpl::IsOnIdleStackLockRequired(WorkerThread* worker) const {
-  // To avoid searching through the idle stack : use GetLastUsedTime() not being
-  // null (or being directly on top of the idle stack) as a proxy for being on
-  // the idle stack.
-  return idle_workers_stack_.Peek() == worker ||
+bool ThreadGroupImpl::IsOnIdleSetLockRequired(WorkerThread* worker) const {
+  // To avoid searching through the idle set : use GetLastUsedTime() not being
+  // null (or being directly on top of the idle set) as a proxy for being on
+  // the idle set.
+  return idle_workers_set_.Peek() == worker ||
          !worker->GetLastUsedTime().is_null();
 }
 

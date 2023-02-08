@@ -40,9 +40,6 @@ class GL_EXPORT GLImageD3D : public GLImage {
   GLImageD3D(const GLImageD3D&) = delete;
   GLImageD3D& operator=(const GLImageD3D&) = delete;
 
-  // Safe downcast. Returns nullptr on failure.
-  static GLImageD3D* FromGLImage(GLImage* image);
-
   bool Initialize();
 
   // GLImage implementation
@@ -61,6 +58,8 @@ class GL_EXPORT GLImageD3D : public GLImage {
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
+
+  const gfx::ColorSpace& color_space() const { return color_space_; }
 
   const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture() const {
     return texture_;

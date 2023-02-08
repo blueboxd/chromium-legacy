@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/threading/thread.h"
@@ -27,8 +27,13 @@
 
 namespace device {
 class PositionCache;
-class NetworkLocationProvider : public LocationProvider,
-                                public GeolocationManager::PermissionObserver {
+
+class NetworkLocationProvider : public LocationProvider
+#if BUILDFLAG(IS_MAC)
+    ,
+                                public GeolocationManager::PermissionObserver
+#endif
+{
  public:
   NetworkLocationProvider(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -49,9 +54,11 @@ class NetworkLocationProvider : public LocationProvider,
   const mojom::Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
+#if BUILDFLAG(IS_MAC)
   // GeolocationPermissionObserver implementation.
   void OnSystemPermissionUpdated(
       LocationSystemPermissionStatus new_status) override;
+#endif
 
  private:
   // Tries to update |position_| request from cache or network.
@@ -105,9 +112,11 @@ class NetworkLocationProvider : public LocationProvider,
 
   base::ThreadChecker thread_checker_;
 
+#if BUILDFLAG(IS_MAC)
   bool is_system_permission_granted_ = false;
 
   bool is_awaiting_initial_permission_status_ = true;
+#endif
 
   base::WeakPtrFactory<NetworkLocationProvider> weak_factory_{this};
 };

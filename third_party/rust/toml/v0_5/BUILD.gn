@@ -4,11 +4,14 @@
 
 import("//build/rust/cargo_crate.gni")
 
-cargo_crate("test_support") {
+cargo_crate("lib") {
   crate_name = "toml"
   epoch = "0.5"
   crate_type = "rlib"
-  testonly = true
+
+  # Only for usage from third-party crates. Add the crate to
+  # third_party.toml to use it from first-party code.
+  visibility = [ "//third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -19,6 +22,10 @@ cargo_crate("test_support") {
   cargo_pkg_authors = "Alex Crichton <alex@alexcrichton.com>"
   cargo_pkg_name = "toml"
   cargo_pkg_description = "A native Rust encoder and decoder of TOML-formatted files and streams. Providesimplementations of the standard Serialize/Deserialize traits for TOML data tofacilitate deserializing and serializing Rust structures."
+  library_configs -= [ "//build/config/compiler:chromium_code" ]
+  library_configs += [ "//build/config/compiler:no_chromium_code" ]
+  executable_configs -= [ "//build/config/compiler:chromium_code" ]
+  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
     "//third_party/rust/indexmap/v1:lib",
     "//third_party/rust/serde/v1:lib",
@@ -27,4 +34,8 @@ cargo_crate("test_support") {
     "indexmap",
     "preserve_order",
   ]
+}
+group("test_support") {
+  public_deps = [ ":lib" ]
+  testonly = true
 }

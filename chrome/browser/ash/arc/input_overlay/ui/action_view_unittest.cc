@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "base/json/json_reader.h"
 #include "base/test/bind.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
@@ -129,9 +130,10 @@ class ActionViewTest : public views::ViewsTestBase {
     widget_ = CreateArcWindow(root_window(), gfx::Rect(200, 100, 400, 600));
     touch_injector_ = std::make_unique<TouchInjector>(
         widget_->GetNativeWindow(),
+        *widget_->GetNativeWindow()->GetProperty(ash::kArcPackageNameKey),
         base::BindLambdaForTesting(
-            [&](std::unique_ptr<AppDataProto>, const std::string&) {}));
-    touch_injector_->set_beta(true);
+            [&](std::unique_ptr<AppDataProto>, std::string) {}));
+    touch_injector_->set_allow_reposition(true);
     touch_injector_->ParseActions(
         *base::JSONReader::ReadAndReturnValueWithError(
             kValidJsonActionMoveKey));

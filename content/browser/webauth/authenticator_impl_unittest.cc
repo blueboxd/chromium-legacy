@@ -29,6 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
@@ -1365,7 +1366,7 @@ TEST_F(AuthenticatorImplTest, NavigationDuringOperation) {
   // Simulate a navigation while waiting for the user to press the token.
   virtual_device_factory_->mutable_state()->simulate_press_callback =
       base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindLambdaForTesting(
                            [&]() { NavigateAndCommit(GURL(kTestOrigin2)); }));
         return false;
@@ -1563,7 +1564,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
     current_request_id_++;
     observations_.num_isuvpaa++;
     if (config_.resolve_callbacks) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), config_.is_uvpaa));
       return current_request_id_;
     }
@@ -1595,8 +1596,8 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
                              WebAuthnDOMExceptionDetails::New(
                                  config_.request_error_name, "message"),
                              nullptr);
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(callback));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
   }
 
   void RunPendingGetCallback() {
@@ -1611,8 +1612,8 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
                              WebAuthnDOMExceptionDetails::New(
                                  config_.request_error_name, "message"),
                              nullptr);
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(callback));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
   }
 
   void RunPendingIsUvpaaCallback() {
@@ -1695,7 +1696,8 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
   }
 
   bool IsSecurityLevelAcceptableForWebAuthn(
-      content::RenderFrameHost* rfh) override {
+      content::RenderFrameHost* rfh,
+      const url::Origin& origin) override {
     return is_webauthn_security_level_acceptable;
   }
 
@@ -2152,6 +2154,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 };
 
 TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialTLSError) {
+  NavigateAndCommit(GURL(kTestOrigin1));
   test_client_.GetTestWebAuthenticationDelegate()
       ->is_webauthn_security_level_acceptable = false;
   PublicKeyCredentialCreationOptionsPtr options =
@@ -2161,12 +2164,47 @@ TEST_F(AuthenticatorContentBrowserClientTest, MakeCredentialTLSError) {
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionTLSError) {
+  NavigateAndCommit(GURL(kTestOrigin1));
   test_client_.GetTestWebAuthenticationDelegate()
       ->is_webauthn_security_level_acceptable = false;
   PublicKeyCredentialRequestOptionsPtr options =
       GetTestPublicKeyCredentialRequestOptions();
   EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
             AuthenticatorStatus::CERTIFICATE_ERROR);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       MakeCredentialSkipTLSCheckWithVirtualEnvironment) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  content::AuthenticatorEnvironmentImpl::GetInstance()
+      ->EnableVirtualAuthenticatorFor(
+          static_cast<content::RenderFrameHostImpl*>(main_rfh())
+              ->frame_tree_node(),
+          /*enable_ui=*/false);
+  test_client_.GetTestWebAuthenticationDelegate()
+      ->is_webauthn_security_level_acceptable = false;
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
+            AuthenticatorStatus::SUCCESS);
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       GetAssertionSkipTLSCheckWithVirtualEnvironment) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  content::AuthenticatorEnvironmentImpl::GetInstance()
+      ->EnableVirtualAuthenticatorFor(
+          static_cast<content::RenderFrameHostImpl*>(main_rfh())
+              ->frame_tree_node(),
+          /*enable_ui=*/false);
+  test_client_.GetTestWebAuthenticationDelegate()
+      ->is_webauthn_security_level_acceptable = false;
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      options->allow_credentials[0].id, kTestRelyingPartyId));
+  EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
+            AuthenticatorStatus::SUCCESS);
 }
 
 // Test that credentials can be created and used from an extension origin when
@@ -4603,6 +4641,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyMakeCredential) {
   for (const bool dpk_support : {false, true}) {
     device::VirtualCtap2Device::Config config;
     config.device_public_key_support = dpk_support;
+    config.backup_eligible = true;
     // None attestation is needed because, otherwise, zeroing the AAGUID
     // invalidates the DPK signature.
     config.none_attestation = true;
@@ -4636,6 +4675,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
 
   device::VirtualCtap2Device::Config config;
   config.device_public_key_support = true;
+  config.backup_eligible = true;
   virtual_device_factory_->SetCtap2Config(config);
 
   PublicKeyCredentialCreationOptionsPtr options =
@@ -4648,6 +4688,34 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
   ASSERT_FALSE(HasDevicePublicKeyExtensionInAuthenticatorData(result.response));
 }
 
+TEST_F(AuthenticatorDevicePublicKeyTest,
+       DevicePublicKeyMakeCredentialRequiresBackupEligible) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  for (const bool backup_eligible : {false, true}) {
+    device::VirtualCtap2Device::Config config;
+    config.device_public_key_support = true;
+    config.none_attestation = true;
+    config.backup_eligible = backup_eligible;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
+    MakeCredentialResult result =
+        AuthenticatorMakeCredential(std::move(options));
+
+    if (backup_eligible) {
+      ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+      ASSERT_TRUE(static_cast<bool>(result.response->device_public_key));
+      ASSERT_TRUE(
+          HasDevicePublicKeyExtensionInAuthenticatorData(result.response));
+    } else {
+      ASSERT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    }
+  }
+}
+
 TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyGetAssertion) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
@@ -4655,6 +4723,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyGetAssertion) {
   for (const bool dpk_support : {false, true}) {
     device::VirtualCtap2Device::Config config;
     config.device_public_key_support = dpk_support;
+    config.backup_eligible = true;
     virtual_device_factory_->SetCtap2Config(config);
 
     PublicKeyCredentialRequestOptionsPtr options =
@@ -4678,6 +4747,36 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyGetAssertion) {
   }
 }
 
+TEST_F(AuthenticatorDevicePublicKeyTest,
+       DevicePublicKeyGetAssertionRequiresBackupEligible) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  bool credential_injected = false;
+  for (const bool backup_eligible : {false, true}) {
+    device::VirtualCtap2Device::Config config;
+    config.device_public_key_support = true;
+    config.backup_eligible = backup_eligible;
+    virtual_device_factory_->SetCtap2Config(config);
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    if (!credential_injected) {
+      ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+          options->allow_credentials[0].id, kTestRelyingPartyId));
+      credential_injected = true;
+    }
+    options->device_public_key = blink::mojom::DevicePublicKeyRequest::New();
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+
+    if (backup_eligible) {
+      ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+      ASSERT_TRUE(static_cast<bool>(result.response->device_public_key));
+    } else {
+      ASSERT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    }
+  }
+}
+
 TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyBadResponse) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
@@ -4687,6 +4786,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest, DevicePublicKeyBadResponse) {
 
     device::VirtualCtap2Device::Config config;
     config.device_public_key_support = true;
+    config.backup_eligible = true;
     // None attestation is needed because, otherwise, zeroing the AAGUID
     // invalidates the DPK signature.
     config.none_attestation = true;
@@ -4846,6 +4946,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
 
     device::VirtualCtap2Device::Config config;
     config.device_public_key_support = true;
+    config.backup_eligible = true;
     config.device_public_key_always_return_attestation = test.has_attestation;
     config.device_public_key_always_return_enterprise_attestation =
         test.enterprise_attestation_returned;
@@ -4951,6 +5052,7 @@ TEST_F(AuthenticatorDevicePublicKeyTest,
 
     device::VirtualCtap2Device::Config config;
     config.device_public_key_support = true;
+    config.backup_eligible = true;
     config.device_public_key_always_return_attestation = test.has_attestation;
     config.device_public_key_always_return_enterprise_attestation =
         test.enterprise_attestation_returned;
@@ -4999,14 +5101,14 @@ class UVTestAuthenticatorClientDelegate
       base::OnceCallback<void(std::u16string)> provide_pin_cb) override {
     *collected_pin_ = true;
     *min_pin_length_ = options.min_pin_length;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN16));
   }
 
   void StartBioEnrollment(base::OnceClosure next_callback) override {
     *did_bio_enrollment_ = true;
     if (cancel_bio_enrollment_) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, std::move(next_callback));
       return;
     }
@@ -5015,7 +5117,7 @@ class UVTestAuthenticatorClientDelegate
 
   void OnSampleCollected(int remaining_samples) override {
     if (remaining_samples <= 0) {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, std::move(bio_callback_));
     }
   }
@@ -5179,7 +5281,7 @@ class PINTestAuthenticatorRequestDelegate
     std::u16string pin = std::move(expected_.front().pin);
     expected_.pop_front();
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), std::move(pin)));
   }
 
@@ -6636,7 +6738,7 @@ class BlockingAuthenticatorRequestDelegate
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     // Post a task to cancel the request to give the second authenticator a
     // chance to return a status from the cancelled request.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(cancel_callback_));
     return true;
   }
@@ -6727,7 +6829,7 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
       base::BindLambdaForTesting([&](VirtualFidoDevice* ignore) -> bool {
         // If asked for a fingerprint, fail the makeCredential request by
         // simulating a matched excluded credential by the other authenticator.
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(std::move(state_1->transact_callback),
                                       std::vector<uint8_t>{static_cast<uint8_t>(
                                           device::CtapDeviceResponseCode::
@@ -6800,7 +6902,7 @@ class ResidentKeyTestAuthenticatorRequestDelegate
   void CollectPIN(
       CollectPINOptions options,
       base::OnceCallback<void(std::u16string)> provide_pin_cb) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN16));
   }
 
@@ -6845,7 +6947,7 @@ class ResidentKeyTestAuthenticatorRequestDelegate
         });
     ASSERT_TRUE(selected != responses.end());
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(*selected)));
   }
 
@@ -8262,17 +8364,14 @@ TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
   NavigateAndCommit(GURL(kTestOrigin1));
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
-
-  if (__builtin_available(macOS 10.12.2, *)) {
-    for (const bool touch_id_available : {false, true}) {
-      SCOPED_TRACE(::testing::Message()
-                   << "touch_id_available=" << touch_id_available);
-      touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
-      TestIsUvpaaCallback cb;
-      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-      cb.WaitForCallback();
-      EXPECT_EQ(touch_id_available, cb.value());
-    }
+  for (const bool touch_id_available : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "touch_id_available=" << touch_id_available);
+    touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
+    TestIsUvpaaCallback cb;
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(touch_id_available, cb.value());
   }
 }
 
@@ -8545,6 +8644,7 @@ class AuthenticatorCableV2Test
     ret.include_credential_in_assertion_response =
         VirtualCtap2Device::Config::IncludeCredential::ALWAYS;
     ret.device_public_key_support = true;
+    ret.backup_eligible = true;
     // None attestation is needed because, otherwise, zeroing the AAGUID
     // invalidates the DPK signature.
     ret.none_attestation = true;

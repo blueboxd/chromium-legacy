@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -173,11 +174,6 @@ Vector<AtomicString>& ComputedStyle::EnsureVariableNamesCache() const {
   return *cached_data_->variable_names_;
 }
 
-void ComputedStyle::ClearVariableNamesCache() const {
-  if (cached_data_)
-    cached_data_->variable_names_.reset();
-}
-
 const ComputedStyle* ComputedStyle::AddCachedPositionFallbackStyle(
     scoped_refptr<const ComputedStyle> style,
     unsigned index) const {
@@ -283,12 +279,12 @@ static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
 // if they reference a named timeline which appeared/disappeared.
 static bool AffectsScrollAnimations(const ComputedStyle* old_style,
                                     const ComputedStyle* new_style) {
-  if (old_style && !(old_style->ScrollTimelineName().empty() &&
-                     old_style->ViewTimelineName().empty())) {
+  if (old_style &&
+      (old_style->ScrollTimelineName() || old_style->ViewTimelineName())) {
     return true;
   }
-  if (new_style && !(new_style->ScrollTimelineName().empty() &&
-                     new_style->ViewTimelineName().empty())) {
+  if (new_style &&
+      (new_style->ScrollTimelineName() || new_style->ViewTimelineName())) {
     return true;
   }
   return false;
@@ -435,16 +431,6 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
        old_style.Display() == EDisplay::kListItem))
     return Difference::kPseudoElementStyle;
   return Difference::kNonInherited;
-}
-
-void ComputedStyle::PropagateIndependentInheritedProperties(
-    const ComputedStyle& parent_style) {
-  ComputedStyleBase::PropagateIndependentInheritedProperties(parent_style);
-  if (!HasVariableReference() && !HasVariableDeclaration() &&
-      (InheritedVariables() != parent_style.InheritedVariables())) {
-    MutableInheritedVariablesInternal() =
-        parent_style.InheritedVariablesInternal();
-  }
 }
 
 StyleSelfAlignmentData ResolvedSelfAlignment(
@@ -744,9 +730,6 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
 
   AdjustDiffForNeedsPaintInvalidation(other, diff, document);
 
-  if (DiffNeedsVisualRectUpdate(other))
-    diff.SetNeedsVisualRectUpdate();
-
   UpdatePropertySpecificDifferences(other, diff);
 
   // The following condition needs to be at last, because it may depend on
@@ -937,7 +920,7 @@ void ComputedStyle::AdjustDiffForClipPath(const ComputedStyle& other,
 void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
     const ComputedStyle& other,
     StyleDifference& diff) const {
-  if (BackgroundColorInternal() != other.BackgroundColorInternal()) {
+  if (BackgroundColor() != other.BackgroundColor()) {
     // If the background color change is not due to a composited animation, then
     // paint invalidation is required; but we can defer the decision until we
     // know whether the color change will be rendered by the compositor.
@@ -1028,15 +1011,6 @@ bool ComputedStyle::CustomPropertiesEqual(
   }
 
   return true;
-}
-
-// This doesn't include conditions needing layout or overflow recomputation
-// which implies visual rect update.
-bool ComputedStyle::DiffNeedsVisualRectUpdate(
-    const ComputedStyle& other) const {
-  // Visual rect is empty if visibility is hidden. Also need to update visual
-  // rect of the resizer.
-  return ComputedStyleBase::DiffNeedsVisualRectUpdate(*this, other);
 }
 
 bool ComputedStyle::PotentialCompositingReasonsFor3DTransformChanged(
@@ -1900,52 +1874,6 @@ const StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
   return NonInheritedVariablesInternal().get();
 }
 
-StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
-  ClearVariableNamesCache();
-
-  scoped_refptr<StyleInheritedVariables>& variables =
-      MutableInheritedVariablesInternal();
-  if (!variables)
-    variables = StyleInheritedVariables::Create();
-  else if (!variables->HasOneRef())
-    variables = variables->Copy();
-  return *variables;
-}
-
-StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
-  ClearVariableNamesCache();
-
-  std::unique_ptr<StyleNonInheritedVariables>& variables =
-      MutableNonInheritedVariablesInternal();
-  if (!variables)
-    variables = std::make_unique<StyleNonInheritedVariables>();
-  return *variables;
-}
-
-void ComputedStyle::SetInitialData(scoped_refptr<StyleInitialData> data) {
-  ClearVariableNamesCache();
-
-  MutableInitialDataInternal() = std::move(data);
-}
-
-void ComputedStyle::SetVariableData(const AtomicString& name,
-                                    scoped_refptr<CSSVariableData> value,
-                                    bool is_inherited_property) {
-  if (is_inherited_property)
-    MutableInheritedVariables().SetData(name, std::move(value));
-  else
-    MutableNonInheritedVariables().SetData(name, std::move(value));
-}
-
-void ComputedStyle::SetVariableValue(const AtomicString& name,
-                                     const CSSValue* value,
-                                     bool is_inherited_property) {
-  if (is_inherited_property)
-    MutableInheritedVariables().SetValue(name, value);
-  else
-    MutableNonInheritedVariables().SetValue(name, value);
-}
-
 static CSSVariableData* GetInitialVariableData(
     const AtomicString& name,
     const StyleInitialData* initial_data) {
@@ -2100,7 +2028,7 @@ void ComputedStyle::AddAppliedTextDecoration(
   list->data.shrink_to_fit();
 }
 
-void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
+void ComputedStyle::OverrideTextDecorationColors(blink::Color override_color) {
   scoped_refptr<AppliedTextDecorationList>& list =
       MutableAppliedTextDecorationsInternal();
   DCHECK(list);
@@ -2112,7 +2040,7 @@ void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
 }
 
 void ComputedStyle::ApplyTextDecorations(
-    const Color& parent_text_decoration_color,
+    const blink::Color& parent_text_decoration_color,
     bool override_existing_colors) {
   if (GetTextDecorationLine() == TextDecorationLine::kNone &&
       !HasSimpleUnderlineInternal() && !AppliedTextDecorationsInternal())
@@ -2120,7 +2048,7 @@ void ComputedStyle::ApplyTextDecorations(
 
   // If there are any color changes or decorations set by this element, stop
   // using m_hasSimpleUnderline.
-  Color current_text_decoration_color =
+  blink::Color current_text_decoration_color =
       VisitedDependentColor(GetCSSPropertyTextDecorationColor());
   if (HasSimpleUnderlineInternal() &&
       (GetTextDecorationLine() != TextDecorationLine::kNone ||
@@ -2185,7 +2113,8 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
     StyleColor text_stroke_style_color =
         visited_link ? InternalVisitedTextStrokeColor() : TextStrokeColor();
     if (!text_stroke_style_color.IsCurrentColor() &&
-        text_stroke_style_color.Resolve(Color(), UsedColorScheme()).Alpha()) {
+        text_stroke_style_color.Resolve(blink::Color(), UsedColorScheme())
+            .Alpha()) {
       return text_stroke_style_color;
     }
   }
@@ -2193,13 +2122,30 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? InternalVisitedTextFillColor() : TextFillColor();
 }
 
-Color ComputedStyle::VisitedDependentColor(const CSSProperty& color_property,
+bool ComputedStyle::HasBackground() const {
+  // Ostensibly, we should call VisitedDependentColor() here,
+  // but visited does not affect alpha (see VisitedDependentColor()
+  // implementation).
+  blink::Color color = GetCSSPropertyBackgroundColor().ColorIncludingFallback(
+      false, *this,
+      /*is_current_color=*/nullptr);
+  if (color.Alpha())
+    return true;
+  // When background color animation is running on the compositor thread, we
+  // need to trigger repaint even if the background is transparent to collect
+  // artifacts in order to run the animation on the compositor.
+  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+      HasCurrentBackgroundColorAnimation())
+    return true;
+  return HasBackgroundImage();
+}
+
+Color ComputedStyle::VisitedDependentColor(const Longhand& color_property,
                                            bool* is_current_color) const {
   DCHECK(!color_property.IsVisited());
 
-  Color unvisited_color =
-      To<Longhand>(color_property)
-          .ColorIncludingFallback(false, *this, is_current_color);
+  blink::Color unvisited_color =
+      color_property.ColorIncludingFallback(false, *this, is_current_color);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
 
@@ -2213,7 +2159,7 @@ Color ComputedStyle::VisitedDependentColor(const CSSProperty& color_property,
     visited_property = visited;
 
   // Overwrite is_current_color based on the visited color.
-  Color visited_color =
+  blink::Color visited_color =
       To<Longhand>(*visited_property)
           .ColorIncludingFallback(true, *this, is_current_color);
 
@@ -2230,22 +2176,16 @@ Color ComputedStyle::VisitedDependentColor(const CSSProperty& color_property,
   // the flag when the unvisited color is ‘currentColor’ would break tests like
   // css/css-pseudo/selection-link-001 and css/css-pseudo/target-text-008.
   // TODO(dazabani@igalia.com) improve behaviour where unvisited is currentColor
-  return Color(visited_color.Red(), visited_color.Green(), visited_color.Blue(),
-               unvisited_color.Alpha());
+  return blink::Color(visited_color.Red(), visited_color.Green(),
+                      visited_color.Blue(), unvisited_color.Alpha());
 }
 
-Color ComputedStyle::ResolvedColor(const StyleColor& color,
-                                   bool* is_current_color) const {
+blink::Color ComputedStyle::ResolvedColor(const StyleColor& color,
+                                          bool* is_current_color) const {
   bool visited_link = (InsideLink() == EInsideLink::kInsideVisitedLink);
-  Color current_color =
+  blink::Color current_color =
       visited_link ? GetInternalVisitedCurrentColor() : GetCurrentColor();
   return color.Resolve(current_color, UsedColorScheme(), is_current_color);
-}
-
-bool ComputedStyle::ShouldForceColor(const StyleColor& unforced_color) const {
-  return InForcedColorsMode() &&
-         ForcedColorAdjust() == EForcedColorAdjust::kAuto &&
-         !unforced_color.IsSystemColorIncludingDeprecated();
 }
 
 bool ComputedStyle::StrokeDashArrayDataEquivalent(
@@ -2351,37 +2291,37 @@ void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
     SetChildHasExplicitInheritance();
 }
 
-Color ComputedStyle::GetCurrentColor(bool* is_current_color) const {
-  DCHECK(!GetColor().IsCurrentColor());
+blink::Color ComputedStyle::GetCurrentColor(bool* is_current_color) const {
+  DCHECK(!Color().IsCurrentColor());
   if (is_current_color)
     *is_current_color = ColorIsCurrentColor();
-  return GetColor().Resolve(Color(), UsedColorScheme());
+  return Color().Resolve(blink::Color(), UsedColorScheme());
 }
 
-Color ComputedStyle::GetInternalVisitedCurrentColor(
+blink::Color ComputedStyle::GetInternalVisitedCurrentColor(
     bool* is_current_color) const {
   DCHECK(!InternalVisitedColor().IsCurrentColor());
   if (is_current_color)
     *is_current_color = InternalVisitedColorIsCurrentColor();
-  return InternalVisitedColor().Resolve(Color(), UsedColorScheme());
+  return InternalVisitedColor().Resolve(blink::Color(), UsedColorScheme());
 }
 
-Color ComputedStyle::GetInternalForcedCurrentColor(
+blink::Color ComputedStyle::GetInternalForcedCurrentColor(
     bool* is_current_color) const {
   DCHECK(!InternalForcedColor().IsCurrentColor());
-  if (GetColor().IsSystemColorIncludingDeprecated())
+  if (Color().IsSystemColorIncludingDeprecated())
     return GetCurrentColor(is_current_color);
-  return InternalForcedColor().Resolve(Color(), UsedColorScheme(),
+  return InternalForcedColor().Resolve(blink::Color(), UsedColorScheme(),
                                        is_current_color,
                                        /* is_forced_color */ true);
 }
 
-Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
+blink::Color ComputedStyle::GetInternalForcedVisitedCurrentColor(
     bool* is_current_color) const {
   DCHECK(!InternalForcedVisitedColor().IsCurrentColor());
   if (InternalVisitedColor().IsSystemColorIncludingDeprecated())
     return GetInternalVisitedCurrentColor(is_current_color);
-  return InternalForcedVisitedColor().Resolve(Color(), UsedColorScheme(),
+  return InternalForcedVisitedColor().Resolve(blink::Color(), UsedColorScheme(),
                                               is_current_color,
                                               /* is_forced_color */ true);
 }
@@ -2400,7 +2340,7 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
   return ListStyleType()->GetStringValue();
 }
 
-absl::optional<Color> ComputedStyle::AccentColorResolved() const {
+absl::optional<blink::Color> ComputedStyle::AccentColorResolved() const {
   const StyleAutoColor& auto_color = AccentColor();
   if (auto_color.IsAutoColor())
     return absl::nullopt;
@@ -2481,6 +2421,18 @@ bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
 bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
   const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
   return unensured && unensured->IsContainerForSizeContainerQueries();
+}
+
+void ComputedStyleBuilder::PropagateIndependentInheritedProperties(
+    const ComputedStyle& parent_style) {
+  ComputedStyleBuilderBase::PropagateIndependentInheritedProperties(
+      parent_style);
+  if (!HasVariableReference() && !HasVariableDeclaration() &&
+      (InheritedVariablesInternal().get() !=
+       parent_style.InheritedVariables())) {
+    MutableInheritedVariablesInternal() =
+        parent_style.InheritedVariablesInternal();
+  }
 }
 
 void ComputedStyleBuilder::ClearBackgroundImage() {
@@ -2607,11 +2559,41 @@ void ComputedStyleBuilder::SetUsedColorScheme(
   SetColorSchemeForced(forced_scheme);
 }
 
+StyleInheritedVariables& ComputedStyleBuilder::MutableInheritedVariables() {
+  ClearVariableNamesCache();
+
+  scoped_refptr<StyleInheritedVariables>& variables =
+      MutableInheritedVariablesInternal();
+  if (!variables)
+    variables = StyleInheritedVariables::Create();
+  else if (!variables->HasOneRef())
+    variables = variables->Copy();
+  return *variables;
+}
+
+StyleNonInheritedVariables&
+ComputedStyleBuilder::MutableNonInheritedVariables() {
+  ClearVariableNamesCache();
+
+  std::unique_ptr<StyleNonInheritedVariables>& variables =
+      MutableNonInheritedVariablesInternal();
+  if (!variables)
+    variables = std::make_unique<StyleNonInheritedVariables>();
+  return *variables;
+}
+
+void ComputedStyleBuilder::ClearVariableNamesCache() {
+  if (style_->cached_data_)
+    style_->cached_data_->variable_names_.reset();
+}
+
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,
                    EOverscrollBehavior::kAuto);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kContain,
                    EOverscrollBehavior::kContain);
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kNone,
                    EOverscrollBehavior::kNone);
+
+CORE_EXPORT ComputedStyle* ComputedStyle::freelist_ = nullptr;
 
 }  // namespace blink

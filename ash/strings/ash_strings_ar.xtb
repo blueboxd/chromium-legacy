@@ -31,7 +31,6 @@
 <translation id="1148499908455722006">فتح مربع حوار المعلومات لـ <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">تقويم</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
-<translation id="1165712434476988950">عليك إعادة تشغيل الجهاز لتطبيق التحديث.</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />، <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏قد لا يتم توصيل الكابل المزوَّد بمنفذ USB-C بالشاشات بشكل صحيح.</translation>
 <translation id="1175572348579024023">التمرير</translation>
@@ -52,6 +51,7 @@
 <translation id="1218444235442067213">‏<ph name="APP_NAME" />، تطبيق من "متجر Play"</translation>
 <translation id="1225748608451425081">‏تم قفل جهاز Chromebook بسبب مشكلة معروفة. ستتمكّن من تسجيل الدخول بعد: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">إيقاف التحديد</translation>
+<translation id="1235458158152011030">الشبكات المعروفة</translation>
 <translation id="1239161794459865856">ميزة <ph name="FEATURE_NAME" /> متصلة.</translation>
 <translation id="1240638468526743569">تطبيق</translation>
 <translation id="1246890715821376239">تطبيقات غير متوافقة</translation>
@@ -358,7 +358,6 @@
 <translation id="296762781903199866">يتعذّر تنزيل ملفات اللغة <ph name="LANGUAGE" /> في ميزة "التعرّف على الكلام"</translation>
 <translation id="2970920913501714344">تثبيت التطبيقات والإضافات والتصاميم</translation>
 <translation id="2977598380246111477">الرقم التالي</translation>
-<translation id="2981684127883932071">عرض الاقتراحات</translation>
 <translation id="2985148236010982088">عرض كل التطبيقات</translation>
 <translation id="2992327365391326550">زر ميكروفون الجهاز غير مفعَّل.</translation>
 <translation id="2996462380875591307">‏تم تفعيل المكبّر. يمكنك إيقافه بالضغط على Ctrl+Search+D مرة أخرى.</translation>
@@ -387,7 +386,6 @@
 <translation id="3120421559657122717">هل تريد إيقاف تشغيل الجهاز؟</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">إعادة التشغيل للتحديث</translation>
-<translation id="3139382871451988441">إيقاف الوصول إلى الكاميرا</translation>
 <translation id="3139942575505304791">مكتب 1</translation>
 <translation id="315116470104423982">بيانات الجوال</translation>
 <translation id="3151786313568798007">الاتجاه</translation>
@@ -521,7 +519,6 @@
 <translation id="385051799172605136">رجوع</translation>
 <translation id="385300504083504382">البداية</translation>
 <translation id="3861651314799684201">‏اضغط على المفتاح Enter لتسجيل فيديو للشاشة بأكملها</translation>
-<translation id="3885531177412808398">يتيح هذا الإجراء وصول كل التطبيقات والمواقع الإلكترونية إلى الميكروفون من خلال منحها إذن استخدام الميكروفون.</translation>
 <translation id="3886872229787704059">تم فتحه اليوم.</translation>
 <translation id="3891340733213178823">‏للخروج اضغط على Ctrl+Shift+Q مرتين.</translation>
 <translation id="3893630138897523026">‏ChromeVox (التعليق المنطوق)</translation>
@@ -557,6 +554,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4066027111132117168">مُفعَّلة لمدة <ph name="REMAINING_TIME" /></translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
+<translation id="4086921558679520050">تفعيل الميكروفون باستخدام الزر اليدوي على جهازك</translation>
 <translation id="4112140312785995938">الانتقال إلى الخلف</translation>
 <translation id="4114315158543974537">‏تفعيل Phone Hub</translation>
 <translation id="4115378294792113321">أرجواني</translation>
@@ -609,6 +607,7 @@
 <translation id="4378479437904450384">قوة إشارة شبكة <ph name="WIRELESS_PROVIDER" /> هي <ph name="SIGNAL_STRENGTH" /> في المئة.</translation>
 <translation id="4378551569595875038">جارٍ الاتصال...</translation>
 <translation id="4379531060876907730">هذه هي أدوات قلم الشاشة</translation>
+<translation id="4381031910344220229">يتيح هذا الإجراء وصول "<ph name="APP_NAME" />" وجميع التطبيقات والمواقع الإلكترونية إلى الميكروفون من خلال منحها إذن استخدام الميكروفون.</translation>
 <translation id="4389184120735010762">لقد ضغطت على اختصار لوحة المفاتيح للمُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="439598569299422042">التنزيل متوقّف مؤقتًا، <ph name="SIZE_INFO" /></translation>
 <translation id="440113666232554208">يتعذّر حفظ التسجيل الرقمي للشاشة</translation>
@@ -650,11 +649,8 @@
 <translation id="4573176682887762361">"كتابة [كلمة أو عبارة]"</translation>
 <translation id="4577274620589681794">انتهى الوقت · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">عرض المعاينات</translation>
-<translation id="4578196883126898996">الميكروفون غير مفعّل، عليك تفعيل زر ميكروفون جهازك.</translation>
 <translation id="4578906031062871102">تم فتح قائمة الإعدادات.</translation>
-<translation id="4581047786858252841">الميكروفون مفعّل.</translation>
 <translation id="4585337515783392668">إيقاف الإرسال إلى مستلم غير معروف</translation>
-<translation id="4587299710837179226">الميكروفون غير مفعّل.</translation>
 <translation id="4596144739579517758">المظهر الداكن غير مُفعَّل.</translation>
 <translation id="4611292653554630842">تسجيل الدخول</translation>
 <translation id="4623167406982293031">يجب إثبات ملكية الحساب</translation>
@@ -671,7 +667,9 @@
 <translation id="4659419629803378708">‏تم تفعيل ChromeVox</translation>
 <translation id="4665114317261903604">تبديل حالة "عدم الإزعاج" <ph name="STATE_TEXT" /></translation>
 <translation id="4666082839192943839">يمكنك إيقاف الوصول إلى الكاميرا على هذا الجهاز لحظر جميع الكاميرات طوال الوقت.</translation>
+<translation id="4666911709726371538">المزيد من التطبيقات</translation>
 <translation id="4667099493359681081">جارٍ تنزيل <ph name="FILENAME" /></translation>
+<translation id="468293128311738995">تطبيقات من هاتفك</translation>
 <translation id="4690510401873698237">الرف في الجزء السفلي</translation>
 <translation id="4696813013609194136">فتح قفل الجهاز باستخدام رمز الوالدين</translation>
 <translation id="4702647871202761252">تم إيقاف شاشة الخصوصية.</translation>
@@ -733,6 +731,7 @@
 <translation id="4987738733603015246">سطح المكتب 16</translation>
 <translation id="5003993274120026347">الجملة التالية</translation>
 <translation id="5016558321564993266">حالة إيقاف/تفعيل أداة التحديد: <ph name="STATE_TEXT" /></translation>
+<translation id="5029356738310729434">الوصول إلى ميكروفون الجهاز مفعَّل.</translation>
 <translation id="5030687792513154421">انتهى الوقت</translation>
 <translation id="5033299697334913360">انقر في أي مكان لالتقاط صورة لوضع ملء الشاشة.</translation>
 <translation id="5035236842988137213">الجهاز <ph name="DEVICE_NAME" /> متصل بهاتف جديد</translation>
@@ -897,7 +896,6 @@
 <translation id="5958529069007801266">مستخدم يخضع للإدارة</translation>
 <translation id="5965524703725988602">إيقاف/تفعيل المظهر الداكن: <ph name="STATE_TEXT" /></translation>
 <translation id="5976112937189445008">‏اضغط على المفتاح Enter لتسجيل فيديو للنافذة</translation>
-<translation id="5977415296283489383">السمّاعة</translation>
 <translation id="5978382165065462689">مشاركة التحكم في شاشتك عن طريق المساعدة عن بُعد.</translation>
 <translation id="5980301590375426705">إنهاء جلسة الضيف</translation>
 <translation id="598407983968395253">استخدام النموذج</translation>
@@ -928,12 +926,10 @@
 <translation id="6103838137565245112">النظام</translation>
 <translation id="6107292179555508368">إمكانية الوصول إلى الميكروفون والكاميرا غير مفعَّلة على هذا الجهاز</translation>
 <translation id="6114505516289286752">تم تنزيل ملفات اللغة <ph name="LANGUAGE" /> في ميزة "التعرّف على الكلام"</translation>
-<translation id="6116825164611323644">خيار الوصول إلى الكاميرا غير مفعَّل على هذا الجهاز</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042">تأكيد تنزيل <ph name="FILENAME" /></translation>
 <translation id="612734058257491180">‏لا يتوفر "مساعد Google" في جلسة ضيف.</translation>
 <translation id="6129953537138746214">مسافة</translation>
-<translation id="6134259848159370930">يمكنك البحث في الجهاز والتطبيقات والإعدادات والويب.</translation>
 <translation id="6137566720514957455">فتح مربع الحوار لإزالة الحساب <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">تأكيد التنزيل</translation>
 <translation id="6154006699632741460">الجهاز الملحق غير متوافق</translation>
@@ -965,9 +961,11 @@
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" /> هي جلسة تتم إدارتها من خلال <ph name="MANAGER" />.</translation>
 <translation id="6344138931392227467">تم توصيل <ph name="DEVICE_NAME" />.</translation>
 <translation id="6351032674660237738">اقتراحات التطبيقات</translation>
+<translation id="6352082849089527770">الشبكات غير المعروفة</translation>
 <translation id="6359587239691116345">يُرجى الحصول على أحدث الميزات وتحسينات الأمان. في حال رفض هذا التحديث، من المحتمل أن يتوقف جهازك عن العمل بشكل صحيح وقد تواجه مشاكل تتعلّق بالأمان والأداء.</translation>
 <translation id="6376931439017688372">تم تفعيل البلوتوث</translation>
 <translation id="6381109794406942707">لفتح قفل الجهاز، أدخِل رقم التعريف الشخصي.</translation>
+<translation id="638716340450135524">تفعيل الوصول إلى الكاميرا</translation>
 <translation id="639644700271529076">‏مفتاح CAPS LOCK قيد الإيقاف</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">‏مساعد Google</translation>
@@ -975,6 +973,7 @@
 <translation id="642644398083277086">محو جميع الإشعارات</translation>
 <translation id="643147933154517414">ليس لديك أي إشعارات</translation>
 <translation id="6431865393913628856">تسجيل الشاشة</translation>
+<translation id="6442259747294754014">الوصول إلى ميكروفون الجهاز غير مفعَّل.</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> في <ph name="RECEIVER_NAME" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />، حدث واحد (<ph name="NUMBER" />)</translation>
 <translation id="6449483711453944360">‏هذا الخيار غير متوفّر حاليًا لتطبيقات Linux ونوافذ التصفّح المتخفي.</translation>
@@ -1026,6 +1025,7 @@
 <translation id="6670153871843998651">مكتب 3</translation>
 <translation id="6671495933530132209">نسخ الصورة</translation>
 <translation id="6671661918848783005">‏يتعذَّر فتح قفل جهاز Chromebook.</translation>
+<translation id="6683022854667115063">سمّاعات رأس</translation>
 <translation id="6696025732084565524">تحتاج لوحة المفاتيح القابلة للفصل إلى تحديث مهم</translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
 <translation id="6707693040195709527">إعادة الجهاز إلى الإصدار السابق متأخرة</translation>
@@ -1138,6 +1138,7 @@
 <translation id="7360036564632145207">يمكن تحسين أداء الأجهزة الملحقة من خلال تغيير إعدادات الحماية من الوصول إلى البيانات.</translation>
 <translation id="736045644501761622">ضبط الخلفية والأسلوب</translation>
 <translation id="7371404428569700291">تسجيل فيديو للنافذة</translation>
+<translation id="737315737514430195">يتيح هذا الإجراء وصول كل التطبيقات والمواقع الإلكترونية إلى الميكروفون من خلال منحها إذن استخدام الميكروفون.</translation>
 <translation id="7377169924702866686">‏مفتاح Caps Lock في وضع التفعيل.</translation>
 <translation id="7377481913241237033">الربط باستخدام رمز</translation>
 <translation id="7378203170292176219">يُرجى السحب لتحديد منطقة لتسجيل فيديو لها.</translation>
@@ -1206,12 +1207,14 @@
 <translation id="7671610481353807627">تم ترتيب التطبيقات حسب اللون.</translation>
 <translation id="7672095158465655885">تم الاتصال بـ "<ph name="NAME" />"، <ph name="SUBTEXT" /></translation>
 <translation id="7684531502177797067">تم ضبط إعدادات الكاميرا على <ph name="CAMERA_NAME" />.</translation>
+<translation id="7689817529363080918">يتيح هذا الإجراء وصول "<ph name="APP1_NAME" />" و"<ph name="APP2_NAME" />" وجميع التطبيقات والمواقع الإلكترونية إلى الميكروفون من خلال منحها إذن استخدام الميكروفون.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7714767791242455379">إضافة شبكة جوّال جديدة</translation>
 <translation id="7720400844887872976">تفعيل الميزة حتى <ph name="TIME" /></translation>
 <translation id="7720410380936703141">إعادة المحاولة</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{إشعار واحد}zero{# إشعار}two{إشعاران (#)}few{# إشعارات}many{# إشعارًا}other{# إشعار}}</translation>
 <translation id="7724603315864178912">قص</translation>
+<translation id="7742327441377685481">ما مِن إشعارات</translation>
 <translation id="7745560842763881396">عرض التطبيقات في الرفّ</translation>
 <translation id="7749443890790263709">تم تجاوز أقصى عدد مسموح به من محطات الإرساء.</translation>
 <translation id="776344839111254542">النقر لعرض تفاصيل التحديث</translation>
@@ -1287,6 +1290,7 @@
 <translation id="8142441511840089262">النقر مرّتين</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
 <translation id="8144760705599030999">يمكنك حفظ <ph name="NAME" /> على <ph name="EMAIL" /> لإقرانه بشكلٍ أسرع بأجهزتك الأخرى.</translation>
+<translation id="8144914663975476336">اختيار تنسيق التسجيل</translation>
 <translation id="8149413265954228307">عرض إعدادات البلوتوث: <ph name="STATE_TEXT" /></translation>
 <translation id="8152092012181020186">‏يُرجى الضغط على Ctrl + W للإغلاق.</translation>
 <translation id="8152264887680882389"><ph name="TEXT" />، الإكمال التلقائي</translation>
@@ -1368,6 +1372,7 @@
 <translation id="8598235756057743477">ترتيب التطبيقات حسب الاسم أو اللون</translation>
 <translation id="8614517853887502247">‏تم حجب إشعارات التطبيقين <ph name="APP_1_TITLE" /> و<ph name="APP_2_TITLE" /> بسبب تفعيل ميزة Viewing Protection.</translation>
 <translation id="8627191004499078455">تم الاتصال بجهاز <ph name="DEVICE_NAME" /></translation>
+<translation id="8630991711272431708">إيقاف الوصول إلى الكاميرا</translation>
 <translation id="8631727435199967028">إعدادات "سهولة الاستخدام"</translation>
 <translation id="8637598503828012618">حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />، يديرها المشرف</translation>
 <translation id="8639760480004882931">يتبقى <ph name="PERCENTAGE" /></translation>
@@ -1383,8 +1388,6 @@
 <translation id="8666856788528804727">افتَح <ph name="NAME" /> لإعداد الجهاز</translation>
 <translation id="8676770494376880701">تمّ توصيل شاحن منخفض الطاقة</translation>
 <translation id="8683506306463609433">تتبّع الأداء نشط</translation>
-<translation id="8684405646663021166">يتيح هذا الإجراء وصول "<ph name="APP_NAME" />" وجميع التطبيقات والمواقع الإلكترونية إلى الميكروفون من خلال منحها إذن استخدام الميكروفون.</translation>
-<translation id="8685326675965865247">يمكنك البحث في جهازك والتطبيقات والإعدادات والويب. ويمكنك استخادم مفاتيح الأسهم للتنقُّل بين تطبيقاتك.</translation>
 <translation id="8703634754197148428">‏بدأ التسجيل. بعد بدء التسجيل، يمكنك استخدام Alt + Shift + L للانتقال إلى الرف والبحث عن زر إيقاف التسجيل.</translation>
 <translation id="8721053961083920564">تبديل مستوى الصوت. <ph name="STATE_TEXT" /></translation>
 <translation id="8724318433625452070">تصوير الشاشة بأكملها</translation>
@@ -1393,7 +1396,6 @@
 <translation id="8735678380411481005">لون الإضاءة الخلفية للوحة المفاتيح</translation>
 <translation id="8747464587821437069"><ph name="CAMERA_AND_MICROPHONE_ACCESS_STATUS" />،
         <ph name="SCREEN_SHARE_STATUS" /></translation>
-<translation id="8752416742247198423">يجب تفعيل خيار الوصول إلى الكاميرا للسماح للتطبيقات وصفحات الويب التي لديها إذن وصول إلى الكاميرا باستخدام الكاميرات المتصلة بهذا الجهاز.</translation>
 <translation id="8755498163081687682">إثبات هويتك: يريد النطاق <ph name="ORIGIN_NAME" /> تأكيد هويتك.</translation>
 <translation id="875593634123171288">‏عرض إعدادات الشبكة الظاهرية الخاصة (VPN)</translation>
 <translation id="8759408218731716181">يتعذر إعداد الدخول المتعدد</translation>
@@ -1408,7 +1410,6 @@
 <translation id="8819728065740986820">ميزة "الشحن التكيُّفي" مفعّلة</translation>
 <translation id="8825863694328519386">التمرير السريع من اليسار للرجوع</translation>
 <translation id="8834539327799336565">الأجهزة المتصلة حاليًا</translation>
-<translation id="8834657930627018205">تفعيل خيار الوصول إلى الكاميرا</translation>
 <translation id="8841375032071747811">زر الرجوع</translation>
 <translation id="8843682306134542540">تبديل قفل التدوير. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Search+Esc</translation>
@@ -1461,7 +1462,6 @@
 <translation id="9089416786594320554">أساليب الإدخال</translation>
 <translation id="9091626656156419976">تمت إزالة عرض <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">كتم صوت الهاتف</translation>
-<translation id="9099154003160514616">‏يتوفّر تحديث للإصدار الحالي من متصفِّح Lacros</translation>
 <translation id="9100887602489003640">جارٍ إضافة الملف التعريفي. يُرجى الانتظار بضع دقائق.</translation>
 <translation id="9105450214093926548">‏إنّ تسجيل الدخول بحساب مستخدم آخر غير متاح أثناء استخدام متصفِّح Lacros. يُرجى استخدام ملف شخصي آخر على متصفِّح Lacros بدلاً من ذلك أو إغلاق المتصفِّح ثم إعادة المحاولة.</translation>
 <translation id="9121941381564890244"><ph name="SNIP" /> أو <ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="OVERVIEW" /></translation>

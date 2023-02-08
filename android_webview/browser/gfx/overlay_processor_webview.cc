@@ -845,7 +845,7 @@ OverlayProcessorWebView::LockResult OverlayProcessorWebView::LockResource(
                                   weak_ptr_factory_.GetWeakPtr(), resource_id,
                                   overlay.surface_id);
   auto return_cb_on_thread = base::BindPostTask(
-      base::ThreadTaskRunnerHandle::Get(), std::move(return_cb));
+      base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(return_cb));
 
   result.unlock_cb = base::ScopedClosureRunner(std::move(return_cb_on_thread));
   return result;
@@ -915,14 +915,7 @@ void OverlayProcessorWebView::ProcessForFrameSinkId(
   DCHECK(it != overlays_.end());
   auto& overlay = it->second;
 
-  const auto& passes = frame_data->GetResolvedPasses();
-  if (passes.empty()) {
-    return;
-  }
-
-  DCHECK_EQ(passes.size(), 1u);
-
-  auto& pass = passes.back();
+  auto& pass = frame_data->GetRootRenderPassData();
   if (!pass.draw_quads().empty()) {
     DCHECK_EQ(pass.draw_quads().size(), 1u);
     auto* surface = frame_sink_manager_->surface_manager()->GetSurfaceForId(

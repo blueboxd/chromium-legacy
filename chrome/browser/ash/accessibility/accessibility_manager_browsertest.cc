@@ -56,9 +56,7 @@ namespace ash {
 
 namespace {
 
-using ::content::BrowserThread;
-using ::extensions::api::braille_display_private::BrailleObserver;
-using ::extensions::api::braille_display_private::DisplayState;
+using ::extensions::api::accessibility_private::DlcType;
 using ::extensions::api::braille_display_private::KeyEvent;
 using ::extensions::api::braille_display_private::MockBrailleController;
 using input_method::InputMethodDescriptors;
@@ -281,9 +279,9 @@ void SetSelectToSpeakEnabledPref(bool enabled) {
 
 bool IsBrailleImeEnabled() {
   InputMethodManager* imm = InputMethodManager::Get();
-  std::unique_ptr<InputMethodDescriptors> descriptors =
+  InputMethodDescriptors descriptors =
       imm->GetActiveIMEState()->GetEnabledInputMethods();
-  for (const auto& descriptor : *descriptors) {
+  for (const auto& descriptor : descriptors) {
     if (descriptor.id() == extension_ime_util::kBrailleImeEngineId)
       return true;
   }
@@ -380,7 +378,7 @@ class AccessibilityManagerTest : public MixinBasedInProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kOnDeviceSpeechRecognition}, {});
+        {features::kOnDeviceSpeechRecognition}, {});
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -425,6 +423,10 @@ class AccessibilityManagerTest : public MixinBasedInProcessBrowserTest {
 
   bool IsChromeVoxPanelActive() {
     return AccessibilityManager::Get()->chromevox_panel_ != nullptr;
+  }
+
+  base::FilePath TtsDlcTypeToPath(DlcType dlc) {
+    return AccessibilityManager::Get()->TtsDlcTypeToPath(dlc);
   }
 
  protected:
@@ -834,6 +836,30 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, ChromeVoxPanel) {
   ASSERT_FALSE(IsChromeVoxPanelActive());
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest, TtsDlcTypeToPath) {
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-es-es/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSESES));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-es-us/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSESUS));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-fr-fr/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSFRFR));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-hi-in/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSHIIN));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-nl-nl/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSNLNL));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-pt-br/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSPTBR));
+  EXPECT_EQ(
+      base::FilePath("/run/imageloader/tts-sv-se/package/root/voice.zvoice"),
+      TtsDlcTypeToPath(DlcType::DLC_TYPE_TTSSVSE));
+}
+
 class AccessibilityManagerSodaTest : public AccessibilityManagerTest {
  protected:
   AccessibilityManagerSodaTest()
@@ -1190,7 +1216,7 @@ enum DictationDialogTestVariant {
 
 class AccessibilityManagerDictationDialogTest
     : public AccessibilityManagerTest,
-      public ::testing::WithParamInterface<DictationDialogTestVariant> {
+      public WithParamInterface<DictationDialogTestVariant> {
  protected:
   AccessibilityManagerDictationDialogTest()
       : disable_animations_(
@@ -1218,13 +1244,13 @@ class AccessibilityManagerDictationDialogTest
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
     if (GetParam() == DictationDialogTestVariant::kOfflineEnabledAndAvailable) {
-      enabled_features.push_back(ash::features::kOnDeviceSpeechRecognition);
+      enabled_features.push_back(features::kOnDeviceSpeechRecognition);
     } else if (GetParam() ==
                DictationDialogTestVariant::kOfflineEnabledAndUnavailable) {
       // SODA isn't available on this device.
-      disabled_features.push_back(ash::features::kOnDeviceSpeechRecognition);
+      disabled_features.push_back(features::kOnDeviceSpeechRecognition);
     } else {
-      disabled_features.push_back(ash::features::kOnDeviceSpeechRecognition);
+      disabled_features.push_back(features::kOnDeviceSpeechRecognition);
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);

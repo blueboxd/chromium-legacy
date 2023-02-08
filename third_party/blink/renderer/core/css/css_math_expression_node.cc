@@ -99,9 +99,7 @@ static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kContainerBlockSize:
     case CSSPrimitiveValue::UnitType::kContainerMin:
     case CSSPrimitiveValue::UnitType::kContainerMax:
-      return RuntimeEnabledFeatures::CSSContainerRelativeUnitsEnabled()
-                 ? kCalcLength
-                 : kCalcOther;
+      return kCalcLength;
     case CSSPrimitiveValue::UnitType::kIcs:
       return RuntimeEnabledFeatures::CSSIcUnitEnabled() ? kCalcLength
                                                         : kCalcOther;
@@ -459,6 +457,48 @@ static double ValueAsNumber(const CSSMathExpressionNode* node, bool& error) {
   return 0;
 }
 
+static bool SupportedCategoryForAtan2(const CalculationCategory category) {
+  switch (category) {
+    case kCalcNumber:
+    case kCalcLength:
+    case kCalcPercent:
+    case kCalcTime:
+    case kCalcFrequency:
+    case kCalcAngle:
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool IsRelativeLength(CSSPrimitiveValue::UnitType type) {
+  return CSSPrimitiveValue::IsRelativeUnit(type) &&
+         CSSPrimitiveValue::IsLength(type);
+}
+
+static double ResolveAtan2(const CSSMathExpressionNode* y_node,
+                           const CSSMathExpressionNode* x_node,
+                           bool& error) {
+  const CalculationCategory category = y_node->Category();
+  if (category != x_node->Category() || !SupportedCategoryForAtan2(category)) {
+    error = true;
+    return 0;
+  }
+  CSSPrimitiveValue::UnitType y_type = y_node->ResolvedUnitType();
+  CSSPrimitiveValue::UnitType x_type = x_node->ResolvedUnitType();
+  if (IsRelativeLength(y_type) || IsRelativeLength(x_type)) {
+    // TODO(crbug.com/1392594): Relative length units are currently hard
+    // to resolve. We ignore the units for now, so that
+    // we can at least support the case where both operands have the same unit.
+    double y = y_node->DoubleValue();
+    double x = x_node->DoubleValue();
+    return std::atan2(y, x);
+  }
+  auto y = y_node->ComputeValueInCanonicalUnit();
+  auto x = x_node->ComputeValueInCanonicalUnit();
+  return std::atan2(y.value(), x.value());
+}
+
 // Helper function for parsing trigonometric functions' parameter
 static double ValueAsRadian(const CSSMathExpressionNode* node, bool& error) {
   if (node->Category() == kCalcAngle)
@@ -526,6 +566,13 @@ CSSMathExpressionOperation::CreateTrigonometricFunctionSimplified(
       unit_type = CSSPrimitiveValue::UnitType::kDegrees;
       value = Rad2deg(std::atan(ValueAsNumber(operands[0], error)));
       DCHECK(value >= -90 && value <= 90 || std::isnan(value));
+      break;
+    }
+    case CSSValueID::kAtan2: {
+      DCHECK_EQ(operands.size(), 2u);
+      unit_type = CSSPrimitiveValue::UnitType::kDegrees;
+      value = Rad2deg(ResolveAtan2(operands[0], operands[1], error));
+      DCHECK(value >= -180 && value <= 180 || std::isnan(value));
       break;
     }
     default:
@@ -1103,7 +1150,7 @@ bool CSSMathExpressionOperation::InvolvesPercentageComparisons() const {
 
 CSSMathExpressionAnchorQuery::CSSMathExpressionAnchorQuery(
     CSSAnchorQueryType type,
-    const CSSCustomIdentValue& anchor_name,
+    const CSSCustomIdentValue* anchor_name,
     const CSSValue& value,
     const CSSPrimitiveValue* fallback)
     : CSSMathExpressionNode(kCalcPercentLength, false /* has_comparisons */),
@@ -1115,8 +1162,10 @@ CSSMathExpressionAnchorQuery::CSSMathExpressionAnchorQuery(
 String CSSMathExpressionAnchorQuery::CustomCSSText() const {
   StringBuilder result;
   result.Append(IsAnchor() ? "anchor(" : "anchor-size(");
-  result.Append(anchor_name_->CustomCSSText());
-  result.Append(" ");
+  if (anchor_name_) {
+    result.Append(anchor_name_->CustomCSSText());
+    result.Append(" ");
+  }
   result.Append(value_->CssText());
   if (fallback_) {
     result.Append(", ");
@@ -1190,8 +1239,10 @@ AnchorSizeValue CSSValueIDToAnchorSizeValueEnum(CSSValueID value) {
 scoped_refptr<const CalculationExpressionNode>
 CSSMathExpressionAnchorQuery::ToCalculationExpression(
     const CSSLengthResolver& length_resolver) const {
-  ScopedCSSName* anchor_name = MakeGarbageCollected<ScopedCSSName>(
-      anchor_name_->Value(), length_resolver.GetTreeScope());
+  ScopedCSSName* anchor_name =
+      anchor_name_ ? MakeGarbageCollected<ScopedCSSName>(
+                         anchor_name_->Value(), length_resolver.GetTreeScope())
+                   : nullptr;
   Length fallback = fallback_ ? fallback_->ConvertToLength(length_resolver)
                               : Length::Fixed(0);
 
@@ -1200,17 +1251,17 @@ CSSMathExpressionAnchorQuery::ToCalculationExpression(
             DynamicTo<CSSPrimitiveValue>(*value_)) {
       DCHECK(percentage->IsPercentage());
       return CalculationExpressionAnchorQueryNode::CreateAnchorPercentage(
-          *anchor_name, percentage->GetFloatValue(), fallback);
+          anchor_name, percentage->GetFloatValue(), fallback);
     }
     const CSSIdentifierValue& side = To<CSSIdentifierValue>(*value_);
     return CalculationExpressionAnchorQueryNode::CreateAnchor(
-        *anchor_name, CSSValueIDToAnchorValueEnum(side.GetValueID()), fallback);
+        anchor_name, CSSValueIDToAnchorValueEnum(side.GetValueID()), fallback);
   }
 
   DCHECK_EQ(type_, CSSAnchorQueryType::kAnchorSize);
   const CSSIdentifierValue& size = To<CSSIdentifierValue>(*value_);
   return CalculationExpressionAnchorQueryNode::CreateAnchorSize(
-      *anchor_name, CSSValueIDToAnchorSizeValueEnum(size.GetValueID()),
+      anchor_name, CSSValueIDToAnchorSizeValueEnum(size.GetValueID()),
       fallback);
 }
 
@@ -1246,6 +1297,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
       case CSSValueID::kAtan:
+      case CSSValueID::kAtan2:
         return RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled();
       case CSSValueID::kAnchor:
       case CSSValueID::kAnchorSize:
@@ -1277,8 +1329,7 @@ class CSSMathExpressionNodeParser {
 
     const CSSCustomIdentValue* anchor_name =
         css_parsing_utils::ConsumeDashedIdent(tokens, context_);
-    if (!anchor_name)
-      return nullptr;
+    // |anchor_name| may be omitted for the implicit anchor elements
 
     tokens.ConsumeWhitespace();
     const CSSValue* value = nullptr;
@@ -1317,7 +1368,7 @@ class CSSMathExpressionNodeParser {
     if (!tokens.AtEnd())
       return nullptr;
     return MakeGarbageCollected<CSSMathExpressionAnchorQuery>(
-        anchor_query_type, *anchor_name, *value, fallback);
+        anchor_query_type, anchor_name, *value, fallback);
   }
 
   CSSMathExpressionNode* ParseMathFunction(CSSValueID function_id,
@@ -1355,6 +1406,11 @@ class CSSMathExpressionNodeParser {
         DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         max_argument_count = 1;
         min_argument_count = 1;
+        break;
+      case CSSValueID::kAtan2:
+        DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
+        max_argument_count = 2;
+        min_argument_count = 2;
         break;
       // TODO(crbug.com/1284199): Support other math functions.
       default:
@@ -1399,6 +1455,7 @@ class CSSMathExpressionNodeParser {
       case CSSValueID::kAsin:
       case CSSValueID::kAcos:
       case CSSValueID::kAtan:
+      case CSSValueID::kAtan2:
         DCHECK(RuntimeEnabledFeatures::CSSTrigonometricFunctionsEnabled());
         return CSSMathExpressionOperation::
             CreateTrigonometricFunctionSimplified(std::move(nodes),
@@ -1430,6 +1487,10 @@ class CSSMathExpressionNodeParser {
     if (token.Id() == CSSValueID::kPi) {
       return CSSMathExpressionNumericLiteral::Create(
           M_PI, CSSPrimitiveValue::UnitType::kNumber);
+    }
+    if (token.Id() == CSSValueID::kE) {
+      return CSSMathExpressionNumericLiteral::Create(
+          M_E, CSSPrimitiveValue::UnitType::kNumber);
     }
     if (!(token.GetType() == kNumberToken ||
           token.GetType() == kPercentageToken ||
@@ -1671,15 +1732,15 @@ CSSMathExpressionNode* CSSMathExpressionNode::Create(
     CSSAnchorQueryType type = anchor_query.Type() == AnchorQueryType::kAnchor
                                   ? CSSAnchorQueryType::kAnchor
                                   : CSSAnchorQueryType::kAnchorSize;
-    // TODO(1380112): Handle implicit anchor name.
     CSSCustomIdentValue* anchor_name =
-        MakeGarbageCollected<CSSCustomIdentValue>(
-            anchor_query.AnchorName().GetName());
+        anchor_query.AnchorName() ? MakeGarbageCollected<CSSCustomIdentValue>(
+                                        anchor_query.AnchorName()->GetName())
+                                  : nullptr;
     CSSValue* value = AnchorQueryValueToCSSValue(anchor_query);
     CSSPrimitiveValue* fallback = CSSPrimitiveValue::CreateFromLength(
         anchor_query.GetFallback(), /* zoom */ 1);
-    return MakeGarbageCollected<CSSMathExpressionAnchorQuery>(
-        type, *anchor_name, *value, fallback);
+    return MakeGarbageCollected<CSSMathExpressionAnchorQuery>(type, anchor_name,
+                                                              *value, fallback);
   }
 
   DCHECK(node.IsOperation());

@@ -12,9 +12,9 @@ import {Cursor, CursorUnit} from '../../common/cursors/cursor.js';
 import {CursorRange} from '../../common/cursors/range.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
+import {LocalStorage} from '../../common/local_storage.js';
 import {RectUtil} from '../../common/rect_util.js';
 import {Earcon} from '../common/abstract_earcons.js';
-import {AbstractTts} from '../common/abstract_tts.js';
 import {NavBraille} from '../common/braille/nav_braille.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
@@ -27,7 +27,7 @@ import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {TreeDumper} from '../common/tree_dumper.js';
-import {QueueMode, TtsSpeechProperties} from '../common/tts_interface.js';
+import {Personality, QueueMode, TtsSettings, TtsSpeechProperties} from '../common/tts_types.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
 import {BrailleBackground} from './braille/braille_background.js';
@@ -35,6 +35,7 @@ import {BrailleCaptionsBackground} from './braille/braille_captions_background.j
 import {ChromeVox} from './chromevox.js';
 import {ChromeVoxState} from './chromevox_state.js';
 import {ChromeVoxBackground} from './classic_background.js';
+import {ClipboardHandler} from './clipboard_handler.js';
 import {Color} from './color.js';
 import {CommandHandlerInterface} from './command_handler_interface.js';
 import {DesktopAutomationInterface} from './desktop_automation_interface.js';
@@ -81,13 +82,31 @@ export class CommandHandler extends CommandHandlerInterface {
     /** @private {boolean} */
     this.languageLoggingEnabled_ = false;
 
-    /**
-     * Handles toggling sticky mode when encountering editables.
-     * @private {!SmartStickyMode}
-     */
-    this.smartStickyMode_ = new SmartStickyMode();
+    SmartStickyMode.init();
+    this.init_();
+  }
 
-    this.init();
+  /** @private */
+  init_() {
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-language-detection', enabled => {
+          if (enabled) {
+            this.languageLoggingEnabled_ = true;
+          }
+        });
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-language-detection-dynamic',
+        enabled => {
+          if (enabled) {
+            this.languageLoggingEnabled_ = true;
+          }
+        });
+
+    chrome.chromeosInfoPrivate.get(['sessionType'], result => {
+      /** @type {boolean} */
+      this.isKioskSession_ = result['sessionType'] ===
+          chrome.chromeosInfoPrivate.SessionType.KIOSK;
+    });
   }
 
   /** @override */
@@ -134,22 +153,22 @@ export class CommandHandler extends CommandHandlerInterface {
             root => LogStore.instance.writeTreeLog(new TreeDumper(root)));
         break;
       case Command.DECREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.RATE, false);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, false);
         return false;
       case Command.INCREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.RATE, true);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, true);
         return false;
       case Command.DECREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.PITCH, false);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, false);
         return false;
       case Command.INCREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.PITCH, true);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, true);
         return false;
       case Command.DECREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.VOLUME, false);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, false);
         return false;
       case Command.INCREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(AbstractTts.VOLUME, true);
+        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, true);
         return false;
       case Command.STOP_SPEECH:
         ChromeVox.tts.stop();
@@ -223,7 +242,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
         // The above command doesn't trigger document clipboard events, so we
         // need to set this manually.
-        ChromeVoxState.instance.readNextClipboardDataChange();
+        ClipboardHandler.instance.readNextClipboardDataChange();
         return false;
       case Command.TOGGLE_DICTATION:
         EventGenerator.sendKeyPress(KeyCode.D, {search: true});
@@ -341,27 +360,27 @@ export class CommandHandler extends CommandHandlerInterface {
         skipSettingSelection = true;
         pred = AutomationPredicate.editText;
         predErrorMsg = 'no_next_edit_text';
-        this.smartStickyMode_.startIgnoringRangeChanges();
+        SmartStickyMode.instance.startIgnoringRangeChanges();
         break;
       case Command.PREVIOUS_EDIT_TEXT:
         skipSettingSelection = true;
         dir = Dir.BACKWARD;
         pred = AutomationPredicate.editText;
         predErrorMsg = 'no_previous_edit_text';
-        this.smartStickyMode_.startIgnoringRangeChanges();
+        SmartStickyMode.instance.startIgnoringRangeChanges();
         break;
       case Command.NEXT_FORM_FIELD:
         skipSettingSelection = true;
         pred = AutomationPredicate.formField;
         predErrorMsg = 'no_next_form_field';
-        this.smartStickyMode_.startIgnoringRangeChanges();
+        SmartStickyMode.instance.startIgnoringRangeChanges();
         break;
       case Command.PREVIOUS_FORM_FIELD:
         skipSettingSelection = true;
         dir = Dir.BACKWARD;
         pred = AutomationPredicate.formField;
         predErrorMsg = 'no_previous_form_field';
-        this.smartStickyMode_.startIgnoringRangeChanges();
+        SmartStickyMode.instance.startIgnoringRangeChanges();
         break;
       case Command.PREVIOUS_GRAPHIC:
         skipSettingSelection = true;
@@ -817,7 +836,7 @@ export class CommandHandler extends CommandHandlerInterface {
    * Finishes processing of a command.
    */
   onFinishCommand() {
-    this.smartStickyMode_.stopIgnoringRangeChanges();
+    SmartStickyMode.instance.stopIgnoringRangeChanges();
   }
 
   /**
@@ -897,7 +916,7 @@ export class CommandHandler extends CommandHandlerInterface {
    * @private
    */
   onEditCommand_(command) {
-    if (ChromeVox.isStickyModeOn()) {
+    if (ChromeVoxPrefs.isStickyModeOn()) {
       return true;
     }
 
@@ -1097,10 +1116,10 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   cycleTypingEcho_() {
-    ChromeVoxState.instance.typingEcho =
-        TypingEcho.cycle(ChromeVoxState.instance.typingEcho);
+    LocalStorage.set(
+        'typingEcho', TypingEcho.cycle(LocalStorage.get('typingEcho')));
     let announce = '';
-    switch (ChromeVoxState.instance.typingEcho) {
+    switch (LocalStorage.get('typingEcho')) {
       case TypingEcho.CHARACTER:
         announce = Msgs.getMsg('character_echo');
         break;
@@ -1114,8 +1133,7 @@ export class CommandHandler extends CommandHandlerInterface {
         announce = Msgs.getMsg('none_echo');
         break;
     }
-    ChromeVox.tts.speak(
-        announce, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
+    ChromeVox.tts.speak(announce, QueueMode.FLUSH, Personality.ANNOTATION);
   }
 
   /** @private */
@@ -1736,7 +1754,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   toggleBrailleTable_() {
-    let brailleTableType = localStorage['brailleTableType'];
+    let brailleTableType = LocalStorage.get('brailleTableType');
     let output = '';
     if (brailleTableType === 'brailleTable6') {
       brailleTableType = 'brailleTable8';
@@ -1750,10 +1768,10 @@ export class CommandHandler extends CommandHandlerInterface {
       output = '@OPTIONS_BRAILLE_TABLE_TYPE_8';
     }
 
-    localStorage['brailleTable'] = localStorage[brailleTableType];
-    localStorage['brailleTableType'] = brailleTableType;
+    LocalStorage.set('brailleTable', LocalStorage.get(brailleTableType));
+    LocalStorage.set('brailleTableType', brailleTableType);
     BrailleBackground.instance.getTranslatorManager().refresh(
-        localStorage[brailleTableType]);
+        LocalStorage.get(brailleTableType));
     new Output().format(output).go();
   }
 
@@ -1762,28 +1780,26 @@ export class CommandHandler extends CommandHandlerInterface {
     ChromeVox.earcons.enabled = !ChromeVox.earcons.enabled;
     const announce = ChromeVox.earcons.enabled ? Msgs.getMsg('earcons_on') :
                                                  Msgs.getMsg('earcons_off');
-    ChromeVox.tts.speak(
-        announce, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
+    ChromeVox.tts.speak(announce, QueueMode.FLUSH, Personality.ANNOTATION);
   }
 
   /** @private */
   toggleScreen_() {
-    const oldState = sessionStorage.getItem('darkScreen');
-    const newState = (oldState === 'true') ? false : true;
-    if (newState && localStorage['acceptToggleScreen'] !== 'true') {
+    const newState = !ChromeVoxPrefs.darkScreen;
+    if (newState && !LocalStorage.get('acceptToggleScreen')) {
       // If this is the first time, show a confirmation dialog.
       chrome.accessibilityPrivate.showConfirmationDialog(
           Msgs.getMsg('toggle_screen_title'),
           Msgs.getMsg('toggle_screen_description'), confirmed => {
             if (confirmed) {
-              sessionStorage.setItem('darkScreen', 'true');
-              localStorage['acceptToggleScreen'] = true;
+              ChromeVoxPrefs.darkScreen = true;
+              LocalStorage.set('acceptToggleScreen', true);
               chrome.accessibilityPrivate.darkenScreen(true);
               new Output().format('@toggle_screen_off').go();
             }
           });
     } else {
-      sessionStorage.setItem('darkScreen', (newState) ? 'true' : 'false');
+      ChromeVoxPrefs.darkScreen = newState;
       chrome.accessibilityPrivate.darkenScreen(newState);
       new Output()
           .format((newState) ? '@toggle_screen_off' : '@toggle_screen_on')
@@ -1828,10 +1844,11 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   toggleStickyMode_() {
-    ChromeVoxPrefs.instance.setAndAnnounceStickyPref(!ChromeVox.isStickyPrefOn);
+    ChromeVoxPrefs.instance.setAndAnnounceStickyPref(
+        !ChromeVoxPrefs.isStickyPrefOn);
 
     if (ChromeVoxState.instance.currentRange) {
-      this.smartStickyMode_.onStickyModeCommand(
+      SmartStickyMode.instance.onStickyModeCommand(
           ChromeVoxState.instance.currentRange);
     }
   }
@@ -1839,40 +1856,20 @@ export class CommandHandler extends CommandHandlerInterface {
   /**
    * Performs global initialization.
    */
-  init() {
-    ChromeVoxKbHandler.commandHandler = command => this.onCommand(command);
+  static init() {
+    CommandHandlerInterface.instance = new CommandHandler();
+    ChromeVoxKbHandler.commandHandler = command =>
+        CommandHandlerInterface.instance.onCommand(command);
 
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection', enabled => {
-          if (enabled) {
-            this.languageLoggingEnabled_ = true;
+    BridgeHelper.registerHandler(
+        BridgeConstants.CommandHandler.TARGET,
+        BridgeConstants.CommandHandler.Action.ON_COMMAND, command => {
+          if (Object.values(Command).includes(command)) {
+            CommandHandlerInterface.instance.onCommand(
+                /** @type {Command} */ (command));
+          } else {
+            console.warn('ChromeVox got an unrecognized command: ' + command);
           }
         });
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection-dynamic',
-        enabled => {
-          if (enabled) {
-            this.languageLoggingEnabled_ = true;
-          }
-        });
-
-    chrome.chromeosInfoPrivate.get(['sessionType'], result => {
-      /** @type {boolean} */
-      this.isKioskSession_ = result['sessionType'] ===
-          chrome.chromeosInfoPrivate.SessionType.KIOSK;
-    });
   }
 }
-
-CommandHandlerInterface.instance = new CommandHandler();
-
-BridgeHelper.registerHandler(
-    BridgeConstants.CommandHandler.TARGET,
-    BridgeConstants.CommandHandler.Action.ON_COMMAND, command => {
-      if (Object.values(Command).includes(command)) {
-        CommandHandlerInterface.instance.onCommand(
-            /** @type {Command} */ (command));
-      } else {
-        console.warn('ChromeVox got an unrecognized command: ' + command);
-      }
-    });

@@ -93,9 +93,6 @@ class TabStrip : public views::View,
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
 
-  // Called when the colors of the frame change.
-  void FrameColorsChanged();
-
   // Sets |background_offset_| and schedules a paint.
   void SetBackgroundOffset(int background_offset);
 
@@ -169,7 +166,6 @@ class TabStrip : public views::View,
                              const tab_groups::TabGroupVisualData* new_visuals);
 
   // Handles animations relating to toggling the collapsed state of a group.
-  // TODO(1295774): Maybe move this functionality into TabContainer.
   void ToggleTabGroup(const tab_groups::TabGroupId& group,
                       bool is_collapsing,
                       ToggleTabGroupCollapsedStateOrigin origin);
@@ -196,8 +192,9 @@ class TabStrip : public views::View,
   }
 
   // Returns the index of the specified view in the model coordinate system, or
-  // -1 if view is closing or not a tab.
-  int GetModelIndexOf(const TabSlotView* view) const;
+  // absl::nullopt if view is closing not a tab, or is not in this tabstrip.
+  // TODO(tbergquist): This should return an optional<size_t>.
+  absl::optional<int> GetModelIndexOf(const TabSlotView* view) const;
 
   // Gets the number of Tabs in the tab strip.
   int GetTabCount() const;
@@ -233,7 +230,7 @@ class TabStrip : public views::View,
 
   // TabContainerController:
   bool IsValidModelIndex(int index) const override;
-  int GetActiveIndex() const override;
+  absl::optional<int> GetActiveIndex() const override;
   int NumPinnedTabsInModel() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   absl::optional<int> GetFirstTabInGroup(
@@ -242,6 +239,10 @@ class TabStrip : public views::View,
       const tab_groups::TabGroupId& group) const override;
   bool CanExtendDragHandle() const override;
   const views::View* GetTabClosingModeMouseWatcherHostView() const override;
+  bool IsAnimatingInTabStrip() const override;
+  void UpdateAnimationTarget(
+      TabSlotView* tab_slot_view,
+      gfx::Rect target_bounds_in_tab_container_coords) override;
 
   // TabContainerController AND TabSlotController:
   bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
@@ -259,7 +260,7 @@ class TabStrip : public views::View,
   void ShiftTabPrevious(Tab* tab) override;
   void MoveTabFirst(Tab* tab) override;
   void MoveTabLast(Tab* tab) override;
-  bool ToggleTabGroupCollapsedState(
+  void ToggleTabGroupCollapsedState(
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) override;
@@ -312,6 +313,9 @@ class TabStrip : public views::View,
   void ShiftGroupLeft(const tab_groups::TabGroupId& group) override;
   void ShiftGroupRight(const tab_groups::TabGroupId& group) override;
   const Browser* GetBrowser() const override;
+
+  // Update the background colors when frame active state changes.
+  void FrameColorsChanged();
 
   // views::View:
   views::SizeBounds GetAvailableSize(const View* child) const override;

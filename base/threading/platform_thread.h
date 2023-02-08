@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
@@ -95,6 +96,9 @@ enum class ThreadType : int {
   // Suitable for threads that have the least urgency and lowest priority, and
   // can be interrupted or delayed by other types.
   kBackground,
+  // Suitable for threads that are less important than normal type, and can be
+  // interrupted or delayed by threads with kDefault type.
+  kUtility,
   // Suitable for threads that produce user-visible artifacts but aren't
   // latency sensitive. The underlying platform will try to be economic
   // in its usage of resources for this thread, if possible.
@@ -117,6 +121,7 @@ enum class ThreadType : int {
 // the underlying effects of SetCurrentThreadType.
 enum class ThreadPriorityForTest : int {
   kBackground,
+  kUtility,
   kNormal,
   // The priority obtained via ThreadType::kDisplayCritical (and potentially
   // other ThreadTypes).
@@ -124,6 +129,10 @@ enum class ThreadPriorityForTest : int {
   kRealtimeAudio,
   kMaxValue = kRealtimeAudio,
 };
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+class ThreadTypeDelegate;
+#endif
 
 // A namespace for low-level thread functions.
 class BASE_EXPORT PlatformThread {
@@ -253,7 +262,14 @@ class BASE_EXPORT PlatformThread {
   // Returns a realtime period provided by `delegate`.
   static TimeDelta GetRealtimePeriod(Delegate* delegate);
 
+  // Returns the override of task leeway if any.
+  static absl::optional<TimeDelta> GetThreadLeewayOverride();
+
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // Sets a delegate which handles thread type changes for this process. This
+  // must be externally synchronized with any call to SetCurrentThreadType.
+  static void SetThreadTypeDelegate(ThreadTypeDelegate* delegate);
+
   // Toggles a specific thread's type at runtime. This can be used to
   // change the priority of a thread in a different process and will fail
   // if the calling process does not have proper permissions. The

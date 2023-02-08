@@ -23,12 +23,13 @@
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
@@ -66,6 +67,7 @@
 #include "third_party/pdfium/public/fpdf_fwlevent.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_searchex.h"
+#include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/window_open_disposition_utils.h"
@@ -259,9 +261,10 @@ void SetUpV8() {
   }
 
   DCHECK(!g_isolate_holder);
-  g_isolate_holder = new gin::IsolateHolder(
-      base::ThreadTaskRunnerHandle::Get(), gin::IsolateHolder::kSingleThread,
-      gin::IsolateHolder::IsolateType::kUtility);
+  g_isolate_holder =
+      new gin::IsolateHolder(base::SingleThreadTaskRunner::GetCurrentDefault(),
+                             gin::IsolateHolder::kSingleThread,
+                             gin::IsolateHolder::IsolateType::kUtility);
 
 #if defined(PDF_ENABLE_XFA)
   gin::InitializeCppgcFromV8Platform();
@@ -502,11 +505,15 @@ void ParamsTransformPageToScreen(unsigned long view_fit_type,
 
 void InitializeSDK(bool enable_v8, FontMappingMode font_mapping_mode) {
   FPDF_LIBRARY_CONFIG config;
-  config.version = 3;
+  config.version = 4;
   config.m_pUserFontPaths = nullptr;
   config.m_pIsolate = nullptr;
   config.m_pPlatform = nullptr;
   config.m_v8EmbedderSlot = gin::kEmbedderPDFium;
+  config.m_RendererType =
+      base::FeatureList::IsEnabled(features::kPdfUseSkiaRenderer)
+          ? FPDF_RENDERERTYPE_SKIA
+          : FPDF_RENDERERTYPE_AGG;
 
 #if defined(PDF_ENABLE_V8)
   if (enable_v8) {
@@ -592,7 +599,7 @@ void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
     // asynchronously to avoid observable differences between this path and the
     // normal loading path.
     document_pending_ = false;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&PDFiumEngine::FinishLoadingDocument,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -636,6 +643,11 @@ void PDFiumEngine::Paint(const gfx::Rect& rect,
                          std::vector<gfx::Rect>& ready,
                          std::vector<gfx::Rect>& pending) {
   gfx::Rect leftover = rect;
+
+  // Set a timer here to check how long it takes to finish rendering and
+  // painting the visible pages.
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+
   for (size_t i = 0; i < visible_pages_.size(); ++i) {
     int index = visible_pages_[i];
     // Convert the current page's rectangle to screen rectangle.  We do this
@@ -701,6 +713,9 @@ void PDFiumEngine::Paint(const gfx::Rect& rect,
       ready.push_back(dirty_in_screen);
     }
   }
+
+  base::UmaHistogramMediumTimes("PDF.RenderAndPaintVisiblePagesTime",
+                                base::TimeTicks::Now() - begin_time);
 }
 
 void PDFiumEngine::PostPaint() {
@@ -1827,7 +1842,7 @@ void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
   if (doc_loader_set_for_testing_) {
     ContinueFind(case_sensitive);
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&PDFiumEngine::ContinueFind,
                        find_weak_factory_.GetWeakPtr(), case_sensitive));
@@ -2410,7 +2425,7 @@ base::Value::Dict PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
     std::string uri = CallPDFiumStringBufferApi(
         base::BindRepeating(&FPDFAction_GetURIPath, doc(), action),
         /*check_expected_size=*/true);
-    if (!uri.empty())
+    if (!uri.empty() && base::IsStringUTF8AllowingNoncharacters(uri))
       dict.Set("uri", uri);
   }
 

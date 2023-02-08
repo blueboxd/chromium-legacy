@@ -12,14 +12,13 @@
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
-#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_image/ozone_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
-#include "gpu/vulkan/vulkan_device_queue.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/buildflags.h"
@@ -28,8 +27,32 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#endif  // BUILDFLAG(ENABLE_VULKAN)
+
 namespace gpu {
 namespace {
+
+// Returns BufferFormat for given `format`.
+gfx::BufferFormat GetBufferFormat(viz::SharedImageFormat format) {
+  if (format.is_single_plane())
+    viz::BufferFormat(format.resource_format());
+
+  switch (format.plane_config()) {
+    case viz::SharedImageFormat::PlaneConfig::kY_V_U:
+      return gfx::BufferFormat::YVU_420;
+    case viz::SharedImageFormat::PlaneConfig::kY_UV:
+      return format.channel_format() ==
+                     viz::SharedImageFormat::ChannelFormat::k10
+                 ? gfx::BufferFormat::P010
+                 : gfx::BufferFormat::YUV_420_BIPLANAR;
+    case viz::SharedImageFormat::PlaneConfig::kY_UV_A:
+      return gfx::BufferFormat::YUVA_420_TRIPLANAR;
+  }
+  NOTREACHED();
+}
 
 gfx::BufferUsage GetBufferUsage(uint32_t usage) {
   if (usage & SHARED_IMAGE_USAGE_WEBGPU) {
@@ -70,13 +93,15 @@ OzoneImageBackingFactory::CreateSharedImageInternal(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage) {
-  gfx::BufferFormat buffer_format = viz::BufferFormat(format);
+  gfx::BufferFormat buffer_format = ToBufferFormat(format);
   VulkanDeviceQueue* device_queue = nullptr;
+#if BUILDFLAG(ENABLE_VULKAN)
   DCHECK(shared_context_state_);
   if (shared_context_state_->vk_context_provider()) {
     device_queue =
         shared_context_state_->vk_context_provider()->GetDeviceQueue();
   }
+#endif  // BUILDFLAG(ENABLE_VULKAN)
   ui::SurfaceFactoryOzone* surface_factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   scoped_refptr<gfx::NativePixmap> pixmap = surface_factory->CreateNativePixmap(
@@ -147,7 +172,6 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -159,7 +183,7 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   scoped_refptr<gfx::NativePixmap> pixmap =
       surface_factory->CreateNativePixmapFromHandle(
-          surface_handle, size, buffer_format,
+          kNullSurfaceHandle, size, buffer_format,
           std::move(handle.native_pixmap_handle));
   if (!pixmap) {
     return nullptr;
@@ -178,6 +202,36 @@ std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
   return backing;
 }
 
+std::unique_ptr<SharedImageBacking> OzoneImageBackingFactory::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::SharedImageFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    GrSurfaceOrigin surface_origin,
+    SkAlphaType alpha_type,
+    uint32_t usage,
+    gfx::GpuMemoryBufferHandle handle) {
+  DCHECK_EQ(handle.type, gfx::NATIVE_PIXMAP);
+
+  ui::SurfaceFactoryOzone* surface_factory =
+      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  scoped_refptr<gfx::NativePixmap> pixmap =
+      surface_factory->CreateNativePixmapFromHandle(
+          kNullSurfaceHandle, size, GetBufferFormat(format),
+          std::move(handle.native_pixmap_handle));
+  if (!pixmap) {
+    return nullptr;
+  }
+
+  auto backing = std::make_unique<OzoneImageBacking>(
+      mailbox, format, gfx::BufferPlane::DEFAULT, size, color_space,
+      surface_origin, alpha_type, usage, shared_context_state_.get(),
+      std::move(pixmap), dawn_procs_, workarounds_, use_passthrough_);
+  backing->SetCleared();
+
+  return backing;
+}
+
 bool OzoneImageBackingFactory::IsSupported(
     uint32_t usage,
     viz::SharedImageFormat format,
@@ -186,6 +240,10 @@ bool OzoneImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane() && gmb_type != gfx::NATIVE_PIXMAP) {
+    return false;
+  }
+
   if (gmb_type != gfx::EMPTY_BUFFER && gmb_type != gfx::NATIVE_PIXMAP) {
     return false;
   }
@@ -205,7 +263,7 @@ bool OzoneImageBackingFactory::IsSupported(
     return false;
   }
   auto* factory = ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
-  if (!factory->CanCreateNativePixmapForFormat(viz::BufferFormat(format)))
+  if (!factory->CanCreateNativePixmapForFormat(ToBufferFormat(format)))
     return false;
 
   ui::GLOzone* gl_ozone = factory->GetCurrentGLOzone();
@@ -233,6 +291,7 @@ bool OzoneImageBackingFactory::IsSupported(
 }
 
 bool OzoneImageBackingFactory::CanImportNativePixmapToVulkan() {
+#if BUILDFLAG(ENABLE_VULKAN)
   if (!shared_context_state_->vk_context_provider()) {
     return false;
   }
@@ -241,6 +300,9 @@ bool OzoneImageBackingFactory::CanImportNativePixmapToVulkan() {
   return shared_context_state_->vk_context_provider()
       ->GetVulkanImplementation()
       ->CanImportGpuMemoryBuffer(vk_device, gfx::NATIVE_PIXMAP);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 }
 
 bool OzoneImageBackingFactory::CanImportNativePixmapToWebGPU() {

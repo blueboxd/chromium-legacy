@@ -20,6 +20,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
@@ -104,6 +105,25 @@ void LoadIconFromWebApp(content::BrowserContext* context,
                         const std::string& web_app_id,
                         IconEffects icon_effects,
                         LoadIconCallback callback);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Requests a compressed icon data for an web app identified by `web_app_id`.
+void GetWebAppCompressedIconData(content::BrowserContext* context,
+                                 const std::string& web_app_id,
+                                 IconType icon_type,
+                                 int size_in_dip,
+                                 ui::ResourceScaleFactor scale_factor,
+                                 LoadIconCallback callback);
+
+// Requests a compressed icon data for a chrome app identified by
+// `extension_id`.
+void GetChromeAppCompressedIconData(content::BrowserContext* context,
+                                    const std::string& extension_id,
+                                    IconType icon_type,
+                                    int size_in_dip,
+                                    ui::ResourceScaleFactor scale_factor,
+                                    LoadIconCallback callback);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Loads an icon from a FilePath. If that fails, it calls the fallback.
 //

@@ -18,8 +18,8 @@
 #include "base/containers/span.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock/screen_locker_tester.h"
@@ -67,6 +67,7 @@
 #include "ui/views/widget/any_widget_observer.h"
 
 namespace ash {
+
 namespace {
 
 // The PIN code that the test certificate provider extension is configured to
@@ -110,29 +111,8 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
     challenge_response_account_id_ = account_id;
   }
 
-  // TODO(crbug.com/1311355): This method can be cleaned up after full migration
-  // to AuthSession.
-  void Mount(const ::user_data_auth::MountRequest& request,
-             chromeos::DBusMethodCallback<::user_data_auth::MountReply>
-                 callback) override {
-    chromeos::CertificateProviderService* certificate_provider_service =
-        chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
-            GetOriginalSigninProfile());
-    // Note: The real cryptohome would call the "ChallengeKey" D-Bus method
-    // exposed by Chrome via org.chromium.CryptohomeKeyDelegateInterface, but
-    // we're directly requesting the extension in order to avoid extra
-    // complexity in this UI-oriented browser test.
-    certificate_provider_service->RequestSignatureBySpki(
-        TestCertificateProviderExtension::GetCertificateSpki(),
-        SSL_SIGN_RSA_PKCS1_SHA256,
-        base::as_bytes(base::make_span(kChallengeData)),
-        challenge_response_account_id_,
-        base::BindOnce(&ChallengeResponseFakeUserDataAuthClient::
-                           ContinueMountExWithSignature,
-                       base::Unretained(this), request.account(),
-                       std::move(callback)));
-  }
-
+  // Key-based API for AuthSessions.
+  // TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
   void AuthenticateAuthSession(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback) override {
@@ -184,22 +164,8 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
   }
 
  private:
-  // TODO(crbug.com/1311355): This method can be cleaned up after full migration
-  // to AuthSession.
-  void ContinueMountExWithSignature(
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      chromeos::DBusMethodCallback<::user_data_auth::MountReply> callback,
-      net::Error error,
-      const std::vector<uint8_t>& signature) {
-    ::user_data_auth::MountReply reply;
-    reply.set_sanitized_username(GetStubSanitizedUsername(cryptohome_id));
-    if (error != net::OK || signature.empty())
-      reply.set_error(
-          ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), reply));
-  }
-
+  // Key-based API for AuthSessions.
+  // TODO(b/260718534): Remove as part of UserAuthFactors cleanup.
   void ContinueAuthenticateSessionWithSignature(
       const ::user_data_auth::AuthenticateAuthSessionRequest& request,
       AuthenticateAuthSessionCallback callback,
@@ -209,7 +175,7 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
       ::user_data_auth::AuthenticateAuthSessionReply reply;
       reply.set_error(
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), reply));
       return;
     }
@@ -226,7 +192,7 @@ class ChallengeResponseFakeUserDataAuthClient : public FakeUserDataAuthClient {
       ::user_data_auth::AuthenticateAuthFactorReply reply;
       reply.set_error(
           ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_MOUNT_FATAL);
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), reply));
       return;
     }
@@ -319,12 +285,10 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
         std::move(cryptohome_client));
 
     // TODO(b/239422391): Clean up after full migration to kUseAuthFactors.
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(ash::features::kUseAuthFactors);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          ash::features::kUseAuthFactors);
-    }
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kUseAuthFactors);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kUseAuthFactors);
     // Don't shut down when no browser is open, since it breaks the test and
     // since it's not the real Chrome OS behavior.
     set_exit_when_last_browser_closes(false);
@@ -462,11 +426,11 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     challenge_response_key.set_extension_id(
         TestCertificateProviderExtension::extension_id());
 
-    base::Value challenge_response_keys_value =
+    base::Value::List challenge_response_keys_list =
         SerializeChallengeResponseKeysForKnownUser({challenge_response_key});
     user_manager::KnownUser(g_browser_process->local_state())
         .SetChallengeResponseKeys(GetChallengeResponseAccountId(),
-                                  std::move(challenge_response_keys_value));
+                                  std::move(challenge_response_keys_list));
   }
 
   // Bypass "signin_screen" feature only enabled for allowlisted extensions.

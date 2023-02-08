@@ -139,7 +139,7 @@ void WaitForCondition(base::RepeatingCallback<bool()> condition,
   const base::TimeTicks start_time = base::TimeTicks::Now();
   while (!condition.Run() && (base::TimeTicks::Now() - start_time < kTimeout)) {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
@@ -230,10 +230,7 @@ class TestBackgroundTracingHelper
     wait_for_scenario_aborted_.Quit();
   }
 
-  void OnTracingEnabled(
-      BackgroundTracingConfigImpl::CategoryPreset preset) override {
-    wait_for_tracing_enabled_.Quit();
-  }
+  void OnTracingEnabled() override { wait_for_tracing_enabled_.Quit(); }
 
   void WaitForScenarioActivated() { wait_for_scenario_activated_.Run(); }
   void WaitForScenarioAborted() { wait_for_scenario_aborted_.Run(); }

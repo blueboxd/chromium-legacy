@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
@@ -44,6 +44,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -616,7 +617,8 @@ void WorkerScriptFetcher::Start(
   url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), request_id_,
       network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
-      kWorkerScriptLoadTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
+      kWorkerScriptLoadTrafficAnnotation,
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 void WorkerScriptFetcher::OnReceiveEarlyHints(
@@ -716,6 +718,8 @@ void WorkerScriptFetcher::OnUploadProgress(int64_t current_position,
 }
 
 void WorkerScriptFetcher::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kWorkerScriptFetcher);
   NOTREACHED();
 }
 

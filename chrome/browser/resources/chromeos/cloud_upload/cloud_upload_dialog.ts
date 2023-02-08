@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './setup_cancel_dialog.js';
+
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
 import {CANCEL_SETUP_EVENT, NEXT_PAGE_EVENT} from './base_setup_page.js';
 import {UserAction} from './cloud_upload.mojom-webui.js';
 import {CloudUploadBrowserProxy} from './cloud_upload_browser_proxy.js';
+import {OfficePwaInstallPageElement} from './office_pwa_install_page.js';
 import {OneDriveUploadPageElement} from './one_drive_upload_page.js';
+import type {SetupCancelDialogElement} from './setup_cancel_dialog.js';
+import {SignInPageElement} from './sign_in_page.js';
 import {WelcomePageElement} from './welcome_page.js';
 
 /**
@@ -15,6 +20,8 @@ import {WelcomePageElement} from './welcome_page.js';
  * individual setup pages and determines which one to show.
  */
 export class CloudUploadElement extends HTMLElement {
+  private proxy = CloudUploadBrowserProxy.getInstance();
+
   /** Resolved once the element's shadow DOM has finished initializing. */
   initPromise: Promise<void>;
 
@@ -24,38 +31,55 @@ export class CloudUploadElement extends HTMLElement {
   /** The current page index into `pages`. */
   private currentPageIdx: number = 0;
 
+  /** The modal dialog shown to confirm if the user wants to cancel setup. */
+  private cancelDialog: SetupCancelDialogElement;
+
   /** The names of the files to upload. */
   private fileNames: string[] = [];
 
   constructor() {
     super();
-    this.attachShadow({mode: 'open'});
+    const shadow = this.attachShadow({mode: 'open'});
+
+    this.cancelDialog = document.createElement('setup-cancel-dialog');
+    shadow.appendChild(this.cancelDialog);
+
+    document.addEventListener('keydown', this.onKeyDown.bind(this));
+
     this.initPromise = this.init();
   }
 
   async init(): Promise<void> {
-    await this.processDialogArgs();
+    const [, {installed: isOfficeWebAppInstalled}, {mounted: isOdfsMounted}] =
+        await Promise.all([
+          this.processDialogArgs(),
+          this.proxy.handler.isOfficeWebAppInstalled(),
+          this.proxy.handler.isODFSMounted(),
+        ]);
 
     // TODO(b/251046341): Adjust this once the rest of the pages are in place.
+    this.pages.push(new WelcomePageElement());
+
+    if (!isOfficeWebAppInstalled) {
+      this.pages.push(new OfficePwaInstallPageElement());
+    }
+
+    if (!isOdfsMounted) {
+      this.pages.push(new SignInPageElement());
+    }
+
     const oneDriveUploadPage = new OneDriveUploadPageElement();
     oneDriveUploadPage.setFileNames(this.fileNames);
-    this.pages = [
-      new WelcomePageElement(),
-      oneDriveUploadPage,
-    ];
-    for (let i = 0; i < this.pages.length; i++) {
-      this.pages[i]?.setAttribute(
-          'total-pages', (this.pages.length).toString());
-      this.pages[i]?.setAttribute('page-number', i.toString());
-      this.pages[i]?.addEventListener(NEXT_PAGE_EVENT, () => this.goNextPage());
-      this.pages[i]?.addEventListener(
-          CANCEL_SETUP_EVENT, () => this.cancelSetup());
-    }
-    this.switchPage(0);
-  }
+    this.pages.push(oneDriveUploadPage);
 
-  get proxy() {
-    return CloudUploadBrowserProxy.getInstance();
+    this.pages.forEach((page, index) => {
+      page.setAttribute('total-pages', String(this.pages.length));
+      page.setAttribute('page-number', String(index));
+      page.addEventListener(NEXT_PAGE_EVENT, () => this.goNextPage());
+      page.addEventListener(CANCEL_SETUP_EVENT, () => this.cancelSetup());
+    });
+
+    this.switchPage(0);
   }
 
   $<T extends HTMLElement>(query: string): T {
@@ -76,7 +100,7 @@ export class CloudUploadElement extends HTMLElement {
   private switchPage(page: number): void {
     this.currentPage?.remove();
     this.currentPageIdx = page;
-    this.shadowRoot?.appendChild(this.currentPage!);
+    this.shadowRoot!.appendChild(this.currentPage!);
   }
 
   /**
@@ -93,11 +117,26 @@ export class CloudUploadElement extends HTMLElement {
     }
   }
 
+  private onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && !this.cancelDialog.open) {
+      this.cancelSetup();
+      // Stop escape from also immediately closing the dialog.
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+  }
+
   /**
    * Invoked when a page fires a `CANCEL_SETUP_EVENT` event.
    */
   private cancelSetup(): void {
-    this.proxy.handler.respondAndClose(UserAction.kCancel);
+    if (this.currentPage instanceof OneDriveUploadPageElement) {
+      // No need to show the cancel dialog as setup is finished.
+      this.proxy.handler.respondAndClose(UserAction.kCancel);
+      return;
+    }
+    this.cancelDialog.show(
+        () => this.proxy.handler.respondAndClose(UserAction.kCancel));
   }
 
   /**
@@ -107,6 +146,12 @@ export class CloudUploadElement extends HTMLElement {
     if (this.currentPageIdx < this.pages.length - 1) {
       this.switchPage(this.currentPageIdx + 1);
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'cloud-upload': CloudUploadElement;
   }
 }
 

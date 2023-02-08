@@ -3839,6 +3839,115 @@ TEST_P(QuicNetworkTransactionTest,
   ExpectQuicAlternateProtocolMapping(kNetworkAnonymizationKey2);
 }
 
+TEST_P(QuicNetworkTransactionTest,
+       ProtocolErrorAfterHandshakeConfirmedThenBrokenWithUseDnsHttpsSvcbAlpn) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kUseDnsHttpsSvcbAlpn},
+      // disabled_features
+      {});
+  context_.params()->idle_connection_timeout = base::Seconds(5);
+
+  // The request will initially go out over QUIC.
+  MockQuicData quic_data(version_);
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructInitialSettingsPacket(packet_num++));
+  }
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
+          true, GetRequestHeaders("GET", "https", "/")));
+  client_maker_->SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+
+  // Peer sending data from an non-existing stream causes this end to raise
+  // error and close connection.
+  quic_data.AddRead(
+      ASYNC, ConstructServerRstPacket(
+                 1, false, GetNthClientInitiatedBidirectionalStreamId(47),
+                 quic::QUIC_STREAM_LAST_ERROR));
+  std::string quic_error_details = "Data for nonexistent stream";
+  quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientAckAndConnectionClosePacket(
+          packet_num++, 1, 1,
+          version_.HasIetfQuicFrames() ? quic::QUIC_HTTP_STREAM_WRONG_DIRECTION
+                                       : quic::QUIC_INVALID_STREAM_ID,
+          quic_error_details,
+          version_.HasIetfQuicFrames() ? quic::IETF_STOP_SENDING
+                                       : quic::IETF_RST_STREAM));
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // After that fails, it will be resent via TCP.
+  MockWrite http_writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n"),
+      MockWrite(SYNCHRONOUS, 1, "Host: mail.example.org\r\n"),
+      MockWrite(SYNCHRONOUS, 2, "Connection: keep-alive\r\n\r\n")};
+
+  MockRead http_reads[] = {MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+                           MockRead(SYNCHRONOUS, 4, alt_svc_header_.data()),
+                           MockRead(SYNCHRONOUS, 5, "hello world"),
+                           MockRead(SYNCHRONOUS, OK, 6)};
+  SequencedSocketData http_data(http_reads, http_writes);
+  socket_factory_.AddSocketDataProvider(&http_data);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  HostResolverEndpointResult endpoint_result1;
+  endpoint_result1.ip_endpoints = {IPEndPoint(IPAddress::IPv4Localhost(), 0)};
+  endpoint_result1.metadata.supported_protocol_alpns = {
+      quic::QuicVersionLabelToString(quic::CreateQuicVersionLabel(version_))};
+  HostResolverEndpointResult endpoint_result2;
+  endpoint_result2.ip_endpoints = {IPEndPoint(IPAddress::IPv4Localhost(), 0)};
+  std::vector<HostResolverEndpointResult> endpoints;
+  endpoints.push_back(endpoint_result1);
+  endpoints.push_back(endpoint_result2);
+  host_resolver_.rules()->AddRule(
+      "mail.example.org",
+      MockHostResolverBase::RuleResolver::RuleResult(
+          std::move(endpoints),
+          /*aliases=*/std::set<std::string>{"mail.example.org"}));
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request_, callback.callback(), net_log_with_source_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Pump the message loop to get the request started.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake.
+  crypto_client_stream_factory_.last_stream()
+      ->NotifySessionOneRttKeyAvailable();
+  quic_data.Resume();
+
+  // Run the QUIC session to completion.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+
+  ExpectQuicAlternateProtocolMapping();
+
+  // Let the transaction proceed which will result in QUIC being marked
+  // as broken and the request falling back to TCP.
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  ASSERT_TRUE(quic_data.AllWriteDataConsumed());
+  ASSERT_FALSE(http_data.AllReadDataConsumed());
+
+  // Read the response body over TCP.
+  CheckResponseData(&trans, "hello world");
+  ExpectBrokenAlternateProtocolMapping();
+  ASSERT_TRUE(http_data.AllWriteDataConsumed());
+  ASSERT_TRUE(http_data.AllReadDataConsumed());
+}
+
 // Verify that with retry_without_alt_svc_on_quic_errors enabled, if a QUIC
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
@@ -9941,7 +10050,112 @@ TEST_P(QuicNetworkTransactionTest, WebsocketOpensNewConnectionWithHttp1) {
   EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
-// TODO(crbug.com/1286832): make test for Alternative services.
+
+// Much like above, but for Alt-Svc QUIC.
+TEST_P(QuicNetworkTransactionTest,
+       WebsocketOpensNewConnectionWithHttp1AfterAltSvcQuic) {
+  if (version_.AlpnDeferToRFCv1()) {
+    // These versions currently do not support Alt-Svc.
+    return;
+  }
+  MockRead http_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"), MockRead(alt_svc_header_.data()),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+      MockRead(ASYNC, OK)};
+
+  StaticSocketDataProvider http_data(http_reads, base::span<MockWrite>());
+  socket_factory_.AddSocketDataProvider(&http_data);
+  AddCertificate(&ssl_data_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockQuicData mock_quic_data(version_);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructInitialSettingsPacket(packet_num++));
+  }
+  mock_quic_data.AddWrite(
+      SYNCHRONOUS,
+      ConstructClientRequestHeadersPacket(
+          packet_num++, GetNthClientInitiatedBidirectionalStreamId(0), true,
+          true, GetRequestHeaders("GET", "https", "/")));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerResponseHeadersPacket(
+                 1, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
+                 GetResponseHeaders("200")));
+  mock_quic_data.AddRead(
+      ASYNC, ConstructServerDataPacket(
+                 2, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
+                 ConstructDataFrame("hello!")));
+  mock_quic_data.AddWrite(SYNCHRONOUS,
+                          ConstructClientAckPacket(packet_num++, 2, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, ERR_CONNECTION_CLOSED);
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  MockWrite http_writes2[] = {
+      MockWrite(SYNCHRONOUS, 0,
+                "GET / HTTP/1.1\r\n"
+                "Host: mail.example.org\r\n"
+                "Connection: Upgrade\r\n"
+                "Upgrade: websocket\r\n"
+                "Origin: http://mail.example.org\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n")};
+
+  MockRead http_reads2[] = {
+      MockRead(SYNCHRONOUS, 1,
+               "HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
+
+  SequencedSocketData http_data2(http_reads2, http_writes2);
+  socket_factory_.AddSocketDataProvider(&http_data2);
+  AddCertificate(&ssl_data_);
+  socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
+
+  CreateSession();
+
+  SendRequestAndExpectHttpResponse("hello world");
+  SendRequestAndExpectQuicResponse("hello!");
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("wss://mail.example.org/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_TRUE(HostPortPair::FromURL(request_.url)
+                  .Equals(HostPortPair::FromURL(request2.url)));
+  request2.extra_headers.SetHeader("Connection", "Upgrade");
+  request2.extra_headers.SetHeader("Upgrade", "websocket");
+  request2.extra_headers.SetHeader("Origin", "http://mail.example.org");
+  request2.extra_headers.SetHeader("Sec-WebSocket-Version", "13");
+
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session_.get());
+  trans2.SetWebSocketHandshakeStreamCreateHelper(
+      &websocket_stream_create_helper);
+
+  TestCompletionCallback callback2;
+  int rv = trans2.Start(&request2, callback2.callback(), net_log_with_source_);
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+  ASSERT_FALSE(mock_quic_data.AllReadDataConsumed());
+  mock_quic_data.Resume();
+  // Run the QUIC session to completion.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
+  EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
+}
 
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 

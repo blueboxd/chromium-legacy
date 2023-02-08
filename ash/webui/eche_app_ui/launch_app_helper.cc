@@ -4,8 +4,6 @@
 
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 
-#include "ash/components/phonehub/phone_hub_manager.h"
-#include "ash/components/phonehub/screen_lock_manager.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/system/toast_data.h"
 #include "ash/public/cpp/system/toast_manager.h"
@@ -13,6 +11,8 @@
 #include "ash/shell.h"
 #include "ash/webui/eche_app_ui/eche_alert_generator.h"
 #include "base/check.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
+#include "chromeos/ash/components/phonehub/screen_lock_manager.h"
 #include "ui/gfx/image/image.h"
 
 namespace ash {
@@ -87,9 +87,10 @@ void LaunchAppHelper::LaunchEcheApp(absl::optional<int64_t> notification_id,
                                     const std::string& package_name,
                                     const std::u16string& visible_name,
                                     const absl::optional<int64_t>& user_id,
-                                    const gfx::Image& icon) const {
+                                    const gfx::Image& icon,
+                                    const std::u16string& phone_name) const {
   launch_eche_app_function_.Run(notification_id, package_name, visible_name,
-                                user_id, icon);
+                                user_id, icon, phone_name);
 }
 
 }  // namespace eche_app

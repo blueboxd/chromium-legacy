@@ -12,12 +12,12 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/settings/ash/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/guest_os_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/plugin_vm_handler.h"
@@ -31,7 +31,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -416,6 +415,7 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"appNotificationsDoNotDisturbDescription",
        IDS_SETTINGS_APP_NOTIFICATIONS_DND_ENABLED_SUBLABEL_TEXT},
       {"appBadgingToggleLabel", IDS_SETTINGS_APP_BADGING_TOGGLE_LABEL},
+      {"appBadgingToggleSublabel", IDS_SETTINGS_APP_BADGING_TOGGLE_SUBLABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -444,10 +444,6 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "showOsSettingsAppBadgingToggle",
       base::FeatureList::IsEnabled(features::kOsSettingsAppBadgingToggle));
   html_source->AddBoolean("showArcvmManageUsb", arc::IsArcVmEnabled());
-
-  html_source->AddBoolean(
-      "isAccessibilityOSSettingsVisibilityEnabled",
-      ::features::IsAccessibilityOSSettingsVisibilityEnabled());
 
   AddAppManagementStrings(html_source);
   AddGuestOsStrings(html_source);

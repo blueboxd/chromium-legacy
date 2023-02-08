@@ -14,8 +14,12 @@ namespace content::features {
 // alongside the definition of their values in the .cc file.
 
 // Alphabetical:
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kFileSystemAccessDragAndDropCheckBlocklist);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFileSystemAccessDoNotOverwriteOnMove);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kFileSystemAccessRemoveEntryExclusiveLock);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kFileSystemAccessRenameWithoutParentAccessRequiresUserActivation);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kFileSystemAccessSkipAfterWriteChecksIfUnchangingExtension);
 
 }  // namespace content::features
 

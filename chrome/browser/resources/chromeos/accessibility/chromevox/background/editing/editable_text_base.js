@@ -13,9 +13,10 @@
  * extended to override methods that extract lines for multiline fields
  * or to provide other customizations.
  */
-import {AbstractTts} from '../../common/abstract_tts.js';
+import {LocalStorage} from '../../../common/local_storage.js';
 import {Msgs} from '../../common/msgs.js';
-import {QueueMode, TtsCategory, TtsInterface, TtsSpeechProperties} from '../../common/tts_interface.js';
+import {TtsInterface} from '../../common/tts_interface.js';
+import {Personality, QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_types.js';
 import {ChromeVoxState} from '../chromevox_state.js';
 
 /**
@@ -334,19 +335,11 @@ export class ChromeVoxEditableTextBase {
         this.speak(lineValue, evt.triggeredByUser);
       } else if (this.start === evt.start + 1 || this.start === evt.start - 1) {
         // Moved by one character; read it.
-        if (!ChromeVoxEditableTextBase.useIBeamCursor) {
-          if (evt.start === this.value.length) {
-            this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
-          } else {
-            this.speak(
-                this.value.substr(evt.start, 1), evt.triggeredByUser,
-                new TtsSpeechProperties(
-                    {'phoneticCharacters': evt.triggeredByUser}));
-          }
+        if (evt.start === this.value.length) {
+          this.speak(Msgs.getMsg('end_of_text_verbose'), evt.triggeredByUser);
         } else {
           this.speak(
-              this.value.substr(Math.min(this.start, evt.start), 1),
-              evt.triggeredByUser,
+              this.value.substr(evt.start, 1), evt.triggeredByUser,
               new TtsSpeechProperties(
                   {'phoneticCharacters': evt.triggeredByUser}));
         }
@@ -363,9 +356,8 @@ export class ChromeVoxEditableTextBase {
       if (this.start + 1 === evt.start && this.end === this.value.length &&
           evt.end === this.value.length) {
         // Autocomplete: the user typed one character of autocompleted text.
-        if (ChromeVoxState.instance.typingEcho === TypingEcho.CHARACTER ||
-            ChromeVoxState.instance.typingEcho ===
-                TypingEcho.CHARACTER_AND_WORD) {
+        if (LocalStorage.get('typingEcho') === TypingEcho.CHARACTER ||
+            LocalStorage.get('typingEcho') === TypingEcho.CHARACTER_AND_WORD) {
           this.speak(this.value.substr(this.start, 1), evt.triggeredByUser);
         }
         this.speak(this.value.substr(evt.start));
@@ -414,7 +406,7 @@ export class ChromeVoxEditableTextBase {
   describeTextChanged(prev, evt) {
     let personality = new TtsSpeechProperties();
     if (evt.value.length < (prev.value.length - 1)) {
-      personality = AbstractTts.PERSONALITY_DELETED;
+      personality = Personality.DELETED;
     }
     if (this.isPassword) {
       this.speak(
@@ -468,8 +460,7 @@ export class ChromeVoxEditableTextBase {
       // Forward deletions causes reading of the character immediately to the
       // right of the caret or the deleted text depending on the iBeam cursor
       // setting.
-      if (prev.start === evt.start && prev.end === evt.end &&
-          !ChromeVoxEditableTextBase.useIBeamCursor) {
+      if (prev.start === evt.start && prev.end === evt.end) {
         this.speak(evt.value[evt.start], evt.triggeredByUser);
       } else {
         this.describeTextChangedHelper(
@@ -586,9 +577,8 @@ export class ChromeVoxEditableTextBase {
       }
       utterance = inserted;
     } else if (insertedLen === 1) {
-      if ((ChromeVoxState.instance.typingEcho === TypingEcho.WORD ||
-           ChromeVoxState.instance.typingEcho ===
-               TypingEcho.CHARACTER_AND_WORD) &&
+      if ((LocalStorage.get('typingEcho') === TypingEcho.WORD ||
+           LocalStorage.get('typingEcho') === TypingEcho.CHARACTER_AND_WORD) &&
           this.isWordBreakChar(inserted) && prefixLen > 0 &&
           !this.isWordBreakChar(evt.value.substr(prefixLen - 1, 1))) {
         // Speak previous word.
@@ -603,17 +593,16 @@ export class ChromeVoxEditableTextBase {
           triggeredByUser = false;  // Implies QUEUE_MODE_QUEUE.
         }
       } else if (
-          ChromeVoxState.instance.typingEcho === TypingEcho.CHARACTER ||
-          ChromeVoxState.instance.typingEcho ===
-              TypingEcho.CHARACTER_AND_WORD) {
+          LocalStorage.get('typingEcho') === TypingEcho.CHARACTER ||
+          LocalStorage.get('typingEcho') === TypingEcho.CHARACTER_AND_WORD) {
         utterance = inserted;
       }
     } else if (deletedLen > 1 && !autocompleteSuffix) {
       utterance = deleted + ', deleted';
     } else if (deletedLen === 1) {
       utterance = deleted;
-      // Single-deleted characters should also use PERSONALITY_DELETED.
-      opt_personality = AbstractTts.PERSONALITY_DELETED;
+      // Single-deleted characters should also use Personality.DELETED.
+      opt_personality = Personality.DELETED;
     }
 
     if (autocompleteSuffix && utterance) {
@@ -692,33 +681,11 @@ export class ChromeVoxEditableTextBase {
   }
 }
 
-
-/**
- * Whether or not moving the cursor from one character to another considers
- * the cursor to be a block (false) or an i-beam (true).
- *
- * If the cursor is a block, then the value of the character to the right
- * of the cursor index is always read when the cursor moves, no matter what
- * the previous cursor location was - this is how PC screenreaders work.
- *
- * If the cursor is an i-beam, moving the cursor by one character reads the
- * character that was crossed over, which may be the character to the left or
- * right of the new cursor index depending on the direction.
- *
- * If the current platform is a Mac, we will use an i-beam cursor. If not,
- * then we will use the block cursor.
- *
- * @type {boolean}
- */
-ChromeVoxEditableTextBase.useIBeamCursor =
-    localStorage['useIBeamCursor'] === String(true);
-
 /**
  * @type {boolean} Whether insertions (i.e. changes of greater than one
  * character) should be spoken.
  */
 ChromeVoxEditableTextBase.shouldSpeakInsertions = false;
-
 
 /**
  * The maximum number of characters that are short enough to speak in response

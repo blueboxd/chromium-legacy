@@ -498,6 +498,10 @@ const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
+// Prevents creating scrollbars for web content. Useful for taking consistent
+// screenshots.
+const char kHideScrollbars[] = "hide-scrollbars";
+
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
@@ -848,6 +852,11 @@ const char kValidateInputEventStream[] = "validate-input-event-stream";
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
+
+// On every navigation a message with the renderer's URL will be logged and the
+// renderer will wait for a debugger to be attached or SIGUSR1 to be sent to
+// continue execution.
+const char kWaitForDebuggerOnNavigation[] = "wait-for-debugger-on-navigation";
 
 // Flag used by WebUI test runners to wait for debugger to be attached.
 const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";

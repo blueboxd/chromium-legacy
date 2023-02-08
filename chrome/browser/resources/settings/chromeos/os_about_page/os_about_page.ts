@@ -16,12 +16,12 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import '../../icons.html.js';
 import '../../prefs/prefs.js';
-import '../../settings_page/settings_animated_pages.js';
-import '../../settings_page/settings_section.js';
-import '../../settings_page/settings_subpage.js';
-import '../../settings_page_styles.css.js';
+import '../os_settings_page/os_settings_animated_pages.js';
+import '../os_settings_page/os_settings_section.js';
+import '../os_settings_page/os_settings_subpage.js';
+import '../os_settings_page_styles.css.js';
 import '../../settings_shared.css.js';
-import '../os_icons.js';
+import '../os_settings_icons.html.js';
 import '../os_reset_page/os_powerwash_dialog.js';
 import './detailed_build_info.js';
 import './update_warning_dialog.js';
@@ -35,12 +35,11 @@ import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/po
 import {loadTimeData} from '../../i18n_setup.js';
 import {LifetimeBrowserProxyImpl} from '../../lifetime_browser_proxy.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, Router} from '../../router.js';
+import {Route, Router} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
-import {MainPageBehavior, MainPageBehaviorInterface} from '../main_page_behavior.js';
+import {MainPageMixin, MainPageMixinInterface} from '../main_page_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {routes} from '../os_route.js';
-import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, RegulatoryInfo, TpmFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent} from './about_page_browser_proxy.js';
 import {getTemplate} from './os_about_page.html.js';
@@ -62,13 +61,11 @@ const OsSettingsAboutPageBaseElement =
     mixinBehaviors(
         [
           DeepLinkingBehavior,
-          MainPageBehavior,
-          RouteObserverBehavior,
         ],
-        I18nMixin(WebUiListenerMixin(PolymerElement))) as {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          WebUiListenerMixinInterface & MainPageBehaviorInterface &
-          RouteObserverBehaviorInterface & I18nMixinInterface,
+        MainPageMixin(I18nMixin(WebUiListenerMixin(PolymerElement)))) as {
+      new (): PolymerElement & WebUiListenerMixinInterface &
+          I18nMixinInterface & MainPageMixinInterface &
+          DeepLinkingBehaviorInterface,
     };
 
 class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
@@ -337,12 +334,9 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   }
 
   override currentRouteChanged(newRoute: Route, oldRoute?: Route) {
-    // super.currentRouteChanged() does not produce desired results since
-    // RouteObserverBehavior has higher precedence than MainPageBehavior given
-    // this element's behavior list order. In order to trigger the
-    // MainPageBehavior method, we must directly call it.
+    // MainPageMixin#currentRouteChanged() should be the super class method
     // See https://crbug.com/1324103 for more details.
-    MainPageBehavior.currentRouteChanged.call(this, newRoute, oldRoute);
+    super.currentRouteChanged(newRoute, oldRoute);
 
     // Does not apply to this page.
     if (newRoute !== routes.ABOUT_ABOUT) {
@@ -364,13 +358,13 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
   }
 
   private startListening_() {
-    this.addWebUIListener(
+    this.addWebUiListener(
         'update-status-changed', this.onUpdateStatusChanged_.bind(this));
     this.aboutBrowserProxy_.refreshUpdateStatus();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'tpm-firmware-update-status-changed',
-        this.onTPMFirmwareUpdateStatusChanged_.bind(this));
-    this.aboutBrowserProxy_.refreshTPMFirmwareUpdateStatus();
+        this.onTpmFirmwareUpdateStatusChanged_.bind(this));
+    this.aboutBrowserProxy_.refreshTpmFirmwareUpdateStatus();
   }
 
   private onUpdateStatusChanged_(event: UpdateStatusChangedEvent) {
@@ -684,12 +678,12 @@ class OsSettingsAboutPageElement extends OsSettingsAboutPageBaseElement {
     this.hasCheckedForUpdates_ = false;
   }
 
-  private onTPMFirmwareUpdateStatusChanged_(
+  private onTpmFirmwareUpdateStatusChanged_(
       event: TpmFirmwareUpdateStatusChangedEvent) {
     this.showTPMFirmwareUpdateLineItem_ = event.updateAvailable;
   }
 
-  private onTPMFirmwareUpdateClick_() {
+  private onTpmFirmwareUpdateClick_() {
     this.showTPMFirmwareUpdateDialog_ = true;
   }
 

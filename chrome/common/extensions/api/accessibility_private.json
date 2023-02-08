@@ -234,7 +234,7 @@
       {
         "id": "AccessibilityFeature",
         "type": "string",
-        "enum": [ "enhancedNetworkVoices", "googleTtsLanguagePacks", "dictationPumpkinParsing", "selectToSpeakVoiceSwitching", "dictationMoreCommands","selectToSpeakContextMenuOption"],
+        "enum": [ "googleTtsLanguagePacks", "dictationPumpkinParsing", "selectToSpeakVoiceSwitching", "dictationMoreCommands","selectToSpeakContextMenuOption", "dictationContextChecking"],
         "description": "Subset of accessibility features."
       },
       {
@@ -289,7 +289,7 @@
       {
         "id": "DlcType",
         "type": "string",
-        "enum": ["ttsEsUs"],
+        "enum": ["ttsEsEs", "ttsEsUs", "ttsFrFr", "ttsHiIn", "ttsNlNl", "ttsPtBr", "ttsSvSe"],
         "description": "Types of accessibility-specific DLCs."
       },
       {
@@ -568,6 +568,12 @@
             "name": "keyEvent",
             "$ref": "SyntheticKeyboardEvent",
             "description": "The event to send."
+          },
+          {
+            "name": "useRewriters",
+            "type": "boolean",
+            "description": "If true, uses rewriters for the key event; only allowed if used from Dictation. Otherwise indicates that rewriters should be skipped.",
+            "optional": true
           }
         ]
       },

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
-import {$} from 'chrome://resources/js/util.js';
+import {$} from 'chrome://resources/ash/common/util.js';
 
 import {DialogType, isFolderDialogType} from '../../common/js/dialog_type.js';
 import {metrics} from '../../common/js/metrics.js';
@@ -408,11 +408,13 @@ export class DialogActionController {
     if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
       if (selection.directoryCount === 1 && selection.fileCount === 0) {
         this.dialogFooter_.okButtonLabel.textContent = str('OPEN_LABEL');
-        this.dialogFooter_.okButton.disabled = false;
+        this.dialogFooter_.okButton.disabled =
+            this.fileSelectionHandler_.isDlpBlocked();
       } else {
         this.dialogFooter_.okButtonLabel.textContent = str('SAVE_LABEL');
         this.dialogFooter_.okButton.disabled =
             this.directoryModel_.isReadOnly() ||
+            this.directoryModel_.isDlpBlocked() ||
             !this.dialogFooter_.filenameInput.value ||
             !this.fileSelectionHandler_.isAvailable();
       }

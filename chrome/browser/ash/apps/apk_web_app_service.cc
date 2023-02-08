@@ -11,7 +11,7 @@
 #include "ash/components/arc/session/connection_holder.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
@@ -235,7 +235,7 @@ bool ApkWebAppService::IsWebAppInstalledFromArc(
     // ARC++.
     return WebAppToApks().FindDict(web_app_id) != nullptr;
   } else {
-    web_app::WebAppRegistrar& registrar = provider_->registrar();
+    web_app::WebAppRegistrar& registrar = provider_->registrar_unsafe();
     const web_app::WebApp* app = registrar.GetAppById(web_app_id);
     return app ? app->IsWebAppStoreInstalledApp() : false;
   }
@@ -263,7 +263,7 @@ absl::optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
   if (!web_app_provider)
     return absl::nullopt;
   absl::optional<web_app::AppId> app_id =
-      web_app_provider->registrar().FindAppWithUrlInScope(url);
+      web_app_provider->registrar_unsafe().FindAppWithUrlInScope(url);
   if (!app_id)
     return absl::nullopt;
 
@@ -647,7 +647,7 @@ void ApkWebAppService::MaybeRemoveArcPackageForWebApp(
   // Post task to make sure that all observers get fired before the callback
   // called.
   if (web_app_uninstalled_callback_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(web_app_uninstalled_callback_),
                                   package_name.value_or(""), web_app_id));
   }

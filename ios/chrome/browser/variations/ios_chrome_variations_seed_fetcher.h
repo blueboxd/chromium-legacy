@@ -7,7 +7,19 @@
 
 #import <Foundation/Foundation.h>
 
-@class IOSChromeSeedResponse;
+// Enum for the seed fetch result histogram. Must stay in sync with
+// `VariationsSeedFetchResult` from enums.xml.
+enum class IOSSeedFetchException : int {
+  // Default value. DO NOT LOG.
+  kNotApplicable = 0,
+  // HTTPS request times out.
+  kHTTPSRequestTimeout = -2,
+  // Variations URL error.
+  kHTTPSRequestBadUrl = -3,
+  // The "IM" header returned from the variations server does not exist or
+  // contains invalid value.
+  kInvalidIMHeader = -5,
+};
 
 // Protocol for variations seed fetcher that reacts to variations seed fetch
 // stages.

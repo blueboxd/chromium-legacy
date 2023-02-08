@@ -4,8 +4,8 @@
 
 import {EventGenerator} from '../../../common/event_generator.js';
 import {KeyCode} from '../../../common/key_code.js';
+import {InputController} from '../input_controller.js';
 import {LocaleInfo} from '../locale_info.js';
-
 import {Macro, MacroError} from './macro.js';
 import {MacroName} from './macro_names.js';
 
@@ -197,8 +197,11 @@ export class SelectAllTextMacro extends RepeatableKeyPressMacro {
 
 /** Macro to unselect text. */
 export class UnselectTextMacro extends RepeatableKeyPressMacro {
-  constructor() {
+  /** @param {!InputController} inputController */
+  constructor(inputController) {
     super(MacroName.UNSELECT_TEXT, /*repeat=*/ 1);
+    /** @private {!InputController} */
+    this.inputController_ = inputController;
   }
 
   /** @override */
@@ -206,12 +209,33 @@ export class UnselectTextMacro extends RepeatableKeyPressMacro {
     EventGenerator.sendKeyPress(
         LocaleInfo.isRTLLocale() ? KeyCode.LEFT : KeyCode.RIGHT);
   }
+
+  /** @override */
+  checkContext() {
+    const checkContextResult = super.checkContext();
+    if (!checkContextResult.canTryAction) {
+      return checkContextResult;
+    }
+
+    if (!this.inputController_.isActive()) {
+      return this.createFailureCheckContextResult_(MacroError.BAD_CONTEXT);
+    }
+
+    const data = this.inputController_.getEditableNodeData();
+    if (!data || !data.value || data.selStart === data.selEnd) {
+      return this.createFailureCheckContextResult_(MacroError.BAD_CONTEXT);
+    }
+
+    return this.createSuccessCheckContextResult_(
+        /*willImmediatelyDisambiguate=*/ false);
+  }
 }
 
 /** Macro to delete the previous word. */
 export class DeletePrevWordMacro extends RepeatableKeyPressMacro {
-  constructor() {
-    super(MacroName.DELETE_PREV_WORD, /*repeat=*/ 1);
+  /** @param {number=} repeat The number of words to delete. */
+  constructor(repeat = 1) {
+    super(MacroName.DELETE_PREV_WORD, repeat);
   }
 
   /** @override */
@@ -269,8 +293,10 @@ export class NavStartText extends RepeatableKeyPressMacro {
 
   /** @override */
   doKeyPress() {
-    EventGenerator.sendKeyPress(KeyCode.A, {ctrl: true});
-    EventGenerator.sendKeyPress(KeyCode.LEFT, {});
+    // TODO(b/259397131): Migrate this implementation to use
+    // chrome.automation.setDocumentSelection.
+    EventGenerator.sendKeyPress(
+        KeyCode.LEFT, {search: true, ctrl: true}, /*useRewriters=*/ true);
   }
 }
 
@@ -282,8 +308,10 @@ export class NavEndText extends RepeatableKeyPressMacro {
 
   /** @override */
   doKeyPress() {
-    EventGenerator.sendKeyPress(KeyCode.A, {ctrl: true});
-    EventGenerator.sendKeyPress(KeyCode.RIGHT, {});
+    // TODO(b/259397131): Migrate this implementation to use
+    // chrome.automation.setDocumentSelection.
+    EventGenerator.sendKeyPress(
+        KeyCode.RIGHT, {search: true, ctrl: true}, /*useRewriters=*/ true);
   }
 }
 

@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/expect_call_in_scope.h"
@@ -22,6 +23,9 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/range/range.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -29,6 +33,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
@@ -74,6 +79,29 @@ class DefaultActionTestView : public View {
 
  private:
   bool activated_ = false;
+};
+
+class AcceleratorView : public View {
+ public:
+  explicit AcceleratorView(ui::Accelerator accelerator)
+      : accelerator_(accelerator) {
+    AddAccelerator(accelerator);
+  }
+
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
+    EXPECT_EQ(accelerator_, accelerator);
+    EXPECT_FALSE(pressed_);
+    pressed_ = true;
+    return true;
+  }
+
+  bool CanHandleAccelerators() const override { return true; }
+
+  bool pressed() const { return pressed_; }
+
+ private:
+  const ui::Accelerator accelerator_;
+  bool pressed_ = false;
 };
 
 }  // namespace
@@ -356,6 +384,109 @@ TEST_P(InteractionTestUtilViewsTest,
   EXPECT_EQ(kComboBoxItem1, box->GetText());
   test_util_->SelectDropdownItem(box_el, 1, GetParam());
   EXPECT_EQ(kComboBoxItem2, box->GetText());
+}
+
+TEST_F(InteractionTestUtilViewsTest, EnterText_Textfield) {
+  auto* const edit = contents_->AddChildView(std::make_unique<Textfield>());
+  edit->SetDefaultWidthInChars(20);
+  widget_->LayoutRootViewIfNecessary();
+
+  auto* const edit_el =
+      views::ElementTrackerViews::GetInstance()->GetElementForView(edit, true);
+
+  test_util_->EnterText(edit_el, u"abcd");
+  EXPECT_EQ(u"abcd", edit->GetText());
+  test_util_->EnterText(
+      edit_el, u"efgh",
+      ui::test::InteractionTestUtil::TextEntryMode::kReplaceAll);
+  EXPECT_EQ(u"efgh", edit->GetText());
+  test_util_->EnterText(edit_el, u"abcd",
+                        ui::test::InteractionTestUtil::TextEntryMode::kAppend);
+  EXPECT_EQ(u"efghabcd", edit->GetText());
+  edit->SetSelectedRange(gfx::Range(2, 6));
+  test_util_->EnterText(
+      edit_el, u"1234",
+      ui::test::InteractionTestUtil::TextEntryMode::kInsertOrReplace);
+  EXPECT_EQ(u"ef1234cd", edit->GetText());
+}
+
+TEST_F(InteractionTestUtilViewsTest, EnterText_EditableCombobox) {
+  auto* const box = contents_->AddChildView(
+      std::make_unique<EditableCombobox>(CreateComboboxModel()));
+  box->SetAccessibleName(u"Editable Combobox");
+  widget_->LayoutRootViewIfNecessary();
+
+  auto* const box_el =
+      views::ElementTrackerViews::GetInstance()->GetElementForView(box, true);
+
+  test_util_->EnterText(box_el, u"abcd");
+  EXPECT_EQ(u"abcd", box->GetText());
+  test_util_->EnterText(
+      box_el, u"efgh",
+      ui::test::InteractionTestUtil::TextEntryMode::kReplaceAll);
+  EXPECT_EQ(u"efgh", box->GetText());
+  test_util_->EnterText(box_el, u"abcd",
+                        ui::test::InteractionTestUtil::TextEntryMode::kAppend);
+  EXPECT_EQ(u"efghabcd", box->GetText());
+  box->SelectRange(gfx::Range(2, 6));
+  test_util_->EnterText(
+      box_el, u"1234",
+      ui::test::InteractionTestUtil::TextEntryMode::kInsertOrReplace);
+  EXPECT_EQ(u"ef1234cd", box->GetText());
+}
+
+TEST_F(InteractionTestUtilViewsTest, ActivateSurface) {
+  // Create a bubble that will close on deactivation.
+  auto dialog_ptr = std::make_unique<BubbleDialogDelegateView>(
+      contents_, BubbleBorder::Arrow::TOP_LEFT);
+  dialog_ptr->set_close_on_deactivate(true);
+  auto* widget = BubbleDialogDelegateView::CreateBubble(std::move(dialog_ptr));
+  WidgetVisibleWaiter shown_waiter(widget);
+  widget->Show();
+  shown_waiter.Wait();
+
+  // Activating the primary widget should close the bubble again.
+  WidgetDestroyedWaiter closed_waiter(widget);
+  auto* const view_el =
+      ElementTrackerViews::GetInstance()->GetElementForView(contents_, true);
+  test_util_->ActivateSurface(view_el);
+  closed_waiter.Wait();
+}
+
+TEST_F(InteractionTestUtilViewsTest, SendAccelerator) {
+  ui::Accelerator accel(ui::VKEY_F5, ui::EF_SHIFT_DOWN);
+  ui::Accelerator accel2(ui::VKEY_F6, ui::EF_NONE);
+  auto* const view =
+      contents_->AddChildView(std::make_unique<AcceleratorView>(accel));
+  auto* const view_el =
+      ElementTrackerViews::GetInstance()->GetElementForView(view, true);
+  test_util_->SendAccelerator(view_el, accel2);
+  EXPECT_FALSE(view->pressed());
+  test_util_->SendAccelerator(view_el, accel);
+  EXPECT_TRUE(view->pressed());
+}
+
+TEST_F(InteractionTestUtilViewsTest, Confirm) {
+  UNCALLED_MOCK_CALLBACK(base::OnceClosure, accept);
+
+  auto dialog_ptr = std::make_unique<BubbleDialogDelegateView>(
+      contents_, BubbleBorder::Arrow::TOP_LEFT);
+  auto* dialog = dialog_ptr.get();
+  dialog->SetAcceptCallback(accept.Get());
+  auto* widget = BubbleDialogDelegateView::CreateBubble(std::move(dialog_ptr));
+  WidgetVisibleWaiter shown_waiter(widget);
+  widget->Show();
+  shown_waiter.Wait();
+
+  auto* const dialog_el =
+      views::ElementTrackerViews::GetInstance()->GetElementForView(dialog,
+                                                                   true);
+
+  EXPECT_CALL_IN_SCOPE(accept, Run, {
+    test_util_->Confirm(dialog_el);
+    WidgetDestroyedWaiter closed_waiter(widget);
+    closed_waiter.Wait();
+  });
 }
 
 INSTANTIATE_TEST_SUITE_P(

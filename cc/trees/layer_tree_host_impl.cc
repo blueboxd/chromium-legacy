@@ -34,6 +34,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -47,7 +48,6 @@
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
-#include "cc/input/scroller_size_metrics.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -312,7 +312,8 @@ class LayerTreeHostImpl::ImageDecodeCacheHolder {
   }
 
  private:
-  raw_ptr<ImageDecodeCache> image_decode_cache_ptr_ = nullptr;
+  raw_ptr<ImageDecodeCache, DanglingUntriaged> image_decode_cache_ptr_ =
+      nullptr;
   std::unique_ptr<ImageDecodeCache> image_decode_cache_;
 };
 
@@ -629,9 +630,10 @@ void LayerTreeHostImpl::BeginMainFrameAborted(
     if (pending_tree_) {
       pending_tree_->AppendSwapPromises(std::move(swap_promises));
     } else {
+      base::TimeTicks timestamp = base::TimeTicks::Now();
       for (const auto& swap_promise : swap_promises) {
         SwapPromise::DidNotSwapAction action =
-            swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE);
+            swap_promise->DidNotSwap(SwapPromise::COMMIT_NO_UPDATE, timestamp);
         DCHECK_EQ(action, SwapPromise::DidNotSwapAction::BREAK_PROMISE);
       }
     }
@@ -1108,11 +1110,6 @@ void LayerTreeHostImpl::StartPageScaleAnimation(const gfx::Point& target_offset,
   gfx::SizeF viewport_size(
       active_tree_->InnerViewportScrollNode()->container_bounds);
 
-  if (viewport_size.IsEmpty()) {
-    // Avoid divide by zero. Besides nothing should see the animation anyway.
-    return;
-  }
-
   // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ = PageScaleAnimation::Create(
       scroll_total, active_tree_->current_page_scale_factor(), viewport_size,
@@ -1381,9 +1378,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   bool have_missing_animated_tiles = false;
   int num_of_layers_with_videos = 0;
 
-  // Advance our de-jelly state. This is a no-op if de-jelly is not active.
-  de_jelly_state_.AdvanceFrame(active_tree_.get());
-
   if (settings_.enable_compositing_based_throttling)
     throttle_decider_.Prepare();
   for (EffectTreeLayerListIterator it(active_tree());
@@ -1412,11 +1406,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       if (render_surface->contributes_to_drawn_surface()) {
         render_surface->AppendQuads(draw_mode, target_render_pass,
                                     &append_quads_data);
-        if (settings_.allow_de_jelly_effect) {
-          de_jelly_state_.UpdateSharedQuadState(
-              active_tree_.get(), render_surface->TransformTreeIndex(),
-              target_render_pass);
-        }
       }
     } else if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
       LayerImpl* layer = it.current_layer();
@@ -1430,11 +1419,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         }
         layer->NotifyKnownResourceIdsBeforeAppendQuads(known_resource_ids);
         layer->AppendQuads(target_render_pass, &append_quads_data);
-        if (settings_.allow_de_jelly_effect) {
-          de_jelly_state_.UpdateSharedQuadState(active_tree_.get(),
-                                                layer->transform_tree_index(),
-                                                target_render_pass);
-        }
       } else {
         if (settings_.enable_compositing_based_throttling)
           throttle_decider_.ProcessLayerNotToDraw(layer);
@@ -1627,10 +1611,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
     // of the process, so the histogram names are runtime constant.
     const char* client_name = GetClientNameForMetrics();
     if (client_name) {
-      size_t total_gpu_memory_for_tilings_in_bytes = 0;
-      for (const PictureLayerImpl* layer : active_tree()->picture_layers())
-        total_gpu_memory_for_tilings_in_bytes += layer->GPUMemoryUsageInBytes();
-
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           base::StringPrintf("Compositing.%s.NumActiveLayers", client_name),
           base::saturated_cast<int>(active_tree_->NumLayers()), 1, 1000, 20);
@@ -1640,19 +1620,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                              client_name),
           base::saturated_cast<int>(active_tree_->picture_layers().size()), 1,
           1000, 20);
-
-      // TODO(pdr): Instead of skipping empty picture layers, maybe we should
-      // accumulate layer->GetRasterSource()->GetMemoryUsage() above and skip
-      // recording when the accumulated memory usage is 0.
-      if (!active_tree()->picture_layers().empty()) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            base::StringPrintf("Compositing.%s.GPUMemoryForTilingsInKb",
-                               client_name),
-            base::saturated_cast<int>(total_gpu_memory_for_tilings_in_bytes /
-                                      1024),
-            1, kGPUMemoryForTilingsLargestBucketKb,
-            kGPUMemoryForTilingsBucketCount);
-      }
     }
   }
 
@@ -4662,7 +4629,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     const auto& caps = context_provider->ContextCapabilities();
     overlay_candidate =
         settings_.resource_settings.use_gpu_memory_buffer_resources &&
-        caps.texture_storage_image &&
+        caps.supports_scanout_shared_images &&
         viz::IsGpuMemoryBufferFormatSupported(format);
     if (overlay_candidate) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;

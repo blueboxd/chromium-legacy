@@ -58,9 +58,10 @@ class SigninUI {
   virtual void ShowNewTermsForFlexUsers() = 0;
 
   virtual void StartEncryptionMigration(
-      const UserContext& user_context,
+      std::unique_ptr<UserContext> user_context,
       EncryptionMigrationMode migration_mode,
-      base::OnceCallback<void(const UserContext&)> skip_migration_callback) = 0;
+      base::OnceCallback<void(std::unique_ptr<UserContext>)>
+          skip_migration_callback) = 0;
 
   // Might store authentication data so that additional auth factors can be
   // added during user onboarding.
@@ -91,11 +92,5 @@ class SigninUI {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-using ::ash::SigninError;
-}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_UI_SIGNIN_UI_H_

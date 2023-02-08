@@ -15,24 +15,23 @@ import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route} from '../../router.js';
+import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
-import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
 
 import {getTemplate} from './pointers.html.js';
 
 const SettingsPointersElementBase =
     mixinBehaviors(
-        [DeepLinkingBehavior, PrefsBehavior, RouteObserverBehavior],
-        PolymerElement) as {
-      new (): PolymerElement & DeepLinkingBehaviorInterface &
-          PrefsBehaviorInterface & RouteObserverBehaviorInterface,
+        [DeepLinkingBehavior],
+        RouteObserverMixin(PrefsMixin(PolymerElement))) as {
+      new (): PolymerElement & PrefsMixinInterface &
+          RouteObserverMixinInterface & DeepLinkingBehaviorInterface,
     };
 
 class SettingsPointersElement extends SettingsPointersElementBase {
@@ -46,11 +45,6 @@ class SettingsPointersElement extends SettingsPointersElementBase {
 
   static get properties() {
     return {
-      prefs: {
-        type: Object,
-        notify: true,
-      },
-
       hasMouse: Boolean,
 
       hasPointingStick: Boolean,

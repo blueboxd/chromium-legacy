@@ -7,6 +7,8 @@
 
 #include "base/check_op.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data_field.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/popover_animation_finished_event_listener.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -20,16 +22,30 @@ enum class PopoverVisibilityState {
   kShowing,
 };
 
-class PopoverData final : public GarbageCollected<PopoverData> {
+class PopoverAnchorObserver : public IdTargetObserver {
+ public:
+  PopoverAnchorObserver(const AtomicString& id, HTMLElement* element)
+      : IdTargetObserver(element->GetTreeScope().GetIdTargetObserverRegistry(),
+                         id),
+        element_(element) {}
+
+  void IdTargetChanged() override { element_->PopoverAnchorElementChanged(); }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(element_);
+    IdTargetObserver::Trace(visitor);
+  }
+
+ private:
+  Member<HTMLElement> element_;
+};
+
+class PopoverData final : public GarbageCollected<PopoverData>,
+                          public ElementRareDataField {
  public:
   PopoverData() = default;
   PopoverData(const PopoverData&) = delete;
   PopoverData& operator=(const PopoverData&) = delete;
-
-  bool hadDefaultOpenWhenParsed() const { return had_defaultopen_when_parsed_; }
-  void setHadDefaultOpenWhenParsed(bool value) {
-    had_defaultopen_when_parsed_ = value;
-  }
 
   PopoverVisibilityState visibilityState() const { return visibility_state_; }
   void setVisibilityState(PopoverVisibilityState visibility_state) {
@@ -45,13 +61,6 @@ class PopoverData final : public GarbageCollected<PopoverData> {
 
   Element* invoker() const { return invoker_; }
   void setInvoker(Element* element) { invoker_ = element; }
-
-  void setNeedsRepositioningForSelectMenu(bool flag) {
-    needs_repositioning_for_select_menu_ = flag;
-  }
-  bool needsRepositioningForSelectMenu() {
-    return needs_repositioning_for_select_menu_;
-  }
 
   Element* previouslyFocusedElement() const {
     return previously_focused_element_;
@@ -76,6 +85,12 @@ class PopoverData final : public GarbageCollected<PopoverData> {
     animation_finished_listener_ = listener;
   }
 
+  void setAnchorElement(Element* anchor) { anchor_element_ = anchor; }
+  Element* anchorElement() const { return anchor_element_; }
+  void setAnchorObserver(PopoverAnchorObserver* observer) {
+    anchor_observer_ = observer;
+  }
+
   HTMLSelectMenuElement* ownerSelectMenuElement() const {
     return owner_select_menu_element_;
   }
@@ -83,15 +98,17 @@ class PopoverData final : public GarbageCollected<PopoverData> {
     owner_select_menu_element_ = element;
   }
 
-  void Trace(Visitor* visitor) const {
+  void Trace(Visitor* visitor) const override {
     visitor->Trace(invoker_);
     visitor->Trace(previously_focused_element_);
     visitor->Trace(animation_finished_listener_);
+    visitor->Trace(anchor_element_);
+    visitor->Trace(anchor_observer_);
     visitor->Trace(owner_select_menu_element_);
+    ElementRareDataField::Trace(visitor);
   }
 
  private:
-  bool had_defaultopen_when_parsed_ = false;
   PopoverVisibilityState visibility_state_ = PopoverVisibilityState::kHidden;
   PopoverValueType type_ = PopoverValueType::kNone;
   WeakMember<Element> invoker_;
@@ -100,9 +117,10 @@ class PopoverData final : public GarbageCollected<PopoverData> {
   // can confirm that the listeners get removed before cleanup.
   Member<PopoverAnimationFinishedEventListener> animation_finished_listener_;
 
-  // TODO(crbug.com/1197720): The popover position should be provided by the new
-  // anchored positioning scheme.
-  bool needs_repositioning_for_select_menu_ = false;
+  // Target of the 'anchor' attribute.
+  Member<Element> anchor_element_;
+  Member<PopoverAnchorObserver> anchor_observer_;
+
   WeakMember<HTMLSelectMenuElement> owner_select_menu_element_;
 };
 

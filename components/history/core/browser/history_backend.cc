@@ -60,6 +60,7 @@
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -199,6 +200,46 @@ void MergeUpdateIntoExistingModelAnnotations(
   }
 }
 
+// Killswitch for the logic to start deleting foreign history on startup (if a
+// previous foreign-history-deletion operation didn't finish before browser
+// shutdown).
+BASE_FEATURE(kDeleteForeignVisitsOnStartup,
+             "DeleteForeignVisitsOnStartup",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+int GetForeignVisitsToDeletePerBatch() {
+  return syncer::kSyncHistoryForeignVisitsToDeletePerBatch.Get();
+}
+
+class DeleteForeignVisitsDBTask : public HistoryDBTask {
+ public:
+  ~DeleteForeignVisitsDBTask() override = default;
+
+  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
+    VisitID max_visit_id = db->GetDeleteForeignVisitsUntilId();
+    int max_count = GetForeignVisitsToDeletePerBatch();
+
+    VisitVector visits;
+    if (!db->GetSomeForeignVisits(max_visit_id, max_count, &visits)) {
+      // Some error happened; no point in going on.
+      return true;
+    }
+
+    backend->RemoveVisits(visits);
+
+    bool done = visits.size() < static_cast<size_t>(max_count);
+    if (done) {
+      // Nothing more to be deleted; clean up the deletion flag.
+      db->SetDeleteForeignVisitsUntilId(kInvalidVisitID);
+    }
+    // Note: As long as this returns false, RunOnDBThread() will get run again
+    // (see also comment on HistoryDBTask::RunOnDBThread()).
+    return done;
+  }
+
+  void DoneRunOnMainThread() override {}
+};
+
 // Does base::debug::DumpWithoutCrashing(), but on Canary/Dev only, and at a
 // throttled rate. This is because our dump volume is high, and that can mask
 // OTHER crashes. This is similar to ReportUnrecoverableError() in Sync code.
@@ -241,7 +282,7 @@ base::Time MidnightNDaysLater(base::Time time, int days) {
 
 QueuedHistoryDBTask::QueuedHistoryDBTask(
     std::unique_ptr<HistoryDBTask> task,
-    scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+    scoped_refptr<base::SequencedTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled)
     : task_(std::move(task)),
       origin_loop_(origin_loop),
@@ -346,16 +387,31 @@ void HistoryBackend::Init(
   typed_url_sync_bridge_ = std::make_unique<TypedURLSyncBridge>(
       this, db_ ? db_->GetTypedURLMetadataDB() : nullptr,
       std::make_unique<ClientTagBasedModelTypeProcessor>(
-          syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
+          syncer::TYPED_URLS,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              history_database_params.channel)));
   typed_url_sync_bridge_->Init();
 
   if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType)) {
-    // TODO(crbug.com/1318028): Plumb in syncer::ReportUnrecoverableError as the
-    // dump_stack callback.
     history_sync_bridge_ = std::make_unique<HistorySyncBridge>(
         this, db_ ? db_->GetHistoryMetadataDB() : nullptr,
         std::make_unique<ClientTagBasedModelTypeProcessor>(
-            syncer::HISTORY, /*dump_stack=*/base::RepeatingClosure()));
+            syncer::HISTORY,
+            base::BindRepeating(&syncer::ReportUnrecoverableError,
+                                history_database_params.channel)));
+  }
+
+  if (base::FeatureList::IsEnabled(kDeleteForeignVisitsOnStartup) && db_) {
+    if (!base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType) &&
+        db_->MayContainForeignVisits()) {
+      // If the History Sync data type is disabled, but there are foreign visits
+      // left (because it was previously enabled), then clean them up now.
+      DeleteAllForeignVisits();
+    } else if (db_->GetDeleteForeignVisitsUntilId() != kInvalidVisitID) {
+      // A deletion of foreign visits was still ongoing during the previous
+      // browser shutdown. Continue it.
+      StartDeletingForeignVisits();
+    }
   }
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
@@ -625,11 +681,6 @@ void HistoryBackend::AddContentModelAnnotationsForVisit(
     } else {
       annotations.model_annotations = model_annotations;
       db_->AddContentAnnotationsForVisit(visit_id, annotations);
-    }
-    URLRow url_row;
-    if (db_->GetURLRow(visit_row.url_id, &url_row)) {
-      delegate_->NotifyContentModelAnnotationModified(url_row,
-                                                      model_annotations);
     }
     ScheduleCommit();
   }
@@ -977,7 +1028,12 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     recent_redirects_.Put(request.url, extended_redirect_chain);
   }
 
-  if (request.context_annotations) {
+  // The below code assumes that last_visit_id should be populated with the
+  // VisitID for the visit that is being added by this method.
+  bool current_visit_was_successfully_added =
+      last_visit_id != kInvalidVisitID && last_visit_id != from_visit_id;
+
+  if (current_visit_was_successfully_added && request.context_annotations) {
     // The `request` contains only the on-visit annotation fields; all other
     // fields aren't known yet. Leave them empty.
     VisitContextAnnotations annotations;
@@ -1000,7 +1056,7 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
                                     ui::PAGE_TRANSITION_AUTO_SUBFRAME) &&
       !ui::PageTransitionCoreTypeIs(request_transition,
                                     ui::PAGE_TRANSITION_MANUAL_SUBFRAME) &&
-      !is_keyword_generated) {
+      !is_keyword_generated && current_visit_was_successfully_added) {
     tracker_.AddVisit(request.context_id, request.nav_entry_id, request.url,
                       last_visit_id);
   }
@@ -1290,6 +1346,11 @@ bool HistoryBackend::IsExpiredVisitTime(const base::Time& time) const {
   return time < expirer_.GetCurrentExpirationTime();
 }
 
+// static
+int HistoryBackend::GetForeignVisitsToDeletePerBatchForTest() {
+  return GetForeignVisitsToDeletePerBatch();
+}
+
 void HistoryBackend::SetPageTitle(const GURL& url,
                                   const std::u16string& title) {
   TRACE_EVENT0("browser", "HistoryBackend::SetPageTitle");
@@ -1362,6 +1423,10 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
   db_->AddURL(url_info);
 }
 
+bool HistoryBackend::CanAddURL(const GURL& url) const {
+  return delegate_->CanAddURL(url);
+}
+
 bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
   DCHECK(urls);
   if (!db_)
@@ -1382,6 +1447,12 @@ bool HistoryBackend::GetAllTypedURLs(URLRows* urls) {
 bool HistoryBackend::GetVisitsForURL(URLID id, VisitVector* visits) {
   if (db_)
     return db_->GetVisitsForURL(id, visits);
+  return false;
+}
+
+bool HistoryBackend::GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) {
+  if (db_)
+    return db_->GetMostRecentVisitForURL(id, visit_row);
   return false;
 }
 
@@ -1450,13 +1521,18 @@ VisitID HistoryBackend::AddSyncedVisit(
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
-  DCHECK_EQ(visit.visit_id, 0);
+  DCHECK_EQ(visit.visit_id, kInvalidVisitID);
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
 
-  if (!db_)
-    return 0;
+  if (!db_) {
+    return kInvalidVisitID;
+  }
+
+  if (!CanAddURL(url)) {
+    return kInvalidVisitID;
+  }
 
   auto [url_id, visit_id] = AddPageVisit(
       url, visit.visit_time, visit.referring_visit, visit.transition, hidden,
@@ -1464,6 +1540,11 @@ VisitID HistoryBackend::AddSyncedVisit(
       visit.opener_visit, title, visit.visit_duration,
       visit.originator_cache_guid, visit.originator_visit_id,
       visit.originator_referring_visit, visit.originator_opener_visit);
+
+  if (visit_id == kInvalidVisitID) {
+    // Adding the page visit failed, do not continue.
+    return kInvalidVisitID;
+  }
 
   if (context_annotations) {
     AddContextAnnotationsForVisit(visit_id, *context_annotations);
@@ -1475,33 +1556,59 @@ VisitID HistoryBackend::AddSyncedVisit(
                                       content_annotations->password_state);
   }
 
+  db_->SetMayContainForeignVisits(true);
+
   ScheduleCommit();
   return visit_id;
 }
 
 VisitID HistoryBackend::UpdateSyncedVisit(
+    const GURL& url,
+    const std::u16string& title,
+    bool hidden,
     const VisitRow& visit,
     const absl::optional<VisitContextAnnotations>& context_annotations,
     const absl::optional<VisitContentAnnotations>& content_annotations) {
-  DCHECK_EQ(visit.visit_id, 0);
+  DCHECK_EQ(visit.visit_id, kInvalidVisitID);
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
 
-  if (!db_)
-    return 0;
+  if (!db_) {
+    return kInvalidVisitID;
+  }
 
   VisitRow original_row;
   if (!db_->GetLastRowForVisitByVisitTime(visit.visit_time, &original_row)) {
-    return 0;
+    return kInvalidVisitID;
   }
 
   if (original_row.originator_cache_guid != visit.originator_cache_guid) {
     // The existing visit came from a different device; something is wrong.
-    return 0;
+    return kInvalidVisitID;
   }
 
   VisitID visit_id = original_row.visit_id;
+
+  // If the existing foreign visit is about to be deleted, don't update it. The
+  // HistorySyncBridge will instead create a new visit. (This can happen if Sync
+  // gets stopped, then started again before all the old foreign visits are
+  // cleaned up.)
+  if (visit_id <= db_->GetDeleteForeignVisitsUntilId()) {
+    return kInvalidVisitID;
+  }
+
+  // If we can't find the corresponding URLRow, or its actual URL doesn't match,
+  // something's wrong.
+  URLRow url_row;
+  if (!db_->GetURLRow(original_row.url_id, &url_row) || url_row.url() != url) {
+    return kInvalidVisitID;
+  }
+
+  // Update the URLRow - its title may have changed.
+  url_row.set_title(title);
+  url_row.set_hidden(hidden);
+  db_->UpdateURLRow(url_row.id(), url_row);
 
   VisitRow updated_row = visit;
   // The fields `visit_id` and `url_id` aren't set in visits coming from sync,
@@ -1514,8 +1621,9 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   updated_row.referring_visit = original_row.referring_visit;
   updated_row.opener_visit = original_row.opener_visit;
 
-  if (!db_->UpdateVisitRow(updated_row))
-    return 0;
+  if (!db_->UpdateVisitRow(updated_row)) {
+    return kInvalidVisitID;
+  }
 
   // If provided, add or update the ContextAnnotations.
   if (context_annotations) {
@@ -1557,6 +1665,41 @@ bool HistoryBackend::UpdateVisitReferrerOpenerIDs(VisitID visit_id,
   row.opener_visit = opener_id;
 
   return db_->UpdateVisitRow(row);
+}
+
+bool HistoryBackend::DeleteAllForeignVisits() {
+  if (!db_)
+    return false;
+
+  if (!db_->MayContainForeignVisits()) {
+    // The DB doesn't contain any foreign visits, or all the foreign visits are
+    // already scheduled for deletion - nothing to do.
+    return true;
+  }
+
+  bool already_running =
+      db_->GetDeleteForeignVisitsUntilId() != kInvalidVisitID;
+
+  // Set the max-foreign-visit-to-delete to the current max visit ID in the DB.
+  // This ensures that any visits added in the future (after the
+  // DeleteAllForeignVisits() call) will not be affected. (This matters if Sync
+  // gets enabled again, and starts adding foreign visits again, before the
+  // deletion process has completed.)
+  VisitID max_visit_to_delete = db_->GetMaxVisitIDInUse();
+  db_->SetDeleteForeignVisitsUntilId(max_visit_to_delete);
+  // Already set the "may contain foreign visits" bit to false, since all the
+  // existing foreign visits are about to be deleted. This ensures that the bit
+  // can be safely set to true again if new foreign visits are added, even
+  // before the deletion completes.
+  db_->SetMayContainForeignVisits(false);
+
+  // Only schedule a deletion task if there isn't one already running. If there
+  // is one already running, it'll pick up the new limit automatically.
+  if (!already_running) {
+    StartDeletingForeignVisits();
+  }
+
+  return true;
 }
 
 bool HistoryBackend::RemoveVisits(const VisitVector& visits) {
@@ -1630,6 +1773,12 @@ base::WeakPtr<syncer::ModelTypeControllerDelegate>
 HistoryBackend::GetHistorySyncControllerDelegate() {
   DCHECK(history_sync_bridge_);
   return history_sync_bridge_->change_processor()->GetControllerDelegate();
+}
+
+void HistoryBackend::SetSyncTransportState(
+    syncer::SyncService::TransportState state) {
+  DCHECK(history_sync_bridge_);
+  history_sync_bridge_->SetSyncTransportState(state);
 }
 
 // Statistics ------------------------------------------------------------------
@@ -1990,6 +2139,20 @@ void HistoryBackend::ReplaceClusters(
   db_->DeleteClusters(ids_to_delete);
   db_->AddClusters(clusters_to_add);
   ScheduleCommit();
+}
+
+int64_t HistoryBackend::ReserveNextClusterId() {
+  TRACE_EVENT0("browser", "HistoryBackend::ReserveNextClusterId");
+  return db_ ? db_->ReserveNextClusterId() : 0;
+}
+
+void HistoryBackend::AddVisitsToCluster(int64_t cluster_id,
+                                        const std::vector<VisitID>& visits) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddVisitsToCluster");
+  if (!db_)
+    return;
+
+  db_->AddVisitsToCluster(cluster_id, visits);
 }
 
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(
@@ -3050,7 +3213,7 @@ void HistoryBackend::KillHistoryDatabase() {
 
 void HistoryBackend::ProcessDBTask(
     std::unique_ptr<HistoryDBTask> task,
-    scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+    scoped_refptr<base::SequencedTaskRunner> origin_loop,
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled) {
   TRACE_EVENT0("browser", "HistoryBackend::ProcessDBTask");
   bool scheduled = !queued_history_db_tasks_.empty();
@@ -3238,6 +3401,11 @@ bool HistoryBackend::ProcessSetFaviconsResult(
   for (const GURL& page_url : result.updated_page_urls)
     SendFaviconChangedNotificationForPageAndRedirects(page_url);
   return true;
+}
+
+void HistoryBackend::StartDeletingForeignVisits() {
+  ProcessDBTask(std::make_unique<DeleteForeignVisitsDBTask>(), task_runner_,
+                /*is_canceled=*/base::BindRepeating([]() { return false; }));
 }
 
 }  // namespace history

@@ -157,6 +157,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void PreviousTrack() override;
   void NextTrack() override;
   void SkipAd() override {}
+  void PreviousSlide() override {}
+  void NextSlide() override {}
   void Seek(base::TimeDelta seek_time) override;
   void Stop(SuspendType type) override;
   void GetMediaImageBitmap(const MediaImage& image,
@@ -173,6 +175,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void HangUp() override {}
   void Raise() override {}
   void SetMute(bool mute) override {}
+  void RequestMediaRemoting() override {}
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }

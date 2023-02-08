@@ -68,20 +68,23 @@ bool IsSavedDesksEnabled() {
 }
 
 SavedDeskDialogController* GetSavedDeskDialogController() {
-  auto* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  DCHECK(overview_session);
-  SavedDeskDialogController* controller =
-      overview_session->saved_desk_dialog_controller();
-  DCHECK(controller);
-  return controller;
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return nullptr;
+
+  SavedDeskDialogController* dialog_controller =
+      overview_controller->overview_session()->saved_desk_dialog_controller();
+  DCHECK(dialog_controller);
+  return dialog_controller;
 }
 
 SavedDeskPresenter* GetSavedDeskPresenter() {
-  auto* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  DCHECK(overview_session);
-  SavedDeskPresenter* presenter = overview_session->saved_desk_presenter();
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return nullptr;
+
+  SavedDeskPresenter* presenter =
+      overview_controller->overview_session()->saved_desk_presenter();
   DCHECK(presenter);
   return presenter;
 }

@@ -123,6 +123,17 @@ void CryptAuthV2DeviceManagerImpl::ForceDeviceSyncNow(
   scheduler_->RequestDeviceSync(invocation_reason, session_id);
 }
 
+BetterTogetherMetadataStatus
+CryptAuthV2DeviceManagerImpl::GetDeviceSyncerBetterTogetherMetadataStatus()
+    const {
+  return device_syncer_->better_together_metadata_status();
+}
+
+GroupPrivateKeyStatus
+CryptAuthV2DeviceManagerImpl::GetDeviceSyncerGroupPrivateKeyStatus() const {
+  return device_syncer_->group_private_key_status();
+}
+
 absl::optional<base::Time> CryptAuthV2DeviceManagerImpl::GetLastDeviceSyncTime()
     const {
   return scheduler_->GetLastSuccessfulDeviceSyncTime();

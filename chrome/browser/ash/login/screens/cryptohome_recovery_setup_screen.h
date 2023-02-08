@@ -1,0 +1,58 @@
+// Copyright 2022 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_ASH_LOGIN_SCREENS_CRYPTOHOME_RECOVERY_SETUP_SCREEN_H_
+#define CHROME_BROWSER_ASH_LOGIN_SCREENS_CRYPTOHOME_RECOVERY_SETUP_SCREEN_H_
+
+#include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/ash/login/quick_unlock/auth_token.h"
+#include "chrome/browser/ash/login/screens/base_screen.h"
+#include "chromeos/ash/services/auth_factor_config/recovery_factor_editor.h"
+#include "components/account_id/account_id.h"
+
+namespace ash {
+
+class CryptohomeRecoverySetupScreenView;
+
+// Controller for the Cryptohome recovery screen.
+class CryptohomeRecoverySetupScreen : public BaseScreen {
+ public:
+  using TView = CryptohomeRecoverySetupScreenView;
+  enum class Result { DONE, SKIPPED };
+  static std::string GetResultString(Result result);
+  using ScreenExitCallback = base::RepeatingCallback<void(Result)>;
+
+  CryptohomeRecoverySetupScreen(
+      base::WeakPtr<CryptohomeRecoverySetupScreenView> view,
+      ScreenExitCallback exit_callback);
+  ~CryptohomeRecoverySetupScreen() override;
+
+  CryptohomeRecoverySetupScreen(const CryptohomeRecoverySetupScreen&) = delete;
+  CryptohomeRecoverySetupScreen& operator=(
+      const CryptohomeRecoverySetupScreen&) = delete;
+
+  ScreenExitCallback get_exit_callback_for_testing() { return exit_callback_; }
+  void set_exit_callback_for_testing(const ScreenExitCallback& callback) {
+    exit_callback_ = callback;
+  }
+
+ protected:
+  // BaseScreen:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void OnUserAction(const base::Value::List& args) override;
+  bool MaybeSkip(WizardContext& context) override;
+
+ private:
+  void ExitScreen(WizardContext& wizard_context, Result result);
+  void OnRecoveryConfigured(auth::RecoveryFactorEditor::ConfigureResult result);
+  base::WeakPtr<CryptohomeRecoverySetupScreenView> view_ = nullptr;
+  ScreenExitCallback exit_callback_;
+  base::WeakPtrFactory<CryptohomeRecoverySetupScreen> weak_ptr_factory_{this};
+};
+
+}  // namespace ash
+
+#endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_CRYPTOHOME_RECOVERY_SETUP_SCREEN_H_

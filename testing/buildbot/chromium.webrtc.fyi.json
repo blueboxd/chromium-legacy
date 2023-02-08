@@ -11,7 +11,7 @@
   },
   "WebRTC Chromium FYI Android Builder (dbg)": {},
   "WebRTC Chromium FYI Android Builder ARM64 (dbg)": {},
-  "WebRTC Chromium FYI Android Tests (dbg) (M Nexus5X)": {
+  "WebRTC Chromium FYI Android Tests (dbg)": {
     "gtest_tests": [
       {
         "args": [
@@ -33,9 +33,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "MMB29Q",
               "device_os_type": "userdebug",
-              "device_type": "bullhead",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -56,7 +55,7 @@
       }
     ]
   },
-  "WebRTC Chromium FYI Android Tests (dbg) (N Nexus5X)": {
+  "WebRTC Chromium FYI Android Tests ARM64 (dbg)": {
     "gtest_tests": [
       {
         "args": [
@@ -78,9 +77,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "N",
               "device_os_type": "userdebug",
-              "device_type": "bullhead",
+              "device_type": "walleye",
               "os": "Android"
             }
           ],
@@ -378,7 +376,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -399,7 +397,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -424,7 +422,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -445,7 +443,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -466,7 +464,7 @@
           "dimension_sets": [
             {
               "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
+              "os": "Windows-10-19042"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -488,7 +486,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "14a309",
+          "14b47b",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -518,7 +516,7 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_14a309",
+              "name": "xcode_ios_14b47b",
               "path": "Xcode.app"
             },
             {
@@ -540,7 +538,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "14a309",
+          "14b47b",
           "--xctest"
         ],
         "isolate_name": "ios_remoting_unittests",
@@ -570,7 +568,7 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_14a309",
+              "name": "xcode_ios_14b47b",
               "path": "Xcode.app"
             },
             {

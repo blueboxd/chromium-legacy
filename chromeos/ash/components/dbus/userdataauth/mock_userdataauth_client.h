@@ -37,11 +37,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
                UnmountCallback callback),
               (override));
   MOCK_METHOD(void,
-              Mount,
-              (const ::user_data_auth::MountRequest& request,
-               MountCallback callback),
-              (override));
-  MOCK_METHOD(void,
               Remove,
               (const ::user_data_auth::RemoveRequest& request,
                RemoveCallback callback),
@@ -65,16 +60,6 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               RemoveKey,
               (const ::user_data_auth::RemoveKeyRequest& request,
                RemoveKeyCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              MassRemoveKeys,
-              (const ::user_data_auth::MassRemoveKeysRequest& request,
-               MassRemoveKeysCallback callback),
-              (override));
-  MOCK_METHOD(void,
-              MigrateKey,
-              (const ::user_data_auth::MigrateKeyRequest& request,
-               MigrateKeyCallback callback),
               (override));
   MOCK_METHOD(
       void,
@@ -183,6 +168,12 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) MockUserDataAuthClient
               (const ::user_data_auth::ListAuthFactorsRequest& request,
                ListAuthFactorsCallback callback),
               (override));
+  MOCK_METHOD(
+      void,
+      GetAuthFactorExtendedInfo,
+      (const ::user_data_auth::GetAuthFactorExtendedInfoRequest& request,
+       GetAuthFactorExtendedInfoCallback callback),
+      (override));
   MOCK_METHOD(void,
               RemoveAuthFactor,
               (const ::user_data_auth::RemoveAuthFactorRequest& request,

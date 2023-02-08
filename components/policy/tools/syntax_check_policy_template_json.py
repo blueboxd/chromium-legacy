@@ -354,7 +354,14 @@ class PolicyTypeProvider():
     # - The downloaded file shouldn't be publicly accessible
     self._external_type_mismatch_allowlist = ['PluginVmImage']
 
-  def GetPolicyType(self, policy):
+  def GetPolicyType(self, policy, schemas_by_id={}):
+    '''Gets the type of `policy` according to its schema.
+
+    Args:
+      policy (dict): The policy to get the type for.
+      schemas_by_id (dict): Maps schema id to a a schema.
+
+    '''
     # Policies may have the same name as the groups they belong to, so caching
     # would not work. Instead, first check if the policy is a group; if it's
     # not, go ahead with caching.
@@ -364,18 +371,25 @@ class PolicyTypeProvider():
     policy_name = policy.get('name')
     if not policy_name or policy_name not in self._policy_types:
       return self._policy_types.setdefault(
-          policy_name, self._GetPolicyTypeFromSchema(policy))
+          policy_name, self._GetPolicyTypeFromSchema(policy, schemas_by_id))
     return self._policy_types[policy_name]
 
   def _IsGroup(self, policy):
     return policy.get('type') == 'group'
 
-  def _GetPolicyTypeFromSchema(self, policy):
+  def _GetPolicyTypeFromSchema(self, policy, schemas_by_id):
     schema = policy.get('schema')
     if not schema:
       raise NotImplementedError(
           'Policy %s does not have a schema. A schema must be implemented for '
           'all non-group type policies.' % policy.get('name'))
+
+    if '$ref' in schema:
+      if not schema['$ref'] in schemas_by_id:
+        raise NotImplementedError(
+            'Policy %s uses unknow $ref %s in schema' % policy['name'],
+            schema['$ref'])
+      schema = schemas_by_id[schema['$ref']]
 
     schema_type = schema.get('type')
     if schema_type == 'boolean':
@@ -400,6 +414,9 @@ class PolicyTypeProvider():
         return 'string-enum-list'
       elif schema_items.get('type') == 'object' and schema_items.get(
           'properties'):
+        return 'dict'
+      elif ('$ref' in schema_items
+            and schemas_by_id[schema_items['$ref']].get('type') == 'object'):
         return 'dict'
       return 'list'
     elif schema_type == 'object':
@@ -441,7 +458,7 @@ class PolicyTemplateChecker(object):
     if offending_snippet is not None:
       if isinstance(offending_snippet, dict) or isinstance(
           offending_snippet, list):
-        yaml_str = pyyaml.dumps(offending_snippet, indent=2)
+        yaml_str = pyyaml.dump(offending_snippet, indent=2)
         formatted_error_message += f'\n  Offending: {yaml_str}'
       else:
         formatted_error_message += f'\n  {offending_snippet}'
@@ -536,46 +553,12 @@ class PolicyTemplateChecker(object):
       return None
     return value
 
-  def _AddPolicyID(self, id, policy_ids, policy, deleted_policy_ids):
-    '''
-    Adds |id| to |policy_ids|. Generates an error message if the
-    |id| exists already; |policy| is needed for this message.
-    '''
-    if id in policy_ids:
-      self._PolicyError('Duplicate id', policy, 'id')
-    elif id in deleted_policy_ids:
-      self._PolicyError('Deleted id', policy, 'id')
-    elif isinstance(id, int):
-      policy_ids.add(id)
 
-  def _CheckPolicyIDs(self, policy_ids, deleted_policy_ids):
-    '''
-    Checks a set of policy_ids to make sure it contains a continuous range
-    of entries (i.e. no holes).
-    Holes would not be a technical problem, but we want to ensure that nobody
-    accidentally omits IDs.
-    '''
-    policy_count = len(policy_ids) + len(deleted_policy_ids)
-    for i in range(policy_count):
-      if (i + 1) not in policy_ids and (i + 1) not in deleted_policy_ids:
-        self._Error('No policy with id: %s' % (i + 1))
-
-  def _CheckHighestId(self, policy_ids, highest_id):
-    '''
-    Checks that the 'highest_id_currently_used' value is actually set to the
-    highest id in use by any policy.
-    '''
-    highest_id_in_policies = max(policy_ids)
-    if highest_id != highest_id_in_policies:
-      self._Error(("'highest_id_currently_used' must be set to the highest"
-                   "policy id in use, which is currently %s (vs %s).") %
-                  (highest_id_in_policies, highest_id))
-
-  def _ValidateSchema(self, schema, schema_name, policy):
+  def _ValidateSchema(self, schema, schema_name, policy, schemas_by_id):
     ''' Helper fuction to call `schema_validator.ValidateSchema`. Appends error
         to `self.errors` if necessary.
     '''
-    schema_errors = self.schema_validator.ValidateSchema(schema)
+    schema_errors = self.schema_validator.ValidateSchema(schema, schemas_by_id)
     if schema_errors:
       schema_error_message = "\n  ".join(schema_errors)
       self._PolicyError(
@@ -597,7 +580,7 @@ class PolicyTemplateChecker(object):
           'does not use all properties at least once.\n'
           f'  {value_error_message}', policy)
 
-  def _CheckPolicySchema(self, policy, policy_type):
+  def _CheckPolicySchema(self, policy, policy_type, schemas_by_id):
     '''Checks that the 'schema' field matches the 'type' field.'''
     self.has_schema_error = False
 
@@ -623,11 +606,11 @@ class PolicyTemplateChecker(object):
           f'Unexpected type. Type "{policy_type}" was expected based on the '
           'schema.', policy, 'type')
 
-    self._ValidateSchema(schema, 'schema', policy)
+    self._ValidateSchema(schema, 'schema', policy, schemas_by_id)
 
     if 'validation_schema' in policy:
       self._ValidateSchema(policy.get('validation_schema'), 'validation schema',
-                           policy)
+                           policy, schemas_by_id)
 
     # Checks that boolean policies are not negated (which makes them harder to
     # reason about).
@@ -949,8 +932,11 @@ class PolicyTemplateChecker(object):
 
     return False
 
-  def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids,
-                   current_version):
+  def _CheckPolicyDefinition(self,
+                             policy,
+                             current_version,
+                             schemas_by_id,
+                             is_in_group=False):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
       return
@@ -994,7 +980,7 @@ class PolicyTemplateChecker(object):
     # Each policy must have a type.
     policy_types = ('group', 'main', 'string', 'int', 'list', 'int-enum',
                     'string-enum', 'string-enum-list', 'dict', 'external')
-    policy_type = self.policy_type_provider.GetPolicyType(policy)
+    policy_type = self.policy_type_provider.GetPolicyType(policy, schemas_by_id)
     if policy_type not in policy_types:
       self._PolicyError('Policy type is not one of: ' + ', '.join(policy_types),
                         policy)
@@ -1041,11 +1027,8 @@ class PolicyTemplateChecker(object):
       # Statistics.
       self.num_groups += 1
 
-    else:  # policy_type != group
-      # Each policy must have a protobuf ID.
-      id = self._CheckContains(policy, 'id', int)
-      self._AddPolicyID(id, policy_ids, policy, deleted_policy_ids)
-
+    # policy_type != group
+    else:
       # Each policy must have an owner.
       self._CheckOwners(policy)
 
@@ -1055,7 +1038,7 @@ class PolicyTemplateChecker(object):
       # 'schema' is the new 'type'.
       # TODO(crbug.com/1310258): remove 'type' from policy_templates and
       # all supporting files (including this one), and exclusively use 'schema'.
-      self._CheckPolicySchema(policy, policy_type)
+      self._CheckPolicySchema(policy, policy_type, schemas_by_id)
 
       # Each policy must have a supported_on list.
       supported_on = self._CheckContains(policy,
@@ -1369,6 +1352,9 @@ class PolicyTemplateChecker(object):
         self._PolicyError('"max_size" is used for non external policies.',
                           policy, 'max_size')
 
+  def _CheckPolicy(self, policy, current_version):
+    self._CheckPolicyDefinition(policy, current_version, {})
+
   def _CheckPlatform(self, platforms, field_name, policy):
     ''' Verifies the |platforms| list. Records any error with |field_name| and
         |policy_name|.  '''
@@ -1438,6 +1424,9 @@ class PolicyTemplateChecker(object):
 
     released_platforms = {}
     rolling_out_platform = {}
+    if policy == None:
+      return released_platforms, rolling_out_platform
+
     for supported_on in policy.get('supported_on', []):
       (supported_platform, supported_from,
        _) = _GetSupportedVersionPlatformAndRange(supported_on)
@@ -1846,7 +1835,7 @@ class PolicyTemplateChecker(object):
                         original_rolling_out_platforms),
               MergeDict(new_released_platforms, new_rolling_out_platform),
               current_version, new_policy)
-      else:
+      elif new_policy:
         (new_released_platforms,
          new_rolling_out_platform) = self._GetReleasedPlatforms(
              new_policy, current_version)
@@ -1942,12 +1931,6 @@ class PolicyTemplateChecker(object):
         parent_element=None,
         container_name='The root element',
         offending=None)
-    highest_id = self._CheckContains(legacy_policy_template,
-                                     'highest_id_currently_used',
-                                     int,
-                                     parent_element=None,
-                                     container_name='The root element',
-                                     offending=None)
     highest_atomic_group_id = self._CheckContains(
         legacy_policy_template,
         'highest_atomic_group_id_currently_used',
@@ -1986,15 +1969,9 @@ class PolicyTemplateChecker(object):
         device_policy_proto_map, options.device_policy_proto_path)
 
     if policy_definitions is not None:
-      policy_ids = set()
       for policy in policy_definitions:
-        self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids,
-                          current_version)
         self._CheckDevicePolicyProtoMappingDeviceOnly(
             policy, device_policy_proto_map, legacy_device_policy_proto_map)
-      self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
-      if highest_id is not None:
-        self._CheckHighestId(policy_ids, highest_id)
       self._CheckTotalDevicePolicyExternalDataMaxSize(policy_definitions)
 
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
@@ -2036,10 +2013,37 @@ class PolicyTemplateChecker(object):
     # Second part: check formatting.
     # TODO(crbug/1375858): Check valid yaml formatting
 
-    # Third part: if the original file contents are available, try to check
-    # if the new policy definitions are compatible with the original policy
-    # definitions (if the original file contents have not raised any syntax
-    # errors).
+    # Third part: summary and exit.
+    if self.options.stats:
+      if self.num_groups > 0:
+        print('%d policies, %d of those in %d groups (containing on '
+              'average %.1f policies).' %
+              (self.num_policies, self.num_policies_in_groups, self.num_groups,
+               (1.0 * self.num_policies_in_groups / self.num_groups)))
+      else:
+        print(self.num_policies, 'policies, 0 policy groups.')
+    return
+
+  def CheckModifiedPolicies(self, policy_change_list, current_version,
+                            skip_compability_check, known_features,
+                            schemas_by_id):
+    '''
+      Checks that changes made to policies `policy_change_list` are compatible
+      with the `current_version` and previous versions of the policy.
+      This also check that the policy definition schema matches the expected
+      schema for a policy. `skip_compability_check` is used to skip the schema
+      and version compatibility checks and must be used with care.
+      'known_features' is a list of faetures that we can find in the feature
+      list for policies.
+      Returns warnings and errors found in the policies.
+    '''
+    self.features = known_features
+    modified_policies = [
+        pc['new_policy'] for pc in policy_change_list
+        if pc['new_policy'] is not None
+    ]
+    for policy in modified_policies:
+      self._CheckPolicyDefinition(policy, current_version, schemas_by_id)
     self.non_compatibility_error_count = 0
     if (not self.errors and not skip_compability_check):
       self._CheckPolicyDefinitionsChangeCompatibility(policy_change_list,
@@ -2055,19 +2059,7 @@ class PolicyTemplateChecker(object):
           'justification. Otherwise, please provide an explanation for the '
           'change. For more information please refer to: '
           'https://bit.ly/33qr3ZV.')
-
-    # Fourth part: summary and exit.
-    print('Finished checking policies. %d errors, %d warnings.' %
-          (len(self.errors), len(self.warnings)))
-    if self.options.stats:
-      if self.num_groups > 0:
-        print('%d policies, %d of those in %d groups (containing on '
-              'average %.1f policies).' %
-              (self.num_policies, self.num_policies_in_groups, self.num_groups,
-               (1.0 * self.num_policies_in_groups / self.num_groups)))
-      else:
-        print(self.num_policies, 'policies, 0 policy groups.')
-    return
+    return self.errors, self.warnings
 
   def Run(self,
           argv,

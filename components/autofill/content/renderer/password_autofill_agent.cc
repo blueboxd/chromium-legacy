@@ -23,7 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -466,6 +466,11 @@ size_t GetIndexOfElement(const FormData& form_data,
 // Returns a prediction whether the form that contains |username_element| and
 // |password_element| will be ready for submission after filling these two
 // elements.
+// TODO(crbug/1393271): Consider to reduce |SubmissionReadinessState| to a
+// boolean value (ready or not). The non-binary state is not needed for
+// auto-submission (crbug.com/1283004), but showing TTF proactively
+// (crbug.com/1393043) may need to check whether or not a given form comprises
+// only two fields.
 mojom::SubmissionReadinessState CalculateSubmissionReadiness(
     const FormData& form_data,
     WebInputElement& username_element,
@@ -1404,12 +1409,12 @@ void PasswordAutofillAgent::OnFrameDetached() {
 
 void PasswordAutofillAgent::OnDestruct() {
   receiver_.reset();
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE,
+                                                                this);
 }
 
 bool PasswordAutofillAgent::IsPrerendering() const {
-  return blink::features::IsPrerender2Enabled() &&
-         render_frame()->GetWebFrame()->GetDocument().IsPrerendering();
+  return render_frame()->GetWebFrame()->GetDocument().IsPrerendering();
 }
 
 void PasswordAutofillAgent::ReadyToCommitNavigation(

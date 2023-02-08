@@ -8,14 +8,17 @@
 #import "base/notreached.h"
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/time/time.h"
 #import "build/branding_buildflags.h"
+#import "components/variations/seed_response.h"
 #import "components/variations/variations_switches.h"
 #import "components/variations/variations_url_constants.h"
 #import "components/version_info/version_info.h"
-#import "ios/chrome/browser/variations/ios_chrome_seed_response.h"
 #import "ios/chrome/browser/variations/ios_chrome_variations_seed_store.h"
 #import "ios/chrome/common/channel_info.h"
 #import "net/http/http_status_code.h"
+
+#import "ios/chrome/browser/variations/ios_chrome_variations_seed_store+private.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +28,10 @@ namespace {
 
 // Maximum time allowed to fetch the seed before the request is cancelled.
 const base::TimeDelta kRequestTimeout = base::Seconds(2);
+// Histogram names for seed fetch time and result.
+const char kSeedFetchResultHistogram[] =
+    "IOS.Variations.FirstRun.SeedFetchResult";
+const char kSeedFetchTimeHistogram[] = "IOS.Variations.FirstRun.SeedFetchTime";
 
 // Whether a current request for variations seed is being made; this variable
 // exists that only one instance of the manager updates the global seed at one
@@ -32,14 +39,6 @@ const base::TimeDelta kRequestTimeout = base::Seconds(2);
 static BOOL g_seed_fetching_in_progress = NO;
 
 }  // namespace
-
-// Extraction of seed update method in IOSChromeVariationsSeedStore to
-// be used (and ONLY used) by the fetcher.
-@interface IOSChromeVariationsSeedStore (Fetcher)
-
-+ (void)updateSharedSeed:(IOSChromeSeedResponse*)seed;
-
-@end
 
 @interface IOSChromeVariationsSeedFetcher () {
   // The variations server domain name.
@@ -57,8 +56,8 @@ static BOOL g_seed_fetching_in_progress = NO;
 @property(nonatomic, readonly) NSURL* variationsUrl;
 
 // The timestamp when the current seed request starts. This is used for metric
-// reporting, and will be reset to `nil` when the request finishes.
-@property(nonatomic, strong) NSDate* startTimeOfOngoingSeedRequest;
+// reporting, and will be reset to null value when the request finishes.
+@property(nonatomic, assign) base::Time startTimeOfOngoingSeedRequest;
 
 @end
 
@@ -151,7 +150,6 @@ static BOOL g_seed_fetching_in_progress = NO;
   // Stops executing if seed fetching is disabled.
   if (!self.fetchingEnabled) {
     [self notifyDelegateSeedFetchResult:NO];
-    [self recordSeedFetchResult];
     return;
   }
 
@@ -172,7 +170,7 @@ static BOOL g_seed_fetching_in_progress = NO;
                                       response:(NSHTTPURLResponse*)response
                                          error:error];
         }];
-  self.startTimeOfOngoingSeedRequest = [NSDate now];
+  self.startTimeOfOngoingSeedRequest = base::Time::Now();
   [task resume];
 }
 
@@ -185,28 +183,45 @@ static BOOL g_seed_fetching_in_progress = NO;
   // successful response, but it is not expected when the request does
   // not contain "If-None-Match" header.
   BOOL success = error == nil && httpResponse.statusCode == net::HTTP_OK;
+  IOSSeedFetchException exception = IOSSeedFetchException::kNotApplicable;
   if (success) {
-    // TODO(crbug.com/1353937): Log time delta.
-    IOSChromeSeedResponse* seed = [self seedResponseForHTTPResponse:httpResponse
-                                                               data:data];
-    if (seed == nil) {
-      success = NO;
+    base::UmaHistogramTimes(
+        kSeedFetchTimeHistogram,
+        base::Time::Now() - self.startTimeOfOngoingSeedRequest);
+    std::unique_ptr<variations::SeedResponse> seed =
+        [self seedResponseForHTTPResponse:httpResponse data:data];
+    if (seed) {
+      [IOSChromeVariationsSeedStore updateSharedSeed:std::move(seed)];
     } else {
-      [IOSChromeVariationsSeedStore updateSharedSeed:seed];
+      // Currently, only the IM header is mandatory to create a first run seed,
+      // and is the only possible reason that a seed is downloaded but not
+      // created.
+      exception = IOSSeedFetchException::kInvalidIMHeader;
+      success = NO;
     }
+  } else if (error.code == NSURLErrorTimedOut) {
+    exception = IOSSeedFetchException::kHTTPSRequestTimeout;
+  } else if (error.code == NSURLErrorBadURL ||
+             error.code == NSURLErrorDNSLookupFailed ||
+             error.code == NSURLErrorCannotFindHost) {
+    exception = IOSSeedFetchException::kHTTPSRequestBadUrl;
   }
-  [self recordSeedFetchResult];
-  self.startTimeOfOngoingSeedRequest = nil;
+  self.startTimeOfOngoingSeedRequest = base::Time();
   g_seed_fetching_in_progress = NO;
 
+  // Log seed fetch result on UMA and notify delegate.
+  int seedFetchResultValue = exception == IOSSeedFetchException::kNotApplicable
+                                 ? static_cast<int>(httpResponse.statusCode)
+                                 : static_cast<int>(exception);
+  base::UmaHistogramSparse(kSeedFetchResultHistogram, seedFetchResultValue);
   [self notifyDelegateSeedFetchResult:success];
 }
 
 // Generates and returns the SeedResponse by parsing the HTTP response returned
 // by the variations server. Returns `nil` if the HTTP response is invalid.
-- (IOSChromeSeedResponse*)seedResponseForHTTPResponse:
-                              (NSHTTPURLResponse*)httpResponse
-                                                 data:(NSData*)data {
+- (std::unique_ptr<variations::SeedResponse>)
+    seedResponseForHTTPResponse:(NSHTTPURLResponse*)httpResponse
+                           data:(NSData*)data {
   NSString* signature =
       [httpResponse valueForHTTPHeaderField:@"X-Seed-Signature"];
   NSString* country = [httpResponse valueForHTTPHeaderField:@"X-Country"];
@@ -225,29 +240,24 @@ static BOOL g_seed_fetching_in_progress = NO;
   if ([instanceManipulations count] == 1 &&
       [[instanceManipulations[0] stringByTrimmingCharactersInSet:whitespace]
           isEqualToString:@"gzip"]) {
-    IOSChromeSeedResponse* seed =
-        [[IOSChromeSeedResponse alloc] initWithSignature:signature
-                                                 country:country
-                                                    time:[NSDate now]
-                                                    data:data
-                                              compressed:YES];
+    auto seed = std::make_unique<variations::SeedResponse>();
+    if (data) {
+      // "data" is binary, for which protobuf uses strings.
+      seed->data = std::string(reinterpret_cast<const char*>([data bytes]),
+                               [data length]);
+    }
+    seed->signature = base::SysNSStringToUTF8(signature);
+    seed->country = base::SysNSStringToUTF8(country);
+    seed->date = base::Time::Now();
+    seed->is_gzip_compressed = YES;
     return seed;
   }
-  [self recordSeedFetchResult];
-  return nil;
-}
-
-// Records the seed fetch result on UMA.
-- (void)recordSeedFetchResult {
-  // TODO(crbug.com/3835653): First parameter of this method should be an enum
-  // that is yet to be implemented. Log metrics for seed fetch result.
-  return;
+  return nullptr;
 }
 
 // Notifies the delegate of the seed fetching result. Since the seed fetch
 // request is sent on the background instead of the main queue, this method
 // should explicitly dispatch the result back on the main queue.
-// TODO(crbug.com/3835653): Merge with `recordSeedFetchResult`.
 - (void)notifyDelegateSeedFetchResult:(BOOL)result {
   __weak IOSChromeVariationsSeedFetcher* weakSelf = self;
   dispatch_async(dispatch_get_main_queue(), ^{

@@ -219,11 +219,6 @@
       permissions_policy_name: "display-capture",
     },
     {
-      name: "DocumentDomain",
-      permissions_policy_name: "document-domain",
-      feature_default: "EnableForAll",
-    },
-    {
       name: "EncryptedMedia",
       permissions_policy_name: "encrypted-media",
     },
@@ -363,6 +358,11 @@
       depends_on: ["SharedStorageAPI"],
     },
     {
+      name: "SmartCard",
+      permissions_policy_name: "smart-card",
+      depends_on: ["SmartCard"],
+    },
+    {
       name: "StorageAccessAPI",
       feature_default: "EnableForAll",
       permissions_policy_name: "storage-access",
@@ -376,7 +376,7 @@
     {
       name: "TrustTokenRedemption",
       permissions_policy_name: "trust-token-redemption",
-      depends_on: ["TrustTokens"],
+      depends_on: ["PrivateStateTokens"],
     },
     {
       name: "Usb",

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_APP_INTERFACE_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_APP_INTERFACE_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @protocol GREYMatcher;
 
@@ -35,8 +35,8 @@
 // and accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithAccessibilityLabelID:(int)messageID;
 
-// Matcher for element with an image corresponding to `imageID`.
-+ (id<GREYMatcher>)imageViewWithImage:(int)imageID;
+// Matcher for element with an image corresponding to `image`.
++ (id<GREYMatcher>)imageViewWithImage:(UIImage*)image;
 
 // Matcher for element with an image defined by its name in the main bundle.
 + (id<GREYMatcher>)imageViewWithImageNamed:(NSString*)imageName;
@@ -531,6 +531,9 @@
 
 // Returns a matcher to the add button in the toolbar of the settings view.
 + (id<GREYMatcher>)settingsToolbarAddButton;
+
+// Returns a matcher matching cells that can be swiped-to-dismiss.
++ (id<GREYMatcher>)cellCanBeSwipedToDismissed;
 
 #pragma mark - Overflow Menu Destinations
 

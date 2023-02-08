@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/ash/components/drivefs/drivefs_util.h"
+#include "chromeos/ash/components/drivefs/sync_status_tracker.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_errors.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -314,14 +314,18 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
   if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
     drive::DriveIntegrationService* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(running_profile_);
-    auto sync_status = (!integration_service)
-                           ? drivefs::SyncStatus::kNotFound
-                           : integration_service->GetSyncStatusForPath(
-                                 file_system_url_.path());
-    switch (sync_status) {
+    drivefs::SyncStatusAndProgress status_and_progress =
+        (!integration_service) ? drivefs::SyncStatusAndProgress::kNotFound
+                               : integration_service->GetSyncStatusForPath(
+                                     file_system_url_.path());
+    switch (status_and_progress.status) {
+      case drivefs::SyncStatus::kQueued:
+        properties_->sync_status = file_manager_private::SYNC_STATUS_QUEUED;
+        break;
       case drivefs::SyncStatus::kInProgress:
         properties_->sync_status =
             file_manager_private::SYNC_STATUS_IN_PROGRESS;
+        properties_->progress = status_and_progress.progress;
         break;
       case drivefs::SyncStatus::kError:
         properties_->sync_status = file_manager_private::SYNC_STATUS_ERROR;
@@ -563,23 +567,18 @@ void VolumeToVolumeMetadata(
 
   switch (volume.mount_condition()) {
     default:
-      NOTREACHED() << "Unexpected mount condition " << volume.mount_condition();
+      LOG(ERROR) << "Unexpected mount condition: " << volume.mount_condition();
       [[fallthrough]];
     case ash::MountError::kSuccess:
-      volume_metadata->mount_condition =
-          file_manager_private::MOUNT_CONDITION_NONE;
+      volume_metadata->mount_condition = file_manager_private::MOUNT_ERROR_NONE;
       break;
     case ash::MountError::kUnknownFilesystem:
       volume_metadata->mount_condition =
-          file_manager_private::MOUNT_CONDITION_UNKNOWN;
+          file_manager_private::MOUNT_ERROR_UNKNOWN_FILESYSTEM;
       break;
     case ash::MountError::kUnsupportedFilesystem:
       volume_metadata->mount_condition =
-          file_manager_private::MOUNT_CONDITION_UNSUPPORTED;
-      break;
-    case ash::MountError::kInProgress:
-      volume_metadata->mount_condition =
-          file_manager_private::MOUNT_CONDITION_IN_PROGRESS;
+          file_manager_private::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM;
       break;
   }
 
@@ -638,7 +637,7 @@ void GetSelectedFileInfo(content::RenderFrameHost* render_frame_host,
     }
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&GetSelectedFileInfoInternal, profile, std::move(params)));
 }

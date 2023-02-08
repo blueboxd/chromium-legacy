@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/values.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -73,6 +74,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
             chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_SRK_VULNERABLE_ROCA,
             srk_vulnerable_roca_path, srk_vulnerable_roca_path.IsAbsolute(),
             false);
+    cros_settings_test_helper_.ReplaceDeviceSettingsProviderWithStub();
     SetUpdateAvailability(Availability::kAvailable);
   }
 
@@ -131,11 +133,17 @@ class TPMFirmwareUpdateModesTest : public TPMFirmwareUpdateTest {
                                base::Unretained(this));
     statistics_provider_.SetVpdStatus(
         system::StatisticsProvider::VpdStatus::kValid);
+    cros_settings_test_helper_.InstallAttributes()->set_device_locked(false);
   }
 
   void RecordResponse(const std::set<Mode>& modes) {
     callback_received_ = true;
     callback_modes_ = modes;
+  }
+
+  void SetConsumerOwned() {
+    cros_settings_test_helper_.InstallAttributes()->SetConsumerOwned();
+    cros_settings_test_helper_.InstallAttributes()->set_device_locked(true);
   }
 
   const std::set<Mode> kAllModes{Mode::kPowerwash, Mode::kPreserveDeviceState};
@@ -161,12 +169,15 @@ TEST_F(TPMFirmwareUpdateModesTest, FRERequired) {
   EXPECT_TRUE(callback_modes_.empty());
 }
 
-TEST_F(TPMFirmwareUpdateModesTest, FRERequiredDueToInvalidVPDStatus) {
+TEST_F(TPMFirmwareUpdateModesTest, FRERequiredDueToInvalidRwVpdStatus) {
   statistics_provider_.SetVpdStatus(
-      system::StatisticsProvider::VpdStatus::kInvalid);
-  GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
-  EXPECT_TRUE(callback_received_);
-  EXPECT_TRUE(callback_modes_.empty());
+      system::StatisticsProvider::VpdStatus::kRwInvalid);
+  base::test::TestFuture<std::set<Mode>> future;
+  GetAvailableUpdateModes(future.GetCallback<const std::set<Mode>&>(),
+                          base::TimeDelta());
+
+  const auto& modes = future.Get();
+  EXPECT_TRUE(modes.empty());
 }
 
 TEST_F(TPMFirmwareUpdateModesTest, Pending) {
@@ -177,11 +188,43 @@ TEST_F(TPMFirmwareUpdateModesTest, Pending) {
   EXPECT_TRUE(callback_modes_.empty());
 }
 
+TEST_F(TPMFirmwareUpdateModesTest, ConsumerOwned) {
+  SetConsumerOwned();
+  statistics_provider_.SetVpdStatus(
+      system::StatisticsProvider::VpdStatus::kInvalid);
+  GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
+  task_environment_.RunUntilIdle();
+  EXPECT_TRUE(callback_received_);
+  EXPECT_EQ(kAllModes, callback_modes_);
+}
+
 TEST_F(TPMFirmwareUpdateModesTest, Available) {
   GetAvailableUpdateModes(std::move(callback_), base::TimeDelta());
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(callback_received_);
   EXPECT_EQ(kAllModes, callback_modes_);
+}
+
+TEST_F(TPMFirmwareUpdateModesTest, AvailableWithInvalidVpdStatus) {
+  statistics_provider_.SetVpdStatus(
+      system::StatisticsProvider::VpdStatus::kInvalid);
+  base::test::TestFuture<std::set<Mode>> future;
+  GetAvailableUpdateModes(future.GetCallback<const std::set<Mode>&>(),
+                          base::TimeDelta());
+
+  const auto& modes = future.Get();
+  EXPECT_EQ(kAllModes, modes);
+}
+
+TEST_F(TPMFirmwareUpdateModesTest, AvailableWithInvalidRoVpdStatus) {
+  statistics_provider_.SetVpdStatus(
+      system::StatisticsProvider::VpdStatus::kRoInvalid);
+  base::test::TestFuture<std::set<Mode>> future;
+  GetAvailableUpdateModes(future.GetCallback<const std::set<Mode>&>(),
+                          base::TimeDelta());
+
+  const auto& modes = future.Get();
+  EXPECT_EQ(kAllModes, modes);
 }
 
 TEST_F(TPMFirmwareUpdateModesTest, AvailableAfterWaiting) {
@@ -242,9 +285,9 @@ TEST_F(TPMFirmwareUpdateModesTest, Timeout) {
 class TPMFirmwareUpdateModesEnterpriseTest : public TPMFirmwareUpdateModesTest {
  public:
   TPMFirmwareUpdateModesEnterpriseTest() {
-    cros_settings_test_helper_.ReplaceDeviceSettingsProviderWithStub();
     cros_settings_test_helper_.InstallAttributes()->SetCloudManaged(
         "example.com", "fake-device-id");
+    cros_settings_test_helper_.InstallAttributes()->set_device_locked(true);
   }
 
   void SetPolicy(const std::set<Mode>& modes) {

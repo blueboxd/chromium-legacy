@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_public_test_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -38,7 +39,6 @@
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
@@ -60,30 +60,6 @@ namespace {
 // disabler exists at a time.
 class ScopedItemMoveAnimationDisabler;
 ScopedItemMoveAnimationDisabler* g_disabler_ptr = nullptr;
-
-AppListView* GetAppListView() {
-  return Shell::Get()->app_list_controller()->fullscreen_presenter()->GetView();
-}
-
-// An app list should be either a bubble app list or a fullscreen app list.
-// Returns true if a bubble app list should be used under the current mode.
-bool ShouldUseBubbleAppList() {
-  // A bubble app list should be used only when it is in clamshell mode
-  return !Shell::Get()->IsInTabletMode();
-}
-
-// Creates a RunLoop that waits until the context menu of app list item is
-// shown.
-void WaitUntilItemMenuShown(ash::AppListItemView* item_view) {
-  base::RunLoop run_loop;
-
-  // Set the callback that will quit the RunLoop when context menu is shown.
-  item_view->SetContextMenuShownCallbackForTest(run_loop.QuitClosure());
-  run_loop.Run();
-
-  // Reset the callback.
-  item_view->SetContextMenuShownCallbackForTest(base::RepeatingClosure());
-}
 
 // Returns the menu item indicated by `order` from a non-folder item menu.
 views::MenuItemView* GetReorderOptionForNonFolderItemMenu(
@@ -186,10 +162,6 @@ views::MenuItemView* ShowRootMenuAndReturn(
       if (is_folder_item) {
         root_menu = item_view->context_menu_for_folder()->root_menu_item_view();
       } else {
-        if (!base::FeatureList::IsEnabled(
-                apps::kAppServiceGetMenuWithoutMojom)) {
-          WaitUntilItemMenuShown(item_view);
-        }
         ash::AppListMenuModelAdapter* menu_model_adapter =
             item_view->item_menu_model_adapter();
         root_menu = menu_model_adapter->root_for_testing();
@@ -205,17 +177,6 @@ PagedAppsGridView* GetPagedAppsGridView() {
   // This view only exists for tablet launcher and legacy peeking launcher.
   DCHECK(!ShouldUseBubbleAppList());
   return AppListView::TestApi(GetAppListView()).GetRootAppsGridView();
-}
-
-AppListBubbleView* GetAppListBubbleView() {
-  AppListBubbleView* bubble_view = Shell::Get()
-                                       ->app_list_controller()
-                                       ->bubble_presenter_for_test()
-                                       ->bubble_view_for_test();
-  DCHECK(bubble_view) << "Bubble launcher view not yet created. Tests must "
-                         "show the launcher and may need to call "
-                         "WaitForBubbleWindow() if animations are enabled.";
-  return bubble_view;
 }
 
 AppsContainerView* GetAppsContainerView() {
@@ -250,12 +211,6 @@ RecentAppsView* GetRecentAppsView() {
     return GetAppListBubbleView()->apps_page_for_test()->recent_apps_for_test();
 
   return GetAppsContainerView()->GetRecentAppsView();
-}
-
-SearchBoxView* GetSearchBoxView() {
-  if (ShouldUseBubbleAppList())
-    return GetAppListBubbleView()->search_box_view_for_test();
-  return GetAppListView()->app_list_main_view()->search_box_view();
 }
 
 // AppListVisibilityChangedWaiter ----------------------------------------------
@@ -793,12 +748,13 @@ ui::Layer* AppListTestApi::GetAppListViewLayer() {
 
 void AppListTestApi::RegisterReorderAnimationDoneCallback(
     ReorderAnimationEndState* actual_state) {
-  AddReorderAnimationCallback(
-      base::BindRepeating(&AppListTestApi::OnReorderAnimationDone,
-                          weak_factory_.GetWeakPtr(), actual_state));
+  AddReorderAnimationCallback(base::BindRepeating(
+      &AppListTestApi::OnReorderAnimationDone, weak_factory_.GetWeakPtr(),
+      !ash::Shell::Get()->IsInTabletMode(), actual_state));
 }
 
-void AppListTestApi::OnReorderAnimationDone(ReorderAnimationEndState* result,
+void AppListTestApi::OnReorderAnimationDone(bool for_bubble_app_list,
+                                            ReorderAnimationEndState* result,
                                             bool abort,
                                             AppListGridAnimationStatus status) {
   DCHECK(status == AppListGridAnimationStatus::kReorderFadeOut ||
@@ -816,9 +772,8 @@ void AppListTestApi::OnReorderAnimationDone(ReorderAnimationEndState* result,
 
     // Verify that the toast container under the clamshell mode does not have
     // a layer after reorder animation completes.
-    views::View* toast_container = GetToastContainerView();
-    if (toast_container && !ash::Shell::Get()->IsInTabletMode())
-      EXPECT_FALSE(toast_container->layer());
+    if (for_bubble_app_list)
+      EXPECT_FALSE(GetToastContainerView()->layer());
   }
 
   // Callback can be registered without a running loop.

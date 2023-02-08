@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/download/drag_download_item.h"
@@ -31,6 +32,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -124,6 +126,16 @@ bool DownloadBubbleRowView::UpdateBubbleUIInfo(bool initial_setup) {
       (is_paused_ == is_paused)) {
     return false;
   }
+
+  // Announce completion of downloads
+  if (state == download::DownloadItem::COMPLETE && !initial_setup &&
+      state_ != state) {
+    const std::u16string alert_text = l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT,
+        model_->GetFileNameToReportUser().LossyDisplayName());
+    GetViewAccessibility().AnnounceText(alert_text);
+  }
+
   mode_ = mode;
   state_ = state;
   is_paused_ = is_paused;
@@ -556,6 +568,9 @@ void DownloadBubbleRowView::Layout() {
 
 void DownloadBubbleRowView::OnMainButtonPressed() {
   if (ui_info_.has_subpage) {
+    DownloadItemWarningData::AddWarningActionEvent(
+        model_->GetDownloadItem(), DownloadItemWarningData::BUBBLE_MAINPAGE,
+        DownloadItemWarningData::OPEN_SUBPAGE);
     navigation_handler_->OpenSecurityDialog(this);
   } else {
     RecordDownloadOpenButtonPressed(model_->IsDone());
@@ -627,8 +642,14 @@ void DownloadBubbleRowView::UpdateLabels() {
   primary_label_->SetText(model_->GetFileNameToReportUser().LossyDisplayName());
   secondary_label_->SetText(model_->GetStatusText());
 
-  transparent_button_->SetAccessibleName(base::JoinString(
-      {primary_label_->GetText(), secondary_label_->GetText()}, u" "));
+  if (ui_info_.has_subpage) {
+    transparent_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_BUBBLE_MAIN_BUTTON_SUBPAGE, primary_label_->GetText(),
+        secondary_label_->GetText()));
+  } else {
+    transparent_button_->SetAccessibleName(base::JoinString(
+        {primary_label_->GetText(), secondary_label_->GetText()}, u" "));
+  }
 
   if (GetWidget()) {
     secondary_label_->SetEnabledColor(
@@ -653,6 +674,11 @@ void DownloadBubbleRowView::RecordMetricsOnUpdate() {
 }
 
 void DownloadBubbleRowView::RecordDownloadDisplayed() {
+  if (model_->IsDangerous()) {
+    DownloadItemWarningData::AddWarningActionEvent(
+        model_->GetDownloadItem(), DownloadItemWarningData::BUBBLE_MAINPAGE,
+        DownloadItemWarningData::SHOWN);
+  }
   if (!model_->GetEphemeralWarningUiShownTime().has_value() &&
       model_->IsEphemeralWarning()) {
     model_->SetEphemeralWarningUiShownTime(base::Time::Now());
@@ -697,7 +723,7 @@ views::MdTextButton* DownloadBubbleRowView::AddMainPageButton(
           base::BindRepeating(
               &DownloadBubbleUIController::ProcessDownloadButtonPress,
               base::Unretained(bubble_controller_),
-              base::Unretained(model_.get()), command),
+              base::Unretained(model_.get()), command, /*is_main_view=*/true),
           button_string));
   button->SetMaxSize(gfx::Size(0, kDownloadButtonHeight));
   button->SetProperty(views::kMarginsKey, kRowInterElementPadding);
@@ -711,12 +737,19 @@ views::ImageButton* DownloadBubbleRowView::AddQuickAction(
       views::CreateVectorImageButton(base::BindRepeating(
           &DownloadBubbleUIController::ProcessDownloadButtonPress,
           base::Unretained(bubble_controller_), base::Unretained(model_.get()),
-          command)));
+          command, /*is_main_view=*/true)));
   InstallCircleHighlightPathGenerator(quick_action);
   quick_action->SetBorder(
       views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ICON)));
   quick_action->SetProperty(views::kMarginsKey, kRowInterElementPadding);
   quick_action->SetVisible(false);
+  views::InkDrop::Get(quick_action)
+      ->SetBaseColorCallback(base::BindRepeating(
+          [](views::View* host) {
+            return views::style::GetColor(*host, views::style::CONTEXT_BUTTON,
+                                          views::style::STYLE_SECONDARY);
+          },
+          quick_action));
   return quick_action;
 }
 

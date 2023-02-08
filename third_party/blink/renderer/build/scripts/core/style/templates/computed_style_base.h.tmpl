@@ -43,6 +43,13 @@ namespace blink {
 // Forward declaration for diff functions.
 class ComputedStyle;
 
+// Forward declaration of friends:
+{% for property in longhands %}
+{% if property.computed_style_custom_functions or property.computed_style_protected_functions %}
+namespace {{property.namespace}} { class {{property.classname}}; }
+{% endif %}
+{% endfor %}
+
 // The generated portion of ComputedStyle. For more info, see the header comment
 // in ComputedStyle.h.
 //
@@ -80,6 +87,14 @@ class ComputedStyle;
 // 'external' field has an extra setter that takes an rvalue reference. A list
 // of the available templates can be found in css_properties.json5.
 class ComputedStyleBase {
+  // Properties with protected accessors must be friends because
+  // Longhand::Apply* functions typically need the "raw" computed value:
+  {% for property in longhands %}
+  {% if property.computed_style_custom_functions or property.computed_style_protected_functions %}
+  friend class {{property.namespace}}::{{property.classname}};
+  {% endif %}
+  {% endfor %}
+
  public:
   inline bool IndependentInheritedEqual(const ComputedStyleBase& o) const {
     return (
@@ -137,10 +152,9 @@ class ComputedStyleBase {
     );
   }
 
-  // Copies the values of any independent inherited properties from the parent
-  // style that are marked as inherited by this style.
-  void PropagateIndependentInheritedProperties(
-      const ComputedStyleBase& parentStyle);
+  inline bool IsSurroundDataSharedWith(const ComputedStyleBase& o) const {
+    return surround_data_.Get() == o.surround_data_.Get();
+  }
 
   {% for name, groups_to_diff in diff_functions_map.items() %}
   static bool {{name}}(const ComputedStyle& a, const ComputedStyle& b);
@@ -229,6 +243,8 @@ class ComputedStyleBuilderBase {
 
   CORE_EXPORT void InheritFrom(const ComputedStyleBase& other, IsAtShadowBoundary isAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyleBase& other);
+
+  void PropagateIndependentInheritedProperties(const ComputedStyleBase& parent_style);
 
   {% for field in computed_style_builder.all_fields|sort(attribute='name') %}
   // {{field.property_name}}

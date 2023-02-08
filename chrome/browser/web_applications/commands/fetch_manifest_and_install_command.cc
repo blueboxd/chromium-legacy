@@ -137,7 +137,8 @@ FetchManifestAndInstallCommand::FetchManifestAndInstallCommand(
     OnceInstallCallback callback,
     bool use_fallback,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
-    : noop_lock_description_(std::make_unique<NoopLockDescription>()),
+    : WebAppCommandTemplate<NoopLock>("FetchManifestAndInstallCommand"),
+      noop_lock_description_(std::make_unique<NoopLockDescription>()),
       install_surface_(install_surface),
       web_contents_(contents),
       bypass_service_worker_check_(bypass_service_worker_check),
@@ -153,10 +154,10 @@ FetchManifestAndInstallCommand::~FetchManifestAndInstallCommand() = default;
 LockDescription& FetchManifestAndInstallCommand::lock_description() const {
   DCHECK(noop_lock_description_ || app_lock_description_);
 
-  if (noop_lock_description_)
-    return *noop_lock_description_;
+  if (app_lock_description_)
+    return *app_lock_description_;
 
-  return *app_lock_description_;
+  return *noop_lock_description_;
 }
 
 void FetchManifestAndInstallCommand::StartWithLock(
@@ -201,8 +202,9 @@ FetchManifestAndInstallCommand::GetInstallingWebContents() {
 
 base::Value FetchManifestAndInstallCommand::ToDebugValue() const {
   auto debug_value = debug_log_.Clone();
-  debug_value.Set("command_name", "FetchManifestAndInstallCommand");
   debug_value.Set("app_id", app_id_);
+  debug_value.Set("install_surface", static_cast<int>(install_surface_));
+  debug_value.Set("used_fallback", use_fallback_);
   return base::Value(std::move(debug_value));
 }
 
@@ -295,7 +297,7 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
 
   app_lock_description_ =
       command_manager()->lock_manager().UpgradeAndAcquireLock(
-          std::move(noop_lock_description_), std::move(noop_lock_), {app_id_},
+          std::move(noop_lock_), {app_id_},
           base::BindOnce(&FetchManifestAndInstallCommand::
                              CheckForPlayStoreIntentOrGetIcons,
                          weak_ptr_factory_.GetWeakPtr(), std::move(icon_urls),

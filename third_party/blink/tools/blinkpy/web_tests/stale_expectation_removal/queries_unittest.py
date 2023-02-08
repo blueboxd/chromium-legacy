@@ -16,11 +16,15 @@ from blinkpy.web_tests.stale_expectation_removal import queries
 from blinkpy.web_tests.stale_expectation_removal import unittest_utils as wt_uu
 from unexpected_passes_common import constants as common_constants
 from unexpected_passes_common import data_types as common_data_types
+from unexpected_passes_common import expectations as common_expectations
+from unexpected_passes_common import unittest_utils as common_uu
 
 
 class ConvertJsonResultToResultObjectUnittest(unittest.TestCase):
     def setUp(self) -> None:
         common_data_types.SetResultImplementation(data_types.WebTestResult)
+        common_expectations.ClearInstance()
+        common_uu.RegisterGenericExpectationsImplementation()
 
     def tearDown(self) -> None:
         common_data_types.SetResultImplementation(common_data_types.BaseResult)
@@ -157,6 +161,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
   )
 SELECT DISTINCT builder_name
@@ -178,6 +184,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     UNION ALL
     SELECT
       (
@@ -186,6 +194,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chrome.blink_web_tests_ci_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   )
 SELECT DISTINCT builder_name
 FROM builders
@@ -206,6 +216,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.blink_web_tests_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
   )
 SELECT DISTINCT builder_name
@@ -227,6 +239,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chromium.blink_web_tests_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
     UNION ALL
     SELECT
       (
@@ -235,6 +249,8 @@ WITH
         WHERE key = "builder") as builder_name
     FROM
       `chrome-luci-data.chrome.blink_web_tests_try_test_results` tr
+    WHERE
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
   )
 SELECT DISTINCT builder_name
 FROM builders
@@ -259,7 +275,8 @@ WITH
     FROM
       `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr
     WHERE
-      exported.realm = "chromium:ci"
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chromium:ci"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
     ORDER BY partition_time DESC
     LIMIT @num_builds
@@ -294,7 +311,8 @@ WITH
       `chrome-luci-data.chromium.blink_web_tests_ci_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -322,7 +340,8 @@ WITH
     FROM
       `chrome-luci-data.chrome.blink_web_tests_ci_test_results` tr
     WHERE
-      exported.realm = "chrome:ci"
+      DATE(partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chrome:ci"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
     ORDER BY partition_time DESC
     LIMIT @num_builds
@@ -357,7 +376,8 @@ WITH
       `chrome-luci-data.chrome.blink_web_tests_ci_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -399,7 +419,8 @@ WITH
       `chrome-luci-data.chromium.blink_web_tests_try_test_results` tr,
       submitted_builds sb
     WHERE
-      exported.realm = "chromium:try"
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chromium:try"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
       AND exported.id = sb.id
     ORDER BY partition_time DESC
@@ -435,7 +456,8 @@ WITH
       `chrome-luci-data.chromium.blink_web_tests_try_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )
@@ -477,7 +499,8 @@ WITH
       `chrome-luci-data.chrome.blink_web_tests_try_test_results` tr,
       submitted_builds sb
     WHERE
-      exported.realm = "chrome:try"
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.realm = "chrome:try"
       AND STRUCT("builder", @builder_name) IN UNNEST(variant)
       AND exported.id = sb.id
     ORDER BY partition_time DESC
@@ -513,7 +536,8 @@ WITH
       `chrome-luci-data.chrome.blink_web_tests_try_test_results` tr,
       builds b
     WHERE
-      exported.id = build_inv_id
+      DATE(tr.partition_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
+      AND exported.id = build_inv_id
       AND status != "SKIP"
       tfc
   )

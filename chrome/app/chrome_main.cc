@@ -132,7 +132,7 @@ int ChromeMain(int argc, const char** argv) {
   if(!__builtin_available(macOS 10.10,*)) {
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
   }
-
+  
   if(!__builtin_available(macOS 10.8,*)) {
     command_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationANGLEName);
     command_line->AppendSwitchASCII(switches::kUseANGLE, gl::kANGLEImplementationSwiftShaderForWebGLName);

@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
-import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarFeatures.AdaptiveToolbarButtonVariant;
+import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -155,7 +155,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
 
     public ButtonData getForStartSurface(
             @StartSurfaceState int overviewModeState, @LayoutType int layoutType) {
-        if (ReturnToChromeUtil.isTabSwitcherOnlyRefactorEnabled(mContext)) {
+        if (ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)) {
             if (layoutType != LayoutType.START_SURFACE) {
                 mButtonData.setCanShow(false);
                 return mButtonData;

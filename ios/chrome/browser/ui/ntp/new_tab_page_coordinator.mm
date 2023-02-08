@@ -72,7 +72,6 @@
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+private.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
@@ -82,7 +81,6 @@
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
-#import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
@@ -120,9 +118,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
                                      OverscrollActionsControllerDelegate,
                                      PrefObserverDelegate,
                                      SceneStateObserver> {
-  // Helper object managing the availability of the voice search feature.
-  VoiceSearchAvailability _voiceSearchAvailability;
-
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
@@ -321,6 +316,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   self.feedHeaderViewController.ntpDelegate = nil;
   self.feedHeaderViewController = nil;
   self.feedTopSectionCoordinator.ntpDelegate = nil;
+  [self.feedTopSectionCoordinator stop];
   self.feedTopSectionCoordinator = nil;
 
   self.alertCoordinator = nil;
@@ -436,8 +432,12 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
-    [self updateStartForVisibilityChange:visible];
     if (visible && self.started) {
+      if (NewTabPageTabHelper::FromWebState(self.webState)
+              ->ShouldShowStartSurface()) {
+        self.headerController.isStartShowing = YES;
+        [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
+      }
       if ([self isFollowingFeedAvailable]) {
         self.ntpViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
         self.shouldScrollIntoFeed = NO;
@@ -546,18 +546,17 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 - (void)initializeNTPComponents {
   self.ntpViewController = [[NewTabPageViewController alloc] init];
   self.ntpMediator = [[NTPHomeMediator alloc]
-             initWithWebState:self.webState
-           templateURLService:self.templateURLService
-                    URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
-                  authService:self.authService
-              identityManager:IdentityManagerFactory::GetForBrowserState(
-                                  self.browser->GetBrowserState())
-        accountManagerService:ChromeAccountManagerServiceFactory::
-                                  GetForBrowserState(
-                                      self.browser->GetBrowserState())
-                   logoVendor:ios::provider::CreateLogoVendor(self.browser,
-                                                              self.webState)
-      voiceSearchAvailability:&_voiceSearchAvailability];
+           initWithWebState:self.webState
+         templateURLService:self.templateURLService
+                  URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
+                authService:self.authService
+            identityManager:IdentityManagerFactory::GetForBrowserState(
+                                self.browser->GetBrowserState())
+      accountManagerService:ChromeAccountManagerServiceFactory::
+                                GetForBrowserState(
+                                    self.browser->GetBrowserState())
+                 logoVendor:ios::provider::CreateLogoVendor(self.browser,
+                                                            self.webState)];
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   self.headerSynchronizer = [[ContentSuggestionsHeaderSynchronizer alloc]
       initWithCollectionController:self.ntpViewController
@@ -623,10 +622,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   self.headerController.toolbarDelegate = self.toolbarDelegate;
   self.headerController.baseViewController = self.baseViewController;
   self.headerController.collectionSynchronizer = self.headerSynchronizer;
-  if (NewTabPageTabHelper::FromWebState(self.webState)
-          ->ShouldShowStartSurface()) {
-    self.headerController.isStartShowing = YES;
-  }
 }
 
 // Configures `self.ntpMediator`.
@@ -744,13 +739,18 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   [self.alertCoordinator stop];
   self.alertCoordinator = nil;
 
+  // This button is in a container view that itself is in FeedHeaderVC's main
+  // view. In order to anchor the alert view correctly, we need to provide the
+  // button's frame as well as its superview which is the coordinate system
+  // for the frame.
+  UIButton* menuButton = self.feedHeaderViewController.menuButton;
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.ntpViewController
                          browser:self.browser
                            title:nil
                          message:nil
-                            rect:self.feedHeaderViewController.menuButton.frame
-                            view:self.feedHeaderViewController.view];
+                            rect:menuButton.frame
+                            view:menuButton.superview];
   __weak NewTabPageCoordinator* weakSelf = self;
 
   // Item for toggling the feed on/off.
@@ -817,7 +817,7 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
 - (UIViewController*)discoverFeedPreviewWithURL:(const GURL)URL {
   std::string referrerURL = base::GetFieldTrialParamValueByFeature(
-      kEnableDiscoverFeedPreview, kDiscoverReferrerParameter);
+      kOverrideFeedSettings, kFeedSettingDiscoverReferrerParameter);
   if (referrerURL.empty()) {
     referrerURL = kDefaultDiscoverReferrer;
   }
@@ -972,8 +972,8 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
   return [self isFollowingFeedAvailable] && [self isFeedHeaderVisible];
 }
 
-- (void)signinPromoHasChangedVisibility:(BOOL)visible {
-  [self.feedTopSectionCoordinator signinPromoHasChangedVisibility:visible];
+- (void)feedTopSectionHasChangedVisibility:(BOOL)visible {
+  [self.feedTopSectionCoordinator feedTopSectionHasChangedVisibility:visible];
 }
 
 #pragma mark - NewTabPageDelegate
@@ -1208,25 +1208,6 @@ BASE_FEATURE(kEnableCheckForNewFollowContent,
 
   prefService->SetBoolean(prefs::kNTPContentSuggestionsForSupervisedUserEnabled,
                           !value);
-}
-
-- (void)updateStartForVisibilityChange:(BOOL)visible {
-  if (visible && self.started &&
-      NewTabPageTabHelper::FromWebState(self.webState)
-          ->ShouldShowStartSurface()) {
-    // Start is being shown on an existing NTP, so configure it
-    // appropriately.
-    self.headerController.isStartShowing = YES;
-    [self.contentSuggestionsCoordinator configureStartSurfaceIfNeeded];
-  }
-  if (!visible && NewTabPageTabHelper::FromWebState(self.webState)
-                      ->ShouldShowStartSurface()) {
-    // This means the NTP going away was showing Start. Reset configuration
-    // since it should not show Start after disappearing.
-    NewTabPageTabHelper::FromWebState(self.webState)
-        ->SetShowStartSurface(false);
-    self.headerController.isStartShowing = NO;
-  }
 }
 
 // Updates the visible property based on viewPresented and sceneInForeground

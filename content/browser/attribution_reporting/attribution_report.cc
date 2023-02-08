@@ -16,6 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "net/base/schemeful_site.h"
@@ -29,7 +30,7 @@ namespace content {
 namespace {
 
 base::Value SerializeDestinations(
-    const base::flat_set<url::Origin>& destinations) {
+    const base::flat_set<attribution_reporting::SuitableOrigin>& destinations) {
   DCHECK(!destinations.empty());
 
   base::flat_set<net::SchemefulSite> sites;
@@ -81,10 +82,13 @@ AttributionReport::EventLevelData::~EventLevelData() = default;
 AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
     std::vector<AggregatableHistogramContribution> contributions,
     Id id,
-    base::Time initial_report_time)
+    base::Time initial_report_time,
+    ::aggregation_service::mojom::AggregationCoordinator
+        aggregation_coordinator)
     : contributions(std::move(contributions)),
       id(id),
-      initial_report_time(initial_report_time) {}
+      initial_report_time(initial_report_time),
+      aggregation_coordinator(aggregation_coordinator) {}
 
 AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
     const AggregatableAttributionData&) = default;
@@ -159,7 +163,7 @@ GURL AttributionReport::ReportURL(bool debug) const {
   replacements.SetPathStr(path);
   return attribution_info_.source.common_info()
       .reporting_origin()
-      .GetURL()
+      ->GetURL()
       .ReplaceComponents(replacements);
 }
 

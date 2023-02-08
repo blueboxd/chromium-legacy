@@ -29,7 +29,10 @@ import static org.junit.Assume.assumeTrue;
 import static org.chromium.chrome.features.start_surface.StartSurfaceMediator.FEED_VISIBILITY_CONSISTENCY;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_TEST_BASE_PARAMS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_TEST_SINGLE_ENABLED_PARAMS;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.getStartSurfaceLayoutType;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.sClassParamsForStartSurfaceTest;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.scrollToolbar;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.scrollToolbarAndVerify;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.ui.test.util.ViewUtils.waitForStableView;
 import static org.chromium.ui.test.util.ViewUtils.waitForView;
@@ -86,6 +89,7 @@ import org.chromium.chrome.features.tasks.SingleTabSwitcherMediator;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
@@ -155,7 +159,7 @@ public class StartSurfaceTest {
         if (isInstantReturn()) {
             // Assume start surface is shown immediately, and the LayoutStateObserver may miss the
             // first onFinishedShowing event.
-            mCurrentlyActiveLayout = LayoutType.TAB_SWITCHER;
+            mCurrentlyActiveLayout = StartSurfaceTestUtils.getStartSurfaceLayoutType();
         }
 
         mLayoutObserver = new LayoutStateProvider.LayoutStateObserver() {
@@ -185,7 +189,7 @@ public class StartSurfaceTest {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -195,10 +199,10 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
 
-        StartSurfaceTestUtils.clickMoreTabs(cta);
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
-        waitForView(allOf(
-                withParent(withId(R.id.secondary_tasks_surface_view)), withId(R.id.tab_list_view)));
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
+        waitForView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
+                withId(R.id.tab_list_view)));
 
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
@@ -212,13 +216,14 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.
     Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS + "/hide_switch_when_no_incognito_tabs/false"})
+    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     public void testShow_SingleAsHomepage_NoIncognitoSwitch() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -231,8 +236,8 @@ public class StartSurfaceTest {
         // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
         onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(GONE)));
 
-        StartSurfaceTestUtils.clickMoreTabs(cta);
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(VISIBLE)));
 
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
@@ -255,8 +260,43 @@ public class StartSurfaceTest {
     }
 
     @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.
+    Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS + "/hide_switch_when_no_incognito_tabs/false"})
+    @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
+    public void testShow_SingleAsHomepage_NoIncognitoSwitch_RefactorEnabled() {
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
+        onViewWaiting(withId(R.id.search_box_text));
+        onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
+        onViewWaiting(withId(R.id.carousel_tab_switcher_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
+
+        // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
+        onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(GONE)));
+
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
+        onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(VISIBLE)));
+
+        // Verifies that the tab switcher is hidden.
+        StartSurfaceTestUtils.pressBack(mActivityTestRule);
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+    }
+
+    @Test
     @LargeTest
     @Feature({"StartSurface"})
+    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS
             + "open_ntp_instead_of_start/false/open_start_as_homepage/true"})
     // clang-format off
@@ -268,7 +308,7 @@ public class StartSurfaceTest {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -286,8 +326,8 @@ public class StartSurfaceTest {
         }
         onViewWaiting(allOf(withId(R.id.tab_title_view), withText(not(is("")))));
 
-        StartSurfaceTestUtils.clickMoreTabs(cta);
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
 
         if (isInstantReturn()) {
             // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
@@ -322,7 +362,7 @@ public class StartSurfaceTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
-        assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
+        assertTrue(cta.getLayoutManager().isLayoutVisible(getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> cta.getTabCreator(true /*incognito*/).launchNTP());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
@@ -336,9 +376,8 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.waitForTabModel(cta);
         assertTrue(cta.getTabModelSelector().getCurrentModel().isIncognito());
         if (mImmediateReturn) {
-            StartSurfaceTestUtils.waitForOverviewVisible(
+            StartSurfaceTestUtils.waitForTabSwitcherVisible(
                     mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
-            onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         } else {
             int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
                     ? R.id.revamped_incognito_ntp_container
@@ -357,7 +396,7 @@ public class StartSurfaceTest {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
@@ -370,7 +409,7 @@ public class StartSurfaceTest {
         ChromeTabUtils.waitForTabPageLoaded(cta.getActivityTab(), (String) null);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -439,7 +478,8 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressHomePageButton(cta);
         CriteriaHelper.pollUiThread(
                 () -> UrlUtilities.isNTPUrl(cta.getTabModelSelector().getCurrentTab().getUrl()));
-        assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
+        assertFalse(cta.getLayoutManager().isLayoutVisible(
+                StartSurfaceTestUtils.getStartSurfaceLayoutType()));
     }
 
     /**
@@ -491,7 +531,7 @@ public class StartSurfaceTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertEquals(isSingleTabSwitcher,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
-        StartSurfaceTestUtils.waitForOverviewVisible(mLayoutChangedCallbackHelper,
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(mLayoutChangedCallbackHelper,
                 mCurrentlyActiveLayout, mActivityTestRule.getActivity());
         mActivityTestRule.waitForActivityNativeInitializationComplete();
         StartSurfaceTestUtils.waitForDeferredStartup(mActivityTestRule);
@@ -555,7 +595,7 @@ public class StartSurfaceTest {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
 
-        StartSurfaceTestUtils.waitForOverviewVisible(mLayoutChangedCallbackHelper,
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(mLayoutChangedCallbackHelper,
                 mCurrentlyActiveLayout, mActivityTestRule.getActivity());
 
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -575,7 +615,7 @@ public class StartSurfaceTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         BottomSheetTestSupport bottomSheetTestSupport = new BottomSheetTestSupport(
                 cta.getRootUiCoordinatorForTesting().getBottomSheetController());
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
@@ -591,7 +631,7 @@ public class StartSurfaceTest {
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
         TabUiTestHelper.enterTabSwitcher(cta);
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
@@ -605,9 +645,9 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressHomePageButton(cta);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
-        StartSurfaceTestUtils.clickMoreTabs(cta);
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
     }
 
@@ -616,25 +656,27 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void testShow_SingleAsHomepage_ResetScrollPosition() {
+        assumeTrue("https://crbug.com/1385547 - Disable for NoInstant.", mUseInstantStart);
+        
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         // Scroll the toolbar.
-        StartSurfaceTestUtils.scrollToolbar(cta);
+        StartSurfaceTestUtils.scrollToolbarAndVerify(cta);
         AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
         assertNotEquals(taskSurfaceHeader.getBottom(), taskSurfaceHeader.getHeight());
 
         // Verifies the case of scrolling Start surface ->  tab switcher -> tap "+1" button ->
         // Start surface. The Start surface should reset its scroll position.
-        StartSurfaceTestUtils.clickMoreTabs(cta);
+        StartSurfaceTestUtils.clickTabSwitcherButton(cta);
 
-        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
@@ -653,7 +695,7 @@ public class StartSurfaceTest {
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         onViewWaiting(allOf(withId(R.id.mv_tiles_container), isDisplayed()));
 
@@ -672,7 +714,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressHomePageButton(cta);
 
         waitForView(withId(R.id.primary_tasks_surface_view));
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         Assert.assertEquals(TabLaunchType.FROM_START_SURFACE, tab.getLaunchType());
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(StartSurfaceUserData.getKeepTab(tab)); });
@@ -692,14 +734,15 @@ public class StartSurfaceTest {
         }
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 0);
-        assertTrue(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
+        assertTrue(cta.getLayoutManager().isLayoutVisible(
+                StartSurfaceTestUtils.getStartSurfaceLayoutType()));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> cta.getTabCreator(true /*incognito*/).launchNTP());
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
@@ -707,11 +750,60 @@ public class StartSurfaceTest {
         // Simulates pressing the home button. Incognito tab should stay and homepage shouldn't
         // show.
         onView(withId(R.id.home_button)).perform(click());
-        assertFalse(cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
         int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
                 ? R.id.revamped_incognito_ntp_container
                 : R.id.new_tab_incognito_container;
         onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
+        assertFalse(cta.getLayoutManager().isLayoutVisible(
+                StartSurfaceTestUtils.getStartSurfaceLayoutType()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS
+            + "open_ntp_instead_of_start/false/open_start_as_homepage/true"
+            + "/show_last_active_tab_only/true"})
+    public void  testNotScrollableWhenContentIsShorterThanScreen() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
+        }
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        StartSurfaceTestUtils.waitForDeferredStartup(mActivityTestRule);
+        int screenHeight = cta.getResources().getDisplayMetrics().heightPixels;
+
+        // If the content is shorter than the screen, the view shouldn't be scrolled.
+        onViewWaiting(allOf(withId(R.id.task_surface_header), isDisplayed()));
+        AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
+        int contentHeight = taskSurfaceHeader.getMeasuredHeight()
+                + cta.findViewById(R.id.tasks_surface_body).getMeasuredHeight();
+        if (contentHeight <= screenHeight) {
+            checkContentIsNotScrollable(cta, taskSurfaceHeader);
+            return;
+        }
+
+        //  If the content is larger than the screen, scroll the toolbar.
+        scrollToolbarAndVerify(cta);
+
+        // Turning off Feed should reset Start surface's scroll position.
+        StartSurfaceTestUtils.toggleFeedHeader(false);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> taskSurfaceHeader.getBottom() == taskSurfaceHeader.getHeight());
+        // If the content is shorter than the screen now without Feed, the view shouldn't be
+        // scrolled.
+        contentHeight = taskSurfaceHeader.getMeasuredHeight()
+                + cta.findViewById(R.id.tasks_surface_body).getMeasuredHeight();
+        if (contentHeight <= screenHeight) checkContentIsNotScrollable(cta, taskSurfaceHeader);
+
+        // Turning on Feed makes the content larger than the screen, the view should be
+        // scrollable again.
+        StartSurfaceTestUtils.toggleFeedHeader(true);
+        scrollToolbarAndVerify(cta);
     }
 
     @Test
@@ -737,7 +829,7 @@ public class StartSurfaceTest {
         assumeTrue(mImmediateReturn);
 
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         Assert.assertEquals(0, RenderProcessHostUtils.getCurrentRenderProcessCount());
@@ -746,6 +838,15 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
         StartSurfaceTestUtils.waitForCurrentTabLoaded(mActivityTestRule);
         Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
+    }
+
+    private void checkContentIsNotScrollable(
+            ChromeTabbedActivity cta, AppBarLayout taskSurfaceHeader) {
+        scrollToolbar(cta);
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> taskSurfaceHeader.getBottom() == taskSurfaceHeader.getHeight()
+                        && cta.findViewById(R.id.tab_switcher_toolbar).getTranslationY() == 0);
     }
 
     /**

@@ -13,7 +13,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #endif
 
 namespace {
@@ -30,8 +30,8 @@ bool IsContextForMainProfile(content::BrowserContext* context) {
   std::string user_hash =
       extensions::ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
           context);
-  if (!chromeos::LoginState::IsInitialized() ||
-      user_hash != chromeos::LoginState::Get()->primary_user_hash()) {
+  if (!ash::LoginState::IsInitialized() ||
+      user_hash != ash::LoginState::Get()->primary_user_hash()) {
     return false;
   }
 #endif

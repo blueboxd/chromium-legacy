@@ -38,15 +38,13 @@ namespace net {
 
 namespace {
 
-constexpr size_t kDefaultCacheSize = 512;
-
 // The PEM block header used for DER certificates
 const char kCertificateHeader[] = "CERTIFICATE";
 
 // Parses a PEM encoded certificate from |file_name| and stores in |result|.
 ::testing::AssertionResult ReadTestCert(
     const std::string& file_name,
-    scoped_refptr<ParsedCertificate>* result) {
+    std::shared_ptr<const ParsedCertificate>* result) {
   std::string der;
   const PemBlockMapping mappings[] = {
       {kCertificateHeader, &der},
@@ -106,14 +104,12 @@ class DebugData : public base::SupportsUserData {
 
 const char* TrustImplTypeToString(TrustStoreMac::TrustImplType t) {
   switch (t) {
-    case TrustStoreMac::TrustImplType::kDomainCache:
-      return "DomainCache";
     case TrustStoreMac::TrustImplType::kSimple:
       return "Simple";
-    case TrustStoreMac::TrustImplType::kLruCache:
-      return "LruCache";
     case TrustStoreMac::TrustImplType::kDomainCacheFullCerts:
       return "DomainCacheFullCerts";
+    case TrustStoreMac::TrustImplType::kKeychainCacheFullCerts:
+      return "KeychainCacheFullCerts";
     case TrustStoreMac::TrustImplType::kUnknown:
       return "Unknown";
   }
@@ -152,10 +148,10 @@ TEST_P(TrustStoreMacImplTest, MultiRootNotTrusted) {
 #pragma clang diagnostic pop
 
   const TrustStoreMac::TrustImplType trust_impl = GetParam();
-  TrustStoreMac trust_store(kSecPolicyAppleSSL, trust_impl, kDefaultCacheSize);
+  TrustStoreMac trust_store(kSecPolicyAppleSSL, trust_impl);
 
-  scoped_refptr<ParsedCertificate> a_by_b, b_by_c, b_by_f, c_by_d, c_by_e,
-      f_by_e, d_by_d, e_by_e;
+  std::shared_ptr<const ParsedCertificate> a_by_b, b_by_c, b_by_f, c_by_d,
+      c_by_e, f_by_e, d_by_d, e_by_e;
   ASSERT_TRUE(ReadTestCert("multi-root-A-by-B.pem", &a_by_b));
   ASSERT_TRUE(ReadTestCert("multi-root-B-by-C.pem", &b_by_c));
   ASSERT_TRUE(ReadTestCert("multi-root-B-by-F.pem", &b_by_f));
@@ -226,7 +222,7 @@ TEST_P(TrustStoreMacImplTest, MultiRootNotTrusted) {
 }
 
 // Test against all the certificates in the default keychains. Confirms that
-// the computed trust value matches that of SecTrustEvaluate.
+// the computed trust value matches that of SecTrustEvaluateWithError.
 TEST_P(TrustStoreMacImplTest, SystemCerts) {
   // Get the list of all certificates in the user & system keychains.
   // This may include both trusted and untrusted certificates.
@@ -257,8 +253,7 @@ TEST_P(TrustStoreMacImplTest, SystemCerts) {
   const TrustStoreMac::TrustImplType trust_impl = GetParam();
 
   base::HistogramTester histogram_tester;
-  TrustStoreMac trust_store(kSecPolicyAppleX509Basic, trust_impl,
-                            kDefaultCacheSize);
+  TrustStoreMac trust_store(kSecPolicyAppleX509Basic, trust_impl);
 
   base::ScopedCFTypeRef<SecPolicyRef> sec_policy(SecPolicyCreateBasicX509());
   ASSERT_TRUE(sec_policy);
@@ -282,7 +277,7 @@ TEST_P(TrustStoreMacImplTest, SystemCerts) {
     ParseCertificateOptions options;
     // For https://crt.sh/?q=D3EEFBCBBCF49867838626E23BB59CA01E305DB7:
     options.allow_invalid_serial_numbers = true;
-    scoped_refptr<ParsedCertificate> cert = ParsedCertificate::Create(
+    std::shared_ptr<const ParsedCertificate> cert = ParsedCertificate::Create(
         x509_util::CreateCryptoBuffer(cert_der), options, &errors);
     if (!cert) {
       LOG(WARNING) << "ParseCertificate::Create " << hash_text << " failed:\n"
@@ -330,17 +325,24 @@ TEST_P(TrustStoreMacImplTest, SystemCerts) {
         // Cert is only in the system domain. It should be untrusted.
         EXPECT_FALSE(is_trust_anchor);
       } else {
-        SecTrustResultType trust_result;
-        ASSERT_EQ(noErr, SecTrustEvaluate(trust, &trust_result));
+        bool trusted;
+        if (__builtin_available(macOS 10.14, *)) {
+          trusted = SecTrustEvaluateWithError(trust, nullptr);
+        } else {
+          SecTrustResultType trust_result;
+          ASSERT_EQ(noErr, SecTrustEvaluate(trust, &trust_result));
+          trusted = (trust_result == kSecTrustResultProceed) ||
+                    (trust_result == kSecTrustResultUnspecified);
+        }
+
         bool expected_trust_anchor =
-            ((trust_result == kSecTrustResultProceed) ||
-             (trust_result == kSecTrustResultUnspecified)) &&
-            (SecTrustGetCertificateCount(trust) == 1);
+            trusted && (SecTrustGetCertificateCount(trust) == 1);
         EXPECT_EQ(expected_trust_anchor, is_trust_anchor);
       }
       auto* trust_debug_data = TrustStoreMac::ResultDebugData::Get(&debug_data);
       ASSERT_TRUE(trust_debug_data);
-      if (is_trust_anchor) {
+      if (is_trust_anchor &&
+          trust_impl != TrustStoreMac::TrustImplType::kKeychainCacheFullCerts) {
         // Since this test queries the real trust store, can't know exactly
         // what bits should be set in the trust debug info, but if it's trusted
         // it should at least have something set.
@@ -365,25 +367,59 @@ TEST_P(TrustStoreMacImplTest, SystemCerts) {
     EXPECT_EQ(trust_debug_data->trust_impl(), trust_debug_data2->trust_impl());
   }
 
-  if (trust_impl == TrustStoreMac::TrustImplType::kDomainCacheFullCerts) {
-    // Since this is testing the actual platform trust settings, we don't know
-    // what values the histogram should be for each domain, so just verify that
-    // the histogram is recorded (or not) depending on the requested trust
-    // domains.
+  // Since this is testing the actual platform certs and trust settings, we
+  // don't know what values the histograms should be, so just verify that the
+  // histogram is recorded (or not) depending on the requested trust impl.
+
+  {
+    // Histograms only logged by DomainCacheFullCerts impl:
+    const int expected_count =
+        (trust_impl == TrustStoreMac::TrustImplType::kDomainCacheFullCerts) ? 1
+                                                                            : 0;
     histogram_tester.ExpectTotalCount(
-        "Net.CertVerifier.MacTrustDomainCertCount.User", 1);
+        "Net.CertVerifier.MacTrustDomainCertCount.User", expected_count);
     histogram_tester.ExpectTotalCount(
-        "Net.CertVerifier.MacTrustDomainCertCount.Admin", 1);
+        "Net.CertVerifier.MacTrustDomainCertCount.Admin", expected_count);
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacTrustDomainCacheInitTime", expected_count);
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacKeychainCerts.IntermediateCacheInitTime",
+        expected_count);
+  }
+
+  {
+    // Histograms only logged by KeychainCacheFullCerts impl:
+    const int expected_count =
+        (trust_impl == TrustStoreMac::TrustImplType::kKeychainCacheFullCerts)
+            ? 1
+            : 0;
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacKeychainCerts.TrustCount", expected_count);
+  }
+
+  {
+    // Histograms logged by both DomainCacheFullCerts and KeychainCacheFullCerts
+    // impls:
+    const int expected_count =
+        (trust_impl == TrustStoreMac::TrustImplType::kDomainCacheFullCerts ||
+         trust_impl == TrustStoreMac::TrustImplType::kKeychainCacheFullCerts)
+            ? 1
+            : 0;
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacKeychainCerts.IntermediateCount", expected_count);
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacKeychainCerts.TotalCount", expected_count);
+    histogram_tester.ExpectTotalCount(
+        "Net.CertVerifier.MacTrustImplCacheInitTime", expected_count);
   }
 }
 
 INSTANTIATE_TEST_SUITE_P(
     Impl,
     TrustStoreMacImplTest,
-    testing::Values(TrustStoreMac::TrustImplType::kDomainCache,
-                    TrustStoreMac::TrustImplType::kSimple,
-                    TrustStoreMac::TrustImplType::kLruCache,
-                    TrustStoreMac::TrustImplType::kDomainCacheFullCerts),
+    testing::Values(TrustStoreMac::TrustImplType::kSimple,
+                    TrustStoreMac::TrustImplType::kDomainCacheFullCerts,
+                    TrustStoreMac::TrustImplType::kKeychainCacheFullCerts),
     [](const testing::TestParamInfo<TrustStoreMacImplTest::ParamType>& info) {
       return TrustImplTypeToString(info.param);
     });

@@ -97,15 +97,15 @@ PermissionsManagerUnittest::AddExtensionWithHostPermission(
 }
 
 const base::Value* PermissionsManagerUnittest::GetRestrictedSitesFromPrefs() {
-  const base::DictionaryValue* permissions =
+  const base::Value::Dict& permissions =
       extension_prefs_->GetPrefAsDictionary(kUserPermissions);
-  return permissions->FindKey("restricted_sites");
+  return permissions.Find("restricted_sites");
 }
 
 const base::Value* PermissionsManagerUnittest::GetPermittedSitesFromPrefs() {
-  const base::DictionaryValue* permissions =
+  const base::Value::Dict& permissions =
       extension_prefs_->GetPrefAsDictionary(kUserPermissions);
-  return permissions->FindKey("permitted_sites");
+  return permissions.Find("permitted_sites");
 }
 
 std::set<url::Origin>
@@ -421,6 +421,30 @@ TEST_F(PermissionsManagerUnittest, GetSiteAccess_NoHostPermissions) {
     EXPECT_FALSE(site_access.withheld_site_access);
     EXPECT_FALSE(site_access.has_all_sites_access);
     EXPECT_FALSE(site_access.withheld_all_sites_access);
+  }
+}
+
+TEST_F(PermissionsManagerUnittest, CanAffectExtension_ByLocation) {
+  struct {
+    mojom::ManifestLocation location;
+    bool can_be_affected;
+  } test_cases[] = {
+      {mojom::ManifestLocation::kInternal, true},
+      {mojom::ManifestLocation::kExternalPref, true},
+      {mojom::ManifestLocation::kUnpacked, true},
+      {mojom::ManifestLocation::kExternalPolicyDownload, false},
+      {mojom::ManifestLocation::kComponent, false},
+  };
+
+  for (const auto& test_case : test_cases) {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test")
+            .SetLocation(test_case.location)
+            .AddPermission("<all_urls>")
+            .Build();
+    EXPECT_EQ(manager_->CanAffectExtension(*extension),
+              test_case.can_be_affected)
+        << test_case.location;
   }
 }
 

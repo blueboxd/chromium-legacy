@@ -237,6 +237,12 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       EXPECT_EQ(nullptr, provider_->Get(policy_key));
   }
 
+  void VerifyPolicyList(const char* policy_key,
+                        const base::Value::List& expected_value) {
+    EXPECT_TRUE(provider_->Get(policy_key)->is_list());
+    EXPECT_EQ(expected_value, provider_->Get(policy_key)->GetList());
+  }
+
   // Helper routine to set LoginScreenDomainAutoComplete policy.
   void SetDomainAutoComplete(const std::string& domain) {
     em::LoginScreenDomainAutoCompleteProto* proto =
@@ -396,12 +402,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
 
   void VerifyDevicePrinterList(const char* policy_key,
                                std::vector<std::string>& values) {
-    base::Value list(base::Value::Type::LIST);
+    base::Value::List list;
     for (auto const& value : values) {
       list.Append(value);
     }
 
-    VerifyPolicyValue(policy_key, &list);
+    base::Value expected_value(std::move(list));
+    VerifyPolicyValue(policy_key, &expected_value);
   }
 
   // Helper routine clear the ShowLowDiskSpaceNotification policy.
@@ -833,9 +840,9 @@ TEST_F(DeviceSettingsProviderTest, EmptyAllowedConnectionTypesForUpdate) {
       {em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET};
   // Check some meaningful value. Policy should be set.
   SetAutoUpdateConnectionTypes(single_value);
-  base::ListValue allowed_connections;
+  base::Value::List allowed_connections;
   allowed_connections.Append(0);
-  VerifyPolicyValue(kAllowedConnectionTypesForUpdate, &allowed_connections);
+  VerifyPolicyList(kAllowedConnectionTypesForUpdate, allowed_connections);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeHostnameTemplate) {
@@ -890,17 +897,17 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
       "[{\"start\": {\"day_of_week\": \"Monday\", \"hours\": 10, \"minutes\": "
       "50}, \"end\": {\"day_of_week\": \"Wednesday\", \"hours\": 1, "
       "\"minutes\": 20, \"extra\": 50}}]";
-  base::ListValue test_list;
-  base::DictionaryValue interval;
-  interval.SetPath({"start", "day_of_week"}, base::Value("Monday"));
-  interval.SetPath({"start", "hours"}, base::Value(10));
-  interval.SetPath({"start", "minutes"}, base::Value(50));
-  interval.SetPath({"end", "day_of_week"}, base::Value("Wednesday"));
-  interval.SetPath({"end", "hours"}, base::Value(1));
-  interval.SetPath({"end", "minutes"}, base::Value(20));
+  base::Value::List test_list;
+  base::Value::Dict interval;
+  interval.SetByDottedPath("start.day_of_week", "Monday");
+  interval.SetByDottedPath("start.hours", 10);
+  interval.SetByDottedPath("start.minutes", 50);
+  interval.SetByDottedPath("end.day_of_week", "Wednesday");
+  interval.SetByDottedPath("end.hours", 1);
+  interval.SetByDottedPath("end.minutes", 20);
   test_list.Append(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
-  VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
+  VerifyPolicyList(kDeviceAutoUpdateTimeRestrictions, test_list);
 }
 
 // Check valid JSON for DeviceScheduledUpdateCheck.
@@ -909,14 +916,15 @@ TEST_F(DeviceSettingsProviderTest, DeviceScheduledUpdateCheckTests) {
       "{\"update_check_time\": {\"hour\": 23, \"minute\": 35}, "
       "\"frequency\": \"DAILY\", \"day_of_week\": \"MONDAY\",  "
       "\"day_of_month\": 15}";
-  base::DictionaryValue expected_val;
-  expected_val.SetPath({"update_check_time", "hour"}, base::Value(23));
-  expected_val.SetPath({"update_check_time", "minute"}, base::Value(35));
-  expected_val.SetKey("frequency", base::Value("DAILY"));
-  expected_val.SetKey("day_of_week", base::Value("MONDAY"));
-  expected_val.SetKey("day_of_month", base::Value(15));
+  base::Value::Dict expected_dict;
+  expected_dict.SetByDottedPath("update_check_time.hour", 23);
+  expected_dict.SetByDottedPath("update_check_time.minute", 35);
+  expected_dict.Set("frequency", "DAILY");
+  expected_dict.Set("day_of_week", "MONDAY");
+  expected_dict.Set("day_of_month", 15);
+  base::Value expected_value(std::move(expected_dict));
   SetDeviceScheduledUpdateCheck(json_string);
-  VerifyPolicyValue(kDeviceScheduledUpdateCheck, &expected_val);
+  VerifyPolicyValue(kDeviceScheduledUpdateCheck, &expected_value);
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
@@ -1164,9 +1172,9 @@ TEST_F(DeviceSettingsProviderTest, FeatureFlags) {
   device_policy_->payload().mutable_feature_flags()->add_feature_flags("foo");
   BuildAndInstallDevicePolicy();
 
-  base::ListValue expected_feature_flags;
-  expected_feature_flags.Append(base::Value("foo"));
-  EXPECT_EQ(expected_feature_flags, *provider_->Get(kFeatureFlags));
+  base::Value::List expected_feature_flags;
+  expected_feature_flags.Append("foo");
+  EXPECT_EQ(expected_feature_flags, provider_->Get(kFeatureFlags)->GetList());
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeBorealisAllowed) {
@@ -1188,9 +1196,10 @@ TEST_F(DeviceSettingsProviderTest, DeviceAllowedBluetoothServices) {
       device_policy_->payload().mutable_device_allowed_bluetooth_services();
   proto->add_allowlist("0x1124");
   BuildAndInstallDevicePolicy();
-  base::ListValue allowlist;
-  allowlist.Append(base::Value("0x1124"));
-  EXPECT_EQ(allowlist, *provider_->Get(kDeviceAllowedBluetoothServices));
+  base::Value::List allowlist;
+  allowlist.Append("0x1124");
+  EXPECT_EQ(allowlist,
+            provider_->Get(kDeviceAllowedBluetoothServices)->GetList());
 }
 
 // Check valid JSON for DeviceScheduledReboot.
@@ -1199,14 +1208,15 @@ TEST_F(DeviceSettingsProviderTest, DeviceScheduledReboot) {
       "{\"reboot_time\": {\"hour\": 22, \"minute\": 30}, "
       "\"frequency\": \"MONTHLY\", \"day_of_week\": \"MONDAY\", "
       "\"day_of_month\": 15}";
-  base::DictionaryValue expected_val;
-  expected_val.SetPath({"reboot_time", "hour"}, base::Value(22));
-  expected_val.SetPath({"reboot_time", "minute"}, base::Value(30));
-  expected_val.SetKey("frequency", base::Value("MONTHLY"));
-  expected_val.SetKey("day_of_week", base::Value("MONDAY"));
-  expected_val.SetKey("day_of_month", base::Value(15));
+  base::Value::Dict expected_dict;
+  expected_dict.SetByDottedPath("reboot_time.hour", 22);
+  expected_dict.SetByDottedPath("reboot_time.minute", 30);
+  expected_dict.Set("frequency", "MONTHLY");
+  expected_dict.Set("day_of_week", "MONDAY");
+  expected_dict.Set("day_of_month", 15);
+  base::Value expected_value(std::move(expected_dict));
   SetDeviceScheduledReboot(json_string);
-  VerifyPolicyValue(kDeviceScheduledReboot, &expected_val);
+  VerifyPolicyValue(kDeviceScheduledReboot, &expected_value);
 }
 
 // Checks that content_protection decodes correctly.

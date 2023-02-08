@@ -14,6 +14,14 @@
 // This file provides the "D-Bus protocol logic" half of the FuseBox server,
 // coupled with the "business logic" half in fusebox_server.cc.
 
+// The "fusebox_staging" concept is described in
+// chrome/browser/ash/fusebox/fusebox_staging.proto
+//
+// TODO(b/255520194): remove this section.
+namespace fusebox_staging {
+const char kStat2Method[] = "Stat2";
+}  // namespace fusebox_staging
+
 namespace ash {
 
 namespace {
@@ -23,6 +31,21 @@ void OnExportedCallback(const std::string& interface_name,
                         bool success) {
   LOG_IF(ERROR, !success) << "Failed to export " << interface_name << "."
                           << method_name;
+}
+
+template <typename T>
+void ReplyToProtoMethod(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender sender,
+                        const T& proto) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+
+  writer.AppendProtoAsArrayOfBytes(proto);
+
+  std::move(sender).Run(std::move(response));
 }
 
 void ReplyToClose(dbus::MethodCall* method_call,
@@ -35,20 +58,6 @@ void ReplyToClose(dbus::MethodCall* method_call,
   dbus::MessageWriter writer(response.get());
 
   writer.AppendInt32(posix_error_code);
-
-  std::move(sender).Run(std::move(response));
-}
-
-void ReplyToMkDir(dbus::MethodCall* method_call,
-                  dbus::ExportedObject::ResponseSender sender,
-                  const fusebox_staging::MkDirResponseProto& response_proto) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  writer.AppendProtoAsArrayOfBytes(response_proto);
 
   std::move(sender).Run(std::move(response));
 }
@@ -86,34 +95,6 @@ void ReplyToRead(dbus::MethodCall* method_call,
   std::move(sender).Run(std::move(response));
 }
 
-void ReplyToReadDir2(dbus::MethodCall* method_call,
-                     dbus::ExportedObject::ResponseSender sender,
-                     const fusebox::ReadDir2ResponseProto& response_proto) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  writer.AppendProtoAsArrayOfBytes(response_proto);
-
-  std::move(sender).Run(std::move(response));
-}
-
-void ReplyToRmDir(dbus::MethodCall* method_call,
-                  dbus::ExportedObject::ResponseSender sender,
-                  const fusebox_staging::RmDirResponseProto& response_proto) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  writer.AppendProtoAsArrayOfBytes(response_proto);
-
-  std::move(sender).Run(std::move(response));
-}
-
 void ReplyToStat(dbus::MethodCall* method_call,
                  dbus::ExportedObject::ResponseSender sender,
                  int32_t posix_error_code,
@@ -140,21 +121,6 @@ void ReplyToStat(dbus::MethodCall* method_call,
   std::move(sender).Run(std::move(response));
 }
 
-void ReplyToListStorages(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender sender,
-    const fusebox::ListStoragesResponseProto& response_proto) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  std::unique_ptr<dbus::Response> response =
-      dbus::Response::FromMethodCall(method_call);
-  dbus::MessageWriter writer(response.get());
-
-  writer.AppendProtoAsArrayOfBytes(response_proto);
-
-  std::move(sender).Run(std::move(response));
-}
-
 }  // namespace
 
 FuseBoxServiceProvider::FuseBoxServiceProvider() : server_(this) {}
@@ -162,18 +128,12 @@ FuseBoxServiceProvider::FuseBoxServiceProvider() : server_(this) {}
 FuseBoxServiceProvider::~FuseBoxServiceProvider() = default;
 
 void FuseBoxServiceProvider::Start(scoped_refptr<dbus::ExportedObject> object) {
-  if (!ash::features::IsFileManagerFuseBoxEnabled()) {
-    LOG(ERROR) << "Not enabled";
-    return;
-  }
-
   exported_object_ = object;
+
+  // TODO(b/255520194): remove the deprecated Stat, Open, Read and Close
+  // methods. They have been replaced by Stat2, Open2, Read2 and Close2.
   object->ExportMethod(fusebox::kFuseBoxServiceInterface, fusebox::kCloseMethod,
                        base::BindRepeating(&FuseBoxServiceProvider::Close,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                       base::BindOnce(&OnExportedCallback));
-  object->ExportMethod(fusebox::kFuseBoxServiceInterface, fusebox::kMkDirMethod,
-                       base::BindRepeating(&FuseBoxServiceProvider::MkDir,
                                            weak_ptr_factory_.GetWeakPtr()),
                        base::BindOnce(&OnExportedCallback));
   object->ExportMethod(fusebox::kFuseBoxServiceInterface, fusebox::kOpenMethod,
@@ -184,25 +144,25 @@ void FuseBoxServiceProvider::Start(scoped_refptr<dbus::ExportedObject> object) {
                        base::BindRepeating(&FuseBoxServiceProvider::Read,
                                            weak_ptr_factory_.GetWeakPtr()),
                        base::BindOnce(&OnExportedCallback));
-  object->ExportMethod(fusebox::kFuseBoxServiceInterface,
-                       fusebox::kReadDir2Method,
-                       base::BindRepeating(&FuseBoxServiceProvider::ReadDir2,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                       base::BindOnce(&OnExportedCallback));
-  object->ExportMethod(fusebox::kFuseBoxServiceInterface, fusebox::kRmDirMethod,
-                       base::BindRepeating(&FuseBoxServiceProvider::RmDir,
-                                           weak_ptr_factory_.GetWeakPtr()),
-                       base::BindOnce(&OnExportedCallback));
   object->ExportMethod(fusebox::kFuseBoxServiceInterface, fusebox::kStatMethod,
                        base::BindRepeating(&FuseBoxServiceProvider::Stat,
                                            weak_ptr_factory_.GetWeakPtr()),
                        base::BindOnce(&OnExportedCallback));
 
-  object->ExportMethod(
-      fusebox::kFuseBoxServiceInterface, fusebox::kListStoragesMethod,
-      base::BindRepeating(&FuseBoxServiceProvider::ListStorages,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&OnExportedCallback));
+  ExportProtoMethod(fusebox::kClose2Method, &fusebox::Server::Close2);
+  ExportProtoMethod(fusebox::kCreateMethod, &fusebox::Server::Create);
+  ExportProtoMethod(fusebox::kMkDirMethod, &fusebox::Server::MkDir);
+  ExportProtoMethod(fusebox::kOpen2Method, &fusebox::Server::Open2);
+  ExportProtoMethod(fusebox::kRead2Method, &fusebox::Server::Read2);
+  ExportProtoMethod(fusebox::kReadDir2Method, &fusebox::Server::ReadDir2);
+  ExportProtoMethod(fusebox::kRmDirMethod, &fusebox::Server::RmDir);
+  ExportProtoMethod(fusebox_staging::kStat2Method, &fusebox::Server::Stat2);
+  ExportProtoMethod(fusebox::kTruncateMethod, &fusebox::Server::Truncate);
+  ExportProtoMethod(fusebox::kUnlinkMethod, &fusebox::Server::Unlink);
+  ExportProtoMethod(fusebox::kWrite2Method, &fusebox::Server::Write2);
+
+  ExportProtoMethod(fusebox::kListStoragesMethod,
+                    &fusebox::Server::ListStorages);
 }
 
 void FuseBoxServiceProvider::OnRegisterFSURLPrefix(const std::string& subdir) {
@@ -244,24 +204,6 @@ void FuseBoxServiceProvider::Close(
                 base::BindOnce(&ReplyToClose, method_call, std::move(sender)));
 }
 
-void FuseBoxServiceProvider::MkDir(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender sender) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  dbus::MessageReader reader(method_call);
-  fusebox_staging::MkDirRequestProto request_proto;
-  if (!reader.PopArrayOfBytesAsProto(&request_proto)) {
-    fusebox_staging::MkDirResponseProto response_proto;
-    response_proto.set_posix_error_code(EINVAL);
-    ReplyToMkDir(method_call, std::move(sender), response_proto);
-    return;
-  }
-
-  server_.MkDir(request_proto,
-                base::BindOnce(&ReplyToMkDir, method_call, std::move(sender)));
-}
-
 void FuseBoxServiceProvider::Open(dbus::MethodCall* method_call,
                                   dbus::ExportedObject::ResponseSender sender) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -295,42 +237,6 @@ void FuseBoxServiceProvider::Read(dbus::MethodCall* method_call,
                base::BindOnce(&ReplyToRead, method_call, std::move(sender)));
 }
 
-void FuseBoxServiceProvider::ReadDir2(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender sender) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  dbus::MessageReader reader(method_call);
-  fusebox::ReadDir2RequestProto request_proto;
-  if (!reader.PopArrayOfBytesAsProto(&request_proto)) {
-    fusebox::ReadDir2ResponseProto response_proto;
-    response_proto.set_posix_error_code(EINVAL);
-    ReplyToReadDir2(method_call, std::move(sender), response_proto);
-    return;
-  }
-
-  server_.ReadDir2(request_proto, base::BindOnce(&ReplyToReadDir2, method_call,
-                                                 std::move(sender)));
-}
-
-void FuseBoxServiceProvider::RmDir(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender sender) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  dbus::MessageReader reader(method_call);
-  fusebox_staging::RmDirRequestProto request_proto;
-  if (!reader.PopArrayOfBytesAsProto(&request_proto)) {
-    fusebox_staging::RmDirResponseProto response_proto;
-    response_proto.set_posix_error_code(EINVAL);
-    ReplyToRmDir(method_call, std::move(sender), response_proto);
-    return;
-  }
-
-  server_.RmDir(request_proto,
-                base::BindOnce(&ReplyToRmDir, method_call, std::move(sender)));
-}
-
 void FuseBoxServiceProvider::Stat(dbus::MethodCall* method_call,
                                   dbus::ExportedObject::ResponseSender sender) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -347,23 +253,36 @@ void FuseBoxServiceProvider::Stat(dbus::MethodCall* method_call,
                base::BindOnce(&ReplyToStat, method_call, std::move(sender)));
 }
 
-void FuseBoxServiceProvider::ListStorages(
+template <typename RequestProto, typename ResponseProto>
+void FuseBoxServiceProvider::ServeProtoMethod(
+    ServerMethodPtr<RequestProto, ResponseProto> method,
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender sender) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   dbus::MessageReader reader(method_call);
-  fusebox::ListStoragesRequestProto request_proto;
+  RequestProto request_proto;
   if (!reader.PopArrayOfBytesAsProto(&request_proto)) {
-    fusebox::ListStoragesResponseProto response_proto;
+    ResponseProto response_proto;
     response_proto.set_posix_error_code(EINVAL);
-    ReplyToListStorages(method_call, std::move(sender), response_proto);
+    ReplyToProtoMethod(method_call, std::move(sender), response_proto);
     return;
   }
+  (server_.*method)(request_proto,
+                    base::BindOnce(&ReplyToProtoMethod<ResponseProto>,
+                                   method_call, std::move(sender)));
+}
 
-  server_.ListStorages(
-      request_proto,
-      base::BindOnce(&ReplyToListStorages, method_call, std::move(sender)));
+template <typename RequestProto, typename ResponseProto>
+void FuseBoxServiceProvider::ExportProtoMethod(
+    const std::string& method_name,
+    ServerMethodPtr<RequestProto, ResponseProto> method) {
+  exported_object_->ExportMethod(
+      fusebox::kFuseBoxServiceInterface, method_name,
+      base::BindRepeating(
+          &FuseBoxServiceProvider::ServeProtoMethod<RequestProto,
+                                                    ResponseProto>,
+          weak_ptr_factory_.GetWeakPtr(), method),
+      base::BindOnce(&OnExportedCallback));
 }
 
 }  // namespace ash

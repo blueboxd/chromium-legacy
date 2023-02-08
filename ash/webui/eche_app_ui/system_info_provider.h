@@ -26,6 +26,7 @@ extern const char kJsonDeviceTypeKey[];
 extern const char kJsonMeasureLatencyKey[];
 extern const char kJsonSendStartSignalingKey[];
 extern const char kJsonDisableStunServerKey[];
+extern const char kJsonCheckAndroidNetworkInfoKey[];
 
 class SystemInfo;
 
@@ -64,6 +65,8 @@ class SystemInfoProvider
   void OnTabletModeEnded() override;
 
   void SetTabletModeChanged(bool enabled);
+  void SetAndroidDeviceNetworkInfoChanged(bool is_different_network,
+                                          bool android_device_on_cellular);
 
   // network_config::CrosNetworkConfigObserver overrides:
   void OnNetworkStateChanged(

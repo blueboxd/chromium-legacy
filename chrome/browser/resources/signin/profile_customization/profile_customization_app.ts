@@ -21,7 +21,7 @@ import {AvatarIcon} from 'chrome://resources/cr_elements/cr_profile_avatar_selec
 import {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -116,10 +116,10 @@ export class ProfileCustomizationAppElement extends
     if (!this.isLocalProfileCreation_) {
       this.profileName_ = loadTimeData.getString('profileName');
     }
-    this.addWebUIListener(
+    this.addWebUiListener(
         'on-profile-info-changed',
         (info: ProfileInfo) => this.setProfileInfo_(info));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'on-available-icons-changed',
         (icons: AvatarIcon[]) => this.setAvailableIcons_(icons));
     this.profileCustomizationBrowserProxy_.initialized().then(

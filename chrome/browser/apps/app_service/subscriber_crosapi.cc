@@ -118,11 +118,6 @@ void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
   return;
 }
 
-void SubscriberCrosapi::OnCapabilityAccesses(
-    std::vector<apps::mojom::CapabilityAccessPtr> deltas) {
-  NOTIMPLEMENTED();
-}
-
 void SubscriberCrosapi::Clone(
     mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
   receivers_.Add(this, std::move(receiver));
@@ -161,6 +156,15 @@ void SubscriberCrosapi::Launch(crosapi::mojom::LaunchParamsPtr launch_params) {
   // TODO(crbug.com/1244506): Link up the return callback.
   proxy_->LaunchAppWithParams(
       ConvertCrosapiToLaunchParams(launch_params, profile_), base::DoNothing());
+}
+
+void SubscriberCrosapi::LaunchWithResult(
+    crosapi::mojom::LaunchParamsPtr launch_params,
+    LaunchWithResultCallback callback) {
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->LaunchAppWithParams(
+      ConvertCrosapiToLaunchParams(launch_params, profile_),
+      MojomLaunchResultToLaunchResultCallback(std::move(callback)));
 }
 
 void SubscriberCrosapi::LoadIcon(const std::string& app_id,

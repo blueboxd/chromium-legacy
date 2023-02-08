@@ -113,7 +113,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   config.additional_args.push_back(
       std::string("--mark_as_allowlisted_for_real_time=") + _safeURL1.spec());
   config.relaunch_policy = NoForceRelaunchAndResetState;
-  config.features_enabled.push_back(safe_browsing::kEnhancedProtection);
   return config;
 }
 
@@ -719,11 +718,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
   [ChromeEarlGrey loadURL:_safeURL2];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];
 
-  [ChromeEarlGrey goBack];
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_MALWARE_V3_HEADING)];
 
-  [ChromeEarlGrey goForward];
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForWebStateContainingText:_safeContent2];
 }
 

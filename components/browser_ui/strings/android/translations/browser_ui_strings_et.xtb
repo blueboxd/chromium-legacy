@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Luba saitide jaoks juurdepääs liikumisanduritele (soovitatav)</translation>
 <translation id="5050380848339752099">See sait jagab teavet väljaspool inkognito režiimi oleva rakendusega.</translation>
 <translation id="5063480226653192405">Kasutus</translation>
-<translation id="5082281938627763039">See kustutab saidi <ph name="FPS_MEMBER" /> ning muude domeeni <ph name="FPS_OWNER" /> saidigrupi saitide puhul küpsisefailid ja saidiandmed</translation>
 <translation id="5091013926750941408">Mobiilisait</translation>
 <translation id="509133520954049755">Taotle arvutivaadet</translation>
 <translation id="5100237604440890931">Ahendatud – laiendamiseks klõpsake.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Täisekraanilt väljumiseks lohistage ülaservast alla ja puudutage tagasinuppu.</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5301954838959518834">Selge, sain aru</translation>
-<translation id="5313967007315987356">Lisa sait</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
 <translation id="534295439873310000">NFC-seadmed</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Ekraanikuva jagamine</translation>
 <translation id="5922967540311291836">Kolmanda osapoole küpsisefailide blokeerimine</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
+<translation id="5968921426641056619">Sisestage veebiaadress</translation>
 <translation id="5975083100439434680">Suumib välja</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Selle saidi juurdepääsu muutmine teie seadmele</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ja <ph name="PERMISSION_2" /> on lubatud</translation>
 <translation id="7302486331832100261">Tavaliselt blokeerite märguanded. Lubamiseks puudutage valikut Üksikasjad.</translation>
+<translation id="7366415735885268578">Saidi lisamine</translation>
 <translation id="7383715096023715447">Domeeni <ph name="DOMAIN" /> seaded</translation>
 <translation id="7423098979219808738">Esmalt küsib</translation>
 <translation id="7423538860840206698">Lõikelaua lugemine on blokeeritud</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Sait kuvab sekkuvaid või eksitavaid reklaame.</translation>
 <translation id="8394832520002899662">Puudutage saidile naasmiseks</translation>
 <translation id="8409345997656833551">Saate märguande, kui artiklit saab kuvada lihtsustatud vaates</translation>
+<translation id="8423565414844018592">Teksti suuruseks on määratud <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8441146129660941386">Keri tagasi</translation>
 <translation id="8444433999583714703">Selleks et anda rakendusele <ph name="APP_NAME" /> juurdepääs teie asukohale, lülitage funktsioon Asukoht sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC on selle seadme puhul välja lülitatud. Lülitage see <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> sisse.</translation>
 <translation id="8928445016601307354">Saitidel keelatakse NFC-seadmetes teabe nägemine ja muutmine</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blokeerige konkreetse saidi küpsisefailid.</translation>
 <translation id="8959122750345127698">Navigeerimine ei ole saadaval: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Unusta</translation>

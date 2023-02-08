@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/content_browser_client.h"
@@ -21,6 +20,8 @@
 #include "net/url_request/url_request.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
+#include "services/network/public/cpp/single_request_url_loader_factory.h"
 #include "services/network/public/mojom/accept_ch_frame_observer.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -141,7 +142,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   scoped_refptr<network::SharedURLLoaderFactory>
   PrepareForNonInterceptedRequest(uint32_t* out_options);
 
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   void CheckPluginAndContinueOnReceiveResponse(
       network::mojom::URLResponseHeadPtr head,
@@ -196,7 +196,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
   // network::mojom::AcceptCHFrameObserver implementation

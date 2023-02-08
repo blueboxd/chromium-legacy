@@ -25,10 +25,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -1051,7 +1051,7 @@ void BackendImpl::CriticalError(int error) {
   disabled_ = true;
 
   if (!num_refs_)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
@@ -1846,7 +1846,7 @@ void BackendImpl::DecreaseNumRefs() {
   num_refs_--;
 
   if (!num_refs_ && disabled_)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&BackendImpl::RestartCache, GetWeakPtr(), true));
 }
@@ -2137,8 +2137,8 @@ void BackendImpl::FlushForTesting() {
 
 void BackendImpl::FlushAsynchronouslyForTesting(base::OnceClosure callback) {
   if (!g_internal_cache_thread.IsCreated()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                     std::move(callback));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
     return;
   }
 

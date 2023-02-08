@@ -78,7 +78,7 @@
 
 #pragma mark - Public
 
-- (void)signinPromoHasChangedVisibility:(BOOL)visible {
+- (void)feedTopSectionHasChangedVisibility:(BOOL)visible {
   if (self.isPromoVisible == visible ||
       !self.feedTopSectionViewController.shouldShowSigninPromo) {
     return;

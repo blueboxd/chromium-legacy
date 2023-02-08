@@ -18,7 +18,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -242,7 +241,7 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
   }
 
   if (event_name) {
-    std::unique_ptr<base::ListValue> args(new base::ListValue());
+    base::Value::List args;
     // The action APIs (browserAction, pageAction, action) are only available
     // to blessed extension contexts. As such, we deterministically know that
     // the right context type here is blessed.
@@ -251,9 +250,9 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
     ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
         ExtensionTabUtil::GetScrubTabBehavior(extension, context_type,
                                               web_contents);
-    args->Append(ExtensionTabUtil::CreateTabObject(
-                     web_contents, scrub_tab_behavior, extension)
-                     .ToValue());
+    args.Append(ExtensionTabUtil::CreateTabObject(web_contents,
+                                                  scrub_tab_behavior, extension)
+                    .ToValue());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,
@@ -296,12 +295,12 @@ void ExtensionActionAPI::DispatchEventToExtension(
     const std::string& extension_id,
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> event_args) {
+    base::Value::List event_args) {
   if (!EventRouter::Get(context))
     return;
 
-  auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(*event_args).TakeList(), context);
+  auto event = std::make_unique<Event>(histogram_value, event_name,
+                                       std::move(event_args), context);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, std::move(event));
@@ -779,7 +778,7 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   // Waiting is required so that the popup view can be retrieved by the custom
   // bindings for the response callback. It's also needed to keep this function
   // instance around until a notification is observed.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&BrowserActionOpenPopupFunction::OpenPopupTimedOut, this),
       base::Seconds(10));

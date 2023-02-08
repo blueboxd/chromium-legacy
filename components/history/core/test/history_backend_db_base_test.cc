@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_backend.h"
@@ -31,6 +30,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {}
 
   // HistoryBackend::Delegate implementation.
+  bool CanAddURL(const GURL& url) const override { return true; }
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override {
     history_test_->last_profile_error_ = init_status;
@@ -51,9 +51,6 @@ class BackendDelegate : public HistoryBackend::Delegate {
                                       KeywordID keyword_id,
                                       const std::u16string& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
-  void NotifyContentModelAnnotationModified(
-      const URLRow& row,
-      const VisitContentModelAnnotations& model_annotations) override {}
   void DBLoaded() override {}
 
  private:
@@ -86,7 +83,7 @@ void HistoryBackendDBBaseTest::TearDown() {
 void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
   backend_ = base::MakeRefCounted<HistoryBackend>(
       std::make_unique<BackendDelegate>(this), nullptr,
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   backend_->Init(false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
   db_ = backend_->db_.get();
@@ -97,7 +94,7 @@ void HistoryBackendDBBaseTest::CreateBackendAndDatabase() {
 void HistoryBackendDBBaseTest::CreateBackendAndDatabaseAllowFail() {
   backend_ = base::MakeRefCounted<HistoryBackend>(
       std::make_unique<BackendDelegate>(this), nullptr,
-      base::ThreadTaskRunnerHandle::Get());
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   backend_->Init(false,
                  TestHistoryDatabaseParamsForPath(history_dir_));
   db_ = backend_->db_.get();

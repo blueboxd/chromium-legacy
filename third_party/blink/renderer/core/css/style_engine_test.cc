@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
@@ -161,11 +162,9 @@ class StyleEngineTest : public PageTestBase {
 };
 
 class StyleEngineContainerQueryTest : public StyleEngineTest,
-                                      private ScopedCSSContainerQueriesForTest,
                                       private ScopedLayoutNGForTest {
  public:
-  StyleEngineContainerQueryTest()
-      : ScopedCSSContainerQueriesForTest(true), ScopedLayoutNGForTest(true) {}
+  StyleEngineContainerQueryTest() : ScopedLayoutNGForTest(true) {}
 };
 
 StyleEngineTest::RuleSetInvalidation
@@ -1157,7 +1156,9 @@ TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
   EXPECT_FALSE(style->ChildHasExplicitInheritance());
 
   style = span->firstChild()->GetComputedStyle();
-  EXPECT_TRUE(MatchedPropertiesCache::IsStyleCacheable(*style));
+
+  ComputedStyleBuilder builder(*style);
+  EXPECT_TRUE(MatchedPropertiesCache::IsStyleCacheable(builder));
 
   span->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
 
@@ -3213,220 +3214,6 @@ TEST_F(StyleEngineTest, AtPropertyUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
 }
 
-TEST_F(StyleEngineTest, CSSMatchMediaUnknownUseCounter) {
-  ScopedCSSMediaQueries4ForTest media_queries_4_flag(false);
-
-  UpdateAllLifecyclePhases();
-
-  {
-    MediaQueryList* mql =
-        GetDocument().domWindow()->matchMedia("(min-width: 0px)");
-    ASSERT_TRUE(mql);
-    mql->media();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMatchMediaUnknown));
-    ClearUseCounter(WebFeature::kCSSMatchMediaUnknown);
-  }
-
-  {
-    MediaQueryList* mql =
-        GetDocument().domWindow()->matchMedia("(width: 100px) or (unknown)");
-    ASSERT_TRUE(mql);
-    mql->media();
-    // Should not be use-counted, because it's a real parse error without
-    // CSSMediaQueries4 enabled.
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMatchMediaUnknown));
-    ClearUseCounter(WebFeature::kCSSMatchMediaUnknown);
-  }
-
-  {
-    MediaQueryList* mql =
-        GetDocument().domWindow()->matchMedia("(unknown: 0px)");
-    ASSERT_TRUE(mql);
-    mql->media();
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSMatchMediaUnknown));
-    ClearUseCounter(WebFeature::kCSSMatchMediaUnknown);
-  }
-
-  {
-    MediaQueryList* mql = GetDocument().domWindow()->matchMedia(
-        "not print and (width: 100px) and (unknown)");
-    ASSERT_TRUE(mql);
-    mql->media();
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSMatchMediaUnknown));
-    ClearUseCounter(WebFeature::kCSSMatchMediaUnknown);
-  }
-}
-
-TEST_F(StyleEngineTest, CSSMediaListUnknownUseCounter) {
-  ScopedCSSMediaQueries4ForTest media_queries_4_flag(false);
-
-  UpdateAllLifecyclePhases();
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style media="(min-width: 0px)"></style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    MediaList* media = style->sheet()->media();
-    ASSERT_TRUE(media);
-    media->mediaText(GetDocument().GetExecutionContext());
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style media="(width: 100px) or (unknown)"></style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    MediaList* media = style->sheet()->media();
-    ASSERT_TRUE(media);
-    media->mediaText(GetDocument().GetExecutionContext());
-    // Should not be use-counted, because it's a real parse error without
-    // CSSMediaQueries4 enabled.
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style media="(unknown: 0px)"></style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    MediaList* media = style->sheet()->media();
-    ASSERT_TRUE(media);
-    media->mediaText(GetDocument().GetExecutionContext());
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-
-    media->MediaTextInternal();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style media="not print and (width: 100px) and (unknown)"></style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    MediaList* media = style->sheet()->media();
-    ASSERT_TRUE(media);
-    media->mediaText(GetDocument().GetExecutionContext());
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-
-    media->MediaTextInternal();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSMediaListUnknown));
-    ClearUseCounter(WebFeature::kCSSMediaListUnknown);
-  }
-}
-
-TEST_F(StyleEngineTest, CSSOMMediaConditionUnknownUseCounter) {
-  ScopedCSSMediaQueries4ForTest media_queries_4_flag(false);
-
-  GetDocument().body()->setInnerHTML(R"HTML(
-    <style id=style>
-      @media (min-width: 100px) {}
-      @media (width: 100px) or (unknown) {}
-      @media (unknown: 0px) {}
-      @media not print and (width: 100px) and (unknown) {}
-    </style>
-  )HTML");
-  UpdateAllLifecyclePhases();
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style>
-        @media (min-width: 100px) {}
-      </style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    ASSERT_EQ(1u, style->sheet()->length());
-    auto* rule = DynamicTo<CSSMediaRule>(style->sheet()->item(0));
-    ASSERT_TRUE(rule);
-    rule->conditionText();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style>
-        @media (width: 100px) or (unknown) {}
-      </style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    ASSERT_EQ(1u, style->sheet()->length());
-    auto* rule = DynamicTo<CSSMediaRule>(style->sheet()->item(0));
-    ASSERT_TRUE(rule);
-    rule->conditionText();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style>
-        @media (unknown: 0px) {}
-      </style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    ASSERT_EQ(1u, style->sheet()->length());
-    auto* rule = DynamicTo<CSSMediaRule>(style->sheet()->item(0));
-    ASSERT_TRUE(rule);
-    rule->conditionText();
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-
-    rule->ConditionTextInternal();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-  }
-
-  {
-    GetDocument().body()->setInnerHTML(R"HTML(
-      <style>
-        @media not print and (width: 100px) and (unknown) {}
-      </style>
-    )HTML");
-    auto* style =
-        DynamicTo<HTMLStyleElement>(GetDocument().QuerySelector("style"));
-    ASSERT_TRUE(style);
-    ASSERT_TRUE(style->sheet());
-    ASSERT_EQ(1u, style->sheet()->length());
-    auto* rule = DynamicTo<CSSMediaRule>(style->sheet()->item(0));
-    ASSERT_TRUE(rule);
-    rule->conditionText();
-    EXPECT_TRUE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-
-    rule->ConditionTextInternal();
-    EXPECT_FALSE(IsUseCounted(WebFeature::kCSSOMMediaConditionUnknown));
-    ClearUseCounter(WebFeature::kCSSOMMediaConditionUnknown);
-  }
-}
-
 TEST_F(StyleEngineTest, AtScopeUseCount) {
   ScopedCSSScopeForTest scope_feature(true);
 
@@ -4212,38 +3999,6 @@ TEST_F(StyleEngineContainerQueryTest,
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*a));
 }
 
-TEST_F(StyleEngineTest, ContainerRelativeUnitsRuntimeFlag) {
-  String css = R"CSS(
-    top: 1cqw;
-    left: 1cqh;
-    bottom: 1cqi;
-    right: 1cqb;
-    padding-top: 1cqmin;
-    padding-right: 1cqmax;
-    padding-bottom: calc(1cqw);
-    margin-left: 1px;
-  )CSS";
-
-  {
-    ScopedCSSContainerQueriesForTest cq_feature(false);
-    ScopedCSSContainerRelativeUnitsForTest feature(false);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(1u, set->PropertyCount());
-    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kMarginLeft));
-  }
-
-  {
-    ScopedCSSContainerQueriesForTest cq_feature(false);
-    ScopedCSSContainerRelativeUnitsForTest feature(true);
-    const CSSPropertyValueSet* set =
-        css_test_helpers::ParseDeclarationBlock(css);
-    ASSERT_TRUE(set);
-    EXPECT_EQ(8u, set->PropertyCount());
-  }
-}
-
 TEST_F(StyleEngineTest, CSSViewportUnits4RuntimeFlag) {
   Vector<String> units = {"vi",  "vb",    "svi",   "svb",   "svw",
                           "svh", "svmin", "svmax", "lvi",   "lvb",
@@ -4269,31 +4024,6 @@ TEST_F(StyleEngineTest, CSSViewportUnits4RuntimeFlag) {
       ASSERT_TRUE(set);
       EXPECT_EQ(1u, set->PropertyCount());
       EXPECT_TRUE(set->HasProperty(CSSPropertyID::kTop));
-    }
-  }
-}
-
-TEST_F(StyleEngineTest, ContainerPropertiesRuntimeFlag) {
-  Vector<String> declarations = {"container-type:inline-size",
-                                 "container-name:foo", "container:inline-size"};
-
-  {
-    ScopedCSSContainerQueriesForTest feature(false);
-
-    for (const String& decl : declarations) {
-      const auto* set = css_test_helpers::ParseDeclarationBlock(decl);
-      ASSERT_TRUE(set);
-      EXPECT_EQ(0u, set->PropertyCount());
-    }
-  }
-
-  {
-    ScopedCSSContainerQueriesForTest feature(true);
-
-    for (const String& decl : declarations) {
-      const auto* set = css_test_helpers::ParseDeclarationBlock(decl);
-      ASSERT_TRUE(set);
-      EXPECT_GT(set->PropertyCount(), 0u);
     }
   }
 }
@@ -4404,6 +4134,108 @@ TEST_F(StyleEngineTest, RejectSlottedSelector) {
 
   // Should fast reject ".notfound ::slotted(span)"
   EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, FastRejectForNesting) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      .notfound {
+        & span {
+          color: pink;
+        }
+      }
+    </style>
+    <div>
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should fast reject "& span"
+  EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, FastRejectForComplexSingleIs) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :is(#parent .notfound) > span {
+        color: pink;
+      }
+    </style>
+    <div id="parent">
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should fast reject ":is(#parent .notfound) > span", even though it is not
+  // the same as "#parent .notfound > span".
+  EXPECT_EQ(1u, stats->rules_fast_rejected);
+}
+
+TEST_F(StyleEngineTest, NoFastRejectForMultipleIs) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :is(#foo, #bar) span {
+        color: pink;
+      }
+    </style>
+    <div id="parent">
+      <span id="child">not pink</span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  StyleEngine& engine = GetStyleEngine();
+  // Even if the Stats() were already enabled, the following resets it to 0.
+  engine.SetStatsEnabled(true);
+
+  StyleResolverStats* stats = engine.Stats();
+  ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
+
+  Element* span = GetDocument().getElementById("child");
+  ASSERT_TRUE(span);
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetStyleEngine().RecalcStyle();
+
+  // Should not try to fast reject due to the (multiple-element) selector list.
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
 }
 
 TEST_F(StyleEngineTest, AudioUAStyleNameSpace) {
@@ -6185,6 +6017,44 @@ TEST_F(StyleEngineTest, BorderWidthsAreRecalculatedWhenZoomChanges) {
   // zoom and device scale factor is reset.
   reset();
   checkBorderWidth(1.0f);
+}
+
+TEST_F(StyleEngineTest, SubsequentSiblingRecalcFlatTree) {
+  GetDocument()
+      .documentElement()
+      ->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id="host">
+      <template shadowroot=open>
+        <slot name=a></slot>
+      </template>
+      <div slot=a id=target></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div slot=a></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div slot=a></div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  unsigned before_count = GetStyleEngine().StyleForElementCount();
+
+  Element* target = GetElementById("target");
+  ASSERT_TRUE(target);
+
+  target->SetInlineStyleProperty(CSSPropertyID::kScrollTimelineName, "foo");
+  UpdateAllLifecyclePhasesForTest();
+
+  unsigned after_count = GetStyleEngine().StyleForElementCount();
+
+  // Only the slotted elements should get style recalc.
+  EXPECT_EQ(3u, after_count - before_count);
 }
 
 }  // namespace blink

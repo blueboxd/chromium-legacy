@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
+#include "ash/system/unified/feature_tile.h"
 #include "ash/system/unified/feature_tiles_container_view.h"
 #include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/quick_settings_footer.h"
@@ -25,6 +26,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -121,8 +123,15 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
+  auto* scroll_view = AddChildView(std::make_unique<views::ScrollView>());
+  scroll_view->SetAllowKeyboardScrolling(false);
+  scroll_view->SetBackgroundColor(absl::nullopt);
+  scroll_view->ClipHeightTo(0, INT_MAX);
+  scroll_view->SetDrawOverflowIndicator(false);
+  scroll_view->SetVerticalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kHiddenButEnabled);
   system_tray_container_ =
-      AddChildView(std::make_unique<views::FlexLayoutView>());
+      scroll_view->SetContents(std::make_unique<views::FlexLayoutView>());
   system_tray_container_->SetOrientation(views::LayoutOrientation::kVertical);
 
   AddTemporaryDetailedViewButtons();
@@ -163,6 +172,11 @@ void QuickSettingsView::SetMaxHeight(int max_height) {
       CalculateHeightForFeatureTilesContainer());
 }
 
+void QuickSettingsView::AddTiles(
+    std::vector<std::unique_ptr<FeatureTile>> tiles) {
+  feature_tiles_container_->AddTiles(std::move(tiles));
+}
+
 void QuickSettingsView::AddSliderView(views::View* slider_view) {
   sliders_container_->AddChildView(slider_view);
 }
@@ -186,9 +200,10 @@ void QuickSettingsView::ShowMediaControls() {
     PreferredSizeChanged();
 }
 
-void QuickSettingsView::SetDetailedView(views::View* detailed_view) {
+void QuickSettingsView::SetDetailedView(
+    std::unique_ptr<views::View> detailed_view) {
   detailed_view_container_->RemoveAllChildViews();
-  detailed_view_container_->AddChildView(detailed_view);
+  detailed_view_container_->AddChildView(std::move(detailed_view));
   system_tray_container_->SetVisible(false);
   detailed_view_container_->SetVisible(true);
 

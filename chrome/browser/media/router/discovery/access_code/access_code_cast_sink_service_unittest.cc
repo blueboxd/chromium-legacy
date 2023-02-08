@@ -70,7 +70,7 @@ class AccessCodeCastSinkServiceTest : public testing::Test {
         message_handler_(mock_cast_socket_service_.get()),
         cast_media_sink_service_impl_(
             std::make_unique<MockCastMediaSinkServiceImpl>(
-                OnSinksDiscoveredCallback(),
+                mock_sink_discovered_cb_.Get(),
                 mock_cast_socket_service_.get(),
                 discovery_network_monitor_.get(),
                 &dual_media_sink_service_)) {
@@ -1319,6 +1319,43 @@ TEST_F(AccessCodeCastSinkServiceTest, RefreshStoredDeviceInfo) {
             CreateValueDictFromMediaSinkInternal(existing_sink_2));
 }
 
+TEST_F(AccessCodeCastSinkServiceTest, RefreshExistingDeviceName) {
+  SetDeviceDurationPrefForTest(base::Seconds(100));
+
+  // Create fake sinks for test. Importantly, new_sink_1 has the same id as
+  // existing_sink_1, but they have different names.
+  MediaSinkInternal existing_sink_1 = CreateCastSink(1);
+  MediaSinkInternal new_sink_1 = CreateCastSink(1);
+  const std::string fake_new_sink_name = "Fake new sink";
+  new_sink_1.sink().set_name(fake_new_sink_name);
+  EXPECT_EQ(existing_sink_1.id(), new_sink_1.id());
+  EXPECT_NE(existing_sink_1.sink().name(), new_sink_1.sink().name());
+
+  existing_sink_1.cast_data().discovery_type =
+      CastDiscoveryType::kAccessCodeManualEntry;
+  new_sink_1.cast_data().discovery_type =
+      CastDiscoveryType::kAccessCodeManualEntry;
+
+  // Add existing sinks to the mock media router and stored prefs. Since the
+  // CastMediaSinkService is mocked out, just manually set everything instead.
+  mock_cast_media_sink_service_impl()->AddSinkForTest(existing_sink_1);
+
+  mock_time_task_runner()->FastForwardUntilNoTasksRemain();
+
+  // Try to add new_sink_1, which has an id that matches an existing sink.
+  MockAddSinkResultCallback mock_callback;
+  access_code_cast_sink_service_->OpenChannelIfNecessary(
+      new_sink_1, mock_callback.Get(), /*has_sink=*/true);
+  FastForwardUiAndIoTasks();
+  mock_time_task_runner()->FastForwardUntilNoTasksRemain();
+
+  EXPECT_EQ(mock_cast_media_sink_service_impl()
+                ->GetSinkById(existing_sink_1.id())
+                ->sink()
+                .name(),
+            new_sink_1.sink().name());
+}
+
 TEST_F(AccessCodeCastSinkServiceTest, RefreshStoredDeviceTimer) {
   // If a device is already stored, then its timer is reset.
   SetDeviceDurationPrefForTest(base::Seconds(100));
@@ -1385,6 +1422,71 @@ TEST_F(AccessCodeCastSinkServiceTest, RefreshStoredDeviceTimer) {
   EXPECT_FALSE(access_code_cast_sink_service_
                    ->current_session_expiration_timers_[cast_sink2.id()]
                    ->IsRunning());
+}
+
+TEST_F(AccessCodeCastSinkServiceTest, HandleMediaRouteAdded) {
+  // Initialize histogram tester so we can ensure metrics are collected.
+  base::HistogramTester histogram_tester;
+
+  // Set duration pref since it will be recorded in metrics.
+  SetDeviceDurationPrefForTest(base::Seconds(10));
+
+  // Create fake sinks for the test.
+
+  // cast_sink1 is not an access code sink.
+  MediaSinkInternal cast_sink1 = CreateCastSink(1);
+  auto cast_data1 = cast_sink1.cast_data();
+  cast_data1.discovery_type = CastDiscoveryType::kMdns;
+  cast_sink1.set_cast_data(cast_data1);
+
+  // cast_sink2 is a new access code sink.
+  MediaSinkInternal cast_sink2 = CreateCastSink(2);
+  auto cast_data2 = cast_sink2.cast_data();
+  cast_data2.discovery_type = CastDiscoveryType::kAccessCodeManualEntry;
+  cast_sink2.set_cast_data(cast_data2);
+
+  // cast_sink3 is a saved access code sink.
+  MediaSinkInternal cast_sink3 = CreateCastSink(3);
+  auto cast_data3 = cast_sink3.cast_data();
+  cast_data3.discovery_type = CastDiscoveryType::kAccessCodeRememberedDevice;
+  cast_sink3.set_cast_data(cast_data3);
+
+  // The histogram should start with nothing logged.
+  histogram_tester.ExpectTotalCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 0);
+
+  access_code_cast_sink_service_->HandleMediaRouteAdded(&cast_sink1);
+
+  // The histogram should not be logged to after a non access code route starts.
+  histogram_tester.ExpectTotalCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 0);
+
+  access_code_cast_sink_service_->HandleMediaRouteAdded(&cast_sink2);
+
+  // The histogram should log when a route starts to a new access code device.
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 10, 1);
+
+  access_code_cast_sink_service_->HandleMediaRouteAdded(&cast_sink3);
+
+  // The histogram should log when a route starts to a saved access code device.
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 10, 2);
+
+  // Ensure various pref values are can be logged.
+  SetDeviceDurationPrefForTest(base::Seconds(100));
+  access_code_cast_sink_service_->HandleMediaRouteAdded(&cast_sink2);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 100, 1);
+
+  SetDeviceDurationPrefForTest(base::Seconds(1000));
+  access_code_cast_sink_service_->HandleMediaRouteAdded(&cast_sink2);
+  histogram_tester.ExpectBucketCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 1000, 1);
+
+  // Histogram logs should not have been lost.
+  histogram_tester.ExpectTotalCount(
+      "AccessCodeCast.Discovery.DeviceDurationOnRoute", 4);
 }
 
 }  // namespace media_router

@@ -16,7 +16,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
-#include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
@@ -40,8 +39,6 @@ namespace {
 const char kTestExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
 const char kTestExtensionId2[] = "dmpipdbjkoajgdeppkffbjhngfckdloi";
 const char kTestImeComponentId[] = "test_engine_id";
-const char kErrorNotActive[] = "IME is not active.";
-const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid.";
 
 enum CallsBitmap {
   NONE = 0U,
@@ -169,10 +166,7 @@ class InputMethodEngineTest : public testing::Test {
   }
 
   void Focus(ui::TextInputType input_type) {
-    ui::TextInputMethod::InputContext input_context(
-        input_type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE,
-        ui::TextInputClient::FOCUS_REASON_OTHER,
-        ui::PersonalizationMode::kDisabled);
+    ui::TextInputMethod::InputContext input_context(input_type);
     engine_->Focus(input_context);
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
@@ -352,41 +346,6 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   // Enable/disable with focus.
   engine_->SetCompositionBounds({gfx::Rect()});
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
-}
-
-TEST_F(InputMethodEngineTest, TestSetSelectionRange) {
-  CreateEngine(true);
-  std::string error;
-  int context = engine_->GetContextIdForTesting();
-  engine_->InputMethodEngine::SetSelectionRange(context, /* start */ 0,
-                                                /* end */ 0, &error);
-  EXPECT_EQ(kErrorNotActive, error);
-  EXPECT_EQ(0,
-            mock_ime_input_context_handler_->set_selection_range_call_count());
-  error = "";
-
-  Focus(ui::TEXT_INPUT_TYPE_TEXT);
-  engine_->Enable(kTestImeComponentId);
-  context = engine_->GetContextIdForTesting();
-  engine_->InputMethodEngine::SetSelectionRange(context, /* start */ 0,
-                                                /* end */ 0, &error);
-  EXPECT_EQ("", error);
-  EXPECT_EQ(1,
-            mock_ime_input_context_handler_->set_selection_range_call_count());
-  error = "";
-
-  engine_->InputMethodEngine::SetSelectionRange(context, /* start */ -1,
-                                                /* end */ 0, &error);
-  EXPECT_EQ(base::StringPrintf(kErrorInvalidValue, "start", -1), error);
-  EXPECT_EQ(1,
-            mock_ime_input_context_handler_->set_selection_range_call_count());
-  error = "";
-
-  engine_->InputMethodEngine::SetSelectionRange(context, /* start */ 0,
-                                                /* end */ -1, &error);
-  EXPECT_EQ(base::StringPrintf(kErrorInvalidValue, "end", -1), error);
-  EXPECT_EQ(1,
-            mock_ime_input_context_handler_->set_selection_range_call_count());
 }
 
 // See https://crbug.com/980437.

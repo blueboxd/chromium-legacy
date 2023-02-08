@@ -62,11 +62,13 @@ class FlatlandWindowTest : public ::testing::Test {
     return flatland_window_.get();
   }
 
-  void SetLayoutInfo(float device_pixel_ratio) {
+  void SetLayoutInfo(float device_pixel_ratio,
+                     fuchsia::math::Inset inset = {0, 0, 0, 0}) {
     fuchsia::ui::composition::LayoutInfo layout_info;
     layout_info.set_logical_size({100, 100});
     layout_info.set_device_pixel_ratio(
         {device_pixel_ratio, device_pixel_ratio});
+    layout_info.set_inset(inset);
     flatland_window_->OnGetLayout(std::move(layout_info));
   }
 
@@ -156,20 +158,13 @@ TEST_F(FlatlandWindowTest, AppliesDevicePixelRatio) {
         EXPECT_EQ(event->AsTouchEvent()->location_f().y(), kLocationY);
         event_received = true;
       });
-  constexpr std::array<std::array<float, 2>, 2> kRect = {{{0, 0}, {20, 20}}};
-  constexpr std::array<float, 9> kIdentity = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-  constexpr fuchsia::ui::pointer::TouchInteractionId kIxnOne = {
-      .device_id = 1u, .pointer_id = 1u, .interaction_id = 2u};
-  std::vector<fuchsia::ui::pointer::TouchEvent> events =
+  std::vector<fuchsia::ui::pointer::TouchEvent> events;
+  events.push_back(
       TouchEventBuilder()
-          .AddTime(1111789u)
-          .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kIxnOne, fuchsia::ui::pointer::EventPhase::ADD,
-                     {kLocationX, kLocationY})
-          .AddResult(
-              {.interaction = kIxnOne,
-               .status = fuchsia::ui::pointer::TouchInteractionStatus::GRANTED})
-          .BuildAsVector();
+          .SetPosition({kLocationX, kLocationY})
+          .SetTouchInteractionStatus(
+              fuchsia::ui::pointer::TouchInteractionStatus::GRANTED)
+          .Build());
   fake_touch_source_.ScheduleCallback(std::move(events));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(event_received);
@@ -189,16 +184,13 @@ TEST_F(FlatlandWindowTest, AppliesDevicePixelRatio) {
         EXPECT_EQ(event->AsTouchEvent()->location_f().y(), kLocationY * kDPR);
         event_received = true;
       });
-  events =
+  events.clear();
+  events.push_back(
       TouchEventBuilder()
-          .AddTime(1111789u)
-          .AddViewParameters(kRect, kRect, kIdentity)
-          .AddSample(kIxnOne, fuchsia::ui::pointer::EventPhase::ADD,
-                     {kLocationX, kLocationY})
-          .AddResult(
-              {.interaction = kIxnOne,
-               .status = fuchsia::ui::pointer::TouchInteractionStatus::GRANTED})
-          .BuildAsVector();
+          .SetPosition({kLocationX, kLocationY})
+          .SetTouchInteractionStatus(
+              fuchsia::ui::pointer::TouchInteractionStatus::GRANTED)
+          .Build());
   fake_touch_source_.ScheduleCallback(std::move(events));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(event_received);
@@ -227,6 +219,35 @@ TEST_F(FlatlandWindowTest, WaitForNonZeroSize) {
   EXPECT_CALL(delegate, OnBoundsChanged(_)).Times(1);
   SetLayoutInfo(1.f);
   EXPECT_FALSE(HasPendingAttachSurfaceContentClosure());
+}
+
+class ParameterizedViewInsetTest : public FlatlandWindowTest,
+                                   public testing::WithParamInterface<float> {};
+
+INSTANTIATE_TEST_SUITE_P(ViewInsetTest,
+                         ParameterizedViewInsetTest,
+                         testing::Values(1.f, 2.f, 3.f));
+
+// Tests whether view insets are properly set in |FlatlandWindow|.
+TEST_P(ParameterizedViewInsetTest, ViewInsetsTest) {
+  MockPlatformWindowDelegate delegate;
+  EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_));
+  CreateFlatlandWindow(&delegate);
+  EXPECT_CALL(delegate, OnBoundsChanged(_)).Times(1);
+  SetLayoutInfo(1.f);
+
+  const fuchsia::math::Inset inset = {1, 1, 1, 1};
+  const float dpr = GetParam();
+
+  // Setting LayoutInfo should trigger a change in the bounds.
+  PlatformWindowDelegate::BoundsChange bounds(false);
+  EXPECT_CALL(delegate, OnBoundsChanged(_)).WillOnce(SaveArg<0>(&bounds));
+  SetLayoutInfo(dpr, inset);
+
+  EXPECT_EQ(bounds.system_ui_overlap.top(), dpr * inset.top);
+  EXPECT_EQ(bounds.system_ui_overlap.left(), dpr * inset.left);
+  EXPECT_EQ(bounds.system_ui_overlap.bottom(), dpr * inset.bottom);
+  EXPECT_EQ(bounds.system_ui_overlap.right(), dpr * inset.right);
 }
 
 }  // namespace ui

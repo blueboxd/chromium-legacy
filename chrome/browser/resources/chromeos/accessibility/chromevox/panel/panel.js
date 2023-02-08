@@ -8,6 +8,7 @@
 import {constants} from '../../common/constants.js';
 import {EventGenerator} from '../../common/event_generator.js';
 import {KeyCode} from '../../common/key_code.js';
+import {LocalStorage} from '../../common/local_storage.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleCommandData} from '../common/braille/braille_command_data.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
@@ -21,7 +22,7 @@ import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
-import {QueueMode} from '../common/tts_interface.js';
+import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
 import {PanelInterface} from './panel_interface.js';
@@ -41,9 +42,11 @@ export class Panel extends PanelInterface {
   /**
    * Initialize the panel.
    */
-  static init() {
+  static async init() {
     /** @type {string} */
     Panel.sessionState = '';
+
+    await LocalStorage.init();
 
     const updateSessionState = sessionState => {
       Panel.sessionState = sessionState;
@@ -174,7 +177,7 @@ export class Panel extends PanelInterface {
     Panel.brailleContainer_.hidden = false;
     Panel.searchContainer_.hidden = true;
 
-    if (localStorage['brailleCaptions'] === String(true)) {
+    if (LocalStorage.get('brailleCaptions')) {
       Panel.speechContainer_.style.visibility = 'hidden';
       Panel.brailleContainer_.style.visibility = 'visible';
     } else {
@@ -606,7 +609,7 @@ export class Panel extends PanelInterface {
     const groups = data.groups;
     const cols = data.cols;
     const rows = data.rows;
-    const sideBySide = localStorage['brailleSideBySide'] === 'true';
+    const sideBySide = LocalStorage.get('brailleSideBySide');
 
     const addBorders = function(event) {
       const cell = event.target;
@@ -1166,10 +1169,12 @@ export class Panel extends PanelInterface {
       BackgroundBridge.CommandHandler.onCommand(Command.FULLY_DESCRIBE);
     });
     $('chromevox-tutorial').addEventListener('requestearcon', evt => {
+      evt = /** @type {{detail: {earconId: string}}} */ (evt);
       const earconId = evt.detail.earconId;
       backgroundPage['ChromeVox']['earcons']['playEarcon'](earconId);
     });
     $('chromevox-tutorial').addEventListener('cancelearcon', evt => {
+      evt = /** @type {{detail: {earconId: string}}} */ (evt);
       const earconId = evt.detail.earconId;
       backgroundPage['ChromeVox']['earcons']['cancelEarcon'](earconId);
     });
@@ -1267,8 +1272,8 @@ Panel.nodeMenuDictionary_ = {};
 /** @public {boolean} */
 Panel.disableRestartTutorialNudgesForTesting = false;
 
-window.addEventListener('load', function() {
-  Panel.init();
+window.addEventListener('load', async function() {
+  await Panel.init();
 
   switch (location.search.slice(1)) {
     case 'tutorial':
@@ -1276,13 +1281,13 @@ window.addEventListener('load', function() {
   }
 }, false);
 
-window.addEventListener('hashchange', function() {
+window.addEventListener('hashchange', async function() {
   const bkgnd = chrome.extension.getBackgroundPage();
 
   // Save the sticky state when a user first focuses the panel.
-  if (bkgnd['ChromeVox'] &&
-      (location.hash === '#fullscreen' || location.hash === '#focus')) {
-    Panel.originalStickyState_ = bkgnd['ChromeVox']['isStickyPrefOn'];
+  if (location.hash === '#fullscreen' || location.hash === '#focus') {
+    Panel.originalStickyState_ =
+        await BackgroundBridge.ChromeVoxPrefs.getStickyPref();
   }
 
   // If the original sticky state was on when we first entered the panel, toggle

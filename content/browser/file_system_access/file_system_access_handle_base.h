@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_HANDLE_BASE_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_HANDLE_BASE_H_
 
-#include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -134,13 +133,22 @@ class CONTENT_EXPORT FileSystemAccessHandleBase {
       bool has_transient_user_activation,
       base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
           callback);
-  void DidConfirmDestinationDoesNotExist(
+  // Only called if the move operation is not allowed to overwrite the target.
+  void ConfirmMoveWillNotOverwriteDestination(
+      const bool has_write_access,
       const storage::FileSystemURL& destination_url,
       std::vector<scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>>
           locks,
       bool has_transient_user_activation,
       base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)> callback,
       base::File::Error result);
+  void DoPerformMoveOperation(
+      const storage::FileSystemURL& destination_url,
+      std::vector<scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>>
+          locks,
+      bool has_transient_user_activation,
+      base::OnceCallback<void(blink::mojom::FileSystemAccessErrorPtr)>
+          callback);
 
   void DidMove(
       storage::FileSystemURL destination_url,

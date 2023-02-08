@@ -23,7 +23,8 @@
 import '../../cr_elements/cr_shared_vars.css.js';
 import '../../cr_elements/cr_shared_style.css.js';
 
-import {assert, assertNotReached} from '//resources/js/assert.js';
+import {assert, assertNotReached} from '//resources/js/assert_ts.js';
+import {sanitizeInnerHtml} from '//resources/js/parse_html_subset.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './localized_link.html.js';
@@ -78,7 +79,7 @@ export class LocalizedLinkElement extends PolymerElement {
         type: String,
         value: '',
         computed: 'getAriaLabelledContent_(localizedString, linkUrl)',
-        observer: 'setContainerInnerHTML_',
+        observer: 'setContainerInnerHtml_',
       },
     };
   }
@@ -97,7 +98,7 @@ export class LocalizedLinkElement extends PolymerElement {
   private getAriaLabelledContent_(localizedString: string, linkUrl: string):
       string {
     const tempEl = document.createElement('div');
-    tempEl.innerHTML = localizedString;
+    tempEl.innerHTML = sanitizeInnerHtml(localizedString, {attrs: ['id']});
 
     const ariaLabelledByIds: string[] = [];
     tempEl.childNodes.forEach((node, index) => {
@@ -147,8 +148,15 @@ export class LocalizedLinkElement extends PolymerElement {
     return tempEl.innerHTML;
   }
 
-  private setContainerInnerHTML_() {
-    this.$.container.innerHTML = this.containerInnerHTML_;
+  private setContainerInnerHtml_() {
+    this.$.container.innerHTML = sanitizeInnerHtml(this.containerInnerHTML_, {
+      attrs: [
+        'aria-hidden',
+        'aria-labelledby',
+        'id',
+        'tabindex',
+      ],
+    });
     const anchorTag = this.shadowRoot!.querySelector('a');
     if (anchorTag) {
       anchorTag.addEventListener(

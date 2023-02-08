@@ -132,6 +132,9 @@ class PrintBackendServiceManager {
   void DocumentDone(const std::string& printer_name,
                     int document_cookie,
                     mojom::PrintBackendService::DocumentDoneCallback callback);
+  void Cancel(const std::string& printer_name,
+              int document_cookie,
+              mojom::PrintBackendService::CancelCallback callback);
 
   // Query if printer driver has been found to require elevated privilege in
   // order to have print queries/commands succeed.
@@ -191,16 +194,18 @@ class PrintBackendServiceManager {
   // callback that can be discarded once a service call succeeds normally.
 
   // Key is a callback ID.
-  template <class T>
+  template <class... T>
   using SavedCallbacks =
-      base::flat_map<base::UnguessableToken, base::OnceCallback<void(T)>>;
+      base::flat_map<base::UnguessableToken, base::OnceCallback<void(T...)>>;
 
   // Key is the remote ID that enables finding the correct remote.  Note that
   // the remote ID does not necessarily mean the printer name.
-  template <class T>
-  using RemoteSavedCallbacks = base::flat_map<std::string, SavedCallbacks<T>>;
-  template <class T>
-  using RemoteSavedStructCallbacks = RemoteSavedCallbacks<mojo::StructPtr<T>>;
+  template <class... T>
+  using RemoteSavedCallbacks =
+      base::flat_map<std::string, SavedCallbacks<T...>>;
+  template <class... T>
+  using RemoteSavedStructCallbacks =
+      RemoteSavedCallbacks<mojo::StructPtr<T...>>;
 
   using RemoteSavedEnumeratePrintersCallbacks =
       RemoteSavedStructCallbacks<mojom::PrinterListResult>;
@@ -228,6 +233,7 @@ class PrintBackendServiceManager {
       RemoteSavedCallbacks<mojom::ResultCode>;
   using RemoteSavedDocumentDoneCallbacks =
       RemoteSavedCallbacks<mojom::ResultCode>;
+  using RemoteSavedCancelCallbacks = RemoteSavedCallbacks<>;
 
   // Bundle of the `PrintBackendService` and its sandboxed/unsandboxed host
   // remotes.
@@ -361,6 +367,7 @@ class PrintBackendServiceManager {
   GetRemoteSavedRenderPrintedDocumentCallbacks(bool sandboxed);
   RemoteSavedDocumentDoneCallbacks& GetRemoteSavedDocumentDoneCallbacks(
       bool sandboxed);
+  RemoteSavedCancelCallbacks& GetRemoteSavedCancelCallbacks(bool sandboxed);
 
   // Helper function to get the service and initialize a `context` for a given
   // `printer_name`.
@@ -369,19 +376,19 @@ class PrintBackendServiceManager {
       ClientType client_type,
       CallbackContext& context);
 
-  // Helper function to save outstanding callbacks.
-  template <class T, class X>
-  void SaveCallback(RemoteSavedCallbacks<T>& saved_callbacks,
+  // Helper functions to save outstanding callbacks.
+  template <class... T, class... X>
+  void SaveCallback(RemoteSavedCallbacks<T...>& saved_callbacks,
                     const std::string& remote_id,
                     const base::UnguessableToken& saved_callback_id,
-                    base::OnceCallback<void(X)> callback);
+                    base::OnceCallback<void(X...)> callback);
 
-  // Helper function for local callback wrappers for mojom calls.
-  template <class T, class X>
-  void ServiceCallbackDone(RemoteSavedCallbacks<T>& saved_callbacks,
+  // Helper functions for local callback wrappers for mojom calls.
+  template <class... T, class... X>
+  void ServiceCallbackDone(RemoteSavedCallbacks<T...>& saved_callbacks,
                            const std::string& remote_id,
                            const base::UnguessableToken& saved_callback_id,
-                           X data);
+                           X... data);
 
   // Local callback wrappers for mojom calls.
   void OnDidEnumeratePrinters(const CallbackContext& context,
@@ -413,6 +420,7 @@ class PrintBackendServiceManager {
                                   mojom::ResultCode result);
   void OnDidDocumentDone(const CallbackContext& context,
                          mojom::ResultCode result);
+  void OnDidCancel(const CallbackContext& context);
 
   // Helper functions to run outstanding callbacks when a remote has become
   // disconnected.
@@ -421,10 +429,10 @@ class PrintBackendServiceManager {
       RemoteSavedStructCallbacks<T>& saved_callbacks,
       const std::string& remote_id,
       mojo::StructPtr<T> result_to_clone);
-  template <class T>
-  void RunSavedCallbacksResult(RemoteSavedCallbacks<T>& saved_callbacks,
-                               const std::string& remote_id,
-                               T result);
+  template <class... T>
+  void RunSavedCallbacks(RemoteSavedCallbacks<T...>& saved_callbacks,
+                         const std::string& remote_id,
+                         T... result);
 
   // Test support for client ID management.
   static void SetClientsForTesting(
@@ -507,6 +515,8 @@ class PrintBackendServiceManager {
       unsandboxed_saved_render_printed_document_callbacks_;
   RemoteSavedDocumentDoneCallbacks sandboxed_saved_document_done_callbacks_;
   RemoteSavedDocumentDoneCallbacks unsandboxed_saved_document_done_callbacks_;
+  RemoteSavedCancelCallbacks sandboxed_saved_cancel_callbacks_;
+  RemoteSavedCancelCallbacks unsandboxed_saved_cancel_callbacks_;
 
   // Set of printer drivers which require elevated permissions to operate.
   // It is expected that most print drivers will succeed with the preconfigured

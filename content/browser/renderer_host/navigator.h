@@ -19,6 +19,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -44,7 +45,6 @@ class NavigationRequest;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
-class WebBundleHandleTracker;
 struct LoadCommittedDetails;
 struct UrlInfo;
 
@@ -85,11 +85,6 @@ class CONTENT_EXPORT Navigator {
   NavigatorDelegate* GetDelegate();
 
   // Notifications coming from the RenderFrameHosts ----------------------------
-
-  // The RenderFrameHostImpl has failed to load the document.
-  void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
-                            const GURL& url,
-                            int error_code);
 
   // The RenderFrameHostImpl has committed a navigation. The Navigator is
   // responsible for resetting |navigation_request| at the end of this method
@@ -163,6 +158,8 @@ class CONTENT_EXPORT Navigator {
       bool has_user_gesture,
       bool is_form_submission,
       const absl::optional<blink::Impression>& impression,
+      blink::mojom::NavigationInitiatorActivationAndAdStatus
+          initiator_activation_and_ad_status,
       base::TimeTicks navigation_start_time,
       bool is_embedder_initiated_fenced_frame_navigation = false,
       bool is_unfenced_top_navigation = false,
@@ -186,7 +183,6 @@ class CONTENT_EXPORT Navigator {
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
       mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
           renderer_cancellation_listener);
 
@@ -195,7 +191,10 @@ class CONTENT_EXPORT Navigator {
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request);
 
-  // Cancel a NavigationRequest for |frame_tree_node|.
+  // Cancels the NavigationRequest owned by |frame_tree_node|. Note that this
+  // will only cancel NavigationRequests that haven't reached the "pending
+  // commit" stage yet, as after that the NavigationRequests will no longer be
+  // owned by the FrameTreeNode.
   void CancelNavigation(FrameTreeNode* frame_tree_node,
                         NavigationDiscardReason reason);
 

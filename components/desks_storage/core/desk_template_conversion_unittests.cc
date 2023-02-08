@@ -26,6 +26,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/features.h"
+#include "components/tab_groups/tab_group_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace desks_storage {
@@ -38,8 +39,8 @@ constexpr char kBrowserUrl1[] = "https://example.com/";
 constexpr char kBrowserUrl2[] = "https://example.com/2";
 constexpr char kBrowserTemplateName[] = "BrowserTest";
 
-app_restore::TabGroupInfo MakeSampleTabGroup() {
-  return app_restore::TabGroupInfo(
+tab_groups::TabGroupInfo MakeSampleTabGroup() {
+  return tab_groups::TabGroupInfo(
       {1, 2}, tab_groups::TabGroupVisualData(
                   u"sample_tab_group", tab_groups::TabGroupColorId::kGrey));
 }
@@ -365,8 +366,12 @@ TEST_F(DeskTemplateConversionTest, EnsureLacrosBrowserWindowsSavedProperly) {
           .SetName(kBrowserTemplateName)
           .SetType(ash::DeskTemplateType::kSaveAndRecall)
           .SetCreatedTime(created_time)
-          .AddLacrosBrowserAppWindow(kBrowserWindowId,
-                                     {GURL(kBrowserUrl1), GURL(kBrowserUrl2)})
+          .AddAppWindow(
+              SavedDeskBrowserBuilder()
+                  .SetGenericBuilder(SavedDeskGenericAppBuilder().SetWindowId(
+                      kBrowserWindowId))
+                  .SetUrls({GURL(kBrowserUrl1), GURL(kBrowserUrl2)})
+                  .Build())
           .Build();
 
   base::Value desk_template_value =
@@ -404,6 +409,26 @@ TEST_F(DeskTemplateConversionTest, EnsureLacrosBrowserWindowsSavedProperly) {
   expected_value.Set("desk", std::move(expected_desk_value));
 
   EXPECT_EQ(expected_value, desk_template_value);
+}
+
+TEST_F(DeskTemplateConversionTest,
+       DeskTemplateFromFloatingWorkspaceJsonAppTest) {
+  base::expected<base::Value, base::JSONReader::Error> parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(base::StringPiece(
+          desk_test_util::kValidPolicyTemplateChromeForFloatingWorkspace));
+
+  ASSERT_TRUE(parsed_json.has_value());
+  ASSERT_TRUE(parsed_json->is_dict());
+
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      desk_template_conversion::ParseDeskTemplateFromSource(
+          *parsed_json, ash::DeskTemplateSource::kPolicy);
+
+  base::Value desk_template_value =
+      desk_template_conversion::SerializeDeskTemplateAsPolicy(
+          desk_template.get(), GetAppsCache(account_id_));
+
+  EXPECT_EQ(*parsed_json, desk_template_value);
 }
 
 }  // namespace desks_storage

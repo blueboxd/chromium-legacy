@@ -40,7 +40,7 @@
 (allow-cvms-blobs)
 
 (if (not (defined? 'vnode-type))
-  (allow file-write-data (path "/dev/null"))  
+  (allow file-write-data (path "/dev/null"))
 ;else
   (allow file-write-data
     (require-all

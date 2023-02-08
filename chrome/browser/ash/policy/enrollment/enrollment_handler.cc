@@ -18,7 +18,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/certificate_util.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/attestation/attestation_flow.h"
 #include "chromeos/ash/components/dbus/authpolicy/authpolicy_client.h"
+#include "chromeos/ash/components/dbus/constants/attestation_constants.h"
 #include "chromeos/ash/components/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
@@ -264,7 +264,7 @@ EnrollmentHandler::EnrollmentHandler(
       enrollment_step_(STEP_PENDING) {
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
-  CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
+  CHECK_EQ(DM_STATUS_SUCCESS, client_->last_dm_status());
   CHECK_EQ(dm_auth_.empty(), enrollment_config_.is_mode_attestation());
   CHECK(enrollment_config_.auth_mechanism !=
             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION ||
@@ -273,15 +273,15 @@ EnrollmentHandler::EnrollmentHandler(
       std::make_unique<CloudPolicyClient::RegistrationParameters>(
           em::DeviceRegisterRequest::DEVICE,
           EnrollmentModeToRegistrationFlavor(enrollment_config.mode));
-  register_params_->SetPsmExecutionResult(
-      GetPsmExecutionResult(*g_browser_process->local_state()));
-  register_params_->SetPsmDeterminationTimestamp(
-      GetPsmDeterminationTimestamp(*g_browser_process->local_state()));
+  register_params_->psm_execution_result =
+      GetPsmExecutionResult(*g_browser_process->local_state());
+  register_params_->psm_determination_timestamp =
+      GetPsmDeterminationTimestamp(*g_browser_process->local_state());
   // License type is set only if terminal license is used. Unset field is
   // treated as enterprise license.
   if (license_type == LicenseType::kTerminal) {
-    register_params_->SetLicenseType(
-        em::LicenseType_LicenseTypeEnum::LicenseType_LicenseTypeEnum_KIOSK);
+    register_params_->license_type =
+        em::LicenseType_LicenseTypeEnum::LicenseType_LicenseTypeEnum_KIOSK;
   }
 
   register_params_->requisition = requisition;
@@ -422,9 +422,10 @@ void EnrollmentHandler::OnClientError(CloudPolicyClient* client) {
   }
 
   if (enrollment_step_ < STEP_POLICY_FETCH) {
-    ReportResult(EnrollmentStatus::ForRegistrationError(client_->status()));
+    ReportResult(
+        EnrollmentStatus::ForRegistrationError(client_->last_dm_status()));
   } else {
-    ReportResult(EnrollmentStatus::ForFetchError(client_->status()));
+    ReportResult(EnrollmentStatus::ForFetchError(client_->last_dm_status()));
   }
 }
 
@@ -520,7 +521,8 @@ void EnrollmentHandler::StartAttestationBasedEnrollmentFlow(
       /*account_id=*/EmptyAccountId(), /*request_origin=*/std::string(),
       /*force_new_key=*/force_new_key,
       /*key_crypto_type=*/::attestation::KEY_TYPE_RSA,
-      /*=key_name=*/std::string(), /*profile_specific_data=*/absl::nullopt,
+      /*key_name=*/ash::attestation::kEnterpriseEnrollmentKey,
+      /*profile_specific_data=*/absl::nullopt,
       /*callback=*/std::move(callback));
 }
 
@@ -782,7 +784,7 @@ void EnrollmentHandler::HandleLockDeviceResult(
         // InstallAttributes not ready yet, retry later.
         LOG(WARNING) << "Install Attributes not ready yet will retry in "
                      << kLockRetryIntervalMs << "ms.";
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
             FROM_HERE,
             base::BindOnce(&EnrollmentHandler::StartLockDevice,
                            weak_ptr_factory_.GetWeakPtr()),

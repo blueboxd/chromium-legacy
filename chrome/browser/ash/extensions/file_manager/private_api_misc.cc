@@ -740,8 +740,10 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   using ash::file_system_provider::Service;
   Service* const service = Service::Get(browser_context());
 
-  if (!service->RequestMount(ProviderId::FromString(params->provider_id)))
+  if (!service->RequestMount(ProviderId::FromString(params->provider_id),
+                             base::DoNothing())) {
     return RespondNow(Error("Failed to request a new mount."));
+  }
 
   return RespondNow(WithArguments());
 }
@@ -979,8 +981,9 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   auto* guest_os_share_path =
       guest_os::GuestOsSharePath::GetForProfile(profile);
-  bool first_for_session = params->observe_first_for_session &&
-                           guest_os_share_path->GetAndSetFirstForSession();
+  bool first_for_session =
+      params->observe_first_for_session &&
+      guest_os_share_path->GetAndSetFirstForSession(params->vm_name);
   auto shared_paths =
       guest_os_share_path->GetPersistedSharedPaths(params->vm_name);
   base::Value::List entries;

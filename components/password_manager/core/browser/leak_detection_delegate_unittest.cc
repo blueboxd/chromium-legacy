@@ -168,7 +168,7 @@ class LeakDetectionDelegateTest : public testing::Test {
             results.push_back(std::make_unique<PasswordForm>(std::move(form)));
             results.back()->in_store = in_store;
           }
-          base::ThreadTaskRunnerHandle::Get()->PostTask(
+          base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
               FROM_HERE,
               base::BindOnce(
                   &PasswordStoreConsumer::OnGetPasswordStoreResultsOrErrorFrom,
@@ -268,10 +268,6 @@ TEST_F(LeakDetectionDelegateTest, StartCheckWithStandardProtection) {
 }
 
 TEST_F(LeakDetectionDelegateTest, StartCheckWithEnhancedProtection) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /* enabled_features */ {safe_browsing::kEnhancedProtection},
-      /* disabled_features */ {});
   SetSBState(safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION);
   SetLeakDetectionEnabled(false);
   const PasswordForm form = CreateTestForm();
@@ -360,11 +356,11 @@ TEST_F(LeakDetectionDelegateTest,
   delegate().StartLeakCheck(form,
                             /*submitted_form_was_likely_signup_form=*/false);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(false), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(false), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
 
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/false, form.url, form.username_value, form.password_value);
@@ -385,11 +381,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
   delegate().StartLeakCheck(form,
                             /*submitted_form_was_likely_signup_form=*/false);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(false), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(false), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
   WaitForPasswordStore();
@@ -412,11 +408,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneForSyncingUser) {
   delegate().StartLeakCheck(form,
                             /*submitted_form_was_likely_signup_form=*/false);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(true), IsReused(false), IsSyncing(true),
-                                HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(true), IsReused(false), IsSyncing(true)),
+                  form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
@@ -443,11 +439,11 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneForAccountStoreUser) {
   delegate().StartLeakCheck(form,
                             /*submitted_form_was_likely_signup_form=*/false);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(true), IsReused(false), IsSyncing(true),
-                                HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(true), IsReused(false), IsSyncing(true)),
+                  form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
@@ -477,11 +473,11 @@ TEST_F(LeakDetectionDelegateTest,
 
   // The credential is not saved in a store that is synced remotely - therefore
   // `IsSyncing` is false.
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(true), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(true), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
@@ -502,11 +498,11 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
   delegate().StartLeakCheck(form,
                             /*submitted_form_was_likely_signup_form=*/false);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(true), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(true), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
 
@@ -581,7 +577,6 @@ class LeakDetectionDelegateWithPasswordChangeTest
   LeakDetectionDelegateWithPasswordChangeTest()
       : LeakDetectionDelegateTest(
             {password_manager::features::kPasswordChange,
-             password_manager::features::kPasswordScriptsFetching,
              password_manager::features::kPasswordDomainCapabilitiesFetching}) {
   }
 };
@@ -609,11 +604,11 @@ TEST_F(LeakDetectionDelegateWithPasswordChangeTest,
   // LeakDetectionDelegateHelperTest).
   EXPECT_CALL(client(), GetPasswordScriptsFetcher()).WillOnce(Return(nullptr));
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(false), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(false), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
   LeakDetectionDelegateInterface* delegate_interface = &delegate();
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);
@@ -640,11 +635,11 @@ TEST_F(LeakDetectionDelegateWithPasswordChangeTest,
   // PasswordScriptsFetcher.
   EXPECT_CALL(client(), GetPasswordScriptsFetcher()).Times(0);
 
-  EXPECT_CALL(client(), NotifyUserCredentialsWereLeaked(
-                            password_manager::CreateLeakType(
-                                IsSaved(false), IsReused(false),
-                                IsSyncing(false), HasChangeScript(false)),
-                            form.url, form.username_value));
+  EXPECT_CALL(client(),
+              NotifyUserCredentialsWereLeaked(
+                  password_manager::CreateLeakType(
+                      IsSaved(false), IsReused(false), IsSyncing(false)),
+                  form.url, form.username_value));
   LeakDetectionDelegateInterface* delegate_interface = &delegate();
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.url, form.username_value, form.password_value);

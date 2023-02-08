@@ -57,21 +57,6 @@ wtf_size_t RasterInvalidator::MatchNewChunkToOldChunk(
   return kNotFound;
 }
 
-static bool ApproximatelyEqual(const SkMatrix& a, const SkMatrix& b) {
-  static constexpr float kTolerance = 1e-5f;
-  for (int i = 0; i < 9; i++) {
-    auto difference = std::abs(a[i] - b[i]);
-    // Check for absolute difference.
-    if (difference > kTolerance)
-      return false;
-    // For scale components, also check for relative difference.
-    if ((i == 0 || i == 4 || i == 9) &&
-        difference > (std::abs(a[i]) + std::abs(b[i])) * kTolerance)
-      return false;
-  }
-  return true;
-}
-
 PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
     const PaintChunk& new_chunk,
     const PaintChunk& old_chunk,
@@ -85,9 +70,12 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   // transform nodes when no raster invalidation is needed. For example, when
   // a composited layer previously not transformed now gets transformed.
   // Check for real accumulated transform change instead.
-  if (!ApproximatelyEqual(new_chunk_info.chunk_to_layer_transform,
-                          old_chunk_info.chunk_to_layer_transform))
+  static constexpr double kTolerance = 1e-5f;
+  if (!new_chunk_info.chunk_to_layer_transform.ApproximatelyEqual(
+          old_chunk_info.chunk_to_layer_transform, kTolerance, kTolerance,
+          kTolerance)) {
     return PaintInvalidationReason::kPaintProperty;
+  }
 
   // Treat the chunk property as changed if the effect node pointer is
   // different, or the effect node's value changed between the layer state and

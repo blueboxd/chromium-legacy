@@ -4,17 +4,13 @@
 
 #include "components/viz/test/test_image_factory.h"
 
-#include <stddef.h>
-
-#include "base/numerics/safe_conversions.h"
-#include "ui/gl/gl_image_shared_memory.h"
-
 namespace viz {
 
 TestImageFactory::TestImageFactory() = default;
 
 TestImageFactory::~TestImageFactory() = default;
 
+#if BUILDFLAG(IS_MAC)
 scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
@@ -23,13 +19,8 @@ scoped_refptr<gl::GLImage> TestImageFactory::CreateImageForGpuMemoryBuffer(
     gfx::BufferPlane plane,
     int client_id,
     gpu::SurfaceHandle surface_handle) {
-  DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
-  auto image = base::MakeRefCounted<gl::GLImageSharedMemory>(size);
-  if (!image->Initialize(handle.region, handle.id, format, handle.offset,
-                         handle.stride))
-    return nullptr;
-
-  return image;
+  return nullptr;
 }
+#endif
 
 }  // namespace viz

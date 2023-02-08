@@ -12,7 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -160,7 +160,7 @@ void PasswordsPrivateRequestCredentialsDetailsFunction::GotPasswords(
 ResponseAction PasswordsPrivateGetSavedPasswordListFunction::Run() {
   // GetList() can immediately call GotList() (which would Respond() before
   // RespondLater()). So we post a task to preserve order.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PasswordsPrivateGetSavedPasswordListFunction::GetList,
                      this));
@@ -190,7 +190,7 @@ ResponseAction PasswordsPrivateGetCredentialGroupsFunction::Run() {
 ResponseAction PasswordsPrivateGetPasswordExceptionListFunction::Run() {
   // GetList() can immediately call GotList() (which would Respond() before
   // RespondLater()). So we post a task to preserve order.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PasswordsPrivateGetPasswordExceptionListFunction::GetList,
                      this));
@@ -351,27 +351,8 @@ ResponseAction PasswordsPrivateRecordChangePasswordFlowStartedFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
   GetDelegate(browser_context())
-      ->RecordChangePasswordFlowStarted(parameters->credential,
-                                        parameters->is_manual_flow);
+      ->RecordChangePasswordFlowStarted(parameters->credential);
   return RespondNow(NoArguments());
-}
-
-// PasswordsPrivateRefreshScriptsIfNecessaryFunction:
-PasswordsPrivateRefreshScriptsIfNecessaryFunction::
-    ~PasswordsPrivateRefreshScriptsIfNecessaryFunction() = default;
-
-ResponseAction PasswordsPrivateRefreshScriptsIfNecessaryFunction::Run() {
-  GetDelegate(browser_context())
-      ->RefreshScriptsIfNecessary(base::BindOnce(
-          &PasswordsPrivateRefreshScriptsIfNecessaryFunction::OnRefreshed,
-          base::RetainedRef(this)));
-
-  // OnRefreshed() might respond before we reach this point.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void PasswordsPrivateRefreshScriptsIfNecessaryFunction::OnRefreshed() {
-  Respond(NoArguments());
 }
 
 // PasswordsPrivateStartPasswordCheckFunction:
@@ -412,35 +393,6 @@ ResponseAction PasswordsPrivateGetPasswordCheckStatusFunction::Run() {
   return RespondNow(ArgumentList(
       api::passwords_private::GetPasswordCheckStatus::Results::Create(
           GetDelegate(browser_context())->GetPasswordCheckStatus())));
-}
-
-// PasswordsPrivateStartAutomatedPasswordChangeFunction:
-PasswordsPrivateStartAutomatedPasswordChangeFunction::
-    ~PasswordsPrivateStartAutomatedPasswordChangeFunction() = default;
-
-ResponseAction PasswordsPrivateStartAutomatedPasswordChangeFunction::Run() {
-  auto parameters =
-      api::passwords_private::StartAutomatedPasswordChange::Params::Create(
-          args());
-  EXTENSION_FUNCTION_VALIDATE(parameters);
-
-  // Forward the call to the delegate.
-  GetDelegate(browser_context())
-      ->StartAutomatedPasswordChange(
-          parameters->credential,
-          base::BindOnce(&PasswordsPrivateStartAutomatedPasswordChangeFunction::
-                             OnResultReceived,
-                         base::RetainedRef(this)));
-
-  // `OnResultReceived()` might respond before we reach this point.
-  return did_respond() ? AlreadyResponded() : RespondLater();
-}
-
-void PasswordsPrivateStartAutomatedPasswordChangeFunction::OnResultReceived(
-    bool success) {
-  Respond(ArgumentList(
-      api::passwords_private::StartAutomatedPasswordChange::Results::Create(
-          success)));
 }
 
 // PasswordsPrivateIsAccountStoreDefaultFunction

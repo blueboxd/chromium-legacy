@@ -148,7 +148,6 @@ android_library("content_full_java") {
     "//components/download/public/common:public_java",
     "//components/payments/mojom:mojom_java",
     "//content/public/common:common_java",
-    "//content/public/common:trust_tokens_mojo_bindings_java",
     "//device/bluetooth:java",
     "//device/gamepad:java",
     "//media/base/android:media_java",
@@ -180,6 +179,7 @@ android_library("content_full_java") {
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/blink/public/mojom:mojom_core_java",
     "//third_party/blink/public/mojom:mojom_platform_java",
+    "//ui/accessibility:ax_base_java",
     "//ui/android:ui_no_recycler_view_java",
     "//ui/android:ui_utils_java",
     "//ui/base/ime/mojom:mojom_java",
@@ -243,7 +243,6 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/accessibility/AccessibilityEventDispatcher.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityHistogramRecorder.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityNodeInfoUtils.java",
-    "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityState.java",
     "java/src/org/chromium/content/browser/accessibility/OViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityDelegate.java",
@@ -375,7 +374,6 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/WebContentsInternals.java",
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
-    "java/src/org/chromium/content_public/browser/trusttokens/TrustTokenFulfillerManager.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -450,7 +448,6 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/SyntheticGestureTarget.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroidImpl.java",
     "java/src/org/chromium/content/browser/TtsPlatformImpl.java",
-    "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityState.java",
     "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningController.java",
@@ -579,8 +576,6 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/accessibility/AccessibilityEventDispatcherTest.java",
     "javatests/src/org/chromium/content/browser/accessibility/AssistViewStructureTest.java",
     "javatests/src/org/chromium/content/browser/accessibility/TestViewStructure.java",
-    "javatests/src/org/chromium/content/browser/accessibility/TestViewStructureFactory.java",
-    "javatests/src/org/chromium/content/browser/accessibility/TestViewStructureInterface.java",
     "javatests/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityEventsTest.java",
     "javatests/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityTest.java",
     "javatests/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityTreeTest.java",

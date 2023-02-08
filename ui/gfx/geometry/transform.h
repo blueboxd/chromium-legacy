@@ -50,22 +50,12 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Creates a transform from explicit 16 matrix elements in row-major order.
   // Always creates a double precision 4x4 matrix.
-  static Transform RowMajor(double r0c0,
-                            double r0c1,
-                            double r0c2,
-                            double r0c3,
-                            double r1c0,
-                            double r1c1,
-                            double r1c2,
-                            double r1c3,
-                            double r2c0,
-                            double r2c1,
-                            double r2c2,
-                            double r2c3,
-                            double r3c0,
-                            double r3c1,
-                            double r3c2,
-                            double r3c3) {
+  // clang-format off
+  static constexpr Transform RowMajor(
+      double r0c0, double r0c1, double r0c2, double r0c3,
+      double r1c0, double r1c1, double r1c2, double r1c3,
+      double r2c0, double r2c1, double r2c2, double r2c3,
+      double r3c0, double r3c1, double r3c2, double r3c3) {
     return Transform(r0c0, r1c0, r2c0, r3c0,   // col 0
                      r0c1, r1c1, r2c1, r3c1,   // col 1
                      r0c2, r1c2, r2c2, r3c2,   // col 2
@@ -75,39 +65,29 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // Creates a transform from explicit 16 matrix elements in col-major order.
   // Always creates a double precision 4x4 matrix.
   // See also ColMajor(double[]) and ColMajorF(float[]).
-  static Transform ColMajor(double r0c0,
-                            double r1c0,
-                            double r2c0,
-                            double r3c0,
-                            double r0c1,
-                            double r1c1,
-                            double r2c1,
-                            double r3c1,
-                            double r0c2,
-                            double r1c2,
-                            double r2c2,
-                            double r3c2,
-                            double r0c3,
-                            double r1c3,
-                            double r2c3,
-                            double r3c3) {
+  static constexpr Transform ColMajor(
+      double r0c0, double r1c0, double r2c0, double r3c0,
+      double r0c1, double r1c1, double r2c1, double r3c1,
+      double r0c2, double r1c2, double r2c2, double r3c2,
+      double r0c3, double r1c3, double r2c3, double r3c3) {
     return Transform(r0c0, r1c0, r2c0, r3c0,   // col 0
                      r0c1, r1c1, r2c1, r3c1,   // col 1
                      r0c2, r1c2, r2c2, r3c2,   // col 2
                      r0c3, r1c3, r2c3, r3c3);  // col 3
   }
+  // clang-format on
 
   // Creates a transform from explicit 2d elements. All other matrix elements
   // remain the same as the corresponding elements of an identity matrix.
   // Always creates a double precision 4x4 matrix.
   // TODO(crbug.com/1359528): Revisit the above statement. Evaluate performance
   // and precision requirements of SVG and CSS transform:matrix().
-  static Transform Affine(double a,    // a.k.a. r0c0 or scale_x
-                          double b,    // a.k.a. r1c0 or tan(skew_y)
-                          double c,    // a.k.a. r0c1 or tan(skew_x)
-                          double d,    // a.k.a  r1c1 or scale_y
-                          double e,    // a.k.a  r0c3 or translation_x
-                          double f) {  // a.k.a  r1c3 or translaiton_y
+  static constexpr Transform Affine(double a,    // a.k.a. r0c0 or scale_x
+                                    double b,    // a.k.a. r1c0 or tan(skew_y)
+                                    double c,    // a.k.a. r0c1 or tan(skew_x)
+                                    double d,    // a.k.a  r1c1 or scale_y
+                                    double e,    // a.k.a  r0c3 or translation_x
+                                    double f) {  // a.k.a  r1c3 or translaiton_y
     return ColMajor(a, b, 0, 0, c, d, 0, 0, 0, 0, 1, 0, e, f, 0, 1);
   }
 
@@ -115,25 +95,31 @@ class GEOMETRY_SKIA_EXPORT Transform {
   explicit Transform(const Quaternion& q);
 
   // Creates a transform as a 2d translation.
-  static Transform MakeTranslation(float tx, float ty) {
+  static constexpr Transform MakeTranslation(float tx, float ty) {
     return Transform(1, 1, tx, ty);
   }
+  static Transform MakeTranslation(const Vector2dF& v) {
+    return MakeTranslation(v.x(), v.y());
+  }
+
   // Creates a transform as a 2d scale.
-  static Transform MakeScale(float scale) { return MakeScale(scale, scale); }
-  static Transform MakeScale(float sx, float sy) {
+  static constexpr Transform MakeScale(float scale) {
+    return MakeScale(scale, scale);
+  }
+  static constexpr Transform MakeScale(float sx, float sy) {
     return Transform(sx, sy, 0, 0);
   }
-  // Accurately rotate by 90, 180 or 270 degrees about the z axis.
-  static Transform Make90degRotation() { return Affine(0, 1, -1, 0, 0, 0); }
-  static Transform Make180degRotation() { return MakeScale(-1); }
-  static Transform Make270degRotation() { return Affine(0, -1, 1, 0, 0, 0); }
 
-  // Returns a const reference to an identity transform. If you just need an
-  // identity transform as a value, the default constructor is better.
-  static const Transform& Identity();
+  // Accurately rotate by 90, 180 or 270 degrees about the z axis.
+  static constexpr Transform Make90degRotation() {
+    return Affine(0, 1, -1, 0, 0, 0);
+  }
+  static constexpr Transform Make180degRotation() { return MakeScale(-1); }
+  static constexpr Transform Make270degRotation() {
+    return Affine(0, -1, 1, 0, 0, 0);
+  }
 
   // Resets this transform to the identity transform.
-  // TODO(crbug.com/1359528): Rename this to SetIdentity or remove it.
   void MakeIdentity() {
     full_matrix_ = false;
     axis_2d_ = AxisTransform2d();
@@ -149,7 +135,7 @@ class GEOMETRY_SKIA_EXPORT Transform {
   bool operator!=(const Transform& rhs) const { return !(*this == rhs); }
 
   // Gets a value at |row|, |col| from the matrix.
-  double rc(int row, int col) const {
+  constexpr double rc(int row, int col) const {
     DCHECK_LE(static_cast<unsigned>(row), 3u);
     DCHECK_LE(static_cast<unsigned>(col), 3u);
     if (LIKELY(!full_matrix_)) {
@@ -547,7 +533,29 @@ class GEOMETRY_SKIA_EXPORT Transform {
     return *this;
   }
 
-  bool ApproximatelyEqual(const gfx::Transform& transform) const;
+  // Checks whether `this` approximately equals `transform`.
+  // Returns true if all following conditions are met:
+  // - For (x, y) in all translation components of (this, transform):
+  //   abs(x - y) <= abs_translation_tolerance
+  // - For (x, y) in all other components of (this, transform):
+  //   abs(x - y) <= abs_other_tolerance
+  // - If rel_scale_tolerance is not zero, for (x, y) in all scale components:
+  //   abs(x - y) <= (abs(x) + abs(y)) * rel_scale_tolerance.
+  bool ApproximatelyEqual(const gfx::Transform& transform,
+                          float abs_translation_tolerance,
+                          float abs_other_tolerance,
+                          float rel_scale_tolerance) const;
+  // Checks approximate equality with one tolerance for all components.
+  bool ApproximatelyEqual(const gfx::Transform& transform,
+                          float abs_tolerance) const {
+    return ApproximatelyEqual(transform, abs_tolerance, abs_tolerance, 0.0f);
+  }
+  // Checks approximate equality with default tolerances. Note that the
+  // tolerance for translation is big to tolerate scroll components due to
+  // snapping (floating point error might round the other way).
+  bool ApproximatelyEqual(const gfx::Transform& transform) const {
+    return ApproximatelyEqual(transform, 1.0f, 0.1f, 0.0f);
+  }
 
   void EnsureFullMatrixForTesting() { EnsureFullMatrix(); }
 
@@ -560,10 +568,10 @@ class GEOMETRY_SKIA_EXPORT Transform {
  private:
   // Used internally to construct Transform with parameters in col-major order.
   // clang-format off
-  Transform(double r0c0, double r1c0, double r2c0, double r3c0,
-            double r0c1, double r1c1, double r2c1, double r3c1,
-            double r0c2, double r1c2, double r2c2, double r3c2,
-            double r0c3, double r1c3, double r2c3, double r3c3)
+  constexpr Transform(double r0c0, double r1c0, double r2c0, double r3c0,
+                      double r0c1, double r1c1, double r2c1, double r3c1,
+                      double r0c2, double r1c2, double r2c2, double r3c2,
+                      double r0c3, double r1c3, double r2c3, double r3c3)
       : full_matrix_(true),
         matrix_(r0c0, r1c0, r2c0, r3c0,
                 r0c1, r1c1, r2c1, r3c1,
@@ -571,7 +579,10 @@ class GEOMETRY_SKIA_EXPORT Transform {
                 r0c3, r1c3, r2c3, r3c3) {}
   // clang-format on
 
-  Transform(float scale_x, float scale_y, float trans_x, float trans_y)
+  constexpr Transform(float scale_x,
+                      float scale_y,
+                      float trans_x,
+                      float trans_y)
       : axis_2d_(AxisTransform2d::FromScaleAndTranslation(
             Vector2dF(scale_x, scale_y),
             Vector2dF(trans_x, trans_y))) {}

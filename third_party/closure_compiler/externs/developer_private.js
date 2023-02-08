@@ -93,6 +93,7 @@ chrome.developerPrivate.ViewType = {
   EXTENSION_SERVICE_WORKER_BACKGROUND: 'EXTENSION_SERVICE_WORKER_BACKGROUND',
   TAB_CONTENTS: 'TAB_CONTENTS',
   OFFSCREEN_DOCUMENT: 'OFFSCREEN_DOCUMENT',
+  EXTENSION_SIDE_PANEL: 'EXTENSION_SIDE_PANEL',
 };
 
 /**
@@ -482,6 +483,14 @@ chrome.developerPrivate.SiteGroup;
  * }}
  */
 chrome.developerPrivate.MatchingExtensionInfo;
+
+/**
+ * @typedef {{
+ *   id: string,
+ *   siteAccess: !chrome.developerPrivate.HostAccess
+ * }}
+ */
+chrome.developerPrivate.ExtensionSiteAccessUpdate;
 
 /**
  * @enum {string}
@@ -875,6 +884,16 @@ chrome.developerPrivate.getUserAndExtensionSitesByEtld = function(callback) {};
  *     callback
  */
 chrome.developerPrivate.getMatchingExtensionsForSite = function(site, callback) {};
+
+/**
+ * Updates the site access settings for multiple extensions for the given `site`
+ * and calls `callback` once all updates have been finished. Each update species
+ * an extension id an a new HostAccess setting.
+ * @param {string} site
+ * @param {!Array<!chrome.developerPrivate.ExtensionSiteAccessUpdate>} updates
+ * @param {function(): void=} callback
+ */
+chrome.developerPrivate.updateSiteAccess = function(site, updates, callback) {};
 
 /**
  * @param {string} id

@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/payments/payment_app_install_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -140,10 +141,6 @@ void PaymentRequestBrowserTestBase::SetBrowserWindowInactive() {
   is_browser_window_active_ = false;
 }
 
-void PaymentRequestBrowserTestBase::SetSkipUiForForBasicCard() {
-  skip_ui_for_basic_card_ = true;
-}
-
 void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::CAN_MAKE_PAYMENT_CALLED);
@@ -206,11 +203,6 @@ void PaymentRequestBrowserTestBase::OnShippingOptionSectionOpened() {
     event_waiter_->OnEvent(DialogEvent::SHIPPING_OPTION_SECTION_OPENED);
 }
 
-void PaymentRequestBrowserTestBase::OnCreditCardEditorOpened() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
-}
-
 void PaymentRequestBrowserTestBase::OnShippingAddressEditorOpened() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
@@ -251,11 +243,6 @@ void PaymentRequestBrowserTestBase::OnSpecDoneUpdating() {
     event_waiter_->OnEvent(DialogEvent::SPEC_DONE_UPDATING);
 }
 
-void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::CVC_PROMPT_SHOWN);
-}
-
 void PaymentRequestBrowserTestBase::OnProcessingSpinnerShown() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_SHOWN);
@@ -271,6 +258,11 @@ void PaymentRequestBrowserTestBase::OnPaymentHandlerWindowOpened() {
     event_waiter_->OnEvent(DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED);
 }
 
+void PaymentRequestBrowserTestBase::OnPaymentHandlerTitleSet() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::PAYMENT_HANDLER_TITLE_SET);
+}
+
 // Install the payment app specified by `hostname`, e.g., "a.com". Specify the
 // filename of the service worker with `service_worker_filename`. Note that
 // the origin has to be initialized first to be supported here. The payment
@@ -280,38 +272,21 @@ void PaymentRequestBrowserTestBase::InstallPaymentApp(
     const std::string& hostname,
     const std::string& service_worker_filename,
     std::string* url_method_output) {
-  NavigateTo(hostname, "/payment_handler_installer.html");
-  *url_method_output = https_server()->GetURL(hostname, "/").spec();
-  *url_method_output =
-      url_method_output->substr(0, url_method_output->length() - 1);
-  ASSERT_NE('/', (*url_method_output)[url_method_output->length() - 1]);
-  ASSERT_EQ("success",
-            content::EvalJs(GetActiveWebContents(),
-                            content::JsReplace("install($1, [$2], false)",
-                                               service_worker_filename,
-                                               *url_method_output)));
-  // We can't output `url_method_output` by return because the ASSERTs require
-  // the method to return void.
+  *url_method_output = PaymentAppInstallUtil::InstallPaymentApp(
+      *GetActiveWebContents(), *https_server(), hostname,
+      service_worker_filename, PaymentAppInstallUtil::IconInstall::kWithIcon);
+  ASSERT_FALSE(url_method_output->empty()) << "Failed to install payment app";
 }
 
-// The default |InstallPaymentApp| uses a manifest file that contains an icon.
-// This path doesn't install an icon.
 void PaymentRequestBrowserTestBase::InstallPaymentAppWithoutIcon(
     const std::string& hostname,
     const std::string& service_worker_filename,
     std::string* url_method_output) {
-  NavigateTo(hostname, "/payment_handler_installer_no_icon.html");
-  *url_method_output = https_server()->GetURL(hostname, "/").spec();
-  *url_method_output =
-      url_method_output->substr(0, url_method_output->length() - 1);
-  ASSERT_NE('/', (*url_method_output)[url_method_output->length() - 1]);
-  ASSERT_EQ("success",
-            content::EvalJs(GetActiveWebContents(),
-                            content::JsReplace("install($1, [$2], false)",
-                                               service_worker_filename,
-                                               *url_method_output)));
-  // We can't output `url_method_output` by return because the ASSERTs require
-  // the method to return void.
+  *url_method_output = PaymentAppInstallUtil::InstallPaymentApp(
+      *GetActiveWebContents(), *https_server(), hostname,
+      service_worker_filename,
+      PaymentAppInstallUtil::IconInstall::kWithoutIcon);
+  ASSERT_FALSE(url_method_output->empty()) << "Failed to install payment app";
 }
 
 void PaymentRequestBrowserTestBase::InvokePaymentRequestUI() {
@@ -551,15 +526,18 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
     content::RenderFrameHost* render_frame_host) {
   DCHECK(render_frame_host);
   DCHECK(render_frame_host->IsActive());
-  std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
-      std::make_unique<TestChromePaymentRequestDelegate>(
-          render_frame_host, /*observer=*/GetWeakPtr(), &prefs_, is_incognito_,
-          is_valid_ssl_, is_browser_window_active_, skip_ui_for_basic_card_);
+
+  auto delegate =
+      std::make_unique<TestChromePaymentRequestDelegate>(render_frame_host);
+  delegate->set_payment_request_dialog_view_observer_for_test(GetWeakPtr());
+  delegate->OverridePrefService(&prefs_);
+  delegate->OverrideOffTheRecord(is_incognito_);
+  delegate->OverrideValidSSL(is_valid_ssl_);
+  delegate->OverrideBrowserWindowActive(is_browser_window_active_);
   delegate_ = delegate.get();
-  auto display_manager = delegate->GetDisplayManager()->GetWeakPtr();
-  auto* request = new PaymentRequest(
-      *render_frame_host, std::move(delegate), std::move(display_manager),
-      std::move(receiver), SPCTransactionMode::NONE, GetWeakPtr());
+
+  auto* request = new PaymentRequest(std::move(delegate), std::move(receiver));
+  request->set_observer_for_test(GetWeakPtr());
   requests_.push_back(request->GetWeakPtr());
 }
 
@@ -666,11 +644,6 @@ PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
 }
 
 void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
-    const std::u16string& cvc) {
-  OpenCVCPromptWithCVC(cvc, delegate_->dialog_view());
-}
-
-void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
     const std::u16string& cvc,
     PaymentRequestDialogView* dialog_view) {
   ResetEventWaiter(DialogEvent::CVC_PROMPT_SHOWN);
@@ -680,22 +653,6 @@ void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
       static_cast<views::Textfield*>(dialog_view->GetViewByID(
           static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD)));
   cvc_field->InsertOrReplaceText(cvc);
-}
-
-void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
-    const std::u16string& cvc) {
-  PayWithCreditCardAndWait(cvc, delegate_->dialog_view());
-}
-
-void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
-    const std::u16string& cvc,
-    PaymentRequestDialogView* dialog_view) {
-  OpenCVCPromptWithCVC(cvc, dialog_view);
-
-  ResetEventWaiterForSequence(
-      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
-  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
-                           dialog_view);
 }
 
 void PaymentRequestBrowserTestBase::PayWithCreditCard(
@@ -739,8 +696,13 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
 }
 
 bool PaymentRequestBrowserTestBase::IsViewVisible(DialogViewID view_id) const {
-  views::View* view =
-      delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
+  return IsViewVisible(view_id, dialog_view());
+}
+
+bool PaymentRequestBrowserTestBase::IsViewVisible(
+    DialogViewID view_id,
+    views::View* dialog_view) const {
+  views::View* view = dialog_view->GetViewByID(static_cast<int>(view_id));
   return view && view->GetVisible();
 }
 
@@ -859,7 +821,13 @@ void PaymentRequestBrowserTestBase::WaitForAnimation(
 
 const std::u16string& PaymentRequestBrowserTestBase::GetLabelText(
     DialogViewID view_id) {
-  views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
+  return GetLabelText(view_id, dialog_view());
+}
+
+const std::u16string& PaymentRequestBrowserTestBase::GetLabelText(
+    DialogViewID view_id,
+    views::View* dialog_view) {
+  views::View* view = dialog_view->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
   return static_cast<views::Label*>(view)->GetText();
 }
@@ -991,6 +959,9 @@ std::ostream& operator<<(
       break;
     case DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED:
       out << "PAYMENT_HANDLER_WINDOW_OPENED";
+      break;
+    case DialogEvent::PAYMENT_HANDLER_TITLE_SET:
+      out << "PAYMENT_HANDLER_TITLE_SET";
       break;
   }
   return out;

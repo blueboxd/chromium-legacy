@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -372,7 +371,7 @@ void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
 
 void PrintJobWorker::PostWaitForPage() {
   // We need to wait for the page to be available.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PrintJobWorker::OnNewPage, weak_factory_.GetWeakPtr()),
       base::Milliseconds(500));
@@ -514,10 +513,9 @@ bool PrintJobWorker::SpoolPage(PrintedPage* page) {
 
   // Signal everyone that the page is printed.
   DCHECK(print_job_);
-  print_job_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PrintJob::OnPageDone, base::RetainedRef(print_job_.get()),
-                     base::RetainedRef(page)));
+  print_job_->PostTask(FROM_HERE,
+                       base::BindOnce(&PrintJob::OnPageDone, print_job_,
+                                      base::RetainedRef(page)));
   return true;
 }
 #endif  // BUILDFLAG(IS_WIN)

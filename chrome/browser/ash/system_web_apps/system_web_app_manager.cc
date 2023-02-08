@@ -33,10 +33,10 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_background_task.h"
+#include "chrome/browser/ash/system_web_apps/system_web_app_icon_checker.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager_factory.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_background_task_info.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
@@ -91,6 +91,11 @@
 #endif  // !defined(OFFICIAL_BUILD)
 
 namespace ash {
+
+const constexpr char kIconHealthMetricName[] =
+    "Webapp.SystemApps.IconsAreHealthyInSession";
+const constexpr char kIconsFixedOnReinstallMetricName[] =
+    "Webapp.SystemApps.IconsFixedOnReinstall";
 
 namespace {
 
@@ -203,22 +208,18 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
       provider_(web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_)),
       on_apps_synchronized_(new base::OneShotEvent()),
       on_tasks_started_(new base::OneShotEvent()),
+      on_icon_check_completed_(new base::OneShotEvent()),
       install_result_per_profile_histogram_name_(
           std::string(kInstallResultHistogramName) + ".Profiles." +
           web_app::GetProfileCategoryForLogging(profile)),
-      pref_service_(profile_->GetPrefs()) {
+      pref_service_(profile_->GetPrefs()),
+      icon_checker_(SystemWebAppIconChecker::Create(profile_)) {
   DCHECK(provider_);
   // Always create delegates because many System Web App WebUIs are disabled
   // when the delegate is not present and we need them in tests. Tests can
   // override the list of delegates with SetSystemAppsForTesting().
-  //
-  // TODO(https://crbug.com/1353262): SWAM is not supported in Kiosk mode. Many
-  // components assume that SWAM always exists alongside WebAppProvider. We want
-  // to use WebAppProvider to install web apps in Kiosk without enabling SWAM.
-  if (!base::FeatureList::IsEnabled(::features::kKioskEnableAppService) ||
-      !profiles::IsKioskSession()) {
-    system_app_delegates_ = CreateSystemWebApps(profile_);
-  }
+  // Tests can override the list of delegates with `SetSystemAppsForTesting`.
+  system_app_delegates_ = CreateSystemWebApps(profile_);
 
 #if defined(OFFICIAL_BUILD)
   const bool is_official = true;
@@ -248,19 +249,13 @@ SystemWebAppManager::~SystemWebAppManager() {
 
 // static
 SystemWebAppManager* SystemWebAppManager::Get(Profile* profile) {
-  return GetForLocalAppsUnchecked(profile);
+  return SystemWebAppManagerFactory::GetForProfile(profile);
 }
 
 // static
 web_app::WebAppProvider* SystemWebAppManager::GetWebAppProvider(
     Profile* profile) {
   return web_app::WebAppProvider::GetForLocalAppsUnchecked(profile);
-}
-
-// static
-SystemWebAppManager* SystemWebAppManager::GetForLocalAppsUnchecked(
-    Profile* profile) {
-  return SystemWebAppManagerFactory::GetForProfile(profile);
 }
 
 // static
@@ -275,7 +270,7 @@ SystemWebAppManager* SystemWebAppManager::GetForTest(Profile* profile) {
   if (!provider)
     return nullptr;
 
-  SystemWebAppManager* swa_manager = GetForLocalAppsUnchecked(profile);
+  SystemWebAppManager* swa_manager = Get(profile);
   DCHECK(swa_manager);
 
   if (provider->on_registry_ready().is_signaled())
@@ -311,7 +306,8 @@ bool SystemWebAppManager::IsAppEnabled(SystemWebAppType type) const {
 
 void SystemWebAppManager::ScheduleStart() {
   provider_->on_registry_ready().Post(
-      FROM_HERE, base::BindOnce(&SystemWebAppManager::Start, GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SystemWebAppManager::Start,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SystemWebAppManager::Start() {
@@ -341,6 +337,9 @@ void SystemWebAppManager::Start() {
     }
   }
 #endif  // DCHECK_IS_ON()
+
+  previous_session_had_broken_icons_ =
+      pref_service_->GetBoolean(kSystemWebAppSessionHasBrokenIconsPrefName);
 
   std::vector<web_app::ExternalInstallOptions> install_options_list;
   const bool should_force_install_apps = ShouldForceInstallApps();
@@ -375,18 +374,23 @@ void SystemWebAppManager::Start() {
   provider_->externally_managed_app_manager().SynchronizeInstalledApps(
       std::move(install_options_list),
       web_app::ExternalInstallSource::kSystemInstalled,
-      base::BindOnce(&SystemWebAppManager::OnAppsSynchronized, GetWeakPtr(),
-                     should_force_install_apps, install_start_time));
+      base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
+                     weak_ptr_factory_.GetWeakPtr(), should_force_install_apps,
+                     install_start_time));
 }
 
 void SystemWebAppManager::Shutdown() {
   shutting_down_ = true;
   StopBackgroundTasks();
+
+  // Icon check might be in progress, we need to cancel it.
+  icon_checker_->StopCheck();
 }
 
 void SystemWebAppManager::InstallSystemAppsForTesting() {
   on_apps_synchronized_ = std::make_unique<base::OneShotEvent>();
   on_tasks_started_ = std::make_unique<base::OneShotEvent>();
+  on_icon_check_completed_ = std::make_unique<base::OneShotEvent>();
   skip_app_installation_in_test_ = false;
   Start();
 
@@ -515,10 +519,6 @@ SystemWebAppManager::GetCapturingSystemAppForURL(const GURL& url) const {
   return type;
 }
 
-base::WeakPtr<SystemWebAppManager> SystemWebAppManager::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 void SystemWebAppManager::OnWebAppUiManagerDestroyed() {
   ui_manager_observation_.Reset();
 }
@@ -538,8 +538,11 @@ void SystemWebAppManager::SetUpdatePolicyForTesting(UpdatePolicy policy) {
   update_policy_ = policy;
 }
 
-void SystemWebAppManager::ResetOnAppsSynchronizedForTesting() {
+void SystemWebAppManager::ResetForTesting() {
+  StopBackgroundTasks();
+  icon_checker_ = SystemWebAppIconChecker::Create(profile_);
   on_apps_synchronized_ = std::make_unique<base::OneShotEvent>();
+  on_icon_check_completed_ = std::make_unique<base::OneShotEvent>();
 }
 
 const base::Version& SystemWebAppManager::CurrentVersion() const {
@@ -550,6 +553,9 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
+bool SystemWebAppManager::PreviousSessionHadBrokenIcons() const {
+  return previous_session_had_broken_icons_;
+}
 void SystemWebAppManager::RecordSystemWebAppInstallDuration(
     const base::TimeDelta& install_duration) const {
   // Install duration should be non-negative. A low resolution clock could
@@ -627,7 +633,6 @@ void SystemWebAppManager::OnAppsSynchronized(
                            CurrentVersion().GetString());
   pref_service_->SetString(prefs::kSystemWebAppLastInstalledLocale,
                            CurrentLocale());
-  pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount, 0);
 
   // Report install duration only if the install pipeline actually installs
   // all the apps (e.g. on version upgrade).
@@ -644,6 +649,7 @@ void SystemWebAppManager::OnAppsSynchronized(
           profile_, background_info.value()));
     }
   }
+
   // May be called more than once in tests.
   if (!on_apps_synchronized_->is_signaled()) {
     on_apps_synchronized_->Signal();
@@ -653,11 +659,18 @@ void SystemWebAppManager::OnAppsSynchronized(
     // associated with a disabled SWA.
   }
 
+  if (!shutting_down_) {
+    // Start an icon health check.
+    icon_checker_->StartCheck(
+        GetAppIds(), base::BindOnce(&SystemWebAppManager::OnIconCheckResult,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // Start the tasks async to give any code running in an on_app_synchronized
   // context a chance to finish first.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SystemWebAppManager::StartBackgroundTasks, GetWeakPtr()));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(&SystemWebAppManager::StartBackgroundTasks,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SystemWebAppManager::StartBackgroundTasks() const {
@@ -671,11 +684,43 @@ void SystemWebAppManager::StartBackgroundTasks() const {
   }
 }
 
+void SystemWebAppManager::OnIconCheckResult(
+    SystemWebAppIconChecker::IconState result) {
+  switch (result) {
+    case SystemWebAppIconChecker::IconState::kNoAppInstalled:
+      break;
+    case SystemWebAppIconChecker::IconState::kBroken:
+      base::UmaHistogramBoolean(kIconHealthMetricName, false);
+      if (PreviousSessionHadBrokenIcons()) {
+        base::UmaHistogramBoolean(kIconsFixedOnReinstallMetricName, false);
+      }
+      pref_service_->SetBoolean(kSystemWebAppSessionHasBrokenIconsPrefName,
+                                true);
+      break;
+    case SystemWebAppIconChecker::IconState::kOk:
+      base::UmaHistogramBoolean(kIconHealthMetricName, true);
+      if (PreviousSessionHadBrokenIcons()) {
+        base::UmaHistogramBoolean(kIconsFixedOnReinstallMetricName, true);
+      }
+      pref_service_->ClearPref(kSystemWebAppSessionHasBrokenIconsPrefName);
+      pref_service_->ClearPref(prefs::kSystemWebAppInstallFailureCount);
+      break;
+  }
+
+  // Might get signaled multiple times in tests.
+  if (!on_icon_check_completed_->is_signaled()) {
+    on_icon_check_completed_->Signal();
+  }
+}
+
 bool SystemWebAppManager::ShouldForceInstallApps() const {
   if (base::FeatureList::IsEnabled(features::kAlwaysReinstallSystemWebApps))
     return true;
 
   if (update_policy_ == UpdatePolicy::kAlwaysUpdate)
+    return true;
+
+  if (PreviousSessionHadBrokenIcons())
     return true;
 
   base::Version current_installed_version(
@@ -703,9 +748,11 @@ void SystemWebAppManager::UpdateLastAttemptedInfo() {
   const std::string& last_attempted_locale(
       pref_service_->GetString(prefs::kSystemWebAppLastAttemptedLocale));
 
-  const bool is_retry = last_attempted_version.IsValid() &&
-                        last_attempted_version == CurrentVersion() &&
-                        last_attempted_locale == CurrentLocale();
+  const bool is_retry = (last_attempted_version.IsValid() &&
+                         last_attempted_version == CurrentVersion() &&
+                         last_attempted_locale == CurrentLocale()) ||
+                        PreviousSessionHadBrokenIcons();
+
   if (!is_retry) {
     pref_service_->SetInteger(prefs::kSystemWebAppInstallFailureCount, 0);
   }

@@ -20,15 +20,14 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -111,9 +110,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
   const GURL start_url =
       https_server()->GetURL("/banners/manifest_test_page.html");
 
-  chromeos::LoginState::Get()->SetLoggedInState(
-      chromeos::LoginState::LOGGED_IN_ACTIVE,
-      chromeos::LoginState::LOGGED_IN_USER_KIOSK);
+  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                      LoginState::LOGGED_IN_USER_KIOSK);
 
   web_app::AppId app_id;
   {
@@ -126,23 +124,21 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
 
     base::RunLoop run_loop;
     auto* provider = web_app::WebAppProvider::GetForTest(browser()->profile());
-    provider->command_manager().ScheduleCommand(
-        std::make_unique<web_app::InstallFromInfoCommand>(
-            std::move(install_info), &provider->install_finalizer(),
-            /*overwrite_existing_manifest_fields=*/false,
-            webapps::WebappInstallSource::KIOSK,
-            base::BindLambdaForTesting(
-                [&app_id, &run_loop](const web_app::AppId& installed_app_id,
-                                     webapps::InstallResultCode code) {
-                  EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall,
-                            code);
-                  app_id = installed_app_id;
-                  run_loop.Quit();
-                })));
+    provider->scheduler().InstallFromInfo(
+        std::move(install_info),
+        /*overwrite_existing_manifest_fields=*/false,
+        webapps::WebappInstallSource::KIOSK,
+        base::BindLambdaForTesting(
+            [&app_id, &run_loop](const web_app::AppId& installed_app_id,
+                                 webapps::InstallResultCode code) {
+              EXPECT_EQ(webapps::InstallResultCode::kSuccessNewInstall, code);
+              app_id = installed_app_id;
+              run_loop.Quit();
+            }));
     run_loop.Run();
   }
 
-  EXPECT_FALSE(ash::WebKioskAppManager::Get()->app_session());
+  EXPECT_FALSE(WebKioskAppManager::Get()->app_session());
 
   {
     base::RunLoop run_loop;
@@ -155,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
     run_loop.RunUntilIdle();
   }
 
-  EXPECT_TRUE(ash::WebKioskAppManager::Get()->app_session());
+  EXPECT_TRUE(WebKioskAppManager::Get()->app_session());
 
   // Verify that new regular windows cannot be opened.
   const auto* browser_list = BrowserList::GetInstance();
@@ -193,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskBrowserControllerAshTest,
     // The newly opened browser will be allowed and stored by |AppSession|.
     run_loop.Run();
 
-    Browser* settings_browser = ash::WebKioskAppManager::Get()
+    Browser* settings_browser = WebKioskAppManager::Get()
                                     ->app_session()
                                     ->GetSettingsBrowserForTesting();
     EXPECT_TRUE(settings_browser);

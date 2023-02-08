@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shared_image/d3d_image_representation.h"
 
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
@@ -51,7 +50,7 @@ bool GLTexturePassthroughD3DImageRepresentation::BeginAccess(GLenum mode) {
       DCHECK(image->ShouldBindOrCopy() == gl::GLImage::BIND);
       image->BindTexImage(target);
 
-      texture->set_is_bind_pending(false);
+      texture->clear_bind_pending();
     }
   }
   D3DImageBacking* d3d_image_backing = static_cast<D3DImageBacking*>(backing());

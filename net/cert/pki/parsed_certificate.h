@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/pki/certificate_policies.h"
 #include "net/cert/pki/parse_certificate.h"
@@ -25,7 +24,8 @@ class NameConstraints;
 class ParsedCertificate;
 class CertErrors;
 
-using ParsedCertificateList = std::vector<scoped_refptr<ParsedCertificate>>;
+using ParsedCertificateList =
+    std::vector<std::shared_ptr<const ParsedCertificate>>;
 
 // Represents an X.509 certificate, including Certificate, TBSCertificate, and
 // standard extensions.
@@ -34,8 +34,16 @@ using ParsedCertificateList = std::vector<scoped_refptr<ParsedCertificate>>;
 // parsed successfully to that level, but does not imply the contents of that
 // member are valid, unless otherwise specified. See the documentation for each
 // member or the documentation of the type it returns.
-class NET_EXPORT ParsedCertificate
-    : public base::RefCountedThreadSafe<ParsedCertificate> {
+class NET_EXPORT ParsedCertificate {
+ private:
+  // Used to make constructors private while still being compatible with
+  // |std::make_shared|.
+  class PrivateConstructor {
+   private:
+    friend ParsedCertificate;
+    PrivateConstructor() = default;
+  };
+
  public:
   // Map from OID to ParsedExtension.
   using ExtensionsMap = std::map<der::Input, ParsedExtension>;
@@ -45,7 +53,7 @@ class NET_EXPORT ParsedCertificate
   // and supported extensions cannot be parsed.
   // On either success or failure, if |errors| is non-null it may have error
   // information added to it.
-  static scoped_refptr<ParsedCertificate> Create(
+  static std::shared_ptr<const ParsedCertificate> Create(
       bssl::UniquePtr<CRYPTO_BUFFER> cert_data,
       const ParseCertificateOptions& options,
       CertErrors* errors);
@@ -59,9 +67,11 @@ class NET_EXPORT ParsedCertificate
   static bool CreateAndAddToVector(
       bssl::UniquePtr<CRYPTO_BUFFER> cert_data,
       const ParseCertificateOptions& options,
-      std::vector<scoped_refptr<net::ParsedCertificate>>* chain,
+      std::vector<std::shared_ptr<const net::ParsedCertificate>>* chain,
       CertErrors* errors);
 
+  explicit ParsedCertificate(PrivateConstructor);
+  ~ParsedCertificate();
   ParsedCertificate(const ParsedCertificate&) = delete;
   ParsedCertificate& operator=(const ParsedCertificate&) = delete;
 
@@ -244,10 +254,6 @@ class NET_EXPORT ParsedCertificate
                     ParsedExtension* parsed_extension) const;
 
  private:
-  friend class base::RefCountedThreadSafe<ParsedCertificate>;
-  ParsedCertificate();
-  ~ParsedCertificate();
-
   // The backing store for the certificate data.
   bssl::UniquePtr<CRYPTO_BUFFER> cert_data_;
 

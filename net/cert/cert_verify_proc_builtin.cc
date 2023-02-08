@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
@@ -178,7 +179,7 @@ class CertVerifyProcTrustStore {
 
   TrustStore* trust_store() { return &trust_store_; }
 
-  void AddTrustAnchor(scoped_refptr<ParsedCertificate> cert) {
+  void AddTrustAnchor(std::shared_ptr<const ParsedCertificate> cert) {
     additional_trust_store_.AddTrustAnchor(std::move(cert));
   }
 
@@ -419,7 +420,7 @@ bool CertVerifyProcBuiltin::SupportsAdditionalTrustAnchors() const {
   return true;
 }
 
-scoped_refptr<ParsedCertificate> ParseCertificateFromBuffer(
+std::shared_ptr<const ParsedCertificate> ParseCertificateFromBuffer(
     CRYPTO_BUFFER* cert_handle,
     CertErrors* errors) {
   return ParsedCertificate::Create(bssl::UpRef(cert_handle),
@@ -432,7 +433,7 @@ void AddIntermediatesToIssuerSource(X509Certificate* x509_cert,
                                     const NetLogWithSource& net_log) {
   for (const auto& intermediate : x509_cert->intermediate_buffers()) {
     CertErrors errors;
-    scoped_refptr<ParsedCertificate> cert =
+    std::shared_ptr<const ParsedCertificate> cert =
         ParseCertificateFromBuffer(intermediate.get(), &errors);
     // TODO(crbug.com/634484): this duplicates the logging of the input chain
     // maybe should only log if there is a parse error/warning?
@@ -460,7 +461,7 @@ void AppendPublicKeyHashes(const der::Input& spki_bytes,
 // |path| to |*hashes|.
 void AppendPublicKeyHashes(const CertPathBuilderResultPath& path,
                            HashValueVector* hashes) {
-  for (const scoped_refptr<ParsedCertificate>& cert : path.certs)
+  for (const std::shared_ptr<const ParsedCertificate>& cert : path.certs)
     AppendPublicKeyHashes(cert->tbs().spki_tlv, hashes);
 }
 
@@ -506,7 +507,7 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
 }
 
 bssl::UniquePtr<CRYPTO_BUFFER> CreateCertBuffers(
-    const scoped_refptr<ParsedCertificate>& certificate) {
+    const std::shared_ptr<const ParsedCertificate>& certificate) {
   return X509Certificate::CreateCertBufferFromBytes(
       certificate->der_cert().AsSpan());
 }
@@ -550,7 +551,7 @@ struct BuildPathAttempt {
 };
 
 CertPathBuilder::Result TryBuildPath(
-    const scoped_refptr<ParsedCertificate>& target,
+    const std::shared_ptr<const ParsedCertificate>& target,
     CertIssuerSourceStatic* intermediates,
     CertVerifyProcTrustStore* trust_store,
     const der::GeneralizedTime& der_verification_time,
@@ -738,7 +739,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
                                                chrome_root_store_version_opt);
 
   // Parse the target certificate.
-  scoped_refptr<ParsedCertificate> target;
+  std::shared_ptr<const ParsedCertificate> target;
   {
     CertErrors parsing_errors;
     target =
@@ -762,7 +763,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
   CertVerifyProcTrustStore trust_store(system_trust_store_.get());
   for (const auto& x509_cert : additional_trust_anchors) {
     CertErrors parsing_errors;
-    scoped_refptr<ParsedCertificate> cert =
+    std::shared_ptr<const ParsedCertificate> cert =
         ParseCertificateFromBuffer(x509_cert->cert_buffer(), &parsing_errors);
     if (cert)
       trust_store.AddTrustAnchor(std::move(cert));
@@ -829,6 +830,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
         cur_attempt.verification_type, cur_attempt.digest_policy, flags,
         ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
         &checked_revocation_for_some_path);
+
+    base::UmaHistogramCounts10000("Net.CertVerifier.PathBuilderIterationCount",
+                                  result.iteration_count);
 
     // TODO(crbug.com/634484): Log these in path_builder.cc so they include
     // correct timing information.

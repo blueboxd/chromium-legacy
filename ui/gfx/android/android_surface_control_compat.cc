@@ -15,6 +15,7 @@
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
@@ -33,6 +34,7 @@ using pASurfaceControl_createFromWindow =
     ASurfaceControl* (*)(ANativeWindow* parent, const char* name);
 using pASurfaceControl_create = ASurfaceControl* (*)(ASurfaceControl* parent,
                                                      const char* name);
+using pASurfaceControl_fromJava = ASurfaceControl* (*)(JNIEnv*, jobject);
 using pASurfaceControl_release = void (*)(ASurfaceControl*);
 
 // ASurfaceTransaction enums
@@ -160,9 +162,9 @@ struct SurfaceControlMethods {
   void InitWithStubs() {
     struct TransactionStub {
       ASurfaceTransaction_OnComplete on_complete = nullptr;
-      void* on_complete_ctx = nullptr;
+      raw_ptr<void> on_complete_ctx = nullptr;
       ASurfaceTransaction_OnCommit on_commit = nullptr;
-      void* on_commit_ctx = nullptr;
+      raw_ptr<void> on_commit_ctx = nullptr;
     };
 
     ASurfaceTransaction_createFn = []() {
@@ -217,6 +219,7 @@ struct SurfaceControlMethods {
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceControl_createFromWindow);
     LOAD_FUNCTION(main_dl_handle, ASurfaceControl_create);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceControl_fromJava);
     LOAD_FUNCTION(main_dl_handle, ASurfaceControl_release);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_create);
@@ -255,6 +258,7 @@ struct SurfaceControlMethods {
   // Surface methods.
   pASurfaceControl_createFromWindow ASurfaceControl_createFromWindowFn;
   pASurfaceControl_create ASurfaceControl_createFn;
+  pASurfaceControl_fromJava ASurfaceControl_fromJavaFn;
   pASurfaceControl_release ASurfaceControl_releaseFn;
 
   // Transaction methods.
@@ -547,6 +551,11 @@ bool SurfaceControl::SupportsSetFrameTimeline() {
              nullptr;
 }
 
+bool SurfaceControl::SupportsSurfacelessControl() {
+  return IsSupported() &&
+         !!SurfaceControlMethods::Get().ASurfaceControl_fromJavaFn;
+}
+
 void SurfaceControl::SetStubImplementationForTesting() {
   SurfaceControlMethods::GetImpl(/*load_functions=*/false).InitWithStubs();
 }
@@ -579,6 +588,19 @@ SurfaceControl::Surface::Surface(ANativeWindow* parent, const char* name) {
                                                                       name);
   if (!owned_surface_)
     LOG(ERROR) << "Failed to create ASurfaceControl : " << name;
+  surface_ = owned_surface_;
+}
+
+SurfaceControl::Surface::Surface(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_surface_control) {
+  CHECK(SupportsSurfacelessControl());
+  owned_surface_ = SurfaceControlMethods::Get().ASurfaceControl_fromJavaFn(
+      env, j_surface_control.obj());
+  if (!owned_surface_) {
+    LOG(ERROR) << "Failed to obtain ASurfaceControl from java";
+    return;
+  }
   surface_ = owned_surface_;
 }
 
@@ -735,18 +757,12 @@ void SurfaceControl::Transaction::SetHDRMetadata(
         .maxFrameAverageLightLevel =
             static_cast<float>(metadata->max_frame_average_light_level)};
 
+    const auto& primaries = metadata->color_volume_metadata.primaries;
     AHdrMetadata_smpte2086 smpte2086 = {
-        .displayPrimaryRed =
-            {.x = metadata->color_volume_metadata.primary_r.x(),
-             .y = metadata->color_volume_metadata.primary_r.y()},
-        .displayPrimaryGreen =
-            {.x = metadata->color_volume_metadata.primary_g.x(),
-             .y = metadata->color_volume_metadata.primary_g.y()},
-        .displayPrimaryBlue =
-            {.x = metadata->color_volume_metadata.primary_b.x(),
-             .y = metadata->color_volume_metadata.primary_b.y()},
-        .whitePoint = {.x = metadata->color_volume_metadata.white_point.x(),
-                       .y = metadata->color_volume_metadata.white_point.y()},
+        .displayPrimaryRed = {.x = primaries.fRX, .y = primaries.fRY},
+        .displayPrimaryGreen = {.x = primaries.fGX, .y = primaries.fGY},
+        .displayPrimaryBlue = {.x = primaries.fBX, .y = primaries.fBY},
+        .whitePoint = {.x = primaries.fWX, .y = primaries.fWY},
         .maxLuminance = metadata->color_volume_metadata.luminance_max,
         .minLuminance = metadata->color_volume_metadata.luminance_min};
 

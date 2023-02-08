@@ -16,7 +16,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill_assistant/core/public/autofill_assistant_intent.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -230,14 +229,12 @@ class ContentAutofillRouter {
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
-      int32_t query_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked,
       void (*callback)(ContentAutofillDriver* target,
                        const FormData& form,
                        const FormFieldData& field,
                        const gfx::RectF& bounding_box,
-                       int32_t query_id,
                        AutoselectFirstSuggestion autoselect_first_suggestion,
                        FormElementWasClicked form_element_was_clicked));
   void HidePopup(ContentAutofillDriver* source,
@@ -280,18 +277,14 @@ class ContentAutofillRouter {
                        const std::u16string& old_value));
 
   // Event called by Autofill Assistant as if it was called by the renderer.
-  void FillFormForAssistant(
-      ContentAutofillDriver* source,
-      const AutofillableData& fill_data,
-      const FormData& form,
-      const FormFieldData& field,
-      const autofill_assistant::AutofillAssistantIntent intent,
-      void (*callback)(
-          ContentAutofillDriver* target,
-          const AutofillableData& fill_data,
-          const FormData& form,
-          const FormFieldData& fiel,
-          const autofill_assistant::AutofillAssistantIntent intent));
+  void FillFormForAssistant(ContentAutofillDriver* source,
+                            const AutofillableData& fill_data,
+                            const FormData& form,
+                            const FormFieldData& field,
+                            void (*callback)(ContentAutofillDriver* target,
+                                             const AutofillableData& fill_data,
+                                             const FormData& form,
+                                             const FormFieldData& fiel));
 
   // Event called when the context menu is opened on a field.
   void OnContextMenuShownInField(
@@ -305,20 +298,18 @@ class ContentAutofillRouter {
   // Routing of events called by the browser:
   std::vector<FieldGlobalId> FillOrPreviewForm(
       ContentAutofillDriver* source,
-      int query_id,
       mojom::RendererFormDataAction action,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
-      void (*callback)(ContentAutofillDriver*,
-                       int,
-                       mojom::RendererFormDataAction,
-                       const FormData&));
+      void (*callback)(ContentAutofillDriver* target,
+                       mojom::RendererFormDataAction action,
+                       const FormData& form));
   void SendAutofillTypePredictionsToRenderer(
       ContentAutofillDriver* source,
       const std::vector<FormDataPredictions>& type_predictions,
-      void (*callback)(ContentAutofillDriver*,
-                       const std::vector<FormDataPredictions>&));
+      void (*callback)(ContentAutofillDriver* target,
+                       const std::vector<FormDataPredictions>& predictions));
   void SendFieldsEligibleForManualFillingToRenderer(
       ContentAutofillDriver* source,
       const std::vector<FieldGlobalId>& fields,

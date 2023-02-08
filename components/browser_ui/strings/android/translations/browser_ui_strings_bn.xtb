@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">সাইটকে মোশন সেন্সর অ্যাক্সেস করার অনুমতি দিন (সাজেস্ট করা হয়)</translation>
 <translation id="5050380848339752099">এই সাইট ছদ্মবেশী মোডের বাইরে একটি অ্যাপের সাথে তথ্য শেয়ার করতে চলেছে।</translation>
 <translation id="5063480226653192405">ব্যবহার</translation>
-<translation id="5082281938627763039">এটি <ph name="FPS_MEMBER" /> এবং <ph name="FPS_OWNER" />-এর সাইটের গ্রুপের সাইটগুলির জন্য কুকি এবং অন্যান্য সাইট ডেটা মুছে দেয়</translation>
 <translation id="5091013926750941408">মোবাইল সাইট</translation>
 <translation id="509133520954049755">ডেস্কটপ ভিউয়ের জন্য অনুরোধ করুন</translation>
 <translation id="5100237604440890931">সঙ্কুচিত - প্রসারিত করতে ক্লিক করুন৷</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">উপর থেকে টেনে আনুন এবং পূর্ণ স্ক্রিন থেকে বেরিয়ে যেতে পিছনে ফেরার বোতাম স্পর্শ করুন।</translation>
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
-<translation id="5313967007315987356">সাইট যোগ করুন</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="534295439873310000">NFC ডিভাইস</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">আপনার স্ক্রিন শেয়ার করা হচ্ছে</translation>
 <translation id="5922967540311291836">থার্ড-পার্টি কুকি ব্লক করুন:</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
+<translation id="5968921426641056619">ওয়েব ঠিকানা লিখুন</translation>
 <translation id="5975083100439434680">ছোট করুন</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">আপনার ডিভাইসে এই সাইটের অ্যাক্সেস নিয়ন্ত্রণ করুন</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> ও <ph name="PERMISSION_2" /> ব্যবহারের অনুমতি দেওয়া হয়েছে</translation>
 <translation id="7302486331832100261">আপনি সাধারণত বিজ্ঞপ্তি ব্লক করেন। অনুমতি দিতে, 'বিবরণ' বিকল্পে ক্লিক করুন।</translation>
+<translation id="7366415735885268578">একটি সাইট যোগ করুন</translation>
 <translation id="7383715096023715447"><ph name="DOMAIN" />-এর সেটিংস</translation>
 <translation id="7423098979219808738">প্রথমে জিজ্ঞাসা করুন</translation>
 <translation id="7423538860840206698">ক্লিপবোর্ড পড়া ব্লক করা হয়েছে</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">এই সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
 <translation id="8394832520002899662">সাইটে ফিরে যেতে ট্যাপ করুন</translation>
 <translation id="8409345997656833551">কোনও নিবন্ধে সিমপ্লিফায়েড ভিউ কাজ করলে সেই বিষয়ে বিজ্ঞপ্তি পান</translation>
+<translation id="8423565414844018592"><ph name="TEXT_SCALING" />-এ টেক্সট স্কেলিং সেট করা আছে</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8441146129660941386">পেছনে যান</translation>
 <translation id="8444433999583714703">তাছাড়া, যাতে <ph name="APP_NAME" /> আপনার লোকেশন অ্যাক্সেস করতে পারে, তার জন্য <ph name="BEGIN_LINK" />Android সেটিংসে<ph name="END_LINK" /> গিয়েও লোকেশন চালু করে দিন।</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="8928445016601307354">NFC ডিভাইসে তথ্য দেখা এবং পরিবর্তন করা থেকে সাইটগুলিকে ব্লক করুন</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">কোনও নির্দিষ্ট সাইটের জন্য কুকি ব্লক করুন।</translation>
 <translation id="8959122750345127698">নেভিগেশানে পৌছানো যাচ্ছে না: <ph name="URL" /></translation>
 <translation id="8986362086234534611">ভুলে যান</translation>

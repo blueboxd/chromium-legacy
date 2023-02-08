@@ -20,7 +20,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 
+namespace ash::app_restore {
+
 namespace {
+
 bool IsAppReadyForLaunch(Profile* profile, const std::string& app_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
   return prefs && prefs->IsAbleToBeLaunched(app_id);
@@ -41,7 +44,6 @@ float GetDisplayScaleFactor(int64_t display_id) {
 }
 
 }  // namespace
-namespace ash::app_restore {
 
 ArcAppSingleRestoreHandler::ArcAppSingleRestoreHandler() {
   observation_.Observe(full_restore::ArcGhostWindowHandler::Get());
@@ -52,6 +54,7 @@ ArcAppSingleRestoreHandler::~ArcAppSingleRestoreHandler() = default;
 void ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp(
     Profile* profile,
     const std::string& app_id,
+    apps::IntentPtr intent,
     int event_flags,
     arc::GhostWindowType window_type,
     arc::mojom::WindowInfoPtr window_info) {
@@ -63,10 +66,10 @@ void ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp(
   // The ghost window and corresponding shelf item need to be added after ash
   // shelf ready.
   if (!is_shelf_ready_) {
-    not_ready_callback_ =
-        base::BindOnce(&ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp,
-                       weak_ptr_factory_.GetWeakPtr(), profile, app_id,
-                       event_flags, window_type, std::move(window_info));
+    not_ready_callback_ = base::BindOnce(
+        &ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp,
+        weak_ptr_factory_.GetWeakPtr(), profile, app_id, std::move(intent),
+        event_flags, window_type, std::move(window_info));
     return;
   }
 
@@ -76,6 +79,7 @@ void ArcAppSingleRestoreHandler::LaunchGhostWindowWithApp(
   // For each single restore handler, the LaunchApp should be only called once.
   DCHECK(!app_id_.has_value());
   app_id_ = app_id;
+  intent_ = std::move(intent);
   event_flags_ = event_flags;
 
   // Unit test use injected window handler.
@@ -156,7 +160,7 @@ bool ArcAppSingleRestoreHandler::IsAppPendingRestore(
 
 void ArcAppSingleRestoreHandler::OnShelfReady() {
   if (!not_ready_callback_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(not_ready_callback_));
   }
   is_shelf_ready_ = true;
@@ -192,8 +196,15 @@ void ArcAppSingleRestoreHandler::SendAppLaunchRequestToARC() {
   DCHECK(proxy);
 
   // TODO(sstan): Add new launch source.
-  proxy->Launch(app_id_.value(), ui::EF_NONE,
-                apps::LaunchSource::kFromFullRestore, std::move(window_info_));
+  if (intent_) {
+    proxy->LaunchAppWithIntent(app_id_.value(), ui::EF_NONE, std::move(intent_),
+                               apps::LaunchSource::kFromFullRestore,
+                               std::move(window_info_), base::DoNothing());
+  } else {
+    proxy->Launch(app_id_.value(), ui::EF_NONE,
+                  apps::LaunchSource::kFromFullRestore,
+                  std::move(window_info_));
+  }
 
   // Remove app_id_ to make sure it only be called once for each app_id.
   app_id_.reset();

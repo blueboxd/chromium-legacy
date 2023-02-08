@@ -657,9 +657,9 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIBrowserTest,
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        StorageAccessAPIBrowserTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         StorageAccessAPIBrowserTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 class StorageAccessAPIStorageBrowserTest
     : public StorageAccessAPIBaseBrowserTest,
@@ -980,9 +980,9 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIForOriginBrowserTest,
   EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        StorageAccessAPIForOriginBrowserTest,
-                        testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         StorageAccessAPIForOriginBrowserTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 // Tests to validate First-Party Set use with `requestStorageAccessForOrigin`.
 class StorageAccessAPIForOriginWithFirstPartySetsBrowserTest
@@ -1228,7 +1228,7 @@ IN_PROC_BROWSER_TEST_P(StorageAccessAPIForOriginExplicitlyDisabledBrowserTest,
                   .ExtractBool());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     StorageAccessAPIForOriginExplicitlyDisabledBrowserTest,
     testing::Bool());
@@ -1244,8 +1244,8 @@ class StorageAccessAPIWithFirstPartySetsBrowserTest
     command_line->AppendSwitchASCII(
         network::switches::kUseFirstPartySet,
         base::StrCat({R"({"primary": "https://)", kHostA,
-                      R"(", "associatedSites": ["https://)", kHostB,
-                      R"("]})"}));
+                      R"(", "associatedSites": ["https://)", kHostB, R"("])",
+                      R"(, "serviceSites": ["https://)", kHostD, R"("]})"}));
   }
 
  protected:
@@ -1308,6 +1308,36 @@ IN_PROC_BROWSER_TEST_F(StorageAccessAPIWithFirstPartySetsBrowserTest,
   EXPECT_THAT(histogram_tester.GetBucketCount(
                   kRequestOutcomeHistogram,
                   0 /*RequestOutcome::kGrantedByFirstPartySet*/),
+              Gt(0));
+}
+
+IN_PROC_BROWSER_TEST_F(StorageAccessAPIWithFirstPartySetsBrowserTest,
+                       Permission_AutodeniedForServiceDomain) {
+  SetBlockThirdPartyCookies(true);
+  base::HistogramTester histogram_tester;
+
+  SetCrossSiteCookieOnHost(kHostA);
+
+  NavigateToPageWithFrame(kHostD);
+
+  NavigateFrameTo(kHostA, "/echoheader?cookie");
+  EXPECT_EQ(GetFrameContent(), "None");
+  EXPECT_EQ(ReadCookiesViaJS(GetFrame()), "");
+  EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
+
+  // The promise should be rejected; `khostD` is a service domain.
+  EXPECT_FALSE(storage::test::RequestStorageAccessForFrame(GetFrame()));
+  EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
+
+  NavigateFrameTo(kHostA, "/echoheader?cookie");
+  EXPECT_EQ(GetFrameContent(), "None");
+  EXPECT_EQ(ReadCookiesViaJS(GetFrame()), "");
+  EXPECT_FALSE(storage::test::HasStorageAccessForFrame(GetFrame()));
+
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester.GetBucketCount(
+                  kRequestOutcomeHistogram,
+                  5 /*RequestOutcome::kDeniedByPrerequisites*/),
               Gt(0));
 }
 

@@ -8,13 +8,12 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "components/viz/common/resources/resource_format.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
@@ -106,7 +105,8 @@ std::unique_ptr<DawnImageRepresentation> SharedMemoryImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
@@ -140,9 +140,10 @@ SharedMemoryImageBacking::ProduceOverlay(SharedImageManager* manager,
   if (!shared_memory_wrapper_.IsValid())
     return nullptr;
 
-  auto gl_image = base::MakeRefCounted<gl::GLImageMemory>(size());
+  auto gl_image =
+      base::WrapRefCounted<gl::GLImageMemory>(new gl::GLImageMemory(size()));
   if (!gl_image->Initialize(shared_memory_wrapper_.GetMemory(),
-                            viz::BufferFormat(format()),
+                            ToBufferFormat(format()),
                             shared_memory_wrapper_.GetStride(),
                             /*disable_pbo_upload=*/true)) {
     DLOG(ERROR) << "Failed to initialize GLImageMemory";

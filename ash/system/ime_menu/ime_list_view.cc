@@ -66,7 +66,9 @@ class ImeListItemView : public ActionableView {
         selected_(selected) {
     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
 
-    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
+    const bool is_qs_revamp = features::IsQsRevampEnabled();
+    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView(
+        /*use_wide_layout=*/is_qs_revamp);
     AddChildView(tri_view);
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -105,7 +107,8 @@ class ImeListItemView : public ActionableView {
 
     if (selected) {
       // The checked button indicates the IME is selected.
-      views::ImageView* checked_image = TrayPopupUtils::CreateMainImageView();
+      views::ImageView* checked_image = TrayPopupUtils::CreateMainImageView(
+          /*use_wide_layout=*/is_qs_revamp);
       checked_image->SetImage(gfx::CreateVectorIcon(
           kHollowCheckCircleIcon, kMenuIconSize, button_color));
       tri_view->AddView(TriView::Container::END, checked_image);
@@ -164,18 +167,21 @@ class KeyboardStatusRow : public views::View {
   views::ToggleButton* toggle() const { return toggle_; }
 
   void Init(views::Button::PressedCallback callback) {
+    const bool is_qs_revamp = features::IsQsRevampEnabled();
     // QsRevamp does not use sticky headers.
-    if (!features::IsQsRevampEnabled()) {
+    if (!is_qs_revamp) {
       TrayPopupUtils::ConfigureAsStickyHeader(this);
     }
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
-    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
+    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView(
+        /*use_wide_layout=*/is_qs_revamp);
     AddChildView(tri_view);
 
     auto* color_provider = AshColorProvider::Get();
     // The on-screen keyboard image button.
-    views::ImageView* keyboard_image = TrayPopupUtils::CreateMainImageView();
+    views::ImageView* keyboard_image =
+        TrayPopupUtils::CreateMainImageView(/*use_wide_layout=*/is_qs_revamp);
     keyboard_image->SetImage(gfx::CreateVectorIcon(
         kImeMenuOnScreenKeyboardIcon, kMenuIconSize,
         color_provider->GetContentLayerColor(
@@ -194,8 +200,8 @@ class KeyboardStatusRow : public views::View {
 
     // The on-screen keyboard toggle button.
     toggle_ = new TrayToggleButton(
-        std::move(callback),
-        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
+        std::move(callback), IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD,
+        /*use_empty_border=*/is_qs_revamp);
     toggle_->SetIsOn(keyboard::IsKeyboardEnabled());
     tri_view->AddView(TriView::Container::END, toggle_);
   }
@@ -231,6 +237,12 @@ void ImeListView::Update(const std::string& current_ime_id,
   property_map_.clear();
   CreateScrollableList();
 
+  // Setup the container for the IME list views.
+  container_ =
+      features::IsQsRevampEnabled()
+          ? scroll_content()->AddChildView(std::make_unique<RoundedContainer>())
+          : scroll_content();
+
   if (single_ime_behavior == ImeListView::SHOW_SINGLE_IME || list.size() > 1)
     AppendImeListAndProperties(current_ime_id, list, property_items);
 
@@ -253,6 +265,7 @@ void ImeListView::ResetImeListView() {
   Reset();
   keyboard_status_row_ = nullptr;
   current_ime_view_ = nullptr;
+  container_ = nullptr;
 }
 
 void ImeListView::ScrollItemToVisible(views::View* item_view) {
@@ -272,17 +285,12 @@ void ImeListView::AppendImeListAndProperties(
     const std::vector<ImeInfo>& list,
     const std::vector<ImeMenuItem>& property_list) {
   DCHECK(ime_map_.empty());
-
-  views::View* container = scroll_content();
-  if (features::IsQsRevampEnabled()) {
-    container =
-        scroll_content()->AddChildView(std::make_unique<RoundedContainer>());
-  }
+  DCHECK(container_);
 
   for (size_t i = 0; i < list.size(); i++) {
     const bool selected = current_ime_id == list[i].id;
     views::View* ime_view =
-        container->AddChildView(std::make_unique<ImeListItemView>(
+        container_->AddChildView(std::make_unique<ImeListItemView>(
             this, list[i].short_name, list[i].name, selected,
             AshColorProvider::Get()->GetContentLayerColor(
                 AshColorProvider::ContentLayerType::kIconColorProminent)));
@@ -295,7 +303,7 @@ void ImeListView::AppendImeListAndProperties(
     // Add the properties, if any, of the currently-selected IME.
     if (selected && !property_list.empty()) {
       // Adds a separator on the top of property items.
-      container->AddChildView(TrayPopupUtils::CreateListItemSeparator(true));
+      container_->AddChildView(TrayPopupUtils::CreateListItemSeparator(true));
 
       const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary);
@@ -303,7 +311,7 @@ void ImeListView::AppendImeListAndProperties(
       // Adds the property items.
       for (const auto& property : property_list) {
         ImeListItemView* property_view =
-            container->AddChildView(std::make_unique<ImeListItemView>(
+            container_->AddChildView(std::make_unique<ImeListItemView>(
                 this, std::u16string(), property.label, property.checked,
                 icon_color));
 
@@ -313,7 +321,7 @@ void ImeListView::AppendImeListAndProperties(
       // Adds a separator on the bottom of property items if there are still
       // other IMEs under the current one.
       if (i < list.size() - 1) {
-        container->AddChildView(TrayPopupUtils::CreateListItemSeparator(true));
+        container_->AddChildView(TrayPopupUtils::CreateListItemSeparator(true));
       }
     }
   }
@@ -324,7 +332,7 @@ void ImeListView::PrependKeyboardStatusRow() {
   keyboard_status_row_ = new KeyboardStatusRow;
   keyboard_status_row_->Init(base::BindRepeating(
       &ImeListView::KeyboardStatusTogglePressed, base::Unretained(this)));
-  scroll_content()->AddChildViewAt(keyboard_status_row_, 0);
+  container_->AddChildViewAt(keyboard_status_row_, 0);
 }
 
 void ImeListView::KeyboardStatusTogglePressed() {

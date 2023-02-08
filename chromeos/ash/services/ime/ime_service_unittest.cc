@@ -11,11 +11,12 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/ash/services/ime/ime_decoder.h"
+#include "chromeos/ash/services/ime/ime_shared_library_wrapper.h"
 #include "chromeos/ash/services/ime/mock_input_channel.h"
 #include "chromeos/ash/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/ash/services/ime/public/mojom/input_method.mojom.h"
 #include "chromeos/ash/services/ime/public/mojom/input_method_host.mojom.h"
+#include "chromeos/ash/services/ime/public/mojom/japanese_settings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -41,8 +42,8 @@ void ConnectCallback(bool* success, bool result) {
 class TestDecoderState;
 
 // The fake decoder state has to be available globally because
-// ImeDecoder::EntryPoints is a list of stateless C functions, so the only way
-// to have a stateful fake is to have a global reference to it.
+// ImeSharedLibraryWrapper::EntryPoints is a list of stateless C functions, so
+// the only way to have a stateful fake is to have a global reference to it.
 TestDecoderState* g_test_decoder_state = nullptr;
 
 mojo::ScopedMessagePipeHandle MessagePipeHandleFromInt(uint32_t handle) {
@@ -73,20 +74,26 @@ class TestDecoderState : public mojom::ConnectionFactory {
       ConnectToInputMethodCallback callback) override {
     std::move(callback).Run(/*bound=*/false);
   }
+  void ConnectToJapaneseDecoder(
+      mojo::PendingAssociatedReceiver<ime::mojom::JapaneseDecoder>
+          japanese_decoder,
+      ConnectToJapaneseDecoderCallback callback) override {
+    std::move(callback).Run(/*bound=*/false);
+  }
 
  private:
   mojo::Receiver<ime::mojom::ConnectionFactory> connection_factory_{this};
 };
 
-class TestImeDecoder : public ImeDecoder {
+class TestImeSharedLibraryWrapper : public ImeSharedLibraryWrapper {
  public:
-  static TestImeDecoder* GetInstance() {
-    static base::NoDestructor<TestImeDecoder> instance;
+  static TestImeSharedLibraryWrapper* GetInstance() {
+    static base::NoDestructor<TestImeSharedLibraryWrapper> instance;
     return instance.get();
   }
 
-  absl::optional<ImeDecoder::EntryPoints> MaybeLoadThenReturnEntryPoints()
-      override {
+  absl::optional<ImeSharedLibraryWrapper::EntryPoints>
+  MaybeLoadThenReturnEntryPoints() override {
     return entry_points_;
   }
 
@@ -106,10 +113,6 @@ class TestImeDecoder : public ImeDecoder {
         .process = [](const uint8_t* data, size_t size) {},
         .init_mojo_mode = [](ImeCrosPlatform* platform) {},
         .close_mojo_mode = []() {},
-        .connect_to_input_method =
-            [](const char* ime_spec, uint32_t receiver_pipe_handle,
-               uint32_t host_pipe_handle,
-               uint32_t host_pipe_version) { return false; },
         .initialize_connection_factory =
             [](uint32_t receiver_pipe_handle) {
               return g_test_decoder_state->InitializeConnectionFactory(
@@ -121,13 +124,13 @@ class TestImeDecoder : public ImeDecoder {
   }
 
  private:
-  friend class base::NoDestructor<TestImeDecoder>;
+  friend class base::NoDestructor<TestImeSharedLibraryWrapper>;
 
-  explicit TestImeDecoder() { ResetState(); }
+  explicit TestImeSharedLibraryWrapper() { ResetState(); }
 
-  ~TestImeDecoder() override = default;
+  ~TestImeSharedLibraryWrapper() override = default;
 
-  absl::optional<ImeDecoder::EntryPoints> entry_points_;
+  absl::optional<ImeSharedLibraryWrapper::EntryPoints> entry_points_;
 };
 
 struct MockInputMethodHost : public mojom::InputMethodHost {
@@ -219,7 +222,7 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
   void SetUp() override {
     service_ = std::make_unique<ImeService>(
         remote_service_.BindNewPipeAndPassReceiver(),
-        TestImeDecoder::GetInstance(),
+        TestImeSharedLibraryWrapper::GetInstance(),
         std::make_unique<TestFieldTrialParamsRetriever>());
     remote_service_->BindInputEngineManager(
         remote_manager_.BindNewPipeAndPassReceiver());
@@ -227,7 +230,7 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
 
   void TearDown() override {
     service_.reset();
-    TestImeDecoder::GetInstance()->ResetState();
+    TestImeSharedLibraryWrapper::GetInstance()->ResetState();
   }
 
   mojo::Remote<mojom::ImeService> remote_service_;

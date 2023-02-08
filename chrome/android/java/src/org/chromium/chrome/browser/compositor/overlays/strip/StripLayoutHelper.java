@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
@@ -102,6 +103,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final int EXPAND_DURATION_MS = 250;
     private static final int EXPAND_DURATION_MS_MEDIUM = 350;
     private static final int EXPAND_DURATION_MS_LONG = 450;
+    private static final int ANIM_FOLIO_DETACH_MS = 75;
     private static final int ANIM_TAB_CREATED_MS = 150;
     private static final int ANIM_TAB_CLOSED_MS = 150;
     private static final int ANIM_TAB_RESIZE_MS = 250;
@@ -131,8 +133,13 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final float NEW_TAB_BUTTON_HEIGHT_DP = 24.f;
     private static final float NEW_TAB_BUTTON_PADDING_DP = 24.f;
     private static final float NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET = 12.f;
+    private static final float FOLIO_ATTACHED_BOTTOM_MARGIN_DP = 0.f;
+    private static final float FOLIO_ANIM_INTERMEDIATE_MARGIN_DP = -12.f;
+    private static final float FOLIO_DETACHED_BOTTOM_MARGIN_DP = 4.f;
     static final float BACKGROUND_TAB_BRIGHTNESS_DEFAULT = 1.f;
     static final float BACKGROUND_TAB_BRIGHTNESS_DIMMED = 0.65f;
+    static final float DIVIDER_HIDDEN_OPACITY = 0.f;
+    static final float DIVIDER_DEFAULT_OPACITY = 1.f;
     static final float FADE_FULL_OPACITY_THRESHOLD_DP = 24.f;
 
     private static final int MESSAGE_RESIZE = 1;
@@ -754,6 +761,35 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 boolean canShowCloseButton = tab.getWidth() >= TAB_WIDTH_MEDIUM
                         || (tab.getId() == selectedTab.getId() && shouldShowCloseButton(tab, i));
                 mStripTabs[i].setCanShowCloseButton(canShowCloseButton, !mIsFirstLayoutPass);
+            }
+        }
+    }
+
+    /**
+     * Called to hide dividers when adjacent to the selected tab. Also bolds the first divider for
+     * a tab group when in edit mode.
+     */
+    private void updateDividers() {
+        if (!ChromeFeatureList.sTabStripRedesign.isEnabled()) return;
+
+        // Validate the index. For example, the index can be {@link TabList.INVALID_TAB_INDEX} when
+        // all tabs are closed.
+        int index = mModel.index();
+        if (index < 0 || index >= mStripTabs.length) return;
+
+        // Divider is never shown for the first tab.
+        mStripTabs[0].setDividerOpacity(DIVIDER_HIDDEN_OPACITY);
+
+        int selectedTabId = mStripTabs[index].getId();
+        for (int i = 1; i < mStripTabs.length; i++) {
+            final StripLayoutTab prevTab = mStripTabs[i - 1];
+            final StripLayoutTab currTab = mStripTabs[i];
+            if (prevTab.getId() == selectedTabId || currTab.getId() == selectedTabId) {
+                // Dividers adjacent to the selected tab are hidden.
+                currTab.setDividerOpacity(DIVIDER_HIDDEN_OPACITY);
+            } else {
+                // All other dividers are visible.
+                currTab.setDividerOpacity(DIVIDER_DEFAULT_OPACITY);
             }
         }
     }
@@ -1485,8 +1521,11 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 7. Invalidate the accessibility provider in case the visible virtual views have changed.
         mRenderHost.invalidateAccessibilityProvider();
 
-        // 8. Hide close buttons if tab width gets lower than 156dp
+        // 8. Hide close buttons if tab width gets lower than 156dp.
         updateCloseButtons();
+
+        // 9. Show dividers between inactive tabs.
+        updateDividers();
     }
 
     private void computeTabInitialPositions() {
@@ -1701,6 +1740,38 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         return tab == mStripTabsVisuallyOrdered[mStripTabsVisuallyOrdered.length - 1];
     }
 
+    private void updateFolioTabAttachState(StripLayoutTab tab, boolean attached) {
+        finishAnimationsAndPushTabUpdates();
+
+        float startValue =
+                attached ? FOLIO_DETACHED_BOTTOM_MARGIN_DP : FOLIO_ATTACHED_BOTTOM_MARGIN_DP;
+        float intermediateValue = FOLIO_ANIM_INTERMEDIATE_MARGIN_DP;
+        float endValue =
+                attached ? FOLIO_ATTACHED_BOTTOM_MARGIN_DP : FOLIO_DETACHED_BOTTOM_MARGIN_DP;
+
+        ArrayList<Animator> animationList = new ArrayList<>();
+        CompositorAnimator dropAnimation = CompositorAnimator.ofFloatProperty(
+                mUpdateHost.getAnimationHandler(), tab, StripLayoutTab.BOTTOM_MARGIN, startValue,
+                intermediateValue, ANIM_FOLIO_DETACH_MS, Interpolators.EMPHASIZED_ACCELERATE);
+        CompositorAnimator riseAnimation =
+                CompositorAnimator.ofFloatProperty(mUpdateHost.getAnimationHandler(), tab,
+                        StripLayoutTab.BOTTOM_MARGIN, intermediateValue, endValue,
+                        ANIM_FOLIO_DETACH_MS, Interpolators.EMPHASIZED_DECELERATE);
+        dropAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                tab.setFolioAttached(attached);
+            }
+        });
+        animationList.add(dropAnimation);
+        animationList.add(riseAnimation);
+
+        AnimatorSet set = new AnimatorSet();
+        set.playSequentially(animationList);
+        mRunningAnimator = set;
+        mRunningAnimator.start();
+    }
+
     @VisibleForTesting
     public boolean getInReorderModeForTesting() {
         return mInReorderMode;
@@ -1763,7 +1834,12 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             performHapticFeedback(tab);
         }
 
-        // 7. Request an update.
+        // 7. Lift the TSR folio container off the toolbar.
+        if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+            updateFolioTabAttachState(mInteractingTab, false);
+        }
+
+        // 8. Request an update.
         mUpdateHost.requestUpdate();
     }
 
@@ -1788,7 +1864,12 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         // 4. Clear any tab group margins if they are enabled.
         if (TabUiFeatureUtilities.isTabletTabGroupsEnabled(mContext)) resetTabGroupMargins();
 
-        // 5. Request an update.
+        // 5. Reattach the TSR folio container to the toolbar.
+        if (TabUiFeatureUtilities.isTabStripFolioEnabled()) {
+            updateFolioTabAttachState(mInteractingTab, true);
+        }
+
+        // 6. Request an update.
         mUpdateHost.requestUpdate();
     }
 

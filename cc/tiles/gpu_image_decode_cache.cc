@@ -25,7 +25,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/features.h"
@@ -641,7 +641,7 @@ class ImageUploadTaskImpl : public TileTask {
   ~ImageUploadTaskImpl() override = default;
 
  private:
-  raw_ptr<GpuImageDecodeCache> cache_;
+  raw_ptr<GpuImageDecodeCache, DanglingUntriaged> cache_;
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
 };
@@ -1029,9 +1029,10 @@ GpuImageDecodeCache::GpuImageDecodeCache(
 
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
+  if (base::SingleThreadTaskRunner::HasCurrentDefault()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "cc::GpuImageDecodeCache", base::ThreadTaskRunnerHandle::Get());
+        this, "cc::GpuImageDecodeCache",
+        base::SingleThreadTaskRunner::GetCurrentDefault());
   }
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
       FROM_HERE, base::BindRepeating(&GpuImageDecodeCache::OnMemoryPressure,
@@ -1109,7 +1110,11 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     return TaskResult(false /* need_unref */, false /* is_at_raster_decode */,
                       image_data->decode.can_do_hardware_accelerated_decode());
   } else if (task_type == DecodeTaskType::kPartOfUploadTask &&
-             !image_data->upload.task_map.empty()) {
+             !image_data->upload.task_map.empty() &&
+             !image_data->HasUploadedData()) {
+    // If there are pending upload tasks and we haven't had data uploaded yet,
+    // another task can be created.
+
     // We had an existing upload task, ref the image and return the task.
     image_data->ValidateBudgeted();
     RefImage(draw_image, cache_key);
@@ -1131,7 +1136,11 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     return TaskResult(task,
                       image_data->decode.can_do_hardware_accelerated_decode());
   } else if (task_type == DecodeTaskType::kStandAloneDecodeTask &&
-             !image_data->decode.stand_alone_task_map.empty()) {
+             !image_data->decode.stand_alone_task_map.empty() &&
+             !image_data->HasUploadedData()) {
+    // If there are pending decode tasks and we haven't had decoded data yet,
+    // another task can be created.
+
     // We had an existing out of raster task, ref the image and return the task.
     image_data->ValidateBudgeted();
     RefImage(draw_image, cache_key);
@@ -1150,9 +1159,13 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
       CHECK_EQ(task, found_task);
 #endif
     }
-    DCHECK(task);
     DCHECK(!image_data->decode.can_do_hardware_accelerated_decode());
-    return TaskResult(task, false /* can_do_hardware_accelerated_decode */);
+
+    // This will be null if the image was already decoded.
+    if (task)
+      return TaskResult(task, /*can_do_hardware_accelerated_decode=*/false);
+    return TaskResult(/*need_unref=*/true, /*is_at_raster_decode=*/false,
+                      /*can_do_hardware_accelerated_decode=*/false);
   }
 
   // Ensure that the image we're about to decode/upload will fit in memory, if
@@ -2243,6 +2256,10 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   if (target_color_space) {
     target_color_params = draw_image.target_color_params();
     target_color_params->color_space = gfx::ColorSpace(*target_color_space);
+    if (const auto* image_metadata =
+            draw_image.paint_image().GetImageHeaderMetadata()) {
+      target_color_params->hdr_metadata = image_metadata->hdr_metadata;
+    }
   }
 
   if (image_data->mode == DecodedDataMode::kTransferCache) {

@@ -11,21 +11,19 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_representation.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/skia_gl_image_representation.h"
 #include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/scoped_restore_texture.h"
-#include "ui/gl/trace_util.h"
 
 #if BUILDFLAG(USE_DAWN) && BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
 #include "gpu/command_buffer/service/shared_image/dawn_egl_image_representation.h"
@@ -115,7 +113,7 @@ void CopyPlane(const uint8_t* source_memory,
                size_t dest_stride,
                viz::SharedImageFormat format,
                const gfx::Size& size) {
-  int row_bytes = size.width() * viz::BitsPerPixel(format) / 8;
+  int row_bytes = size.width() * BitsPerPixel(format) / 8;
   libyuv::CopyPlane(source_memory, source_stride, dest_memory, dest_stride,
                     row_bytes, size.height());
 }
@@ -151,12 +149,12 @@ scoped_refptr<gles2::TexturePassthrough> D3DImageBacking::CreateGLTexture(
   // The GL internal format can differ from the underlying swap chain or texture
   // format e.g. RGBA or RGB instead of BGRA or RED/RG for NV12 texture planes.
   // See EGL_ANGLE_d3d_texture_client_buffer spec for format restrictions.
-  const auto internal_format = viz::GLInternalFormat(format);
-  const auto data_type = viz::GLDataType(format);
+  const auto internal_format = GLInternalFormat(format);
+  const auto data_type = GLDataType(format);
   auto image = base::MakeRefCounted<gl::GLImageD3D>(
       size, internal_format, data_type, color_space, d3d11_texture, array_slice,
       plane_index, swap_chain);
-  DCHECK_EQ(image->GetDataFormat(), viz::GLDataFormat(format));
+  DCHECK_EQ(image->GetDataFormat(), GLDataFormat(format));
   if (!image->Initialize()) {
     LOG(ERROR) << "GLImageD3D::Initialize failed";
     api->glDeleteTexturesFn(1, &service_id);
@@ -362,7 +360,7 @@ D3DImageBacking::D3DImageBacking(
           usage,
           gl_texture
               ? gl_texture->estimated_size()
-              : gfx::BufferSizeForBufferFormat(size, viz::BufferFormat(format)),
+              : gfx::BufferSizeForBufferFormat(size, ToBufferFormat(format)),
           false /* is_thread_safe */),
       d3d11_texture_(std::move(d3d11_texture)),
       gl_texture_(std::move(gl_texture)),
@@ -561,7 +559,8 @@ std::unique_ptr<DawnImageRepresentation> D3DImageBacking::ProduceDawn(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    WGPUBackendType backend_type) {
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats) {
 #if BUILDFLAG(USE_DAWN)
 #if BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
   if (backend_type == WGPUBackendType_OpenGLES) {
@@ -570,16 +569,15 @@ std::unique_ptr<DawnImageRepresentation> D3DImageBacking::ProduceDawn(
         device);
   }
 #endif
-  const viz::SharedImageFormat viz_si_format = format();
-  const WGPUTextureFormat wgpu_format = viz::ToWGPUFormat(viz_si_format);
+  const WGPUTextureFormat wgpu_format = ToWGPUFormat(format());
   if (wgpu_format == WGPUTextureFormat_Undefined) {
-    LOG(ERROR) << "Unsupported viz format found: " << viz_si_format.ToString();
+    LOG(ERROR) << "Unsupported viz format found: " << format().ToString();
     return nullptr;
   }
   const WGPUTextureUsageFlags usage = GetAllowedDawnUsages(wgpu_format);
   if (usage == WGPUTextureUsage_None) {
     LOG(ERROR) << "WGPUTextureUsage is unknown for viz format: "
-               << viz_si_format.ToString();
+               << format().ToString();
     return nullptr;
   }
 
@@ -591,6 +589,9 @@ std::unique_ptr<DawnImageRepresentation> D3DImageBacking::ProduceDawn(
                              static_cast<uint32_t>(size().height()), 1};
   texture_descriptor.mipLevelCount = 1;
   texture_descriptor.sampleCount = 1;
+  texture_descriptor.viewFormatCount =
+      static_cast<uint32_t>(view_formats.size());
+  texture_descriptor.viewFormats = view_formats.data();
 
   // We need to have internal usages of CopySrc for copies,
   // RenderAttachment for clears, and TextureBinding for copyTextureForBrowser.
@@ -643,13 +644,6 @@ void D3DImageBacking::OnMemoryDump(
     uint64_t client_tracing_id) {
   SharedImageBacking::OnMemoryDump(dump_name, client_guid, pmd,
                                    client_tracing_id);
-
-  // Add a |service_guid| which expresses shared ownership between the
-  // various GPU dumps.
-  base::trace_event::MemoryAllocatorDumpGuid service_guid =
-      gl::GetGLTextureServiceGUIDForTracing(gl_texture_->service_id());
-  pmd->CreateSharedGlobalAllocatorDump(service_guid);
-  pmd->AddOwnershipEdge(client_guid, service_guid, kOwningEdgeImportance);
 
   // Swap chain textures only have one level backed by an image.
   if (auto* gl_image = GetGLImage())
@@ -945,8 +939,8 @@ std::unique_ptr<OverlayImageRepresentation> D3DImageBacking::ProduceOverlay(
   // Lazily create a GL image if it wasn't provided on initialization. There's
   // no need to bind to a GL texture since the image is only used for overlay.
   if (!gl_image) {
-    const auto internal_format = viz::GLInternalFormat(format());
-    const auto data_type = viz::GLDataType(format());
+    const auto internal_format = GLInternalFormat(format());
+    const auto data_type = GLDataType(format());
     gl_image = base::MakeRefCounted<gl::GLImageD3D>(
         size(), internal_format, data_type, color_space(), d3d11_texture_,
         array_slice_, plane_index_, swap_chain_);

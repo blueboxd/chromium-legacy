@@ -128,7 +128,6 @@ export enum Facing {
   VIRTUAL_USER = 'virtual_user',
   VIRTUAL_ENV = 'virtual_environment',
   VIRTUAL_EXT = 'virtual_external',
-  UNKNOWN = 'unknown',
 }
 
 export enum ViewName {
@@ -179,12 +178,6 @@ export enum AspectRatioSet {
   RATIO_OTHER = 0.0000,
   RATIO_SQUARE = 1.0000,
 }
-
-export const NON_CROP_ASPECT_RATIO_SETS = [
-  AspectRatioSet.RATIO_4_3,
-  AspectRatioSet.RATIO_16_9,
-  AspectRatioSet.RATIO_OTHER,
-];
 
 export enum Rotation {
   ANGLE_0 = 0,
@@ -357,8 +350,8 @@ export enum ErrorType {
   START_CAMERA_FAILURE = 'start-camera-failure',
   START_CAPTURE_FAILURE = 'start-capture-failure',
   STOP_CAPTURE_FAILURE = 'stop-capture-failure',
+  UNCAUGHT_ERROR = 'uncaught-error',
   UNCAUGHT_PROMISE = 'uncaught-promise',
-  UNKNOWN_FACING = 'unknown-facing',
   UNSAFE_INTEGER = 'unsafe-integer',
   UNSUPPORTED_PROTOCOL = 'unsupported-protocol',
 }
@@ -431,6 +424,14 @@ export class EmptyThumbnailError extends Error {
   }
 }
 
+export class LowStorageError extends Error {
+  constructor() {
+    const message = 'Cannot start recording due to low storage.';
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
 /**
  * Throws when the recording is ended with no chunk returned.
  */
@@ -488,4 +489,12 @@ export enum LocalStorageKey {
   SHOW_ALL_RESOLUTIONS = 'showAllResolutions',
   SHOW_METADATA = 'showMetadata',
   TOGGLE_MIC = 'toggleMic',
+}
+
+/**
+ * Type of low storage dialog.
+ */
+export enum LowStorageDialogType {
+  AUTO_STOP = 'auto-stop',
+  CANNOT_START = 'cannot-start',
 }

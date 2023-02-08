@@ -25,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_credentials_manager.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
@@ -106,6 +106,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
+
 namespace {
 
 namespace em = ::enterprise_management;
@@ -262,7 +263,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
     // Prevent browser start in user session so that we do not need to wait
     // for its initialization.
-    ash::test::UserSessionManagerTestApi(ash::UserSessionManager::GetInstance())
+    test::UserSessionManagerTestApi(UserSessionManager::GetInstance())
         .SetShouldLaunchBrowserInTests(false);
   }
 

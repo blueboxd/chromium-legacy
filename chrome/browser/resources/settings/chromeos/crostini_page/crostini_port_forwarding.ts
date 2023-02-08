@@ -16,22 +16,22 @@ import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './crostini_port_forwarding_add_port_dialog.js';
 import '../../controls/settings_toggle_button.js';
-import '../../settings_page/settings_section.js';
-import '../../settings_page_styles.css.js';
+import '../os_settings_page/os_settings_section.js';
+import '../os_settings_page_styles.css.js';
 import '../../settings_shared.css.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
 import {containerLabel, equalContainerId} from '../guest_os/guest_os_container_select.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs_behavior.js';
 
 import {CrostiniBrowserProxy, CrostiniBrowserProxyImpl, CrostiniPortActiveSetting, CrostiniPortSetting, DEFAULT_CROSTINI_CONTAINER, DEFAULT_CROSTINI_GUEST_ID, DEFAULT_CROSTINI_VM} from './crostini_browser_proxy.js';
 import {getTemplate} from './crostini_port_forwarding.html.js';
@@ -48,10 +48,7 @@ interface CrostiniPortForwardingElement {
 }
 
 const CrostiniPortForwardingBase =
-    mixinBehaviors([PrefsBehavior], WebUiListenerMixin(PolymerElement)) as {
-      new (): PolymerElement & PrefsBehaviorInterface &
-          WebUiListenerMixinInterface,
-    };
+    PrefsMixin(WebUiListenerMixin(PolymerElement));
 
 class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
   static get is() {
@@ -64,12 +61,6 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
 
   static get properties() {
     return {
-      /** Preferences state. */
-      prefs: {
-        type: Object,
-        notify: true,
-      },
-
       showAddPortDialog_: {
         type: Boolean,
         value: false,
@@ -129,11 +120,11 @@ class CrostiniPortForwardingElement extends CrostiniPortForwardingBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-port-forwarder-active-ports-changed',
         (ports: CrostiniPortActiveSetting[]) =>
             this.onCrostiniPortsActiveStateChanged_(ports));
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-container-info',
         (infos: ContainerInfo[]) => this.onContainerInfo_(infos));
     this.browserProxy_.getCrostiniActivePorts().then(

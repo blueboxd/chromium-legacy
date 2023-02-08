@@ -8,6 +8,8 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/current_thread.h"
 #include "components/metrics/structured/enums.h"
@@ -18,8 +20,7 @@
 #include "components/metrics/structured/structured_metrics_validator.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
-namespace metrics {
-namespace structured {
+namespace metrics::structured {
 namespace {
 
 using ::metrics::ChromeUserMetricsExtension;
@@ -346,6 +347,12 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
   // Independent events should not be associated with the client_id, so clear
   // it.
   uma_proto->clear_client_id();
+  // TODO(crbug/1052796): Remove the UMA timer code, which is currently used to
+  // determine if it is worth to finalize independent logs in the background
+  // by measuring the time it takes to execute the callback
+  // MetricsService::PrepareProviderMetricsLogDone().
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "UMA.IndependentLog.StructuredMetricsProvider.FinalizeTime");
   std::move(done_callback).Run(true);
 }
 
@@ -440,6 +447,21 @@ void StructuredMetricsProvider::RecordEvent(const Event& event) {
       NOTREACHED();
   }
 
+  // TODO(crbug/1350322): Add client_id and user_id once they are added to the
+  // original proto.
+  if (project_validator->event_type() ==
+      StructuredEventProto_EventType_SEQUENCE) {
+    auto* event_sequence_metadata =
+        event_proto->mutable_event_sequence_metadata();
+
+    event_sequence_metadata->set_reset_counter(
+        event.event_sequence_metadata().reset_counter);
+    event_sequence_metadata->set_system_uptime(
+        event.recorded_time_since_boot().InMilliseconds());
+    event_sequence_metadata->set_event_unique_id(
+        base::HashMetricName(event.event_sequence_metadata().event_unique_id));
+  }
+
   // Set the ID for this event, if any.
   switch (project_validator->id_type()) {
     case IdType::kProjectId:
@@ -464,6 +486,7 @@ void StructuredMetricsProvider::RecordEvent(const Event& event) {
   switch (project_validator->event_type()) {
     case StructuredEventProto_EventType_REGULAR:
     case StructuredEventProto_EventType_RAW_STRING:
+    case StructuredEventProto_EventType_SEQUENCE:
       event_proto->set_event_type(project_validator->event_type());
       break;
     default:
@@ -532,5 +555,4 @@ void StructuredMetricsProvider::HashUnhashedEventsAndPersist() {
   }
 }
 
-}  // namespace structured
-}  // namespace metrics
+}  // namespace metrics::structured

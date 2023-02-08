@@ -157,14 +157,12 @@ TrustImplTypeFromMojom(
   switch (input) {
     case mojom_MacTrustImplType::kUnknown:
       return TrialVerificationInfo::MAC_TRUST_IMPL_UNKNOWN;
-    case mojom_MacTrustImplType::kDomainCache:
-      return TrialVerificationInfo::MAC_TRUST_IMPL_DOMAIN_CACHE;
     case mojom_MacTrustImplType::kSimple:
       return TrialVerificationInfo::MAC_TRUST_IMPL_SIMPLE;
-    case mojom_MacTrustImplType::kLruCache:
-      return TrialVerificationInfo::MAC_TRUST_IMPL_MRU_CACHE;
     case mojom_MacTrustImplType::kDomainCacheFullCerts:
       return TrialVerificationInfo::MAC_TRUST_IMPL_DOMAIN_CACHE_FULL_CERTS;
+    case mojom_MacTrustImplType::kKeychainCacheFullCerts:
+      return TrialVerificationInfo::MAC_TRUST_IMPL_KEYCHAIN_CACHE_FULL_CERTS;
   }
 }
 #endif  // BUILDFLAG(IS_APPLE)

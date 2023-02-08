@@ -22,7 +22,6 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
@@ -56,6 +55,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
@@ -485,6 +485,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnUploadProgress(
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::kWebRequestProxyingURLLoaderFactory);
+
   target_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
@@ -925,7 +928,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
   if (error_code != net::OK) {
     // Here we come from an onHeaderReceived failure.
     state_ = State::kRejectedByOnHeadersReceivedForAuth;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt,
                                   true /* should_cancel */));
     return;
@@ -1000,8 +1003,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   }
 
   auth_credentials_ = absl::nullopt;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(completion));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, std::move(completion));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -1575,7 +1578,7 @@ void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(
     WebRequestAPI::AuthRequestCallback callback) {
   auto it = network_request_id_to_web_request_id_.find(request_id);
   if (it == network_request_id_to_web_request_id_.end()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), absl::nullopt,
                                   true /* should_cancel */));
     return;

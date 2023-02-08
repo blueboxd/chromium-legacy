@@ -19,8 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -66,9 +66,10 @@ class FileSystemOperationImplTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath().AppendASCII("filesystem");
     quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
         /* is_incognito= */ false, base_dir,
-        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
+        special_storage_policy_);
     quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>(
-        quota_manager(), base::ThreadTaskRunnerHandle::Get());
+        quota_manager(), base::SingleThreadTaskRunner::GetCurrentDefault());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
     sandbox_file_system_.AddFileChangeObserver(&change_observer_);
     sandbox_file_system_.AddFileUpdateObserver(&update_observer_);
@@ -447,6 +448,7 @@ class FileSystemOperationImplTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
+  // These are mocks.
   scoped_refptr<QuotaManager> quota_manager_;
   scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
@@ -543,7 +545,7 @@ TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcFileAndOverwrite) {
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_file_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(1, quota_manager_proxy()->notify_bucket_accessed_count());
 }
 
 TEST_F(FileSystemOperationImplTest, TestMoveSuccessSrcFileAndNew) {
@@ -719,7 +721,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndOverwrite) {
       Copy(src_file, dest_file, FileSystemOperation::CopyOrMoveOptionSet()));
 
   EXPECT_TRUE(FileExists("dest"));
-  EXPECT_EQ(4, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(4, quota_manager_proxy()->notify_bucket_accessed_count());
   EXPECT_EQ(2, change_observer()->get_and_reset_modify_file_count());
 
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -732,7 +734,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcFileAndNew) {
             Copy(src_file, URLForPath("new"),
                  FileSystemOperation::CopyOrMoveOptionSet()));
   EXPECT_TRUE(FileExists("new"));
-  EXPECT_EQ(4, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(4, quota_manager_proxy()->notify_bucket_accessed_count());
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_file_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_modify_file_count());
@@ -750,7 +752,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndOverwrite) {
   // Make sure we've overwritten but not copied the source under the |dest_dir|.
   EXPECT_TRUE(DirectoryExists("dest"));
   EXPECT_FALSE(DirectoryExists("dest/src"));
-  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 3);
+  EXPECT_GE(quota_manager_proxy()->notify_bucket_accessed_count(), 3);
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
@@ -765,7 +767,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirAndNew) {
       base::File::FILE_OK,
       Copy(src_dir, dest_dir_new, FileSystemOperation::CopyOrMoveOptionSet()));
   EXPECT_TRUE(DirectoryExists("dest"));
-  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 2);
+  EXPECT_GE(quota_manager_proxy()->notify_bucket_accessed_count(), 2);
 
   EXPECT_EQ(1, change_observer()->get_and_reset_create_directory_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
@@ -786,7 +788,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
   EXPECT_TRUE(FileExists("dest/dir/sub"));
 
   // For recursive copy we may record multiple read access.
-  EXPECT_GE(quota_manager_proxy()->notify_storage_accessed_count(), 1);
+  EXPECT_GE(quota_manager_proxy()->notify_bucket_accessed_count(), 1);
 
   EXPECT_EQ(2, change_observer()->get_and_reset_create_directory_count());
   EXPECT_EQ(1, change_observer()->get_and_reset_remove_directory_count());
@@ -968,8 +970,7 @@ TEST_F(FileSystemOperationImplTest, TestExistsAndMetadataSuccess) {
   EXPECT_FALSE(info().is_directory);
   ++read_access;
 
-  EXPECT_EQ(read_access,
-            quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(read_access, quota_manager_proxy()->notify_bucket_accessed_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -1011,7 +1012,7 @@ TEST_F(FileSystemOperationImplTest, TestReadDirSuccess) {
       EXPECT_EQ(FILE_PATH_LITERAL("child_file"), entry.name.value());
     }
   }
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(1, quota_manager_proxy()->notify_bucket_accessed_count());
   EXPECT_TRUE(change_observer()->HasNoChange());
 }
 
@@ -1119,7 +1120,7 @@ TEST_F(FileSystemOperationImplTest, TestTruncate) {
 
   // Truncate is not a 'read' access.  (Here expected access count is 1
   // since we made 1 read access for GetMetadata.)
-  EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
+  EXPECT_EQ(1, quota_manager_proxy()->notify_bucket_accessed_count());
 }
 
 TEST_F(FileSystemOperationImplTest, TestTruncateFailureByQuota) {

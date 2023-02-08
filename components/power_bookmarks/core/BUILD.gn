@@ -17,19 +17,33 @@ static_library("core") {
     "power_bookmark_utils.h",
   ]
 
-  public_deps = [ ":proto" ]
+  public_deps = [
+    ":proto",
+    "//components/sync/protocol",
+  ]
 
   deps = [
+    ":features",
     ":powers",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
     "//components/commerce/core:proto",
     "//components/keyed_service/core:core",
+    "//components/power_bookmarks/metrics",
     "//components/power_bookmarks/storage",
     "//ui/base",
     "//url",
   ]
+}
+
+static_library("features") {
+  sources = [
+    "power_bookmark_features.cc",
+    "power_bookmark_features.h",
+  ]
+
+  deps = [ "//base" ]
 }
 
 static_library("powers") {
@@ -38,9 +52,10 @@ static_library("powers") {
     "powers/power.h",
     "powers/power_overview.cc",
     "powers/power_overview.h",
+    "powers/search_params.h",
   ]
 
-  public_deps = [ ":proto" ]
+  public_deps = [ "//components/sync/protocol" ]
 
   deps = [
     "//base",
@@ -52,7 +67,6 @@ proto_library("proto") {
   proto_in_dir = "//"
   sources = [
     "proto/power_bookmark_meta.proto",
-    "proto/power_bookmark_specifics.proto",
     "proto/shopping_specifics.proto",
   ]
   deps = [ "//components/commerce/core:proto" ]
@@ -80,6 +94,7 @@ source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":features",
     ":powers",
     "//base/test:test_support",
     "//components/bookmarks/browser",

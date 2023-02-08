@@ -24,13 +24,13 @@
 #include "chromeos/ash/components/dbus/rmad/rmad_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,8 +126,7 @@ class ShimlessRmaServiceTest : public testing::Test {
   ~ShimlessRmaServiceTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kShimlessRMAOsUpdate}, {});
+    scoped_feature_list_.InitWithFeatures({features::kShimlessRMAOsUpdate}, {});
     chromeos::PowerManagerClient::InitializeFake();
     // VersionUpdater depends on UpdateEngineClient.
     UpdateEngineClient::InitializeFake();
@@ -154,13 +153,13 @@ class ShimlessRmaServiceTest : public testing::Test {
     RmadClient::Shutdown();
     NetworkHandler::Shutdown();
     cros_network_config_test_helper_.reset();
-    chromeos::LoginState::Shutdown();
+    LoginState::Shutdown();
     UpdateEngineClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
   }
 
   void SetupFakeNetwork() {
-    chromeos::LoginState::Initialize();
+    LoginState::Initialize();
 
     cros_network_config_test_helper_ =
         std::make_unique<network_config::CrosNetworkConfigTestHelper>(false);

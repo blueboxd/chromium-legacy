@@ -56,6 +56,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContentMetadataProvider) {
   RunTestURL("foreground/js/metadata/content_metadata_provider_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DlpMetadataProvider) {
+  RunTestURL("foreground/js/metadata/dlp_metadata_provider_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ContextMenuHandler) {
   RunTestURL("foreground/js/ui/context_menu_handler_unittest.js");
 }
@@ -254,8 +258,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
   RunTestURL("foreground/js/spinner_controller_unittest.js");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, StorageAdapter) {
-  RunTestURL("common/js/storage_adapter_unittest.js");
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Storage) {
+  RunTestURL("common/js/storage_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
@@ -268,10 +272,6 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailLoader) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
   RunTestURL("foreground/js/metadata/thumbnail_model_unittest.js");
-}
-
-IN_PROC_BROWSER_TEST_F(FileManagerJsTest, Trash) {
-  RunTestURL("background/js/trash_unittest.js");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
@@ -294,6 +294,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfBreadcrumbs) {
   RunTestURL("widgets/xf_breadcrumb_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSearchOptions) {
+  RunTestURL("widgets/xf_search_options_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileGridTest) {
   RunTestURL("foreground/js/ui/file_grid_unittest.js");
 }
@@ -314,6 +318,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerAllEntries) {
   RunTestURL("state/reducers/all_entries_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerCurrentDirectory) {
+  RunTestURL("state/reducers/current_directory_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerSearch) {
+  RunTestURL("state/reducers/search_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfConflictDialog) {
   RunTestURL("widgets/xf_conflict_dialog_unittest.js");
 }
@@ -332,4 +344,16 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfSelect) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NudgeContainer) {
   RunTestURL("containers/nudge_container_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfTree) {
+  RunTestURL("widgets/xf_tree_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfTreeItem) {
+  RunTestURL("widgets/xf_tree_item_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, XfIcon) {
+  RunTestURL("widgets/xf_icon_unittest.js");
 }

@@ -16,7 +16,7 @@ import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resource
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {ContainerInfo, GuestId} from '../guest_os/guest_os_browser_proxy.js';
 import {equalContainerId} from '../guest_os/guest_os_container_select.js';
@@ -147,16 +147,16 @@ class SettingsCrostiniExportImportElement extends
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-export-import-operation-status-changed',
         (inProgress: boolean) => {
           this.exportImportInProgress_ = inProgress;
         });
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-installer-status-changed', (installerShowing: boolean) => {
           this.installerShowing_ = installerShowing;
         });
-    this.addWebUIListener(
+    this.addWebUiListener(
         'crostini-container-info',
         (infos: ContainerInfo[]) => this.onContainerInfo_(infos));
 

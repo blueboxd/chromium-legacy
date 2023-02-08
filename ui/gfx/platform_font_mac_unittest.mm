@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #import "base/mac/foundation_util.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
@@ -18,16 +17,21 @@ namespace gfx {
 using Weight = Font::Weight;
 
 TEST(PlatformFontMacTest, DeriveFont) {
-  // macOS 13 bug: For non-system fonts with 0-valued traits,
+  // macOS 13.0 bug: For non-system fonts with 0-valued traits,
   // `kCFBooleanFalse` is used instead of a `CFNumberRef` of 0. See
-  // https://crbug.com/1372420. Filed as FB11673021.
+  // https://crbug.com/1372420. Filed as FB11673021, fixed in macOS 13.1.
   auto GetValueFromDictionaryAndWorkAroundMacOS13Bug = [](CFDictionaryRef dict,
                                                           CFStringRef key) {
-    CFTypeRef value = CFDictionaryGetValue(dict, key);
-    if (value == kCFBooleanFalse) {
-      CGFloat zero = 0;
-      return (CFNumberRef)CFAutorelease(
-          CFNumberCreate(nullptr, kCFNumberCGFloatType, &zero));
+    NSOperatingSystemVersion version =
+        [[NSProcessInfo processInfo] operatingSystemVersion];
+
+    if (version.majorVersion == 13 && version.minorVersion == 0) {
+      CFTypeRef value = CFDictionaryGetValue(dict, key);
+      if (value == kCFBooleanFalse) {
+        CGFloat zero = 0;
+        return (CFNumberRef)CFAutorelease(
+            CFNumberCreate(nullptr, kCFNumberCGFloatType, &zero));
+      }
     }
 
     return base::mac::GetValueFromDictionary<CFNumberRef>(dict, key);
@@ -189,16 +193,8 @@ TEST(PlatformFontMacTest, DerivedFineGrainedFonts) {
   EXPECT_EQ(static_cast<int>(Weight::LIGHT), DerivedIntWeight(Weight::LIGHT));
   EXPECT_EQ(static_cast<int>(Weight::NORMAL), DerivedIntWeight(Weight::NORMAL));
   EXPECT_EQ(static_cast<int>(Weight::MEDIUM), DerivedIntWeight(Weight::MEDIUM));
-  if (base::mac::IsAtMostOS10_10()) {
-    // If a SEMIBOLD system font is requested, 10.10 will return the bold system
-    // font, but somehow bearing a weight number of 0.24, which is really a
-    // medium weight (0.23).
-    EXPECT_EQ(static_cast<int>(Weight::MEDIUM),
-              DerivedIntWeight(Weight::SEMIBOLD));
-  } else {
-    EXPECT_EQ(static_cast<int>(Weight::SEMIBOLD),
-              DerivedIntWeight(Weight::SEMIBOLD));
-  }
+  EXPECT_EQ(static_cast<int>(Weight::SEMIBOLD),
+            DerivedIntWeight(Weight::SEMIBOLD));
   EXPECT_EQ(static_cast<int>(Weight::BOLD), DerivedIntWeight(Weight::BOLD));
   EXPECT_EQ(static_cast<int>(Weight::EXTRA_BOLD),
             DerivedIntWeight(Weight::EXTRA_BOLD));

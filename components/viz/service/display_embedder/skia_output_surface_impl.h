@@ -123,7 +123,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       base::OnceClosure on_finished,
       base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
       bool is_overlay) override;
-  void MakePromiseSkImage(ImageContext* image_context) override;
+  void MakePromiseSkImage(ImageContext* image_context,
+                          const gfx::ColorSpace& yuv_color_space) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
       const gfx::Size& size,
@@ -162,7 +163,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::unique_ptr<ExternalUseClient::ImageContext> CreateImageContext(
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
-      ResourceFormat format,
+      SharedImageFormat format,
       bool maybe_concurrent_reads,
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space,
@@ -217,7 +218,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   };
   void FlushGpuTasks(SyncMode sync_mode);
   GrBackendFormat GetGrBackendFormatForTexture(
-      ResourceFormat resource_format,
+      SharedImageFormat si_format,
+      int plane_index,
       uint32_t gl_texture_target,
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
   void ContextLost();

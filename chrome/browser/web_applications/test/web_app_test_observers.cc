@@ -128,7 +128,7 @@ WebAppTestRegistryObserverAdapter::WebAppTestRegistryObserverAdapter(
 WebAppTestRegistryObserverAdapter::WebAppTestRegistryObserverAdapter(
     Profile* profile)
     : WebAppTestRegistryObserverAdapter(
-          &WebAppProvider::GetForTest(profile)->registrar()) {}
+          &WebAppProvider::GetForTest(profile)->registrar_unsafe()) {}
 
 WebAppTestRegistryObserverAdapter::~WebAppTestRegistryObserverAdapter() =
     default;
@@ -176,6 +176,10 @@ void WebAppTestRegistryObserverAdapter::OnWebAppLastBadgingTimeChanged(
 void WebAppTestRegistryObserverAdapter::OnWebAppProtocolSettingsChanged() {
   if (app_protocol_settings_changed_delegate_)
     app_protocol_settings_changed_delegate_.Run();
+}
+
+void WebAppTestRegistryObserverAdapter::OnAppRegistrarDestroyed() {
+  observation_.Reset();
 }
 
 void WebAppTestRegistryObserverAdapter::SignalRunLoopAndStoreAppId(

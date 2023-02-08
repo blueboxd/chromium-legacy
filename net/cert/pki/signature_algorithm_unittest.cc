@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#include "base/containers/span.h"
 #include "base/files/file_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "net/cert/pem.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"

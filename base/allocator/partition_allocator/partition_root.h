@@ -192,24 +192,31 @@ struct PartitionOptions {
     kEnabled,
   };
 
+  enum class AddDummyRefCount : uint8_t {
+    kDisabled,
+    kEnabled,
+  };
+
   enum class UseConfigurablePool : uint8_t {
     kNo,
     kIfAvailable,
   };
 
   // Constructor to suppress aggregate initialization.
-  constexpr PartitionOptions(AlignedAlloc aligned_alloc,
-                             ThreadCache thread_cache,
-                             Quarantine quarantine,
-                             Cookie cookie,
-                             BackupRefPtr backup_ref_ptr,
-                             BackupRefPtrZapping backup_ref_ptr_zapping,
-                             UseConfigurablePool use_configurable_pool
+  constexpr PartitionOptions(
+      AlignedAlloc aligned_alloc,
+      ThreadCache thread_cache,
+      Quarantine quarantine,
+      Cookie cookie,
+      BackupRefPtr backup_ref_ptr,
+      BackupRefPtrZapping backup_ref_ptr_zapping,
+      UseConfigurablePool use_configurable_pool,
+      AddDummyRefCount add_dummy_ref_count = AddDummyRefCount::kDisabled
 #if BUILDFLAG(ENABLE_PKEYS)
-                             ,
-                             int pkey = internal::kDefaultPkey
+      ,
+      int pkey = internal::kDefaultPkey
 #endif
-                             )
+      )
       : aligned_alloc(aligned_alloc),
         thread_cache(thread_cache),
         quarantine(quarantine),
@@ -231,6 +238,7 @@ struct PartitionOptions {
   BackupRefPtr backup_ref_ptr;
   BackupRefPtrZapping backup_ref_ptr_zapping;
   UseConfigurablePool use_configurable_pool;
+  AddDummyRefCount add_dummy_ref_count = AddDummyRefCount::kDisabled;
 #if BUILDFLAG(ENABLE_PKEYS)
   int pkey;
 #endif
@@ -1040,8 +1048,8 @@ PartitionAllocGetSlotStartInBRPPool(uintptr_t address) {
 // This isn't a general purpose function. The caller is responsible for ensuring
 // that the ref-count is in place for this allocation.
 template <typename Z, typename = std::enable_if_t<offset_type<Z>, void>>
-PA_ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(uintptr_t address,
-                                                    Z delta_in_bytes) {
+PA_ALWAYS_INLINE PtrPosWithinAlloc
+PartitionAllocIsValidPtrDelta(uintptr_t address, Z delta_in_bytes) {
   // Required for pointers right past an allocation. See
   // |PartitionAllocGetSlotStartInBRPPool()|.
   uintptr_t adjusted_address = address - kPartitionPastAllocationAdjustment;
@@ -1061,10 +1069,21 @@ PA_ALWAYS_INLINE bool PartitionAllocIsValidPtrDelta(uintptr_t address,
 
   uintptr_t object_addr = root->SlotStartToObjectAddr(slot_start);
   uintptr_t new_address = address + static_cast<uintptr_t>(delta_in_bytes);
-  return object_addr <= new_address &&
-         // We use "greater than or equal" below because we want to include
-         // pointers right past the end of an allocation.
-         new_address <= object_addr + slot_span->GetUsableSize(root);
+  uintptr_t object_end = object_addr + slot_span->GetUsableSize(root);
+#if defined(PA_USE_OOB_POISON)
+  bool below_object_end = new_address < object_end;
+#else
+  bool below_object_end = new_address <= object_end;
+#endif
+  if (object_addr <= new_address && below_object_end) {
+    return PtrPosWithinAlloc::kInBounds;
+#if defined(PA_USE_OOB_POISON)
+  } else if (new_address == object_end) {
+    return PtrPosWithinAlloc::kAllocEnd;
+#endif
+  } else {
+    return PtrPosWithinAlloc::kFarOOB;
+  }
 }
 
 PA_ALWAYS_INLINE void PartitionAllocFreeForRefCounting(uintptr_t slot_start) {

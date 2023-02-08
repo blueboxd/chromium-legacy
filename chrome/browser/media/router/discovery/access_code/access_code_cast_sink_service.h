@@ -193,7 +193,11 @@ class AccessCodeCastSinkService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            RefreshStoredDeviceInfo);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           RefreshExistingDeviceName);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            RefreshStoredDeviceTimer);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           HandleMediaRouteAdded);
 
   // Use |AccessCodeCastSinkServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -220,6 +224,9 @@ class AccessCodeCastSinkService : public KeyedService,
   // Handles removal from media router via expiration if a route with an access
   // code cast sink has ended.
   void HandleMediaRouteRemovedByAccessCode(const MediaSinkInternal* sink);
+
+  // Reports to metrics whenever the added route is to an access code sink.
+  void HandleMediaRouteAdded(const MediaSinkInternal* sink);
 
   void OnAccessCodeRouteRemoved(const MediaSinkInternal* sink);
   void OpenChannelIfNecessary(const MediaSinkInternal& sink,
@@ -277,6 +284,9 @@ class AccessCodeCastSinkService : public KeyedService,
       const MediaSink::Id& sink_id);
 
   void RemoveAndDisconnectExistingSinksOnNetwork();
+
+  void UpdateExistingSink(const MediaSinkInternal& new_sink,
+                          const MediaSinkInternal* exisitng_sink);
 
   // DiscoveryNetworkMonitor::Observer implementation
   void OnNetworksChanged(const std::string& network_id) override;
@@ -342,7 +352,8 @@ class AccessCodeCastSinkService : public KeyedService,
 
   raw_ptr<PrefService, DanglingUntriaged> prefs_;
 
-  raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
+  raw_ptr<signin::IdentityManager, DanglingUntriaged> identity_manager_ =
+      nullptr;
 
   // This registrar monitors for user prefs changes.
   std::unique_ptr<PrefChangeRegistrar> user_prefs_registrar_;

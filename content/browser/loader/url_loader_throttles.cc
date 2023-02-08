@@ -76,9 +76,9 @@ CreateContentBrowserURLLoaderThrottles(
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kPersistentOriginTrials)) {
-    OriginTrialsControllerDelegate* origin_trials_delegate =
-        browser_context->GetOriginTrialsControllerDelegate();
+  OriginTrialsControllerDelegate* origin_trials_delegate =
+      browser_context->GetOriginTrialsControllerDelegate();
+  if (origin_trials_delegate) {
     // Critical Origin Trials may restart the network request, so only allow on
     // safe methods, since the origin trials in question may change request
     // headers or other aspects of the network request. We want to avoid servers
@@ -92,7 +92,7 @@ CreateContentBrowserURLLoaderThrottles(
   }
 
   auto throttle = MaybeCreateIdentityUrlLoaderThrottle(
-      base::BindRepeating(SetIdpSigninStatus, browser_context));
+      base::BindRepeating(webid::SetIdpSigninStatus, browser_context));
   if (throttle)
     throttles.push_back(std::move(throttle));
 

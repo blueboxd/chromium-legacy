@@ -9,20 +9,26 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
 #include "components/reading_list/core/reading_list_model_storage.h"
-#include "components/reading_list/core/reading_list_store_delegate.h"
+#include "components/reading_list/core/reading_list_sync_bridge.h"
 
 namespace base {
 class Clock;
-}
+}  // namespace base
 
 class PrefService;
 
+namespace syncer {
+class ModelTypeChangeProcessor;
+}  // namespace syncer
+
 // Concrete implementation of a reading list model using in memory lists.
-class ReadingListModelImpl : public ReadingListModel,
-                             public ReadingListStoreDelegate {
+class ReadingListModelImpl : public ReadingListModel {
  public:
   using ReadingListEntries = std::map<GURL, ReadingListEntry>;
 
@@ -31,42 +37,29 @@ class ReadingListModelImpl : public ReadingListModel,
   // ReadingListModelImpl without persistence. Data will not be persistent
   // across sessions.
   // |clock| will be used to timestamp all the operations.
+  // TODO(crbug.com/1386158): Remove |pref_service| which is unused.
   ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer,
                        PrefService* pref_service,
-                       base::Clock* clock_);
-
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
-
-  ReadingListModelImpl(const ReadingListModelImpl&) = delete;
-  ReadingListModelImpl& operator=(const ReadingListModelImpl&) = delete;
-
+                       base::Clock* clock);
   ~ReadingListModelImpl() override;
-
-  void StoreLoaded(std::unique_ptr<ReadingListEntries> entries) override;
 
   // KeyedService implementation.
   void Shutdown() override;
 
   // ReadingListModel implementation.
   bool loaded() const override;
-
+  bool IsPerformingBatchUpdates() const override;
+  ReadingListSyncBridge* GetModelTypeSyncBridge() override;
+  std::unique_ptr<ScopedReadingListBatchUpdate> BeginBatchUpdates() override;
+  const std::vector<GURL> Keys() const override;
   size_t size() const override;
   size_t unread_size() const override;
   size_t unseen_size() const override;
-
   void MarkAllSeen() override;
-  bool GetLocalUnseenFlag() const override;
-  void ResetLocalUnseenFlag() override;
-
-  const std::vector<GURL> Keys() const override;
-
+  bool DeleteAllEntries() override;
   const ReadingListEntry* GetEntryByURL(const GURL& gurl) const override;
   const ReadingListEntry* GetFirstUnreadEntry(bool distilled) const override;
-
-  void RemoveEntryByURL(const GURL& url) override;
-
   bool IsUrlSupported(const GURL& url) override;
-
   const ReadingListEntry& AddEntry(
       const GURL& url,
       const std::string& title,
@@ -75,9 +68,8 @@ class ReadingListModelImpl : public ReadingListModel,
   const ReadingListEntry& AddEntry(const GURL& url,
                                    const std::string& title,
                                    reading_list::EntrySource source) override;
-
+  void RemoveEntryByURL(const GURL& url) override;
   void SetReadStatus(const GURL& url, bool read) override;
-
   void SetEntryTitle(const GURL& url, const std::string& title) override;
   void SetEstimatedReadTime(const GURL& url,
                             base::TimeDelta estimated_read_time) override;
@@ -87,78 +79,97 @@ class ReadingListModelImpl : public ReadingListModel,
   void SetEntryDistilledInfo(const GURL& url,
                              const base::FilePath& distilled_path,
                              const GURL& distilled_url,
-                             int64_t distillation_size,
-                             const base::Time& distillation_date) override;
+                             int64_t distilation_size,
+                             const base::Time& distilation_time) override;
   void SetContentSuggestionsExtra(
       const GURL& url,
       const reading_list::ContentSuggestionsExtra& extra) override;
+  void AddObserver(ReadingListModelObserver* observer) override;
+  void RemoveObserver(ReadingListModelObserver* observer) override;
 
-  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override;
-  ReadingListEntry* SyncMergeEntry(
-      std::unique_ptr<ReadingListEntry> entry) override;
-  void SyncRemoveEntry(const GURL& url) override;
-  bool DeleteAllEntries() override;
+  // API specifically for changes received via sync.
+  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry);
+  ReadingListEntry* SyncMergeEntry(std::unique_ptr<ReadingListEntry> entry);
+  void SyncRemoveEntry(const GURL& url);
 
-  std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
-  CreateBatchToken() override;
-
-  // Helper class that is used to scope batch updates.
-  class ScopedReadingListBatchUpdate
-      : public ReadingListModel::ScopedReadingListBatchUpdate {
+  class ScopedReadingListBatchUpdateImpl : public ScopedReadingListBatchUpdate,
+                                           public ReadingListModelObserver {
    public:
-    explicit ScopedReadingListBatchUpdate(ReadingListModelImpl* model);
+    explicit ScopedReadingListBatchUpdateImpl(ReadingListModelImpl* model);
+    ~ScopedReadingListBatchUpdateImpl() override;
 
-    ScopedReadingListBatchUpdate(const ScopedReadingListBatchUpdate&) = delete;
-    ScopedReadingListBatchUpdate& operator=(
-        const ScopedReadingListBatchUpdate&) = delete;
+    syncer::MetadataChangeList* GetSyncMetadataChangeList();
 
-    ~ScopedReadingListBatchUpdate() override;
-
+    // ReadingListModelObserver overrides.
+    void ReadingListModelLoaded(const ReadingListModel* model) override;
     void ReadingListModelBeingShutdown(const ReadingListModel* model) override;
 
    private:
+    raw_ptr<ReadingListModelImpl> model_;
     std::unique_ptr<ReadingListModelStorage::ScopedBatchUpdate> storage_token_;
   };
 
- protected:
-  void EnteringBatchUpdates() override;
-  void LeavingBatchUpdates() override;
+  // Same as BeginBatchUpdates(), but returns specifically
+  // ReadingListModelImpl's ScopedReadingListBatchUpdateImpl.
+  std::unique_ptr<ScopedReadingListBatchUpdateImpl>
+  BeginBatchUpdatesWithSyncMetadata();
+
+  // Test-only factory function to inject an arbitrary change processor.
+  static std::unique_ptr<ReadingListModelImpl> BuildNewForTest(
+      std::unique_ptr<ReadingListModelStorage> storage_layer,
+      PrefService* pref_service,
+      base::Clock* clock,
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
 
  private:
-  // Sets/Loads the pref flag that indicate if some entries have never been seen
-  // since being added to the store.
-  void SetPersistentHasUnseen(bool has_unseen);
-  bool GetPersistentHasUnseen();
+  ReadingListModelImpl(
+      std::unique_ptr<ReadingListModelStorage> storage_layer,
+      base::Clock* clock,
+      std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
+
+  void StoreLoaded(ReadingListModelStorage::LoadResultOrError result_or_error);
+
+  // Tells model that batch updates have completed. Called from
+  // ScopedReadingListBatchUpdateImpl's destructor.
+  void EndBatchUpdates();
 
   // Returns a mutable pointer to the entry with URL |url|. Return nullptr if
   // no entry is found.
-  ReadingListEntry* GetMutableEntryFromURL(const GURL& url) const;
+  ReadingListEntry* GetMutableEntryFromURL(const GURL& url);
 
   // Returns the |storage_layer_| of the model.
   ReadingListModelStorage* StorageLayer();
 
-  // Remove entry |url| and propagate to store if |from_sync| is false.
+  // Add |entry| to the model, which must not exist before, and notify the sync
+  // bridge if |source| is not ADDED_VIA_SYNC.
+  void AddEntryImpl(std::unique_ptr<ReadingListEntry> entry,
+                    reading_list::EntrySource source);
+
+  // Remove entry |url| and propagate to the sync bridge if |from_sync| is
+  // false.
   void RemoveEntryByURLImpl(const GURL& url, bool from_sync);
-
-  void RebuildIndex() const;
-
-  std::unique_ptr<ReadingListEntries> entries_;
-  size_t unread_entry_count_;
-  size_t read_entry_count_;
-  size_t unseen_entry_count_;
 
   // Update the 3 counts above considering addition/removal of |entry|.
   void UpdateEntryStateCountersOnEntryRemoval(const ReadingListEntry& entry);
   void UpdateEntryStateCountersOnEntryInsertion(const ReadingListEntry& entry);
 
-  // Set the unseen flag to true.
-  void SetUnseenFlag();
+  const std::unique_ptr<ReadingListModelStorage> storage_layer_;
+  const raw_ptr<base::Clock> clock_;
 
-  raw_ptr<base::Clock> clock_;
-  std::unique_ptr<ReadingListModelStorage> storage_layer_;
-  raw_ptr<PrefService> pref_service_;
-  bool has_unseen_;
-  bool loaded_;
+  ReadingListSyncBridge sync_bridge_;
+
+  base::ObserverList<ReadingListModelObserver>::Unchecked observers_;
+
+  bool loaded_ = false;
+
+  ReadingListEntries entries_;
+  size_t unread_entry_count_ = 0;
+  size_t read_entry_count_ = 0;
+  size_t unseen_entry_count_ = 0;
+
+  unsigned int current_batch_updates_count_ = 0;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ReadingListModelImpl> weak_ptr_factory_{this};
 };

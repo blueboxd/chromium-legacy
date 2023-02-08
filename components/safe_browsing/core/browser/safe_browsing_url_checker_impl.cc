@@ -8,8 +8,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "components/safe_browsing/core/browser/db/database_manager.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service_base.h"
@@ -42,9 +43,11 @@ void RecordCheckUrlTimeout(bool timed_out) {
 }
 
 void RecordLocalMatchResult(
-    AsyncMatch match_result,
+    bool has_match,
     network::mojom::RequestDestination request_destination,
     std::string url_lookup_service_metric_suffix) {
+  AsyncMatch match_result =
+      has_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
   base::UmaHistogramEnumeration(kMatchResultHistogramName, match_result);
   bool is_mainframe =
       request_destination == network::mojom::RequestDestination::kDocument;
@@ -251,7 +254,7 @@ UnsafeResource SafeBrowsingUrlCheckerImpl::MakeUnsafeResource(
   resource.callback =
       base::BindRepeating(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                           weak_factory_.GetWeakPtr());
-  resource.callback_sequence = base::SequencedTaskRunnerHandle::Get();
+  resource.callback_sequence = base::SequencedTaskRunner::GetCurrentDefault();
   resource.render_process_id = render_process_id_;
   resource.render_frame_id = render_frame_id_;
   resource.frame_tree_node_id = frame_tree_node_id_;
@@ -279,7 +282,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
   DCHECK_LT(next_index_, urls_.size());
   DCHECK_EQ(urls_[next_index_].url, url);
 
-  timer_.Stop();
+  timer_->Stop();
   RecordCheckUrlTimeout(timed_out);
   if (urls_[next_index_].is_cached_safe_url) {
     UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.GetCache.FallbackThreatType",
@@ -430,7 +433,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
           "safe_browsing", "CheckUrl", TRACE_ID_LOCAL(this), "url", url.spec());
 
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
                          weak_factory_.GetWeakPtr(), url, threat_type,
@@ -442,8 +445,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                                       TRACE_ID_LOCAL(this), "url", url.spec());
 
     // Start a timer to abort the check if it takes too long.
-    timer_.Start(FROM_HERE, base::Milliseconds(kCheckUrlTimeoutMs), this,
-                 &SafeBrowsingUrlCheckerImpl::OnTimeout);
+    timer_->Start(FROM_HERE, base::Milliseconds(kCheckUrlTimeoutMs), this,
+                  &SafeBrowsingUrlCheckerImpl::OnTimeout);
 
     bool safe_synchronously;
     bool can_perform_full_url_lookup = CanPerformFullURLLookup(url);
@@ -458,47 +461,24 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
       bool check_allowlist =
           can_check_db_ && can_check_high_confidence_allowlist_;
-      AsyncMatch match = (check_allowlist)
-                             ? CallCheckUrlForHighConfidenceAllowlist(url)
-                             : AsyncMatch::NO_MATCH;
+      bool has_allowlist_match =
+          check_allowlist &&
+          database_manager_->CheckUrlForHighConfidenceAllowlist(url);
       urls_[next_index_].did_check_allowlist = check_allowlist;
-      RecordLocalMatchResult(match, request_destination_,
+      RecordLocalMatchResult(has_allowlist_match, request_destination_,
                              url_lookup_service_metric_suffix_);
-
-      switch (match) {
-        case AsyncMatch::ASYNC:
-          // Hash-prefix matched. A call to
-          // |OnCheckUrlForHighConfidenceAllowlist| will follow.
-          break;
-        case AsyncMatch::MATCH:
-          // Full-hash matched locally so queue a call to
-          // |OnCheckUrlForHighConfidenceAllowlist| to trigger the hash-based
-          // checking.
-          base::SequencedTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::BindOnce(&SafeBrowsingUrlCheckerImpl::
-                                 OnCheckUrlForHighConfidenceAllowlist,
-                             weak_factory_.GetWeakPtr(),
-                             /*did_match_allowlist=*/true));
-          break;
-        case AsyncMatch::NO_MATCH:
-          // No match found locally or |can_check_db_| is false. Queue the call
-          // to |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
-          // lookup.
-          base::SequencedTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::BindOnce(&SafeBrowsingUrlCheckerImpl::
-                                 OnCheckUrlForHighConfidenceAllowlist,
-                             weak_factory_.GetWeakPtr(),
-                             /*did_match_allowlist=*/false));
-          break;
-      }
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist,
+              weak_factory_.GetWeakPtr(),
+              /*did_match_allowlist=*/has_allowlist_match));
     } else {
       safe_synchronously = can_check_db_ ? CallCheckBrowseUrl(url) : true;
     }
 
     if (safe_synchronously) {
-      timer_.Stop();
+      timer_->Stop();
       RecordCheckUrlTimeout(/*timed_out=*/false);
 
       TRACE_EVENT_NESTABLE_ASYNC_END1("safe_browsing", "CheckUrl",
@@ -596,7 +576,6 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
        can_rt_check_subresource_url_);
   DCHECK(is_expected_request_destination);
 
-  is_async_database_manager_check_in_progress_ = false;
   const GURL& url = urls_[next_index_].url;
   if (did_match_allowlist) {
     ui_task_runner_->PostTask(
@@ -605,8 +584,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
                        weak_factory_.GetWeakPtr(), url, last_committed_url_,
                        /*is_mainframe=*/request_destination_ ==
                            network::mojom::RequestDestination::kDocument,
-                       url_lookup_service_on_ui_, database_manager_,
-                       base::SequencedTaskRunnerHandle::Get()));
+                       url_lookup_service_on_ui_,
+                       base::SequencedTaskRunner::GetCurrentDefault()));
     // If the URL matches the high-confidence allowlist, still do the hash based
     // checks.
     PerformHashBasedCheck(url);
@@ -619,8 +598,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
                      weak_factory_.GetWeakPtr(), url, last_committed_url_,
                      /*is_mainframe=*/request_destination_ ==
                          network::mojom::RequestDestination::kDocument,
-                     url_lookup_service_on_ui_, database_manager_,
-                     base::SequencedTaskRunnerHandle::Get()));
+                     url_lookup_service_on_ui_,
+                     base::SequencedTaskRunner::GetCurrentDefault()));
 }
 
 void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
@@ -633,7 +612,6 @@ void SafeBrowsingUrlCheckerImpl::MaybeSendSampleRequest(
     const GURL& last_committed_url,
     bool is_mainframe,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   bool can_send_protego_sampled_ping =
       url_lookup_service_on_ui &&
@@ -660,7 +638,6 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     const GURL& last_committed_url,
     bool is_mainframe,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-    scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner) {
   bool is_lookup_service_available =
       url_lookup_service_on_ui && !url_lookup_service_on_ui->IsInBackoffMode();
@@ -791,23 +768,15 @@ bool SafeBrowsingUrlCheckerImpl::CallCheckBrowseUrl(const GURL& url) {
   return is_safe_synchronously;
 }
 
-AsyncMatch SafeBrowsingUrlCheckerImpl::CallCheckUrlForHighConfidenceAllowlist(
-    const GURL& url) {
-  AsyncMatch result =
-      database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
-  if (result == AsyncMatch::ASYNC) {
-    // It is unexpected that the high confidence allowlist would return async.
-    // However, until the CheckUrlForHighConfidenceAllowlist code is refactored
-    // to make that case impossible, we still handle it.
-    is_async_database_manager_check_in_progress_ = true;
-  }
-  return result;
-}
-
 void SafeBrowsingUrlCheckerImpl::CancelCheckIfRelevant() {
   if (is_async_database_manager_check_in_progress_) {
     database_manager_->CancelCheck(this);
   }
+}
+
+void SafeBrowsingUrlCheckerImpl::SetTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> timer) {
+  timer_ = std::move(timer);
 }
 
 }  // namespace safe_browsing

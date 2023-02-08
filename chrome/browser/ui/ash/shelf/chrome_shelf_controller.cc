@@ -32,13 +32,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/icon_standardizer.h"
+#include "chrome/browser/ash/app_list/app_service/app_service_app_icon_loader.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
@@ -48,8 +49,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/app_service/app_service_app_icon_loader.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/app_icon_color_cache.h"
@@ -1106,9 +1105,8 @@ void ChromeShelfController::OnAppImageUpdated(const std::string& app_id,
     copy = image.DeepCopy();
   }
 
-  base::PostTaskAndReplyWithResult(
-      standard_icon_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&CreateStandardImageOnWorkerThread, copy),
+  standard_icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&CreateStandardImageOnWorkerThread, copy),
       base::BindOnce(&ChromeShelfController::UpdateAppImage,
                      weak_ptr_factory_.GetWeakPtr(), app_id));
 }
@@ -1252,7 +1250,7 @@ void ChromeShelfController::OnIsSyncingChanged() {
 }
 
 void ChromeShelfController::ScheduleUpdatePinnedAppsFromSync() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&ChromeShelfController::UpdatePinnedAppsFromSync,
                      weak_ptr_factory_.GetWeakPtr()));

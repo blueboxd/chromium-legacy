@@ -59,7 +59,7 @@
 <translation id="1953553007165777902">다운로드 중... <ph name="MINUTE" />분 남음</translation>
 <translation id="2018528049276128029">각 프로필에는 북마크, 방문 기록, 비밀번호 등과 같은 Chrome 정보가 보관됩니다.</translation>
 <translation id="2018879682492276940">설치할 수 없습니다. 다시 시도해 보세요.</translation>
-<translation id="2071318482926839249">이미 다른 계정으로 로그인되어 있습니다. 브라우징을 분리하기 위해 Chrome에서 나만의 프로필을 만들 수 있습니다.</translation>
+<translation id="2071318482926839249">이미 다른 계정으로 로그인되어 있습니다. 인터넷 사용 기록을 별도로 보관하기 위해 Chrome에서 나만의 프로필을 만들 수 있습니다.</translation>
 <translation id="207902854391093810">무료 체험을 사용 설정한 경우 방문하는 사이트에서는 Ad measurement를 활용해 광고의 실적을 측정하는 데 도움이 되는 정보를 Chrome에 요청할 수 있습니다. Ad measurement는 사이트 간에 최소한의 정보만 전송함으로써 크로스 사이트 추적을 제한합니다.</translation>
 <translation id="2091012649849228750">향후 Chrome 업데이트를 받으려면 Windows 10 이상이 필요합니다. 이 컴퓨터에서는 Windows 8을 사용 중입니다.</translation>
 <translation id="2094648590148273905">ChromeOS Flex 약관</translation>
@@ -85,7 +85,6 @@
 <translation id="2401189691232800402">ChromeOS 시스템</translation>
 <translation id="2467438592969358367">Chrome에서 비밀번호를 내보내려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="2485422356828889247">제거</translation>
-<translation id="2494974097748878569">Chrome의 Google 어시스턴트</translation>
 <translation id="2534507159460261402">Google Pay(Chrome에 복사됨)</translation>
 <translation id="2559253115192232574">이후 방문한 사이트에서 광고 개인 최적화를 위해 내 관심분야를 알려달라고 Chrome에 요청할 수 있습니다. Chrome은 최대 3개의 관심분야를 공유할 수 있습니다.</translation>
 <translation id="2563121210305478421">Chrome을 다시 시작하시겠습니까?</translation>
@@ -218,7 +217,7 @@
 <translation id="4970947549776831107">위험한 유형의 파일이기 때문에 Chrome에서 파일을 차단했습니다.</translation>
 <translation id="4990567037958725628">Chrome Canary</translation>
 <translation id="5037581483200764584">향후 Chrome 업데이트를 받으려면 macOS 10.13 이상이 필요합니다. 이 컴퓨터에서는 OS X 10.11을 사용하고 있습니다.</translation>
-<translation id="5098668839038261629">이 설정을 사용하면 Chrome에서도 로그아웃됩니다</translation>
+<translation id="5098668839038261629">사용하게 되면 Chrome에서도 로그아웃됩니다.</translation>
 <translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
 <translation id="5139423532931106058">Chrome 프로필 맞춤설정</translation>
 <translation id="5163087008893166964">Chrome에 오신 것을 환영합니다. 새 브라우저 창이 열렸습니다</translation>
@@ -290,7 +289,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="6739177684496155661">새 Chrome 프로필에서 계속하시겠습니까?</translation>
 <translation id="6750954913813541382">맞춤법 오류를 바로잡기 위해 Chrome에서 브라우저에 입력된 텍스트를 Google로 전송합니다.</translation>
 <translation id="677276454032249905">Chrome을 종료하시겠습니까?</translation>
-<translation id="6785872064505734160">Chrome의 Google 어시스턴트가 사용자를 위해 여러 웹사이트에서 작업을 완료할 수 있습니다.</translation>
 <translation id="683440813066116847">Chrome Canary가 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="6881299373831449287">Chrome 업데이트 중</translation>
 <translation id="6885412569789873916">Chrome 베타 앱</translation>

@@ -14,7 +14,7 @@ import {BridgeHelper} from './bridge_helper.js';
 import {Command} from './command_store.js';
 import {BaseLog, SerializableLog} from './log_types.js';
 import {PanelTabMenuItemData} from './panel_menu_data.js';
-import {QueueMode, TtsSpeechProperties} from './tts_interface.js';
+import {QueueMode, TtsSpeechProperties} from './tts_types.js';
 
 export const BackgroundBridge = {};
 
@@ -58,12 +58,19 @@ BackgroundBridge.ChromeVoxPrefs = {
   /**
    * Get the prefs (not including keys).
    * @return {!Promise<Object<string, string>>} A map of all prefs except the
-   *     key map from localStorage.
+   *     key map from LocalStorage.
    */
   async getPrefs() {
     return BridgeHelper.sendMessage(
         BridgeConstants.ChromeVoxPrefs.TARGET,
         BridgeConstants.ChromeVoxPrefs.Action.GET_PREFS);
+  },
+
+  /** @return {!Promise<boolean>} */
+  async getStickyPref() {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.ChromeVoxPrefs.TARGET,
+        BridgeConstants.ChromeVoxPrefs.Action.GET_STICKY_PREF);
   },
 
   /**
@@ -97,20 +104,6 @@ BackgroundBridge.ChromeVoxState = {
     return BridgeHelper.sendMessage(
         BridgeConstants.ChromeVoxState.TARGET,
         BridgeConstants.ChromeVoxState.Action.CLEAR_CURRENT_RANGE);
-  },
-
-  /**
-   * Method that updates the punctuation echo level, and also persists setting
-   * to local storage.
-   * @param {number} punctuationEcho The index of the desired punctuation echo
-   *     level in AbstractTts.PUNCTUATION_ECHOES.
-   * @return {!Promise}
-   */
-  async updatePunctuationEcho(punctuationEcho) {
-    return BridgeHelper.sendMessage(
-        BridgeConstants.ChromeVoxState.TARGET,
-        BridgeConstants.ChromeVoxState.Action.UPDATE_PUNCTUATION_ECHO,
-        punctuationEcho);
   },
 };
 
@@ -352,6 +345,20 @@ BackgroundBridge.TtsBackground = {
         BridgeConstants.TtsBackground.TARGET,
         BridgeConstants.TtsBackground.Action.SPEAK, textString, queueMode,
         properties);
+  },
+
+  /**
+   * Method that updates the punctuation echo level, and also persists setting
+   * to local storage.
+   * @param {number} punctuationEcho The index of the desired punctuation echo
+   *     level in PunctuationEchoes.
+   * @return {!Promise}
+   */
+  async updatePunctuationEcho(punctuationEcho) {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.TtsBackground.TARGET,
+        BridgeConstants.TtsBackground.Action.UPDATE_PUNCTUATION_ECHO,
+        punctuationEcho);
   },
 };
 

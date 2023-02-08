@@ -54,7 +54,7 @@ interface CrosHealthdServiceFactory {
 
 // Diagnostics interface exposed by the cros_healthd daemon.
 //
-// NextMinVersion: 2, NextIndex: 33
+// NextMinVersion: 7, NextIndex: 38
 [Stable]
 interface CrosHealthdDiagnosticsService {
   // Returns an array of all diagnostic routines that the platform supports.
@@ -127,15 +127,29 @@ interface CrosHealthdDiagnosticsService {
   RunBatteryHealthRoutine@4() => (RunRoutineResponse response);
 
   // Requests that the SmartctlCheck routine is created and started on the
-  // platform. This routine checks available spare NVMe capacity against the
-  // threshold.
+  // platform. This routine passes iff a NVMe drive's:
+  // 1. Critical Warning == 0x00 (no warning)
+  // 2. Available Spare >= Available Spare Threshold
+  // 3. Percentage Used <= Percentage Used Threshold (from request)
+  // In addition, above values are also returned in the output.
   // The availability of this routine can be determined by checking that
-  // kSmartctlCheck is returned by GetAvailableRoutines.
+  // kSmartctlCheck (without |percentage_used_threshold|) or
+  // kSmartctlCheckWithPercentageUsed (with |percentage_used_threshold|) is
+  // returned by GetAvailableRoutines.
+  //
+  // The request:
+  // * |percentage_used_threshold| - an optional threshold number in percentage,
+  //                                 range [0, 255] inclusive, that the routine
+  //                                 examines `percentage_used` against. If not
+  //                                 specified, the routine will default to the
+  //                                 max allowed value (255).
   //
   // The response:
   // * |response| - contains a unique identifier and status for the created
   //                routine.
-  RunSmartctlCheckRoutine@5() => (RunRoutineResponse response);
+  RunSmartctlCheckRoutine@5(
+    [MinVersion=6] NullableUint32? percentage_used_threshold)
+        => (RunRoutineResponse response);
 
   // Requests that the AcPower routine is created and started on the
   // platform. This routine checks the status of the power supply, and if
@@ -511,6 +525,94 @@ interface CrosHealthdDiagnosticsService {
   // * |response| - contains a unique identifier and status for the created
   //                routine.
   RunArcDnsResolutionRoutine@31() => (RunRoutineResponse response);
+
+  // Requests that the SensitiveSensor routine is created and started on the
+  // platform. This routine checks that the device's sensors are working
+  // correctly by monitoring the sensor sample data without user interaction.
+  // This routine only support sensitive sensors including accelerometers,
+  // gyro sensors, gravity sensors and magnetometers.
+  // The availability of this routine can be determined by checking that
+  // kSensitiveSensor is returned by GetAvailableRoutines.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  [MinVersion=2] RunSensitiveSensorRoutine@33()
+      => (RunRoutineResponse response);
+
+  // Requests that the Fingerprint routine is created and started on the
+  // platform. This routine checks whether the fingerprint module is healthy or
+  // not.
+  // The availability of this routine can be determined by checking that
+  // kFingerprint is returned by GetAvailableRoutines.
+  //
+  // Note that this routine can be run ONLY when WP is off, so it'll only be
+  // used in the RMA center or factory.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  [MinVersion=3] RunFingerprintRoutine@34() => (RunRoutineResponse response);
+
+  // Requests that the FingerprintAlive routine is created and started on the
+  // platform. This routine checks whether the fingerprint module is alive or
+  // not. Alive means the sensor is responsive and the firmware version is RW.
+  // The availability of this routine can be determined by checking that
+  // kFingerprintAlive is returned by GetAvailableRoutines.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  [MinVersion=3] RunFingerprintAliveRoutine@35()
+    => (RunRoutineResponse response);
+
+  // Requests that the PrivacyScreen routine is created and started on the
+  // platform. This routine checks whether the privacy screen is working as
+  // expected. This routine is only available if GetAvailableRoutines returned
+  // kPrivacyScreen.
+  //
+  // The request:
+  // * |target_state| - privacy screen target state.
+  [MinVersion=4] RunPrivacyScreenRoutine@36(bool target_state)
+      => (RunRoutineResponse response);
+
+  // Requests that the LedLitUp routine is created and started on the
+  // platform. This routine lights up the target LED in the specified color and
+  // requests the caller to verify the change.
+  // The availability of this routine can be determined by checking that
+  // kLedLitUp is returned by GetAvailableRoutines.
+  //
+  // The routine proceeds with the following steps:
+  // 1. Set the specified LED with the specified color. If the LED name or color
+  //    is not supported by EC, the routine fails at this step.
+  // 2. Invoke the |GetColorMatched| method of |replier|. The method should
+  //    return |true| if the actual color matches the specified color and
+  //    |false|, otherwise. Notice that there is no timeout so it will wait
+  //    indefinitely.
+  // 3. After receiving the response from |replier|, the color of the LED will
+  //    be reset (back the auto control). If the replier disconnects before
+  //    the response is received, the LED will also be reset.
+  // 4. The status of the routine is updated. The routine passes when the
+  //    response is |true|. If the response is |false| or the disconnection
+  //    occurs, the routine fails.
+  //
+  // Requirement:
+  // * The LED name and color provided by the client must be valid. In other
+  //   words, the specified LED must be installed and the specified color must
+  //   be supported.
+  //
+  // The request:
+  // * |name| - specifies the LED to be lit up.
+  // * |color| - specifies the color to be lit up.
+  // * |replier| - a replier that can answer whether the actual LED color
+  //               matches the expected color.
+  //
+  // The response:
+  // * |response| - contains a unique identifier and status for the created
+  //                routine.
+  [MinVersion=5] RunLedLitUpRoutine@37(LedName name, LedColor color,
+    pending_remote<LedLitUpRoutineReplier> replier)
+        => (RunRoutineResponse response);
 };
 
 // Event interface exposed by the cros_healthd daemon.

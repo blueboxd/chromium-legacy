@@ -42,10 +42,9 @@ bool BulkLeakCheckServiceAdapter::StartBulkLeakCheck(
 
   // Even though the BulkLeakCheckService performs canonicalization eventually
   // we do it here to de-dupe credentials that have the same canonicalized form.
-  SavedPasswordsPresenter::SavedPasswordsView saved_passwords =
-      presenter_->GetSavedPasswords();
-  base::flat_set<CanonicalizedCredential> canonicalized(saved_passwords.begin(),
-                                                        saved_passwords.end());
+  const auto passwords = presenter_->GetSavedPasswords();
+  base::flat_set<CanonicalizedCredential> canonicalized(passwords.begin(),
+                                                        passwords.end());
 
   // Build the list of LeakCheckCredentials and forward them to the service to
   // start the check.
@@ -78,12 +77,13 @@ size_t BulkLeakCheckServiceAdapter::GetPendingChecksCount() const {
   return service_->GetPendingChecksCount();
 }
 
-void BulkLeakCheckServiceAdapter::OnEdited(const PasswordForm& form) {
+void BulkLeakCheckServiceAdapter::OnEdited(
+    const CredentialUIEntry& credential) {
   if (CanStartLeakCheck(*prefs_)) {
-    // Here no extra canonicalization is needed, as there are no other forms we
-    // could de-dupe before we pass it on to the service.
+    // Here no extra canonicalization is needed, as there are no other
+    // credentials we could de-dupe before we pass it on to the service.
     std::vector<LeakCheckCredential> credentials;
-    credentials.emplace_back(form.username_value, form.password_value);
+    credentials.emplace_back(credential.username, credential.password);
     service_->CheckUsernamePasswordPairs(std::move(credentials));
   }
 }

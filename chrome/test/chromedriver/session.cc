@@ -70,7 +70,7 @@ FrameInfo::FrameInfo(const std::string& parent_frame_id,
       frame_id(frame_id),
       chromedriver_frame_id(chromedriver_frame_id) {}
 
-InputCancelListEntry::InputCancelListEntry(base::DictionaryValue* input_state,
+InputCancelListEntry::InputCancelListEntry(base::Value::Dict* input_state,
                                            const MouseEvent* mouse_event,
                                            const TouchEvent* touch_event,
                                            const KeyEvent* key_event)
@@ -230,7 +230,11 @@ Status Session::OnBidiResponse(base::Value::Dict payload) {
   }
 
   std::string message;
-  if (!base::JSONWriter::Write(payload, &message)) {
+  // `OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION` is needed to keep the BiDi format.
+  // crbug.com/chromedriver/4297.
+  if (!base::JSONWriter::WriteWithOptions(
+          payload, base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION,
+          &message)) {
     return Status{kUnknownError, "unable to serialize a BiDi response"};
   }
 

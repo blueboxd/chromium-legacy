@@ -26,7 +26,7 @@
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/win/win_util.h"
+#include "chrome/updater/util/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -37,7 +37,7 @@ namespace {
 constexpr size_t kMaxStringLen = 0x4000;  // 16KB.
 
 HRESULT IsCOMCallerAllowed() {
-  if (GetUpdaterScope() == UpdaterScope::kUser)
+  if (!IsSystemInstall())
     return S_OK;
 
   HResultOr<bool> result = IsCOMCallerAdmin();
@@ -692,8 +692,7 @@ HRESULT UpdaterInternalImpl::Run(IUpdaterInternalCallback* callback) {
   return S_OK;
 }
 
-HRESULT UpdaterInternalImpl::InitializeUpdateService(
-    IUpdaterInternalCallback* callback) {
+HRESULT UpdaterInternalImpl::Hello(IUpdaterInternalCallback* callback) {
   using IUpdaterInternalCallbackPtr =
       Microsoft::WRL::ComPtr<IUpdaterInternalCallback>;
   scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
@@ -707,7 +706,7 @@ HRESULT UpdaterInternalImpl::InitializeUpdateService(
           [](scoped_refptr<UpdateServiceInternal> update_service_internal,
              scoped_refptr<base::SequencedTaskRunner> task_runner,
              IUpdaterInternalCallbackPtr callback) {
-            update_service_internal->InitializeUpdateService(base::BindOnce(
+            update_service_internal->Hello(base::BindOnce(
                 [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                    IUpdaterInternalCallbackPtr callback) {
                   task_runner->PostTaskAndReplyWithResult(
@@ -715,9 +714,8 @@ HRESULT UpdaterInternalImpl::InitializeUpdateService(
                       base::BindOnce(&IUpdaterInternalCallback::Run, callback,
                                      0),
                       base::BindOnce([](HRESULT hr) {
-                        VLOG(2)
-                            << "UpdaterInternalImpl::InitializeUpdateService "
-                            << "callback returned " << std::hex << hr;
+                        VLOG(2) << "UpdaterInternalImpl::Hello "
+                                << "callback returned " << std::hex << hr;
                       }));
                 },
                 task_runner, callback));

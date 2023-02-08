@@ -8,13 +8,11 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -141,17 +139,13 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
      * Implementation that talks with the Android connectivity manager service.
      */
     public class DelegateImpl implements Delegate {
-        @RequiresApi(Build.VERSION_CODES.M)
         @Override
         public @ConnectionState int inferConnectionStateFromSystem() {
             // NET_CAPABILITY_VALIDATED and NET_CAPABILITY_CAPTIVE_PORTAL are only available on
             // Marshmallow and later versions.
-            ConnectivityManager connectivityManager = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                connectivityManager =
-                        (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
-                                Context.CONNECTIVITY_SERVICE);
-            }
+            ConnectivityManager connectivityManager =
+                    (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.CONNECTIVITY_SERVICE);
 
             if (connectivityManager == null) return ConnectionState.NONE;
 

@@ -307,7 +307,8 @@ LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
 void LocalFrame::Init(Frame* opener,
                       const DocumentToken& document_token,
                       std::unique_ptr<PolicyContainer> policy_container,
-                      const StorageKey& storage_key) {
+                      const StorageKey& storage_key,
+                      ukm::SourceId document_ukm_source_id) {
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -319,7 +320,8 @@ void LocalFrame::Init(Frame* opener,
   mojo_handler_ = MakeGarbageCollected<LocalFrameMojoHandler>(*this);
 
   SetOpenerDoNotNotify(opener);
-  loader_.Init(document_token, std::move(policy_container), storage_key);
+  loader_.Init(document_token, std::move(policy_container), storage_key,
+               document_ukm_source_id);
 }
 
 void LocalFrame::SetView(LocalFrameView* view) {
@@ -1661,8 +1663,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   }
 
   const bool target_escapes_fenced_frame =
-      IsInFencedFrameTree() && (Tree().Top(FrameTreeBoundary::kFenced) !=
-                                Tree().Top(FrameTreeBoundary::kFenced));
+      IsInFencedFrameTree() && (Tree().Top() != Tree().Top());
 
   // If the target frame is outside the fenced frame, the only way that should
   // be possible is through the '_unfencedTop' reserved frame name.
@@ -1709,8 +1710,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // Sandboxed frames can also navigate popups, if the
     // 'allow-sandbox-escape-via-popup' flag is specified, or if
     // 'allow-popups' flag is specified and the popup's opener is the frame.
-    if (target_is_outermost_frame &&
-        target_frame != Tree().Top(FrameTreeBoundary::kIgnoreFence) &&
+    if (target_is_outermost_frame && target_frame != Tree().Top() &&
         GetSecurityContext()->IsSandboxed(
             network::mojom::blink::WebSandboxFlags::
                 kPropagatesToAuxiliaryBrowsingContexts) &&
@@ -1729,7 +1729,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // then if the ancestor chain allowed to navigate the top frame.
     // Note: We don't check root fenced frames for kTop* flags since the kTop*
     // flags imply the actual top-level page.
-    if ((target_frame == Tree().Top(FrameTreeBoundary::kIgnoreFence)) &&
+    if ((target_frame == Tree().Top()) &&
         !target_frame.GetPage()->IsMainFrameFencedFrameRoot()) {
       if (GetSecurityContext()->IsSandboxed(
               network::mojom::blink::WebSandboxFlags::kTopNavigation) &&
@@ -1848,9 +1848,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (!target_domain.empty() && !destination_domain.empty() &&
         target_domain == destination_domain &&
         (target_frame.GetSecurityContext()->GetSecurityOrigin()->Protocol() ==
-             destination_url.Protocol() ||
-         !base::FeatureList::IsEnabled(
-             features::kBlockCrossOriginTopNavigationToDiffentScheme))) {
+             destination_url.Protocol())) {
       return true;
     }
 
@@ -1877,10 +1875,13 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
   return false;
 }
 
-void LocalFrame::WillPotentiallyStartNavigation(const KURL& url) const {
-  TRACE_EVENT1("navigation", "LocalFrame::WillPotentiallyStartNavigation",
+void LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation(
+    const KURL& url) const {
+  TRACE_EVENT1("navigation",
+               "LocalFrame::WillPotentiallyStartOutermostMainFrameNavigation",
                "url", url);
-  GetLocalFrameHostRemote().WillPotentiallyStartNavigation(url);
+  mojo_handler_->NonAssociatedLocalFrameHostRemote()
+      .WillPotentiallyStartOutermostMainFrameNavigation(url);
 }
 
 ContentCaptureManager* LocalFrame::GetOrResetContentCaptureManager() {
@@ -2520,7 +2521,41 @@ void LocalFrame::SetContextPaused(bool is_paused) {
 bool LocalFrame::SwapIn() {
   DCHECK(IsProvisional());
   WebLocalFrameClient* client = Client()->GetWebFrame()->Client();
-  return client->SwapIn(WebFrame::FromCoreFrame(GetProvisionalOwnerFrame()));
+  // Swap in `this`, which is a provisional frame to an existing frame.
+  Frame* provisional_owner_frame = GetProvisionalOwnerFrame();
+
+  // First, check if there's a previous main frame to be used for a main frame
+  // LocalFrame <-> LocalFrame swap.
+  if (Frame* previous_local_main_frame =
+          GetPage()->TakePreviousMainFrameForLocalSwap()) {
+    // We're about to do a LocalFrame <-> LocalFrame swap for a provisional
+    // main frame, where the previous main frame and the provisional main frame
+    // are in different Pages. The provisional frame's owner is set to the
+    // placeholder main RemoteFrame for the new Page, but we should trigger the
+    // swapping out of the previous Page's main frame instead here.
+    // This is because we want to preserve the behavior before RenderDocument,
+    // where we would unload the previous document before the next document on
+    // same-LocalFrame cross-document navigation, and also transfer some state
+    // from the previous document to the new one.
+    // The placeholder main RemoteFrame for the new Page will also get detached
+    // so that the new main LocalFrame can be swapped in, but that will be done
+    // a bit later on in `Frame::SwapImpl()`, as we don't need to transfer any
+    // data from the placeholder RemoteFrame.
+    CHECK(IsMainFrame());
+    CHECK(previous_local_main_frame->IsLocalFrame());
+    CHECK_NE(previous_local_main_frame->GetPage(), GetPage());
+    CHECK(provisional_owner_frame->IsRemoteFrame());
+    CHECK(!DynamicTo<RemoteFrame>(provisional_owner_frame)
+               ->IsRemoteFrameHostRemoteBound());
+    return client->SwapIn(WebFrame::FromCoreFrame(previous_local_main_frame));
+  }
+
+  // In all other cases, the LocalFrame would be swapped in with the provisional
+  // owner frame which belongs to the same Page as `this`. The provisional owner
+  // frame can be a RemoteFrame or a LocalFrame (for non-main frame
+  // LocalFrame <-> LocalFrame swap cases).
+  CHECK_EQ(provisional_owner_frame->GetPage(), GetPage());
+  return client->SwapIn(WebFrame::FromCoreFrame(provisional_owner_frame));
 }
 
 void LocalFrame::LoadJavaScriptURL(const KURL& url) {
@@ -2590,12 +2625,13 @@ LocalFrameToken LocalFrame::GetLocalFrameToken() const {
 }
 
 LoaderFreezeMode LocalFrame::GetLoaderFreezeMode() {
-  if (GetPage()->GetPageScheduler()->IsInBackForwardCache() &&
-      IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
-    return LoaderFreezeMode::kBufferIncoming;
-  }
-  if (paused_ || frozen_)
+  if (paused_ || frozen_) {
+    if (GetPage()->GetPageScheduler()->IsInBackForwardCache() &&
+        IsInflightNetworkRequestBackForwardCacheSupportEnabled()) {
+      return LoaderFreezeMode::kBufferIncoming;
+    }
     return LoaderFreezeMode::kStrict;
+  }
   return LoaderFreezeMode::kNone;
 }
 
@@ -2633,6 +2669,15 @@ void LocalFrame::DidFreeze() {
 void LocalFrame::DidResume() {
   TRACE_EVENT0("blink", "LocalFrame::DidResume");
   DCHECK(IsAttached());
+  // Before doing anything, set the "is in BFCache" state to false. This might
+  // affect calculations of other states triggered by the code below, e.g. the
+  // LoaderFreezeMode.
+  DomWindow()->SetIsInBackForwardCache(false);
+
+  // TODO(yuzus): Figure out if we should call GetLoaderFreezeMode().
+  GetDocument()->Fetcher()->SetDefersLoading(LoaderFreezeMode::kNone);
+  Loader().SetDefersLoading(LoaderFreezeMode::kNone);
+
   const base::TimeTicks resume_event_start = base::TimeTicks::Now();
   GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
   const base::TimeTicks resume_event_end = base::TimeTicks::Now();
@@ -2645,12 +2690,6 @@ void LocalFrame::DidResume() {
     document_resource_coordinator->SetLifecycleState(
         performance_manager::mojom::LifecycleState::kRunning);
   }
-
-  // TODO(yuzus): Figure out if we should call GetLoaderFreezeMode().
-  GetDocument()->Fetcher()->SetDefersLoading(LoaderFreezeMode::kNone);
-  Loader().SetDefersLoading(LoaderFreezeMode::kNone);
-
-  DomWindow()->SetIsInBackForwardCache(false);
 
   // TODO(yuzus): Figure out where these calls should really belong.
   GetDocument()->DispatchHandleLoadStart();

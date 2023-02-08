@@ -6,9 +6,11 @@
 
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/types/expected.h"
 #include "components/web_package/input_reader.h"
 #include "components/web_package/mojom/web_bundle_parser.mojom-forward.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
+#include "components/web_package/signed_web_bundles/ed25519_signature.h"
 #include "components/web_package/web_bundle_parser.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
@@ -275,32 +277,31 @@ void IntegrityBlockParser::ReadSignatureStackEntryAttributesPublicKeyValue(
     uint64_t offset_in_stream,
     const uint64_t signature_stack_entries_left,
     mojom::BundleIntegrityBlockSignatureStackEntryPtr signature_stack_entry,
-    const absl::optional<std::vector<uint8_t>>& public_key) {
-  if (!public_key) {
+    const absl::optional<std::vector<uint8_t>>& public_key_bytes) {
+  if (!public_key_bytes) {
     RunErrorCallbackAndDestroy(
         "Error reading signature stack entry's public key.");
     return;
   }
-  if (public_key->size() != Ed25519PublicKey::kLength) {
-    RunErrorCallbackAndDestroy(
-        base::StringPrintf("The public key does not have the correct length, "
-                           "expected %zu bytes.",
-                           Ed25519PublicKey::kLength));
+  base::expected<Ed25519PublicKey, std::string> public_key =
+      Ed25519PublicKey::Create(*public_key_bytes);
+  if (!public_key.has_value()) {
+    RunErrorCallbackAndDestroy(public_key.error());
     return;
   }
 
   // Keep track of the raw CBOR bytes of both the complete signature stack entry
   // and its attributes.
   signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(), public_key->begin(),
-      public_key->end());
+      signature_stack_entry->complete_entry_cbor.end(),
+      public_key_bytes->begin(), public_key_bytes->end());
   signature_stack_entry->attributes_cbor.insert(
-      signature_stack_entry->attributes_cbor.end(), public_key->begin(),
-      public_key->end());
+      signature_stack_entry->attributes_cbor.end(), public_key_bytes->begin(),
+      public_key_bytes->end());
 
   signature_stack_entry->public_key = *public_key;
 
-  offset_in_stream += public_key->size();
+  offset_in_stream += public_key_bytes->size();
   data_source_->Read(
       offset_in_stream, kMaxCBORItemHeaderSize,
       base::BindOnce(
@@ -354,23 +355,30 @@ void IntegrityBlockParser::ParseSignatureStackEntrySignature(
     uint64_t offset_in_stream,
     uint64_t signature_stack_entries_left,
     mojom::BundleIntegrityBlockSignatureStackEntryPtr signature_stack_entry,
-    const absl::optional<std::vector<uint8_t>>& signature) {
-  if (!signature) {
+    const absl::optional<std::vector<uint8_t>>& signature_bytes) {
+  if (!signature_bytes.has_value()) {
     RunErrorCallbackAndDestroy(
         "Error reading signature-stack entry signature.");
     return;
   }
 
+  base::expected<Ed25519Signature, std::string> signature =
+      Ed25519Signature::Create(*signature_bytes);
+  if (!signature.has_value()) {
+    RunErrorCallbackAndDestroy(signature.error());
+    return;
+  }
+
   // Keep track of the raw CBOR bytes of the complete signature stack entry.
   signature_stack_entry->complete_entry_cbor.insert(
-      signature_stack_entry->complete_entry_cbor.end(), signature->begin(),
-      signature->end());
+      signature_stack_entry->complete_entry_cbor.end(),
+      signature_bytes->begin(), signature_bytes->end());
 
   signature_stack_entry->signature = *signature;
 
   signature_stack_.emplace_back(std::move(signature_stack_entry));
 
-  offset_in_stream += signature->size();
+  offset_in_stream += signature_bytes->size();
 
   DCHECK(signature_stack_entries_left > 0);
   --signature_stack_entries_left;

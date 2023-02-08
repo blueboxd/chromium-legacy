@@ -6,19 +6,18 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
-#include "chrome/browser/ash/login/saml/in_session_password_sync_manager.h"
-#include "chrome/browser/ash/login/saml/in_session_password_sync_manager_factory.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/test_condition_waiter.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_captive_portal_dialog.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_network_dialog.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_network_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_reauth_dialogs.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_start_reauth_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_captive_portal_dialog.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_dialog.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_reauth_dialogs.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +25,7 @@
 namespace ash {
 
 namespace {
+
 // Main dialog
 const test::UIPath kSamlContainer = {"main-element", "body"};
 const test::UIPath kMainVerifyButton = {"main-element",
@@ -35,6 +35,7 @@ const test::UIPath kMainCancelButton = {"main-element",
 const test::UIPath kErrorCancelButton = {"main-element",
                                          "cancelButtonErrorScreen"};
 const test::UIPath kSamlCancelButton = {"main-element", "saml-close-button"};
+const test::UIPath kChangeIdPButton = {"main-element", "change-account"};
 const test::UIPath kMainScreen = {"main-element", "verifyAccountScreen"};
 const test::UIPath kErrorScreen = {"main-element", "errorScreen"};
 const test::UIPath kSamlConfirmPasswordScreen = {"main-element",
@@ -49,6 +50,7 @@ const char kSigninFrame[] = "signin-frame";
 // Network dialog
 const test::UIPath kNetworkDialog = {"network-ui", "dialog"};
 const test::UIPath kNetworkCancelButton = {"network-ui", "cancelButton"};
+
 }  // namespace
 
 LockScreenReauthDialogTestHelper::LockScreenReauthDialogTestHelper() = default;
@@ -99,24 +101,14 @@ bool LockScreenReauthDialogTestHelper::ShowDialogAndWaitImpl() {
     return false;
   }
 
-  // The screen can only be locked if there is an active user session, so
-  // ProfileManager::GetActiveUserProfile() must return a non-null Profile.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  CHECK(profile);
-  password_sync_manager_ =
-      InSessionPasswordSyncManagerFactory::GetForProfile(profile);
-  if (!password_sync_manager_) {
-    ADD_FAILURE() << "Could not retrieve InSessionPasswordSyncManager";
-    return false;
-  }
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       prefs::kLockScreenReauthenticationEnabled, true);
-  password_sync_manager_->CreateAndShowDialog();
 
-  WaitForReauthDialogToLoad();
+  LockScreenStartReauthDialog::Show();
 
   // Fetch the dialog, WebUi controller and main message handler.
-  reauth_dialog_ = password_sync_manager_->get_reauth_dialog_for_testing();
+  reauth_dialog_ = LockScreenStartReauthDialog::GetInstance();
+  WaitForReauthDialogToLoad();
   if (!reauth_dialog_ || !reauth_dialog_->GetWebUIForTest()) {
     ADD_FAILURE() << "Could not retrieve LockScreenStartReauthDialog";
     return false;
@@ -167,6 +159,11 @@ void LockScreenReauthDialogTestHelper::ClickCancelButtonOnSamlScreen() {
   DialogJS().TapOnPath(kSamlCancelButton);
 }
 
+void LockScreenReauthDialogTestHelper::ClickChangeIdPButtonOnSamlScreen() {
+  ExpectSamlScreenVisible();
+  DialogJS().TapOnPath(kChangeIdPButton);
+}
+
 void LockScreenReauthDialogTestHelper::WaitForSamlScreen() {
   WaitForAuthenticatorToLoad();
   DialogJS().CreateVisibilityWaiter(true, kSamlContainer)->Wait();
@@ -192,6 +189,10 @@ void LockScreenReauthDialogTestHelper::ExpectSamlScreenVisible() {
 
 void LockScreenReauthDialogTestHelper::ExpectSamlScreenHidden() {
   DialogJS().ExpectHiddenPath(kSamlContainer);
+}
+
+void LockScreenReauthDialogTestHelper::ExpectGaiaScreenVisible() {
+  DialogJS().ExpectAttributeEQ("isDefaultSsoProvider", {"main-element"}, false);
 }
 
 void LockScreenReauthDialogTestHelper::ExpectSamlConfirmPasswordVisible() {
@@ -270,16 +271,14 @@ void LockScreenReauthDialogTestHelper::WaitForAuthenticatorToLoad() {
 
 void LockScreenReauthDialogTestHelper::WaitForReauthDialogToClose() {
   base::RunLoop run_loop;
-  if (!password_sync_manager_->IsReauthDialogClosedForTesting(
-          run_loop.QuitClosure())) {
+  if (!reauth_dialog_->IsClosedForTesting(run_loop.QuitClosure())) {
     run_loop.Run();
   }
 }
 
 void LockScreenReauthDialogTestHelper::WaitForReauthDialogToLoad() {
   base::RunLoop run_loop;
-  if (!password_sync_manager_->IsReauthDialogLoadedForTesting(
-          run_loop.QuitClosure())) {
+  if (!reauth_dialog_->IsLoadedForTesting(run_loop.QuitClosure())) {
     run_loop.Run();
   }
 }

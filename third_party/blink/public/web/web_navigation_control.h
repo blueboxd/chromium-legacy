@@ -19,6 +19,9 @@ class WebSecurityOrigin;
 class WebURL;
 struct WebNavigationInfo;
 struct WebNavigationParams;
+namespace scheduler {
+class TaskAttributionId;
+}  // namespace scheduler
 
 // This interface gives control to navigation-related functionality of
 // WebLocalFrame. It is separated from WebLocalFrame to give precise control
@@ -29,7 +32,7 @@ class WebNavigationControl : public WebLocalFrame {
   ~WebNavigationControl() override {}
 
   // Runs beforeunload handlers for this frame and its local descendants.
-  // Returns |true| if all the frames agreed to proceed with unloading
+  // Returns `true` if all the frames agreed to proceed with unloading
   // from their respective event handlers.
   // Note: this may lead to the destruction of the frame.
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
@@ -44,7 +47,7 @@ class WebNavigationControl : public WebLocalFrame {
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   // Commits a same-document navigation in the frame. For history navigations,
-  // a valid WebHistoryItem should be provided. |initiator_origin| is null
+  // a valid WebHistoryItem should be provided. `initiator_origin` is null
   // for browser-initiated navigations. Returns CommitResult::Ok if the
   // navigation has actually committed.
   virtual mojom::CommitResult CommitSameDocumentNavigation(
@@ -54,7 +57,9 @@ class WebNavigationControl : public WebLocalFrame {
       bool is_client_redirect,
       bool has_transient_user_activation,
       const WebSecurityOrigin& initiator_origin,
-      bool is_browser_initiated) = 0;
+      bool is_browser_initiated,
+      absl::optional<scheduler::TaskAttributionId>
+          soft_navigation_heuristics_task_id) = 0;
 
   // Override the normal rules that determine whether the frame is on the
   // initial empty document or not. Used to propagate state when this frame has
@@ -62,7 +67,15 @@ class WebNavigationControl : public WebLocalFrame {
   virtual void SetIsNotOnInitialEmptyDocument() = 0;
   virtual bool IsOnInitialEmptyDocument() = 0;
 
-  virtual void WillPotentiallyStartNavigation(const WebURL&) const = 0;
+  // Notifies that a renderer-initiated navigation to `url` will
+  // potentially start soon. This is fired before the beforeunload event
+  // (if it's needed) gets dispatched in the renderer, so that the
+  // browser can speculatively start service worker before processing
+  // beforeunload event, which might take a long time. Note that the
+  // navigation might not actually start, e.g. if it gets canceled by
+  // beforeunload.
+  virtual void WillPotentiallyStartOutermostMainFrameNavigation(
+      const WebURL&) const = 0;
 
   // Marks the frame as loading, before WebLocalFrameClient issues a navigation
   // request through the browser process on behalf of the frame.

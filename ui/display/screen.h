@@ -52,7 +52,8 @@ class DISPLAY_EXPORT Screen {
 
   // Retrieves the single Screen object; this may be null if it's not already
   // created, except for IOS where it creates a native screen instance
-  // automatically.
+  // automatically. On ChromeOS ash the return value is only null on startup.
+
   static Screen* GetScreen();
 
   // Returns whether a Screen singleton exists or not.
@@ -121,7 +122,7 @@ class DISPLAY_EXPORT Screen {
   Display GetDisplayForNewWindows() const;
 
   // Sets the suggested display to use when creating a new window.
-  void SetDisplayForNewWindows(int64_t display_id);
+  virtual void SetDisplayForNewWindows(int64_t display_id);
 
   // Returns ScreenInfos, attempting to set the current ScreenInfo to the
   // display corresponding to `nearest_id`.  The returned result is guaranteed
@@ -201,8 +202,19 @@ class DISPLAY_EXPORT Screen {
   virtual TabletState GetTabletState() const;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Overrides tablet state stored in screen and notifies observers only on
+  // Lacros side.
+  // Not that this method may make tablet state out-of-sync with Ash side.
+  virtual void OverrideTabletStateForTesting(
+      display::TabletState tablet_state) {}
+#endif
+
  protected:
   void set_shutdown(bool shutdown) { shutdown_ = shutdown; }
+  int64_t display_id_for_new_windows() const {
+    return display_id_for_new_windows_;
+  }
 
  private:
   friend class ScopedDisplayForNewWindows;

@@ -17,12 +17,12 @@
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/session/arc_activation_necessity_checker.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -71,6 +71,7 @@ class ArcActivationNecessityCheckerTest : public testing::Test {
     profile_ = profile_builder.Build();
     profile_->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
     profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcPackagesIsUpToDate, true);
 
     const AccountId account_id(AccountId::FromUserEmailGaiaId(
         profile_->GetProfileUserName(), "1234567890"));
@@ -146,6 +147,14 @@ TEST_F(ArcActivationNecessityCheckerTest, UnmanagedUser) {
 
 TEST_F(ArcActivationNecessityCheckerTest, AdbSideloadingIsAvailable) {
   adb_sideloading_availability_delegate_.set_result(true);
+  base::test::TestFuture<bool> future;
+  checker_->Check(future.GetCallback());
+  EXPECT_TRUE(future.Get());
+}
+
+TEST_F(ArcActivationNecessityCheckerTest, PacakgeListIsNotUpToDate) {
+  profile_->GetPrefs()->SetBoolean(prefs::kArcPackagesIsUpToDate, false);
+
   base::test::TestFuture<bool> future;
   checker_->Check(future.GetCallback());
   EXPECT_TRUE(future.Get());

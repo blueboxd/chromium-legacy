@@ -75,23 +75,12 @@ extern const int kGridHeaderValueColor;
 // The space between different labels inside the GridHeader.
 extern const CGFloat kGridHeaderContentSpacing;
 
-// GridCell styling.
-// All kxxxColor constants after this are RGB values stored in a Hex integer.
-// These will be converted into UIColors using the UIColorFromRGB() function,
-// from uikit_ui_util.h.
-// TODO(crbug.com/981889): remove with iOS 12.
-// Extra dark theme colors until iOS 12 gets removed.
-extern const int kGridDarkThemeCellTitleColor;
-extern const int kGridDarkThemeCellDetailColor;
-extern const CGFloat kGridDarkThemeCellDetailAlpha;
-extern const int kGridDarkThemeCellTintColor;
-extern const int kGridDarkThemeCellSolidButtonTextColor;
-
 // GridCell dimensions.
 extern const CGSize kGridCellSizeSmall;
 extern const CGSize kGridCellSizeMedium;
 extern const CGSize kGridCellSizeLarge;
 extern const CGSize kGridCellSizeAccessibility;
+extern const CGFloat kLegacyGridCellCornerRadius;
 extern const CGFloat kGridCellCornerRadius;
 extern const CGFloat kGridCellIconCornerRadius;
 // The cell header contains the icon, title, and close button.
@@ -100,9 +89,11 @@ extern const CGFloat kGridCellHeaderAccessibilityHeight;
 extern const CGFloat kGridCellHeaderLeadingInset;
 extern const CGFloat kGridCellCloseTapTargetWidthHeight;
 extern const CGFloat kGridCellCloseButtonContentInset;
+extern const CGFloat kGridCellCloseButtonTopSpacing;
 extern const CGFloat kGridCellTitleLabelContentInset;
 extern const CGFloat kGridCellIconDiameter;
 extern const CGFloat kGridCellSelectIconContentInset;
+extern const CGFloat kGridCellSelectIconTopSpacing;
 extern const CGFloat kGridCellSelectIconSize;
 extern const CGFloat kGridCellSelectionRingGapWidth;
 extern const CGFloat kGridCellSelectionRingTintWidth;

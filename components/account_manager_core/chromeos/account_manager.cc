@@ -21,9 +21,7 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "components/account_manager_core/account.h"
 #include "components/account_manager_core/chromeos/tokens.pb.h"
@@ -150,7 +148,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
     // We cannot call |AccountManager::DeletePendingTokenRevocationRequest|
     // directly because it will immediately start deleting |this|, before the
     // method has had a chance to return.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&AccountManager::DeletePendingTokenRevocationRequest,
                        account_manager_, this));
@@ -256,7 +254,7 @@ class AccountManager::AccessTokenFetcher : public OAuth2AccessTokenFetcher {
   }
 
   const ::account_manager::AccountKey account_key_;
-  const raw_ptr<AccountManager> account_manager_;
+  const raw_ptr<AccountManager, DanglingUntriaged> account_manager_;
   const raw_ptr<OAuth2AccessTokenConsumer> consumer_;
 
   bool are_token_requests_allowed_ = false;
@@ -363,8 +361,8 @@ void AccountManager::Initialize(
 
   if (!IsEphemeralMode()) {
     DCHECK(task_runner_);
-    PostTaskAndReplyWithResult(
-        task_runner_.get(), FROM_HERE,
+    task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&AccountManager::LoadAccountsFromDisk, tokens_file_path),
         base::BindOnce(
             &AccountManager::InsertAccountsAndRunInitializationCallbacks,

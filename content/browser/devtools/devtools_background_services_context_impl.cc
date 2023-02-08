@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/guid.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -31,16 +30,6 @@ std::string CreateEntryKeyPrefix(devtools::proto::BackgroundService service) {
 
 std::string CreateEntryKey(devtools::proto::BackgroundService service) {
   return CreateEntryKeyPrefix(service) + base::GenerateGUID();
-}
-
-void DidLogServiceEvent(blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.LogEvent", status);
-}
-
-void DidClearServiceEvents(blink::ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.ClearEvents", status);
 }
 
 constexpr devtools::proto::BackgroundService ServiceToProtoEnum(
@@ -162,8 +151,6 @@ void DevToolsBackgroundServicesContextImpl::DidGetUserData(
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UMA_HISTOGRAM_ENUMERATION("DevTools.BackgroundService.GetEvents", status);
-
   std::vector<devtools::proto::BackgroundServiceEvent> events;
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
@@ -197,12 +184,12 @@ void DevToolsBackgroundServicesContextImpl::ClearLoggedBackgroundServiceEvents(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   service_worker_context_->ClearUserDataForAllRegistrationsByKeyPrefix(
-      CreateEntryKeyPrefix(service), base::BindOnce(&DidClearServiceEvents));
+      CreateEntryKeyPrefix(service), base::DoNothing());
 }
 
 void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEvent(
     uint64_t service_worker_registration_id,
-    const url::Origin& origin,
+    blink::StorageKey storage_key,
     DevToolsBackgroundService service,
     const std::string& event_name,
     const std::string& instance_id,
@@ -222,7 +209,8 @@ void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEvent(
   devtools::proto::BackgroundServiceEvent event;
   event.set_timestamp(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
-  event.set_origin(origin.GetURL().spec());
+  event.set_origin(storage_key.origin().GetURL().spec());
+  event.set_storage_key(storage_key.Serialize());
   event.set_service_worker_registration_id(service_worker_registration_id);
   event.set_background_service(ServiceToProtoEnum(service));
   event.set_event_name(event_name);
@@ -233,9 +221,9 @@ void DevToolsBackgroundServicesContextImpl::LogBackgroundServiceEvent(
   // TODO(crbug.com/1199077): Update this when
   // DevToolsBackgroundServicesContextImpl implements StorageKey.
   service_worker_context_->StoreRegistrationUserData(
-      service_worker_registration_id, blink::StorageKey(origin),
+      service_worker_registration_id, storage_key,
       {{CreateEntryKey(event.background_service()), event.SerializeAsString()}},
-      base::BindOnce(&DidLogServiceEvent));
+      base::DoNothing());
 
   NotifyEventObservers(std::move(event));
 }

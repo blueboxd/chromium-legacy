@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/net/cert_manager.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
@@ -23,6 +24,7 @@
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_service.pb.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/client_cert_util.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
@@ -34,7 +36,6 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -84,7 +85,7 @@ ash::NetworkProfileHandler* GetNetworkProfileHandler() {
 
 const ash::NetworkProfile* GetNetworkProfile() {
   return GetNetworkProfileHandler()->GetProfileForUserhash(
-      chromeos::LoginState::Get()->primary_user_hash());
+      ash::LoginState::Get()->primary_user_hash());
 }
 
 std::vector<const ash::NetworkState*> GetHostActiveNetworks() {
@@ -189,7 +190,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
 
   // The remaining cases defined in shill dbus-constants are legacy values from
   // Flimflam and are not expected to be encountered. These are: kStateCarrier,
-  // kStateActivationFailure, and kStateOffline.
+  // and kStateOffline.
   NOTREACHED() << "Unknown connection state: " << state;
   return arc::mojom::ConnectionStateType::NOT_CONNECTED;
 }
@@ -362,6 +363,7 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
         TranslateWiFiSecurity(network_state->security_class());
     mojo->wifi->frequency = network_state->frequency();
     mojo->wifi->signal_strength = network_state->signal_strength();
+    mojo->wifi->rssi = network_state->rssi();
     if (shill_dict) {
       mojo->wifi->hidden_ssid =
           shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
@@ -620,6 +622,18 @@ void ArcNetHostImpl::OnConnectionReady() {
 
   // Listen on network configuration changes.
   ash::PatchPanelClient::Get()->AddObserver(this);
+
+  SetUpFlags();
+}
+
+void ArcNetHostImpl::SetUpFlags() {
+  auto* net_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->net(), SetUpFlag);
+  if (!net_instance)
+    return;
+
+  net_instance->SetUpFlag(arc::mojom::Flag::ENABLE_ARC_HOST_VPN,
+                          base::FeatureList::IsEnabled(arc::kEnableArcHostVpn));
 }
 
 void ArcNetHostImpl::OnConnectionClosed() {
@@ -795,7 +809,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
         base::Value::FromUniquePtrValue(std::move(ipconfig_dict)));
   }
 
-  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  std::string user_id_hash = ash::LoginState::Get()->primary_user_hash();
   // TODO(crbug.com/730593): Remove SplitOnceCallback() by updating
   // the callee interface.
   auto split_callback = base::SplitOnceCallback(std::move(callback));
@@ -1058,7 +1072,7 @@ void ArcNetHostImpl::AndroidVpnConnected(
     return;
   }
 
-  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  std::string user_id_hash = ash::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
       base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,

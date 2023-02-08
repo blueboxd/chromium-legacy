@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversion_utils.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/pdf/renderer/pdf_ax_action_target.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/renderer/render_accessibility.h"
@@ -68,11 +68,11 @@ class PdfOcrService final {
   // Sends the given image to the Screen AIService for processing.
   bool ScheduleImageProcessing(
       const chrome_pdf::AccessibilityImageInfo& image,
-      screen_ai::mojom::ScreenAIAnnotator::AnnotateCallback callback) {
+      screen_ai::mojom::ScreenAIAnnotator::PerformOcrCallback callback) {
     if (!screen_ai_annotator_.is_bound())
       return false;
-    screen_ai_annotator_->Annotate(image.image_data, parent_tree_id_,
-                                   std::move(callback));
+    screen_ai_annotator_->PerformOcr(image.image_data, parent_tree_id_,
+                                     std::move(callback));
     return true;
   }
 
@@ -1227,9 +1227,12 @@ PdfAccessibilityTree::PdfAccessibilityTree(
   if (features::IsPdfOcrEnabled() && render_frame) {
     content::RenderAccessibility* render_accessibility =
         GetRenderAccessibilityIfEnabled();
-    DCHECK(render_accessibility);
-    ocr_service_ = std::make_unique<PdfOcrService>(
-        render_accessibility->GetTreeIDForPluginHost(), *render_frame);
+    // PdfAccessibilityTree is created even when accessibility services are not
+    // enabled and we rely on them to use PdfOcr service.
+    if (render_accessibility) {
+      ocr_service_ = std::make_unique<PdfOcrService>(
+          render_accessibility->GetTreeIDForPluginHost(), *render_frame);
+    }
   }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 }
@@ -1390,7 +1393,7 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
     chrome_pdf::AccessibilityViewportInfo viewport_info) {
   // This call may trigger layout, and ultimately self-deletion; see
   // crbug.com/1274376 for details.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PdfAccessibilityTree::DoSetAccessibilityViewportInfo,
                      GetWeakPtr(), std::move(viewport_info)));
@@ -1426,7 +1429,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
     chrome_pdf::AccessibilityDocInfo doc_info) {
   // This call may trigger layout, and ultimately self-deletion; see
   // crbug.com/1274376 for details.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PdfAccessibilityTree::DoSetAccessibilityDocInfo,
                      GetWeakPtr(), std::move(doc_info)));
@@ -1462,7 +1465,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     chrome_pdf::AccessibilityPageObjects page_objects) {
   // This call may trigger layout, and ultimately self-deletion; see
   // crbug.com/1274376 for details.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&PdfAccessibilityTree::DoSetAccessibilityPageInfo,
                      GetWeakPtr(), std::move(page_info), std::move(text_runs),

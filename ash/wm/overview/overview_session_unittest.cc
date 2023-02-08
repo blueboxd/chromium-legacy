@@ -34,11 +34,13 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_util.h"
 #include "ash/test/test_window_builder.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
+#include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -3450,19 +3452,14 @@ INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
 
 class FloatOverviewSessionTest : public OverviewTestBase {
  public:
-  FloatOverviewSessionTest() = default;
+  FloatOverviewSessionTest()
+      : scoped_feature_list_(chromeos::wm::features::kFloatWindow) {}
   FloatOverviewSessionTest(const FloatOverviewSessionTest&) = delete;
   FloatOverviewSessionTest& operator=(const FloatOverviewSessionTest&) = delete;
   ~FloatOverviewSessionTest() override = default;
 
-  // OverviewTestBase:
-  void SetUp() override {
-    feature_list.InitAndEnableFeature(chromeos::wm::features::kFloatWindow);
-    OverviewTestBase::SetUp();
-  }
-
  private:
-  base::test::ScopedFeatureList feature_list;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that when we drag in overview, and there is a floated window, the
@@ -3510,20 +3507,17 @@ TEST_F(FloatOverviewSessionTest, DraggingWithFloatedWindow) {
   generator->ReleaseLeftButton();
 
   // Start dragging the regular window. Check that the float container gets
-  // stacked under the desk container.
+  // stacked under the desk container after dragging starts.
   generator->set_current_screen_location(
       gfx::ToRoundedPoint(normal_item->target_bounds().CenterPoint()));
   generator->PressLeftButton();
+  generator->MoveMouseBy(10, 10);
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     EXPECT_TRUE(
         IsStackedBelow(root->GetChildById(kShellWindowId_FloatContainer),
                        root->GetChildById(kShellWindowId_DeskContainerA)));
   }
 
-  // Move the mouse a bit before releasing so that we stay in overview. We are
-  // no longer in a drag, and the float container is restacked between the
-  // always on top container and the app list container.
-  generator->MoveMouseBy(10, 10);
   generator->ReleaseLeftButton();
   ASSERT_TRUE(InOverviewSession());
   check_float_container_normal_stacked();
@@ -3537,6 +3531,61 @@ TEST_F(FloatOverviewSessionTest, DraggingWithFloatedWindow) {
   // `OverviewWindowDragController` gets deleted using `DeleteSoon()`.
   base::RunLoop().RunUntilIdle();
   check_float_container_normal_stacked();
+}
+
+// Tests that clicking the normal window to activate it does not result in a
+// crash. Regression test for b/258818000.
+TEST_F(FloatOverviewSessionTest, ClickingWithFloatedWindow) {
+  // Create one normal and one floated window.
+  auto normal_window = CreateAppWindow();
+  auto floated_window = CreateAppWindow();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  ToggleOverview();
+  OverviewItem* normal_item = GetOverviewItemForWindow(normal_window.get());
+  GetEventGenerator()->set_current_screen_location(
+      gfx::ToRoundedPoint(normal_item->target_bounds().CenterPoint()));
+  GetEventGenerator()->ClickLeftButton();
+}
+
+// Tests that dragging a normal window while there is a floated window to a new
+// desk does not result in a crash. Regression test for b/261757970.
+TEST_F(FloatOverviewSessionTest, DraggingToNewDeskWithFloatedWindow) {
+  // Create one normal and one floated window.
+  auto normal_window = CreateAppWindow();
+  auto floated_window = CreateAppWindow();
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  // Enter overview and start dragging on the normal window.
+  ToggleOverview();
+  OverviewItem* normal_item = GetOverviewItemForWindow(normal_window.get());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      gfx::ToRoundedPoint(normal_item->target_bounds().CenterPoint()));
+  generator->PressLeftButton();
+
+  // Drag the normal window to the new desk button; this will create a new desk
+  // and drop the normal window in it.
+  OverviewGrid* overview_grid =
+      GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  const auto* zero_state_new_desk_button =
+      desks_bar_view->zero_state_new_desk_button();
+  ASSERT_TRUE(zero_state_new_desk_button);
+  ASSERT_TRUE(zero_state_new_desk_button->GetVisible());
+  generator->DragMouseTo(
+      zero_state_new_desk_button->GetBoundsInScreen().CenterPoint());
+
+  // Check that a new desk has been created, and there should be no crash when
+  // dropping the window.
+  generator->ReleaseLeftButton();
+  auto* controller = DesksController::Get();
+  EXPECT_EQ(2u, controller->desks().size());
+  EXPECT_TRUE(
+      base::Contains(controller->desks()[1]->windows(), normal_window.get()));
 }
 
 class TabletModeOverviewSessionTest : public OverviewTestBase {
@@ -4615,7 +4664,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
 
   // Simulate a long press, which is required to snap windows.
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(2));
   run_loop.Run();
 
@@ -5580,7 +5629,7 @@ TEST_F(SplitViewOverviewSessionTest,
   generator->PressTouch();
   {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(2));
     run_loop.Run();
   }
@@ -5602,7 +5651,7 @@ TEST_F(SplitViewOverviewSessionTest,
   generator->PressTouch();
   {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(2));
     run_loop.Run();
   }

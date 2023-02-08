@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$} from 'chrome://resources/js/util.js';
+import {$} from 'chrome://resources/js/util_ts.js';
+
 import {millisecondsToString} from './util.js';
 
 /**
@@ -51,7 +52,9 @@ function createSelectableButton(
 }
 
 function selectSelectableButton(id) {
-  var element = $(id);
+  // |id| is usually not a valid selector for querySelector so we cannot use $
+  // here.
+  var element = document.getElementById(id);
   if (!element) {
     console.error('failed to select button with id: ' + id);
     return;

@@ -11,17 +11,17 @@ let instance: BookmarksApiProxy|null = null;
 
 export interface BookmarksApiProxy {
   callbackRouter: {[key: string]: ChromeEvent<Function>};
-  bookmarkCurrentTab(): void;
+  bookmarkCurrentTabInFolder(folderId: string): void;
   cutBookmark(id: string): void;
   copyBookmark(id: string): Promise<void>;
-  getTopLevelBookmarks(): Promise<chrome.bookmarks.BookmarkTreeNode[]>;
+  getActiveUrl(): Promise<string|undefined>;
   getFolders(): Promise<chrome.bookmarks.BookmarkTreeNode[]>;
   openBookmark(
       id: string, depth: number, clickModifiers: ClickModifiers,
       source: ActionSource): void;
   pasteToBookmark(parentId: string, destinationId?: string): Promise<void>;
   showContextMenu(id: string, x: number, y: number, source: ActionSource): void;
-  showUI(): void;
+  showUi(): void;
 }
 
 export class BookmarksApiProxyImpl implements BookmarksApiProxy {
@@ -35,6 +35,8 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
       onCreated: chrome.bookmarks.onCreated,
       onMoved: chrome.bookmarks.onMoved,
       onRemoved: chrome.bookmarks.onRemoved,
+      onTabActivated: chrome.tabs.onActivated,
+      onTabUpdated: chrome.tabs.onUpdated,
     };
 
     this.handler = new BookmarksPageHandlerRemote();
@@ -44,8 +46,8 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
         this.handler.$.bindNewPipeAndPassReceiver());
   }
 
-  bookmarkCurrentTab() {
-    this.handler.bookmarkCurrentTab();
+  bookmarkCurrentTabInFolder(folderId: string) {
+    this.handler.bookmarkCurrentTabInFolder(BigInt(folderId));
   }
 
   cutBookmark(id: string) {
@@ -58,21 +60,13 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
     });
   }
 
-  getTopLevelBookmarks() {
-    return new Promise<chrome.bookmarks.BookmarkTreeNode[]>(
-        resolve => chrome.bookmarks.getTree(results => {
-          if (results[0] && results[0].children) {
-            let allBookmarks: chrome.bookmarks.BookmarkTreeNode[] = [];
-            for (const child of results[0].children) {
-              if (child.children) {
-                allBookmarks = allBookmarks.concat(child.children);
-              }
-            }
-            resolve(allBookmarks);
-            return;
-          }
-          resolve([]);
-        }));
+  getActiveUrl() {
+    return chrome.tabs.query({active: true, currentWindow: true}).then(tabs => {
+      if (tabs[0]) {
+        return tabs[0].url;
+      }
+      return undefined;
+    });
   }
 
   getFolders() {
@@ -103,7 +97,7 @@ export class BookmarksApiProxyImpl implements BookmarksApiProxy {
     this.handler.showContextMenu(id, {x, y}, source);
   }
 
-  showUI() {
+  showUi() {
     this.handler.showUI();
   }
 

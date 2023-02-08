@@ -14,6 +14,7 @@
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/display/cursor_window_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_pref_service_provider.h"
@@ -68,6 +69,24 @@ class AccessibilityControllerTest : public AshTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+TEST_F(AccessibilityControllerTest, ChangingCursorSizePrefChangesCursorSize) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, true);
+
+  CursorWindowController* cursor_window_controller =
+      Shell::Get()->window_tree_host_manager()->cursor_window_controller();
+
+  // Test all possible sizes
+  for (int size = 25; size <= 64; ++size) {
+    prefs->SetInteger(prefs::kAccessibilityLargeCursorDipSize, size);
+    auto bounds = cursor_window_controller->GetBoundsForTest();
+    EXPECT_EQ(bounds.height(), size);
+    EXPECT_EQ(bounds.width(), size);
+  }
+}
 
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
@@ -879,6 +898,35 @@ TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, false);
   EXPECT_EQ(kDefaultLargeCursorSize,
             prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize));
+}
+
+TEST_F(AccessibilityControllerTest, ChangingCursorColorPrefChangesCursorColor) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+  // Simulate using chrome settings webui to set cursor color, which also turns
+  // on the cursor color enabled pref.
+  prefs->SetInteger(prefs::kAccessibilityCursorColor, SK_ColorBLUE);
+  prefs->SetBoolean(prefs::kAccessibilityCursorColorEnabled, true);
+
+  CursorWindowController* cursor_window_controller =
+      Shell::Get()->window_tree_host_manager()->cursor_window_controller();
+
+  // Expect cursor color in cursor_window_controller to be blue.
+  EXPECT_EQ(SK_ColorBLUE, cursor_window_controller->GetCursorColorForTest());
+
+  // Set cursor color pref to green.
+  prefs->SetInteger(prefs::kAccessibilityCursorColor, SK_ColorGREEN);
+
+  // Expect cursor color in cursor_window_controller to be green.
+  EXPECT_EQ(SK_ColorGREEN, cursor_window_controller->GetCursorColorForTest());
+
+  // Simulate using chrome settings webui to set cursor color to black, which
+  // which also turns off the cursor color enabled pref.
+  prefs->SetInteger(prefs::kAccessibilityCursorColor, 0);
+  prefs->SetBoolean(prefs::kAccessibilityCursorColorEnabled, false);
+  EXPECT_EQ(kDefaultCursorColor,
+            cursor_window_controller->GetCursorColorForTest());
 }
 
 TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {

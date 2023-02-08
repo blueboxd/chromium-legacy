@@ -52,7 +52,7 @@ class InsecureCredentialsManager : public SavedPasswordsPresenter::Observer {
   InsecureCredentialsManager(
       SavedPasswordsPresenter* presenter,
       scoped_refptr<PasswordStoreInterface> profile_store,
-      scoped_refptr<PasswordStoreInterface> account_store = nullptr);
+      scoped_refptr<PasswordStoreInterface> account_store);
   ~InsecureCredentialsManager() override;
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -87,9 +87,8 @@ class InsecureCredentialsManager : public SavedPasswordsPresenter::Observer {
                        base::flat_set<std::u16string> weak_passwords);
 
   // SavedPasswordsPresenter::Observer:
-  void OnEdited(const PasswordForm& form) override;
-  void OnSavedPasswordsChanged(
-      SavedPasswordsPresenter::SavedPasswordsView passwords) override;
+  void OnEdited(const CredentialUIEntry& credential) override;
+  void OnSavedPasswordsChanged() override;
 
   // Notifies observers when insecure credentials have changed.
   void NotifyInsecureCredentialsChanged();

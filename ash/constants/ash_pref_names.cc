@@ -1117,6 +1117,9 @@ const char kLoginScreenWebUILazyLoading[] =
 // Boolean value for the FloatingWorkspaceEnabled policy
 const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
 
+// Boolean value for the FloatingWorkspaceV2Enabled policy
+const char kFloatingWorkspaceV2Enabled[] = "ash.floating_workspace_v2_enabled";
+
 // Boolean value indicating that post reboot notification should be shown to the
 // user.
 const char kShowPostRebootNotification[] = "ash.show_post_reboot_notification";
@@ -1148,6 +1151,20 @@ const char kAutozoomNudges[] = "ash.camera.autozoom_nudges";
 // pref is set to `false`, the user data recovery is not activated. The default
 // value of the pref is `true`. Controlled by RecoveryFactorBehavior policy.
 const char kRecoveryFactorBehavior[] = "ash.recovery.recovery_factor_behavior";
+
+// Pref which stores ICCIDs of cellular networks that have been migrated to the
+// APN Revamp feature.
+const char kApnMigratedIccids[] = "ash.cellular.apn_migrated_iccids";
+
+// An integer pref that indicates the background blur level that is applied.
+// -1 means disabled.
+const char kBackgroundBlur[] = "ash.camera.background_blur";
+
+// An boolean pref that indicates whether background replacement is applied.
+const char kBackgroundReplace[] = "ash.camera.background_replace";
+
+// An boolean pref that indicates whether portrait relighting is applied.
+const char kPortraitRelighting[] = "ash.camera.portrait_relighting";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

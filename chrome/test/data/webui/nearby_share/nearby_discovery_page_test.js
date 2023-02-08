@@ -8,12 +8,12 @@ import 'chrome://nearby/nearby_discovery_page.js';
 
 import {setDiscoveryManagerForTesting} from 'chrome://nearby/discovery_manager.js';
 import {NearbyDiscoveryPageElement} from 'chrome://nearby/nearby_discovery_page.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {isVisible} from '../test_util.js';
+import {assertEquals, assertFalse, assertTrue} from '../chromeos/chai_assert.js';
+import {isVisible} from '../chromeos/test_util.js';
 
 import {FakeConfirmationManagerRemote, FakeDiscoveryManagerRemote} from './fake_mojo_interfaces.js';
 

@@ -97,9 +97,6 @@ void DumpAccessibilityTreeTest::SetUpCommandLine(
   // Enable accessibility object model, used in other tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
-  // Enable display locking, used in some tests.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "CSSContentVisibilityHiddenMatchable");
   // Enable HTMLSelectMenuElement, used by AccessibilitySelectMenu and
   // AccessibilitySelectMenuOpen.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -2087,20 +2084,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-empty-positioned.html"));
 }
 
-class DumpAccessibilityTreeFencedFrameShadowDOMTest
-    : public DumpAccessibilityTreeTest {
+class DumpAccessibilityTreeFencedFrameTest : public DumpAccessibilityTreeTest {
  protected:
-  DumpAccessibilityTreeFencedFrameShadowDOMTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}}},
-         {features::kPrivacySandboxAdsAPIsOverride, {}}},
-        {/* disabled_features */});
+  DumpAccessibilityTreeFencedFrameTest() {
+    feature_list_.InitWithFeatures({{blink::features::kFencedFrames},
+                                    {features::kPrivacySandboxAdsAPIsOverride}},
+                                   {/* disabled_features */});
 
     UseHttpsTestServer();
   }
 
-  ~DumpAccessibilityTreeFencedFrameShadowDOMTest() override {
+  ~DumpAccessibilityTreeFencedFrameTest() override {
     // Ensure that the feature lists are destroyed in the same order they
     // were created in.
     scoped_feature_list_.Reset();
@@ -2113,45 +2107,11 @@ class DumpAccessibilityTreeFencedFrameShadowDOMTest
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    DumpAccessibilityTreeFencedFrameShadowDOMTest,
+    DumpAccessibilityTreeFencedFrameTest,
     ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameShadowDOMTest,
-                       AccessibilityFencedFrameScrollable) {
-  RunHtmlTest(FILE_PATH_LITERAL("fencedframe-scrollable-shadowdom.html"));
-}
-
-class DumpAccessibilityTreeFencedFrameMPArchTest
-    : public DumpAccessibilityTreeTest {
- protected:
-  DumpAccessibilityTreeFencedFrameMPArchTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kFencedFrames, {{"implementation_type", "mparch"}}},
-         {features::kPrivacySandboxAdsAPIsOverride, {}}},
-        {/* disabled_features */});
-
-    UseHttpsTestServer();
-  }
-
-  ~DumpAccessibilityTreeFencedFrameMPArchTest() override {
-    // Ensure that the feature lists are destroyed in the same order they
-    // were created in.
-    scoped_feature_list_.Reset();
-    feature_list_.Reset();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    DumpAccessibilityTreeFencedFrameMPArchTest,
-    ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
-    DumpAccessibilityTreeTestPassToString());
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameMPArchTest,
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameTest,
                        AccessibilityFencedFrameScrollable) {
   RunHtmlTest(FILE_PATH_LITERAL("fencedframe-scrollable-mparch.html"));
 }
@@ -3043,29 +3003,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvg) {
   RunHtmlTest(FILE_PATH_LITERAL("svg.html"));
 }
 
-// TODO: fails on android, the test hangs in WaitForAllFramesLoaded while
-// waiting for AccessibilityNotificationWaiter::WaitForNotification.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySvgAsEmbedSource \
-  DISABLED_AccessibilitySvgAsEmbedSource
-#else
-#define MAYBE_AccessibilitySvgAsEmbedSource AccessibilitySvgAsEmbedSource
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySvgAsEmbedSource) {
+                       AccessibilitySvgAsEmbedSource) {
   RunHtmlTest(FILE_PATH_LITERAL("svg-as-embed-source.html"));
 }
 
-// TODO: fails on android, the test hangs in WaitForAllFramesLoaded while
-// waiting for AccessibilityNotificationWaiter::WaitForNotification.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySvgAsObjectSource \
-  DISABLED_AccessibilitySvgAsObjectSource
-#else
-#define MAYBE_AccessibilitySvgAsObjectSource AccessibilitySvgAsObjectSource
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySvgAsObjectSource) {
+                       AccessibilitySvgAsObjectSource) {
   RunHtmlTest(FILE_PATH_LITERAL("svg-as-object-source.html"));
 }
 

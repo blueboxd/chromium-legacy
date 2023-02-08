@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/constants",
   "+ash/public",
   "+chromeos/crosapi/cpp/lacros_startup_state.h",
   "+chromeos/ui/base/window_state_type.h",
@@ -13,5 +14,6 @@ include_rules = [
   "+third_party/re2",
   "+ui/base/ui_base_types.h",
   "+ui/base/window_open_disposition.h",
-  "+ui/gfx/geometry"
+  "+ui/gfx/geometry",
+  "+ui/gfx/range",
 ]

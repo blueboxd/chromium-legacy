@@ -50,6 +50,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSetAudioSinkId(int player_id,
                         const std::string& raw_device_id) override {}
   void OnSetMute(int player_id, bool mute) override {}
+  void OnRequestMediaRemoting(int player_id) override {}
 
   absl::optional<media_session::MediaPosition> GetPosition(
       int player_id) const override {
@@ -100,6 +101,24 @@ ActionMappingEntry kActionMappings[] = {
     {MediaSessionAction::kSeekBackward, MediaSessionUserAction::kSeekBackward},
     {MediaSessionAction::kSeekForward, MediaSessionUserAction::kSeekForward},
     {MediaSessionAction::kSkipAd, MediaSessionUserAction::kSkipAd},
+    {MediaSessionAction::kStop, MediaSessionUserAction::kStop},
+    {MediaSessionAction::kSeekTo, MediaSessionUserAction::kSeekTo},
+    {MediaSessionAction::kScrubTo, MediaSessionUserAction::kScrubTo},
+    {MediaSessionAction::kEnterPictureInPicture,
+     MediaSessionUserAction::kEnterPictureInPicture},
+    {MediaSessionAction::kExitPictureInPicture,
+     MediaSessionUserAction::kExitPictureInPicture},
+    {MediaSessionAction::kSwitchAudioDevice,
+     MediaSessionUserAction::kSwitchAudioDevice},
+    {MediaSessionAction::kToggleMicrophone,
+     MediaSessionUserAction::kToggleMicrophone},
+    {MediaSessionAction::kToggleCamera, MediaSessionUserAction::kToggleCamera},
+    {MediaSessionAction::kHangUp, MediaSessionUserAction::kHangUp},
+    {MediaSessionAction::kRaise, MediaSessionUserAction::kRaise},
+    {MediaSessionAction::kSetMute, MediaSessionUserAction::kSetMute},
+    {MediaSessionAction::kPreviousSlide,
+     MediaSessionUserAction::kPreviousSlide},
+    {MediaSessionAction::kNextSlide, MediaSessionUserAction::kNextSlide},
 };
 
 }  // anonymous namespace

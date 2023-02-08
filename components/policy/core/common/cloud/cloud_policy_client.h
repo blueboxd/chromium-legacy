@@ -19,6 +19,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -140,24 +141,11 @@ class POLICY_EXPORT CloudPolicyClient {
         enterprise_management::DeviceRegisterRequest::Flavor flavor);
     ~RegistrationParameters();
 
-    // A setter for |psm_execution_result| field.
-    void SetPsmExecutionResult(
-        absl::optional<
-            enterprise_management::DeviceRegisterRequest::PsmExecutionResult>
-            new_psm_result);
-
-    // A setter for |psm_determination_timestamp| field.
-    void SetPsmDeterminationTimestamp(
-        absl::optional<int64_t> new_psm_timestamp);
-
-    void SetLicenseType(
-        enterprise_management::LicenseType_LicenseTypeEnum license_type);
-
     enterprise_management::DeviceRegisterRequest::Type registration_type;
     enterprise_management::DeviceRegisterRequest::Flavor flavor;
 
     absl::optional<enterprise_management::LicenseType_LicenseTypeEnum>
-        license_type_;
+        license_type;
 
     // Lifetime of registration. Used for easier clean up of ephemeral session
     // registrations.
@@ -196,13 +184,13 @@ class POLICY_EXPORT CloudPolicyClient {
   // DMToken for affiliated users. Could be null if it's not possible to use
   // device DMToken for user policy fetches.
   CloudPolicyClient(
-      const std::string& machine_id,
-      const std::string& machine_model,
-      const std::string& brand_code,
-      const std::string& attested_device_id,
+      base::StringPiece machine_id,
+      base::StringPiece machine_model,
+      base::StringPiece brand_code,
+      base::StringPiece attested_device_id,
       absl::optional<MacAddress> ethernet_mac_address,
       absl::optional<MacAddress> dock_mac_address,
-      const std::string& manufacture_date,
+      base::StringPiece manufacture_date,
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DeviceDMTokenCallback device_dm_token_callback);
@@ -302,9 +290,6 @@ class POLICY_EXPORT CloudPolicyClient {
           device_type,
       const std::set<std::string>& oauth_scopes,
       RobotAuthCodeCallback callback);
-
-  // Sends an unregistration request to the server.
-  virtual void Unregister();
 
   // Upload a machine certificate to the server.  Like FetchPolicy, this method
   // requires that the client is in a registered state.  |certificate_data| must
@@ -600,9 +585,9 @@ class POLICY_EXPORT CloudPolicyClient {
   // policies haven't gone through verification, so their contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
   // instead for making policy decisions.
-  const ResponseMap& responses() const {
+  const ResponseMap& last_policy_fetch_responses() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return responses_;
+    return last_policy_fetch_responses_;
   }
 
   // Returns the policy response for the (|policy_type|, |settings_entity_id|)
@@ -611,9 +596,9 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& policy_type,
       const std::string& settings_entity_id) const;
 
-  DeviceManagementStatus status() const {
+  DeviceManagementStatus last_dm_status() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return status_;
+    return last_dm_status_;
   }
 
   // Returns the invalidation version that was used for the last FetchPolicy.
@@ -665,9 +650,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // Callback for robot account api authorization requests.
   void OnFetchRobotAuthCodesCompleted(RobotAuthCodeCallback callback,
                                       DMServerJobResult result);
-
-  // Callback for unregistration requests.
-  void OnUnregisterCompleted(DMServerJobResult result);
 
   // Callback for certificate upload requests.
   void OnCertificateUploadCompleted(StatusCallback callback,
@@ -779,8 +761,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // requests have been started, only the last one will be kept.
   std::unique_ptr<DeviceManagementService::Job> unique_request_job_;
 
-  // All of the outstanding non-policy-fetch request jobs. These jobs are
-  // silently cancelled if Unregister() is called.
+  // All of the outstanding non-policy-fetch request jobs.
   std::vector<std::unique_ptr<DeviceManagementService::Job>> request_jobs_;
 
   // Only one outstanding app push-install report upload is allowed, and it must
@@ -793,9 +774,10 @@ class POLICY_EXPORT CloudPolicyClient {
   raw_ptr<DeviceManagementService::Job> extension_install_report_request_job_ =
       nullptr;
 
-  // The policy responses returned by the last policy fetch operation.
-  ResponseMap responses_;
-  DeviceManagementStatus status_ = DM_STATUS_SUCCESS;
+  // The policy responses returned by the last policy fetch operation. See
+  // `ResponseMap` for information on the format.
+  ResponseMap last_policy_fetch_responses_;
+  DeviceManagementStatus last_dm_status_ = DM_STATUS_SUCCESS;
 
   DeviceDMTokenCallback device_dm_token_callback_;
 

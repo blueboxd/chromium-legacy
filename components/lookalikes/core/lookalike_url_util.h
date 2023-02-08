@@ -57,7 +57,7 @@ enum class LookalikeUrlMatchType {
   kNone = 0,
   // DEPRECATED: Use kSkeletonMatchTop500 or kSkeletonMatchTop5k.
   // kTopSite = 1,
-  kSiteEngagement = 2,
+  kSkeletonMatchSiteEngagement = 2,
   kEditDistance = 3,
   kEditDistanceSiteEngagement = 4,
   kTargetEmbedding = 5,
@@ -302,5 +302,9 @@ ComboSquattingType GetComboSquattingType(
     const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites,
     std::string* matched_domain);
+
+// Returns true if `etld_plus_one` has a TLD that's considered safe for
+// lookalike checks, such as government sites.
+bool IsSafeTLD(const std::string& hostname);
 
 #endif  // COMPONENTS_LOOKALIKES_CORE_LOOKALIKE_URL_UTIL_H_

@@ -25,9 +25,9 @@
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
-#         google google-0xffff
-#         intel intel-gen-9 intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92
-#               intel-0x3e9b intel-0x5912 intel-0x9bc5
+#         google google-0xffff google-0xc0de
+#         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
+#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -126,6 +126,11 @@ crbug.com/1194209 [ mac no-passthrough ] WebglExtension_WEBGL_webcodecs_video_fr
 
 # Extension only available through passthrough decoder?
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
+
+# Extension not available on OpenGL ES, but could plausibly be
+# implemented on ANGLE's Vulkan backend.
+[ android no-passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
+[ android passthrough angle-opengles ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
 
 # This test uses H.264 and the ChromeOS and Fuchsia bots aren't compiled with
 # proprietary codecs.
@@ -308,7 +313,6 @@ crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/misc/shader
 # Metal failures #
 # Common to all GPU types (both AMD and Intel, at least)
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] WebglExtension_EXT_disjoint_timer_query_webgl2 [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] conformance2/rendering/fs-color-type-mismatch-color-buffer-type.html [ Failure ]
 crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/sub.html [ Failure ]
 crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
 crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
@@ -336,6 +340,8 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/gles3/uniformbuffers/random.html [ Failure ]
 crbug.com/angleproject/7425 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ Failure ]
 crbug.com/1369290 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturefiltering/2d_array_combinations_05.html [ RetryOnFailure ]
+crbug.com/1395813 [ mac passthrough angle-metal amd ] conformance2/renderbuffers/multisampled-stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/1395813 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/teximage3d_depth.html [ Failure ]
 
 # Metal Intel
 crbug.com/angleproject/6430 [ mac passthrough angle-metal intel ] conformance2/textures/canvas/tex-2d-rgb16f-rgb-float.html [ Failure ]
@@ -355,7 +361,6 @@ crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/tr
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/angleproject/7397 [ mac passthrough angle-metal intel ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 # Metal M1
 # TODO(crbug.com/1276153) uncomment after fix for updated part of test applies
@@ -368,7 +373,6 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-rend
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturefiltering/cube_sizes_03.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturefiltering/cube_sizes_04.html [ Failure ]
 crbug.com/1298619 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
-crbug.com/angleproject/7397 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
 ######################################################################
 # Mac failures (mainly OpenGL; some need to be reevaluated on Metal) #
@@ -427,7 +431,6 @@ crbug.com/654187 [ mac nvidia-0xfe9 ] deqp/functional/gles3/framebufferblit/conv
 crbug.com/772651 [ mac nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop-complex.html [ Failure ]
 crbug.com/795052 [ mac nvidia-0xfe9 ] conformance2/uniforms/draw-with-uniform-blocks.html [ Failure ]
 crbug.com/1037650 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
-crbug.com/1086194 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
 
 crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_4_samples.html [ RetryOnFailure ]
 crbug.com/1338004 [ mac nvidia-0xfe9 passthrough ] deqp/functional/gles3/multisample/fbo_max_samples.html [ RetryOnFailure ]
@@ -614,17 +617,29 @@ crbug.com/angleproject/3684 [ android angle-opengles ] conformance2/renderbuffer
 crbug.com/angleproject/3685 [ android angle-opengles ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
 crbug.com/angleproject/3686 [ android angle-opengles ] deqp/functional/gles3/multisample/fbo_4_samples.html [ Failure ]
 crbug.com/angleproject/3686 [ android angle-opengles ] deqp/functional/gles3/multisample/fbo_max_samples.html [ Failure ]
+# finder:group-start crbug.com/1382796 failures happen in many tests, so can be classified as stale for one specific test
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/canvas/rapid-resizing.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/context/context-release-with-workers.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance2/sync/sync-webgl-specific.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] deqp/data/gles3/shaders/declarations.html [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] deqp/functional/gles3/primitiverestart/00.html [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] deqp/functional/gles3/textureshadow/* [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 ] conformance2/textures/video/* [ RetryOnFailure ]
+# finder:group-end
 
 #####################
 # ChromeOS failures #
 #####################
 
 crbug.com/1215700 [ chromeos no-passthrough ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
-
+crbug.com/1380411 [ chromeos passthrough ] conformance2/textures/canvas_sub_rectangle/tex-3d-* [ Skip ]
+crbug.com/1380411 [ chromeos passthrough ] conformance2/textures/canvas_sub_rectangle/tex-2d-r8ui-red_integer-unsigned_byte.html [ Failure ]
+crbug.com/1380411 [ chromeos passthrough ] conformance2/textures/webgl_canvas/tex-2d-r8ui-red_integer-unsigned_byte.html [ Failure ]
+crbug.com/1380411 [ chromeos passthrough ] conformance2/textures/webgl_canvas/tex-3d-* [ Skip ]
 crbug.com/1210240 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance2/textures/canvas_sub_rectangle/tex-2d-r8ui-red_integer-unsigned_byte.html [ Failure ]
 crbug.com/1210240 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance2/textures/webgl_canvas/tex-2d-r8ui-red_integer-unsigned_byte.html [ Failure ]
 crbug.com/1213198 [ chromeos chromeos-board-amd64-generic ] WebglExtension_OVR_multiview2 [ Failure ]
@@ -658,66 +673,8 @@ crbug.com/1232118 [ chromeos chromeos-board-amd64-generic ] conformance/uniforms
 crbug.com/1238075 [ chromeos chromeos-board-amd64-generic ] conformance/rendering/gl-scissor-test.html [ Failure ]
 crbug.com/1241179 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/ext-texture-norm16.html [ Failure ]
 crbug.com/1241183 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
+crbug.com/1399117 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
 
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_bptc [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_compression_rgtc [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_filter_anisotropic [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_EXT_texture_norm16 [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_OES_texture_float_linear [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_OVR_multiview2 [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_pvrtc [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Failure ]
-crbug.com/1213198 [ chromeos chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Failure ]
-crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/uniformbuffers/instance_array_basic_type.html [ Failure ]
-crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/uniformbuffers/random.html [ Failure ]
-crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/uniformbuffers/single_basic_array.html [ Failure ]
-crbug.com/1218162 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/uniformbuffers/single_basic_type.html [ Failure ]
-crbug.com/1218169 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fragmentoutput/array.float.html [ Failure ]
-crbug.com/1218169 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fragmentoutput/basic.float.html [ Failure ]
-crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.2_samples.html [ RetryOnFailure ]
-crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.4_samples.html [ RetryOnFailure ]
-crbug.com/1218509 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/fbomultisample.8_samples.html [ Failure ]
-crbug.com/1218512 [ chromeos chromeos-board-kevin ] deqp/functional/gles3/shadertexturefunction/texturelodoffset.html [ Failure ]
-crbug.com/1218516 [ chromeos chromeos-board-kevin ] deqp/data/gles3/shaders/arrays.html [ Failure ]
-crbug.com/1218607 [ chromeos chromeos-board-kevin ] conformance2/reading/read-pixels-pack-parameters.html [ Failure ]
-crbug.com/1218612 [ chromeos chromeos-board-kevin ] conformance2/glsl3/array-as-return-value.html [ Failure ]
-crbug.com/1218612 [ chromeos chromeos-board-kevin ] conformance2/glsl3/matrix-row-major.html [ Failure ]
-crbug.com/1218612 [ chromeos chromeos-board-kevin ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
-crbug.com/1218612 [ chromeos chromeos-board-kevin ] conformance2/glsl3/uninitialized-local-global-variables.html [ Failure ]
-crbug.com/1218615 [ chromeos chromeos-board-kevin ] conformance2/extensions/ext-color-buffer-float.html [ Failure ]
-crbug.com/1219024 [ chromeos chromeos-board-kevin ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
-crbug.com/1219024 [ chromeos chromeos-board-kevin ] conformance/misc/shader-precision-format.html [ Failure ]
-crbug.com/1219024 [ chromeos chromeos-board-kevin ] conformance/rendering/blending.html [ Failure ]
-crbug.com/1219057 [ chromeos chromeos-board-kevin ] conformance2/buffers/uniform-buffers.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_triangles.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/position.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/1284804 [ chromeos chromeos-board-kevin passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
-crbug.com/1374285 [ chromeos chromeos-board-kevin passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
-crbug.com/1374285 [ chromeos chromeos-board-kevin passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
-crbug.com/1374285 [ chromeos chromeos-board-kevin passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
-crbug.com/1374285 [ chromeos chromeos-board-kevin passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
-crbug.com/1374285 [ chromeos chromeos-board-kevin passthrough ] conformance2/rendering/rasterizer-discard-and-implicit-clear.html [ Failure ]
-crbug.com/1285112 [ chromeos chromeos-board-kevin passthrough ] conformance2/rendering/blitframebuffer-multisampled-readbuffer.html [ Failure ]
-crbug.com/1285114 [ chromeos chromeos-board-kevin passthrough ] conformance2/transform_feedback/transform_feedback.html [ Failure ]
-crbug.com/1286099 [ chromeos chromeos-board-kevin passthrough ] conformance2/rendering/blitframebuffer-r11f-g11f-b10f.html [ Failure ]
-crbug.com/1374291 [ chromeos chromeos-board-kevin passthrough ] conformance2/textures/video/tex-3d-rgba8-rgba-unsigned_byte.html [ Failure ]
-
-
-crbug.com/1373277 [ chromeos chromeos-board-kevin ] conformance2/textures/video/tex-3d-srgb8-rgb-unsigned_byte.html [ Failure ]
 
 # Must investigate ChromeOS failures with passthrough command decoder.
 crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]
@@ -737,6 +694,8 @@ crbug.com/1210240 [ linux intel display-server-wayland no-passthrough ] conforma
 crbug.com/1215700 [ linux intel display-server-wayland no-passthrough ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
 crbug.com/1218607 [ linux intel display-server-wayland no-passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 crbug.com/1231736 [ linux intel display-server-wayland no-passthrough ] deqp/functional/gles3/clipping.html [ Failure ]
+crbug.com/1399117 [ linux intel display-server-wayland no-passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
+
 
 # Failures on validating command decoder only; won't fix.
 crbug.com/angleproject/5038 [ linux intel display-server-wayland no-passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]

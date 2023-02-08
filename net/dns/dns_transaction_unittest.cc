@@ -22,9 +22,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/idempotency.h"
@@ -35,12 +35,12 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_names_util.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_test_util.h"
-#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
@@ -75,27 +75,11 @@ base::TimeDelta kFallbackPeriod = base::Seconds(1);
 
 const char kMockHostname[] = "mock.http";
 
-// Like `net::DNSDomainFromDot()` except allows converting more names than
-// accepted by that utility.
-std::string DomainFromDot(base::StringPiece dotted_name) {
-  std::string dns_name;
-
-  while (true) {
-    size_t next_dot = dotted_name.find('.');
-    if (next_dot == base::StringPiece::npos) {
-      dns_name.append(1, base::checked_cast<base::StringPiece::value_type>(
-                             dotted_name.size()));
-      dns_name.append(static_cast<std::string>(dotted_name));
-      dns_name.append(1, 0);
-      return dns_name;
-    } else {
-      dns_name.append(
-          1, base::checked_cast<base::StringPiece::value_type>(next_dot));
-      dns_name.append(
-          static_cast<std::string>(dotted_name.substr(0, next_dot)));
-      dotted_name = dotted_name.substr(next_dot + 1);
-    }
-  }
+std::vector<uint8_t> DomainFromDot(base::StringPiece dotted_name) {
+  absl::optional<std::vector<uint8_t>> dns_name =
+      dns_names_util::DottedNameToNetwork(dotted_name);
+  CHECK(dns_name.has_value());
+  return dns_name.value();
 }
 
 enum class Transport { UDP, TCP, HTTPS };
@@ -158,6 +142,7 @@ class DnsSocketData {
 
   ~DnsSocketData() = default;
 
+  void ClearWrites() { writes_.clear(); }
   // All responses must be added before GetProvider.
 
   // Adds pre-built DnsResponse. |tcp_length| will be used in TCP mode only.
@@ -282,6 +267,8 @@ class TestUDPClientSocket : public MockUDPClientSocket {
 
   ~TestUDPClientSocket() override = default;
   int Connect(const IPEndPoint& endpoint) override;
+  int ConnectAsync(const IPEndPoint& address,
+                   CompletionOnceCallback callback) override;
 
  private:
   raw_ptr<TestSocketFactory> factory_;
@@ -342,6 +329,12 @@ class TestSocketFactory : public MockClientSocketFactory {
 int TestUDPClientSocket::Connect(const IPEndPoint& endpoint) {
   factory_->OnConnect(endpoint);
   return MockUDPClientSocket::Connect(endpoint);
+}
+
+int TestUDPClientSocket::ConnectAsync(const IPEndPoint& address,
+                                      CompletionOnceCallback callback) {
+  factory_->OnConnect(address);
+  return MockUDPClientSocket::ConnectAsync(address, std::move(callback));
 }
 
 // Helper class that holds a DnsTransaction and handles OnTransactionComplete.
@@ -513,7 +506,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
       on_start_.Run();
     // Start reading asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&URLRequestMockDohJob::StartAsync,
                                   weak_factory_.GetWeakPtr()));
   }
@@ -684,6 +677,21 @@ class DnsTransactionTestBase : public testing::Test {
       transaction_ids_.push_back(data->query_id());
     socket_factory_->AddSocketDataProvider(data->GetProvider());
     socket_data_.push_back(std::move(data));
+  }
+
+  void AddQueryAndResponseNoWrite(uint16_t id,
+                                  const char* dotted_name,
+                                  uint16_t qtype,
+                                  IoMode mode,
+                                  Transport transport,
+                                  const OptRecordRdata* opt_rdata = nullptr,
+                                  DnsQuery::PaddingStrategy padding_strategy =
+                                      DnsQuery::PaddingStrategy::NONE) {
+    CHECK(socket_factory_.get());
+    auto data = std::make_unique<DnsSocketData>(
+        id, dotted_name, qtype, mode, transport, opt_rdata, padding_strategy);
+    data->ClearWrites();
+    AddSocketData(std::move(data), true);
   }
 
   // Add expected query for |dotted_name| and |qtype| with |id| and response
@@ -1085,8 +1093,9 @@ TEST_F(DnsTransactionTest, ConcurrentLookup) {
 }
 
 TEST_F(DnsTransactionTest, CancelLookup) {
-  AddAsyncQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype,
-                           kT0ResponseDatagram, std::size(kT0ResponseDatagram));
+  AddQueryAndResponseNoWrite(0 /* id */, kT0HostName, kT0Qtype, ASYNC,
+                             Transport::UDP, nullptr);
+
   AddAsyncQueryAndResponse(1 /* id */, kT1HostName, kT1Qtype,
                            kT1ResponseDatagram, std::size(kT1ResponseDatagram));
 

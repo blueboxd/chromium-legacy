@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
-#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
@@ -491,6 +490,10 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   // tail of tests that don't add these helpers. This ensures that the various
   // DCHECKs in the state transition machinery don't fail.
   ResourceCoordinatorTabHelper::CreateForWebContents(raw_null_contents);
+
+  // Send the notification to WebContentsObservers that the old content is about
+  // to be discarded and replaced with `null_contents`.
+  old_contents->AboutToBeDiscarded(null_contents.get());
 
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.

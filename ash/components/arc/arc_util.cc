@@ -8,6 +8,8 @@
 #include <cstdio>
 
 #include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/session/arc_vm_data_migration_status.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -22,6 +24,7 @@
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/version/version_loader.h"
 #include "components/exo/shell_surface_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
@@ -51,12 +54,6 @@ constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
 constexpr char kReadahead[] = "readahead";
 constexpr char kGenerate[] = "generate";
 constexpr char kDisabled[] = "disabled";
-
-// Do not run ureadahead in vm for devices with less than 8GB due to memory
-// pressure issues since system will likely drop caches in this case.
-// The value should match platform2/arc/vm/scripts/init/arcvm-ureadahead.conf
-// in Chrome OS.
-constexpr int kReadaheadTotalMinMemoryInKb = 7500000;
 
 // Decodes a job name that may have "_2d" e.g. |kArcCreateDataJobName|
 // and returns a decoded string.
@@ -160,18 +157,10 @@ bool IsUreadaheadDisabled() {
       ash::switches::kArcDisableUreadahead);
 }
 
-ArcVmUreadaheadMode GetArcVmUreadaheadMode(SystemMemoryInfoCallback callback) {
-  base::SystemMemoryInfoKB mem_info;
-  DCHECK(callback);
-  if (!callback.Run(&mem_info)) {
-    LOG(ERROR) << "Failed to get system memory info";
-    return ArcVmUreadaheadMode::DISABLED;
-  }
-  ArcVmUreadaheadMode mode = (mem_info.total > kReadaheadTotalMinMemoryInKb)
-                                 ? IsUreadaheadDisabled()
-                                       ? ArcVmUreadaheadMode::DISABLED
-                                       : ArcVmUreadaheadMode::READAHEAD
-                                 : ArcVmUreadaheadMode::DISABLED;
+ArcVmUreadaheadMode GetArcVmUreadaheadMode() {
+  ArcVmUreadaheadMode mode = IsUreadaheadDisabled()
+                                 ? ArcVmUreadaheadMode::DISABLED
+                                 : ArcVmUreadaheadMode::READAHEAD;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kArcVmUreadaheadMode)) {
     const std::string value =
@@ -425,6 +414,37 @@ void ConfigureUpstartJobs(std::deque<JobDesc> jobs,
       NOTREACHED();
       break;
   }
+}
+
+ArcVmDataMigrationStatus GetArcVmDataMigrationStatus(
+    PrefService* profile_prefs) {
+  return static_cast<ArcVmDataMigrationStatus>(
+      profile_prefs->GetInteger(prefs::kArcVmDataMigrationStatus));
+}
+
+void SetArcVmDataMigrationStatus(PrefService* profile_prefs,
+                                 ArcVmDataMigrationStatus status) {
+  profile_prefs->SetInteger(prefs::kArcVmDataMigrationStatus,
+                            static_cast<int>(status));
+}
+
+bool ShouldUseVirtioBlkData(PrefService* profile_prefs) {
+  // If kEnableVirtioBlkForData is set, force using virtio-blk /data regardless
+  // of the migration status.
+  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
+    return true;
+
+  // Just use virtio-fs when ARCVM /data migration is not enabled.
+  if (!base::FeatureList::IsEnabled(kEnableArcVmDataMigration))
+    return false;
+
+  ArcVmDataMigrationStatus status = GetArcVmDataMigrationStatus(profile_prefs);
+  if (status == ArcVmDataMigrationStatus::kFinished) {
+    VLOG(1) << "ARCVM /data migration has finished";
+    return true;
+  }
+  VLOG(1) << "ARCVM /data migration hasn't finished yet. Status=" << status;
+  return false;
 }
 
 }  // namespace arc

@@ -30,8 +30,8 @@
 #include "chromeos/ash/components/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/ash/components/dbus/attestation/interface.pb.h"
 #include "chromeos/ash/components/dbus/constants/attestation_constants.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -435,10 +435,9 @@ class KioskTpmChallengeKeySubtleTest : public TpmChallengeKeySubtleTestBase {
 
   void SetUp() override {
     TpmChallengeKeySubtleTestBase::SetUp();
-    chromeos::LoginState::Initialize();
-    chromeos::LoginState::Get()->SetLoggedInState(
-        chromeos::LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_KIOSK);
+    LoginState::Initialize();
+    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                        LoginState::LOGGED_IN_USER_KIOSK);
   }
 };
 
@@ -665,6 +664,31 @@ TEST_F(TpmChallengeKeySubtleTestECC, DeviceKeyRegisteredSuccessECC) {
       GetCertificate(_, _, _, _, ::attestation::KEY_TYPE_ECC, key_name, _, _));
 
   RunOneStepAndExpect(key_type, /*will_register_key=*/true, key_name,
+                      TpmChallengeKeyResult::MakePublicKey(GetPublicKey()));
+}
+
+TEST_F(AffiliatedUserTpmChallengeKeySubtleTest,
+       UserKeyRegisteredSuccessDefaultNameRsa) {
+  const AttestationKeyType key_type = KEY_USER;
+  const std::string key_name = std::string(kEnterpriseUserKey);
+
+  EXPECT_CALL(
+      mock_attestation_flow_,
+      GetCertificate(_, _, _, _, ::attestation::KEY_TYPE_RSA, key_name, _, _));
+
+  RunOneStepAndExpect(key_type, /*will_register_key=*/true, "",
+                      TpmChallengeKeyResult::MakePublicKey(GetPublicKey()));
+}
+
+TEST_F(TpmChallengeKeySubtleTestECC, UserKeyRegisteredSuccessDefaultNameECC) {
+  const AttestationKeyType key_type = KEY_USER;
+  const std::string key_name = std::string(kEnterpriseUserKey) + "-ecdsa";
+
+  EXPECT_CALL(
+      mock_attestation_flow_,
+      GetCertificate(_, _, _, _, ::attestation::KEY_TYPE_ECC, key_name, _, _));
+
+  RunOneStepAndExpect(key_type, /*will_register_key=*/true, "",
                       TpmChallengeKeyResult::MakePublicKey(GetPublicKey()));
 }
 

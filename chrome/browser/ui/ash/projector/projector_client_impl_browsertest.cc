@@ -22,6 +22,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -376,6 +378,8 @@ class ProjectorClientManagedTest
   }
 
  private:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
   LoggedInUserMixin logged_in_user_mixin_{
       &mixin_host_,
       is_child() ? LoggedInUserMixin::LogInType::kChild
@@ -449,6 +453,7 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   base::RunLoop loop;
   web_app_provider->on_registry_ready().Post(FROM_HERE, loop.QuitClosure());
   loop.Run();
+  web_app_provider->command_manager().AwaitAllCommandsCompleteForTesting();
 
   // We can't uninstall the Projector SWA until the next session, but the icon
   // is greyed out and disabled.
@@ -464,6 +469,7 @@ IN_PROC_BROWSER_TEST_P(ProjectorClientManagedTest, DisableThenEnablePolicy) {
   base::RunLoop loop2;
   web_app_provider->on_registry_ready().Post(FROM_HERE, loop2.QuitClosure());
   loop2.Run();
+  web_app_provider->command_manager().AwaitAllCommandsCompleteForTesting();
 
   EXPECT_EQ(apps::Readiness::kReady,
             GetAppReadiness(kChromeUITrustedProjectorSwaAppId));

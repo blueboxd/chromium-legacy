@@ -20,6 +20,7 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_client_adapter.h"
 #include "ash/components/arc/session/arc_dlc_installer.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/session/arc_session.h"
@@ -27,6 +28,7 @@
 #include "ash/components/arc/session/file_system_status.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -47,11 +49,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
@@ -65,6 +67,7 @@
 #include "components/version_info/version_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 
 namespace arc {
@@ -84,18 +87,6 @@ constexpr char kArcVmPostVmStartServicesJobName[] =
 
 constexpr const char kArcVmBootNotificationServerSocketPath[] =
     "/run/arcvm_boot_notification_server/host.socket";
-
-constexpr base::TimeDelta kArcBugReportBackupTimeMetricMinTime =
-    base::Milliseconds(1);
-constexpr base::TimeDelta kArcBugReportBackupTimeMetricMaxTime =
-    base::Seconds(60);
-constexpr int kArcBugReportBackupTimeMetricBuckets = 50;
-constexpr const char kArcBugReportBackupTimeMetric[] =
-    "Login.ArcBugReportBackupTime";
-
-constexpr int kLogdConfigSizeSmall = 256;   // kBytes
-constexpr int kLogdConfigSizeMed = 512;     // kBytes
-constexpr int kLogdConfigSizeLarge = 1024;  // kBytes
 
 constexpr int64_t kInvalidCid = -1;
 
@@ -178,162 +169,57 @@ std::vector<std::string> GenerateUpgradeProps(
   return result;
 }
 
-std::vector<std::string> GenerateKernelCmdline(
-    const StartParams& start_params,
-    const FileSystemStatus& file_system_status,
-    bool is_host_on_vm) {
-  std::string native_bridge;
+void AppendParamsFromStartParams(
+    vm_tools::concierge::StartArcVmRequest& request,
+    const StartParams& start_params) {
+  request.set_enable_keyboard_shortcut_helper_integration(
+      start_params.enable_keyboard_shortcut_helper_integration);
+
   switch (IdentifyBinaryTranslationType(start_params)) {
     case ArcBinaryTranslationType::NONE:
-      native_bridge = "0";
+      request.set_native_bridge_experiment(
+          vm_tools::concierge::StartArcVmRequest::BINARY_TRANSLATION_TYPE_NONE);
       break;
     case ArcBinaryTranslationType::HOUDINI:
-      native_bridge = "libhoudini.so";
+      request.set_native_bridge_experiment(
+          vm_tools::concierge::StartArcVmRequest::
+              BINARY_TRANSLATION_TYPE_HOUDINI);
       break;
     case ArcBinaryTranslationType::NDK_TRANSLATION:
-      native_bridge = "libndk_translation.so";
+      request.set_native_bridge_experiment(
+          vm_tools::concierge::StartArcVmRequest::
+              BINARY_TRANSLATION_TYPE_NDK_TRANSLATION);
       break;
-  }
-
-  const int guest_zram_size = kGuestZramSize.Get();
-  VLOG(1) << "Setting ARCVM guest's zram size to " << guest_zram_size;
-
-  std::vector<std::string> result = {
-      base::StringPrintf("androidboot.native_bridge=%s", native_bridge.c_str()),
-      base::StringPrintf("androidboot.host_is_in_vm=%d", is_host_on_vm),
-      base::StringPrintf("androidboot.lcd_density=%d",
-                         start_params.lcd_density),
-      base::StringPrintf("androidboot.arc_file_picker=%d",
-                         start_params.arc_file_picker_experiment),
-      base::StringPrintf("androidboot.arc_custom_tabs=%d",
-                         start_params.arc_custom_tabs_experiment),
-      base::StringPrintf(
-          "androidboot.keyboard_shortcut_helper_integration=%d",
-          start_params.enable_keyboard_shortcut_helper_integration),
-      base::StringPrintf("androidboot.enable_notifications_refresh=%d",
-                         start_params.enable_notifications_refresh),
-      base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
-  };
-
-  const ArcVmUreadaheadMode mode =
-      GetArcVmUreadaheadMode(base::BindRepeating(&base::GetSystemMemoryInfo));
-  switch (mode) {
-    case ArcVmUreadaheadMode::READAHEAD:
-      result.push_back("androidboot.arcvm_ureadahead_mode=readahead");
-      break;
-    case ArcVmUreadaheadMode::GENERATE:
-      result.push_back("androidboot.arcvm_ureadahead_mode=generate");
-      break;
-    case ArcVmUreadaheadMode::DISABLED:
-      break;
-  }
-
-  // Only add boot property if flag to disable media store maintenance is set.
-  if (start_params.disable_media_store_maintenance)
-    result.push_back("androidboot.disable_media_store_maintenance=1");
-
-  if (start_params.arc_generate_play_auto_install)
-    result.push_back("androidboot.arc_generate_pai=1");
-
-  if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
-    result.push_back("androidboot.arcvm_virtio_blk_data=1");
-  else
-    result.push_back("androidboot.arcvm_virtio_blk_data=0");
-
-  // Conditionally sets some properties based on |start_params|.
-  switch (start_params.play_store_auto_update) {
-    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_DEFAULT:
-      break;
-    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_ON:
-      result.push_back("androidboot.play_store_auto_update=1");
-      break;
-    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF:
-      result.push_back("androidboot.play_store_auto_update=0");
-      break;
-  }
-
-  // Set logcat size, only if configured to one of the few supported sizes.
-  if (base::FeatureList::IsEnabled(kLogdConfig)) {
-    auto logd_config_size = kLogdConfigSize.Get();
-    switch (logd_config_size) {
-      case kLogdConfigSizeSmall:
-        result.push_back("androidboot.arcvm.logd.size=256K");
-        break;
-      case kLogdConfigSizeMed:
-        result.push_back("androidboot.arcvm.logd.size=512K");
-        break;
-      case kLogdConfigSizeLarge:
-        result.push_back("androidboot.arcvm.logd.size=1M");
-        break;
-      default:
-        VLOG(1) << "WARNING: Invalid logd size ignored: [" << logd_config_size
-                << "]";
-        break;
-    }
-  }
-
-  if (base::FeatureList::IsEnabled(kVmMemoryPSIReports)) {
-    auto period = kVmMemoryPSIReportsPeriod.Get();
-    // Since Android performs parameter validation, not doing it here.
-    result.push_back(base::StringPrintf(
-        "androidboot.arcvm_metrics_mem_psi_period=%d", period));
-  }
-
-  if (base::FeatureList::IsEnabled(arc::kUseDalvikMemoryProfile)) {
-    switch (start_params.dalvik_memory_profile) {
-      case StartParams::DalvikMemoryProfile::DEFAULT:
-      case StartParams::DalvikMemoryProfile::M4G:
-        // Use the 4G profile for devices with 4GB RAM or less.
-        result.push_back("androidboot.arc_dalvik_memory_profile=4G");
-        break;
-      case StartParams::DalvikMemoryProfile::M8G:
-        result.push_back("androidboot.arc_dalvik_memory_profile=8G");
-        break;
-      case StartParams::DalvikMemoryProfile::M16G:
-        result.push_back("androidboot.arc_dalvik_memory_profile=16G");
-        break;
-    }
-  } else {
-    VLOG(1) << "Dalvik memory profile is not enabled, the default setting is "
-            << "used.";
   }
 
   std::string log_profile_name;
   switch (start_params.usap_profile) {
     case StartParams::UsapProfile::DEFAULT:
+      request.set_usap_profile(
+          vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_DEFAULT);
       log_profile_name = "default low-memory";
       break;
     case StartParams::UsapProfile::M4G:
-      result.push_back("androidboot.usap_profile=4G");
+      request.set_usap_profile(
+          vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_4G);
       log_profile_name = "high-memory 4G";
       break;
     case StartParams::UsapProfile::M8G:
-      result.push_back("androidboot.usap_profile=8G");
+      request.set_usap_profile(
+          vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_8G);
       log_profile_name = "high-memory 8G";
       break;
     case StartParams::UsapProfile::M16G:
-      result.push_back("androidboot.usap_profile=16G");
+      request.set_usap_profile(
+          vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_16G);
       log_profile_name = "high-memory 16G";
       break;
   }
   VLOG(1) << "Applied " << log_profile_name << " USAP profile";
 
-  if (start_params.disable_download_provider)
-    result.push_back("androidboot.disable_download_provider=1");
-
-  if (base::FeatureList::IsEnabled(arc::kVmGmsCoreLowMemoryKillerProtection))
-    result.push_back("androidboot.arc_enable_gmscore_lmk_protection=1");
-
-  if (start_params.enable_tts_caching)
-    result.push_back("androidboot.arc.tts.caching=1");
-
-  if (base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR))
-    result.push_back("androidboot.arc.broadcast_anr_prenotify=1");
-
-  if (base::FeatureList::IsEnabled(arc::kEnableLazyWebViewInit))
-    result.push_back("androidboot.arc.web_view_zygote.lazy_init=1");
-
-  return result;
+  *request.mutable_mini_instance_request() =
+      ArcClientAdapter::ConvertStartParamsToStartArcMiniInstanceRequest(
+          start_params);
 }
 
 vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
@@ -343,21 +229,14 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const absl::optional<base::FilePath>& data_disk_path,
     const FileSystemStatus& file_system_status,
     bool use_per_vm_core_scheduling,
-    std::vector<std::string> kernel_cmdline,
+    const StartParams& start_params,
+    bool is_host_on_vm,
     ArcVmClientAdapterDelegate* delegate) {
   vm_tools::concierge::StartArcVmRequest request;
 
   request.set_name(kArcVmName);
   request.set_owner_id(user_id_hash);
   request.set_use_per_vm_core_scheduling(use_per_vm_core_scheduling);
-
-  if (file_system_status.is_host_rootfs_writable() &&
-      file_system_status.is_system_image_ext_format()) {
-    request.add_params("rw");
-  }
-
-  for (auto& entry : kernel_cmdline)
-    request.add_params(std::move(entry));
 
   const bool should_set_blocksize =
       !base::FeatureList::IsEnabled(arc::kUseDefaultBlockSize);
@@ -449,6 +328,10 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_update_o4c_list_via_a2c2(
       base::FeatureList::IsEnabled(kArcUpdateO4CListViaA2C2));
 
+  // Controls whether WebView Zygote is lazily initialized in ARC.
+  request.set_enable_web_view_zygote_lazy_init(
+      base::FeatureList::IsEnabled(arc::kEnableLazyWebViewInit));
+
   // Specify VM Memory.
   if (base::FeatureList::IsEnabled(kVmMemorySize)) {
     base::SystemMemoryInfoKB info;
@@ -486,30 +369,25 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     VLOG(1) << "VmMemorySize is disabled.";
   }
 
-  // Specify balloon policy.
-  if (base::FeatureList::IsEnabled(kVmBalloonPolicy)) {
-    vm_tools::concierge::BalloonPolicyOptions* balloon_policy =
-        request.mutable_balloon_policy();
-    const int64_t moderate_kib = kVmBalloonPolicyModerateKiB.Get();
-    const int64_t critical_kib = kVmBalloonPolicyCriticalKiB.Get();
-    const int64_t reclaim_kib = kVmBalloonPolicyReclaimKiB.Get();
-    balloon_policy->set_moderate_target_cache(moderate_kib * 1024);
-    balloon_policy->set_critical_target_cache(critical_kib * 1024);
-    balloon_policy->set_reclaim_target_cache(reclaim_kib * 1024);
-    balloon_policy->set_responsive(kVmBalloonPolicyResponsive.Get());
-    balloon_policy->set_responsive_timeout_ms(
-        kVmBalloonPolicyResponsiveTimeoutMs.Get());
-    balloon_policy->set_responsive_max_deflate_bytes(
-        kVmBalloonPolicyResponsiveMaxDeflateBytes.Get());
-    VLOG(1) << "Use LimitCacheBalloonPolicy. ModerateKiB=" << moderate_kib
-            << ", CriticalKiB=" << critical_kib
-            << ", ReclaimKiB=" << reclaim_kib;
-  } else {
-    VLOG(1) << "Use BalanceAvailableBalloonPolicy";
-  }
+  AppendParamsFromStartParams(request, start_params);
 
-  if (base::FeatureList::IsEnabled(kGuestZram))
+  auto* mini_instance_request = request.mutable_mini_instance_request();
+  mini_instance_request->set_enable_consumer_auto_update_toggle(
+      base::FeatureList::IsEnabled(
+          ash::features::kConsumerAutoUpdateToggleAllowed));
+
+  request.set_enable_rw(file_system_status.is_host_rootfs_writable() &&
+                        file_system_status.is_system_image_ext_format());
+  request.set_enable_gmscore_lmk_protection(
+      base::FeatureList::IsEnabled(arc::kVmGmsCoreLowMemoryKillerProtection));
+  request.set_enable_broadcast_anr_prenotify(
+      base::FeatureList::IsEnabled(arc::kVmBroadcastPreNotifyANR));
+  request.set_enable_virtio_blk_data(start_params.use_virtio_blk_data);
+
+  if (base::FeatureList::IsEnabled(kGuestZram)) {
     request.set_guest_swappiness(kGuestZramSwappiness.Get());
+    request.set_guest_zram_size(kGuestZramSize.Get());
+  }
 
   if (base::FeatureList::IsEnabled(kMglruReclaim)) {
     request.set_mglru_reclaim_interval(kMglruReclaimInterval.Get());
@@ -526,22 +404,41 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   else
     request.set_vm_memory_psi_period(-1);
 
-  auto orientation = display::Display::ROTATE_0;
-  if (auto* screen = display::Screen::GetScreen())
-    orientation = screen->GetPrimaryDisplay().panel_rotation();
+  auto orientation = display::PanelOrientation::kNormal;
+  if (auto* screen = display::Screen::GetScreen()) {
+    const auto display_id = screen->GetPrimaryDisplay().id();
+    if (auto* shell = ash::Shell::Get()) {
+      const auto& info = shell->display_manager()->GetDisplayInfo(display_id);
+      orientation = info.panel_orientation();
+    }
+  }
   switch (orientation) {
     using StartArcVmRequest = vm_tools::concierge::StartArcVmRequest;
-    case display::Display::ROTATE_0:
+    case display::PanelOrientation::kNormal:
       request.set_panel_orientation(StartArcVmRequest::ORIENTATION_0);
       break;
-    case display::Display::ROTATE_90:
+    case display::PanelOrientation::kRightUp:
       request.set_panel_orientation(StartArcVmRequest::ORIENTATION_90);
       break;
-    case display::Display::ROTATE_180:
+    case display::PanelOrientation::kBottomUp:
       request.set_panel_orientation(StartArcVmRequest::ORIENTATION_180);
       break;
-    case display::Display::ROTATE_270:
+    case display::PanelOrientation::kLeftUp:
       request.set_panel_orientation(StartArcVmRequest::ORIENTATION_270);
+      break;
+  }
+
+  const ArcVmUreadaheadMode mode = GetArcVmUreadaheadMode();
+  switch (mode) {
+    using StartArcVmRequest = vm_tools::concierge::StartArcVmRequest;
+    case ArcVmUreadaheadMode::READAHEAD:
+      request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_READAHEAD);
+      break;
+    case ArcVmUreadaheadMode::GENERATE:
+      request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_GENERATE);
+      break;
+    case ArcVmUreadaheadMode::DISABLED:
+      request.set_ureadahead_mode(StartArcVmRequest::UREADAHEAD_MODE_DISABLED);
       break;
   }
 
@@ -776,7 +673,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       GetDebugDaemonClient()->BackupArcBugReport(
           cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id_),
           base::BindOnce(&ArcVmClientAdapter::OnArcBugReportBackedUp,
-                         weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+                         weak_factory_.GetWeakPtr()));
     } else {
       StopArcInstanceInternal();
     }
@@ -806,7 +703,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void TrimVmMemory(TrimVmMemoryCallback callback, int page_limit) override {
     VLOG(2) << "Start trimming VM memory";
     if (user_id_hash_.empty()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback), /*success=*/false,
                          /*failure_reason=*/"user_id_hash_ is not set"));
@@ -857,16 +754,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   }
 
  private:
-  void OnArcBugReportBackedUp(base::TimeTicks arc_bug_report_backup_time,
-                              bool result) {
-    if (result) {
-      base::TimeDelta elapsed_time =
-          base::TimeTicks::Now() - arc_bug_report_backup_time;
-      base::UmaHistogramCustomTimes(kArcBugReportBackupTimeMetric, elapsed_time,
-                                    kArcBugReportBackupTimeMetricMinTime,
-                                    kArcBugReportBackupTimeMetricMaxTime,
-                                    kArcBugReportBackupTimeMetricBuckets);
-    } else {
+  void OnArcBugReportBackedUp(bool result) {
+    if (!result) {
       LOG(ERROR) << "Error contacting debugd to back up ARC bug report.";
     }
 
@@ -987,7 +876,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
   void OnDemoResourcesLoaded(chromeos::VoidDBusMethodCallback callback,
                              FileSystemStatus file_system_status) {
-    if (!base::FeatureList::IsEnabled(kEnableVirtioBlkForData)) {
+    if (!start_params_.use_virtio_blk_data) {
       VLOG(1) << "Using virtio-fs for /data";
       StartArcVm(std::move(callback), std::move(file_system_status),
                  /*data_disk_path=*/absl::nullopt);
@@ -1085,12 +974,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                                    start_params_.num_cores_disabled;
     DCHECK_LT(0, cpus);
 
-    std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        start_params_, file_system_status, is_host_on_vm_);
     auto start_request = CreateStartArcVmRequest(
         user_id_hash_, cpus, demo_session_apps_path, data_disk_path,
-        file_system_status, use_per_vm_core_scheduling,
-        std::move(kernel_cmdline), delegate_.get());
+        file_system_status, use_per_vm_core_scheduling, start_params_,
+        is_host_on_vm_, delegate_.get());
 
     GetConciergeClient()->StartArcVm(
         start_request,

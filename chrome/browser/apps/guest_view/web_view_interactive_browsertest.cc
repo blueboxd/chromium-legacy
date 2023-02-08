@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -417,7 +416,7 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
 
    private:
     void ScheduleWait(int wait_retry_left) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&PopupCreatedObserver::Wait, base::Unretained(this),
                          wait_retry_left),
@@ -1199,7 +1198,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
 
   // Wait for guest to load (without this the events never reach the guest).
   std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop->QuitClosure(), base::Milliseconds(200));
   run_loop->Run();
 
@@ -1219,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_LongPressSelection) {
 
   // Give enough time for the quick menu to fire.
   run_loop = std::make_unique<base::RunLoop>();
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop->QuitClosure(), base::Milliseconds(200));
   run_loop->Run();
 
@@ -1512,24 +1511,23 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest,
   // Flush any pending events to make sure we start with a clean slate.
   content::RunAllPendingInMessageLoop();
 
-  content::WebContents* guest_web_contents =
-      GetGuestViewManager()->DeprecatedGetLastGuestCreated();
+  auto* guest_rfh = GetGuestViewManager()->GetLastGuestRenderFrameHostCreated();
 
   // Click the <input> element inside the <webview>. In its focus handle, the
   // <input> inside the <webview> initializes its value to "A B X D".
   ExtensionTestMessageListener focus_listener("WebViewImeTest.InputFocused");
-  content::WebContents* target_web_contents = guest_web_contents;
-  WaitForHitTestData(guest_web_contents);
+  WaitForHitTestData(guest_rfh);
 
   // The guest page has a large input box and (50, 50) lies inside the box.
-  content::SimulateMouseClickAt(target_web_contents, 0,
-                                blink::WebMouseEvent::Button::kLeft,
-                                gfx::Point(50, 50));
+  content::SimulateMouseClickAt(
+      GetGuestViewManager()->GetLastGuestViewCreated()->embedder_web_contents(),
+      0, blink::WebMouseEvent::Button::kLeft,
+      guest_rfh->GetView()->TransformPointToRootCoordSpace(gfx::Point(50, 50)));
   EXPECT_TRUE(focus_listener.WaitUntilSatisfied());
 
   // Verify the text inside the <input> is "A B X D".
   std::string value;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_web_contents,
+  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_rfh,
                                             "window.domAutomationController."
                                             "send(document.querySelector('"
                                             "input').value)",
@@ -1540,23 +1538,21 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest,
   // For OOPIF guests, the target for IME is the RWH for the guest's main frame.
   // For BrowserPlugin-based guests, input always goes to the embedder.
   ExtensionTestMessageListener input_listener("WebViewImetest.InputReceived");
-  content::RenderWidgetHost* target_rwh_for_input =
-      target_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
-  content::SendImeCommitTextToWidget(target_rwh_for_input, u"C",
+  content::SendImeCommitTextToWidget(guest_rfh->GetRenderWidgetHost(), u"C",
                                      std::vector<ui::ImeTextSpan>(),
                                      gfx::Range(4, 5), 0);
   EXPECT_TRUE(input_listener.WaitUntilSatisfied());
 
   // Get the input value from the guest.
   value.clear();
-  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_web_contents,
+  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_rfh,
                                             "window.domAutomationController."
                                             "send(document.querySelector('"
                                             "input').value)",
                                             &value));
   EXPECT_EQ("A B C D", value);
 }
-#endif  //  OS_MAC
+#endif  // BUILDFLAG(IS_MAC)
 
 // This test verifies that focusing an input inside a <webview> will put the
 // guest process's render widget into a monitoring mode for composition range
@@ -1628,7 +1624,7 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest,
              .OffsetFromOrigin()
              .Length() < distance_from_root_view_origin) {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
@@ -1709,7 +1705,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewInteractiveTest,
   // flakiness on some platforms.
   while (!content::EvalJs(guest_rfh, "document.hasFocus()").ExtractBool()) {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }

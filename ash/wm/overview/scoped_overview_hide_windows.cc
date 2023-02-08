@@ -43,11 +43,10 @@ void ScopedOverviewHideWindows::AddWindow(aura::Window* window) {
   window->Hide();
 }
 
-void ScopedOverviewHideWindows::RemoveWindow(aura::Window* window,
-                                             bool show_window) {
+void ScopedOverviewHideWindows::RemoveWindow(aura::Window* window) {
   DCHECK(HasWindow(window));
   window->RemoveObserver(this);
-  if (!window->is_destroying() && window_visibility_[window] && show_window)
+  if (!window->is_destroying() && window_visibility_[window])
     window->Show();
   window_visibility_.erase(window);
 }
@@ -58,7 +57,7 @@ void ScopedOverviewHideWindows::RemoveAllWindows() {
   for (const auto& element : window_visibility_)
     windows_to_remove.push_back(element.first);
   for (auto* window : base::Reversed(windows_to_remove))
-    RemoveWindow(window, /*show_window=*/true);
+    RemoveWindow(window);
 }
 
 void ScopedOverviewHideWindows::OnWindowDestroying(aura::Window* window) {

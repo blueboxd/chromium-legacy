@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/elements/chrome_activity_overlay_coordinator.h"
+#import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
@@ -326,14 +327,28 @@
   [self updateToolbarButtons];
 }
 
+#pragma mark - UIResponder
+
+// To always be able to register key commands via -keyCommands, the VC must be
+// able to become first responder.
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
+- (NSArray*)keyCommands {
+  return @[ UIKeyCommand.cr_close ];
+}
+
+- (void)keyCommand_close {
+  base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
+  [self dismiss];
+}
+
 #pragma mark - TableViewLinkHeaderFooterItemDelegate
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)url {
   if (url.gurl == GURL(kCBDSignOutOfChromeURL)) {
     DCHECK(base::FeatureList::IsEnabled(switches::kEnableCbdSignOut));
-    // TODO(crbug.com/1341654): Log a user action indicating that the user
-    // clicked on the sign out link from the footer. Remove the action
-    // indicating that this came from signin > signout.
     [self showSignOutWithItemView:[view contentView]];
     return;
   }
@@ -413,6 +428,15 @@
     dispatch_after(timeOneSecondLater, dispatch_get_main_queue(), ^{
       [self.overlayCoordinator stop];
       self.navigationController.interactivePopGestureRecognizer.delegate = nil;
+
+      // Inform Voiceover users that their browsing data has
+      // been cleared. Otherwise, users only hear that the clear browsing data
+      // process was initiated, but not completed.
+      UIAccessibilityPostNotification(
+          UIAccessibilityAnnouncementNotification,
+          l10n_util::GetNSString(
+              IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE));
+
       if (completionBlock)
         completionBlock();
     });
@@ -536,6 +560,7 @@
 
 // Offer the user to sign-out near itemView
 // If they sync, they can keep or delete their data.
+// TODO(crbug.com/1385791) Test that correct histogram is registered.
 - (void)showSignOutWithItemView:(UIView*)itemView {
   if (_signoutCoordinator) {
     // An action is already in progress, ignore user's request.

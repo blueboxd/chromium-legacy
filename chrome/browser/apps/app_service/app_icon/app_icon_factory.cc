@@ -37,6 +37,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/grit/app_icon_resources.h"
@@ -485,9 +486,51 @@ void LoadIconFromWebApp(content::BrowserContext* context,
           icon_type, size_hint_in_dip, is_placeholder_icon, icon_effects,
           IDR_APP_DEFAULT_ICON, std::move(callback));
   icon_loader->LoadWebAppIcon(
-      web_app_id, web_app_provider->registrar().GetAppStartUrl(web_app_id),
+      web_app_id,
+      web_app_provider->registrar_unsafe().GetAppStartUrl(web_app_id),
       web_app_provider->icon_manager(), Profile::FromBrowserContext(context));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void GetWebAppCompressedIconData(content::BrowserContext* context,
+                                 const std::string& web_app_id,
+                                 IconType icon_type,
+                                 int size_in_dip,
+                                 ui::ResourceScaleFactor scale_factor,
+                                 LoadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(context);
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::GetForLocalAppsUnchecked(
+          Profile::FromBrowserContext(context));
+
+  DCHECK(web_app_provider);
+  scoped_refptr<AppIconLoader> icon_loader =
+      base::MakeRefCounted<AppIconLoader>(
+          icon_type, size_in_dip, /*is_placeholder_icon=*/false,
+          IconEffects::kNone, kInvalidIconResource, std::move(callback));
+  icon_loader->GetWebAppCompressedIconData(web_app_id, scale_factor,
+                                           web_app_provider->icon_manager());
+}
+
+void GetChromeAppCompressedIconData(content::BrowserContext* context,
+                                    const std::string& extension_id,
+                                    IconType icon_type,
+                                    int size_in_dip,
+                                    ui::ResourceScaleFactor scale_factor,
+                                    LoadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  scoped_refptr<AppIconLoader> icon_loader =
+      base::MakeRefCounted<AppIconLoader>(
+          icon_type, size_in_dip, /*is_placeholder_icon=*/false,
+          IconEffects::kNone, kInvalidIconResource, std::move(callback));
+  icon_loader->GetChromeAppCompressedIconData(
+      extensions::ExtensionRegistry::Get(context)->GetInstalledExtension(
+          extension_id),
+      context, scale_factor);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void LoadIconFromFileWithFallback(
     IconType icon_type,

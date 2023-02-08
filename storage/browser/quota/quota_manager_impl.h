@@ -292,39 +292,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Called by storage backends via proxy.
   //
-  // Quota-managed storage backends should call this method when storage is
-  // accessed. Used to maintain LRU ordering.
-  // TODO(crbug.com/1199417): Remove when all usages have updated to use
-  // NotifyBucketAccessed.
-  void NotifyStorageAccessed(const blink::StorageKey& storage_key,
-                             blink::mojom::StorageType type,
-                             base::Time access_time);
-
-  // Called by storage backends via proxy.
-  //
   // Quota-managed storage backends should call this method when a bucket is
   // accessed. Used to maintain LRU ordering.
-  void NotifyBucketAccessed(BucketId bucket_id, base::Time access_time);
-
-  // Called by storage backends via proxy.
-  //
-  // Quota-managed storage backends must call this method when they have made
-  // any modifications that change the amount of data stored in their storage.
-  // TODO(crbug.com/1199417): Remove when all usages have updated to use
-  // NotifyBucketModified.
-  void NotifyStorageModified(QuotaClientType client_id,
-                             const blink::StorageKey& storage_key,
-                             blink::mojom::StorageType type,
-                             int64_t delta,
-                             base::Time modification_time,
-                             base::OnceClosure callback);
+  void NotifyBucketAccessed(const BucketLocator& bucket,
+                            base::Time access_time);
 
   // Called by storage backends via proxy.
   //
   // Quota-managed storage backends must call this method when they have made
   // any modifications that change the amount of data stored in a bucket.
   void NotifyBucketModified(QuotaClientType client_id,
-                            BucketId bucket_id,
+                            const BucketLocator& bucket,
                             int64_t delta,
                             base::Time modification_time,
                             base::OnceClosure callback);
@@ -410,8 +388,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                        UsageWithBreakdownCallback callback);
   void GetBucketUsageWithBreakdown(const BucketLocator& bucket,
                                    UsageWithBreakdownCallback callback);
-  void GetBucketUsageAndQuota(const BucketInfo& bucket,
-                              UsageAndQuotaCallback callback);
+  void GetBucketUsageAndQuota(BucketId id, UsageAndQuotaCallback callback);
 
   bool IsSessionOnly(const blink::StorageKey& storage_key,
                      blink::mojom::StorageType type) const;
@@ -458,7 +435,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // Kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set
   // the quota for syncable storage. (http://crbug.com/155488)
-  static int64_t kSyncableStorageDefaultHostQuota;
+  static int64_t kSyncableStorageDefaultStorageKeyQuota;
 
   void SetGetVolumeInfoFnForTesting(GetVolumeInfoFn fn) {
     get_volume_info_fn_ = fn;
@@ -687,6 +664,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                             base::Time modification_time,
                             base::OnceClosure callback,
                             QuotaErrorOr<BucketInfo> result);
+  void DidGetBucketForUsageAndQuota(UsageAndQuotaCallback callback,
+                                    QuotaErrorOr<BucketInfo> result);
   void DidGetStorageKeys(GetStorageKeysCallback callback,
                          QuotaErrorOr<std::set<blink::StorageKey>> result);
   void DidGetBuckets(
@@ -774,12 +753,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   GetBucketCallback lru_bucket_callback_;
 
-  // Keeps track of storage keys that have been accessed during an eviction task
-  // so they can be filtered out from eviction.
-  std::set<blink::StorageKey> access_notified_storage_keys_;
   // Buckets that have been notified of access during LRU task to exclude from
   // eviction.
-  std::set<BucketId> access_notified_buckets_;
+  std::set<BucketLocator> access_notified_buckets_;
 
   std::map<blink::StorageKey, QuotaOverride> devtools_overrides_;
   int next_override_handle_id_ = 0;

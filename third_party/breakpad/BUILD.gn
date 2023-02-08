@@ -124,6 +124,10 @@ if (!is_win) {
         "breakpad/src/processor/stackwalker_ppc.h",
         "breakpad/src/processor/stackwalker_ppc64.cc",
         "breakpad/src/processor/stackwalker_ppc64.h",
+        "breakpad/src/processor/stackwalker_riscv.cc",
+        "breakpad/src/processor/stackwalker_riscv.h",
+        "breakpad/src/processor/stackwalker_riscv64.cc",
+        "breakpad/src/processor/stackwalker_riscv64.h",
         "breakpad/src/processor/stackwalker_sparc.cc",
         "breakpad/src/processor/stackwalker_sparc.h",
         "breakpad/src/processor/stackwalker_x86.cc",
@@ -167,6 +171,8 @@ if (!is_win) {
 
     fuzzer_test("minidump_fuzzer") {
       sources = [
+        "breakpad/src/processor/disassembler_objdump.cc",
+        "breakpad/src/processor/disassembler_objdump.h",
         "breakpad/src/processor/exploitability.cc",
         "breakpad/src/processor/minidump.cc",
         "breakpad/src/processor/minidump_processor.cc",
@@ -213,6 +219,8 @@ if (!is_win) {
 
     executable("minidump_stackwalk") {
       sources = [
+        "breakpad/src/processor/disassembler_objdump.cc",
+        "breakpad/src/processor/disassembler_objdump.h",
         "breakpad/src/processor/exploitability.cc",
         "breakpad/src/processor/minidump.cc",
         "breakpad/src/processor/minidump_processor.cc",
@@ -326,6 +334,20 @@ if (is_mac) {
 
       # For breakpad/src/common/stabs_reader.h.
       defines = [ "HAVE_MACH_O_NLIST_H" ]
+    }
+    test("breakpad_unittests") {
+      sources = [ "breakpad/src/common/module_unittest.cc" ]
+      deps = [
+        ":common",
+        "//testing/gmock",
+        "//testing/gtest",
+        "//testing/gtest:gtest_main",
+      ]
+      include_dirs = [
+        "breakpad/src",
+        "chromium",  # Use our copy of breakpad_googletest_includes.h
+        ".",
+      ]
     }
 
     executable("dump_syms") {
@@ -569,6 +591,8 @@ if (is_linux || is_chromeos || is_android) {
       defines = [ "HAVE_A_OUT_H" ]
 
       include_dirs = [ "breakpad/src" ]
+
+      libs = [ "z" ]
     }
   } else {
     # Aliases for convenience.
@@ -722,7 +746,7 @@ if (is_linux || is_chromeos || is_android) {
       "breakpad/src/common/tests/file_utils.h",
       "breakpad/src/tools/linux/md2core/minidump_memory_range.h",
       "breakpad/src/tools/linux/md2core/minidump_memory_range_unittest.cc",
-      "linux/breakpad_googletest_includes.h",
+      "chromium/breakpad_googletest_includes.h",
     ]
 
     deps = [
@@ -736,7 +760,7 @@ if (is_linux || is_chromeos || is_android) {
     data_deps = [ ":linux_dumper_unittest_helper" ]
 
     include_dirs = [
-      "linux",  # Use our copy of breakpad_googletest_includes.h
+      "chromium",  # Use our copy of breakpad_googletest_includes.h
       ".",
     ]
 

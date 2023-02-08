@@ -10,12 +10,16 @@
 
 #include "ash/constants/ash_switches.h"
 #include "ash/display/privacy_screen_controller.h"
+#include "ash/ime/ime_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/webui/diagnostics_ui/backend/input/input_data_provider.h"
+#include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom-shared.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "chromeos/system/statistics_provider.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -204,12 +208,23 @@ constexpr uint32_t kScancodesDrallion[] = {
     0xAE, 0xB0, 0x44, 0x57, 0xd7, 0x8B, 0xD3,
 };
 
+// Turkish F-Type xkb keyboard layout id which is used to differentiate between
+// a device from 'tr' region with Q-Type vs F-Type.
+constexpr base::StringPiece kTurkishFLayoutId = "xkb:tr:f:tur";
+
+// |kTurkeyRegionCode| is the real turkey region code.
+// |kTurkeyFLayoutRegionCode| is used purely in the diagnostics app to
+// accurately display F-Type keyboard layouts.
+constexpr base::StringPiece kTurkeyRegionCode = "tr";
+constexpr base::StringPiece kTurkeyFLayoutRegionCode = "tr.f";
+
 mojom::MechanicalLayout GetSystemMechanicalLayout() {
   chromeos::system::StatisticsProvider* stats_provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  std::string layout_string;
-  if (!stats_provider->GetMachineStatistic(
-          chromeos::system::kKeyboardMechanicalLayoutKey, &layout_string)) {
+  const absl::optional<base::StringPiece> layout_string =
+      stats_provider->GetMachineStatistic(
+          chromeos::system::kKeyboardMechanicalLayoutKey);
+  if (!layout_string) {
     LOG(ERROR) << "Couldn't determine mechanical layout";
     return mojom::MechanicalLayout::kUnknown;
   }
@@ -220,7 +235,7 @@ mojom::MechanicalLayout GetSystemMechanicalLayout() {
   } else if (layout_string == "JIS") {
     return mojom::MechanicalLayout::kJis;
   } else {
-    LOG(ERROR) << "Unknown mechanical layout " << layout_string;
+    LOG(ERROR) << "Unknown mechanical layout " << layout_string.value();
     return mojom::MechanicalLayout::kUnknown;
   }
 }
@@ -228,14 +243,26 @@ mojom::MechanicalLayout GetSystemMechanicalLayout() {
 absl::optional<std::string> GetRegionCode() {
   chromeos::system::StatisticsProvider* stats_provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  std::string layout_string;
-  if (!stats_provider->GetMachineStatistic(chromeos::system::kRegionKey,
-                                           &layout_string)) {
+  const absl::optional<base::StringPiece> layout_string =
+      stats_provider->GetMachineStatistic(chromeos::system::kRegionKey);
+  if (!layout_string) {
     LOG(ERROR) << "Couldn't determine region";
     return absl::nullopt;
   }
 
-  return layout_string;
+  // In Turkey, two different layouts are shipped (Q-Type and F-Type) under the
+  // same region code |kTurkeyRegionCode|. To do a best effort differentiation
+  // between the two, query the current IME. If it is |kTurkishFLayoutId|,
+  // return our made up |kTurnishFLayoutRegionCode|.
+  if (layout_string.value() == kTurkeyRegionCode) {
+    ImeControllerImpl* controller = Shell::Get()->ime_controller();
+    DCHECK(controller);
+    if (base::EndsWith(controller->current_ime().id, kTurkishFLayoutId)) {
+      return std::string(kTurkeyFLayoutRegionCode);
+    }
+  }
+
+  return std::string(layout_string.value());
 }
 
 }  // namespace
@@ -383,11 +410,14 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
   // Work out the physical layout.
   if (device_info->keyboard_type ==
       ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
-    // TODO(crbug.com/1207678): set internal keyboard as unknown on ChromeOS
-    // Flex (board names chromeover64 or reven).
-    if (device_info->keyboard_top_row_layout ==
-        ui::EventRewriterChromeOS::KeyboardTopRowLayout::
-            kKbdTopRowLayoutWilco) {
+    // Reven boards have unknown keyboard layouts and should not be considered
+    // internal keyboards for the purposes of diagnostics.
+    if (chromeos::switches::IsRevenBranding()) {
+      result->physical_layout = mojom::PhysicalLayout::kUnknown;
+      result->connection_type = mojom::ConnectionType::kUnknown;
+    } else if (device_info->keyboard_top_row_layout ==
+               ui::EventRewriterChromeOS::KeyboardTopRowLayout::
+                   kKbdTopRowLayoutWilco) {
       result->physical_layout =
           mojom::PhysicalLayout::kChromeOSDellEnterpriseWilco;
     } else if (device_info->keyboard_top_row_layout ==
@@ -403,8 +433,7 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
   }
 
   // Get the mechanical and visual layouts, if possible.
-  if (device_info->keyboard_type ==
-      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+  if (result->physical_layout != mojom::PhysicalLayout::kUnknown) {
     result->mechanical_layout = GetSystemMechanicalLayout();
     result->region_code = GetRegionCode();
   } else {
@@ -413,8 +442,7 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
   }
 
   // Determine number pad presence.
-  if (device_info->keyboard_type ==
-      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+  if (result->physical_layout != mojom::PhysicalLayout::kUnknown) {
     result->number_pad_present =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kHasNumberPad)
@@ -446,8 +474,7 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
   // Logic in InputDataProvider will change kUnknown to the most likely one in
   // cases where we can't be sure.
   result->top_right_key = mojom::TopRightKey::kUnknown;
-  if (device_info->keyboard_type ==
-      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+  if (result->physical_layout != mojom::PhysicalLayout::kUnknown) {
     if (result->physical_layout ==
         mojom::PhysicalLayout::kChromeOSDellEnterpriseWilco) {
       // The first generation of Wilco devices both have lock in the top-right

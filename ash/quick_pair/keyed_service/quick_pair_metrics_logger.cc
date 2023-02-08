@@ -99,6 +99,19 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
                                                DiscoveryAction action) {
   switch (action) {
     case DiscoveryAction::kPairToDevice:
+      switch (device->protocol) {
+        case Protocol::kFastPairSubsequent:
+          RecordSubsequentSuccessFunnelFlow(
+              FastPairSubsequentSuccessFunnelEvent::kNotificationsClicked);
+          break;
+        case Protocol::kFastPairInitial:
+          RecordInitialSuccessFunnelFlow(
+              FastPairInitialSuccessFunnelEvent::kNotificationsClicked);
+          break;
+        case Protocol::kFastPairRetroactive:
+          break;
+      }
+
       if (base::Contains(discovery_learn_more_devices_, device)) {
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
@@ -136,7 +149,7 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByUser);
       break;
-    case DiscoveryAction::kDismissed:
+    case DiscoveryAction::kDismissedByOs:
       if (base::Contains(discovery_learn_more_devices_, device)) {
         AttemptRecordingFastPairEngagementFlow(
             *device, FastPairEngagementFlowEvent::
@@ -148,7 +161,17 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
       AttemptRecordingFastPairEngagementFlow(
           *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissed);
       break;
-    case DiscoveryAction::kAlreadyDisplayed:
+    case DiscoveryAction::kDismissedByTimeout:
+      if (base::Contains(discovery_learn_more_devices_, device)) {
+        AttemptRecordingFastPairEngagementFlow(
+            *device, FastPairEngagementFlowEvent::
+                         kDiscoveryUiDismissedByTimeoutAfterLearnMorePressed);
+        discovery_learn_more_devices_.erase(device);
+        break;
+      }
+
+      AttemptRecordingFastPairEngagementFlow(
+          *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissedByTimeout);
       break;
   }
 }
@@ -175,6 +198,51 @@ void QuickPairMetricsLogger::OnPairingFailureAction(
 void QuickPairMetricsLogger::OnDeviceFound(scoped_refptr<Device> device) {
   AttemptRecordingFastPairEngagementFlow(
       *device, FastPairEngagementFlowEvent::kDiscoveryUiShown);
+}
+
+void QuickPairMetricsLogger::OnPairingStart(scoped_refptr<Device> device) {
+  switch (device->protocol) {
+    case Protocol::kFastPairSubsequent:
+      RecordSubsequentSuccessFunnelFlow(
+          FastPairSubsequentSuccessFunnelEvent::kInitializationStarted);
+      break;
+    case Protocol::kFastPairInitial:
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kInitializationStarted);
+      break;
+    case Protocol::kFastPairRetroactive:
+      break;
+  }
+}
+
+void QuickPairMetricsLogger::OnHandshakeComplete(scoped_refptr<Device> device) {
+  switch (device->protocol) {
+    case Protocol::kFastPairSubsequent:
+      RecordSubsequentSuccessFunnelFlow(
+          FastPairSubsequentSuccessFunnelEvent::kPairingStarted);
+      break;
+    case Protocol::kFastPairInitial:
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kPairingStarted);
+      break;
+    case Protocol::kFastPairRetroactive:
+      break;
+  }
+}
+
+void QuickPairMetricsLogger::OnPairingComplete(scoped_refptr<Device> device) {
+  switch (device->protocol) {
+    case Protocol::kFastPairSubsequent:
+      RecordSubsequentSuccessFunnelFlow(
+          FastPairSubsequentSuccessFunnelEvent::kProcessComplete);
+      break;
+    case Protocol::kFastPairInitial:
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kPairingComplete);
+      break;
+    case Protocol::kFastPairRetroactive:
+      break;
+  }
 }
 
 void QuickPairMetricsLogger::OnRetroactivePairFound(
@@ -228,7 +296,21 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
           *device, FastPairRetroactiveEngagementFlowEvent::
                        kAssociateAccountUiDismissedByUser);
       break;
-    case AssociateAccountAction::kDismissed:
+    case AssociateAccountAction::kDismissedByTimeout:
+      if (base::Contains(associate_account_learn_more_devices_, device)) {
+        AttemptRecordingFastPairRetroactiveEngagementFlow(
+            *device,
+            FastPairRetroactiveEngagementFlowEvent::
+                kAssociateAccountDismissedByTimeoutAfterLearnMorePressed);
+        associate_account_learn_more_devices_.erase(device);
+        break;
+      }
+
+      AttemptRecordingFastPairRetroactiveEngagementFlow(
+          *device, FastPairRetroactiveEngagementFlowEvent::
+                       kAssociateAccountUiDismissedByTimeout);
+      break;
+    case AssociateAccountAction::kDismissedByOs:
       if (base::Contains(associate_account_learn_more_devices_, device)) {
         AttemptRecordingFastPairRetroactiveEngagementFlow(
             *device, FastPairRetroactiveEngagementFlowEvent::
@@ -247,8 +329,20 @@ void QuickPairMetricsLogger::OnAssociateAccountAction(
 void QuickPairMetricsLogger::OnAccountKeyWrite(
     scoped_refptr<Device> device,
     absl::optional<AccountKeyFailure> error) {
-  if (device->protocol == Protocol::kFastPairRetroactive)
-    RecordRetroactivePairingResult(/*success=*/!error.has_value());
+  switch (device->protocol) {
+    case Protocol::kFastPairSubsequent:
+      // TODO(b/259443372): Record this case once we implement account key
+      // writing in all scenarios,
+      NOTREACHED();
+      break;
+    case Protocol::kFastPairInitial:
+      RecordInitialSuccessFunnelFlow(
+          FastPairInitialSuccessFunnelEvent::kProcessComplete);
+      break;
+    case Protocol::kFastPairRetroactive:
+      RecordRetroactivePairingResult(/*success=*/!error.has_value());
+      break;
+  }
 
   if (error.has_value()) {
     RecordAccountKeyResult(*device, /*success=*/false);

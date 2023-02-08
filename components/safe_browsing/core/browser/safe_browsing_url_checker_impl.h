@@ -153,6 +153,9 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                         NativeCheckUrlCallback callback);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingUrlCheckerTest,
+                           CheckUrl_CancelCheckOnTimeout);
+
   class Notifier {
    public:
     explicit Notifier(CheckUrlCallback callback);
@@ -183,7 +186,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void OnCheckBrowseUrlResult(const GURL& url,
                               SBThreatType threat_type,
                               const ThreatMetadata& metadata) override;
-  void OnCheckUrlForHighConfidenceAllowlist(bool did_match_allowlist) override;
+
+  void OnCheckUrlForHighConfidenceAllowlist(bool did_match_allowlist);
 
   void OnTimeout();
 
@@ -226,7 +230,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const GURL& last_committed_url,
       bool is_mainframe,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // This function has to be static because it is called in UI thread.
@@ -239,7 +242,6 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
       const GURL& last_committed_url,
       bool is_mainframe,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
-      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
   // Called when the |request| from the real-time lookup service is sent.
@@ -267,11 +269,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Calls |CheckBrowseUrl| on the database manager and sets
   // is_async_database_manager_check_in_progress_ if the check is asynchronous.
   bool CallCheckBrowseUrl(const GURL& url);
-  // Calls |CheckUrlForHighConfidenceAllowlist| on the database manager and sets
-  // is_async_database_manager_check_in_progress_ if the check is asynchronous.
-  AsyncMatch CallCheckUrlForHighConfidenceAllowlist(const GURL& url);
   // Cancels the ongoing database manager check if there is one.
   void CancelCheckIfRelevant();
+
+  void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
   security_interstitials::UnsafeResource MakeUnsafeResource(
       const GURL& url,
@@ -354,7 +355,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   State state_ = STATE_NONE;
 
   // Timer to abort the SafeBrowsing check if it takes too long.
-  base::OneShotTimer timer_;
+  std::unique_ptr<base::OneShotTimer> timer_ =
+      std::make_unique<base::OneShotTimer>();
 
   // Whether real time lookup is enabled for this request.
   bool real_time_lookup_enabled_;

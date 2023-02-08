@@ -103,7 +103,9 @@ TEST_F(SyncEncryptionKeysTabHelperTest,
   EXPECT_FALSE(HasEncryptionKeysApiInMainFrame());
 }
 
-TEST_F(SyncEncryptionKeysTabHelperTest, ShouldNotExposeMojoApiIfNavigatedAway) {
+// TODO(https://crbug.com/1394191): flaky on android bots.
+TEST_F(SyncEncryptionKeysTabHelperTest,
+       DISABLED_ShouldNotExposeMojoApiIfNavigatedAway) {
   web_contents_tester()->NavigateAndCommit(GaiaUrls::GetInstance()->gaia_url());
   ASSERT_TRUE(HasEncryptionKeysApiInMainFrame());
   web_contents_tester()->NavigateAndCommit(GURL("http://page.com"));
@@ -136,8 +138,9 @@ TEST_F(SyncEncryptionKeysTabHelperTest,
   EXPECT_FALSE(HasEncryptionKeysApiInMainFrame());
 }
 
+// TODO(https://crbug.com/1394191): flaky on android bots.
 TEST_F(SyncEncryptionKeysTabHelperTest,
-       ShouldNotExposeMojoApiIfNavigatedAwayToErrorPage) {
+       DISABLED_ShouldNotExposeMojoApiIfNavigatedAwayToErrorPage) {
   web_contents_tester()->NavigateAndCommit(GaiaUrls::GetInstance()->gaia_url());
   ASSERT_TRUE(HasEncryptionKeysApiInMainFrame());
 
@@ -160,17 +163,10 @@ TEST_F(SyncEncryptionKeysTabHelperTest,
 class SyncEncryptionKeysTabHelperPrerenderingTest
     : public SyncEncryptionKeysTabHelperTest {
  public:
-  SyncEncryptionKeysTabHelperPrerenderingTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kPrerender2},
-        // Disable the memory requirement of Prerender2 so the test can run on
-        // any bot.
-        {blink::features::kPrerender2MemoryControls});
-  }
-  ~SyncEncryptionKeysTabHelperPrerenderingTest() override = default;
+  SyncEncryptionKeysTabHelperPrerenderingTest() = default;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  content::test::ScopedPrerenderFeatureList prerender_feature_list_;
 };
 
 // Tests that EncryptionKeys works based on a main frame. A prerendered page

@@ -55,6 +55,9 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"searchResults", IDS_SEARCH_RESULTS},
       {"searchResultSelected", IDS_OS_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED},
       {"clearSearch", IDS_CLEAR_SEARCH},
+      {"searchFeedbackButton", IDS_OS_SETTINGS_SEARCH_FEEDBACK_BUTTON},
+      {"searchFeedbackDescriptionTemplate",
+       IDS_OS_SETTINGS_SEARCH_FEEDBACK_DESCRIPTION_TEMPLATE},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -169,8 +172,10 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);
+  html_source->AddBoolean("searchFeedbackEnabled",
+                          ash::features::IsOsSettingsSearchFeedbackEnabled());
 
-  html_source->AddBoolean("isGuest", features::IsGuestModeActive());
+  html_source->AddBoolean("isGuest", IsGuestModeActive());
   html_source->AddBoolean(
       "isKioskModeActive",
       user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());

@@ -22,7 +22,7 @@ class EmojiPickerBrowserTest extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerClipboard']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerClipboard']};
   }
 }
 
@@ -36,7 +36,8 @@ var EmojiPickerMainTest = class extends EmojiPickerBrowserTest {
 };
 
 
-TEST_F('EmojiPickerMainTest', 'All', function() {
+// TODO(https://crbug.com/1179762): Re-enable once flakiness is fixed.
+TEST_F('EmojiPickerMainTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -57,7 +58,7 @@ TEST_F('EmojiPickerStoreTest', 'DISABLED_All', function() {
 var EmojiPickerExtensionBrowserTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerExtension']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerExtension']};
   }
 
   /** @override */
@@ -74,7 +75,7 @@ TEST_F('EmojiPickerExtensionBrowserTest', 'All', function() {
 var EmojiPickerExtensionEmojiTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerExtension']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerExtension']};
   }
 
   /** @override */
@@ -91,7 +92,7 @@ TEST_F('EmojiPickerExtensionEmojiTest', 'All', function() {
 var EmojiPickerExtensionSymbolTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerExtension']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerExtension']};
   }
 
   /** @override */
@@ -108,7 +109,7 @@ TEST_F('EmojiPickerExtensionSymbolTest', 'All', function() {
 var EmojiPickerExtensionEmoticonTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerExtension']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerExtension']};
   }
 
   /** @override */
@@ -125,7 +126,7 @@ TEST_F('EmojiPickerExtensionEmoticonTest', 'All', function() {
 var EmojiPickerExtensionSearchTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kImeSystemEmojiPickerExtension']};
+    return {enabled: ['ash::features::kImeSystemEmojiPickerExtension']};
   }
 
   /** @override */
@@ -143,7 +144,7 @@ var EmojiPickerTrieTest = class extends PolymerTest {
   /** @override */
   get featureList() {
     return {
-      enabled: ['chromeos::features::kImeSystemEmojiPickerSearchExtension'],
+      enabled: ['ash::features::kImeSystemEmojiPickerSearchExtension'],
     };
   }
   /** @override */

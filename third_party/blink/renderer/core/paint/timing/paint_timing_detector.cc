@@ -35,10 +35,13 @@
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/loader/fetch/media_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -59,12 +62,31 @@ bool IsBackgroundImageContentful(const LayoutObject& object,
       object.IsDocumentElement()) {
     return false;
   }
-
-  DCHECK(!image.IsSVGImage());
-  if (!base::FeatureList::IsEnabled(features::kIncludeBackgroundSVGInLCP) &&
-      image.IsSVGImageForContainer())
-    return false;
   return true;
+}
+
+LargestContentfulPaintType GetLargestContentfulPaintTypeFromString(
+    const AtomicString& type_string) {
+  if (type_string.empty())
+    return LargestContentfulPaintType::kNone;
+
+  using LargestContentfulPaintTypeMap =
+      HashMap<AtomicString, LargestContentfulPaintType>;
+
+  DEFINE_STATIC_LOCAL(LargestContentfulPaintTypeMap,
+                      largest_contentful_paint_type_map,
+                      ({{"svg", LargestContentfulPaintType::kSVG},
+                        {"gif", LargestContentfulPaintType::kGIF},
+                        {"png", LargestContentfulPaintType::kPNG},
+                        {"jpg", LargestContentfulPaintType::kJPG},
+                        {"avif", LargestContentfulPaintType::kAVIF},
+                        {"webp", LargestContentfulPaintType::kWebP}}));
+
+  auto it = largest_contentful_paint_type_map.find(type_string);
+  if (it != largest_contentful_paint_type_map.end())
+    return it->value;
+
+  return LargestContentfulPaintType::kNone;
 }
 
 }  // namespace
@@ -139,7 +161,7 @@ bool PaintTimingDetector::NotifyBackgroundImagePaint(
 
   return image_paint_timing_detector.RecordImage(
       *object, image.Size(), *cached_image, current_paint_chunk_properties,
-      &style_image, image_border);
+      &style_image, image_border, style_image.IsLoadedAfterMouseover());
 }
 
 // static
@@ -159,9 +181,14 @@ bool PaintTimingDetector::NotifyImagePaint(
   if (!image_paint_timing_detector.IsRecordingLargestImagePaint())
     return false;
 
+  Node* image_node = object.GetNode();
+  HTMLImageElement* element = DynamicTo<HTMLImageElement>(image_node);
+  bool is_loaded_after_mouseover =
+      element && element->IsChangedShortlyAfterMouseover();
+
   return image_paint_timing_detector.RecordImage(
       object, intrinsic_size, media_timing, current_paint_chunk_properties,
-      nullptr, image_border);
+      nullptr, image_border, is_loaded_after_mouseover);
 }
 
 void PaintTimingDetector::NotifyImageFinished(const LayoutObject& object,
@@ -255,7 +282,7 @@ PaintTimingDetector::GetLargestContentfulPaintCalculator() {
   return largest_contentful_paint_calculator_;
 }
 
-bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
+bool PaintTimingDetector::NotifyMetricsIfLargestImagePaintChanged(
     base::TimeTicks image_paint_time,
     uint64_t image_paint_size,
     ImageRecord* image_record,
@@ -273,10 +300,7 @@ bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
   lcp_details_.largest_contentful_paint_type_ =
       blink::LargestContentfulPaintType::kNone;
   if (image_record) {
-    Node* image_node = DOMNodeIds::NodeForId(image_record->node_id);
-    HTMLImageElement* element = DynamicTo<HTMLImageElement>(image_node);
-    if (element && !image_node->IsInShadowTree() &&
-        element->IsChangedShortlyAfterMouseover()) {
+    if (image_record->is_loaded_after_mouseover) {
       lcp_details_.largest_contentful_paint_type_ |=
           blink::LargestContentfulPaintType::kAfterMouseover;
     }
@@ -293,6 +317,21 @@ bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
         lcp_details_.largest_contentful_paint_type_ |=
             blink::LargestContentfulPaintType::kAnimatedImage;
       }
+
+      // Set image type flag.
+      lcp_details_.largest_contentful_paint_type_ |=
+          blink::LargestContentfulPaintType::kImage;
+
+      // Set specific type of the image.
+      lcp_details_.largest_contentful_paint_type_ |=
+          GetLargestContentfulPaintTypeFromString(
+              image_record->media_timing->MediaType());
+
+      // Set DataURI type.
+      if (image_record->media_timing->IsDataUrl()) {
+        lcp_details_.largest_contentful_paint_type_ |=
+            blink::LargestContentfulPaintType::kDataURI;
+      }
     }
   }
   lcp_details_.largest_image_paint_time_ = image_paint_time;
@@ -305,7 +344,7 @@ bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
   return true;
 }
 
-bool PaintTimingDetector::NotifyIfChangedLargestTextPaint(
+bool PaintTimingDetector::NotifyMetricsIfLargestTextPaintChanged(
     base::TimeTicks text_paint_time,
     uint64_t text_paint_size) {
   if (!HasLargestTextPaintChanged(text_paint_time, text_paint_size))
@@ -325,6 +364,17 @@ void PaintTimingDetector::UpdateLargestContentfulPaintTime() {
       lcp_details_.largest_image_paint_size_) {
     lcp_details_.largest_contentful_paint_time_ =
         lcp_details_.largest_text_paint_time_;
+
+    // We set lcp_details_.largest_contentful_paint_type_ only here because we
+    // use lcp_details_.largest_contentful_paint_type_ to track the LCP type of
+    // the largest image only. When the largest image gets updated, the
+    // lcp_details_.largest_contentful_paint_type_ gets reset and updated
+    // accordingly in the NotifyMetricsIfLargestImagePaintChanged() method. If
+    // the LCP element turns out to be the largest text, we simply set the
+    // lcp_details_.largest_contentful_paint_type_ to be kText here. This is
+    // possible because currently text elements have only 1 LCP type kText.
+    lcp_details_.largest_contentful_paint_type_ =
+        LargestContentfulPaintType::kText;
   } else if (lcp_details_.largest_text_paint_size_ <
              lcp_details_.largest_image_paint_size_) {
     lcp_details_.largest_contentful_paint_time_ =
@@ -334,6 +384,12 @@ void PaintTimingDetector::UpdateLargestContentfulPaintTime() {
     lcp_details_.largest_contentful_paint_time_ =
         std::min(lcp_details_.largest_text_paint_time_,
                  lcp_details_.largest_image_paint_time_);
+
+    if (lcp_details_.largest_text_paint_time_ <
+        lcp_details_.largest_image_paint_time_) {
+      lcp_details_.largest_contentful_paint_type_ =
+          LargestContentfulPaintType::kText;
+    }
   }
   if (record_lcp_to_ukm_) {
     lcp_details_for_ukm_ = lcp_details_;
@@ -424,14 +480,15 @@ void PaintTimingDetector::UpdateLargestContentfulPaintCandidate() {
   const TextRecord* largest_text_record = nullptr;
   const ImageRecord* largest_image_record = nullptr;
   if (text_paint_timing_detector_->IsRecordingLargestTextPaint()) {
-    largest_text_record = text_paint_timing_detector_->UpdateCandidate();
+    largest_text_record = text_paint_timing_detector_->UpdateMetricsCandidate();
   }
   if (image_paint_timing_detector_->IsRecordingLargestImagePaint()) {
-    largest_image_record = image_paint_timing_detector_->UpdateCandidate();
+    largest_image_record =
+        image_paint_timing_detector_->UpdateMetricsCandidate();
   }
 
-  lcp_calculator->UpdateLargestContentfulPaintIfNeeded(largest_text_record,
-                                                       largest_image_record);
+  lcp_calculator->UpdateWebExposedLargestContentfulPaintIfNeeded(
+      largest_text_record, largest_image_record);
 }
 
 void PaintTimingDetector::ReportIgnoredContent() {

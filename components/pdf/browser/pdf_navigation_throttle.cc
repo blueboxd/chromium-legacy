@@ -11,7 +11,7 @@
 #include "base/check.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/pdf/browser/pdf_stream_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -96,7 +96,7 @@ PdfNavigationThrottle::WillStartRequest() {
             contents->GetPrimaryMainFrame()->GetSiteInstance());
   params.source_site_instance.reset();
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](base::WeakPtr<content::WebContents> web_contents,

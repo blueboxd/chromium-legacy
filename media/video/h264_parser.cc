@@ -14,6 +14,7 @@
 #include "media/base/subsample_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/hdr_metadata.h"
 
 namespace media {
 
@@ -247,9 +248,39 @@ H264SliceHeader::H264SliceHeader() {
   memset(this, 0, sizeof(*this));
 }
 
+H264SliceHeader::H264SliceHeader(const H264SliceHeader& t) = default;
+
 H264SEIMessage::H264SEIMessage() {
   memset(this, 0, sizeof(*this));
 }
+
+void H264SEIContentLightLevelInfo::PopulateHDRMetadata(
+    gfx::HDRMetadata& hdr_metadata) const {
+  hdr_metadata.max_content_light_level = max_content_light_level;
+  hdr_metadata.max_frame_average_light_level = max_picture_average_light_level;
+}
+
+void H264SEIMasteringDisplayInfo::PopulateColorVolumeMetadata(
+    gfx::ColorVolumeMetadata& color_volume_metadata) const {
+  constexpr auto kChromaDenominator = 50000.0f;
+  constexpr auto kLumaDenoninator = 10000.0f;
+  // display primaries are in G/B/R order in MDCV SEI.
+  color_volume_metadata.primaries = {
+      display_primaries[2][0] / kChromaDenominator,
+      display_primaries[2][1] / kChromaDenominator,
+      display_primaries[0][0] / kChromaDenominator,
+      display_primaries[0][1] / kChromaDenominator,
+      display_primaries[1][0] / kChromaDenominator,
+      display_primaries[1][1] / kChromaDenominator,
+      white_points[0] / kChromaDenominator,
+      white_points[1] / kChromaDenominator};
+  color_volume_metadata.luminance_max = max_luminance / kLumaDenoninator;
+  color_volume_metadata.luminance_min = min_luminance / kLumaDenoninator;
+}
+
+H264SEI::H264SEI() = default;
+
+H264SEI::~H264SEI() = default;
 
 #define READ_BITS_OR_RETURN(num_bits, out)                                 \
   do {                                                                     \
@@ -260,6 +291,32 @@ H264SEIMessage::H264SEIMessage() {
       return kInvalidStream;                                               \
     }                                                                      \
     *out = _out;                                                           \
+  } while (0)
+
+#define READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(num_bits, out,             \
+                                                num_bits_remain)           \
+  do {                                                                     \
+    int _out;                                                              \
+    if (!br_.ReadBits(num_bits, &_out)) {                                  \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return kInvalidStream;                                               \
+    }                                                                      \
+    *num_bits_remain -= num_bits;                                          \
+    *out = _out;                                                           \
+  } while (0)
+
+#define SKIP_BITS_OR_RETURN(num_bits)                                       \
+  do {                                                                      \
+    int bits_left = num_bits;                                               \
+    int discard;                                                            \
+    while (bits_left > 0) {                                                 \
+      if (!br_.ReadBits(bits_left > 16 ? 16 : bits_left, &discard)) {       \
+        DVLOG(1) << "Error in stream: unexpected EOS while trying to skip"; \
+        return kInvalidStream;                                              \
+      }                                                                     \
+      bits_left -= 16;                                                      \
+    }                                                                       \
   } while (0)
 
 #define READ_BOOL_OR_RETURN(out)                                           \
@@ -273,17 +330,39 @@ H264SEIMessage::H264SEIMessage() {
     *out = _out != 0;                                                      \
   } while (0)
 
+#define READ_BOOL_AND_MINUS_BITS_READ_OR_RETURN(out, num_bits_remain)      \
+  do {                                                                     \
+    int _out;                                                              \
+    if (!br_.ReadBits(1, &_out)) {                                         \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return kInvalidStream;                                               \
+    }                                                                      \
+    *num_bits_remain -= 1;                                                 \
+    *out = _out != 0;                                                      \
+  } while (0)
+
 #define READ_UE_OR_RETURN(out)                                                 \
   do {                                                                         \
-    if (ReadUE(out) != kOk) {                                                  \
+    if (ReadUE(out, nullptr) != kOk) {                                         \
       DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
       return kInvalidStream;                                                   \
     }                                                                          \
   } while (0)
 
+#define READ_UE_AND_MINUS_BITS_READ_OR_RETURN(out, num_bits_remain)            \
+  do {                                                                         \
+    int num_bits_read;                                                         \
+    if (ReadUE(out, &num_bits_read) != kOk) {                                  \
+      DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
+      return kInvalidStream;                                                   \
+    }                                                                          \
+    *num_bits_remain -= num_bits_read;                                         \
+  } while (0)
+
 #define READ_SE_OR_RETURN(out)                                                 \
   do {                                                                         \
-    if (ReadSE(out) != kOk) {                                                  \
+    if (ReadSE(out, nullptr) != kOk) {                                         \
       DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
       return kInvalidStream;                                                   \
     }                                                                          \
@@ -563,7 +642,7 @@ bool H264Parser::ParseNALUs(const uint8_t* stream,
   return false;
 }
 
-H264Parser::Result H264Parser::ReadUE(int* val) {
+H264Parser::Result H264Parser::ReadUE(int* val, int* num_bits_read) {
   int num_bits = -1;
   int bit;
   int rest;
@@ -583,6 +662,10 @@ H264Parser::Result H264Parser::ReadUE(int* val) {
   // be 0 or else the number is too large.
   *val = (1u << num_bits) - 1u;
 
+  // Calculate the total read bits count.
+  if (num_bits_read)
+    *num_bits_read = 1 + num_bits * 2;
+
   if (num_bits == 31) {
     READ_BITS_OR_RETURN(num_bits, &rest);
     return (rest == 0) ? kOk : kInvalidStream;
@@ -596,12 +679,12 @@ H264Parser::Result H264Parser::ReadUE(int* val) {
   return kOk;
 }
 
-H264Parser::Result H264Parser::ReadSE(int* val) {
+H264Parser::Result H264Parser::ReadSE(int* val, int* num_bits_read) {
   int ue;
   Result res;
 
   // See Chapter 9 in the spec.
-  res = ReadUE(&ue);
+  res = ReadUE(&ue, num_bits_read);
   if (res != kOk)
     return res;
 
@@ -1602,40 +1685,103 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
   return kOk;
 }
 
-H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
+H264Parser::Result H264Parser::ParseSEI(H264SEI* sei) {
   int byte;
-
-  memset(sei_msg, 0, sizeof(*sei_msg));
-
-  READ_BITS_OR_RETURN(8, &byte);
-  while (byte == 0xff) {
-    sei_msg->type += 255;
+  int num_parsed_sei_msg = 0;
+  // According to spec 7.3.2.3, we should loop parsing SEI NALU
+  // as long as `more_rbsp_data` condition is true, which means
+  // if the NALU's RBSP data is large enough and `more_rbsp_data`
+  // condition keeps true all the time, we are very likely have to
+  // loop the parsing millions of times.
+  //
+  // The spec doesn't provide any pattern to let us validate the
+  // the parsed SEI messages, so we have to set a limit here.
+  constexpr int kMaxParsedSEIMessages = 64;
+  do {
+    H264SEIMessage sei_msg;
+    sei_msg.type = 0;
     READ_BITS_OR_RETURN(8, &byte);
-  }
-  sei_msg->type += byte;
+    while (byte == 0xff) {
+      sei_msg.type += 255;
+      READ_BITS_OR_RETURN(8, &byte);
+    }
+    sei_msg.type += byte;
 
-  READ_BITS_OR_RETURN(8, &byte);
-  while (byte == 0xff) {
-    sei_msg->payload_size += 255;
+    sei_msg.payload_size = 0;
     READ_BITS_OR_RETURN(8, &byte);
-  }
-  sei_msg->payload_size += byte;
+    while (byte == 0xff) {
+      sei_msg.payload_size += 255;
+      READ_BITS_OR_RETURN(8, &byte);
+    }
+    sei_msg.payload_size += byte;
+    int num_bits_remain = sei_msg.payload_size * 8;
 
-  DVLOG(4) << "Found SEI message type: " << sei_msg->type
-           << " payload size: " << sei_msg->payload_size;
+    DVLOG(4) << "Found SEI message type: " << sei_msg.type
+             << " payload size: " << sei_msg.payload_size;
 
-  switch (sei_msg->type) {
-    case H264SEIMessage::kSEIRecoveryPoint:
-      READ_UE_OR_RETURN(&sei_msg->recovery_point.recovery_frame_cnt);
-      READ_BOOL_OR_RETURN(&sei_msg->recovery_point.exact_match_flag);
-      READ_BOOL_OR_RETURN(&sei_msg->recovery_point.broken_link_flag);
-      READ_BITS_OR_RETURN(2, &sei_msg->recovery_point.changing_slice_group_idc);
-      break;
-
-    default:
-      DVLOG(4) << "Unsupported SEI message";
-      break;
-  }
+    switch (sei_msg.type) {
+      case H264SEIMessage::kSEIRecoveryPoint:
+        READ_UE_AND_MINUS_BITS_READ_OR_RETURN(
+            &sei_msg.recovery_point.recovery_frame_cnt, &num_bits_remain);
+        READ_BOOL_AND_MINUS_BITS_READ_OR_RETURN(
+            &sei_msg.recovery_point.exact_match_flag, &num_bits_remain);
+        READ_BOOL_AND_MINUS_BITS_READ_OR_RETURN(
+            &sei_msg.recovery_point.broken_link_flag, &num_bits_remain);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(
+            2, &sei_msg.recovery_point.changing_slice_group_idc,
+            &num_bits_remain);
+        break;
+      case H264SEIMessage::kSEIContentLightLevelInfo:
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(
+            16, &sei_msg.content_light_level_info.max_content_light_level,
+            &num_bits_remain);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(
+            16,
+            &sei_msg.content_light_level_info.max_picture_average_light_level,
+            &num_bits_remain);
+        break;
+      case H264SEIMessage::kSEIMasteringDisplayInfo:
+        for (auto& primary : sei_msg.mastering_display_info.display_primaries) {
+          for (auto& component : primary) {
+            READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(16, &component,
+                                                    &num_bits_remain);
+          }
+        }
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(
+            16, &sei_msg.mastering_display_info.white_points[0],
+            &num_bits_remain);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(
+            16, &sei_msg.mastering_display_info.white_points[1],
+            &num_bits_remain);
+        uint32_t luminace_high_31bits, luminance_low_1bit;
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(31, &luminace_high_31bits,
+                                                &num_bits_remain);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(1, &luminance_low_1bit,
+                                                &num_bits_remain);
+        sei_msg.mastering_display_info.max_luminance =
+            (luminace_high_31bits << 1) + (luminance_low_1bit & 0x1);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(31, &luminace_high_31bits,
+                                                &num_bits_remain);
+        READ_BITS_AND_MINUS_BITS_READ_OR_RETURN(1, &luminance_low_1bit,
+                                                &num_bits_remain);
+        sei_msg.mastering_display_info.min_luminance =
+            (luminace_high_31bits << 1) + (luminance_low_1bit & 0x1);
+        break;
+      default:
+        DVLOG(4) << "Unsupported SEI message";
+        break;
+    }
+    TRUE_OR_RETURN(num_bits_remain >= 0);
+    // D.1.1 Not byted aligned in payload or unsupported SEI, skip bits.
+    if (num_bits_remain > 0)
+      SKIP_BITS_OR_RETURN(num_bits_remain);
+    // Only add parsed SEI messages.
+    if (num_bits_remain < sei_msg.payload_size * 8)
+      sei->msgs.push_back(sei_msg);
+    // In case the loop endless.
+    if (++num_parsed_sei_msg > kMaxParsedSEIMessages)
+      return kInvalidStream;
+  } while (br_.HasMoreRBSPData());
 
   return kOk;
 }

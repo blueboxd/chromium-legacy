@@ -26,9 +26,10 @@
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/typed_macros.h"
@@ -46,6 +47,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/cookies/static_cookie_policy.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -104,8 +106,6 @@
 namespace network {
 
 namespace {
-
-using ConcerningHeaderId = URLLoader::ConcerningHeaderId;
 
 // Cannot use 0, because this means "default" in
 // mojo::core::Core::CreateDataPipe
@@ -241,7 +241,7 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
             net::SSLPrivateKey::SignCallback callback) override {
     std::vector<uint8_t> input_vector(input.begin(), input.end());
     if (!ssl_private_key_ || !ssl_private_key_.is_connected()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(std::move(callback),
                          net::ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY,
@@ -285,22 +285,6 @@ bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
          status.HasExclusionReason(
              net::CookieInclusionStatus::EXCLUDE_DOMAIN_NON_ASCII);
 }
-
-// Concerning headers that consumers probably shouldn't be allowed to set.
-// Gathering numbers on these before adding them to kUnsafeHeaders.
-const struct {
-  const char* name;
-  ConcerningHeaderId histogram_id;
-} kConcerningHeaders[] = {
-    {net::HttpRequestHeaders::kConnection, ConcerningHeaderId::kConnection},
-    {net::HttpRequestHeaders::kCookie, ConcerningHeaderId::kCookie},
-    {"Date", ConcerningHeaderId::kDate},
-    {"Expect", ConcerningHeaderId::kExpect},
-    // The referer is passed in from the caller on a per-request basis, but
-    // there's a separate field for it that should be used instead.
-    {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
-    {"Via", ConcerningHeaderId::kVia},
-};
 
 // Parses AcceptCHFrame and removes client hints already in the headers.
 std::vector<mojom::WebClientHintsType> ComputeAcceptCHFrameHints(
@@ -407,6 +391,56 @@ bool HasHeadersIncompatibleWithSingleKeyedCache(
   return false;
 }
 
+// Retrieves the Cookie header from either `cors_exempt_headers` or `headers`.
+std::string GetCookiesFromHeaders(
+    const net::HttpRequestHeaders& headers,
+    const net::HttpRequestHeaders& cors_exempt_headers) {
+  std::string cookies;
+  if (!cors_exempt_headers.GetHeader(net::HttpRequestHeaders::kCookie,
+                                     &cookies)) {
+    headers.GetHeader(net::HttpRequestHeaders::kCookie, &cookies);
+  }
+  return cookies;
+}
+
+net::HttpRequestHeaders AttachCookies(const net::HttpRequestHeaders& headers,
+                                      const std::string& cookies_from_browser) {
+  DCHECK(!cookies_from_browser.empty());
+
+  // Parse the existing cookie line.
+  std::string old_cookies;
+  headers.GetHeader(net::HttpRequestHeaders::kCookie, &old_cookies);
+  net::cookie_util::ParsedRequestCookies parsed_cookies;
+
+  net::cookie_util::ParseRequestCookieLine(old_cookies, &parsed_cookies);
+  net::cookie_util::ParsedRequestCookies parsed_cookies_from_browser;
+  net::cookie_util::ParseRequestCookieLine(cookies_from_browser,
+                                           &parsed_cookies_from_browser);
+
+  // Add the browser cookies to the request.
+  for (auto cookie : parsed_cookies_from_browser) {
+    DCHECK(!cookie.first.empty());
+
+    // Ensure we're not adding duplicate cookies.
+    auto it = std::find_if(
+        parsed_cookies.begin(), parsed_cookies.end(),
+        [&cookie](const net::cookie_util::ParsedRequestCookie& old_cookie) {
+          return old_cookie.first == cookie.first;
+        });
+    if (it != parsed_cookies.end())
+      continue;
+
+    parsed_cookies.emplace_back(cookie.first, cookie.second);
+  }
+
+  net::HttpRequestHeaders updated_headers = headers;
+  std::string updated_cookies =
+      net::cookie_util::SerializeRequestCookieLine(parsed_cookies);
+  updated_headers.SetHeader(net::HttpRequestHeaders::kCookie, updated_cookies);
+
+  return updated_headers;
+}
+
 }  // namespace
 
 URLLoader::MaybeSyncURLLoaderClient::MaybeSyncURLLoaderClient(
@@ -474,10 +508,11 @@ URLLoader::URLLoader(
                          std::move(sync_url_loader_client)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                               base::SequencedTaskRunnerHandle::Get()),
-      peer_closed_handle_watcher_(FROM_HERE,
-                                  mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                                  base::SequencedTaskRunnerHandle::Get()),
+                               base::SequencedTaskRunner::GetCurrentDefault()),
+      peer_closed_handle_watcher_(
+          FROM_HERE,
+          mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+          base::SequencedTaskRunner::GetCurrentDefault()),
       per_factory_corb_state_(context.GetMutableCorbState()),
       devtools_request_id_(request.devtools_request_id),
       request_mode_(request.mode),
@@ -488,7 +523,10 @@ URLLoader::URLLoader(
       custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       fetch_window_id_(request.fetch_window_id),
-      private_network_access_checker_(request, &*factory_params_, options_),
+      private_network_access_checker_(
+          request,
+          factory_params_->client_security_state.get(),
+          options_),
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
       origin_access_list_(context.GetOriginAccessList()),
       cookie_observer_remote_(std::move(cookie_observer)),
@@ -598,6 +636,8 @@ URLLoader::URLLoader(
 
   if (request.trusted_params) {
     has_user_activation_ = request.trusted_params->has_user_activation;
+    allow_cookies_from_browser_ =
+        request.trusted_params->allow_cookies_from_browser;
   }
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
@@ -691,6 +731,13 @@ URLLoader::URLLoader(
   if (request.request_body.get()) {
     OpenFilesForUpload(request);
     return;
+  }
+
+  // Store any cookies passed from the browser process to later attach them to
+  // the request.
+  if (allow_cookies_from_browser_) {
+    cookies_from_browser_ =
+        GetCookiesFromHeaders(request.headers, request.cors_exempt_headers);
   }
 
   BeginTrustTokenOperationIfNecessaryAndThenScheduleStart(request);
@@ -815,7 +862,7 @@ void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
                    "NetworkContextClient is set.";
     // Defer calling NotifyCompleted to make sure the URLLoader finishes
     // initializing before getting deleted.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&URLLoader::NotifyCompleted,
                        weak_ptr_factory_.GetWeakPtr(), net::ERR_ACCESS_DENIED));
@@ -835,7 +882,7 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
     DCHECK(opened_files.empty());
     // Defer calling NotifyCompleted to make sure the URLLoader finishes
     // initializing before getting deleted.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
                                   weak_ptr_factory_.GetWeakPtr(), error_code));
     return;
@@ -895,7 +942,7 @@ void URLLoader::OnDoneConstructingTrustTokenHelper(
 
     // Defer calling NotifyCompleted to make sure the URLLoader
     // finishes initializing before getting deleted.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   net::ERR_TRUST_TOKEN_OPERATION_FAILED));
@@ -948,13 +995,13 @@ void URLLoader::OnDoneBeginningTrustTokenOperation(
     //
     // Here and below, defer calling NotifyCompleted to make sure the URLLoader
     // finishes initializing before getting deleted.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &URLLoader::NotifyCompleted, weak_ptr_factory_.GetWeakPtr(),
             net::ERR_TRUST_TOKEN_OPERATION_SUCCESS_WITHOUT_SENDING_REQUEST));
   } else {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   net::ERR_TRUST_TOKEN_OPERATION_FAILED));
@@ -980,7 +1027,6 @@ void URLLoader::ScheduleStart() {
 URLLoader::~URLLoader() {
   TRACE_EVENT("loading", "URLLoader::~URLLoader",
               perfetto::TerminatingFlow::FromPointer(this));
-  RecordBodyReadFromNetBeforePausedIfNeeded();
   if (keepalive_ && keepalive_statistics_recorder_) {
     keepalive_statistics_recorder_->OnLoadFinished(
         *factory_params_->top_frame_id, keepalive_request_size_);
@@ -1019,9 +1065,12 @@ void URLLoader::FollowRedirect(
     return;
   }
 
-  if (!modified_headers.IsEmpty())
-    LogConcerningRequestHeaders(modified_headers,
-                                true /* added_during_redirect */);
+  // Store any cookies passed from the browser process to later attach them to
+  // the request.
+  if (allow_cookies_from_browser_) {
+    cookies_from_browser_ =
+        GetCookiesFromHeaders(modified_headers, modified_cors_exempt_headers);
+  }
 
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
@@ -1051,17 +1100,7 @@ void URLLoader::PauseReadingBodyFromNet() {
   // request indicates that the response was cached, there could still be
   // network activity involved. For example, the response was only partially
   // cached.
-  //
-  // On the other hand, we only report BodyReadFromNetBeforePaused histogram
-  // when we are sure that the response body hasn't been read from cache. This
-  // avoids polluting the histogram data with data points from cached responses.
   should_pause_reading_body_ = true;
-
-  if (read_in_progress_) {
-    update_body_read_before_paused_ = true;
-  } else {
-    body_read_before_paused_ = url_request_->GetRawBodyBytes();
-  }
 }
 
 void URLLoader::ResumeReadingBodyFromNet() {
@@ -1320,6 +1359,12 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   }
 
   SetRequestCredentials(redirect_info.new_url);
+
+  // Clear the Cookie header to ensure that cookies passed in through the
+  // `ResourceRequest` do not persist across redirects.
+  url_request_.get()->RemoveRequestHeaderByName(
+      net::HttpRequestHeaders::kCookie);
+  cookies_from_browser_.clear();
 
   // We may need to clear out old Sec- prefixed request headers. We'll attempt
   // to do this before we re-add any.
@@ -1685,10 +1730,6 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
       reported_total_encoded_bytes_ = total_encoded_bytes;
     }
   }
-  if (update_body_read_before_paused_) {
-    update_body_read_before_paused_ = false;
-    body_read_before_paused_ = url_request_->GetRawBodyBytes();
-  }
 
   bool complete_read = true;
   if (consumer_handle_.is_valid()) {
@@ -1769,7 +1810,7 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
     CompletePendingWrite(true /* success */);
   }
   if (completed_synchronously) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&URLLoader::ReadMore, weak_ptr_factory_.GetWeakPtr()));
   } else {
@@ -1789,11 +1830,24 @@ int URLLoader::OnBeforeStartTransaction(
     net::NetworkDelegate::OnBeforeStartTransactionCallback callback) {
   if (header_client_) {
     header_client_->OnBeforeSendHeaders(
-        headers,
+        cookies_from_browser_.empty()
+            ? headers
+            : AttachCookies(headers, cookies_from_browser_),
         base::BindOnce(&URLLoader::OnBeforeSendHeadersComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return net::ERR_IO_PENDING;
   }
+
+  // Additional cookies were added to the existing headers, so `callback` must
+  // be invoked to ensure that the cookies are included in the request.
+  if (!cookies_from_browser_.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), net::OK,
+                       AttachCookies(headers, cookies_from_browser_)));
+    return net::ERR_IO_PENDING;
+  }
+
   return net::OK;
 }
 
@@ -1871,42 +1925,6 @@ URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
   if (!pointer)
     return nullptr;
   return pointer->get();
-}
-
-// static
-void URLLoader::LogConcerningRequestHeaders(
-    const net::HttpRequestHeaders& request_headers,
-    bool added_during_redirect) {
-  net::HttpRequestHeaders::Iterator it(request_headers);
-
-  bool concerning_header_found = false;
-
-  while (it.GetNext()) {
-    for (const auto& header : kConcerningHeaders) {
-      if (base::EqualsCaseInsensitiveASCII(header.name, it.name())) {
-        concerning_header_found = true;
-        if (added_during_redirect) {
-          UMA_HISTOGRAM_ENUMERATION(
-              "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect",
-              header.histogram_id);
-        } else {
-          UMA_HISTOGRAM_ENUMERATION(
-              "NetworkService.ConcerningRequestHeader.HeaderPresentOnStart",
-              header.histogram_id);
-        }
-      }
-    }
-  }
-
-  if (added_during_redirect) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "NetworkService.ConcerningRequestHeader.AddedOnRedirect",
-        concerning_header_found);
-  } else {
-    UMA_HISTOGRAM_BOOLEAN(
-        "NetworkService.ConcerningRequestHeader.PresentOnStart",
-        concerning_header_found);
-  }
 }
 
 void URLLoader::OnAuthCredentials(
@@ -2242,22 +2260,6 @@ bool URLLoader::HasDataPipe() const {
   return pending_write_ || response_body_stream_.is_valid();
 }
 
-void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
-  if (update_body_read_before_paused_)
-    body_read_before_paused_ = url_request_->GetRawBodyBytes();
-  if (body_read_before_paused_ != -1) {
-    if (!url_request_->was_cached()) {
-      UMA_HISTOGRAM_COUNTS_1M("Network.URLLoader.BodyReadFromNetBeforePaused",
-                              body_read_before_paused_);
-    } else {
-      DVLOG(1) << "The request has been paused, but "
-               << "Network.URLLoader.BodyReadFromNetBeforePaused is not "
-               << "reported because the response body may be from cache. "
-               << "body_read_before_paused_: " << body_read_before_paused_;
-    }
-  }
-}
-
 void URLLoader::ResumeStart() {
   url_request_->LogUnblocked();
   url_request_->Start();
@@ -2360,7 +2362,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     if (result != MOJO_RESULT_OK) {
       // Defer calling NotifyCompleted to make sure the caller can still access
       // |this|.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&URLLoader::NotifyCompleted,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     net::ERR_INSUFFICIENT_RESOURCES));
@@ -2408,7 +2410,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   // DeleteSelf is posted asynchronously, to make sure that the callers (e.g.
   // URLLoader::OnResponseStarted and/or URLLoader::DidRead instance methods)
   // can still safely dereference |this|.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
   return kWillCancelRequest;

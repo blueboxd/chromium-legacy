@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/first_run_flow_controller_lacros.h"
 
+#include "base/functional/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -131,34 +132,10 @@ FirstRunFlowControllerLacros::FirstRunFlowControllerLacros(
     ClearHostClosure clear_host_callback,
     Profile* profile,
     ProfilePicker::DebugFirstRunExitedCallback first_run_exited_callback)
-    : ProfileManagementFlowController(host,
-                                      std::move(clear_host_callback),
-                                      Step::kPostSignInFlow),
+    : ProfileManagementFlowControllerImpl(host, std::move(clear_host_callback)),
+      profile_(profile),
       first_run_exited_callback_(std::move(first_run_exited_callback)) {
   DCHECK(first_run_exited_callback_);
-
-  auto mark_sync_confirmation_seen_callback =
-      base::BindOnce(&FirstRunFlowControllerLacros::MarkSyncConfirmationSeen,
-                     // Unretained ok: the callback is passed to a step that
-                     // the `this` will own and outlive.
-                     base::Unretained(this));
-  auto finish_flow_callback = FinishFlowCallback(
-      base::BindOnce(&FirstRunFlowControllerLacros::ExitFlowAndRun,
-                     // Unretained ok: the callback is passed to a step that
-                     // the `this` will own and outlive.
-                     base::Unretained(this),
-                     // Unretained ok: `signed_in_flow` will register a profile
-                     // keep alive.
-                     base::Unretained(profile)));
-  auto signed_in_flow = std::make_unique<LacrosFirstRunSignedInFlowController>(
-      host, profile,
-      content::WebContents::Create(content::WebContents::CreateParams(profile)),
-      std::move(mark_sync_confirmation_seen_callback),
-      std::move(finish_flow_callback));
-
-  RegisterStep(initial_step(),
-               ProfileManagementStepController::CreateForPostSignInFlow(
-                   host, std::move(signed_in_flow)));
 }
 
 FirstRunFlowControllerLacros::~FirstRunFlowControllerLacros() {
@@ -169,33 +146,48 @@ FirstRunFlowControllerLacros::~FirstRunFlowControllerLacros() {
         .Run(sync_confirmation_seen_
                  ? ProfilePicker::FirstRunExitStatus::kQuitAtEnd
                  : ProfilePicker::FirstRunExitStatus::kQuitEarly,
-             ProfilePicker::FirstRunExitSource::kControllerDestructor,
-             // Since the flow is exited already, we don't have anything to
-             // close or finish setting up, and the callback won't be executed
-             // anyway.
-             /*maybe_callback=*/base::OnceClosure());
+             ProfilePicker::FirstRunExitSource::kControllerDestructor);
+    // Since the flow is exited already, we don't have anything to close or
+    // finish setting up.
   }
 }
 
-void FirstRunFlowControllerLacros::ExitFlowAndRun(
-    Profile* profile,
-    PostHostClearedCallback callback) {
-  // We don't call `FinishFlowAndRunInBrowser()` directly, as
-  // `first_run_exited_callback_` should make a browser window available when
-  // it runs. If there is no browser, then we will create it as a fallback.
-  auto finish_flow_callback =
-      base::BindOnce(&FirstRunFlowControllerLacros::FinishFlowAndRunInBrowser,
-                     // Unretained ok: the flow will be closed when we run
-                     // `finish_flow_callback`, so `this` will still be alive.
-                     base::Unretained(this),
-                     // Unretained ok: the flow keeps the profile alive and
-                     // `first_run_exited_callback_` will open a browser for it.
-                     base::Unretained(profile), std::move(callback));
+void FirstRunFlowControllerLacros::Init(
+    StepSwitchFinishedCallback step_switch_finished_callback) {
+  SwitchToIdentityStepsFromPostSignIn(
+      profile_,
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile_)),
+      std::move(step_switch_finished_callback));
+}
 
+void FirstRunFlowControllerLacros::CancelPostSignInFlow() {
+  NOTREACHED();  // The whole Lacros FRE is post-sign-in, it's not cancellable.
+}
+
+bool FirstRunFlowControllerLacros::PreFinishWithBrowser() {
   std::move(first_run_exited_callback_)
       .Run(ProfilePicker::FirstRunExitStatus::kCompleted,
-           ProfilePicker::FirstRunExitSource::kFlowFinished,
-           std::move(finish_flow_callback));
+           ProfilePicker::FirstRunExitSource::kFlowFinished);
+  return true;
+}
+
+std::unique_ptr<ProfilePickerSignedInFlowController>
+FirstRunFlowControllerLacros::CreateSignedInFlowController(
+    Profile* signed_in_profile,
+    std::unique_ptr<content::WebContents> contents,
+    FinishFlowCallback finish_flow_callback) {
+  auto mark_sync_confirmation_seen_callback =
+      base::BindOnce(&FirstRunFlowControllerLacros::MarkSyncConfirmationSeen,
+                     // Unretained ok: the callback is passed to a step that
+                     // the `this` will own and outlive.
+                     base::Unretained(this));
+
+  auto signed_in_flow = std::make_unique<LacrosFirstRunSignedInFlowController>(
+      host(), profile_, std::move(contents),
+      std::move(mark_sync_confirmation_seen_callback),
+      std::move(finish_flow_callback));
+  return signed_in_flow;
 }
 
 void FirstRunFlowControllerLacros::MarkSyncConfirmationSeen() {

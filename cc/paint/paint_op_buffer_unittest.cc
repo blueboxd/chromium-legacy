@@ -5,6 +5,7 @@
 #include "cc/paint/paint_op_buffer.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/memory/raw_ptr.h"
@@ -17,6 +18,7 @@
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image_builder.h"
+#include "cc/paint/paint_op_buffer_iterator.h"
 #include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
@@ -135,6 +137,8 @@ class PaintOpAppendTest : public ::testing::Test {
 
   void VerifyOps(PaintOpBuffer* buffer) {
     EXPECT_EQ(buffer->size(), 4u);
+    EXPECT_TRUE(buffer->has_draw_ops());
+    EXPECT_TRUE(buffer->has_save_layer_ops());
 
     PaintOpBuffer::Iterator iter(buffer);
     ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
@@ -158,6 +162,19 @@ class PaintOpAppendTest : public ::testing::Test {
     EXPECT_FALSE(iter);
   }
 
+  void CheckInitialState(PaintOpBuffer* buffer, bool expect_empty_buffer) {
+    EXPECT_FALSE(buffer->has_draw_ops());
+    EXPECT_FALSE(buffer->has_save_layer_ops());
+    EXPECT_EQ(0u, buffer->size());
+    EXPECT_EQ(0u, buffer->total_op_count());
+    EXPECT_EQ(0u, buffer->next_op_offset());
+    EXPECT_FALSE(PaintOpBuffer::Iterator(buffer));
+    if (expect_empty_buffer) {
+      EXPECT_EQ(0u, buffer->paint_ops_size());
+      EXPECT_EQ(sizeof(PaintOpBuffer), buffer->bytes_used());
+    }
+  }
+
  private:
   SkRect rect_;
   PaintFlags flags_;
@@ -171,6 +188,7 @@ TEST_F(PaintOpAppendTest, SimpleAppend) {
   VerifyOps(&buffer);
 
   buffer.Reset();
+  CheckInitialState(&buffer, false);
   PushOps(&buffer);
   VerifyOps(&buffer);
 }
@@ -184,8 +202,7 @@ TEST_F(PaintOpAppendTest, MoveThenDestruct) {
   VerifyOps(&destination);
 
   // Original should be empty, and safe to destruct.
-  EXPECT_EQ(original.size(), 0u);
-  EXPECT_EQ(original.bytes_used(), sizeof(PaintOpBuffer));
+  CheckInitialState(&original, true);
 }
 
 TEST_F(PaintOpAppendTest, MoveThenDestructOperatorEq) {
@@ -198,9 +215,7 @@ TEST_F(PaintOpAppendTest, MoveThenDestructOperatorEq) {
   VerifyOps(&destination);
 
   // Original should be empty, and safe to destruct.
-  EXPECT_EQ(original.size(), 0u);
-  EXPECT_EQ(original.bytes_used(), sizeof(PaintOpBuffer));
-  EXPECT_FALSE(PaintOpBuffer::Iterator(&original));
+  CheckInitialState(&original, true);
 }
 
 TEST_F(PaintOpAppendTest, MoveThenReappend) {
@@ -1279,8 +1294,9 @@ class SimpleSerializer {
 
       // Number of bytes bytes_written must be a multiple of PaintOpAlign
       // unless the buffer is filled entirely.
-      if (remaining_ != 0u)
-        DCHECK_EQ(0u, bytes_written % PaintOpBuffer::PaintOpAlign);
+      if (remaining_ != 0u) {
+        DCHECK_EQ(0u, bytes_written % PaintOpBuffer::kPaintOpAlign);
+      }
     }
   }
 
@@ -1354,7 +1370,7 @@ class DeserializerIterator {
         remaining_(remaining),
         options_(options) {
     data_.reset(static_cast<char*>(base::AlignedAlloc(
-        sizeof(LargestPaintOp), PaintOpBuffer::PaintOpAlign)));
+        sizeof(LargestPaintOp), PaintOpBuffer::kPaintOpAlign)));
     DeserializeCurrentOp();
   }
 
@@ -1869,7 +1885,7 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
     // in the buffer_.
     output_size_ = kBufferBytesPerOp * buffer_.size();
     output_.reset(static_cast<char*>(
-        base::AlignedAlloc(output_size_, PaintOpBuffer::PaintOpAlign)));
+        base::AlignedAlloc(output_size_, PaintOpBuffer::kPaintOpAlign)));
   }
 
   bool IsTypeSupported() {
@@ -2005,7 +2021,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   char* first = static_cast<char*>(output_.get());
   char* current = first;
 
-  static constexpr size_t kAlign = PaintOpBuffer::PaintOpAlign;
+  static constexpr size_t kAlign = PaintOpBuffer::kPaintOpAlign;
   static constexpr size_t kOutputOpSize = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
@@ -2100,7 +2116,7 @@ TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
   size_t deserialized_size = sizeof(LargestPaintOp) + PaintOp::kMaxSkip;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
-          base::AlignedAlloc(deserialized_size, PaintOpBuffer::PaintOpAlign)));
+          base::AlignedAlloc(deserialized_size, PaintOpBuffer::kPaintOpAlign)));
   for (const PaintOp& op : PaintOpBuffer::Iterator(&buffer_)) {
     size_t bytes_written = op.Serialize(output_.get(), output_size_,
                                         options_provider.serialize_options(),
@@ -2143,7 +2159,7 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -2215,7 +2231,7 @@ TEST(PaintOpSerializationTest, DoNotPreservePaintOps) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -2240,7 +2256,7 @@ TEST(PaintOpSerializationTest, Preamble) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -2337,7 +2353,7 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -2408,7 +2424,7 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
 
     std::unique_ptr<char, base::AlignedFreeDeleter> memory(
         static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                              PaintOpBuffer::PaintOpAlign)));
+                                              PaintOpBuffer::kPaintOpAlign)));
     TestOptionsProvider options_provider;
     SimpleBufferSerializer serializer(memory.get(),
                                       PaintOpBuffer::kInitialBufferSize,
@@ -2468,7 +2484,7 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -2514,7 +2530,7 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
 // Test generic PaintOp deserializing failure cases.
 TEST(PaintOpBufferTest, PaintOpDeserialize) {
   static constexpr size_t kSize = sizeof(LargestPaintOp) + 100;
-  static constexpr size_t kAlign = PaintOpBuffer::PaintOpAlign;
+  static constexpr size_t kAlign = PaintOpBuffer::kPaintOpAlign;
   std::unique_ptr<char, base::AlignedFreeDeleter> input_(
       static_cast<char*>(base::AlignedAlloc(kSize, kAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> output_(
@@ -2571,10 +2587,10 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
 TEST(PaintOpBufferTest, ValidateSkClip) {
   size_t buffer_size = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
-      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
-          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
 
   PaintOpBuffer buffer;
 
@@ -2629,10 +2645,10 @@ TEST(PaintOpBufferTest, ValidateSkClip) {
 TEST(PaintOpBufferTest, ValidateSkBlendMode) {
   size_t buffer_size = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
-      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
-          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
 
   PaintOpBuffer buffer;
 
@@ -2710,10 +2726,10 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
 TEST(PaintOpBufferTest, ValidateRects) {
   size_t buffer_size = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
-      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
-          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::kPaintOpAlign)));
 
   // Used for QuickRejectDraw
   SkCanvas device(256, 256);
@@ -3340,7 +3356,7 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -3508,7 +3524,7 @@ TEST_P(PaintFilterSerializationTest, Basic) {
 TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   sk_sp<PaintOpBuffer> record_buffer(new PaintOpBuffer);
   record_buffer->push<DrawRectOp>(SkRect::MakeXYWH(0, 0, 1, 1), PaintFlags());
 
@@ -3560,7 +3576,7 @@ TEST(PaintOpBufferTest,
      DrawSkottieOpSerializationFailureFromUnPrivilegedProcess) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
 
   scoped_refptr<SkottieWrapper> skottie =
       CreateSkottie(gfx::Size(100, 100), /*duration_secs=*/1);
@@ -3795,7 +3811,7 @@ TEST(PaintOpBufferTest, SecurityConstrainedImageSerialization) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   PaintOpWriter writer(memory.get(), PaintOpBuffer::kInitialBufferSize,
                        options_provider.serialize_options(),
@@ -3829,7 +3845,7 @@ TEST(PaintOpBufferTest, DrawImageRectSerializeScaledImages) {
                                 src, dst, SkCanvas::kStrict_SrcRectConstraint);
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -3859,7 +3875,7 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -3887,7 +3903,7 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   // Generate serialized |memory|.
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   size_t memory_written = 0;
   {
     auto buffer = sk_make_sp<PaintOpBuffer>();
@@ -3906,7 +3922,7 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   // a scale factor.
   std::unique_ptr<char, base::AlignedFreeDeleter> memory_scaled(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   size_t memory_scaled_written = 0;
   {
     auto buffer = sk_make_sp<PaintOpBuffer>();
@@ -3997,7 +4013,7 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
   // Generate serialized |memory|.
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   auto buffer = sk_make_sp<PaintOpBuffer>();
   PaintFlags flags;
   flags.setShader(shader);
@@ -4041,7 +4057,7 @@ TEST(PaintOpBufferTest, RecordFilterSerializeScaledImages) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -4076,7 +4092,7 @@ TEST(PaintOpBufferTest, NullImages) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
                                     PaintOpBuffer::kInitialBufferSize,
@@ -4229,7 +4245,7 @@ TEST(PaintOpBufferTest, PathCaching) {
 
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
-                                            PaintOpBuffer::PaintOpAlign)));
+                                            PaintOpBuffer::kPaintOpAlign)));
   auto buffer = sk_make_sp<PaintOpBuffer>();
   buffer->push<DrawPathOp>(path, flags, UsePaintCache::kEnabled);
   SimpleBufferSerializer serializer(memory.get(),
@@ -4250,6 +4266,69 @@ TEST(PaintOpBufferTest, PathCaching) {
   SkPath cached_path;
   EXPECT_TRUE(options_provider.service_paint_cache()->GetPath(
       path.getGenerationID(), &cached_path));
+}
+
+TEST(PaintOpBufferTest, ShrinkToFit) {
+  PaintOpBuffer buffer;
+  EXPECT_EQ(sizeof(PaintOpBuffer), buffer.bytes_used());
+  EXPECT_FALSE(&buffer.GetFirstOp());
+  buffer.ShrinkToFit();
+  EXPECT_EQ(sizeof(PaintOpBuffer), buffer.bytes_used());
+  EXPECT_FALSE(&buffer.GetFirstOp());
+
+  buffer.push<DrawColorOp>(SkColors::kRed, SkBlendMode::kSrc);
+  EXPECT_GT(buffer.bytes_used(), sizeof(PaintOpBuffer) + sizeof(DrawColorOp));
+  const PaintOp* first_op = &buffer.GetFirstOp();
+  ASSERT_TRUE(first_op);
+  buffer.ShrinkToFit();
+  EXPECT_EQ(sizeof(PaintOpBuffer) + sizeof(DrawColorOp), buffer.bytes_used());
+  EXPECT_NE(first_op, &buffer.GetFirstOp());
+
+  first_op = &buffer.GetFirstOp();
+  buffer.ShrinkToFit();
+  EXPECT_EQ(sizeof(PaintOpBuffer) + sizeof(DrawColorOp), buffer.bytes_used());
+  EXPECT_EQ(first_op, &buffer.GetFirstOp());
+}
+
+TEST(PaintOpBufferTest, MoveRetainingBufferIfPossible) {
+  PaintOpBuffer buffer;
+  sk_sp<PaintOpBuffer> move_to = buffer.MoveRetainingBufferIfPossible();
+  EXPECT_EQ(sizeof(PaintOpBuffer), move_to->bytes_used());
+  EXPECT_FALSE(&move_to->GetFirstOp());
+  EXPECT_EQ(sizeof(PaintOpBuffer), buffer.bytes_used());
+  EXPECT_FALSE(&buffer.GetFirstOp());
+
+  // `buffer` has more reserved than used.
+  buffer.push<DrawColorOp>(SkColors::kRed, SkBlendMode::kSrc);
+  size_t old_bytes_used = buffer.bytes_used();
+  EXPECT_GT(old_bytes_used, sizeof(PaintOpBuffer) + sizeof(DrawColorOp));
+  const PaintOp* first_op = &buffer.GetFirstOp();
+  ASSERT_TRUE(first_op);
+  EXPECT_EQ(1u, buffer.size());
+
+  // `move_to` should allocate a new data buffer that fits, and `buffer` should
+  // retain the old data buffer.
+  move_to = buffer.MoveRetainingBufferIfPossible();
+  EXPECT_EQ(1u, move_to->size());
+  EXPECT_EQ(sizeof(PaintOpBuffer) + sizeof(DrawColorOp), move_to->bytes_used());
+  EXPECT_NE(first_op, &move_to->GetFirstOp());
+  EXPECT_EQ(first_op, &buffer.GetFirstOp());
+  EXPECT_EQ(old_bytes_used, buffer.bytes_used());
+
+  // `buffer` now fits.
+  buffer = std::move(*move_to);
+  old_bytes_used = buffer.bytes_used();
+  EXPECT_EQ(old_bytes_used, sizeof(PaintOpBuffer) + sizeof(DrawColorOp));
+  first_op = &buffer.GetFirstOp();
+  ASSERT_TRUE(first_op);
+
+  // `move_to` takes the data buffer of `buffer`.
+  move_to = buffer.MoveRetainingBufferIfPossible();
+  EXPECT_EQ(1u, move_to->size());
+  EXPECT_EQ(sizeof(PaintOpBuffer) + sizeof(DrawColorOp), move_to->bytes_used());
+  EXPECT_EQ(first_op, &move_to->GetFirstOp());
+  EXPECT_FALSE(&buffer.GetFirstOp());
+  EXPECT_EQ(sizeof(PaintOpBuffer), buffer.bytes_used());
 }
 
 TEST(IteratorTest, IterationTest) {

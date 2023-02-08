@@ -44,6 +44,7 @@
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -311,6 +312,7 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
     AshTestBase::SetUp();
     network_handler_test_helper_.RegisterPrefs(profile_prefs_.registry(),
                                                local_state_.registry());
+    PrefProxyConfigTrackerImpl::RegisterPrefs(profile_prefs_.registry());
 
     network_handler_test_helper_.InitializePrefs(&profile_prefs_,
                                                  &local_state_);
@@ -681,7 +683,7 @@ class StatusAreaWidgetEcheTest : public AshTestBase {
  protected:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chromeos::features::kEcheSWA},
+        /*enabled_features=*/{features::kEcheSWA},
         /*disabled_features=*/{});
     DCHECK(test_web_view_factory_.get());
     AshTestBase::SetUp();
@@ -703,7 +705,8 @@ TEST_F(StatusAreaWidgetEcheTest, EcheTrayShowHide) {
   gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   image_skia.MakeThreadSafe();
   status_area->eche_tray()->LoadBubble(GURL("http://google.com"),
-                                       gfx::Image(image_skia), u"app 1");
+                                       gfx::Image(image_skia), u"app 1",
+                                       u"your phone");
   status_area->eche_tray()->ShowBubble();
 
   // Auto-hidden shelf would be forced to be visible.

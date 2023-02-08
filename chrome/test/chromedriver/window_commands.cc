@@ -248,8 +248,15 @@ base::Value::Dict CreateDictionaryFrom(const Cookie& cookie) {
     SetSafeInt(dict, "expiry", cookie.expiry);
   dict.Set("httpOnly", cookie.http_only);
   dict.Set("secure", cookie.secure);
-  if (!cookie.samesite.empty())
+  if (!cookie.samesite.empty()) {
     dict.Set("sameSite", cookie.samesite);
+  } else {
+    // The default in the standard is Lax:
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+    // Chrome (mostly) treats default cookies as Lax so this seems correct:
+    // https://chromestatus.com/feature/5088147346030592
+    dict.Set("sameSite", "Lax");
+  }
   return dict;
 }
 
@@ -660,10 +667,6 @@ Status ExecuteWindowCommand(const WindowCommand& command,
   if (status.IsError())
     return status;
 
-  status = web_view->ConnectIfNecessary();
-  if (status.IsError())
-    return status;
-
   status = web_view->HandleReceivedEvents();
   if (status.IsError())
     return status;
@@ -846,10 +849,11 @@ Status ExecuteNewWindow(Session* session,
   if (status.IsError())
     return status;
 
-  auto results = std::make_unique<base::DictionaryValue>();
-  results->GetDict().Set("handle", WebViewIdToWindowHandle(handle));
-  results->GetDict().Set(
-      "type", (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
+  base::Value::Dict dict;
+  dict.Set("handle", WebViewIdToWindowHandle(handle));
+  dict.Set("type",
+           (window_type == Chrome::WindowType::kWindow) ? "window" : "tab");
+  auto results = std::make_unique<base::Value>(std::move(dict));
   *value = std::move(results);
   return Status(kOk);
 }
@@ -919,8 +923,8 @@ Status ExecuteSwitchToFrame(Session* session,
       session->GetCurrentFrameId(), script, args, &result);
   if (status.IsError())
     return status;
-  const base::DictionaryValue* element;
-  if (!result->GetAsDictionary(&element))
+  const base::Value::Dict* element = result->GetIfDict();
+  if (!element)
     return Status(kUnknownError, "fail to locate the sub frame element");
 
   std::string chrome_driver_id = GenerateId();
@@ -1292,8 +1296,7 @@ Status ProcessInputActionSequence(
   }
 
   bool found = false;
-  for (const base::Value& source_value :
-       session->active_input_sources.GetList()) {
+  for (const base::Value& source_value : session->active_input_sources) {
     DCHECK(source_value.is_dict());
     const base::Value::Dict& source = source_value.GetDict();
 
@@ -1330,31 +1333,30 @@ Status ProcessInputActionSequence(
       tmp_source.Set("pointerType", pointer_type);
     }
 
-    session->active_input_sources.Append(base::Value(std::move(tmp_source)));
+    session->active_input_sources.Append(std::move(tmp_source));
 
-    base::Value* tmp_state = session->input_state_table.SetPath(
-        id, base::Value(base::Value::Type::DICTIONARY));
-    tmp_state->GetDict().Set("id", id);
+    base::Value::Dict tmp_state;
+    tmp_state.Set("id", id);
     if (type == "key") {
       // Initialize a key input state object
       // (https://w3c.github.io/webdriver/#dfn-key-input-state).
-      tmp_state->GetDict().Set("pressed",
-                               base::Value(base::Value::Type::DICTIONARY));
+      tmp_state.Set("pressed", base::Value::Dict());
       // For convenience, we use one integer property to encode four Boolean
       // properties (alt, shift, ctrl, meta) from the spec, using values from
       // enum KeyModifierMask.
-      tmp_state->GetDict().Set("modifiers", 0);
+      tmp_state.Set("modifiers", 0);
     } else if (type == "pointer") {
       int x = 0;
       int y = 0;
 
       // "pressed" is stored as a bitmask of pointer buttons.
-      tmp_state->GetDict().Set("pressed", 0);
-      tmp_state->GetDict().Set("subtype", pointer_type);
+      tmp_state.Set("pressed", 0);
+      tmp_state.Set("subtype", pointer_type);
 
-      tmp_state->GetDict().Set("x", x);
-      tmp_state->GetDict().Set("y", y);
+      tmp_state.Set("x", x);
+      tmp_state.Set("y", y);
     }
+    session->input_state_table.SetByDottedPath(id, std::move(tmp_state));
   }
 
   const base::Value::List* actions = action_sequence.FindList("actions");
@@ -1595,7 +1597,7 @@ Status ExecutePerformActions(Session* session,
   }
 
   std::set<std::string> pointer_id_set;
-  std::vector<base::DictionaryValue*> action_input_states;
+  std::vector<base::Value::Dict*> action_input_states;
   std::map<std::string, gfx::Point> action_locations;
   std::map<std::string, bool> has_touch_start;
   std::map<std::string, int> buttons;
@@ -1647,8 +1649,9 @@ Status ExecutePerformActions(Session* session,
         std::string action_type;
         GetOptionalString(action, "id", &id);
 
-        base::DictionaryValue* input_state;
-        if (!session->input_state_table.GetDictionary(id, &input_state))
+        base::Value::Dict* input_state =
+            session->input_state_table.FindDictByDottedPath(id);
+        if (!input_state)
           return Status(kUnknownError, "missing input state");
 
         GetOptionalString(action, "type", &type);
@@ -1663,13 +1666,11 @@ Status ExecutePerformActions(Session* session,
                 session, web_view, &viewport_width, &viewport_height);
             if (status.IsError())
               return status;
-            absl::optional<int> maybe_init_x =
-                input_state->GetDict().FindInt("x");
+            absl::optional<int> maybe_init_x = input_state->FindInt("x");
             if (maybe_init_x)
               init_x = *maybe_init_x;
 
-            absl::optional<int> maybe_init_y =
-                input_state->GetDict().FindInt("y");
+            absl::optional<int> maybe_init_y = input_state->FindInt("y");
             if (maybe_init_y)
               init_y = *maybe_init_y;
             action_locations.insert(
@@ -1678,7 +1679,7 @@ Status ExecutePerformActions(Session* session,
             std::string pointer_type;
             GetOptionalString(action, "pointerType", &pointer_type);
             if (pointer_type == "mouse" || pointer_type == "pen") {
-              buttons[id] = input_state->GetDict().Find("pressed")->GetInt();
+              buttons[id] = input_state->Find("pressed")->GetInt();
               last_pressed_buttons[id] = buttons[id];
             } else if (pointer_type == "touch") {
               has_touch_start[id] = false;
@@ -1705,7 +1706,7 @@ Status ExecutePerformActions(Session* session,
               std::vector<KeyEvent> dispatch_key_events;
               KeyEventBuilder builder;
               Status status = ConvertKeyActionToKeyEvent(
-                  action, input_state, action_type == "keyDown",
+                  action, *input_state, action_type == "keyDown",
                   &dispatch_key_events);
               if (status.IsError())
                 return status;
@@ -1839,27 +1840,20 @@ Status ExecutePerformActions(Session* session,
                   session->mouse_click_timestamp = timestamp;
                   session->input_cancel_list.emplace_back(
                       action_input_states[j], &event, nullptr, nullptr);
-                  action_input_states[j]->GetDict().Set(
-                      "pressed", action_input_states[j]
-                                         ->GetDict()
-                                         .Find("pressed")
-                                         ->GetInt() |
-                                     (1 << event.button));
+                  action_input_states[j]->Set(
+                      "pressed",
+                      action_input_states[j]->Find("pressed")->GetInt() |
+                          (1 << event.button));
                 } else if (event.type == kReleasedMouseEventType) {
                   pressure = 0;
                   event.click_count = session->click_count;
                   buttons[id] &= ~StringToModifierMouseButton(button_type[id]);
-                  action_input_states[j]->GetDict().Set(
-                      "pressed", action_input_states[j]
-                                         ->GetDict()
-                                         .Find("pressed")
-                                         ->GetInt() &
-                                     ~(1 << event.button));
+                  action_input_states[j]->Set(
+                      "pressed",
+                      action_input_states[j]->Find("pressed")->GetInt() &
+                          ~(1 << event.button));
                 } else if (event.type == kMovedMouseEventType) {
-                  if (action_input_states[j]
-                          ->GetDict()
-                          .Find("pressed")
-                          ->GetInt() == 0) {
+                  if (action_input_states[j]->Find("pressed")->GetInt() == 0) {
                     pressure = 0;
                   }
                 }
@@ -1887,9 +1881,9 @@ Status ExecutePerformActions(Session* session,
               if (event.type == kTouchStart) {
                 session->input_cancel_list.emplace_back(
                     action_input_states[j], nullptr, &event, nullptr);
-                action_input_states[j]->GetDict().Set("pressed", 1);
+                action_input_states[j]->Set("pressed", 1);
               } else if (event.type == kTouchEnd) {
-                action_input_states[j]->GetDict().Set("pressed", 0);
+                action_input_states[j]->Set("pressed", 0);
               }
               if (has_touch_start[id]) {
                 if (event.type == kPause)
@@ -1906,10 +1900,8 @@ Status ExecutePerformActions(Session* session,
               if (action_type == "pointerUp")
                 has_touch_start[id] = false;
             }
-            action_input_states[j]->GetDict().Set("x",
-                                                  action_locations[id].x());
-            action_input_states[j]->GetDict().Set("y",
-                                                  action_locations[id].y());
+            action_input_states[j]->Set("x", action_locations[id].x());
+            action_input_states[j]->Set("y", action_locations[id].y());
           }
         }
       }
@@ -1931,32 +1923,31 @@ Status ExecuteReleaseActions(Session* session,
   for (const InputCancelListEntry& entry :
        base::Reversed(session->input_cancel_list)) {
     if (entry.key_event) {
-      base::DictionaryValue* pressed;
-      entry.input_state->GetDictionary("pressed", &pressed);
-      if (!pressed->GetDict().Find(entry.key_event->key))
+      base::Value::Dict* pressed = entry.input_state->FindDict("pressed");
+      if (!pressed->Find(entry.key_event->key))
         continue;
       web_view->DispatchKeyEvents({*entry.key_event}, false);
-      pressed->RemoveKey(entry.key_event->key);
+      pressed->Remove(entry.key_event->key);
     } else if (entry.mouse_event) {
-      int pressed = entry.input_state->GetDict().Find("pressed")->GetInt();
+      int pressed = entry.input_state->Find("pressed")->GetInt();
       int button_mask = 1 << entry.mouse_event->button;
       if ((pressed & button_mask) == 0)
         continue;
       web_view->DispatchMouseEvents({*entry.mouse_event},
                                     session->GetCurrentFrameId(), false);
-      entry.input_state->GetDict().Set("pressed", pressed & ~button_mask);
+      entry.input_state->Set("pressed", pressed & ~button_mask);
     } else if (entry.touch_event) {
-      int pressed = entry.input_state->GetDict().Find("pressed")->GetInt();
+      int pressed = entry.input_state->Find("pressed")->GetInt();
       if (pressed == 0)
         continue;
       web_view->DispatchTouchEvents({*entry.touch_event}, false);
-      entry.input_state->GetDict().Set("pressed", 0);
+      entry.input_state->Set("pressed", 0);
     }
   }
 
   session->input_cancel_list.clear();
-  session->input_state_table.DictClear();
-  session->active_input_sources.ClearList();
+  session->input_state_table.clear();
+  session->active_input_sources.clear();
   session->mouse_position = WebPoint(0, 0);
   session->click_count = 0;
   session->mouse_click_timestamp = base::TimeTicks::Now();
@@ -2699,15 +2690,15 @@ Status ExecuteSetWindowRect(Session* session,
   }
 
   // to pass to the set window rect command
-  base::DictionaryValue rect_params;
+  base::Value::Dict rect_params;
   // only set position if both x and y are given
   if (has_x && has_y) {
-    rect_params.GetDict().Set("x", static_cast<int>(x));
-    rect_params.GetDict().Set("y", static_cast<int>(y));
+    rect_params.Set("x", static_cast<int>(x));
+    rect_params.Set("y", static_cast<int>(y));
   }  // only set size if both height and width are given
   if (has_width && has_height) {
-    rect_params.GetDict().Set("width", static_cast<int>(width));
-    rect_params.GetDict().Set("height", static_cast<int>(height));
+    rect_params.Set("width", static_cast<int>(width));
+    rect_params.Set("height", static_cast<int>(height));
   }
   Status status = session->chrome->SetWindowRect(session->window, rect_params);
   if (status.IsError())
@@ -2820,10 +2811,6 @@ Status ExecuteSetPermission(Session* session,
   if (!permission_state)
     return Status(kInvalidArgument, "no permission state");
 
-  bool one_realm = false;
-  if (!GetOptionalBool(params, "oneRealm", &one_realm, nullptr))
-    return Status(kInvalidArgument, "oneRealm defined but not a boolean");
-
   Chrome::PermissionState valid_state;
   if (*permission_state == "granted")
     valid_state = Chrome::PermissionState::kGranted;
@@ -2834,9 +2821,6 @@ Status ExecuteSetPermission(Session* session,
   else
     return Status(kInvalidArgument, "unrecognized permission state");
 
-  auto val = base::Value::ToUniquePtrValue(base::Value(descriptor->Clone()));
-  auto dict = base::DictionaryValue::From(std::move(val));
-
-  return session->chrome->SetPermission(std::move(dict), valid_state, one_realm,
-                                        web_view);
+  auto dict = std::make_unique<base::Value::Dict>(descriptor->Clone());
+  return session->chrome->SetPermission(std::move(dict), valid_state, web_view);
 }

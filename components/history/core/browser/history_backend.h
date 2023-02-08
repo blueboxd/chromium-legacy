@@ -36,6 +36,7 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/sync/history_backend_for_sync.h"
 #include "components/history/core/browser/visit_tracker.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/version_info/channel.h"
 #include "sql/init_status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -90,7 +91,7 @@ class QueuedHistoryDBTask {
  public:
   QueuedHistoryDBTask(
       std::unique_ptr<HistoryDBTask> task,
-      scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+      scoped_refptr<base::SequencedTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
 
   QueuedHistoryDBTask(const QueuedHistoryDBTask&) = delete;
@@ -104,7 +105,7 @@ class QueuedHistoryDBTask {
 
  private:
   std::unique_ptr<HistoryDBTask> task_;
-  scoped_refptr<base::SingleThreadTaskRunner> origin_loop_;
+  scoped_refptr<base::SequencedTaskRunner> origin_loop_;
   base::CancelableTaskTracker::IsCanceledCallback is_canceled_;
 };
 
@@ -131,6 +132,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   class Delegate {
    public:
     virtual ~Delegate() = default;
+
+    // Returns whether the given URL can/should be added to the history.
+    virtual bool CanAddURL(const GURL& url) const = 0;
 
     // Called when the database cannot be read correctly for some reason.
     // `diagnostics` contains information about the underlying database
@@ -181,14 +185,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     // The event will be forwarded to the HistoryServiceObservers in the correct
     // thread.
     virtual void NotifyKeywordSearchTermDeleted(URLID url_id) = 0;
-
-    // Notify HistoryService that content model annotation associated with
-    // the URL for `row` has been modified. Changes to the floc and related
-    // searches annotations will not trigger this. The event will be forwarded
-    // to the HistoryServiceObservers in the correct thread.
-    virtual void NotifyContentModelAnnotationModified(
-        const URLRow& row,
-        const VisitContentModelAnnotations& model_annotations) = 0;
 
     // Invoked when the backend has finished loading the db.
     virtual void DBLoaded() = 0;
@@ -520,6 +516,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void ReplaceClusters(const std::vector<int64_t>& ids_to_delete,
                        const std::vector<Cluster>& clusters_to_add);
 
+  int64_t ReserveNextClusterId();
+
+  void AddVisitsToCluster(int64_t cluster_id,
+                          const std::vector<VisitID>& visits);
+
   std::vector<Cluster> GetMostRecentClusters(
       base::Time inclusive_min_time,
       base::Time exclusive_max_time,
@@ -557,12 +558,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void ProcessDBTask(
       std::unique_ptr<HistoryDBTask> task,
-      scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
+      scoped_refptr<base::SequencedTaskRunner> origin_loop,
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled);
+
+  bool CanAddURL(const GURL& url) const override;
 
   bool GetAllTypedURLs(URLRows* urls);
 
   bool GetVisitsForURL(URLID id, VisitVector* visits);
+
+  bool GetMostRecentVisitForURL(URLID id, VisitRow* visit_row) override;
 
   // Fetches up to `max_visits` most recent visits for the passed URL.
   bool GetMostRecentVisitsForURL(URLID id, int max_visits, VisitVector* visits);
@@ -603,6 +608,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // instead. Returns the local VisitID of the updated visit, or 0 if no
   // matching visit was found.
   VisitID UpdateSyncedVisit(
+      const GURL& url,
+      const std::u16string& title,
+      bool hidden,
       const VisitRow& visit,
       const absl::optional<VisitContextAnnotations>& context_annotations,
       const absl::optional<VisitContentAnnotations>& content_annotations)
@@ -613,6 +621,14 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   bool UpdateVisitReferrerOpenerIDs(VisitID visit_id,
                                     VisitID referrer_id,
                                     VisitID opener_id) override;
+
+  // Starts the asynchronous process of deleting all foreign visits, i.e. those
+  // with a non-empty `originator_cache_guid`. (This is called when History Sync
+  // is disabled.)
+  // Even though the process is async, only visits that already exist at the
+  // time this is called will be deleted. Visits added afterwards will *not* be
+  // deleted.
+  bool DeleteAllForeignVisits() override;
 
   bool RemoveVisits(const VisitVector& visits);
 
@@ -644,6 +660,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // delegate is owned by `this` object.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetHistorySyncControllerDelegate();
+
+  // Sends the SyncService's TransportState `state` to the HistorySyncBridge.
+  void SetSyncTransportState(syncer::SyncService::TransportState state);
 
   // Deleting ------------------------------------------------------------------
 
@@ -727,6 +746,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   base::Time GetFirstRecordedTimeForTest() { return first_recorded_time_; }
 
+  static int GetForeignVisitsToDeletePerBatchForTest();
+
  protected:
   ~HistoryBackend() override;
 
@@ -739,9 +760,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Returns the name of the Favicons database.
   base::FilePath GetFaviconsFileName() const;
-
-  class URLQuerier;
-  friend class URLQuerier;
 
   // Does the work of Init.
   void InitImpl(const HistoryDatabaseParams& history_database_params);
@@ -918,6 +936,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   bool ProcessSetFaviconsResult(const favicon::SetFaviconsResult& result,
                                 const GURL& icon_url);
+
+  // Implementation of DeleteAllForeignVisits(): Since there may be many (1000s)
+  // of foreign visits, the deletion is implemented in multiple small batches to
+  // keep the memory overhead manageable. This method schedules a HistoryDBTask
+  // that will perform the deletion in multiple steps.
+  void StartDeletingForeignVisits();
+
   // Data ----------------------------------------------------------------------
 
   // Delegate. See the class definition above for more information. This will

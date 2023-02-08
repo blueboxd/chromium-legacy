@@ -12,7 +12,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ash {
+
 namespace {
+
 constexpr char local_session_name[] = "local_session";
 constexpr char remote_session_1_name[] = "remote_session_1";
 constexpr char remote_session_2_name[] = "remote_session_2";
@@ -80,11 +83,12 @@ class MockOpenTabsUIDelegate : public sync_sessions::OpenTabsUIDelegate {
 
 }  // namespace
 
-namespace ash {
-class TestFloatingWorkSpaceService : public ash::FloatingWorkspaceService {
+class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
  public:
-  explicit TestFloatingWorkSpaceService(TestingProfile* profile)
-      : ash::FloatingWorkspaceService(profile) {
+  explicit TestFloatingWorkSpaceService(TestingProfile* profile,
+                                        TestFloatingWorkspaceVersion version)
+      : FloatingWorkspaceService(profile) {
+    InitForTest(version);
     mock_open_tabs_ = std::make_unique<MockOpenTabsUIDelegate>();
   }
 
@@ -145,7 +149,8 @@ class FloatingWorkspaceServiceTest : public testing::Test {
 };
 
 TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSession) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(local_session_name, more_recent_time);
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
@@ -166,7 +171,7 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSession) {
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), GetMaxRestoreTime());
   run_loop.Run();
   EXPECT_TRUE(test_floating_workspace_service.GetRestoredSession());
@@ -175,7 +180,8 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSession) {
 }
 
 TEST_F(FloatingWorkspaceServiceTest, RestoreLocalSession) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   // Local session has most recent timestamp and should be restored.
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(local_session_name, most_recent_time);
@@ -196,7 +202,7 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreLocalSession) {
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), GetMaxRestoreTime());
   run_loop.Run();
   EXPECT_TRUE(test_floating_workspace_service.GetRestoredSession());
@@ -205,7 +211,8 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreLocalSession) {
 }
 
 TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSessionAfterUpdated) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   // Local session has most recent timestamp and should be restored.
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(local_session_name, most_recent_time);
@@ -227,7 +234,7 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSessionAfterUpdated) {
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin
   base::RunLoop first_run_loop;
   base::TimeDelta first_run_loop_delay_time = base::Seconds(1);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, first_run_loop.QuitClosure(), first_run_loop_delay_time);
   first_run_loop.Run();
   // Remote session got updated during the 3 second delay of dispatching task
@@ -238,7 +245,7 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSessionAfterUpdated) {
   // and should be restored.
   less_recent_remote_session->modified_time = remote_session_updated_time;
   base::RunLoop second_run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, second_run_loop.QuitClosure(),
       GetMaxRestoreTime() - first_run_loop_delay_time);
   second_run_loop.Run();
@@ -248,7 +255,8 @@ TEST_F(FloatingWorkspaceServiceTest, RestoreRemoteSessionAfterUpdated) {
 }
 
 TEST_F(FloatingWorkspaceServiceTest, NoLocalSession) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
   const std::unique_ptr<sync_sessions::SyncedSession>
       most_recent_remote_session =
@@ -264,7 +272,7 @@ TEST_F(FloatingWorkspaceServiceTest, NoLocalSession) {
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), GetMaxRestoreTime());
   run_loop.Run();
   EXPECT_TRUE(test_floating_workspace_service.GetRestoredSession());
@@ -273,7 +281,8 @@ TEST_F(FloatingWorkspaceServiceTest, NoLocalSession) {
 }
 
 TEST_F(FloatingWorkspaceServiceTest, NoRemoteSession) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   std::unique_ptr<sync_sessions::SyncedSession> local_session =
       CreateNewSession(local_session_name, least_recent_time);
   test_floating_workspace_service.SetLocalSessionForTesting(
@@ -282,7 +291,7 @@ TEST_F(FloatingWorkspaceServiceTest, NoRemoteSession) {
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), GetMaxRestoreTime());
   run_loop.Run();
   EXPECT_TRUE(test_floating_workspace_service.GetRestoredSession());
@@ -291,12 +300,13 @@ TEST_F(FloatingWorkspaceServiceTest, NoRemoteSession) {
 }
 
 TEST_F(FloatingWorkspaceServiceTest, NoSession) {
-  TestFloatingWorkSpaceService test_floating_workspace_service(profile());
+  TestFloatingWorkSpaceService test_floating_workspace_service(
+      profile(), TestFloatingWorkspaceVersion::kFloatingWorkspaceV1Enabled);
   test_floating_workspace_service
       .RestoreBrowserWindowsFromMostRecentlyUsedDevice();
   // Wait for 3 seconds which is kMaxTimeAvailableForRestoreAfterLogin.
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), GetMaxRestoreTime());
   run_loop.Run();
   EXPECT_FALSE(test_floating_workspace_service.GetRestoredSession());

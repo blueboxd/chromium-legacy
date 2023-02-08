@@ -34,17 +34,6 @@
 
 namespace web_app {
 
-namespace {
-
-WebAppLaunchManager::OpenApplicationCallback&
-GetOpenApplicationCallbackForTesting() {
-  static base::NoDestructor<WebAppLaunchManager::OpenApplicationCallback>
-      callback;
-  return *callback;
-}
-
-}  // namespace
-
 WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
     : profile_(profile),
       provider_(WebAppProvider::GetForLocalAppsUnchecked(profile)) {}
@@ -56,7 +45,12 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   if (GetOpenApplicationCallbackForTesting())
     return GetOpenApplicationCallbackForTesting().Run(std::move(params));
 
-  return WebAppLaunchProcess(*profile_, params).Run();
+  WebAppProvider* provider =
+      WebAppProvider::GetForLocalAppsUnchecked(profile_.get());
+  DCHECK(provider);
+  return WebAppLaunchProcess::CreateAndRun(
+      *profile_, provider->registrar_unsafe(),
+      provider->os_integration_manager(), params);
 }
 
 void WebAppLaunchManager::LaunchApplication(
@@ -123,15 +117,22 @@ void WebAppLaunchManager::SetOpenApplicationCallbackForTesting(
   GetOpenApplicationCallbackForTesting() = std::move(callback);
 }
 
+// static
+WebAppLaunchManager::OpenApplicationCallback&
+WebAppLaunchManager::GetOpenApplicationCallbackForTesting() {
+  static base::NoDestructor<WebAppLaunchManager::OpenApplicationCallback>
+      callback;
+  return *callback;
+}
 void WebAppLaunchManager::LaunchWebApplication(
     apps::AppLaunchParams&& params,
     base::OnceCallback<void(Browser* browser, apps::LaunchContainer container)>
         callback) {
   apps::LaunchContainer container;
   Browser* browser = nullptr;
-  if (provider_->registrar().IsInstalled(params.app_id)) {
-    if (provider_->registrar().GetAppEffectiveDisplayMode(params.app_id) ==
-        blink::mojom::DisplayMode::kBrowser) {
+  if (provider_->registrar_unsafe().IsInstalled(params.app_id)) {
+    if (provider_->registrar_unsafe().GetAppEffectiveDisplayMode(
+            params.app_id) == blink::mojom::DisplayMode::kBrowser) {
       params.container = apps::LaunchContainer::kLaunchContainerTab;
       params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     }

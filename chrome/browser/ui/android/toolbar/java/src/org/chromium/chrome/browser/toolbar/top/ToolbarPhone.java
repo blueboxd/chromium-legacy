@@ -48,7 +48,6 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -98,6 +97,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * Phone specific toolbar implementation.
@@ -976,7 +976,8 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 Math.max(Math.max(mNtpSearchBoxScrollFraction, mStartSurfaceScrollFraction),
                         mUrlFocusChangeFraction);
         for (UrlExpansionObserver observer : mUrlExpansionObservers) {
-            observer.onUrlExpansionProgressChanged(mUrlExpansionFraction);
+            observer.onUrlExpansionProgressChanged(
+                    mUrlExpansionFraction, mUrlFocusChangeInProgress);
         }
         assert mUrlExpansionFraction >= 0;
         assert mUrlExpansionFraction <= 1;
@@ -1566,13 +1567,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     private CaptureReadinessResult getReadinessStateWithSuppression() {
-        ToolbarSnapshotState newSnapshotState = generateToolbarSnapshotState();
-        @ToolbarSnapshotDifference
-        int snapshotDifference = newSnapshotState.getAnyDifference(mToolbarSnapshotState);
-
-        if (snapshotDifference == ToolbarSnapshotDifference.NONE) {
-            return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.SNAPSHOT_SAME);
-        } else if (urlHasFocus()) {
+        if (urlHasFocus()) {
             return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.URL_BAR_HAS_FOCUS);
         } else if (mUrlFocusChangeInProgress) {
             return CaptureReadinessResult.notReady(
@@ -1588,7 +1583,14 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         } else if (isInTabSwitcherMode() || mIsShowingStartSurfaceTabSwitcher) {
             return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.TAB_SWITCHER_MODE);
         } else {
-            return CaptureReadinessResult.readyWithSnapshotDifference(snapshotDifference);
+            ToolbarSnapshotState newSnapshotState = generateToolbarSnapshotState();
+            @ToolbarSnapshotDifference
+            int snapshotDifference = newSnapshotState.getAnyDifference(mToolbarSnapshotState);
+            if (snapshotDifference == ToolbarSnapshotDifference.NONE) {
+                return CaptureReadinessResult.notReady(TopToolbarBlockCaptureReason.SNAPSHOT_SAME);
+            } else {
+                return CaptureReadinessResult.readyWithSnapshotDifference(snapshotDifference);
+            }
         }
     }
 

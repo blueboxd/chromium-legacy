@@ -13,6 +13,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/device_state.h"
 #include "chromeos/ash/components/network/managed_network_configuration_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
@@ -21,7 +22,6 @@
 #include "chromeos/ash/components/network/onc/onc_translation_tables.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
 #include "chromeos/components/onc/onc_signature.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/device_event_log/device_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -230,7 +230,7 @@ base::Value TranslateNetworkStateToONC(const NetworkState* network) {
   // of what profile is associated with the page that calls this method. We do
   // not expose any sensitive properties in the resulting dictionary, it is
   // only used to show connection state and icons.
-  std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
+  std::string user_id_hash = LoginState::Get()->primary_user_hash();
   ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
   NetworkHandler::Get()
       ->managed_network_configuration_handler()
@@ -251,15 +251,15 @@ base::Value TranslateNetworkStateToONC(const NetworkState* network) {
   return onc_dictionary;
 }
 
-base::Value TranslateNetworkListToONC(NetworkTypePattern pattern,
-                                      bool configured_only,
-                                      bool visible_only,
-                                      int limit) {
+base::Value::List TranslateNetworkListToONC(NetworkTypePattern pattern,
+                                            bool configured_only,
+                                            bool visible_only,
+                                            int limit) {
   NetworkStateHandler::NetworkStateList network_states;
   NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
       pattern, configured_only, visible_only, limit, &network_states);
 
-  base::Value network_properties_list(base::Value::Type::LIST);
+  base::Value::List network_properties_list;
   for (const NetworkState* state : network_states) {
     network_properties_list.Append(TranslateNetworkStateToONC(state));
   }

@@ -27,7 +27,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
@@ -152,7 +151,7 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb)
     : can_use_decoder_(num_instances_.Increment() < kMaxNumOfInstances),
       output_planes_count_(0),
-      child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      child_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
       device_(std::move(device)),
       decoder_thread_("V4L2SliceVideoDecodeAcceleratorThread"),
       video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
@@ -1458,7 +1457,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     return;
   }
   ret = bind_image_cb_.Run(client_texture_id, gl_device->GetTextureTarget(),
-                           gl_image, true);
+                           gl_image);
   if (!ret) {
     LOG(ERROR) << "Error while running bind image callback";
     NOTIFY_ERROR(PLATFORM_FAILURE);

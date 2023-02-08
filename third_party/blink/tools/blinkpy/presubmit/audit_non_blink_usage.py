@@ -319,6 +319,8 @@ _CONFIG = [
             'base::TickClock',
 
             # cc painting types.
+            'cc::InspectablePaintRecorder',
+            'cc::InspectableRecordPaintCanvas',
             'cc::PaintCanvas',
             'cc::PaintFlags',
             'cc::PaintImage',
@@ -522,6 +524,9 @@ _CONFIG = [
             'display::ScreenInfo',
             'display::ScreenInfos',
 
+            # Terminal value for display id's used across display <-> Blink.
+            'display::kInvalidDisplayId',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',
@@ -530,7 +535,6 @@ _CONFIG = [
             "power_scheduler::.+",
 
             # Nested namespaces under the blink namespace
-            'attribution_response_parsing::.+',
             'bindings::.+',
             'canvas_heuristic_parameters::.+',
             'compositor_target_property::.+',
@@ -1115,32 +1119,6 @@ _CONFIG = [
         ],
         'allowed': [
             'base::flat_map',
-            # TODO(mythria): Allow use of non-blink mojo interface. Once
-            # //content/renderer/loader is moved to Blink as a part of onion
-            # soup we can update all uses to blink::mojom::blink::CodeCacheHost.
-            'blink::mojom::CodeCacheHost',
-        ],
-    },
-    {
-        'paths': [
-            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.cc',
-            'third_party/blink/renderer/bindings/core/v8/v8_code_cache.h',
-            'third_party/blink/renderer/core/workers/worklet_global_scope.h',
-            'third_party/blink/renderer/core/workers/worklet_global_scope.cc',
-            'third_party/blink/renderer/core/workers/worker_global_scope.cc',
-            'third_party/blink/renderer/core/workers/worker_global_scope.h',
-            'third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h',
-            'third_party/blink/renderer/core/execution_context/execution_context.h',
-            'third_party/blink/renderer/core/execution_context/execution_context.cc',
-            'third_party/blink/renderer/modules/service_worker/service_worker_script_cached_metadata_handler.h',
-            'third_party/blink/renderer/modules/service_worker/service_worker_script_cached_metadata_handler.cc',
-            'third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.cc',
-        ],
-        'allowed': [
-            # TODO(mythria): Allow use of non-blink mojo interface. Once
-            # //content/renderer/loader is moved to Blink as a part of onion
-            # soup we can update all uses to blink::mojom::blink::CodeCacheHost.
-            'blink::mojom::CodeCacheHost',
         ],
     },
     {
@@ -1464,6 +1442,7 @@ _CONFIG = [
             'media::.+',
             'rtc::scoped_refptr',
             'webrtc::AudioDeviceModule',
+            'webrtc::AudioParameters',
             'webrtc::AudioSourceInterface',
             'webrtc::AudioTransport',
             'webrtc::kAdmMaxDeviceNameSize',
@@ -1848,7 +1827,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/frame/attribution_response_parsing.cc',
+            'third_party/blink/renderer/core/frame/attribution_src_loader.cc',
+            'third_party/blink/renderer/core/frame/attribution_src_loader.h',
         ],
         'allowed': [
             'attribution_reporting:.*',

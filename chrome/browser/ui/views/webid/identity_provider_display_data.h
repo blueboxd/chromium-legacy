@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/public/browser/identity_request_account.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 
 class IdentityProviderDisplayData {
@@ -14,7 +15,7 @@ class IdentityProviderDisplayData {
   IdentityProviderDisplayData(
       const std::u16string& idp_etld_plus_one,
       const content::IdentityProviderMetadata& idp_metadata,
-      const content::ClientIdData& client_data,
+      const content::ClientMetadata& client_metadata,
       const std::vector<content::IdentityRequestAccount>& accounts);
 
   IdentityProviderDisplayData(const IdentityProviderDisplayData& other);
@@ -23,7 +24,7 @@ class IdentityProviderDisplayData {
 
   std::u16string idp_etld_plus_one_;
   content::IdentityProviderMetadata idp_metadata_;
-  content::ClientIdData client_data_;
+  content::ClientMetadata client_metadata_;
   std::vector<content::IdentityRequestAccount> accounts_;
 };
 

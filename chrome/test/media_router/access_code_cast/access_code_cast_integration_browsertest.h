@@ -63,9 +63,6 @@ class AccessCodeCastIntegrationBrowserTest
 
   void EnableAccessCodeCasting();
 
-  // TODO(b/235882005): This function will hang on Wayland linux tests. If a
-  // test case is added that uses this function, make sure to add that test case
-  // to  //testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter
   content::WebContents* ShowDialog();
 
   // TestBrowserDialog:
@@ -146,6 +143,8 @@ class AccessCodeCastIntegrationBrowserTest
 
   raw_ptr<AccessCodeCastPrefUpdater> GetPrefUpdater();
 
+  void AddScreenplayTag(const std::string& screenplay_tag);
+
   MockCastMediaSinkServiceImpl* mock_cast_media_sink_service_impl() {
     return impl_;
   }
@@ -154,6 +153,11 @@ class AccessCodeCastIntegrationBrowserTest
     return static_cast<syncer::TestSyncService*>(
         SyncServiceFactory::GetForProfile(profile));
   }
+
+  static constexpr char kAccessCodeCastNewDeviceScreenplayTag[] =
+      "screenplay-a7ecd49d-f138-40b0-a830-3c1ebb4f4c5a";
+  static constexpr char kAccessCodeCastSavedDeviceScreenplayTag[] =
+      "screenplay-5aba818e-1cca-4c41-811a-4bf704cbe820";
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -184,7 +188,7 @@ class AccessCodeCastIntegrationBrowserTest
   std::unique_ptr<cast_channel::MockCastSocketService,
                   base::OnTaskRunnerDeleter>
       mock_cast_socket_service_;
-  MockCastMediaSinkServiceImpl* impl_ = nullptr;
+  raw_ptr<MockCastMediaSinkServiceImpl> impl_ = nullptr;
 
   std::unique_ptr<TestMediaSinkService> mock_dual_media_sink_service_;
 

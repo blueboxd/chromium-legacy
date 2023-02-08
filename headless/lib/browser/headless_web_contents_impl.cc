@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -37,6 +37,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "headless/lib/browser/directory_enumerator.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
@@ -187,6 +188,12 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     return headless_web_contents_->browser_context()
         ->options()
         ->block_new_web_contents();
+  }
+
+  void EnumerateDirectory(content::WebContents* web_contents,
+                          scoped_refptr<content::FileSelectListener> listener,
+                          const base::FilePath& path) override {
+    DirectoryEnumerator::Start(path, std::move(listener));
   }
 
   void RequestToLockMouse(content::WebContents* web_contents,
@@ -343,7 +350,7 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
     render_process_host_->RemoveObserver(this);
   // Defer destruction of WindowTreeHost, as it does sync mojo calls
   // in the destructor of ui::Compositor.
-  base::SequencedTaskRunnerHandle::Get()->DeleteSoon(
+  base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(
       FROM_HERE, std::move(window_tree_host_));
 }
 

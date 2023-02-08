@@ -25,9 +25,9 @@
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
 #         arm
-#         google google-0xffff
-#         intel intel-gen-9 intel-0xa2e intel-0xd26 intel-0xa011 intel-0x3e92
-#               intel-0x3e9b intel-0x5912 intel-0x9bc5
+#         google google-0xffff google-0xc0de
+#         intel intel-gen-9 intel-gen-12 intel-0xa2e intel-0xd26 intel-0xa011
+#               intel-0x3e92 intel-0x3e9b intel-0x5912 intel-0x9bc5
 #         nvidia nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm ]
 # Architecture
@@ -209,8 +209,6 @@ crbug.com/1201009 [ fuchsia ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCa
 # Timeout on Nexus 5
 
 # WebGL's accelerated canvas capture is failing on ChromeOS
-crbug.com/1353813 [ chromeos ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_OneCopy [ Failure ]
-crbug.com/1353813 [ chromeos ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLCanvas_TwoCopy_Accelerated [ Failure ]
 
 # WebGPU is only supported on Win10, Mac, and Linux+SkiaRenderer+Vulkan.
 crbug.com/852089 [ android ] WebGPUTraceTest_* [ Skip ]
@@ -225,11 +223,24 @@ crbug.com/dawn/549 [ mac ] WebGPUCachingTraceTest_* [ Skip ]
 crbug.com/dawn/549 [ chromeos ] WebGPUCachingTraceTest_* [ Skip ]
 crbug.com/dawn/549 [ fuchsia ] WebGPUCachingTraceTest_* [ Skip ]
 
+# finder:group-start crbug.com/1382796 failures happen in many tests, so can be classified as stale for one specific test
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_2DCanvasWebGL [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Canvas2DRedBox [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Video_VP9_DXVA [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_Video_MP4_Rounded_Corner [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_WebGLDisplayP3 [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_WebGLGreenTriangle_* [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] TraceTest_WebGLPreservedAfterTabSwitch [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] WebGLCanvasCaptureTraceTest_VideoStreamFromWebGLAlphaCanvas [ RetryOnFailure ]
+# finder:group-end
+
+# 2DCanvasWebGL flakily crashes, which then affects the following test.
+crbug.com/1383609 [ android android-sm-a135m ] TraceTest_2DCanvasWebGL [ Failure ]
+crbug.com/1383609 [ android android-sm-a135m ] TraceTest_BackgroundImage [ Failure ]
+crbug.com/1383609 [ android android-sm-a235m ] TraceTest_2DCanvasWebGL [ Failure ]
+crbug.com/1383609 [ android android-sm-a235m ] TraceTest_BackgroundImage [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

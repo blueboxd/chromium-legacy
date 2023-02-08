@@ -130,6 +130,10 @@ class CONTENT_EXPORT ServiceWorkerHost : public BucketContext {
   void BindCacheStorageForBucket(
       const storage::BucketInfo& bucket,
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
+  void GetSandboxedFileSystemForBucket(
+      const storage::BucketInfo& bucket,
+      blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+          callback) override;
 
  private:
   int worker_process_id_ = ChildProcessHost::kInvalidUniqueID;
@@ -154,7 +158,7 @@ class CONTENT_EXPORT ServiceWorkerHost : public BucketContext {
   std::unique_ptr<ServiceWorkerContainerHost> container_host_;
 
   service_manager::InterfaceProvider remote_interfaces_{
-      base::ThreadTaskRunnerHandle::Get()};
+      base::SingleThreadTaskRunner::GetCurrentDefault()};
 
   // CodeCacheHost processes requests to fetch / write generated code for
   // JavaScript / WebAssembly resources.

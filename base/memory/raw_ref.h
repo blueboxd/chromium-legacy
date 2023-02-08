@@ -12,6 +12,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/augmentations/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/memory/raw_ptr.h"
 
 namespace base {
@@ -54,20 +55,35 @@ constexpr inline bool is_raw_ref_v = is_raw_ref<T>::value;
 // means the reference inside it can be moved and reassigned.
 template <class T, class RawPtrType = DefaultRawPtrType>
 class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ref {
+  // operator* is used with the expectation of GetForExtraction semantics:
+  //
+  // raw_ref<Foo> foo_raw_ref = something;
+  // Foo& foo_ref = *foo_raw_ref;
+  //
+  // The implementation of operator* provides GetForDereference semantics, and
+  // this results in spurious crashes in BRP-ASan builds, so we need to disable
+  // BRP-ASan instrumentation for raw_ref.
+#if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+  using Inner = raw_ptr<T, RawPtrNoOp>;
+#else
   using Inner = raw_ptr<T, RawPtrType>;
+#endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+
   using Impl = typename raw_ptr_traits::RawPtrTypeToImpl<RawPtrType>::Impl;
   // These impls do not clear on move, which produces an inconsistent behaviour.
   // We want consistent behaviour such that using a raw_ref after move is caught
   // and aborts. Failure to clear would be indicated by the related death tests
   // not CHECKing appropriately.
   static constexpr bool need_clear_after_move =
-      std::is_same_v<Impl, internal::RawPtrNoOpImpl> ||
-#if defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
       std::is_same_v<Impl,
                      internal::MTECheckedPtrImpl<
                          internal::MTECheckedPtrImplPartitionAllocSupport>> ||
-#endif  // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
-      std::is_same_v<Impl, internal::AsanBackupRefPtrImpl>;
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+      std::is_same_v<Impl, internal::AsanBackupRefPtrImpl> ||
+#endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+      std::is_same_v<Impl, internal::RawPtrNoOpImpl>;
 
  public:
   PA_ALWAYS_INLINE explicit raw_ref(T& p) noexcept
@@ -169,17 +185,6 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ref {
     PA_RAW_PTR_CHECK(rhs.inner_.get());  // Catch use-after-move.
     swap(lhs.inner_, rhs.inner_);
   }
-
-#if BUILDFLAG(PA_USE_BASE_TRACING)
-  // If T can be serialised into trace, its alias is also
-  // serialisable.
-  template <class U = T>
-  typename perfetto::check_traced_value_support<U>::type WriteIntoTrace(
-      perfetto::TracedValue&& context) const {
-    PA_RAW_PTR_CHECK(inner_.get());  // Catch use-after-move.
-    inner_.WriteIntoTrace(std::move(context));
-  }
-#endif  // BUILDFLAG(PA_USE_BASE_TRACING)
 
   template <class U>
   friend PA_ALWAYS_INLINE bool operator==(const raw_ref& lhs,

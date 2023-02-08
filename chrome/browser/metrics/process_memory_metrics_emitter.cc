@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
@@ -251,14 +252,14 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"malloc/partitions/allocator", "Malloc.Allocator.ObjectCount",
      MetricSize::kTiny, MemoryAllocatorDump::kNameObjectCount,
      EmitTo::kSizeInUmaOnly, nullptr},
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     // TODO(keishi): Add brp_quarantined metrics for the Blink partitions.
     {"malloc/partitions/allocator", "Malloc.BRPQuarantined", MetricSize::kSmall,
      "brp_quarantined_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"malloc/partitions/allocator", "Malloc.BRPQuarantinedCount",
      MetricSize::kTiny, "brp_quarantined_count", EmitTo::kSizeInUmaOnly,
      nullptr},
-#endif
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     {"malloc/partitions", "Malloc.BRPQuarantinedBytesPerMinute",
      MetricSize::kSmall, "brp_quarantined_bytes_per_minute",
      EmitTo::kSizeInUmaOnly, nullptr},
@@ -1123,6 +1124,9 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
     extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile);
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
+    if (!process_map || !registry)
+      continue;
+
     std::set<std::string> extension_ids =
         process_map->GetExtensionsInProcess(rph_id);
     for (const std::string& extension_id : extension_ids) {

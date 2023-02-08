@@ -21,6 +21,8 @@ import './internet_page/apn_subpage.js';
 import './internet_page/cellular_roaming_toggle_button.js';
 import './internet_page/cellular_setup_dialog.js';
 import './internet_page/esim_remove_profile_dialog.js';
+import './internet_page/hotspot_subpage.js';
+import './internet_page/hotspot_summary_item.js';
 import './internet_page/internet_config.js';
 import './internet_page/internet_detail_page.js';
 import './internet_page/internet_known_networks_page.js';
@@ -58,8 +60,8 @@ import './os_apps_page/app_management_page/main_view.js';
 import './os_apps_page/app_management_page/pin_to_shelf_item.js';
 import './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_detail_view.js';
 import './os_apps_page/app_management_page/pwa_detail_view.js';
-import './os_apps_page/app_management_page/shared_style.js';
-import './os_apps_page/app_management_page/shared_vars.js';
+import './os_apps_page/app_management_page/app_management_cros_shared_style.css.js';
+import './os_apps_page/app_management_page/app_management_cros_shared_vars.css.js';
 import './os_apps_page/app_management_page/supported_links_overlapping_apps_dialog.js';
 import './os_apps_page/app_management_page/supported_links_dialog.js';
 import './os_apps_page/app_management_page/supported_links_item.js';
@@ -82,7 +84,7 @@ import './os_bluetooth_page/os_paired_bluetooth_list_item.js';
 import './os_bluetooth_page/os_saved_devices_list.js';
 import './os_bluetooth_page/os_saved_devices_list_item.js';
 import './os_bluetooth_page/settings_fast_pair_constants.js';
-import './os_icons.js';
+import './os_settings_icons.html.js';
 import './os_people_page/account_manager.js';
 import './os_people_page/os_people_page.js';
 import './os_people_page/os_sync_controls.js';
@@ -92,7 +94,7 @@ import './os_settings_page/os_settings_page.js';
 import './os_settings_page/settings_idle_load.js';
 import './os_settings_menu/os_settings_menu.js';
 import './os_settings_ui/os_settings_ui.js';
-import './os_settings_icons_css.js';
+import './os_settings_icons.css.js';
 import './os_settings_search_box/os_search_result_row.js';
 import './os_settings_search_box/os_settings_search_box.js';
 import './os_toolbar/os_toolbar.js';
@@ -108,6 +110,8 @@ import * as searchResultIconMojomWebui from '../mojom-webui/search/search_result
 import * as userActionRecorderMojomWebui from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
 import * as settingMojomWebui from '../mojom-webui/setting.mojom-webui.js';
 
+import * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
+
 export {PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 export {BrowserProxy as AppManagementComponentBrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
 export {PageType, WindowMode} from 'chrome://resources/cr_components/app_management/constants.js';
@@ -119,7 +123,7 @@ export {ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_p
 export {PageStatus, StatusAction, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.js';
 export {CrSettingsPrefs} from '../prefs/prefs_types.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '../privacy_page/privacy_page_browser_proxy.js';
-export {Route, Router} from '../router.js';
+export {Route, Router} from './router.js';
 export {getContactManager, observeContactManager, setContactManagerForTesting} from '../shared/nearby_contact_manager.js';
 export {getNearbyShareSettings, observeNearbyShareSettings, setNearbyShareSettingsForTesting} from '../shared/nearby_share_settings.js';
 export {NearbySettings, NearbyShareSettingsBehavior} from '../shared/nearby_share_settings_behavior.js';
@@ -140,6 +144,7 @@ export {getReceiveManager, observeReceiveManager, setReceiveManagerForTesting} f
 export {dataUsageStringToEnum, NearbyShareDataUsage} from './nearby_share_page/types.js';
 export {ManageA11yPageBrowserProxy, ManageA11yPageBrowserProxyImpl} from './os_a11y_page/manage_a11y_page_browser_proxy.js';
 export {OsA11yPageBrowserProxy, OsA11yPageBrowserProxyImpl} from './os_a11y_page/os_a11y_page_browser_proxy.js';
+export {SelectToSpeakSubpageBrowserProxy, SelectToSpeakSubpageBrowserProxyImpl} from './os_a11y_page/select_to_speak_subpage_browser_proxy.js';
 export {SwitchAccessSubpageBrowserProxy, SwitchAccessSubpageBrowserProxyImpl} from './os_a11y_page/switch_access_subpage_browser_proxy.js';
 export {TextToSpeechPageBrowserProxy, TextToSpeechPageBrowserProxyImpl} from './os_a11y_page/text_to_speech_page_browser_proxy.js';
 export {TtsSubpageBrowserProxy, TtsSubpageBrowserProxyImpl} from './os_a11y_page/tts_subpage_browser_proxy.js';
@@ -148,12 +153,12 @@ export {DeviceNameBrowserProxyImpl} from './os_about_page/device_name_browser_pr
 export {DeviceNameState, SetDeviceNameResult} from './os_about_page/device_name_util.js';
 export {AndroidAppsBrowserProxyImpl} from './os_apps_page/android_apps_browser_proxy.js';
 export {addApp, changeApp, removeApp, updateSelectedAppId} from './os_apps_page/app_management_page/actions.js';
-export {BrowserProxy} from './os_apps_page/app_management_page/browser_proxy.js';
+export {AppManagementBrowserProxy} from './os_apps_page/app_management_page/browser_proxy.js';
 export {FakePageHandler} from './os_apps_page/app_management_page/fake_page_handler.js';
 export {PluginVmBrowserProxyImpl} from './os_apps_page/app_management_page/plugin_vm_page/plugin_vm_browser_proxy.js';
-export {AppState, reduceAction} from './os_apps_page/app_management_page/reducers.js';
+export {reduceAction, updateApps} from './os_apps_page/app_management_page/reducers.js';
 export {AppManagementStore} from './os_apps_page/app_management_page/store.js';
-export {AppManagementStoreClientImpl} from './os_apps_page/app_management_page/store_client.js';
+export {AppManagementStoreMixin} from './os_apps_page/app_management_page/store_mixin.js';
 export {setAppNotificationProviderForTesting} from './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 export {OsBluetoothDevicesSubpageBrowserProxyImpl} from './os_bluetooth_page/os_bluetooth_devices_subpage_browser_proxy.js';
 export {FastPairSavedDevicesOptInStatus} from './os_bluetooth_page/settings_fast_pair_constants.js';
@@ -161,7 +166,7 @@ export {osPageVisibility} from './os_page_visibility.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
 export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
 export {OsSyncBrowserProxyImpl} from './os_people_page/os_sync_browser_proxy.js';
-export {FingerprintLocation, FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js';
+export {FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js';
 export {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './os_privacy_page/metrics_consent_browser_proxy.js';
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
@@ -169,11 +174,12 @@ export {routes} from './os_route.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {ParentalControlsBrowserProxy, ParentalControlsBrowserProxyImpl} from './parental_controls_page/parental_controls_browser_proxy.js';
 export {PersonalizationHubBrowserProxy, PersonalizationHubBrowserProxyImpl} from './personalization_page/personalization_hub_browser_proxy.js';
-export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './personalization_search_handler.js';
-export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './settings_search_handler.js';
+export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
+export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
 export {
   appNotificationHandlerMojomWebui,
   crosAudioConfigMojomWebui,
+  fakeCrosAudioConfig,
   personalizationSearchMojomWebui,
   routesMojomWebui,
   searchMojomWebui,

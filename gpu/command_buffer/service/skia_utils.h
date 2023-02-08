@@ -51,10 +51,10 @@ class SharedContextState;
 GPU_GLES2_EXPORT GrContextOptions
 GetDefaultGrContextOptions(GrContextType type);
 
-// Returns internal gl format of texture for Skia
+// Returns internal gl format of texture for Skia for given `gl_storage_format`.
 GPU_GLES2_EXPORT GLuint GetGrGLBackendTextureFormat(
     const gles2::FeatureInfo* feature_info,
-    viz::ResourceFormat resource_format,
+    GLenum gl_storage_format,
     sk_sp<GrContextThreadSafeProxy> gr_context_thread_safe);
 
 // Creates a GrBackendTexture from a service ID. Skia does not take ownership.
@@ -64,7 +64,7 @@ GPU_GLES2_EXPORT bool GetGrBackendTexture(
     GLenum target,
     const gfx::Size& size,
     GLuint service_id,
-    viz::ResourceFormat resource_format,
+    GLenum gl_storage_format,
     sk_sp<GrContextThreadSafeProxy> gr_context_thread_safe,
     GrBackendTexture* gr_texture);
 

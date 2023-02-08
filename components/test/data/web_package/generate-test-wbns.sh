@@ -9,7 +9,7 @@ set -e
 for cmd in gen-bundle sign-bundle; do
     if ! command -v $cmd > /dev/null 2>&1; then
         echo "$cmd is not installed. Please run:"
-        echo "  go get -u github.com/WICG/webpackage/go/bundle/cmd/..."
+        echo "  go install github.com/WICG/webpackage/go/bundle/cmd/...@latest"
         echo '  export PATH=$PATH:$(go env GOPATH)/bin'
         exit 1
     fi
@@ -27,6 +27,11 @@ gen-bundle \
 
 gen-bundle \
   -version b2 \
+  -har mixed_absolute_relative_urls.har \
+  -o mixed_absolute_relative_urls.wbn
+
+gen-bundle \
+  -version b2 \
   -har simple.har \
   -o simple_b2.wbn
 
@@ -35,7 +40,7 @@ gen-bundle \
   -har 24_responses.har \
   -o 24_responses.wbn
 
-sign-bundle \
+sign-bundle signatures-section \
   -i hello_b2.wbn \
   -certificate $sxg_test_data_dir/test.example.org.public.pem.cbor \
   -privateKey $sxg_test_data_dir/prime256v1.key \
@@ -44,9 +49,8 @@ sign-bundle \
   -validityUrl https://test.example.org/resource.validity.msg \
   -o hello_vouched_subsets.wbn
 
-sign-bundle \
+sign-bundle integrity-block \
   -i simple_b2.wbn \
-  -signType integrityblock \
   -privateKey signed_web_bundle_private_key.pem \
   -o simple_b2_signed.swbn
 

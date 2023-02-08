@@ -13,7 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.Px;
+
+import com.google.android.material.tabs.TabLayout;
 
 import org.chromium.chrome.browser.feed.R;
 
@@ -27,22 +28,34 @@ public class StickySectionHeaderView extends SectionHeaderView {
         super(context, attrs);
     }
 
-    /** Sets the sticky header’s visibility. */
+    /**
+     * Sets the sticky header’s visibility and update the tab state.
+     * The sticky header will be visible only when users scroll the real header above the toolbar.
+     */
     @Override
     void setStickyHeaderVisible(boolean isVisible) {
+        updateTabState();
         this.setVisibility(isVisible ? VISIBLE : GONE);
     }
 
     /**
-     * When we set/update the toolbar height, the margin of the sticky header should be updated
-     * simultaneously.
+     * This method is to set/update the sticky header's margin.
+     * @param marginValue the sticky header's margin
      */
     @Override
-    public void setToolbarHeight(@Px int toolbarHeight) {
-        super.setToolbarHeight(toolbarHeight);
+    void updateStickyHeaderMargin(int marginValue) {
         ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) this.getLayoutParams();
-        params.setMargins(
-                params.leftMargin, toolbarHeight, params.rightMargin, params.bottomMargin);
+        params.setMargins(params.leftMargin, marginValue, params.rightMargin, params.bottomMargin);
+    }
+
+    /**
+     * This method update the tabs state, recalculating the unread indicator position.
+     */
+    private void updateTabState() {
+        TabLayout tabLayout = findViewById(R.id.tab_list_view);
+        for (int i = 0; i < tabLayout.getTabCount(); i++) {
+            applyTabState(tabLayout.getTabAt(i));
+        }
     }
 
     @Override

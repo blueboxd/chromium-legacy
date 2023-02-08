@@ -13,7 +13,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/strings/stringprintf.h"
-#include "ui/gfx/linux/scoped_gbm_device.h"
+#include "ui/gfx/linux/scoped_gbm_device.h"  // nogncheck
 
 namespace ui {
 

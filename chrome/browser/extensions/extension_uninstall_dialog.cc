@@ -17,11 +17,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/clear_site_data_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
@@ -39,6 +37,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/native_window_tracker.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -76,7 +75,7 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
     : profile_(profile), parent_(parent), delegate_(delegate) {
   DCHECK(delegate_);
   if (parent)
-    parent_window_tracker_ = NativeWindowTracker::Create(parent);
+    parent_window_tracker_ = views::NativeWindowTracker::Create(parent);
   profile_observation_.Observe(profile_.get());
 }
 
@@ -106,7 +105,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   if (!profile_)
     return;
 
-  if (parent() && parent_window_tracker_->WasNativeWindowClosed()) {
+  if (parent() && parent_window_tracker_->WasNativeWindowDestroyed()) {
     OnDialogClosed(CLOSE_ACTION_CANCELED);
     return;
   }
@@ -134,7 +133,7 @@ void ExtensionUninstallDialog::OnIconUpdated(ChromeAppIcon* icon) {
 
   dialog_shown_ = true;
 
-  if (parent() && parent_window_tracker_->WasNativeWindowClosed()) {
+  if (parent() && parent_window_tracker_->WasNativeWindowDestroyed()) {
     OnDialogClosed(CLOSE_ACTION_CANCELED);
     return;
   }

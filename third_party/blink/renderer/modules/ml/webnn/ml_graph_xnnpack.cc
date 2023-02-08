@@ -11,12 +11,15 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/thread_annotations.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/buildflag.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
@@ -25,6 +28,17 @@
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
+
+#define XNN_CHECK_STATUS_AND_SET_ERROR_MESSAGE(xnn_func)            \
+  {                                                                 \
+    xnn_status status = xnn_func;                                   \
+    if (status != xnn_status_success) {                             \
+      error_message =                                               \
+          String::Format("Failed to call %s: %s.", #xnn_func,       \
+                         XnnStatusToString(status).Utf8().c_str()); \
+      return status;                                                \
+    }                                                               \
+  }
 
 namespace {
 
@@ -147,24 +161,100 @@ void MLGraphXnnpack::ValidateAndBuildAsync(MLContext* context,
   graph->BuildAsync(named_outputs, resolver);
 }
 
+// static
+MLGraph* MLGraphXnnpack::ValidateAndBuildSync(
+    MLContext* context,
+    const MLNamedOperands& named_outputs,
+    ExceptionState& exception_state) {
+  return MakeGarbageCollected<MLGraphXnnpack>(context)->BuildSync(
+      named_outputs, exception_state);
+}
+
 MLGraphXnnpack::MLGraphXnnpack(MLContext* context) : MLGraph(context) {}
 
 MLGraphXnnpack::~MLGraphXnnpack() = default;
 
+// static
+HeapVector<Member<const MLOperator>>*
+MLGraphXnnpack::GetOperatorsInTopologicalOrder(
+    const MLNamedOperands& named_outputs) {
+  // A WebNN graph is represented by a directed acyclic graph (DAG) that has
+  // operators as vertices and operand as edges. The topological sorting is
+  // implemented by depth-first search (DFS) and visiting vertices in
+  // post-order. It means a vertex (operator) is visited (pushed to the back of
+  // the sorted list) after all its dependent vertices (operators) are visited.
+  // With that, it ensures operator 'j' appears before operator 'i' in the
+  // result, if 'i' depends on 'j'. The DFS algorithm is based on the
+  // non-recursive implementation of:
+  // https://en.wikipedia.org/wiki/Depth-first_search
+
+  // The topologically sorted operators.
+  auto* toposorted_operators =
+      MakeGarbageCollected<HeapVector<Member<const MLOperator>>>();
+
+  // The to-visit stack and visited set for DFS graph traversal.
+  HeapDeque<Member<const MLOperator>> operators_to_visit;
+  HeapHashSet<Member<const MLOperator>> visited_operators;
+  // Enumerate output operands and initialize the to-visit stack with their
+  // dependent operators.
+  for (const auto& output : named_outputs) {
+    const auto* operand = output.second.Get();
+    operators_to_visit.push_back(operand->Operator());
+  }
+  while (operators_to_visit.size() > 0) {
+    // Get the current operator from the top of the to-visit stack.
+    const auto& current_operator = operators_to_visit.back();
+    if (!visited_operators.Contains(current_operator.Get())) {
+      // The current operator is not visited, check whether its dependent
+      // operators are visited or not.
+      bool skip_visit = false;
+      for (const auto& operand : current_operator->Inputs()) {
+        if (operand->Kind() == MLOperand::OperandKind::kOutput) {
+          const auto* dependent_operator = operand->Operator();
+          DCHECK(dependent_operator);
+          if (!visited_operators.Contains(dependent_operator)) {
+            // As there is an dependent operator is not visited, skip visiting
+            // this operator and push the dependent operator into the to-visit
+            // stack.
+            skip_visit = true;
+            operators_to_visit.push_back(dependent_operator);
+          }
+        }
+      }
+      if (!skip_visit) {
+        // When all dependent operators have been visited, visit the current
+        // operator and add it into the visited set.
+        toposorted_operators->push_back(current_operator);
+        visited_operators.insert(current_operator);
+        // Pop the current operator from the to-visit stack.
+        operators_to_visit.pop_back();
+      }
+    } else {
+      // The current operator is already visited, pop it and check the next
+      // one.
+      operators_to_visit.pop_back();
+    }
+  }
+  return toposorted_operators;
+}
+
 void MLGraphXnnpack::BuildAsyncImpl(const MLNamedOperands& named_outputs,
                                     ScriptPromiseResolver* resolver) {
+  // TODO(crbug.com/1273291): Revisit whether the topological sorting should run
+  // in the worker thread.
+  auto* toposorted_operators = GetOperatorsInTopologicalOrder(named_outputs);
   // TODO(crbug.com/1273291): Get a dedicated queue when the specification
   // matures.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       ExecutionContext::From(resolver->GetScriptState())
           ->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  auto* on_heap_named_outputs =
-      MakeGarbageCollected<MLNamedOperands>(named_outputs);
   worker_pool::PostTask(
       FROM_HERE,
       CrossThreadBindOnce(
           &BuildOnBackgroundThread, WrapCrossThreadPersistent(this),
-          WrapCrossThreadPersistent(on_heap_named_outputs),
+          WrapCrossThreadPersistent(
+              MakeGarbageCollected<MLNamedOperands>(named_outputs)),
+          WrapCrossThreadPersistent(toposorted_operators),
           WrapCrossThreadPersistent(resolver), std::move(task_runner)));
 }
 
@@ -172,6 +262,8 @@ void MLGraphXnnpack::BuildAsyncImpl(const MLNamedOperands& named_outputs,
 void MLGraphXnnpack::BuildOnBackgroundThread(
     CrossThreadPersistent<MLGraphXnnpack> graph,
     CrossThreadPersistent<MLNamedOperands> named_outputs,
+    CrossThreadPersistent<HeapVector<Member<const MLOperator>>>
+        toposorted_operators,
     CrossThreadPersistent<ScriptPromiseResolver> resolver,
     scoped_refptr<base::SequencedTaskRunner> resolver_task_runner) {
   DCHECK(!IsMainThread());
@@ -185,9 +277,8 @@ void MLGraphXnnpack::BuildOnBackgroundThread(
     status = xnn_status_uninitialized;
   }
 
-  // TODO(ningxin.hu@intel.com): Sort the operators topoloically by searching
-  // from named_outputs, build an XNNPACK Subgraph object based those operators
-  // and create an XNNPACK Runtime object for accelerated execution.
+  status = graph->CreateXnnSubgraphAndRuntime(
+      *named_outputs, *toposorted_operators, error_message);
 
   PostCrossThreadTask(*resolver_task_runner, FROM_HERE,
                       CrossThreadBindOnce(&MLGraphXnnpack::OnBuildFinished,
@@ -207,14 +298,91 @@ void MLGraphXnnpack::OnBuildFinished(
   resolver->Resolve(this);
 }
 
+MLGraph* MLGraphXnnpack::BuildSyncImpl(const MLNamedOperands& named_outputs,
+                                       ExceptionState& exception_state) {
+  DCHECK(!xnn_context_);
+  String error_message;
+  xnn_context_ = SharedXnnpackContext::GetInstance(error_message);
+  if (!xnn_context_) {
+    exception_state.ThrowDOMException(
+        XnnStatusToDOMExceptionCode(xnn_status_uninitialized), error_message);
+    return nullptr;
+  }
+
+  auto* toposorted_operators = GetOperatorsInTopologicalOrder(named_outputs);
+  xnn_status status = CreateXnnSubgraphAndRuntime(
+      named_outputs, *toposorted_operators, error_message);
+  if (status != xnn_status_success) {
+    exception_state.ThrowDOMException(XnnStatusToDOMExceptionCode(status),
+                                      error_message);
+    return nullptr;
+  }
+
+  return this;
+}
+
 void MLGraphXnnpack::ComputeAsyncImpl(const MLNamedArrayBufferViews& inputs,
                                       const MLNamedArrayBufferViews& outputs,
                                       ScriptPromiseResolver* resolver) {
   // TODO(ningxin.hu@intel.com): Implement this method by posting the inputs and
   // outputs to a background thread and invoking XNNPACK Runtime object in the
   // background thread.
+
   resolver->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kNotSupportedError, "Not implemented."));
+}
+
+void MLGraphXnnpack::ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
+                                     const MLNamedArrayBufferViews& outputs,
+                                     ExceptionState& exception_state) {
+  // TODO(ningxin.hu@intel.com): Setup the external values of the XNNPACK
+  // Runtime object by input and output buffers, and invoke the XNNPACK Runtime
+  // object for accelerated execution in the caller's thread.
+
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not implemented.");
+}
+
+xnn_status MLGraphXnnpack::CreateXnnSubgraphAndRuntime(
+    const MLNamedOperands& named_outputs,
+    const HeapVector<Member<const MLOperator>>& toposorted_operators,
+    String& error_message) {
+  TRACE_EVENT("blink", "MLGraphXnnpack::CreateXnnSubgraphAndRuntime");
+
+  // The number of external value IDs that is reserved by XNNPACK Subgraph. Set
+  // its value to the number of graph input and output resources.
+  uint32_t external_value_ids_num;
+  if (!base::CheckAdd<wtf_size_t>(input_resources_info_.size(),
+                                  output_resources_info_.size())
+           .AssignIfValid(&external_value_ids_num)) {
+    error_message = "The graph has too many inputs and outputs.";
+    return xnn_status_invalid_parameter;
+  }
+  xnn_subgraph_t subgraph_ptr = nullptr;
+  XNN_CHECK_STATUS_AND_SET_ERROR_MESSAGE(
+      xnn_create_subgraph(external_value_ids_num, 0, &subgraph_ptr));
+  DCHECK_NE(subgraph_ptr, nullptr);
+
+  // XNNPACK Subgraph is an abstract representation of a neural network model.
+  // The Subgraph Values and Nodes will be defined for the operands and
+  // operators of a WebNN graph. An XNNPACK Runtime object will be created from
+  // the Subgraph object. Once constructed, the Runtime object is independent of
+  // the Subgraph object. The Runtime object is kept for the accelerated
+  // executions and the Subgraph object will be deleted.
+  std::unique_ptr<xnn_subgraph, decltype(&xnn_delete_subgraph)> subgraph(
+      subgraph_ptr, &xnn_delete_subgraph);
+
+  // TODO(ningxin.hu@intel.com): Define XNNPACK Subgraph external Values for
+  // the named output operands. Visit the topologically sorted operators. For
+  // each operator, define the XNNPACK Subgraph Node for the operator and Values
+  // for its input and output operands.
+
+  xnn_runtime_t runtime_ptr = nullptr;
+  XNN_CHECK_STATUS_AND_SET_ERROR_MESSAGE(
+      xnn_create_runtime(subgraph.get(), &runtime_ptr));
+  DCHECK_NE(runtime_ptr, nullptr);
+  xnn_runtime_.reset(runtime_ptr);
+  return xnn_status_success;
 }
 
 }  // namespace blink

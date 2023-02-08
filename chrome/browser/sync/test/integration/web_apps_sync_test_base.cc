@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/web_apps_sync_test_base.h"
 
-#include "build/chromeos_buildflags.h"
-
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #endif
@@ -34,15 +32,10 @@ WebAppsSyncTestBase::WebAppsSyncTestBase(TestType test_type)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Disable WebAppsCrosapi, so that Web Apps get synced in the Ash browser.
   disabled_features.push_back(features::kWebAppsCrosapi);
-  disabled_features.push_back(chromeos::features::kLacrosPrimary);
+  disabled_features.push_back(ash::features::kLacrosPrimary);
 #endif
 
   scoped_feature_list_.InitWithFeatures({}, disabled_features);
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  SkipMainProfileCheckForTesting();
-  browser_sync::ChromeSyncClient::SkipMainProfileCheckForTesting();
-#endif
 }
 
 WebAppsSyncTestBase::~WebAppsSyncTestBase() = default;

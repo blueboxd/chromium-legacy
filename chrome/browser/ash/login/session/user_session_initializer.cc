@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
 
-#include "ash/components/peripheral_notification/peripheral_notification_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
@@ -15,6 +14,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/accessibility/system_live_caption_service_factory.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/camera_mic/vm_camera_mic_manager.h"
 #include "chrome/browser/ash/child_accounts/child_status_reporting_service_factory.h"
@@ -50,6 +50,8 @@
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/network/network_cert_loader.h"
+#include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
+#include "components/live_caption/caption_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -238,6 +240,11 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   clipboard_image_model_factory_impl_ =
       std::make_unique<ClipboardImageModelFactoryImpl>(profile);
 
+  if (captions::IsLiveCaptionFeatureSupported() &&
+      base::FeatureList::IsEnabled(features::kSystemLiveCaption)) {
+    SystemLiveCaptionServiceFactory::GetInstance()->GetForProfile(profile);
+  }
+
   g_browser_process->platform_part()->InitializePrimaryProfileServices(profile);
 }
 
@@ -255,7 +262,7 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   if (is_primary_user) {
     DCHECK_EQ(primary_profile_, profile);
 
-    if (ash::features::AreGlanceablesEnabled()) {
+    if (features::AreGlanceablesEnabled()) {
       // Must be called after CalenderKeyedServiceFactory is initialized.
       ChromeGlanceablesDelegate::Get()->OnPrimaryUserSessionStarted(profile);
     }
@@ -276,10 +283,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
     // Pciguard is turned on.
     if (PeripheralNotificationManager::IsInitialized()) {
       PeripheralNotificationManager::Get()->SetPcieTunnelingAllowedState(
-          chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
+          settings::PeripheralDataAccessHandler::GetPrefState());
     }
     PciguardClient::Get()->SendExternalPciDevicesPermissionState(
-        chromeos::settings::PeripheralDataAccessHandler::GetPrefState());
+        settings::PeripheralDataAccessHandler::GetPrefState());
 
     CrasAudioHandler::Get()->RefreshNoiseCancellationState();
   }

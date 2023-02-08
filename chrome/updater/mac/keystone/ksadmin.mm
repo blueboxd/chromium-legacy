@@ -34,14 +34,14 @@
 #include "base/time/time.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/mac/mac_util.h"
 #include "chrome/updater/mac/setup/ks_tickets.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/mac_util.h"
+#include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -192,7 +192,7 @@ void MaybeInstallUpdater(UpdaterScope scope) {
     return;
   }
 
-  if (scope == UpdaterScope::kSystem && geteuid() != 0) {
+  if (IsSystemInstall(scope) && geteuid() != 0) {
     VLOG(0) << "Cannot install system updater without root privilege.";
     return;
   }
@@ -275,8 +275,7 @@ KSTicket* KSAdminApp::TicketFromAppState(
 
 scoped_refptr<UpdateService> KSAdminApp::ServiceProxy(
     UpdaterScope scope) const {
-  return scope == UpdaterScope::kSystem ? system_service_proxy_
-                                        : user_service_proxy_;
+  return IsSystemInstall(scope) ? system_service_proxy_ : user_service_proxy_;
 }
 
 void KSAdminApp::ChooseService(

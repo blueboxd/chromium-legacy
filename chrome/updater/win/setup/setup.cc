@@ -33,11 +33,11 @@
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -72,7 +72,7 @@ std::vector<base::FilePath> GetSetupFiles(const base::FilePath& source_dir) {
 // TODO(crbug.com/1069976): use specific return values for different code paths.
 int Setup(UpdaterScope scope) {
   VLOG(1) << __func__ << ", scope: " << scope;
-  DCHECK(scope == UpdaterScope::kUser || ::IsUserAnAdmin());
+  DCHECK(!IsSystemInstall(scope) || ::IsUserAnAdmin());
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
@@ -145,13 +145,13 @@ int Setup(UpdaterScope scope) {
   base::CommandLine run_updater_wake_command(
       versioned_dir->Append(updater_exe));
   run_updater_wake_command.AppendSwitch(kWakeSwitch);
-  if (scope == UpdaterScope::kSystem)
+  if (IsSystemInstall(scope))
     run_updater_wake_command.AppendSwitch(kSystemSwitch);
   run_updater_wake_command.AppendSwitch(kEnableLoggingSwitch);
   run_updater_wake_command.AppendSwitchASCII(kLoggingModuleSwitch,
                                              kLoggingModuleSwitchValue);
 
-  if (scope == UpdaterScope::kUser) {
+  if (!IsSystemInstall(scope)) {
     RegisterUserRunAtStartup(GetTaskNamePrefix(scope), run_updater_wake_command,
                              install_list.get());
   }
@@ -166,9 +166,6 @@ int Setup(UpdaterScope scope) {
   }
 
   VLOG(1) << "Setup succeeded.";
-
-  CheckComInterfaceTypeLib(scope, true);
-  MarshalInterface<IUpdaterInternal, UpdaterInternalImpl>();
 
   return 0;
 }

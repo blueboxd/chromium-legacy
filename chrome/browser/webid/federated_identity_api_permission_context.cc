@@ -4,6 +4,7 @@
 
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -36,13 +37,20 @@ FederatedIdentityApiPermissionContext::GetApiPermissionStatus(
   if (!base::FeatureList::IsEnabled(features::kFedCm))
     return PermissionStatus::BLOCKED_VARIATIONS;
 
-  // TODO(npm): FedCM is currently restricted to contexts where third party
-  // cookies are not blocked.  Once the privacy improvements for the API are
-  // implemented, remove this restriction. See https://crbug.com/13043
-  if (cookie_settings_->ShouldBlockThirdPartyCookies())
-    return PermissionStatus::BLOCKED_THIRD_PARTY_COOKIES_BLOCKED;
-
   const GURL rp_embedder_url = relying_party_embedder.GetURL();
+
+  // TODO(npm): FedCM is currently restricted to contexts where third party
+  // cookies are not blocked unless the FedCmWithoutThirdPartyCookies flag is
+  // enabled.  Once the privacy improvements for the API are implemented, remove
+  // this restriction. See https://crbug.com/13043
+  if (cookie_settings_->ShouldBlockThirdPartyCookies() &&
+      !cookie_settings_->IsThirdPartyAccessAllowed(
+          rp_embedder_url, /*source=*/nullptr,
+          content_settings::CookieSettings::QueryReason::kCookies) &&
+      !base::FeatureList::IsEnabled(features::kFedCmWithoutThirdPartyCookies)) {
+    return PermissionStatus::BLOCKED_THIRD_PARTY_COOKIES_BLOCKED;
+  }
+
   const ContentSetting setting = host_content_settings_map_->GetContentSetting(
       rp_embedder_url, rp_embedder_url,
       ContentSettingsType::FEDERATED_IDENTITY_API);

@@ -14,9 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
-#include "base/task/task_runner_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/types/pass_key.h"
 #include "components/file_access/scoped_file_access_delegate.h"
 #include "net/base/file_stream.h"
@@ -72,8 +71,8 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf,
 
 int64_t LocalFileStreamReader::GetLength(
     net::Int64CompletionOnceCallback callback) {
-  bool posted = base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE, base::BindOnce(&DoGetFileInfo, file_path_),
+  bool posted = task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&DoGetFileInfo, file_path_),
       base::BindOnce(&LocalFileStreamReader::DidGetFileInfoForGetLength,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
   DCHECK(posted);
@@ -105,7 +104,7 @@ void LocalFileStreamReader::Open(net::CompletionOnceCallback callback) {
   base::OnceCallback<void(file_access::ScopedFileAccess)> open_cb =
       base::BindOnce(&LocalFileStreamReader::OnScopedFileAccessRequested,
                      weak_factory_.GetWeakPtr(), std::move(callback));
-  auto current_task_runner = base::SequencedTaskRunnerHandle::Get();
+  auto current_task_runner = base::SequencedTaskRunner::GetCurrentDefault();
   auto task = base::BindPostTask(current_task_runner, std::move(open_cb));
 
   // TODO(crbug.com/1354502): Replace this with actual destination URLs.

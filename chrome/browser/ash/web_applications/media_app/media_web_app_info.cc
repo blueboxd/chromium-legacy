@@ -19,11 +19,11 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/hats/hats_config.h"
 #include "chrome/browser/ash/hats/hats_notification_controller.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -260,7 +260,7 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForMediaWebApp() {
       },
       *info);
 
-  if (chromeos::features::IsDarkLightModeEnabled()) {
+  if (ash::features::IsDarkLightModeEnabled()) {
     info->theme_color = cros_styles::ResolveColor(
         cros_styles::ColorName::kBgColor, /*is_dark_mode=*/false);
     info->dark_mode_theme_color = cros_styles::ResolveColor(
@@ -361,8 +361,9 @@ bool MediaSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
   return true;
 }
 
-bool MediaSystemAppDelegate::ShouldReuseExistingWindow() const {
-  return !ShouldShowNewWindowMenuOption();
+Browser* MediaSystemAppDelegate::GetWindowForLaunch(Profile* profile,
+                                                    const GURL& url) const {
+  return nullptr;
 }
 
 bool MediaSystemAppDelegate::ShouldHandleFileOpenIntents() const {

@@ -389,7 +389,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   for (const auto& kv : recordings_.sources) {
     MaybeMarkForDeletion(kv.first);
     // If the source id is not allowlisted, don't send it unless it has
-    // associated entries and the URL matches that of a allowlisted source.
+    // associated entries and the URL matches that of an allowlisted source.
     if (!IsAllowlistedSourceId(kv.first)) {
       // UkmSource should not keep initial_url for non-navigation source IDs.
       DCHECK_EQ(1u, kv.second->urls().size());
@@ -404,8 +404,12 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
         continue;
       }
 
-      // Non-allowlisted Source types will not be kept after entries are logged.
-      MarkSourceForDeletion(kv.first);
+      if (!base::GetFieldTrialParamByFeatureAsBool(
+              kUkmFeature, "KeepNonAllowlistedSourcesThatMatch", false)) {
+        // Non-allowlisted Source types will not be kept after entries are
+        // logged.
+        MarkSourceForDeletion(kv.first);
+      }
     }
     // Minimal validations before serializing into a proto message.
     // See crbug/1274876.

@@ -35,7 +35,7 @@ namespace ash {
 namespace file_system_provider {
 
 class ProvidedFileSystemInfo;
-class RequestManager;
+class OperationRequestManager;
 
 // Represents metadata for either a file or a directory.
 struct EntryMetadata {
@@ -269,7 +269,7 @@ class ProvidedFileSystemInterface {
   virtual const OpenedFiles& GetOpenedFiles() const = 0;
 
   // Returns a request manager for the file system.
-  virtual RequestManager* GetRequestManager() = 0;
+  virtual OperationRequestManager* GetRequestManager() = 0;
 
   // Adds an observer on the file system.
   virtual void AddObserver(ProvidedFileSystemObserver* observer) = 0;
@@ -283,17 +283,5 @@ class ProvidedFileSystemInterface {
 
 }  // namespace file_system_provider
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
-namespace chromeos {
-namespace file_system_provider {
-using ::ash::file_system_provider::Action;
-using ::ash::file_system_provider::EntryMetadata;
-using ::ash::file_system_provider::OPEN_FILE_MODE_READ;
-using ::ash::file_system_provider::OPEN_FILE_MODE_WRITE;
-using ::ash::file_system_provider::OpenedFiles;
-using ::ash::file_system_provider::OpenFileMode;
-}  // namespace file_system_provider
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_

@@ -9,7 +9,6 @@
 
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -33,6 +32,10 @@ class TranslateInfoBarDelegate;
 namespace gfx {
 class Image;
 struct VectorIcon;
+}
+
+namespace ui {
+class ImageModel;
 }
 
 namespace infobars {
@@ -93,7 +96,7 @@ class InfoBarDelegate {
     // Removed: DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID = 22,
     // Removed: NOTIFICATION_PERMISSION_INFOBAR_DELEGATE = 23,
     // Removed: AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE = 24,
-    GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID = 25,
+    // Removed: GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID = 25,
     SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 26,
     // Removed: PEPPER_BROKER_INFOBAR_DELEGATE = 27,
     PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID = 28,
@@ -131,7 +134,7 @@ class InfoBarDelegate {
     // Removed: WINDOW_ERROR_INFOBAR_DELEGATE_ANDROID = 60,
     DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 61,
     // Removed: DESKTOP_SEARCH_REDIRECTION_INFOBAR_DELEGATE = 62,
-    UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 63,
+    // Removed: UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE = 63,
     // Removed: DATA_REDUCTION_PROMO_INFOBAR_DELEGATE_ANDROID = 64,
     AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_DELEGATE_ANDROID = 65,
     ADS_BLOCKED_INFOBAR_DELEGATE_ANDROID = 66,
@@ -180,6 +183,7 @@ class InfoBarDelegate {
     SUPPORTED_LINKS_INFOBAR_DELEGATE_CHROMEOS = 109,
     AUTOFILL_VIRTUAL_CARD_ENROLLMENT_INFOBAR_DELEGATE_MOBILE = 110,
     TAILORED_SECURITY_SERVICE_INFOBAR_DELEGATE = 111,
+    CHROME_FOR_TESTING_INFOBAR_DELEGATE = 112,
   };
 
   // Describes navigation events, used to decide whether infobars should be

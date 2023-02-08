@@ -173,7 +173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-06-04">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -257,7 +257,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="ContentSettings.ImagePressed" enum="ContentSettingImageType"
     expires_after="2021-02-01">
-  <owner>calamity@chromium.org</owner>
+  <obsolete>
+    Removed in Nov 2022.
+  </obsolete>
+  <owner>alancutter@chromium.org</owner>
   <owner>src/chrome/browser/ui/page_action/OWNERS</owner>
   <summary>
     Counts which content setting buttons are pressed by the user.
@@ -265,7 +268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="2023-03-15">
+    expires_after="2023-05-14">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -276,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.PermissionRequested" enum="PermissionType"
-    expires_after="2023-03-15">
+    expires_after="2023-05-14">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -310,7 +313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -395,6 +398,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.RegularProfile.DefaultBackgroundSyncSetting"
+    enum="ContentSetting" expires_after="2023-04-16">
+  <owner>tungnh@chromium.org</owner>
+  <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
+  <summary>
+    The default permission setting for Background Sync at profile open. This
+    histogram is only recorded for regular profiles.
+  </summary>
+</histogram>
+
 <histogram
     name="ContentSettings.{RegularProfileFiltered}DefaultAutoDarkWebContentSetting"
     enum="ContentSetting" expires_after="2023-02-19">
@@ -408,16 +421,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -433,16 +446,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -457,16 +470,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -482,16 +495,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -506,16 +519,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -531,16 +544,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -556,16 +569,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -581,16 +594,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -607,16 +620,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -634,16 +647,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -659,16 +672,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -684,16 +697,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -710,16 +723,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -734,16 +747,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -760,16 +773,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -785,16 +798,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -812,16 +825,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
 </histogram>
 
@@ -843,16 +856,16 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="RegularProfileFiltered">
     <variant name=""
-        summary="prior to version M-107. It is recorded for both regular and
+        summary="prior to version M-109. It is recorded for both regular and
                  irregular profiles">
       <obsolete>
-        Deprecated in M107. Used to include data from both regular and irregular
+        Deprecated in M109. Used to include data from both regular and irregular
         profiles, such as incognito profiles. Consult the new histograms with
         the RegularProfile tag instead.
       </obsolete>
     </variant>
     <variant name="RegularProfile."
-        summary="from version M-107. It is recorded only for regular profiles"/>
+        summary="from version M-109. It is recorded only for regular profiles"/>
   </token>
   <token key="ContentSettingsType">
     <variant name="app-banner" summary="App banner exceptions"/>
@@ -1169,7 +1182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ManualRefreshInterval" units="ms"
-    expires_after="2023-03-01">
+    expires_after="2023-05-14">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1613,7 +1626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadVisibilityLog" enum="Boolean"
-    expires_after="2023-05-07">
+    expires_after="2023-06-04">
   <owner>freedjm@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1646,7 +1659,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions.Commands"
-    enum="FeedUserCommandType" expires_after="2023-03-01">
+    enum="FeedUserCommandType" expires_after="2023-05-14">
   <owner>harringtond@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1747,7 +1760,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ViewedCardCountAtManualRefresh"
-    units="count" expires_after="2023-03-01">
+    units="count" expires_after="2023-06-04">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1759,7 +1772,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ViewedCardPercentageAtManualRefresh"
-    units="%" expires_after="2023-03-01">
+    units="%" expires_after="2023-06-04">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1799,7 +1812,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowByIdResult"
-    enum="WebFeedSubscriptionRequestStatus" expires_after="2023-03-01">
+    enum="WebFeedSubscriptionRequestStatus" expires_after="2023-06-04">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1810,7 +1823,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.FollowCount.Engaged"
-    units="follows" expires_after="2023-05-07">
+    units="follows" expires_after="2023-06-04">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1886,7 +1899,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.WebFeed.NewFollow.ChangeReason"
-    enum="WebFeedChangeReason" expires_after="2023-04-01">
+    enum="WebFeedChangeReason" expires_after="2023-06-04">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -2070,18 +2083,16 @@ chromium-metrics-reviews@google.com.
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
-    Tracks each instance of user engagement with {FeedType}, by scrolling or
-    interacting with a card (opening the URL or using the menu). Note that each
-    event type reports samples very differently and buckets can't be directly
-    compared. We're mostly interested in unique user counts. We track every
-    interaction, and we report ENGAGED and ENGAGED_SIMPLE once per user visit. A
-    user visit is when the user scrolls or interacts with the NTP more than 5
-    minutes after the previous visit. The SCROLLED engagement type represents a
-    single instance of the user scrolling, and is reported once per Feed visit.
-    The INTERACTED engagement type represents one instance of using the menu or
-    opening a feed article into its own tab. SCROLLED and INTERACTED are
-    reported for every occurrence, thus we could end up with more scrolled and
-    interected than ENGAGED or ENGAGED_SIMPLE samples.
+    Tracks user behavior with {FeedType}. Each bucket is one of two types of
+    metric. Per-visit metrics sample once per &quot;visit&quot;, which is a
+    cluster of user activities separated by less than 5 minutes of inactivity.
+    Per-visit metrics record a sample at the moment that the visit's criteria
+    are first met. Per-interaction metrics are not clustered and report samples
+    immediately. In the UI, Bucket Proportion and Total Count are not meaningful
+    as these metrics are not independent. All buckets of this metric can be
+    moved by changes in the Discover service as well as by client changes.
+    go/discover-oncall describes how to get in touch with Discover oncall
+    engineers.
   </summary>
   <token key="FeedType">
     <variant name="Feed" summary="the For-You Feed"/>

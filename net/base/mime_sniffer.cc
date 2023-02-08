@@ -577,7 +577,7 @@ static const MagicNumber kByteOrderMark[] = {
 static bool SniffBinary(base::StringPiece content,
                         bool* have_enough_content,
                         std::string* result) {
-  // There is no concensus about exactly how to sniff for binary content.
+  // There is no consensus about exactly how to sniff for binary content.
   // * IE 7: Don't sniff for binary looking bytes, but trust the file extension.
   // * Firefox 3.5: Sniff first 4096 bytes for a binary looking byte.
   // Here, we side with FF, but with a smaller buffer. This size was chosen
@@ -793,29 +793,13 @@ bool SniffMimeType(base::StringPiece content,
   return have_enough_content;
 }
 
-bool SniffMimeType(const char* content,
-                   size_t content_size,
-                   const GURL& url,
-                   const std::string& type_hint,
-                   ForceSniffFileUrlsForHtml force_sniff_file_url_for_html,
-                   std::string* result) {
-  return SniffMimeType(base::StringPiece(content, content_size), url, type_hint,
-                       force_sniff_file_url_for_html, result);
-}
-
-NET_EXPORT bool SniffMimeTypeFromLocalData(base::StringPiece content,
-                                           std::string* result) {
+bool SniffMimeTypeFromLocalData(base::StringPiece content,
+                                std::string* result) {
   // First check the extra table.
   if (CheckForMagicNumbers(content, kExtraMagicNumbers, result))
     return true;
   // Finally check the original table.
   return CheckForMagicNumbers(content, kMagicNumbers, result);
-}
-
-bool SniffMimeTypeFromLocalData(const char* content,
-                                size_t size,
-                                std::string* result) {
-  return SniffMimeTypeFromLocalData(base::StringPiece(content, size), result);
 }
 
 bool LooksLikeBinary(base::StringPiece content) {

@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 blink_core_sources_style = [
+  "anchor_scroll_value.cc",
+  "anchor_scroll_value.h",
   "applied_text_decoration.cc",
   "applied_text_decoration.h",
   "applied_text_decoration_list.h",
@@ -134,6 +136,7 @@ blink_core_tests_style = [
   "scoped_css_name_test.cc",
   "style_aspect_ratio_test.cc",
   "style_difference_test.cc",
+  "style_initial_letter_test.cc",
   "style_name_or_keyword_test.cc",
   "style_name_test.cc",
   "style_pending_image_test.cc",

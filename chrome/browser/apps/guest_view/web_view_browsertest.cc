@@ -25,7 +25,6 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -63,6 +62,7 @@
 #include "components/version_info/version_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/ax_event_notification_details.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -105,6 +105,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/identifiability_metrics.h"
@@ -221,11 +222,11 @@ class ContextMenuShownObserver {
 
   void OnMenuShown(RenderViewContextMenu* context_menu) {
     shown_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
                                   base::Unretained(context_menu)));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, run_loop_.QuitClosure());
   }
 
   void Wait() { run_loop_.Run(); }
@@ -351,7 +352,7 @@ class LeftMouseClick {
     mouse_event_.click_count = 1;
     render_frame_host_->GetRenderWidgetHost()->ForwardMouseEvent(mouse_event_);
 
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&LeftMouseClick::SendMouseUp, base::Unretained(this)),
         base::Milliseconds(duration_ms));
@@ -2091,10 +2092,42 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
              NO_TEST_SERVER);
 }
 
-class WebViewSSLErrorTest : public WebViewTest {
+class WebViewSSLErrorTest
+    : public WebViewTestBase,
+      public testing::WithParamInterface<testing::tuple<bool, bool>> {
  public:
-  WebViewSSLErrorTest() = default;
+  WebViewSSLErrorTest() {
+    auto [is_site_isolation_enabled, use_interstitials] = GetParam();
+    std::vector<base::test::FeatureRef> enabled_features, disabled_features;
+    if (is_site_isolation_enabled) {
+      enabled_features.push_back(features::kSiteIsolationForGuests);
+    } else {
+      disabled_features.push_back(features::kSiteIsolationForGuests);
+    }
+
+    if (use_interstitials) {
+      disabled_features.push_back(
+          extensions_features::kWebviewTagMPArchBehavior);
+    } else {
+      enabled_features.push_back(
+          extensions_features::kWebviewTagMPArchBehavior);
+    }
+
+    scoped_feature_list_.InitWithFeatures(std::move(enabled_features),
+                                          std::move(disabled_features));
+  }
   ~WebViewSSLErrorTest() override = default;
+
+  static std::string DescribeParams(
+      const testing::TestParamInfo<ParamType>& info) {
+    auto [is_site_isolation_enabled, use_interstitials] = info.param;
+    return base::StringPrintf(
+        "SiteIsolationForGuests%s_Use%s",
+        is_site_isolation_enabled ? "Enabled" : "Disabled",
+        use_interstitials ? "Interstitial" : "ErrorPage");
+  }
+
+  bool UseInterstitials() { return testing::get<1>(GetParam()); }
 
   // Loads the guest at "web_view/ssl/https_page.html" with an SSL error, and
   // asserts the security interstitial is not displayed for guest through the
@@ -2124,7 +2157,7 @@ class WebViewSSLErrorTest : public WebViewTest {
     ASSERT_TRUE(guest->GetGuestMainFrame()->IsErrorDocument());
     // TODO(1338009): We intend to limit SSL errors to a plain error page
     // instead of an interstitial.
-    ASSERT_TRUE(IsShowingInterstitial(guest->web_contents()));
+    ASSERT_EQ(UseInterstitials(), IsShowingInterstitial(guest->web_contents()));
   }
 
   void LoadEmptyGuest() {
@@ -2173,12 +2206,15 @@ class WebViewSSLErrorTest : public WebViewTest {
       ASSERT_EQ(guest_navi_obs.last_committed_url(), GURL());
     }
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(WebViewSSLErrorTests,
                          WebViewSSLErrorTest,
-                         testing::Bool(),
-                         WebViewTest::DescribeParams);
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         WebViewSSLErrorTest::DescribeParams);
 
 // Test makes sure that an error document is shown in `<webview>` with an SSL
 // error.
@@ -2334,10 +2370,10 @@ class WebViewHttpsFirstModeTest : public WebViewSSLErrorTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(WebViewTests,
+INSTANTIATE_TEST_SUITE_P(WebViewHttpsFirstModeTests,
                          WebViewHttpsFirstModeTest,
-                         testing::Bool(),
-                         WebViewTest::DescribeParams);
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         WebViewHttpsFirstModeTest::DescribeParams);
 
 // Tests that loading an HTTPS page in a guest <webview> with HTTPS-First Mode
 // enabled doesn't crash nor shows error page.
@@ -2877,11 +2913,11 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, TestContextMenu) {
 
   auto close_menu_and_stop_run_loop = [](base::OnceClosure closure,
                                          RenderViewContextMenu* context_menu) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
                                   base::Unretained(context_menu)));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(closure));
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(closure));
   };
 
   base::RunLoop run_loop;
@@ -3905,7 +3941,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadDataAPINotRelativeToAnotherExtension) {
   // resort to a timeout here. If |fail_if_webview_navigates| doesn't see a
   // navigation in that time, we consider the test to have passed.
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
   EXPECT_FALSE(fail_if_webview_navigates.navigation_started());
@@ -3956,8 +3992,8 @@ class ClientCertStoreStub : public net::ClientCertStore {
     if (quit_closure_) {
       // Call the quit closure asynchronously, so it's ordered after the cert
       // selector.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(quit_closure_));
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, std::move(quit_closure_));
     }
   }
 
@@ -4577,21 +4613,17 @@ IN_PROC_BROWSER_TEST_P(WebViewTestNoDomAutomationController,
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, LoadWebViewAccessibility) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   LoadAppWithGuest("web_view/focus_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
-  content::EnableAccessibilityForWebContents(web_contents);
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::EnableAccessibilityForWebContents(guest_web_contents);
   content::WaitForAccessibilityTreeToContainNodeWithName(web_contents,
                                                          "Guest button");
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   LoadAppWithGuest("web_view/focus_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
-  content::EnableAccessibilityForWebContents(web_contents);
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::EnableAccessibilityForWebContents(guest_web_contents);
 
   // Wait for focus to land on the "root web area" role, representing
   // focus on the main document itself.
@@ -4624,11 +4656,9 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
 // The test was disabled. See crbug.com/1141313.
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest,
                        DISABLED_FocusAccessibilityNestedFrame) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   LoadAppWithGuest("web_view/focus_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
-  content::EnableAccessibilityForWebContents(web_contents);
-  content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::EnableAccessibilityForWebContents(guest_web_contents);
 
   // Wait for focus to land on the "root web area" role, representing
   // focus on the main document itself.
@@ -4708,11 +4738,10 @@ class WebContentsAccessibilityEventWatcher
 };
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   LoadAppWithGuest("web_view/touch_accessibility");
   content::WebContents* web_contents = GetFirstAppWindowWebContents();
-  content::EnableAccessibilityForWebContents(web_contents);
   content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::EnableAccessibilityForWebContents(guest_web_contents);
 
   // Listen for accessibility events on both WebContents.
   WebContentsAccessibilityEventWatcher main_event_watcher(
@@ -6174,8 +6203,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ContentScript) {
 
 // Checks that content scripts work in an out-of-process iframe in a <webview>
 // tag.
-// TODO(crbug.com/1363124): Fix flakiness on win10_chromium_x64_rel_ng. The test
-// is also disabled on mac11-arm64-rel using filter.
+// TODO(crbug.com/1363124): Fix flakiness on win-rel. The test is also disabled
+// on mac11-arm64-rel using filter.
 #if BUILDFLAG(IS_WIN)
 #define MAYBE_ContentScriptInOOPIF DISABLED_ContentScriptInOOPIF
 #else

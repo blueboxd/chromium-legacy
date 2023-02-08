@@ -31,7 +31,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.lifetime.DestroyChecker;
 import org.chromium.base.lifetime.Destroyable;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -64,6 +63,8 @@ import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.url.GURL;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
@@ -404,13 +405,6 @@ public abstract class ToolbarLayout
     }
 
     /**
-     * @return The helper for menu button UI interactions.
-     */
-    AppMenuButtonHelper getMenuButtonHelper() {
-        return mAppMenuButtonHelper;
-    }
-
-    /**
      * @return Whether or not the native library is loaded and ready.
      */
     boolean isNativeLibraryReady() {
@@ -734,37 +728,6 @@ public abstract class ToolbarLayout
      * Notified when a navigation to a different page has occurred.
      */
     protected void onNavigatedToDifferentPage() {}
-
-    /**
-     * Starts load progress.
-     */
-    void startLoadProgress() {
-        mProgressBar.start();
-    }
-
-    /**
-     * Sets load progress.
-     * @param progress The load progress between 0 and 1.
-     */
-    void setLoadProgress(float progress) {
-        mProgressBar.setProgress(progress);
-    }
-
-    /**
-     * Finishes load progress.
-     * @param delayed Whether hiding progress bar should be delayed to give enough time for user to
-     *                        recognize the last state.
-     */
-    void finishLoadProgress(boolean delayed) {
-        mProgressBar.finish(delayed);
-    }
-
-    /**
-     * @return True if the progress bar is started.
-     */
-    boolean isProgressStarted() {
-        return mProgressBar.isStarted();
-    }
 
     /**
      * Finish any toolbar animations.

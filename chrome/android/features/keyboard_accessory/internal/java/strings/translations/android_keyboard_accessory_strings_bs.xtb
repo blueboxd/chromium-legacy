@@ -5,7 +5,7 @@
 <translation id="1566281227936819866">Prikazuju se sačuvani načini plaćanja</translation>
 <translation id="1717486229951421299">Lista akreditiva za popunjavanje dodirom je otvorena na pola visine.</translation>
 <translation id="207576718733492531">Lista akreditiva za popunjavanje dodirom je zatvorena.</translation>
-<translation id="2610239185026711824">Predloži lozinku</translation>
+<translation id="2610239185026711824">Predloži zaporku</translation>
 <translation id="2652129567809778422">Odaberite lozinku</translation>
 <translation id="2803478378562657435">Prikazivanje sačuvanih lozinki i opcija za lozinke</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -27,5 +27,6 @@
 <translation id="8037472847879765671">Prikaz načina plaćanja</translation>
 <translation id="8507520749471379845">Dostupne su lozinke</translation>
 <translation id="8705308553596171387">Nema lozinke</translation>
+<translation id="879180780857354295">Alternativne opcije popunjavanja su dostupne iznad tastature</translation>
 <translation id="8849262850971482943">Koristite virtuelnu karticu radi dodatne sigurnosti</translation>
 </translationbundle>

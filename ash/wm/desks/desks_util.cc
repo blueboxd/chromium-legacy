@@ -16,7 +16,9 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/containers/adapters.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -123,10 +125,15 @@ ASH_EXPORT bool BelongsToActiveDesk(aura::Window* window) {
   // A floated window may be associated with a desk, but they would be parented
   // to the float container.
   if (window_state && window_state->IsFloated()) {
-    auto* desk =
-        Shell::Get()->float_controller()->FindDeskOfFloatedWindow(window);
-    DCHECK(desk);
-    return desk->is_active();
+    // When restoring floated window, this will be called when window is not
+    // assigned to a desk by float controller yet. Only return `desk` when it
+    // exists.
+    // Note: in above case, `window` still belongs to desk container and
+    // can be checked in statements below.
+    if (auto* desk =
+            Shell::Get()->float_controller()->FindDeskOfFloatedWindow(window)) {
+      return desk->is_active();
+    }
   }
 
   const int active_desk_id = GetActiveDeskContainerId();
@@ -143,6 +150,22 @@ aura::Window* GetDeskContainerForContext(aura::Window* context) {
 
     context = context->parent();
   }
+
+  return nullptr;
+}
+
+const Desk* GetDeskForContext(aura::Window* context) {
+  DCHECK(context);
+
+  for (const auto& desk : DesksController::Get()->desks()) {
+    if (desk.get()->container_id() ==
+        GetDeskContainerForContext(context)->GetId()) {
+      return desk.get();
+    }
+  }
+
+  if (WindowState::Get(context)->IsFloated())
+    return Shell::Get()->float_controller()->FindDeskOfFloatedWindow(context);
 
   return nullptr;
 }
@@ -181,6 +204,27 @@ bool IsDraggingAnyDesk() {
 bool IsWindowVisibleOnAllWorkspaces(const aura::Window* window) {
   return window->GetProperty(aura::client::kWindowWorkspaceKey) ==
          aura::client::kWindowWorkspaceVisibleOnAllWorkspaces;
+}
+
+bool IsZOrderTracked(aura::Window* window) {
+  return window->GetType() == aura::client::WindowType::WINDOW_TYPE_NORMAL &&
+         window->GetProperty(aura::client::kZOrderingKey) ==
+             ui::ZOrderLevel::kNormal;
+}
+
+absl::optional<size_t> GetWindowZOrder(
+    const std::vector<aura::Window*>& windows,
+    aura::Window* window) {
+  size_t position = 0;
+  for (aura::Window* w : base::Reversed(windows)) {
+    if (IsZOrderTracked(w)) {
+      if (w == window)
+        return position;
+      ++position;
+    }
+  }
+
+  return absl::nullopt;
 }
 
 }  // namespace desks_util

@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Dozvoli sajtovima da pristupaju senzorima za pokret (preporučeno)</translation>
 <translation id="5050380848339752099">Ovaj sajt će deliti informacije sa aplikacijom izvan režima bez arhiviranja.</translation>
 <translation id="5063480226653192405">Korišćenje</translation>
-<translation id="5082281938627763039">Ovim se brišu kolačići i drugi podaci o sajtovima za <ph name="FPS_MEMBER" /> i sajtove u grupi sajtova vlasnika <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Mobilni sajt</translation>
 <translation id="509133520954049755">Traži prikaz za računare</translation>
 <translation id="5100237604440890931">Skupljeno je – Kliknite da biste proširili.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Prevucite od vrha ekrana i dodirnite dugme Nazad da biste izašli iz režima celog ekrana.</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5301954838959518834">Važi</translation>
-<translation id="5313967007315987356">Dodajte sajt</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5335288049665977812">Dozvoli sajtovima da pokreću JavaScript (preporučeno)</translation>
 <translation id="534295439873310000">NFC uređaji</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Deli se ekran</translation>
 <translation id="5922967540311291836">Blokirajte kolačiće trećih strana:</translation>
 <translation id="5939518447894949180">Resetuj</translation>
+<translation id="5968921426641056619">Unesite veb-adresu</translation>
 <translation id="5975083100439434680">Umanjivanje</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrolišite pristup ovog sajta uređaju</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378">Izabrali ste <ph name="ITEM_COUNT" /></translation>
 <translation id="7260727271532453612">Odobrene su dozvole <ph name="PERMISSION_1" /> i <ph name="PERMISSION_2" /></translation>
 <translation id="7302486331832100261">Obično blokirate obaveštenja. Da biste ih dozvolili, dodirnite Detalji.</translation>
+<translation id="7366415735885268578">Dodajte sajt</translation>
 <translation id="7383715096023715447">Podešavanja za <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Prvo pitaj</translation>
 <translation id="7423538860840206698">Čitanje privremene memorije je blokirano</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Ovaj sajt prikazuje oglase koji ometaju aktivnosti ili obmanjujuće oglase</translation>
 <translation id="8394832520002899662">Dodirnite da biste se vratili na sajt</translation>
 <translation id="8409345997656833551">Dobijte obaveštenje kada je pojednostavljeni prikaz dostupan za članak</translation>
+<translation id="8423565414844018592">Promena veličine teksta je podešena na <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Podešavanja</translation>
 <translation id="8441146129660941386">Premotaj unazad</translation>
 <translation id="8444433999583714703">Da biste dozvolili da <ph name="APP_NAME" /> pristupa lokaciji, uključite lokaciju i u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC je isključen za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />Android podešavanjima<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Sprečite sajtove da vide i menjaju informacije na NFC uređajima</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blokirajte kolačiće za određeni sajt.</translation>
 <translation id="8959122750345127698">Navigacija je nedostupna: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Zaboravi</translation>

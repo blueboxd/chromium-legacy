@@ -11,8 +11,8 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
@@ -56,6 +56,7 @@
 #include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_packet_writer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quiche/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quiche/quic/platform/api/quic_test.h"
@@ -184,7 +185,7 @@ class QuicChromiumClientSessionTest
             DatagramSocket::DEFAULT_BIND, NetLog::Get(), NetLogSource());
     socket->Connect(kIpEndPoint);
     QuicChromiumPacketWriter* writer = new net::QuicChromiumPacketWriter(
-        socket.get(), base::ThreadTaskRunnerHandle::Get().get());
+        socket.get(), base::SingleThreadTaskRunner::GetCurrentDefault().get());
     quic::QuicConnection* connection = new quic::QuicConnection(
         quic::QuicUtils::CreateRandomConnectionId(&random_),
         quic::QuicSocketAddress(), ToQuicSocketAddress(kIpEndPoint), &helper_,
@@ -212,7 +213,7 @@ class QuicChromiumClientSessionTest
         "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
         std::make_unique<quic::QuicClientPushPromiseIndex>(),
         &test_push_delegate_, base::DefaultTickClock::GetInstance(),
-        base::ThreadTaskRunnerHandle::Get().get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault().get(),
         /*socket_performance_watcher=*/nullptr, NetLog::Get());
     if (connectivity_monitor_) {
       connectivity_monitor_->SetInitialDefaultNetwork(default_network_);
@@ -256,7 +257,7 @@ class QuicChromiumClientSessionTest
       DatagramClientSocket* socket,
       QuicChromiumClientSession* session) const {
     auto writer = std::make_unique<QuicChromiumPacketWriter>(
-        socket, base::ThreadTaskRunnerHandle::Get().get());
+        socket, base::SingleThreadTaskRunner::GetCurrentDefault().get());
     writer->set_delegate(session);
     return writer;
   }
@@ -1712,89 +1713,6 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   }
 }
 
-TEST_P(QuicChromiumClientSessionTest, CanPoolExpectCT) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /* enabled_features */
-      {kDynamicExpectCTFeature,
-       features::kPartitionExpectCTStateByNetworkIsolationKey,
-       features::kPartitionConnectionsByNetworkIsolationKey},
-      /* disabled_features */
-      {});
-
-  NetworkAnonymizationKey network_anonymization_key =
-      NetworkAnonymizationKey::CreateTransient();
-  // Need to create a session key after setting
-  // kPartitionExpectCTStateByNetworkIsolationKey, otherwise, it will ignore the
-  // NetworkAnonymizationKey value.
-  session_key_ =
-      QuicSessionKey(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED,
-                     SocketTag(), network_anonymization_key,
-                     SecureDnsPolicy::kAllow, /*require_dns_https_alpn=*/false);
-
-  // Need to create this after enabling
-  // kPartitionExpectCTStateByNetworkIsolationKey.
-  transport_security_state_ = std::make_unique<TransportSecurityState>();
-
-  MockQuicData quic_data(version_);
-  if (VersionUsesHttp3(version_.transport_version))
-    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
-  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
-  quic_data.AddRead(ASYNC, ERR_CONNECTION_CLOSED);
-  quic_data.AddSocketDataToFactory(&socket_factory_);
-  Initialize();
-
-  // Load a cert that is valid for:
-  //   www.example.org
-  //   mail.example.org
-  //   www.example.com
-
-  // Details with a CT error.
-  ProofVerifyDetailsChromium details;
-  details.cert_verify_result.verified_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
-  details.cert_verify_result.is_issued_by_known_root = true;
-  details.cert_verify_result.policy_compliance =
-      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
-
-  CompleteCryptoHandshake();
-  session_->OnProofVerifyDetailsAvailable(details);
-
-  // Pooling succeeds if CT isn't required.
-  EXPECT_TRUE(session_->CanPool(
-      "www.example.org",
-      QuicSessionKey("foo", 1234, PRIVACY_MODE_DISABLED, SocketTag(),
-                     network_anonymization_key, SecureDnsPolicy::kAllow,
-                     /*require_dns_https_alpn=*/false)));
-
-  // Adding Expect-CT data for different NetworkAnonymizationKeys should have no
-  // effect.
-  base::Time expiry = base::Time::Now() + base::Days(1);
-  transport_security_state_->AddExpectCT(
-      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
-      NetworkAnonymizationKey::CreateTransient());
-  transport_security_state_->AddExpectCT(
-      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
-      NetworkAnonymizationKey());
-  EXPECT_TRUE(session_->CanPool(
-      "www.example.org",
-      QuicSessionKey("foo", 1234, PRIVACY_MODE_DISABLED, SocketTag(),
-                     network_anonymization_key, SecureDnsPolicy::kAllow,
-                     /*require_dns_https_alpn=*/false)));
-
-  // Adding Expect-CT data for the same NetworkAnonymizationKey should prevent
-  // pooling.
-  transport_security_state_->AddExpectCT(
-      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
-      network_anonymization_key);
-  EXPECT_FALSE(session_->CanPool(
-      "www.example.org",
-      QuicSessionKey("foo", 1234, PRIVACY_MODE_DISABLED, SocketTag(),
-                     network_anonymization_key, SecureDnsPolicy::kAllow,
-                     /*require_dns_https_alpn=*/false)));
-}
-
 // Much as above, but uses a non-empty NetworkAnonymizationKey.
 TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkAnonymizationKey) {
   base::test::ScopedFeatureList feature_list;
@@ -2469,11 +2387,11 @@ TEST_P(QuicChromiumClientSessionTest, DegradingWithMultiPortEnabled) {
   allow_port_migration_ = true;
   SetIetfConnectionMigrationFlagsAndConnectionOptions();
   auto options = config_.SendConnectionOptions();
-  options.push_back(quic::kMPQC);
+  config_.SetClientConnectionOptions(quic::QuicTagVector{quic::kMPQC});
   config_.SetConnectionOptionsToSend(options);
 
   Initialize();
-  EXPECT_TRUE(session_->connection()->multi_port_enabled());
+  EXPECT_TRUE(session_->connection()->multi_port_stats());
 
   session_->ReallyOnPathDegrading();
   EXPECT_EQ(1u, connectivity_monitor_->GetNumDegradingSessions());

@@ -14,7 +14,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
@@ -657,8 +656,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         upload_bgra ? viz::BGRA_8888 : viz::RGBA_8888;
 
     bool overlays_supported =
-        enable_gpu_memory_buffer_ &&
-        main_thread_context_->ContextCapabilities().texture_storage_image;
+        enable_gpu_memory_buffer_ && main_thread_context_->ContextCapabilities()
+                                         .supports_scanout_shared_images;
     uint32_t texture_target = GL_TEXTURE_2D;
     if (overlays_supported) {
       texture_target = gpu::GetBufferTextureTarget(
@@ -957,7 +956,7 @@ void PepperGraphics2DHost::SendOffscreenFlushAck() {
 
 void PepperGraphics2DHost::ScheduleOffscreenFlushAck() {
   offscreen_flush_pending_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PepperGraphics2DHost::SendOffscreenFlushAck, AsWeakPtr()),
       base::Milliseconds(kOffscreenCallbackDelayMs));

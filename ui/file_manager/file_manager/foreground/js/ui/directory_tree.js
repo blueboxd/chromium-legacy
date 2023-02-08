@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent, getPropertyDescriptor, PropertyKind} from 'chrome://resources/ash/common/cr_deprecated.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert.js';
 
 import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
+import {VolumeEntry} from '../../../common/js/files_app_entry_types.js';
 import {vmTypeToIconName} from '../../../common/js/icon_util.js';
 import {metrics} from '../../../common/js/metrics.js';
 import {str, util} from '../../../common/js/util.js';
@@ -441,7 +442,8 @@ export class DirectoryItem extends FilesTreeItem {
           item = DirectoryTree.createDirectoryItem(
               currentEntry.navigationModel, tree);
         } else {
-          item = new SubDirectoryItem(label, currentEntry, this, tree);
+          item = new SubDirectoryItem(
+              label, currentEntry, this, tree, !!currentEntry.disabled);
         }
         this.add(item);
         index++;
@@ -467,7 +469,8 @@ export class DirectoryItem extends FilesTreeItem {
           item = DirectoryTree.createDirectoryItem(
               currentEntry.navigationModel, tree);
         } else {
-          item = new SubDirectoryItem(label, currentEntry, this, tree);
+          item = new SubDirectoryItem(
+              label, currentEntry, this, tree, !!currentEntry.disabled);
         }
         this.addAt(item, index);
         index++;
@@ -641,7 +644,7 @@ export class DirectoryItem extends FilesTreeItem {
    * @param {function()=} opt_errorCallback Callback called on error.
    */
   updateSubDirectories(recursive, opt_successCallback, opt_errorCallback) {
-    if (!this.entry || this.entry.createReader === undefined) {
+    if (!this.entry || this.disabled || this.entry.createReader === undefined) {
       opt_errorCallback && opt_errorCallback();
       return;
     }
@@ -675,7 +678,7 @@ export class DirectoryItem extends FilesTreeItem {
    * @override
    */
   updateExpandIcon() {
-    if (!this.entry || this.entry.createReader === undefined) {
+    if (!this.entry || this.disabled || this.entry.createReader === undefined) {
       this.hasChildren = false;
       return;
     }
@@ -852,8 +855,10 @@ export class SubDirectoryItem extends DirectoryItem {
    * @param {DirectoryItem|ShortcutItem|DirectoryTree} parentDirItem
    *     Parent of this item.
    * @param {DirectoryTree} tree Current tree, which contains this item.
+   * @param {boolean} disabled Whether this item is disabled. Even if the parent
+   *     is not, the subdirectory can be.
    */
-  constructor(label, dirEntry, parentDirItem, tree) {
+  constructor(label, dirEntry, parentDirItem, tree, disabled = false) {
     super(label, tree);
     this.__proto__ = SubDirectoryItem.prototype;
 
@@ -863,7 +868,7 @@ export class SubDirectoryItem extends DirectoryItem {
 
     this.dirEntry_ = dirEntry;
     this.entry = dirEntry;
-    this.disabled = parentDirItem.disabled;
+    this.disabled = disabled;
     this.delayExpansion = parentDirItem.delayExpansion;
 
     if (this.delayExpansion) {
@@ -1486,7 +1491,7 @@ export class DriveVolumeItem extends VolumeItem {
    * @override
    */
   updateSubDirectories(recursive) {
-    if (!this.entry || this.hasChildren) {
+    if (!this.entry || this.hasChildren || this.disabled) {
       return;
     }
 
@@ -1571,8 +1576,13 @@ export class DriveVolumeItem extends VolumeItem {
       });
       return;
     }
-    // Must be under "My Drive", which is always the first item.
-    this.items[0].updateItemByEntry(changedDirectoryEntry);
+
+    // NOTE: It's possible that the DriveVolumeItem hasn't populated its
+    // children yet.
+    if (this.items[0]) {
+      // Must be under "My Drive", which is always the first item.
+      this.items[0].updateItemByEntry(changedDirectoryEntry);
+    }
   }
 
   /**

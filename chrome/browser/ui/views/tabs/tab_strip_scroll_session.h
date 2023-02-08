@@ -8,7 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "tab_style_views.h"
 
 class TabDragWithScrollManager;
@@ -21,11 +20,10 @@ class TabStripScrollSession {
   TabStripScrollSession(const TabStripScrollSession&) = delete;
   TabStripScrollSession& operator=(const TabStripScrollSession&) = delete;
   virtual ~TabStripScrollSession();
-  // TODO: Make RTL work for Tab Scrolling in https://crbug.com/1377094
   enum class TabScrollDirection {
     kNoScroll,
-    kScrollTowardsLeft,
-    kScrollTowardsRight
+    kScrollTowardsLeadingTabs,
+    kScrollTowardsTrailingTabs
   };
   // Calculates which direction should the scrolling occur and
   // starts the `Start()` method

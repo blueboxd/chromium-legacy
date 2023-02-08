@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/style_rule_font_feature_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_palette_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -181,8 +182,6 @@ TEST(CSSParserImplTest, AtCounterStyleOffsets) {
 }
 
 TEST(CSSParserImplTest, AtContainerOffsets) {
-  ScopedCSSContainerQueriesForTest scoped_feature(true);
-
   String sheet_text = "@container (max-width: 100px) { }";
 
   auto* context = MakeGarbageCollected<CSSParserContext>(
@@ -198,23 +197,6 @@ TEST(CSSParserImplTest, AtContainerOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_header_end_, 30u);
   EXPECT_EQ(test_css_parser_observer.rule_body_start_, 31u);
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 32u);
-}
-
-TEST(CSSParserImplTest, AtContainerDisabled) {
-  ScopedNullExecutionContext execution_context;
-  String rule = "@container (max-width: 100px) { }";
-  {
-    ScopedCSSContainerQueriesForTest scoped_feature(true);
-    Document* document =
-        Document::CreateForTest(execution_context.GetExecutionContext());
-    EXPECT_TRUE(css_test_helpers::ParseRule(*document, rule));
-  }
-  {
-    ScopedCSSContainerQueriesForTest scoped_feature(false);
-    Document* document =
-        Document::CreateForTest(execution_context.GetExecutionContext());
-    EXPECT_FALSE(css_test_helpers::ParseRule(*document, rule));
-  }
 }
 
 TEST(CSSParserImplTest, DirectNesting) {
@@ -669,7 +651,6 @@ TEST(CSSParserImplTest, LayeredImportRulesInvalid) {
     auto* parsed = DynamicTo<StyleRuleImport>(ParseRule(*document, rule));
     ASSERT_TRUE(parsed);
     EXPECT_FALSE(parsed->IsLayered());
-    EXPECT_TRUE(parsed->MediaQueries()->HasUnknown());
   }
 
   {
@@ -677,7 +658,6 @@ TEST(CSSParserImplTest, LayeredImportRulesInvalid) {
     auto* parsed = DynamicTo<StyleRuleImport>(ParseRule(*document, rule));
     ASSERT_TRUE(parsed);
     EXPECT_FALSE(parsed->IsLayered());
-    EXPECT_TRUE(parsed->MediaQueries()->HasUnknown());
   }
 
   {
@@ -685,7 +665,6 @@ TEST(CSSParserImplTest, LayeredImportRulesInvalid) {
     auto* parsed = DynamicTo<StyleRuleImport>(ParseRule(*document, rule));
     ASSERT_TRUE(parsed);
     EXPECT_FALSE(parsed->IsLayered());
-    EXPECT_TRUE(parsed->MediaQueries()->HasUnknown());
   }
 }
 
@@ -716,7 +695,6 @@ TEST(CSSParserImplTest, LayeredImportRulesMultipleLayers) {
     ASSERT_TRUE(parsed->IsLayered());
     ASSERT_EQ(1u, parsed->GetLayerName().size());
     EXPECT_EQ(g_empty_atom, parsed->GetLayerName()[0]);
-    EXPECT_TRUE(parsed->MediaQueries()->HasUnknown());
   }
 
   {
@@ -814,8 +792,6 @@ TEST(CSSParserImplTest, EmptyLayerStatementAfterRegularRule) {
 }
 
 TEST(CSSParserImplTest, FontPaletteValuesDisabled) {
-  ScopedFontPaletteForTest disabled_scope(false);
-
   // @font-palette-values rules should be ignored when the feature is disabled.
 
   using css_test_helpers::ParseRule;
@@ -829,7 +805,6 @@ TEST(CSSParserImplTest, FontPaletteValuesDisabled) {
 }
 
 TEST(CSSParserImplTest, FontPaletteValuesBasicRuleParsing) {
-  ScopedFontPaletteForTest enabled_scope(true);
   using css_test_helpers::ParseRule;
   ScopedNullExecutionContext execution_context;
   Document* document =
@@ -849,6 +824,44 @@ TEST(CSSParserImplTest, FontPaletteValuesBasicRuleParsing) {
       0, DynamicTo<CSSPrimitiveValue>(parsed->GetBasePalette())->GetIntValue());
   ASSERT_TRUE(parsed->GetOverrideColors()->IsValueList());
   ASSERT_EQ(2u, DynamicTo<CSSValueList>(parsed->GetOverrideColors())->length());
+}
+
+TEST(CSSParserImplTest, FontFeatureValuesRuleParsing) {
+  using css_test_helpers::ParseRule;
+  ScopedNullExecutionContext execution_context;
+  Document* document =
+      Document::CreateForTest(execution_context.GetExecutionContext());
+  String rule = R"CSS(@font-feature-values fontFam1, fontFam2 {
+    @styleset { curly: 4 3 2 1; wavy: 2; cool: 3; }
+    @swash { thrown: 1; }
+    @styleset { yo: 1; }
+  })CSS";
+  auto* parsed =
+      DynamicTo<StyleRuleFontFeatureValues>(ParseRule(*document, rule));
+  ASSERT_TRUE(parsed);
+  auto& families = parsed->GetFamilies();
+  ASSERT_EQ(AtomicString("fontFam1"), families[0]);
+  ASSERT_EQ(AtomicString("fontFam2"), families[1]);
+  ASSERT_EQ(parsed->GetStyleset()->size(), 4u);
+  ASSERT_TRUE(parsed->GetStyleset()->Contains("cool"));
+  ASSERT_EQ(parsed->GetStyleset()->at("curly"), Vector<uint32_t>({4, 3, 2, 1}));
+}
+
+TEST(CSSParserImplTest, FontFeatureValuesOffsets) {
+  String sheet_text = "@font-feature-values myFam { @styleset { curly: 1; } }";
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(context);
+  TestCSSParserObserver test_css_parser_observer;
+  CSSParserImpl::ParseStyleSheetForInspector(sheet_text, context, style_sheet,
+                                             test_css_parser_observer);
+  EXPECT_EQ(style_sheet->ChildRules().size(), 1u);
+  EXPECT_EQ(test_css_parser_observer.rule_type_,
+            StyleRule::RuleType::kFontFeatureValues);
+  EXPECT_EQ(test_css_parser_observer.rule_header_start_, 21u);
+  EXPECT_EQ(test_css_parser_observer.rule_header_end_, 27u);
+  EXPECT_EQ(test_css_parser_observer.rule_body_start_, 28u);
+  EXPECT_EQ(test_css_parser_observer.rule_body_end_, 53u);
 }
 
 }  // namespace blink

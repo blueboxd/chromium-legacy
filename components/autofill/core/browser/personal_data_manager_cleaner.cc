@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/base/features.h"
 
 namespace autofill {
 
@@ -77,7 +78,17 @@ void PersonalDataManagerCleaner::SyncStarted(syncer::ModelType model_type) {
   // profile de-duplication has not run for the |CHROME_VERSION_MAJOR| yet,
   // |AlternativeStateNameMap| needs to be populated first. Otherwise,
   // defer the insertion to when the observers are notified.
-  if (!alternative_state_name_map_updater_
+  // TODO(crbug.com/1111960): If sync is disabled and re-enabled, the
+  // alternative state name map should be re-populated. This is currently not
+  // the case due to the `is_alternative_state_name_map_populated()` check. This
+  // state should be reset when sync is disabled, together with
+  // `autofill_profile_sync_started` and `contact_info_sync_started`.
+  autofill_profile_sync_started |= model_type == syncer::AUTOFILL_PROFILE;
+  contact_info_sync_started |= model_type == syncer::CONTACT_INFO;
+  if (autofill_profile_sync_started &&
+      (contact_info_sync_started ||
+       !base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType)) &&
+      !alternative_state_name_map_updater_
            ->is_alternative_state_name_map_populated() &&
       base::FeatureList::IsEnabled(
           features::kAutofillUseAlternativeStateNameMap) &&
@@ -157,7 +168,9 @@ void PersonalDataManagerCleaner::RemoveInaccessibleProfileValues() {
     return;
   }
 
-  for (const AutofillProfile* profile : personal_data_manager_->GetProfiles()) {
+  for (const AutofillProfile* profile :
+       personal_data_manager_->GetProfilesFromSource(
+           AutofillProfile::Source::kLocalOrSyncable)) {
     const ServerFieldTypeSet inaccessible_fields =
         profile->FindInaccessibleProfileValues();
     if (!inaccessible_fields.empty()) {
@@ -185,7 +198,8 @@ bool PersonalDataManagerCleaner::ApplyDedupingRoutine() {
   }
 
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->GetProfiles();
+      personal_data_manager_->GetProfilesFromSource(
+          AutofillProfile::Source::kLocalOrSyncable);
 
   // No need to de-duplicate if there are less than two profiles.
   if (profiles.size() < 2) {
@@ -371,7 +385,8 @@ void PersonalDataManagerCleaner::UpdateCardsBillingAddressReference(
 
 bool PersonalDataManagerCleaner::DeleteDisusedAddresses() {
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->GetProfiles();
+      personal_data_manager_->GetProfilesFromSource(
+          AutofillProfile::Source::kLocalOrSyncable);
 
   // Early exit when there are no profiles.
   if (profiles.empty()) {
@@ -411,7 +426,9 @@ bool PersonalDataManagerCleaner::DeleteDisusedAddresses() {
 }
 
 void PersonalDataManagerCleaner::ClearProfileNonSettingsOrigins() {
-  for (AutofillProfile* profile : personal_data_manager_->GetProfiles()) {
+  // `kAccount` profiles don't store an origin.
+  for (AutofillProfile* profile : personal_data_manager_->GetProfilesFromSource(
+           AutofillProfile::Source::kLocalOrSyncable)) {
     if (profile->origin() != kSettingsOrigin && !profile->origin().empty()) {
       profile->set_origin(std::string());
       personal_data_manager_->UpdateProfileInDB(*profile, /*enforced=*/true);

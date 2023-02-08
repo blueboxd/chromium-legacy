@@ -4,8 +4,6 @@
 
 #include "net/cert/pki/ocsp.h"
 
-#include "base/containers/contains.h"
-#include "base/time/time.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/extended_key_usage.h"
@@ -459,26 +457,30 @@ bool VerifyHash(const EVP_MD* type,
 //
 // Returns true on success and fills |*spk_tlv| with the result.
 //
-// SubjectPublicKeyInfo  ::=  SEQUENCE  {
+// From RFC 5280, Section 4.1
+//   SubjectPublicKeyInfo  ::=  SEQUENCE  {
 //     algorithm            AlgorithmIdentifier,
-//     subjectPublicKey     BIT STRING
-// }
+//     subjectPublicKey     BIT STRING  }
+//
+//   AlgorithmIdentifier  ::=  SEQUENCE  {
+//     algorithm               OBJECT IDENTIFIER,
+//     parameters              ANY DEFINED BY algorithm OPTIONAL  }
+//
 bool GetSubjectPublicKeyBytes(const der::Input& spki_tlv, der::Input* spk_tlv) {
-  // TODO(bbe) decide what to do with the asn1 utilities, bring them into pki
-  // or use the boringssl stuff internally..
-  base::StringPiece spk_strpiece;
-  if (!asn1::ExtractSubjectPublicKeyFromSPKI(spki_tlv.AsStringPiece(),
-                                             &spk_strpiece)) {
+  CBS outer, inner, alg, spk;
+  uint8_t unused_bit_count;
+  CBS_init(&outer, spki_tlv.UnsafeData(), spki_tlv.Length());
+  //   The subjectPublicKey field includes the unused bit count. For this
+  //   application, the unused bit count must be zero, and is not included in
+  //   the result. We extract the subjectPubicKey bit string, verify the first
+  //   byte is 0, and if so set |spk_tlv| to the remaining bytes.
+  if (!CBS_get_asn1(&outer, &inner, CBS_ASN1_SEQUENCE) ||
+      !CBS_get_asn1(&inner, &alg, CBS_ASN1_SEQUENCE) ||
+      !CBS_get_asn1(&inner, &spk, CBS_ASN1_BITSTRING) ||
+      !CBS_get_u8(&spk, &unused_bit_count) || unused_bit_count != 0) {
     return false;
   }
-  // ExtractSubjectPublicKeyFromSPKI() includes the unused bit count. For this
-  // application, the unused bit count must be zero, and is not included in the
-  // result.
-  if (!net::string_util::StartsWith(
-          std::string_view(spk_strpiece.data(), spk_strpiece.size()), "\0"))
-    return false;
-  spk_strpiece.remove_prefix(1);
-  *spk_tlv = der::Input(spk_strpiece);
+  *spk_tlv = der::Input(CBS_data(&spk), CBS_len(&spk));
   return true;
 }
 
@@ -524,7 +526,8 @@ bool CheckCertIDMatchesCertificate(
 // TODO(eroman): Revisit how certificate parsing is used by this file. Ideally
 // would either pass in the parsed bits, or have a better abstraction for lazily
 // parsing.
-scoped_refptr<ParsedCertificate> OCSPParseCertificate(std::string_view der) {
+std::shared_ptr<const ParsedCertificate> OCSPParseCertificate(
+    std::string_view der) {
   ParseCertificateOptions parse_options;
   parse_options.allow_invalid_serial_numbers = true;
 
@@ -532,7 +535,9 @@ scoped_refptr<ParsedCertificate> OCSPParseCertificate(std::string_view der) {
   // parsing model.
   CertErrors errors;
   return ParsedCertificate::Create(
-      x509_util::CreateCryptoBuffer(base::StringPiece(der.data(), der.size())),
+      bssl::UniquePtr<CRYPTO_BUFFER>(
+          CRYPTO_BUFFER_new(reinterpret_cast<const uint8_t*>(der.data()),
+                            der.size(), x509_util::GetBufferPool())),
       {}, &errors);
 }
 
@@ -591,8 +596,12 @@ scoped_refptr<ParsedCertificate> OCSPParseCertificate(std::string_view der) {
   if (!responder_certificate->has_extended_key_usage())
     return false;
 
-  return base::Contains(responder_certificate->extended_key_usage(),
-                        der::Input(kOCSPSigning));
+  for (const auto& key_purpose_oid :
+       responder_certificate->extended_key_usage()) {
+    if (key_purpose_oid == der::Input(kOCSPSigning))
+      return true;
+  }
+  return false;
 }
 
 [[nodiscard]] bool VerifyOCSPResponseSignatureGivenCert(
@@ -626,7 +635,7 @@ scoped_refptr<ParsedCertificate> OCSPParseCertificate(std::string_view der) {
   //  (2) Has been given authority for OCSP signing by |issuer_certificate|.
   //  (3) Has signed the OCSP response using its public key.
   for (const auto& responder_cert_tlv : response.certs) {
-    scoped_refptr<ParsedCertificate> cur_responder_certificate =
+    std::shared_ptr<const ParsedCertificate> cur_responder_certificate =
         OCSPParseCertificate(responder_cert_tlv.AsStringView());
 
     // If failed parsing the certificate, keep looking.
@@ -723,8 +732,8 @@ OCSPRevocationStatus GetRevocationStatusForCert(
     const OCSPResponseData& response_data,
     const ParsedCertificate* cert,
     const ParsedCertificate* issuer_certificate,
-    const base::Time& verify_time,
-    const base::TimeDelta& max_age,
+    int64_t verify_time_epoch_seconds,
+    int64_t max_age_seconds,
     OCSPVerifyResult::ResponseStatus* response_details) {
   OCSPRevocationStatus result = OCSPRevocationStatus::UNKNOWN;
   *response_details = OCSPVerifyResult::NO_MATCHING_RESPONSE;
@@ -763,7 +772,7 @@ OCSPRevocationStatus GetRevocationStatusForCert(
                                   single_response.has_next_update
                                       ? &single_response.next_update
                                       : nullptr,
-                                  verify_time, max_age)) {
+                                  verify_time_epoch_seconds, max_age_seconds)) {
       if (*response_details != OCSPVerifyResult::PROVIDED)
         *response_details = OCSPVerifyResult::INVALID_DATE;
       continue;
@@ -788,8 +797,8 @@ OCSPRevocationStatus CheckOCSP(
     const ParsedCertificate* certificate,
     std::string_view issuer_certificate_der,
     const ParsedCertificate* issuer_certificate,
-    const base::Time& verify_time,
-    const base::TimeDelta& max_age,
+    int64_t verify_time_epoch_seconds,
+    int64_t max_age_seconds,
     OCSPVerifyResult::ResponseStatus* response_details) {
   *response_details = OCSPVerifyResult::NOT_CHECKED;
 
@@ -843,8 +852,8 @@ OCSPRevocationStatus CheckOCSP(
     return OCSPRevocationStatus::UNKNOWN;
   }
 
-  scoped_refptr<ParsedCertificate> parsed_certificate;
-  scoped_refptr<ParsedCertificate> parsed_issuer_certificate;
+  std::shared_ptr<const ParsedCertificate> parsed_certificate;
+  std::shared_ptr<const ParsedCertificate> parsed_issuer_certificate;
   if (!certificate) {
     parsed_certificate = OCSPParseCertificate(certificate_der);
     certificate = parsed_certificate.get();
@@ -869,9 +878,9 @@ OCSPRevocationStatus CheckOCSP(
 
   // Look through all of the OCSPSingleResponses for a match (based on CertID
   // and time).
-  OCSPRevocationStatus status =
-      GetRevocationStatusForCert(response_data, certificate, issuer_certificate,
-                                 verify_time, max_age, response_details);
+  OCSPRevocationStatus status = GetRevocationStatusForCert(
+      response_data, certificate, issuer_certificate, verify_time_epoch_seconds,
+      max_age_seconds, response_details);
 
   // Check that the OCSP response has a valid signature. It must either be
   // signed directly by the issuing certificate, or a valid authorized
@@ -890,23 +899,24 @@ OCSPRevocationStatus CheckOCSP(
     std::string_view raw_response,
     std::string_view certificate_der,
     std::string_view issuer_certificate_der,
-    const base::Time& verify_time,
-    const base::TimeDelta& max_age,
+    int64_t verify_time_epoch_seconds,
+    int64_t max_age_seconds,
     OCSPVerifyResult::ResponseStatus* response_details) {
   return CheckOCSP(raw_response, certificate_der, nullptr,
-                   issuer_certificate_der, nullptr, verify_time, max_age,
-                   response_details);
+                   issuer_certificate_der, nullptr, verify_time_epoch_seconds,
+                   max_age_seconds, response_details);
 }
 
 OCSPRevocationStatus CheckOCSP(
     std::string_view raw_response,
     const ParsedCertificate* certificate,
     const ParsedCertificate* issuer_certificate,
-    const base::Time& verify_time,
-    const base::TimeDelta& max_age,
+    int64_t verify_time_epoch_seconds,
+    int64_t max_age_seconds,
     OCSPVerifyResult::ResponseStatus* response_details) {
   return CheckOCSP(raw_response, std::string_view(), certificate,
-                   std::string_view(), issuer_certificate, verify_time, max_age,
+                   std::string_view(), issuer_certificate,
+                   verify_time_epoch_seconds, max_age_seconds,
                    response_details);
 }
 

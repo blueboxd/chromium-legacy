@@ -27,10 +27,10 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kEnableHostnameSetting',
+        'ash::features::kEnableHostnameSetting',
         // TODO(b/217560706): Remove this explicit enabled flag when rollout
         // completed.
-        'chromeos::features::kDiacriticsOnPhysicalKeyboardLongpress',
+        'ash::features::kDiacriticsOnPhysicalKeyboardLongpress',
       ],
     };
   }
@@ -46,7 +46,7 @@ var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kAudioSettingsPage',
+        'ash::features::kAudioSettingsPage',
         'features::kAllowDisableTouchpadHapticFeedback',
         'features::kAllowTouchpadHapticClickSettings',
       ],
@@ -71,7 +71,7 @@ var OSSettingsPeoplePageAccountManagerV3Test =
   get featureList() {
     return {
       disabled: [
-        'chromeos::features::kLacrosSupport',
+        'ash::features::kLacrosSupport',
       ],
     };
   }
@@ -90,7 +90,7 @@ var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
   get featureList() {
     return {
       enabled: [
-        'chromeos::features::kLacrosSupport',
+        'ash::features::kLacrosSupport',
       ],
     };
   }
@@ -280,6 +280,46 @@ TEST_F('OSSettingsInternetPageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
+// TODO(b/239477916) Move this test back into the list of tests below once
+// hotspot is launched.
+var OSSettingsHotspotSubpageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_subpage_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
+    };
+  }
+};
+
+TEST_F('OSSettingsHotspotSubpageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
+// TODO(b/239477916) Move this test back into the list of tests below once
+// hotspot is launched.
+var OSSettingsHotspotSummaryItemV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/hotspot_summary_item_tests.js&host=test';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(['ash::features::kHotspot'])
+    };
+  }
+};
+
+TEST_F('OSSettingsHotspotSummaryItemV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
   GEN('fake_crostini_features.SetAll(true);');
@@ -325,6 +365,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 [['AccessibilityPage', 'os_a11y_page_tests.js'],
  ['AboutPage', 'os_about_page_tests.js'],
  ['AccountsPage', 'add_users_tests.js'],
+ ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
@@ -357,11 +398,9 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'app_management/supported_links_item_test.js',
  ],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
- ['AppManagementUninstallButton', 'app_management/uninstall_button_test.js'],
  [
    'AudioAndCaptionsPage',
    'audio_and_captions_page_tests.js',
-   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
@@ -376,17 +415,16 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'CursorAndTouchpadPage',
    'cursor_and_touchpad_page_tests.js',
-   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['DateTimePage', 'date_time_page_tests.js'],
  [
    'DisplayAndMagnificationPage',
    'display_and_magnification_page_tests.js',
-   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.js'],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
+ ['FakeCrosAudioConfig', 'fake_cros_audio_config_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
  ['FindShortcutBehaviorTest', 'find_shortcut_behavior_test.js'],
@@ -404,7 +442,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'KeyboardAndTextInputPage',
    'keyboard_and_text_input_page_tests.js',
-   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
  ['LockScreenPage', 'lock_screen_tests.js'],
@@ -423,7 +460,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'multidevice_permissions_setup_dialog_tests.js',
  ],
  ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.js'],
- ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.js'],
  ['MultideviceSubPage', 'multidevice_subpage_tests.js'],
  [
    'MultideviceTaskContinuationItem',
@@ -496,6 +532,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['ResetPage', 'os_reset_page_test.js'],
  ['SettingsSchedulerSlider', 'settings_scheduler_slider_test.js'],
  ['SearchSubpage', 'search_subpage_test.js'],
+ [
+   'SelectToSpeakSubpage',
+   'select_to_speak_subpage_tests.js',
+   {enabled: ['features::kAccessibilitySelectToSpeakPageMigration']},
+ ],
  ['SettingsTrafficCounters', 'settings_traffic_counters_test.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.js'],
  ['SmbPage', 'smb_shares_page_tests.js'],
@@ -510,7 +551,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'TextToSpeechPage',
    'text_to_speech_page_tests.js',
-   {enabled: ['features::kAccessibilityOSSettingsVisibility']},
  ],
  ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.js'],
  ['TimezoneSelector', 'timezone_selector_test.js'],
@@ -559,6 +599,17 @@ function registerTest(testName, module, featureList) {
     GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
     TEST_F(className, 'OfficialBuild' || 'All', () => {
       mocha.grep('PrivacyHubSubpageTest_OfficialBuild').run();
+    });
+    GEN('#endif');
+  } else if (testName === 'OsSettingsSearchBox') {
+    TEST_F(className, 'AllBuilds' || 'All', () => {
+      mocha.grep('/^(?!(OSSettingsSearchBox SearchFeedback_OfficialBuild)).*$/')
+          .run();
+    });
+
+    GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+    TEST_F(className, 'OfficialBuild' || 'All', () => {
+      mocha.grep('SearchFeedback_OfficialBuild').run();
     });
     GEN('#endif');
   } else {

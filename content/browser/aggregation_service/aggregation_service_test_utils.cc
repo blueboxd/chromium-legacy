@@ -23,6 +23,7 @@
 #include "base/strings/strcat.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/browser/aggregation_service/aggregatable_report.h"
@@ -165,6 +166,13 @@ testing::AssertionResult PayloadContentsEqual(
            << ", actual: " << actual.aggregation_mode;
   }
 
+  if (expected.aggregation_coordinator != actual.aggregation_coordinator) {
+    return testing::AssertionFailure()
+           << "Expected aggregation_coordinator "
+           << expected.aggregation_coordinator
+           << ", actual: " << actual.aggregation_coordinator;
+  }
+
   return testing::AssertionSuccess();
 }
 
@@ -213,23 +221,27 @@ testing::AssertionResult SharedInfoEqual(
 
 AggregatableReportRequest CreateExampleRequest(
     mojom::AggregationServiceMode aggregation_mode,
-    int failed_send_attempts) {
+    int failed_send_attempts,
+    ::aggregation_service::mojom::AggregationCoordinator
+        aggregation_coordinator) {
   return CreateExampleRequestWithReportTime(
-      /*report_time=*/base::Time::Now(), aggregation_mode,
-      failed_send_attempts);
+      /*report_time=*/base::Time::Now(), aggregation_mode, failed_send_attempts,
+      aggregation_coordinator);
 }
 
 AggregatableReportRequest CreateExampleRequestWithReportTime(
     base::Time report_time,
     mojom::AggregationServiceMode aggregation_mode,
-    int failed_send_attempts) {
+    int failed_send_attempts,
+    ::aggregation_service::mojom::AggregationCoordinator
+        aggregation_coordinator) {
   return AggregatableReportRequest::Create(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
                  {mojom::AggregatableReportHistogramContribution(
                      /*bucket=*/123,
                      /*value=*/456)},
-                 aggregation_mode),
+                 aggregation_mode, aggregation_coordinator),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/report_time,
                  /*report_id=*/

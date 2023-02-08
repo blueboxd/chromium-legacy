@@ -33,13 +33,14 @@
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_device_source.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
@@ -50,6 +51,7 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
+#include "components/power_monitor/make_power_monitor_device_source.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
 #include "components/variations/variations_ids_provider.h"
 #include "content/app/mojo_ipc_support.h"
@@ -109,6 +111,7 @@
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "tools/v8_context_snapshot/buildflags.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -142,6 +145,7 @@
 #endif  // BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "base/files/file_path_watcher_inotify.h"
 #include "base/native_library.h"
 #include "base/rand_util.h"
 #include "content/public/common/zygote/sandbox_support_linux.h"
@@ -218,7 +222,7 @@ namespace {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
 gin::V8SnapshotFileType GetSnapshotType(const base::CommandLine& command_line) {
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
+#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
   return gin::V8SnapshotFileType::kWithAdditionalContext;
 #else
   return gin::V8SnapshotFileType::kDefault;
@@ -227,7 +231,7 @@ gin::V8SnapshotFileType GetSnapshotType(const base::CommandLine& command_line) {
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 std::string GetSnapshotDataDescriptor(const base::CommandLine& command_line) {
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
+#if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
 #if BUILDFLAG(IS_ANDROID)
   // On android, the renderer loads the context snapshot directly.
   return std::string();
@@ -403,6 +407,10 @@ void PreSandboxInit() {
   // https://boringssl.googlesource.com/boringssl/+/HEAD/SANDBOXING.md
   CRYPTO_pre_sandbox_init();
 
+  // Pre-read /proc/sys/fs/inotify/max_user_watches so it doesn't have to be
+  // allowed by the sandbox.
+  base::GetMaxNumberOfInotifyWatches();
+
 #if BUILDFLAG(ENABLE_PPAPI)
   // Ensure access to the Pepper plugins before the sandbox is turned on.
   PreloadPepperPlugins();
@@ -453,6 +461,11 @@ void PreSandboxInit() {
     blink::WebFontRenderStyle::SetSkiaFontManager(
         SkFontMgr_New_Android(&custom));
   }
+
+  // Preload and cache the results since the methods may use the prlimit64
+  // system call that is not allowed by all sandbox types.
+  base::internal::CanUseBackgroundThreadTypeForWorkerThread();
+  base::internal::CanUseUtilityThreadTypeForWorkerThread();
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
@@ -825,7 +838,9 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   // ensure the cache is populated.
   // Making the blocking call now also avoids the potential for blocking later
   // in when it might be user-visible.
-  base::FetchAndCacheSystemInfo();
+  if (!base::FetchAndCacheSystemInfo()) {
+    return TerminateForFatalInitializationError();
+  }
 #endif
 
   if (!GetContentClient())
@@ -1174,8 +1189,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
 
     // PowerMonitor is needed in reduced mode. BrowserMainLoop will safely skip
     // initializing it again if it has already been initialized.
-    base::PowerMonitor::Initialize(
-        std::make_unique<base::PowerMonitorDeviceSource>());
+    base::PowerMonitor::Initialize(MakePowerMonitorDeviceSource());
 
     // Ensure the visibility tracker is created on the main thread.
     ProcessVisibilityTracker::GetInstance();
@@ -1208,7 +1222,7 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
 
 #if BUILDFLAG(IS_ANDROID)
     if (start_minimal_browser) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&MinimalBrowserStartupComplete));
     }
 #endif

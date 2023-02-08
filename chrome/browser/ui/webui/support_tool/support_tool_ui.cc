@@ -18,6 +18,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/support_tool/data_collection_module.pb.h"
@@ -211,7 +212,7 @@ void SupportToolMessageHandler::HandleGetAllDataCollectors(
   AllowJavascript();
   CHECK_EQ(1U, args.size());
   const base::Value& callback_id = args[0];
-  ResolveJavascriptCallback(callback_id, GetAllDataCollectors());
+  ResolveJavascriptCallback(callback_id, GetAllDataCollectorItems());
 }
 
 // Starts data collection with the issue details and selected set of data
@@ -383,5 +384,5 @@ SupportToolUI::SupportToolUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 SupportToolUI::~SupportToolUI() = default;
 
 bool SupportToolUI::IsEnabled(Profile* profile) {
-  return webui::IsEnterpriseManaged() || !profile->IsGuestSession();
+  return policy::IsDeviceEnterpriseManaged() || !profile->IsGuestSession();
 }

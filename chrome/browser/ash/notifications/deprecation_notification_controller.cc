@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -100,7 +101,7 @@ void DeprecationNotificationController::ShowNotification(
               Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
           }));
 
-  auto notification = CreateSystemNotification(
+  auto notification = CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_SIMPLE, id,
       l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE), message_body,
       std::u16string(), GURL(),
@@ -115,7 +116,13 @@ void DeprecationNotificationController::ShowNotification(
 
 bool DeprecationNotificationController::
     ShouldShowSixPackKeyDeprecationNotification(ui::KeyboardCode key_code) {
-  return !shown_key_notifications_.contains(key_code);
+  const auto* accelerator_controller = Shell::Get()->accelerator_controller();
+  DCHECK(accelerator_controller);
+
+  // Six pack key notification should not show if accelerators are being blocked
+  // as the user does not expect these keys to be interpreted as a six pack key.
+  return !accelerator_controller->ShouldPreventProcessingAccelerators() &&
+         !shown_key_notifications_.contains(key_code);
 }
 
 void DeprecationNotificationController::

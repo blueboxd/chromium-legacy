@@ -15,6 +15,7 @@
 #include "ash/in_session_auth/in_session_auth_dialog_controller_impl.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/system_sounds_delegate.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -84,6 +85,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorControllerImpl;
+class AcceleratorTracker;
 class AccessibilityControllerImpl;
 class AccessibilityDelegate;
 class AccessibilityEventHandlerManager;
@@ -106,6 +108,7 @@ class BluetoothDeviceStatusUiHandler;
 class BluetoothNotificationController;
 class BrightnessControlDelegate;
 class CalendarController;
+class CameraEffectsController;
 class CaptureModeController;
 class ControlVHistogramRecorder;
 class CrosDisplayConfig;
@@ -211,15 +214,16 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemNotificationController;
+class SystemSoundsDelegate;
 class SystemTrayModel;
 class SystemTrayNotifier;
 class ToastManagerImpl;
 class ToplevelWindowEventHandler;
 class ClipboardHistoryControllerImpl;
 class TouchDevicesController;
+class TouchSelectionMagnifierRunnerAsh;
 class TrayAction;
 class UserMetricsRecorder;
-class VideoConferenceTrayController;
 class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperControllerImpl;
@@ -359,6 +363,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   AcceleratorControllerImpl* accelerator_controller() {
     return accelerator_controller_.get();
   }
+  wm::AcceleratorFilter* accelerator_filter() {
+    return accelerator_filter_.get();
+  }
+  AcceleratorTracker* accelerator_tracker() {
+    return accelerator_tracker_.get();
+  }
   AccessibilityControllerImpl* accessibility_controller() {
     return accessibility_controller_.get();
   }
@@ -396,6 +406,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   CalendarController* calendar_controller() {
     return calendar_controller_.get();
+  }
+  CameraEffectsController* camera_effects_controller() {
+    return camera_effects_controller_.get();
   }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
@@ -632,6 +645,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
   }
+  SystemSoundsDelegate* system_sounds_delegate() {
+    return system_sounds_delegate_.get();
+  }
   TabClusterUIController* tab_cluster_ui_controller() const {
     return tab_cluster_ui_controller_.get();
   }
@@ -654,10 +670,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   TrayAction* tray_action() { return tray_action_.get(); }
 
   UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
-
-  VideoConferenceTrayController* video_conference_tray_controller() {
-    return video_conference_tray_controller_.get();
-  }
 
   VideoDetector* video_detector() { return video_detector_.get(); }
   WallpaperControllerImpl* wallpaper_controller() {
@@ -756,6 +768,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   void NotifyShelfAlignmentChanged(aura::Window* root_window,
                                    ShelfAlignment old_alignment);
 
+  // Notifies observers that the display for new windows has changed.
+  void NotifyDisplayForNewWindowsChanged();
+
   // Adds the |handler| based on its |type| to receive events, ensuring that
   // event handlers continue to be called in their HandlerType order.
   void AddAccessibilityEventHandler(
@@ -844,6 +859,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CalendarController> calendar_controller_;
+  std::unique_ptr<CameraEffectsController> camera_effects_controller_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<curtain::SecurityCurtainController>
       security_curtain_controller_;
@@ -918,16 +934,16 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<CaptureModeController> capture_mode_controller_;
   std::unique_ptr<ControlVHistogramRecorder> control_v_histogram_recorder_;
+  std::unique_ptr<AcceleratorTracker> accelerator_tracker_;
   std::unique_ptr<ShutdownControllerImpl> shutdown_controller_;
   std::unique_ptr<SystemNotificationController> system_notification_controller_;
   std::unique_ptr<SystemTrayModel> system_tray_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
+  std::unique_ptr<SystemSoundsDelegate> system_sounds_delegate_;
   std::unique_ptr<ToastManagerImpl> toast_manager_;
   std::unique_ptr<ClipboardHistoryControllerImpl> clipboard_history_controller_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
-  std::unique_ptr<VideoConferenceTrayController>
-      video_conference_tray_controller_;
   std::unique_ptr<WallpaperControllerImpl> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowRestoreController> window_restore_controller_;
@@ -1027,6 +1043,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HighlighterController> highlighter_controller_;
 
   std::unique_ptr<DockedMagnifierController> docked_magnifier_controller_;
+
+  std::unique_ptr<TouchSelectionMagnifierRunnerAsh>
+      touch_selection_magnifier_runner_ash_;
 
   std::unique_ptr<chromeos::SnapController> snap_controller_;
 

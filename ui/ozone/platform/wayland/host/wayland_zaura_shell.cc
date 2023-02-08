@@ -20,7 +20,7 @@ namespace ui {
 
 namespace {
 constexpr uint32_t kMinVersion = 1;
-constexpr uint32_t kMaxVersion = 43;
+constexpr uint32_t kMaxVersion = 46;
 }
 
 // static
@@ -41,9 +41,7 @@ void WaylandZAuraShell::Instantiate(WaylandConnection* connection,
   }
 
   auto zaura_shell = wl::Bind<struct zaura_shell>(
-      registry, name,
-      wl::CalculateBindVersion(version, kMaxVersion,
-                               zaura_shell_interface.version));
+      registry, name, std::min(version, kMaxVersion));
   if (!zaura_shell) {
     LOG(ERROR) << "Failed to bind zaura_shell";
     return;
@@ -102,6 +100,7 @@ int WaylandZAuraShell::GetActiveDeskIndex() const {
 void WaylandZAuraShell::OnLayoutMode(void* data,
                                      struct zaura_shell* zaura_shell,
                                      uint32_t layout_mode) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* self = static_cast<WaylandZAuraShell*>(data);
   auto* connection = self->connection_.get();
   auto* screen = connection->wayland_output_manager()->wayland_screen();
@@ -123,6 +122,7 @@ void WaylandZAuraShell::OnLayoutMode(void* data,
         screen->OnTabletStateChanged(display::TabletState::kInTabletMode);
       return;
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 // static

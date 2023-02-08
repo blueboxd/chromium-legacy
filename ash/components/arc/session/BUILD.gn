@@ -44,6 +44,7 @@ static_library("session") {
   deps = [
     ":arc_base_enums",
     ":connection_holder",
+    "//ash",
     "//ash/components/arc:arc_base_utils",
     "//ash/components/arc:arc_features",
     "//ash/components/arc:prefs",
@@ -66,6 +67,7 @@ static_library("session") {
     "//components/prefs:prefs",
     "//components/user_manager",
     "//components/version_info",
+    "//ui/display/manager",
   ]
 }
 
@@ -92,6 +94,8 @@ static_library("arc_base_enums") {
     "arc_management_transition.h",
     "arc_stop_reason.cc",
     "arc_stop_reason.h",
+    "arc_vm_data_migration_status.cc",
+    "arc_vm_data_migration_status.h",
   ]
 
   deps = [ "//base" ]

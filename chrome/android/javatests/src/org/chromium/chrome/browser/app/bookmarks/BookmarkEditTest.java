@@ -76,8 +76,7 @@ public class BookmarkEditTest {
     @Before
     public void setUp() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedRegularProfile();
-            mBookmarkModel = new BookmarkModel(profile);
+            mBookmarkModel = BookmarkModel.getForProfile(Profile.getLastUsedRegularProfile());
             mBookmarkModel.loadEmptyPartnerBookmarkShimForTesting();
         });
 
@@ -256,28 +255,6 @@ public class BookmarkEditTest {
         waitForEditActivity();
         Assert.assertEquals("Folder should change after folder activity finishes.", FOLDER_A,
                 mBookmarkEditActivity.getFolderTextView().getText());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Bookmark"})
-    public void testChangeFolderWhenBookmarkRemoved() throws ExecutionException, TimeoutException {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mBookmarkEditActivity.getFolderTextView().performClick());
-        waitForMoveFolderActivity();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue("Expected BookmarkFolderSelectActivity.",
-                    ApplicationStatus.getLastTrackedFocusedActivity()
-                                    instanceof BookmarkFolderSelectActivity);
-            mBookmarkModel.deleteBookmark(mBookmarkId);
-        });
-        // clang-format off
-        CriteriaHelper.pollUiThread(() ->
-                !(ApplicationStatus.getLastTrackedFocusedActivity()
-                      instanceof BookmarkFolderSelectActivity),
-                "Timed out waiting for BookmarkFolderSelectActivity to close");
-        // clang-format on
     }
 
     private BookmarkItem getBookmarkItem(BookmarkId bookmarkId) throws ExecutionException {

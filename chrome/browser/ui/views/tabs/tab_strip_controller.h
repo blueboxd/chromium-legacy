@@ -54,8 +54,8 @@ class TabStripController {
   // one whose content is shown.
   virtual bool IsActiveTab(int index) const = 0;
 
-  // Returns the index of the active tab.
-  virtual int GetActiveIndex() const = 0;
+  // Returns the index of the active tab, or nullopt if no tab is active.
+  virtual absl::optional<int> GetActiveIndex() const = 0;
 
   // Returns true if the selected index is selected.
   virtual bool IsTabSelected(int index) const = 0;
@@ -106,7 +106,7 @@ class TabStripController {
 
   // Switches the collapsed state of a tab group. Returns false if the state was
   // not successfully switched.
-  virtual bool ToggleTabGroupCollapsedState(
+  virtual void ToggleTabGroupCollapsedState(
       const tab_groups::TabGroupId group,
       ToggleTabGroupCollapsedStateOrigin origin =
           ToggleTabGroupCollapsedStateOrigin::kImplicitAction) = 0;

@@ -423,17 +423,20 @@ class RenderFrameHostManagerTest
             controller.GetIndexOfEntry(entry),
             controller.GetLastCommittedEntryIndex(), controller.GetEntryCount(),
             frame_tree_node->current_replication_state().frame_policy,
-            frame_tree_node->AncestorOrSelfHasCSPEE());
+            frame_tree_node->AncestorOrSelfHasCSPEE(),
+            /*soft_navigation_heuristics_task_id=*/absl::nullopt);
     commit_params->post_content_type = post_content_type;
 
     std::unique_ptr<NavigationRequest> navigation_request =
-        NavigationRequest::CreateBrowserInitiated(
+        NavigationRequest::Create(
             frame_tree_node, std::move(common_params), std::move(commit_params),
             !entry->is_renderer_initiated(), false /* was_opener_suppressed */,
             nullptr /* initiator_frame_token */,
             ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
             entry->extra_headers(), frame_entry, entry, is_form_submission,
             nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
+            blink::mojom::NavigationInitiatorActivationAndAdStatus::
+                kDidNotStartWithTransientActivation,
             false /* is_pdf */);
 
     // Simulates request creation that triggers the 1st internal call to
@@ -886,7 +889,8 @@ TEST_P(RenderFrameHostManagerTest, Init) {
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* rfh = manager->current_frame_host();
   RenderViewHostImpl* rvh = rfh->render_view_host();
   ASSERT_TRUE(rfh);
@@ -904,7 +908,8 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
       browser_context(), SiteInstance::Create(browser_context())));
   RenderViewHostChangedObserver change_observer(web_contents.get());
 
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host = nullptr;
 
   // 1) The first navigation. --------------------------
@@ -995,7 +1000,8 @@ TEST_P(RenderFrameHostManagerTest, WebUI) {
 
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* initial_rfh = manager->current_frame_host();
 
   EXPECT_FALSE(initial_rfh->render_view_host()->IsRenderViewLive());
@@ -1046,7 +1052,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   std::unique_ptr<TestWebContents> web_contents1(
       TestWebContents::Create(browser_context(), blank_instance));
   RenderFrameHostManager* manager1 =
-      web_contents1->GetRenderManagerForTesting();
+      web_contents1->GetPrimaryFrameTree().root()->render_manager();
   // Test the case that new RVH is considered live.
   RenderViewHostImpl* rvh1 = manager1->current_frame_host()->render_view_host();
   rvh1->CreateRenderView(absl::nullopt, MSG_ROUTING_NONE, false);
@@ -1078,7 +1084,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   std::unique_ptr<TestWebContents> web_contents2(
       TestWebContents::Create(browser_context(), webui_instance));
   RenderFrameHostManager* manager2 =
-      web_contents2->GetRenderManagerForTesting();
+      web_contents2->GetPrimaryFrameTree().root()->render_manager();
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
   RenderViewHostImpl* rvh2 = manager2->current_frame_host()->render_view_host();
@@ -1186,7 +1192,8 @@ TEST_P(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
   RenderFrameDeletedObserver rfh1_deleted_observer(rfh1);
@@ -1199,13 +1206,13 @@ TEST_P(RenderFrameHostManagerTest, CreateProxiesForOpeners) {
   std::unique_ptr<TestWebContents> opener1(
       TestWebContents::Create(browser_context(), site_instance1.get()));
   RenderFrameHostManager* opener1_manager =
-      opener1->GetRenderManagerForTesting();
+      opener1->GetPrimaryFrameTree().root()->render_manager();
   contents()->SetOpener(opener1.get());
 
   std::unique_ptr<TestWebContents> opener2(
       TestWebContents::Create(browser_context(), site_instance1.get()));
   RenderFrameHostManager* opener2_manager =
-      opener2->GetRenderManagerForTesting();
+      opener2->GetPrimaryFrameTree().root()->render_manager();
   opener1->SetOpener(opener2.get());
 
   // Navigate to a cross-site URL (different SiteInstance but same
@@ -1405,7 +1412,7 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
   std::unique_ptr<TestWebContents> opener1(
       TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
   RenderFrameHostManager* opener1_manager =
-      opener1->GetRenderManagerForTesting();
+      opener1->GetPrimaryFrameTree().root()->render_manager();
   contents()->SetOpener(opener1.get());
 
   // Make sure the new opener RVH is considered live.
@@ -1478,7 +1485,8 @@ TEST_P(RenderFrameHostManagerTest, GuestNavigations) {
   EXPECT_EQ(kGuestPartitionConfig,
             initial_instance->GetStoragePartitionConfig());
 
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* initial_host = manager->current_frame_host();
 
   // 1) First navigation. ------------------------
@@ -1606,7 +1614,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   RenderViewHostChangedObserver change_observer(web_contents.get());
   web_contents->SetDelegate(&delegate);
 
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -1927,7 +1936,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName1",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
   contents()->GetPrimaryMainFrame()->OnCreateChildFrame(
       contents()->GetPrimaryMainFrame()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -1937,7 +1946,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName2",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
   RenderFrameHostManager* root_manager =
       contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostManager* iframe1 =
@@ -2108,7 +2117,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe, ukm::kInvalidSourceId);
   RenderFrameHostManager* iframe =
       contents()->GetPrimaryFrameTree().root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
@@ -2257,7 +2266,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe, ukm::kInvalidSourceId);
   RenderFrameHostManager* subframe_rfhm =
       contents()->GetPrimaryFrameTree().root()->child_at(0)->render_manager();
 
@@ -2269,7 +2278,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
       false /* is_initial_entry */);
-  RenderFrameHostManager* main_rfhm = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* main_rfhm =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* webui_rfh = NavigateToEntry(main_rfhm, &webui_entry);
   EXPECT_EQ(webui_rfh, GetPendingFrameHost(main_rfhm));
   EXPECT_TRUE(webui_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
@@ -2351,10 +2361,12 @@ TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   //
   std::unique_ptr<TestWebContents> tab1(
       TestWebContents::Create(browser_context(), site_instance1.get()));
-  RenderFrameHostManager* tab1_manager = tab1->GetRenderManagerForTesting();
+  RenderFrameHostManager* tab1_manager =
+      tab1->GetPrimaryFrameTree().root()->render_manager();
   std::unique_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), site_instance1.get()));
-  RenderFrameHostManager* tab2_manager = tab2->GetRenderManagerForTesting();
+  RenderFrameHostManager* tab2_manager =
+      tab2->GetPrimaryFrameTree().root()->render_manager();
 
   contents()->SetOpener(tab1.get());
   tab1->SetOpener(tab2.get());
@@ -2414,7 +2426,8 @@ TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   // Create an opener tab, and simulate that its opener points to itself.
   std::unique_ptr<TestWebContents> opener(
       TestWebContents::Create(browser_context(), site_instance1.get()));
-  RenderFrameHostManager* opener_manager = opener->GetRenderManagerForTesting();
+  RenderFrameHostManager* opener_manager =
+      opener->GetPrimaryFrameTree().root()->render_manager();
   contents()->SetOpener(opener.get());
   opener->SetOpener(opener.get());
 
@@ -2636,7 +2649,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -2646,7 +2659,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       blink::mojom::TreeScopeType::kDocument, "frame2", "uniqueName2", false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
   main_test_rfh()->OnCreateChildFrame(
       main_test_rfh()->GetProcess()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -2656,7 +2669,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       blink::mojom::TreeScopeType::kDocument, "frame3", "uniqueName3", false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
 
   FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child1 = root->child_at(0)->render_manager();
@@ -2769,7 +2782,7 @@ TEST_P(RenderFrameHostManagerTest,
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
-      blink::mojom::FrameOwnerProperties(), kOwnerType);
+      blink::mojom::FrameOwnerProperties(), kOwnerType, ukm::kInvalidSourceId);
 
   FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();
@@ -2826,7 +2839,8 @@ TEST_P(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   initial_instance->SetSite(UrlInfo::CreateForTesting(kInitUrl));
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), initial_instance));
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      web_contents->GetPrimaryFrameTree().root()->render_manager();
   NavigationControllerImpl& controller = web_contents->GetController();
 
   // Setup a restored entry.
@@ -2877,7 +2891,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
   EXPECT_TRUE(host1->IsRenderFrameLive());
   WebUIImpl* web_ui = host1->web_ui();
@@ -2928,7 +2943,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
   EXPECT_TRUE(host1->IsRenderFrameLive());
   WebUIImpl* web_ui = host1->web_ui();
@@ -2975,7 +2991,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
   EXPECT_TRUE(host1->IsRenderFrameLive());
   WebUIImpl* web_ui1 = host1->web_ui();
@@ -3030,7 +3047,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo/"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host1 = manager->current_frame_host();
   EXPECT_TRUE(host1->IsRenderFrameLive());
   WebUIImpl* web_ui1 = host1->web_ui();
@@ -3136,7 +3154,8 @@ TEST_P(RenderFrameHostManagerTest, CanCommitOrigin) {
 // Tests that the correct intermediary and final navigation states are reached
 // when navigating from a renderer that is not live to a WebUI URL.
 TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
 
   RenderFrameHostImpl* initial_host = manager->current_frame_host();
   ASSERT_TRUE(initial_host);
@@ -3169,12 +3188,13 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           controller().GetLastCommittedEntryIndex(),
           controller().GetEntryCount(),
           frame_tree_node->current_replication_state().frame_policy,
-          frame_tree_node->AncestorOrSelfHasCSPEE());
+          frame_tree_node->AncestorOrSelfHasCSPEE(),
+          /*soft_navigation_heuristics_task_id=*/absl::nullopt);
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, std::move(common_params), std::move(commit_params),
-          !entry.is_renderer_initiated(), false /* was_opener_suppressed */,
+          false /* was_opener_suppressed */,
           nullptr /* initiator_frame_token */,
           ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
           entry.extra_headers(), frame_entry, &entry,
@@ -3213,7 +3233,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host = manager->current_frame_host();
   EXPECT_TRUE(host->IsRenderFrameLive());
   WebUIImpl* web_ui = host->web_ui();
@@ -3248,7 +3269,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
                                                     GetWebUIURL("foo"));
 
-  RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
+  RenderFrameHostManager* manager =
+      contents()->GetPrimaryFrameTree().root()->render_manager();
   RenderFrameHostImpl* host = manager->current_frame_host();
   EXPECT_TRUE(host->IsRenderFrameLive());
   EXPECT_TRUE(host->web_ui());
@@ -3343,7 +3365,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::DocumentToken(), blink::FramePolicy(),
       blink::mojom::FrameOwnerProperties(),
-      blink::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe, ukm::kInvalidSourceId);
 
   FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();

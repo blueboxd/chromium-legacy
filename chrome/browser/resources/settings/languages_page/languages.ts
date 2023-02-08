@@ -138,7 +138,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
       'neverTranslateSitesPrefChanged_(' +
           'prefs.translate_site_blocklist_with_time.value.*, languages)',
       // <if expr="is_win">
-      'prospectiveUILanguageChanged_(prefs.intl.app_locale.value, languages)',
+      'prospectiveUiLanguageChanged_(prefs.intl.app_locale.value, languages)',
       // </if>
       'preferredLanguagesPrefChanged_(' +
           'prefs.intl.accept_languages.value, languages)',
@@ -215,38 +215,35 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
 
     // Get the language list.
     promises.push(
-        new Promise<chrome.languageSettingsPrivate.Language[]>(resolve => {
-          this.languageSettingsPrivate_.getLanguageList(resolve);
-        }).then(result => {
+        this.languageSettingsPrivate_.getLanguageList().then(result => {
           args.supportedLanguages = result;
         }));
 
     // Get the translate target language.
-    promises.push(new Promise<string>(resolve => {
-                    this.languageSettingsPrivate_.getTranslateTargetLanguage(
-                        resolve);
-                  }).then(result => args.translateTarget = result));
+    promises.push(
+        this.languageSettingsPrivate_.getTranslateTargetLanguage().then(
+            result => {
+              args.translateTarget = result;
+            }));
 
     // Get the list of language-codes to always translate.
-    promises.push(new Promise<string[]>(resolve => {
-                    this.languageSettingsPrivate_.getAlwaysTranslateLanguages(
-                        resolve);
-                  }).then(result => {
-      args.alwaysTranslateCodes = result;
-    }));
+    promises.push(
+        this.languageSettingsPrivate_.getAlwaysTranslateLanguages().then(
+            result => {
+              args.alwaysTranslateCodes = result;
+            }));
 
     // Get the list of language-codes to never translate.
-    promises.push(new Promise<string[]>(resolve => {
-                    this.languageSettingsPrivate_.getNeverTranslateLanguages(
-                        resolve);
-                  }).then(result => {
-      args.neverTranslateCodes = result;
-    }));
+    promises.push(
+        this.languageSettingsPrivate_.getNeverTranslateLanguages().then(
+            result => {
+              args.neverTranslateCodes = result;
+            }));
 
     // <if expr="is_win">
     // Fetch the starting UI language, which affects which actions should be
     // enabled.
-    promises.push(this.browserProxy_.getProspectiveUILanguage().then(
+    promises.push(this.browserProxy_.getProspectiveUiLanguage().then(
         prospectiveUILanguage => {
           this.originalProspectiveUILanguage_ =
               prospectiveUILanguage || window.navigator.language;
@@ -267,7 +264,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
           this.onSpellcheckDictionariesChanged_.bind(this);
       this.languageSettingsPrivate_.onSpellcheckDictionariesChanged.addListener(
           this.boundOnSpellcheckDictionariesChanged_);
-      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses(
+      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses().then(
           this.boundOnSpellcheckDictionariesChanged_);
       // </if>
 
@@ -291,7 +288,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
   /**
    * Updates the prospective UI language based on the new pref value.
    */
-  private prospectiveUILanguageChanged_(prospectiveUILanguage: string) {
+  private prospectiveUiLanguageChanged_(prospectiveUILanguage: string) {
     this.set(
         'languages.prospectiveUILanguage',
         prospectiveUILanguage || this.originalProspectiveUILanguage_);
@@ -319,15 +316,13 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
 
     // <if expr="not is_macosx">
     if (this.boundOnSpellcheckDictionariesChanged_) {
-      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses(
+      this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses().then(
           this.boundOnSpellcheckDictionariesChanged_);
     }
     // </if>
 
     // Update translate target language.
-    new Promise(resolve => {
-      this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
-    }).then(result => {
+    this.languageSettingsPrivate_.getTranslateTargetLanguage().then(result => {
       this.set('languages.translateTarget', result);
     });
   }
@@ -731,8 +726,8 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase implements
    * Sets the prospective UI language to the chosen language. This won't affect
    * the actual UI language until a restart.
    */
-  setProspectiveUILanguage(languageCode: string) {
-    this.browserProxy_.setProspectiveUILanguage(languageCode);
+  setProspectiveUiLanguage(languageCode: string) {
+    this.browserProxy_.setProspectiveUiLanguage(languageCode);
   }
 
   /**

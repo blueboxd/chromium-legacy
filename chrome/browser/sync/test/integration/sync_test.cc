@@ -102,10 +102,10 @@
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs_factory.h"
+#include "chrome/browser/ash/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/sync/test/integration/printers_helper.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -709,20 +709,6 @@ void SyncTest::DisableNotificationsForClient(int index) {
       fake_server_invalidation_observers_[index].get());
 }
 
-void SyncTest::SetEncryptionPassphraseForClient(int index,
-                                                const std::string& passphrase) {
-  // Must be called before client initialization.
-  DCHECK(clients_.empty());
-  client_encryption_passphrases_[index] = passphrase;
-}
-
-void SyncTest::SetDecryptionPassphraseForClient(int index,
-                                                const std::string& passphrase) {
-  // Must be called before client initialization.
-  DCHECK(clients_.empty());
-  client_decryption_passphrases_[index] = passphrase;
-}
-
 void SyncTest::SetupMockGaiaResponsesForProfile(Profile* profile) {
   SetURLLoaderFactoryForTest(profile,
                              test_url_loader_factory_.GetSafeWeakWrapper());
@@ -821,32 +807,9 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
   for (int client_index = 0; client_index < num_clients_; client_index++) {
     SyncServiceImplHarness* client = GetClient(client_index);
     DVLOG(1) << "Setting up " << client_index << " client";
+    ASSERT_TRUE(client->SetupSyncNoWaitForCompletion())
+        << "SetupSync() failed.";
 
-    auto decryption_passphrase_it =
-        client_decryption_passphrases_.find(client_index);
-    auto encryption_passphrase_it =
-        client_encryption_passphrases_.find(client_index);
-    bool decryption_passphrase_provided =
-        (decryption_passphrase_it != client_decryption_passphrases_.end());
-    bool encryption_passphrase_provided =
-        (encryption_passphrase_it != client_encryption_passphrases_.end());
-    if (decryption_passphrase_provided && encryption_passphrase_provided) {
-      LOG(FATAL) << "Both an encryption and decryption passphrase were "
-                    "provided for the client. This is disallowed.";
-    }
-
-    if (encryption_passphrase_provided) {
-      ASSERT_TRUE(client->SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
-          encryption_passphrase_it->second))
-          << "SetupSync() failed.";
-    } else if (decryption_passphrase_provided) {
-      ASSERT_TRUE(client->SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
-          decryption_passphrase_it->second))
-          << "SetupSync() failed.";
-    } else {
-      ASSERT_TRUE(client->SetupSyncNoWaitForCompletion())
-          << "SetupSync() failed.";
-    }
     if (TestUsesSelfNotifications()) {
       // On Android, invalidations for Session data type are disabled by
       // default. This may result in test flakiness when using when using
@@ -1311,8 +1274,6 @@ bool SyncTest::WaitForAsyncChangesToBeCommitted(size_t profile_index) const {
     // Session to be committed to prevent unexpected commit requests during
     // test. It shouldn't be called when custom passphrase is enabled because
     // SessionHierarchyMatchChecker doesn't support custom passphrases.
-    DCHECK(client_decryption_passphrases_.find(profile_index) ==
-           client_decryption_passphrases_.end());
     if (!SessionHierarchyMatchChecker(
              fake_server::SessionsHierarchy({{url::kAboutBlankURL}}),
              GetSyncService(profile_index), GetFakeServer())
@@ -1332,11 +1293,22 @@ bool SyncTest::WaitForAsyncChangesToBeCommitted(size_t profile_index) const {
 
 void SyncTest::CheckForDataTypeFailures(size_t client_index) const {
   DCHECK(GetClient(client_index));
-  if (GetClient(client_index)->service()->HasAnyDatatypeErrorForTest()) {
+
+  auto* service = GetClient(client_index)->service();
+  syncer::ModelTypeSet types_to_check =
+      service->GetRegisteredDataTypesForTest();
+  types_to_check.RemoveAll(excluded_types_from_check_for_data_type_failures_);
+
+  if (service->HasAnyDatatypeErrorForTest(types_to_check)) {
     ADD_FAILURE() << "Data types failed during tests: "
                   << GetClient(client_index)
                          ->service()
                          ->GetTypeStatusMapForDebugging()
                          .DebugString();
   }
+}
+
+void SyncTest::ExcludeDataTypesFromCheckForDataTypeFailures(
+    syncer::ModelTypeSet types) {
+  excluded_types_from_check_for_data_type_failures_ = types;
 }

@@ -10,7 +10,6 @@
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_runner_util.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
@@ -93,9 +92,8 @@ void ZipFileInstaller::LoadFromZipFileImpl(const base::FilePath& zip_file,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      io_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&PrepareAndGetUnzipDir, zip_file),
+  io_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&PrepareAndGetUnzipDir, zip_file),
       base::BindOnce(&ZipFileInstaller::Unzip, this));
 }
 
@@ -128,8 +126,8 @@ void ZipFileInstaller::ManifestUnzipped(const base::FilePath& unzip_dir,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      io_task_runner_.get(), FROM_HERE,
+  io_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ReadFileContent, unzip_dir.Append(kManifestFilename)),
       base::BindOnce(&ZipFileInstaller::ManifestRead, this, unzip_dir));
 }
@@ -171,21 +169,13 @@ void ZipFileInstaller::ManifestParsed(
     const base::FilePath& unzip_dir,
     absl::optional<base::Value> result,
     const absl::optional<std::string>& error) {
-  if (!result) {
-    ReportFailure(std::string(kExtensionHandlerFileUnzipError));
-    return;
-  }
-
-  std::unique_ptr<base::DictionaryValue> manifest_dictionary =
-      base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(std::move(*result)));
-  if (!manifest_dictionary) {
+  if (!result || !result->is_dict()) {
     ReportFailure(std::string(kExtensionHandlerFileUnzipError));
     return;
   }
 
   Manifest::Type manifest_type =
-      Manifest::GetTypeFromManifestValue(*manifest_dictionary);
+      Manifest::GetTypeFromManifestValue(result->GetDict());
 
   unzip::UnzipFilterCallback filter = base::BindRepeating(
       [](bool is_theme, const base::FilePath& file_path) -> bool {

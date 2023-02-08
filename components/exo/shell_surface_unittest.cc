@@ -121,6 +121,12 @@ uint32_t Configure(ConfigureData* config_data,
   return 0;
 }
 
+bool IsCaptureWindow(ShellSurface* shell_surface) {
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  return WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow() ==
+         window;
+}
+
 }  // namespace
 
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
@@ -1400,18 +1406,17 @@ TEST_F(ShellSurfaceTest, Popup) {
   // Verify that created shell surface is popup and has capture.
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
             popup_shell_surface->GetWidget()->GetNativeWindow()->GetType());
-  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            popup_shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
 
   // Setting frame type on popup should have no effect.
   popup_surface->SetFrame(SurfaceFrameType::NORMAL);
   EXPECT_FALSE(popup_shell_surface->frame_enabled());
 
-  // ShellSurface can capture the event even after it is craeted.
+  // ShellSurface can capture the event even after it is created.
   std::unique_ptr<Buffer> sub_popup_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   std::unique_ptr<Surface> sub_popup_surface(new Surface);
-  sub_popup_surface->Attach(popup_buffer.get());
+  sub_popup_surface->Attach(sub_popup_buffer.get());
   std::unique_ptr<ShellSurface> sub_popup_shell_surface(CreatePopupShellSurface(
       sub_popup_surface.get(), popup_shell_surface.get(), gfx::Point(100, 50)));
   sub_popup_shell_surface->Grab();
@@ -1420,10 +1425,9 @@ TEST_F(ShellSurfaceTest, Popup) {
             sub_popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
   aura::Window* target =
       sub_popup_shell_surface->GetWidget()->GetNativeWindow();
-  // The capture should be on sub_popup_shell_surface.
-  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            target);
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP, target->GetType());
+  // The capture should be on `sub_popup_shell_surface`.
+  EXPECT_TRUE(IsCaptureWindow(sub_popup_shell_surface.get()));
 
   {
     // Mouse is on the top most popup.
@@ -1449,16 +1453,214 @@ TEST_F(ShellSurfaceTest, Popup) {
 
   // Removing top most popup moves the grab to parent popup.
   sub_popup_shell_surface.reset();
-  target = popup_shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
-            target);
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
+
   {
     // Targetting should still work.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
-    ui::Event::DispatcherApi(&event).set_target(target);
+    ui::Event::DispatcherApi(&event).set_target(
+        popup_shell_surface->GetWidget()->GetNativeWindow());
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
+}
+
+TEST_F(ShellSurfaceTest, GainCaptureFromSiblingSubPopup) {
+  // Test that in the following setup:
+  //
+  //     popup_shell_surface1     popup_shell_surface2
+  //  (has grab, loses capture) (has grab, gains capture)
+  //                 \                /
+  //                popup_shell_surface
+  //
+  // when popup_shell_surface2 is added, capture is correctly transferred to it
+  // from popup_shell_surface1.
+
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  auto popup_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface = std::make_unique<Surface>();
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
+
+  auto popup_buffer1 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface1 = std::make_unique<Surface>();
+  popup_surface1->Attach(popup_buffer1.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface1(CreatePopupShellSurface(
+      popup_surface1.get(), popup_shell_surface.get(), gfx::Point(100, 50)));
+  popup_shell_surface1->Grab();
+  popup_surface1->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface1.get()));
+
+  auto popup_buffer2 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface2 = std::make_unique<Surface>();
+  popup_surface2->Attach(popup_buffer2.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface2(CreatePopupShellSurface(
+      popup_surface2.get(), popup_shell_surface.get(), gfx::Point(50, 100)));
+  popup_shell_surface2->Grab();
+  popup_surface2->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface2.get()));
+}
+
+TEST_F(ShellSurfaceTest, GainCaptureFromNieceSubPopup) {
+  // Test that in the following setup:
+  //
+  //    popup_shell_surface3
+  //           (no grab)
+  //              |
+  //    popup_shell_surface2
+  //  (has grab; loses capture)
+  //              |
+  //    popup_shell_surface1    popup_shell_surface4
+  //         (no grab)        (has grab; gains capture)
+  //                 \                /
+  //                popup_shell_surface
+  //
+  // when popup_shell_surface4 is added, capture is correctly transferred to
+  // it from popup_shell_surface2.
+
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  auto popup_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface = std::make_unique<Surface>();
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
+
+  auto popup_buffer1 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface1 = std::make_unique<Surface>();
+  popup_surface1->Attach(popup_buffer1.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface1(CreatePopupShellSurface(
+      popup_surface1.get(), popup_shell_surface.get(), gfx::Point(100, 50)));
+  popup_surface1->Commit();
+  // Doesn't change capture.
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
+
+  auto popup_buffer2 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface2 = std::make_unique<Surface>();
+  popup_surface2->Attach(popup_buffer2.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface2(CreatePopupShellSurface(
+      popup_surface2.get(), popup_shell_surface1.get(), gfx::Point(150, 50)));
+  popup_shell_surface2->Grab();
+  popup_surface2->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface2.get()));
+
+  auto popup_buffer3 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface3 = std::make_unique<Surface>();
+  popup_surface3->Attach(popup_buffer3.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface3(CreatePopupShellSurface(
+      popup_surface3.get(), popup_shell_surface2.get(), gfx::Point(200, 50)));
+  popup_surface3->Commit();
+  // Doesn't change capture.
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface2.get()));
+
+  auto popup_buffer4 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface4 = std::make_unique<Surface>();
+  popup_surface4->Attach(popup_buffer4.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface4(CreatePopupShellSurface(
+      popup_surface4.get(), popup_shell_surface.get(), gfx::Point(50, 100)));
+  popup_shell_surface4->Grab();
+  popup_surface4->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface4.get()));
+}
+
+TEST_F(ShellSurfaceTest, GainCaptureFromDescendantSubPopup) {
+  // Test that in the following setup:
+  //
+  //    popup_shell_surface3
+  //  (has grab; loses capture)
+  //              |
+  //    popup_shell_surface2
+  //          (no grab)
+  //              |
+  //    popup_shell_surface1
+  //  (has grab; gains capture)
+  //              |
+  //    popup_shell_surface
+  //
+  // when popup_shell_surface3 is closed, capture is correctly transferred to
+  // popup_shell_surface1.
+
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  auto popup_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface = std::make_unique<Surface>();
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface.get()));
+
+  auto popup_buffer1 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface1 = std::make_unique<Surface>();
+  popup_surface1->Attach(popup_buffer1.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface1(CreatePopupShellSurface(
+      popup_surface1.get(), popup_shell_surface.get(), gfx::Point(100, 50)));
+  popup_shell_surface1->Grab();
+  popup_surface1->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface1.get()));
+
+  auto popup_buffer2 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface2 = std::make_unique<Surface>();
+  popup_surface2->Attach(popup_buffer2.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface2(CreatePopupShellSurface(
+      popup_surface2.get(), popup_shell_surface1.get(), gfx::Point(150, 50)));
+  popup_surface2->Commit();
+  // Doesn't change capture.
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface1.get()));
+
+  auto popup_buffer3 = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface3 = std::make_unique<Surface>();
+  popup_surface3->Attach(popup_buffer3.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface3(CreatePopupShellSurface(
+      popup_surface3.get(), popup_shell_surface2.get(), gfx::Point(200, 50)));
+  popup_shell_surface3->Grab();
+  popup_surface3->Commit();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface3.get()));
+
+  popup_shell_surface3.reset();
+  EXPECT_TRUE(IsCaptureWindow(popup_shell_surface1.get()));
 }
 
 TEST_F(ShellSurfaceTest, Menu) {
@@ -1986,8 +2188,11 @@ TEST_F(ShellSurfaceTest, UpdateBoundsWhenDraggedToAnotherDisplay) {
 // Make sure that resize shadow does not update until commit when the window
 // property |aura::client::kUseWindowBoundsForShadow| is false.
 TEST_F(ShellSurfaceTest, ResizeShadowIndependentBounds) {
+  constexpr gfx::Point kOrigin(10, 10);
   std::unique_ptr<ShellSurface> shell_surface =
-      test::ShellSurfaceBuilder({64, 64}).BuildShellSurface();
+      test::ShellSurfaceBuilder({64, 64})
+          .SetOrigin(kOrigin)
+          .BuildShellSurface();
   shell_surface->OnSetServerStartResize();
   shell_surface->root_surface()->Commit();
   ASSERT_TRUE(shell_surface->GetWidget());
@@ -2016,14 +2221,13 @@ TEST_F(ShellSurfaceTest, ResizeShadowIndependentBounds) {
   ASSERT_TRUE(normal_shadow);
 
   // ash::ResizeShadow::InitParams set the default |thickness| to 8.
-  const int kResizeShadowThickness = 8;
+  constexpr int kResizeShadowThickness = 8;
 
   EXPECT_EQ(gfx::Size(size.width() + kResizeShadowThickness, size.height()),
             resize_shadow->GetLayerForTest()->bounds().size());
   EXPECT_EQ(size, normal_shadow->content_bounds().size());
 
-  gfx::Size new_size(100, 100);
-  gfx::Rect new_bounds(new_size);
+  constexpr gfx::Rect kNewBounds(kOrigin, {100, 100});
   uint32_t serial = 0;
   auto configure_callback = base::BindRepeating(
       [](uint32_t* const serial_ptr, const gfx::Rect& bounds,
@@ -2035,8 +2239,8 @@ TEST_F(ShellSurfaceTest, ResizeShadowIndependentBounds) {
 
   // Resize the widget and set geometry.
   shell_surface->StartResize(HTBOTTOMRIGHT);
-  shell_surface->SetWidgetBounds(new_bounds, /*adjusted_by_server=*/false);
-  shell_surface->SetGeometry(new_bounds);
+  shell_surface->SetWidgetBounds(kNewBounds, /*adjusted by server=*/false);
+  shell_surface->SetGeometry(gfx::Rect(kNewBounds.size()));
 
   // Client acknowledge configure for resizing. Shadow sizes should not be
   // updated yet until commit.
@@ -2047,10 +2251,66 @@ TEST_F(ShellSurfaceTest, ResizeShadowIndependentBounds) {
 
   // Normal and resize shadow sizes are updated after commit.
   shell_surface->root_surface()->Commit();
-  EXPECT_EQ(
-      gfx::Size(new_size.width() + kResizeShadowThickness, new_size.height()),
-      resize_shadow->GetLayerForTest()->bounds().size());
-  EXPECT_EQ(new_size, normal_shadow->content_bounds().size());
+  EXPECT_EQ(gfx::Size(kNewBounds.width() + kResizeShadowThickness,
+                      kNewBounds.height()),
+            resize_shadow->GetLayerForTest()->bounds().size());
+  EXPECT_EQ(kNewBounds.size(), normal_shadow->content_bounds().size());
+
+  // Explicitly ends the drag here.
+  ash::Shell::Get()->toplevel_window_event_handler()->CompleteDragForTesting(
+      ash::ToplevelWindowEventHandler::DragResult::SUCCESS);
+  // Hide Shadow
+  event_generator->MoveMouseTo({0, 0});
+
+  EXPECT_FALSE(resize_shadow->visible());
+
+  // Move
+  UpdateDisplay("800x600,1200x1000");
+  shell_surface->GetWidget()->SetBounds({{1000, 100}, kNewBounds.size()});
+
+  shell_surface->AcknowledgeConfigure(serial);
+  shell_surface->root_surface()->Commit();
+
+  auto* screen = display::Screen::GetScreen();
+  int64_t secondary_id =
+      display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+          .GetSecondaryDisplay()
+          .id();
+  ASSERT_EQ(secondary_id, screen
+                              ->GetDisplayNearestWindow(
+                                  shell_surface->GetWidget()->GetNativeWindow())
+                              .id());
+
+  // Use outside to start drag because exo consumes events inside.
+  event_generator->MoveMouseTo({999, 99});
+
+  gfx::Rect bounds = shell_surface->GetWidget()->GetNativeWindow()->bounds();
+
+  EXPECT_TRUE(resize_shadow->visible());
+  gfx::Rect expected_shadow_on_secondary(
+      bounds.x() - kResizeShadowThickness, bounds.y() - kResizeShadowThickness,
+      bounds.width() + kResizeShadowThickness,
+      bounds.height() + kResizeShadowThickness);
+  EXPECT_EQ(expected_shadow_on_secondary,
+            resize_shadow->GetLayerForTest()->bounds());
+
+  constexpr gfx::Rect kResizedBoundsOn2nd{950, 50, 150, 150};
+  shell_surface->StartResize(HTTOPLEFT);
+  shell_surface->GetWidget()->SetBounds(kResizedBoundsOn2nd);
+  shell_surface->SetGeometry(gfx::Rect(kResizedBoundsOn2nd.size()));
+  shell_surface->AcknowledgeConfigure(serial);
+
+  EXPECT_EQ(expected_shadow_on_secondary,
+            resize_shadow->GetLayerForTest()->bounds());
+
+  shell_surface->root_surface()->Commit();
+  constexpr gfx::Rect kExpectedShadowBoundsOn2nd(
+      150 - kResizeShadowThickness, 50 - kResizeShadowThickness,
+      kResizedBoundsOn2nd.width() + kResizeShadowThickness,
+      kResizedBoundsOn2nd.height() + kResizeShadowThickness);
+
+  EXPECT_EQ(kExpectedShadowBoundsOn2nd,
+            resize_shadow->GetLayerForTest()->bounds());
 }
 
 // Make sure that resize shadow updates as soon as widget bounds change when
@@ -2698,6 +2958,27 @@ TEST_F(ShellSurfaceTest, ConfigureOnlySentOnceForBoundsAndWindowStateChange) {
 
   // The bounds change event should have been suppressed because the window
   // state is changing.
+  EXPECT_EQ(times_configured, 1);
+}
+
+TEST_F(ShellSurfaceTest, SetImmersiveModeTriggersConfigure) {
+  int times_configured = 0;
+  auto test_callback = base::BindRepeating(
+      [](int* times_configured, const gfx::Rect&,
+         chromeos::WindowStateType new_type, bool, bool,
+         const gfx::Vector2d&) -> uint32_t {
+        ++(*times_configured);
+        return 0;
+      },
+      &times_configured);
+
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({1, 1}).BuildShellSurface();
+
+  shell_surface->set_configure_callback(test_callback);
+
+  shell_surface->SetUseImmersiveForFullscreen(true);
+
   EXPECT_EQ(times_configured, 1);
 }
 

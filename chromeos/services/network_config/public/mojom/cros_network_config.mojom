@@ -17,6 +17,9 @@ import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "url/mojom/url.mojom";
 
+// The maximum number of custom APNs that a cellular network can have.
+const uint8 kMaxNumCustomApns = 10;
+
 // Activation state for Cellular networks.
 enum ActivationStateType {
   kUnknown,
@@ -273,6 +276,9 @@ struct NetworkStateProperties {
   // The proxy mode affecting this network. Includes any settings that affect
   // this network (i.e. global proxy settings are also considered).
   ProxyMode proxy_mode;
+  // Indicates if the DNS queries can be used to monitor user traffic via user
+  // or device identifiers in the secure DNS URI templates.
+  bool dns_queries_monitored;
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
   OncSource source;
@@ -1242,6 +1248,21 @@ interface CrosNetworkConfig {
   // |day| to be valid, it must be within the limit 1 <= |day| <= 31.
   SetTrafficCountersAutoReset(string guid, bool auto_reset, UInt32Value? day) =>
     (bool success);
+
+  // Creates a new APN for the cellular network with ID |network_guid|, and
+  // appends it to |custom_apn_list|. Should only be called when the APN
+  // Revamp feature flag is enabled.
+  CreateCustomApn(string network_guid, ApnProperties apn);
+
+  // Removes the APN with ID |apn_id| from |custom_apn_list| for the cellular
+  // network with ID |network_guid|. Should only be called when the APN
+  // Revamp feature flag is enabled.
+  RemoveCustomApn(string network_guid, string apn_id);
+
+  // Finds the APN that matches |apn.id| in |custom_apn_list| for the network
+  // with ID |network_guid|. If found, replaces the content with |apn|.
+  // Should only be called when the APN Revamp feature flag is enabled.
+  ModifyCustomApn(string network_guid, ApnProperties apn);
 };
 
 interface CrosNetworkConfigObserver {

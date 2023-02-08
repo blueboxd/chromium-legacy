@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/test/integration_test_commands.h"
-#include "chrome/updater/unittest_util.h"
+#include "chrome/updater/util/unittest_util.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <shlobj.h>
@@ -30,7 +30,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/installer/util/scoped_token_privilege.h"
-#include "chrome/updater/win/win_util.h"
+#include "chrome/updater/util/win_util.h"
 
 namespace {
 
@@ -179,10 +179,10 @@ int main(int argc, char** argv) {
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
-  if (FAILED(updater::DisableCOMExceptionHandling())) {
-    // Failing to disable COM exception handling is a critical error.
-    CHECK(false) << "Failed to disable COM exception handling.";
-  }
+
+  // Failing to disable COM exception handling is a critical error.
+  CHECK(SUCCEEDED(updater::DisableCOMExceptionHandling()))
+      << "Failed to disable COM exception handling.";
 
   installer::ScopedTokenPrivilege token_se_debug(SE_DEBUG_NAME);
   if (::IsUserAnAdmin() && !token_se_debug.is_enabled()) {
@@ -195,14 +195,12 @@ int main(int argc, char** argv) {
   ScopedSymbolPath scoped_symbol_path_user(/*is_system=*/false);
 #endif
 
+  // Use the {ISOLATED_OUTDIR} as a log destination for the test suite.
   base::TestSuite test_suite(argc, argv);
+  updater::test::InitLoggingForUnitTest();
   chrome::RegisterPathProvider();
   return base::LaunchUnitTestsWithOptions(
       argc, argv, 1, 10, true, base::BindRepeating([]() {
-        logging::SetLogItems(true,    // enable_process_id
-                             true,    // enable_thread_id
-                             true,    // enable_timestamp
-                             false);  // enable_tickcount
         LOG(ERROR) << "A test timeout has occured in "
                    << updater::test::GetTestName();
         updater::test::CreateIntegrationTestCommands()->PrintLog();

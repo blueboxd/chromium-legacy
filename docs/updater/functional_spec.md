@@ -148,6 +148,8 @@ process is determined by command-line arguments:
         updater is inactive, it may qualify and activate, or uninstall itself.
         If this version of the updater is active, it may check for updates for
         applications, unregister uninstalled applications, and more.
+*   --wake-all
+    *   Runs --wake for every updater version installed in this scope.
 *   --crash-me
     *   Record a backtrace in the log, crash the program, save a crash dump,
         and report the crash.
@@ -383,8 +385,15 @@ Offline installs include:
   format.
 * app installer.
 
-The `arch` attribute in the offline update response is used to determine
-compatibility of the app being installed with the host processor architecture.
+For online app installs, the update server checks the compatibility between the
+application and the host OS that the install is attempted on.
+
+The updater client has equivalent support for offline installs, where no update
+server is involved.
+
+The `platform`, `arch`, and `min_os_version` attributes in the offline update
+response are used to determine compatibility of the app being installed with the
+host OS.
 
 Omaha 3 offline manifests have `arch` as "x64", but the Chromium functions
 return "x86_64" as the architecture for amd64. The updater accounts for this by
@@ -811,8 +820,6 @@ crash handler child process. Each crash handler process is capable of uploading
 crashes.
 
 ### Process Launcher
-(This feature is deprecated, please use the Application Commands feature.)
-
 The feature allows installed products to pre-register and later run elevated
 command lines in the format `c:\program files\foo\exe.exe params`. Multiple
 command lines can be registered per `app_id`.
@@ -826,12 +833,9 @@ also a child of %ProgramFiles% or %ProgramFiles(x86)%. For instance:
 * `"c:\Program Files (x86)\subdir\exe.exe"` is also a valid path.
 
 #### Registration
-Commands are registered in the registry with the following format:
-
-```
-    Update\Clients\{`app_id`}
-        REG_SZ `command_id` == "c:\Program Files\subdir\exe.exe p1 p2"
-```
+Registration is the same as for App commands, except there are no replaceable
+parameters. See
+[App command registration](functional_spec.md#services-application-commands-applicable-to-the-windows-version-of-the-updater-registration).
 
 #### Usage
 Once registered, commands may be invoked using the `LaunchCmdElevated` method in
@@ -852,15 +856,16 @@ applications,  the program path is also a child of %ProgramFiles% or
 * `"c:\Program Files (x86)\subdir\exe.exe"` is also a valid path.
 
 #### Registration
-App commands are registered in the registry with the following formats:
+App commands are registered in the registry with the following format:
 
-* New command layout format:
 ```
     Update\Clients\{`app_id`}\Commands\`command_id`
         REG_SZ "CommandLine" == {command format}
         {optional} REG_DWORD "AutoRunOnOSUpgrade" == {1}
 ```
-* Older command layout format, which may be deprecated in the future:
+
+* There is a deprecated command layout format that is only supported for
+versions of Google Chrome `110.0.5435.0` and below with the `cmd` command id.
 ```
     Update\Clients\{`app_id`}
         REG_SZ `command_id` == {command format}

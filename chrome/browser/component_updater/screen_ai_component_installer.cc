@@ -4,27 +4,21 @@
 
 #include "chrome/browser/component_updater/screen_ai_component_installer.h"
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
-#include "components/services/screen_ai/public/cpp/pref_names.h"
 #include "components/services/screen_ai/public/cpp/screen_ai_install_state.h"
 #include "components/services/screen_ai/public/cpp/utilities.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "ui/accessibility/accessibility_features.h"
 
 using content::BrowserThread;
 
 namespace {
-
-const int kScreenAICleanUpDelayInDays = 30;
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the component.
 // The component id is: mfhmdacoffpmifoibamicehhklffanao
@@ -59,7 +53,7 @@ bool ScreenAIComponentInstallerPolicy::RequiresNetworkEncryption() const {
 
 update_client::CrxInstaller::Result
 ScreenAIComponentInstallerPolicy::OnCustomInstall(
-    const base::Value& manifest,
+    const base::Value::Dict& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
@@ -69,15 +63,15 @@ void ScreenAIComponentInstallerPolicy::OnCustomUninstall() {}
 void ScreenAIComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    base::Value manifest) {
-  screen_ai::ScreenAIInstallState::GetInstance()->SetComponentReady(
+    base::Value::Dict manifest) {
+  screen_ai::ScreenAIInstallState::GetInstance()->SetComponentFolder(
       install_dir);
   VLOG(1) << "Screen AI Component ready, version " << version.GetString()
           << " in " << install_dir.value();
 }
 
 bool ScreenAIComponentInstallerPolicy::VerifyInstallation(
-    const base::Value& manifest,
+    const base::Value::Dict& manifest,
     const base::FilePath& install_dir) const {
   VLOG(1) << "Verifying Screen AI component in " << install_dir.value();
   return screen_ai::GetLatestComponentBinaryPath().DirName() == install_dir;
@@ -103,53 +97,29 @@ ScreenAIComponentInstallerPolicy::GetInstallerAttributes() const {
 }
 
 // static
-void ScreenAIComponentInstallerPolicy::
-    DeleteComponentOrScheduleDeletionIfNeeded(PrefService* global_prefs) {
+void ScreenAIComponentInstallerPolicy::DeleteComponent() {
   base::FilePath component_binary_path =
       screen_ai::GetLatestComponentBinaryPath();
-  if (component_binary_path.empty())
-    return;
 
-  base::Time deletion_time =
-      global_prefs->GetTime(prefs::kScreenAIScheduledDeletionTimePrefName);
-
-  // Set deletion time if it is not set yet.
-  if (deletion_time.is_null()) {
-    global_prefs->SetTime(
-        prefs::kScreenAIScheduledDeletionTimePrefName,
-        base::Time::Now() + base::Days(kScreenAICleanUpDelayInDays));
-    return;
-  }
-
-  if (deletion_time <= base::Time::Now()) {
-    // If there are more than one instance of the component, delete them as
-    // well.
-    do {
-      base::DeletePathRecursively(component_binary_path.DirName());
-      component_binary_path = screen_ai::GetLatestComponentBinaryPath();
-    } while (!component_binary_path.empty());
-    global_prefs->SetTime(prefs::kScreenAIScheduledDeletionTimePrefName,
-                          base::Time());
-  }
+  if (!component_binary_path.empty())
+    base::DeletePathRecursively(component_binary_path.DirName());
 }
 
 void RegisterScreenAIComponent(ComponentUpdateService* cus,
-                               PrefService* global_prefs) {
+                               PrefService* local_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!features::IsScreenAIServiceNeeded()) {
-    ScreenAIComponentInstallerPolicy::DeleteComponentOrScheduleDeletionIfNeeded(
-        global_prefs);
+  if (screen_ai::ScreenAIInstallState::ShouldInstall(local_state)) {
+    auto installer = base::MakeRefCounted<ComponentInstaller>(
+        std::make_unique<ScreenAIComponentInstallerPolicy>());
+    installer->Register(cus, base::OnceClosure());
     return;
   }
 
-  // Remove scheduled time for deletion as feature is enabled.
-  global_prefs->SetTime(prefs::kScreenAIScheduledDeletionTimePrefName,
-                        base::Time());
-
-  auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<ScreenAIComponentInstallerPolicy>());
-  installer->Register(cus, base::OnceClosure());
+  if (!screen_ai::GetLatestComponentBinaryPath().empty() &&
+      screen_ai::ScreenAIInstallState::ShouldUninstall(local_state)) {
+    ScreenAIComponentInstallerPolicy::DeleteComponent();
+  }
 }
 
 }  // namespace component_updater

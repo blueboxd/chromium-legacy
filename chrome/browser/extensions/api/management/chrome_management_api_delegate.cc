@@ -32,9 +32,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -72,9 +70,9 @@
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -287,13 +285,12 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto* provider = web_app::WebAppProvider::GetForWebApps(
         Profile::FromBrowserContext(context));
 
-    provider->command_manager().ScheduleCommand(
-        std::make_unique<web_app::InstallFromInfoCommand>(
-            std::move(web_app_info), &provider->install_finalizer(),
-            /*overwrite_existing_manifest_fields=*/false,
-            webapps::WebappInstallSource::MANAGEMENT_API,
-            base::BindOnce(OnGenerateAppForLinkCompleted,
-                           base::RetainedRef(function))));
+    provider->scheduler().InstallFromInfo(
+        std::move(web_app_info),
+        /*overwrite_existing_manifest_fields=*/false,
+        webapps::WebappInstallSource::MANAGEMENT_API,
+        base::BindOnce(OnGenerateAppForLinkCompleted,
+                       base::RetainedRef(function)));
   }
 
   extensions::api::management::ExtensionInfo CreateExtensionInfoFromWebApp(
@@ -302,7 +299,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     auto* provider = web_app::WebAppProvider::GetForWebApps(
         Profile::FromBrowserContext(context));
     DCHECK(provider);
-    const web_app::WebAppRegistrar& registrar = provider->registrar();
+    const web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
 
     extensions::api::management::ExtensionInfo info;
     info.id = app_id;
@@ -364,7 +361,7 @@ void LaunchWebApp(const web_app::AppId& app_id, Profile* profile) {
   auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
   DCHECK(provider);
   absl::optional<web_app::UserDisplayMode> display_mode =
-      provider->registrar().GetAppUserDisplayMode(app_id);
+      provider->registrar_unsafe().GetAppUserDisplayMode(app_id);
   auto launch_container = apps::LaunchContainer::kLaunchContainerWindow;
   if (display_mode == web_app::UserDisplayMode::kBrowser)
     launch_container = apps::LaunchContainer::kLaunchContainerTab;
@@ -574,7 +571,7 @@ void ChromeManagementAPIDelegate::InstallOrLaunchReplacementWebApp(
 
   // Launch the app if web_app_url happens to match start_url. If not, the app
   // could still be installed with different start_url.
-  if (provider->registrar().IsLocallyInstalled(web_app_url)) {
+  if (provider->registrar_unsafe().IsLocallyInstalled(web_app_url)) {
     LaunchWebApp(
         web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, web_app_url),
         profile);

@@ -9,6 +9,8 @@
 #include "ash/public/cpp/schedule_enums.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
+#include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
 #include "components/prefs/pref_service.h"
@@ -17,6 +19,7 @@
 namespace ash {
 
 namespace {
+
 constexpr const char kUserActionNext[] = "next";
 constexpr const char kUserActionSelect[] = "select";
 
@@ -58,11 +61,18 @@ bool ThemeSelectionScreen::ShouldBeSkipped(const WizardContext& context) const {
   if (context.skip_post_login_screens_for_tests)
     return true;
 
+  if (features::IsOobeChoobeEnabled() &&
+      WizardController::default_controller()
+          ->GetChoobeFlowController()
+          ->ShouldScreenBeSkipped(ThemeSelectionScreenView::kScreenId)) {
+    return true;
+  }
+
   const PrefService::Preference* pref =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->FindPreference(
           prefs::kDarkModeScheduleType);
   if (pref->IsManaged() || pref->IsRecommended() ||
-      !chromeos::features::IsOobeThemeSelectionEnabled() ||
+      !features::IsOobeThemeSelectionEnabled() ||
       !features::IsDarkLightModeEnabled()) {
     return true;
   }

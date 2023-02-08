@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -17,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
@@ -29,6 +32,8 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/accessibility/speech_monitor.h"
+#include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
+#include "chrome/browser/ash/extensions/default_app_order.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_browsertest_base.h"
@@ -40,7 +45,6 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -49,9 +53,12 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -76,6 +83,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/common/constants.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/idle/scoped_set_idle_state.h"
@@ -1194,6 +1202,28 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest,
                            << type_and_info.second->GetInternalName()
                            << " can't be found in AppService after install.";
   }
+
+  // Verify that all system web apps which are enabled by default and appear in
+  // the launcher have an explicit launcher position set.
+  std::vector<std::string> app_order;
+  chromeos::default_app_order::Get(&app_order);
+
+  // Demo/testing apps don't need a launcher position.
+  const base::flat_set<SystemWebAppType> kLauncherPositionExemptTypes = {
+      SystemWebAppType::SAMPLE};
+
+  for (const auto& [app_type, app_delegate] : app_map) {
+    if (app_delegate->IsAppEnabled() && app_delegate->ShouldShowInLauncher() &&
+        !base::Contains(kLauncherPositionExemptTypes, app_type)) {
+      EXPECT_TRUE(base::Contains(app_order,
+                                 GetManager().GetAppIdForSystemApp(app_type)))
+          << "System app '" << app_delegate->GetInternalName()
+          << "' appears in the launcher but does not have an app order "
+             "definition. Its app ID should be added to GetDefault() in "
+             "//chrome/browser/ash/extensions/default_app_order.cc, which "
+             "should match the order in go/default-apps";
+    }
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerInstallAllAppsBrowserTest, Upgrade) {
@@ -1470,6 +1500,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->clear();
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1491,6 +1524,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->Append(static_cast<int>(policy::SystemFeature::kOsSettings));
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
 
   EXPECT_EQ(apps::Readiness::kDisabledByPolicy, GetAppReadiness(*settings_id));
   EXPECT_TRUE(apps::IconEffects::kBlocked &
@@ -1502,6 +1538,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
         policy::policy_prefs::kSystemFeaturesDisableList);
     update->clear();
   }
+  SystemWebAppManager::GetWebAppProvider(browser()->profile())
+      ->command_manager()
+      .AwaitAllCommandsCompleteForTesting();
   EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
@@ -1761,32 +1800,67 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerContextMenuBrowserTest, WebLink) {
   }
 }
 
-class SystemWebAppAccessibilityTest : public SystemWebAppManagerBrowserTest {
+class SystemWebAppSingleWindowTest : public SystemWebAppManagerBrowserTest {
  public:
-  SystemWebAppAccessibilityTest()
+  SystemWebAppSingleWindowTest()
       : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
   }
-  ~SystemWebAppAccessibilityTest() override = default;
+  ~SystemWebAppSingleWindowTest() override = default;
+};
 
+IN_PROC_BROWSER_TEST_P(SystemWebAppSingleWindowTest, WindowReuse) {
+  WaitForTestSystemAppInstall();
+
+  content::WebContents* web_contents =
+      LaunchApp(maybe_installation_->GetType());
+
+  // Second launch reuses the window.
+  EXPECT_EQ(web_contents,
+            LaunchAppWithoutWaiting(maybe_installation_->GetType()));
+
+  // Third launch reuses the window despite different URL.
+  apps::AppLaunchParams params =
+      LaunchParamsForApp(maybe_installation_->GetType());
+  params.override_url = GURL("http://example.com/in-scope");
+  EXPECT_EQ(web_contents, LaunchAppWithoutWaiting(std::move(params)));
+}
+
+class SystemWebAppAccessibilityTest : public SystemWebAppSingleWindowTest {
  protected:
+  void EnableChromeVox();
   test::SpeechMonitor speech_monitor_;
 };
 
+void SystemWebAppAccessibilityTest::EnableChromeVox() {
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  speech_monitor_.ExpectSpeechPattern("*");
+  speech_monitor_.Call([this]() {
+    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+        browser()->profile(), extension_misc::kChromeVoxExtensionId, R"JS(
+        import('/chromevox/background/chromevox_state.js').then(
+            module => module.ChromeVoxState.ready().then(() =>
+                window.domAutomationController.send('done')));
+        )JS");
+  });
+}
+
 IN_PROC_BROWSER_TEST_P(SystemWebAppAccessibilityTest,
                        CanCycleToWindowControlButtons) {
-  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  EnableChromeVox();
   WaitForTestSystemAppInstall();
 
   // Launch the app so it shows up in shelf.
   Browser* app_browser;
-  LaunchApp(maybe_installation_->GetType(), &app_browser);
+  gfx::NativeWindow app_window;
 
-  auto* app_window = app_browser->window()->GetNativeWindow();
-
-  // F6 to switch pane.
   speech_monitor_.Call([&]() {
+    LaunchApp(maybe_installation_->GetType(), &app_browser);
+
+    app_window = app_browser->window()->GetNativeWindow();
+
+    // F6 to switch pane.
     ui_controls::SendKeyPress(app_window, ui::VKEY_F6, /*Ctrl*/ false,
                               /*Shift*/ false, /*Alt*/ false,
                               /*Launcher*/ false);
@@ -1820,10 +1894,98 @@ class SystemWebAppAbortsLaunchTest : public SystemWebAppManagerBrowserTest {
 IN_PROC_BROWSER_TEST_P(SystemWebAppAbortsLaunchTest, LaunchAborted) {
   WaitForTestSystemAppInstall();
 
-  ash::LaunchSystemWebAppAsync(browser()->profile(),
-                               maybe_installation_->GetType());
+  LaunchSystemWebAppAsync(browser()->profile(), maybe_installation_->GetType());
 
   EXPECT_EQ(0U, GetSystemWebAppBrowserCount(maybe_installation_->GetType()));
+}
+
+class SystemWebAppIconHealthMetricsTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppIconHealthMetricsTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppWithValidIcons();
+    // Only reinstall on version change, so we don't force reinstall
+    // and overwrite the broken icon.
+    maybe_installation_->set_update_policy(
+        SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+  }
+  ~SystemWebAppIconHealthMetricsTest() override = default;
+
+ protected:
+  static constexpr char kIconsAreHealthyHistogramName[] =
+      "Webapp.SystemApps.IconsAreHealthyInSession";
+  base::HistogramTester tester_;
+
+  void WaitForInstallAndIconCheck() {
+    WaitForTestSystemAppInstall();
+
+    base::RunLoop run_loop;
+    SystemWebAppManager::Get(browser()->profile())
+        ->on_icon_check_completed()
+        .Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppIconHealthMetricsTest, ReportsMetrics) {
+  WaitForInstallAndIconCheck();
+
+  tester_.ExpectBucketCount(kIconsAreHealthyHistogramName, true, 1);
+  // Given SWA install with no broken icon, pref should report no broken icons.
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      SystemWebAppManager::kSystemWebAppSessionHasBrokenIconsPrefName));
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppIconHealthMetricsTest,
+                       PRE_PRE_ReinstallFixesBrokenIcon) {
+  WaitForInstallAndIconCheck();
+
+  // Given SWA install with no broken icon, pref should report no broken icons.
+  CHECK_EQ(
+      false,
+      browser()->profile()->GetPrefs()->GetBoolean(
+          SystemWebAppManager::kSystemWebAppSessionHasBrokenIconsPrefName));
+
+  // Intentionally break icons by corrupting the on-disk icon file.
+  auto app_id = maybe_installation_->GetAppId();
+  base::FilePath icon_path =
+      SystemWebAppManager::GetWebAppProvider(browser()->profile())
+          ->icon_manager()
+          .GetIconFilePathForTesting(app_id, IconPurpose::ANY, 32);
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::WriteFile(icon_path, "Not a PNG file");
+  }
+
+  // Restart to let SystemWebAppManager perform the check.
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppIconHealthMetricsTest,
+                       PRE_ReinstallFixesBrokenIcon) {
+  WaitForInstallAndIconCheck();
+
+  tester_.ExpectBucketCount(kIconsAreHealthyHistogramName, false, 1);
+
+  // TODO(https://crbug.com/1162992): Change CHECK_EQ to EXPECT_TRUE when
+  // assertions report correctly as test failure in PRE_TESTs.
+
+  // Icon check should update pref to report broken icons.
+  CHECK_EQ(
+      true,
+      browser()->profile()->GetPrefs()->GetBoolean(
+          SystemWebAppManager::kSystemWebAppSessionHasBrokenIconsPrefName));
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppIconHealthMetricsTest,
+                       ReinstallFixesBrokenIcon) {
+  WaitForInstallAndIconCheck();
+
+  tester_.ExpectBucketCount(kIconsAreHealthyHistogramName, true, 1);
+  tester_.ExpectBucketCount(
+      SystemWebAppManager::kIconsFixedOnReinstallHistogramName, true, 1);
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_TEST_SUITE_REGULAR_PREF_MIGRATION_P(
@@ -1882,10 +2044,18 @@ INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerDefaultBoundsTest);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppSingleWindowTest);
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppAccessibilityTest);
+
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppAbortsLaunchTest);
+
+INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
+    SystemWebAppIconHealthMetricsTest);
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     SystemWebAppManagerContextMenuBrowserTest);

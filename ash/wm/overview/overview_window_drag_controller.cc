@@ -305,18 +305,6 @@ void OverviewWindowDragController::InitiateDrag(
   presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
       item_->root_window()->layer()->GetCompositor(),
       kOverviewWindowDragHistogram, kOverviewWindowDragMaxLatencyHistogram);
-
-  if (!chromeos::wm::features::IsFloatWindowEnabled())
-    return;
-
-  if (auto* float_window =
-          Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
-              DesksController::Get()->active_desk())) {
-    // If the float window is dragged, it will be on top of everything as
-    // expected.
-    if (item_->GetWindow() != float_window)
-      float_drag_helper_ = std::make_unique<ScopedFloatDragHelper>(this);
-  }
 }
 
 void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
@@ -335,6 +323,17 @@ void OverviewWindowDragController::Drag(const gfx::PointF& location_in_screen) {
       StartNormalDragMode(location_in_screen);
     else
       return;
+
+    if (chromeos::wm::features::IsFloatWindowEnabled()) {
+      if (auto* float_window =
+              Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
+                  DesksController::Get()->active_desk())) {
+        // If the float window is dragged, it will be on top of everything as
+        // expected.
+        if (item_->GetWindow() != float_window)
+          float_drag_helper_ = std::make_unique<ScopedFloatDragHelper>(this);
+      }
+    }
   }
 
   if (current_drag_behavior_ == DragBehavior::kDragToClose)
@@ -370,8 +369,17 @@ OverviewWindowDragController::CompleteDrag(
   }
 
   did_move_ = false;
-  if (float_drag_helper_)
-    float_drag_helper_->Shutdown(item_->GetWindow());
+  if (float_drag_helper_) {
+    // `item_` may be null if `CompleteNormalDrag()` resulted in moving the
+    // window into another desk. At this point, we can just reset
+    // `float_drag_helper_` to return the containers into the correct stacking
+    // order, since the animation will not animate over the floated window if it
+    // is already above the desk bar.
+    if (item_)
+      float_drag_helper_->Shutdown(item_->GetWindow());
+    else
+      float_drag_helper_.reset();
+  }
   item_ = nullptr;
   current_drag_behavior_ = DragBehavior::kNoDrag;
   UnpauseOcclusionTracker();

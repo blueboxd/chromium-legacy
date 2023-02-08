@@ -24,6 +24,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+
 #include <shellapi.h>
 
 #include "base/strings/string_util_win.h"
@@ -554,6 +555,10 @@ CommandLine::StringType CommandLine::GetArgumentsStringInternal(
   StringType params;
   // Append switches and arguments.
   bool parse_switches = true;
+#if BUILDFLAG(IS_WIN)
+  bool appended_single_argument_switch = false;
+#endif
+
   for (size_t i = 1; i < argv_.size(); ++i) {
     StringType arg = argv_[i];
     StringType switch_string;
@@ -572,7 +577,16 @@ CommandLine::StringType CommandLine::GetArgumentsStringInternal(
       }
     } else {
 #if BUILDFLAG(IS_WIN)
-      arg = QuoteForCommandLineToArgvW(arg, allow_unsafe_insert_sequences);
+      if (has_single_argument_switch_) {
+        // Check that we don't have multiple arguments when
+        // `has_single_argument_switch_` is true.
+        DCHECK(!appended_single_argument_switch);
+        appended_single_argument_switch = true;
+        params.append(base::StrCat(
+            {kSwitchPrefixes[0], kSingleArgument, FILE_PATH_LITERAL(" ")}));
+      } else {
+        arg = QuoteForCommandLineToArgvW(arg, allow_unsafe_insert_sequences);
+      }
 #endif
       params.append(arg);
     }

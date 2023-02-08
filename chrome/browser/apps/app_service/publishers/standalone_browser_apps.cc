@@ -168,12 +168,8 @@ void StandaloneBrowserApps::Launch(const std::string& app_id,
 
 void StandaloneBrowserApps::LaunchAppWithParams(AppLaunchParams&& params,
                                                 LaunchCallback callback) {
-  if (base::FeatureList::IsEnabled(apps::kAppServiceLaunchWithoutMojom)) {
-    Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
-  } else {
-    Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
-           nullptr);
-  }
+  Launch(params.app_id, ui::EF_NONE, LaunchSource::kUnknown, nullptr);
+
   // TODO(crbug.com/1244506): Add launch return value.
   std::move(callback).Run(LaunchResult());
 }
@@ -197,22 +193,6 @@ void StandaloneBrowserApps::Connect(
   subscriber->OnApps(std::move(apps), apps::mojom::AppType::kStandaloneBrowser,
                      true /* should_notify_initialized */);
   subscribers_.Add(std::move(subscriber));
-}
-
-void StandaloneBrowserApps::Launch(const std::string& app_id,
-                                   int32_t event_flags,
-                                   apps::mojom::LaunchSource launch_source,
-                                   apps::mojom::WindowInfoPtr window_info) {
-  DCHECK_EQ(app_constants::kLacrosAppId, app_id);
-  crosapi::BrowserManager::Get()->Launch();
-}
-
-void StandaloneBrowserApps::GetMenuModel(const std::string& app_id,
-                                         apps::mojom::MenuType menu_type,
-                                         int64_t display_id,
-                                         GetMenuModelCallback callback) {
-  std::move(callback).Run(
-      ConvertMenuItemsToMojomMenuItems(CreateBrowserMenuItems(profile_)));
 }
 
 void StandaloneBrowserApps::OpenNativeSettings(const std::string& app_id) {
@@ -243,7 +223,8 @@ void StandaloneBrowserApps::StopApp(const std::string& app_id) {
   }
 }
 
-void StandaloneBrowserApps::OnLoadComplete(bool success) {
+void StandaloneBrowserApps::OnLoadComplete(bool success,
+                                           const base::Version& version) {
   is_browser_load_success_ = success;
 
   apps::mojom::AppPtr mojom_app = apps::mojom::App::New();

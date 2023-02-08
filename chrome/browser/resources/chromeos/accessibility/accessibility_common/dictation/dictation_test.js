@@ -5,7 +5,7 @@
 GEN_INCLUDE(['dictation_test_base.js']);
 
 /** Dictation feature using accessibility common extension browser tests. */
-DictationE2ETest = class extends DictationE2ETestDisallowConsole {};
+DictationE2ETest = class extends DictationE2ETestAllowConsole {};
 
 AX_TEST_F('DictationE2ETest', 'ResetsImeAfterToggleOff', async function() {
   // Set something as the active IME.
@@ -295,4 +295,24 @@ AX_TEST_F(
       this.toggleDictationOff();
       assertEquals(
           0, this.mockAccessibilityPrivate.getSpokenFeedbackSilencedCount());
+    });
+
+AX_TEST_F(
+    'DictationE2ETest', 'SurroundingInfoResetsAfterToggleOff',
+    async function() {
+      assertEquals(null, this.getInputController().surroundingInfo_);
+      this.toggleDictationOn();
+      const value = 'This is a test';
+      this.sendFinalSpeechResult(value);
+      // A surroundingTextChanged event is fired whenever the editable value
+      // or the caret index is changed.
+      this.mockInputIme.callOnSurroundingTextChanged({
+        anchor: value.length,
+        focus: value.length,
+        offset: 0,
+        text: value,
+      });
+      assertNotNullNorUndefined(this.getInputController().surroundingInfo_);
+      this.toggleDictationOff();
+      assertEquals(null, this.getInputController().surroundingInfo_);
     });

@@ -20,7 +20,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {Route} from '../../router.js';
+import {Route} from '../router.js';
 import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
@@ -31,7 +31,8 @@ import {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './privacy_hub_
 /**
  * These values are persisted to logs and should not be renumbered or re-used.
  * Keep in sync with PrivacyHubNavigationOrigin in
- * tools/metrics/histograms/enums.xml.
+ * tools/metrics/histograms/enums.xml and
+ * ash/system/privacy_hub/privacy_hub_metrics.h.
  */
 export const PrivacyHubNavigationOrigin = {
   SYSTEM_SETTINGS: 0,

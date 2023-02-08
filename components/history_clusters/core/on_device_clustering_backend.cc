@@ -26,13 +26,11 @@
 #include "components/history_clusters/core/history_clusters_util.h"
 #include "components/history_clusters/core/keyword_cluster_finalizer.h"
 #include "components/history_clusters/core/label_cluster_finalizer.h"
-#include "components/history_clusters/core/metrics_cluster_finalizer.h"
 #include "components/history_clusters/core/noisy_cluster_finalizer.h"
 #include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/history_clusters/core/on_device_clustering_util.h"
 #include "components/history_clusters/core/ranking_cluster_finalizer.h"
 #include "components/history_clusters/core/similar_visit_deduper_cluster_finalizer.h"
-#include "components/history_clusters/core/single_domain_cluster_finalizer.h"
 #include "components/history_clusters/core/single_visit_cluster_finalizer.h"
 #include "components/optimization_guide/core/batch_entity_metadata_task.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
@@ -349,38 +347,30 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
             &entity_id_to_entity_metadata_map));
   }
 
-  cluster_finalizers.push_back(
-      std::make_unique<ContentVisibilityClusterFinalizer>());
+  // Cluster finalizers that affect the appearance of a cluster on a UI surface.
   cluster_finalizers.push_back(
       std::make_unique<SimilarVisitDeduperClusterFinalizer>());
   cluster_finalizers.push_back(std::make_unique<RankingClusterFinalizer>());
-  if (GetConfig().should_hide_single_visit_clusters_on_prominent_ui_surfaces) {
-    cluster_finalizers.push_back(
-        std::make_unique<SingleVisitClusterFinalizer>());
-  }
-  if (GetConfig().should_hide_single_domain_clusters_on_prominent_ui_surfaces) {
-    cluster_finalizers.push_back(
-        std::make_unique<SingleDomainClusterFinalizer>());
-  }
-  // Add feature to turn on/off site engagement score filter.
-  if (engagement_score_provider_is_valid &&
-      GetConfig().should_filter_noisy_clusters) {
+  cluster_finalizers.push_back(std::make_unique<LabelClusterFinalizer>(
+      &entity_id_to_entity_metadata_map));
+
+  // TODO(b/259466296): Guard the below cluster finalizers so that they don't
+  // run when we start persisting "basic" clusters at navigation, as these
+  // attributes will be computed on the fly.
+
+  // Cluster finalizers that affect the keywords for a cluster.
+  cluster_finalizers.push_back(std::make_unique<KeywordClusterFinalizer>(
+      &entity_id_to_entity_metadata_map));
+
+  // Cluster finalizers that affect the visibility of a cluster.
+  cluster_finalizers.push_back(
+      std::make_unique<ContentVisibilityClusterFinalizer>());
+  cluster_finalizers.push_back(std::make_unique<SingleVisitClusterFinalizer>());
+  if (engagement_score_provider_is_valid) {
     cluster_finalizers.push_back(std::make_unique<NoisyClusterFinalizer>());
   }
   if (GetConfig().should_use_categories_to_filter_on_prominent_ui_surfaces) {
     cluster_finalizers.push_back(std::make_unique<CategoryClusterFinalizer>());
-  }
-  cluster_finalizers.push_back(std::make_unique<KeywordClusterFinalizer>(
-      &entity_id_to_entity_metadata_map));
-  if (GetConfig().should_label_clusters) {
-    cluster_finalizers.push_back(std::make_unique<LabelClusterFinalizer>(
-        &entity_id_to_entity_metadata_map));
-  }
-  if (clustering_request_source ==
-      ClusteringRequestSource::kKeywordCacheGeneration) {
-    // Only log metrics for whole clusters when it is a query-less state to get
-    // a better lay of the land. We estimate this by using the request source.
-    cluster_finalizers.push_back(std::make_unique<MetricsClusterFinalizer>());
   }
 
   // Group visits into clusters.
@@ -403,47 +393,14 @@ OnDeviceClusteringBackend::ClusterVisitsOnBackgroundThread(
   // Run finalizers that dedupe and score visits within a cluster and
   // log several metrics about the result.
   base::ElapsedThreadTimer cluster_finalizers_timer;
-  std::vector<int> keyword_sizes;
-  std::vector<int> visits_in_clusters;
-  keyword_sizes.reserve(clusters.size());
-  visits_in_clusters.reserve(clusters.size());
   for (auto& cluster : clusters) {
     for (const auto& finalizer : cluster_finalizers) {
       finalizer->FinalizeCluster(cluster);
     }
-    if (GetConfig()
-            .should_show_all_clusters_unconditionally_on_prominent_ui_surfaces) {
-      // Override the `should_show_on_prominent_ui_surfaces` bit if set by
-      // config.
-      cluster.should_show_on_prominent_ui_surfaces = true;
-    }
-    visits_in_clusters.emplace_back(cluster.visits.size());
-    keyword_sizes.emplace_back(cluster.keyword_to_data_map.size());
   }
   base::UmaHistogramTimes(
       "History.Clusters.Backend.ClusterFinalizers.ThreadTime",
       cluster_finalizers_timer.Elapsed());
-
-  if (!visits_in_clusters.empty()) {
-    // We check for empty to ensure the below code doesn't crash, but
-    // realistically this vector should never be empty.
-    base::UmaHistogramCounts1000("History.Clusters.Backend.ClusterSize.Min",
-                                 *std::min_element(visits_in_clusters.begin(),
-                                                   visits_in_clusters.end()));
-    base::UmaHistogramCounts1000("History.Clusters.Backend.ClusterSize.Max",
-                                 *std::max_element(visits_in_clusters.begin(),
-                                                   visits_in_clusters.end()));
-  }
-  if (!keyword_sizes.empty()) {
-    // We check for empty to ensure the below code doesn't crash, but
-    // realistically this vector should never be empty.
-    base::UmaHistogramCounts100(
-        "History.Clusters.Backend.NumKeywordsPerCluster.Min",
-        *std::min_element(keyword_sizes.begin(), keyword_sizes.end()));
-    base::UmaHistogramCounts100(
-        "History.Clusters.Backend.NumKeywordsPerCluster.Max",
-        *std::max_element(keyword_sizes.begin(), keyword_sizes.end()));
-  }
 
   base::UmaHistogramTimes("History.Clusters.Backend.ComputeClusters.ThreadTime",
                           cluster_visits_timer.Elapsed());

@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
+#import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/web_content_commands.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_dependency_installation_observer.h"
@@ -95,9 +99,7 @@
     passwordTabHelper->SetDispatcher(_commandDispatcher);
   }
 
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
-    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(_delegate);
-  }
+  OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(_delegate);
 
   web_deprecated::SetSwipeRecognizerProvider(webState, _sideSwipeController);
 
@@ -107,6 +109,13 @@
       _downloadManagerCoordinator);
 
   NetExportTabHelper::FromWebState(webState)->SetDelegate(_tabHelperDelegate);
+
+  id<WebContentCommands> webContentsHandler =
+      HandlerForProtocol(_commandDispatcher, WebContentCommands);
+  ITunesUrlsHandlerTabHelper::FromWebState(webState)->SetWebContentsHandler(
+      webContentsHandler);
+  PassKitTabHelper::FromWebState(webState)->SetWebContentsHandler(
+      webContentsHandler);
 }
 
 - (void)uninstallDependencyForWebState:(web::WebState*)webState {
@@ -124,9 +133,7 @@
     passwordTabHelper->SetDispatcher(nil);
   }
 
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
-    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
-  }
+  OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
 
   web_deprecated::SetSwipeRecognizerProvider(webState, nil);
 

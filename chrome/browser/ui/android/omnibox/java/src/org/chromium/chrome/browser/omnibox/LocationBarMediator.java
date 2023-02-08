@@ -28,7 +28,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.metrics.TimingMetric;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -83,6 +82,7 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * Mediator for the LocationBar component. Intended location for LocationBar business logic;
@@ -322,8 +322,8 @@ class LocationBarMediator
             templateUrlService.addObserver(this);
         }
         mAssistantVoiceSearchServiceSupplier.set(new AssistantVoiceSearchService(mContext,
-                ExternalAuthUtils.getInstance(), templateUrlService, GSAState.getInstance(mContext),
-                this, SharedPreferencesManager.getInstance(),
+                ExternalAuthUtils.getInstance(), templateUrlService, GSAState.getInstance(), this,
+                SharedPreferencesManager.getInstance(),
                 IdentityServicesProvider.get().getIdentityManager(
                         Profile.getLastUsedRegularProfile()),
                 AccountManagerFacadeProvider.getInstance()));

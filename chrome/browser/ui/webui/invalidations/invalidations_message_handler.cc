@@ -117,16 +117,14 @@ void InvalidationsMessageHandler::OnUpdatedTopics(
     dict.Set("totalCount", topic_item.second);
     list_of_objects.Append(std::move(dict));
   }
-  FireWebUIListener("update-ids", base::Value(handler_name), list_of_objects);
+  FireWebUIListener("ids-updated", base::Value(handler_name), list_of_objects);
 }
 void InvalidationsMessageHandler::OnDebugMessage(
     const base::Value::Dict& details) {}
 
 void InvalidationsMessageHandler::OnInvalidation(
     const invalidation::TopicInvalidationMap& new_invalidations) {
-  std::unique_ptr<base::ListValue> invalidations_list =
-      new_invalidations.ToValue();
-  FireWebUIListener("log-invalidations", *invalidations_list);
+  FireWebUIListener("log-invalidations", new_invalidations.ToValue());
 }
 
 void InvalidationsMessageHandler::OnDetailedStatus(

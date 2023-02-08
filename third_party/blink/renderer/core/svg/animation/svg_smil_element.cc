@@ -200,14 +200,14 @@ void SVGSMILElement::Condition::ConnectEventBase(
   DCHECK_EQ(type_, kEventBase);
   DCHECK(!base_element_);
   DCHECK(!event_listener_);
-  SVGElement* target;
+  Element* target;
   if (base_id_.empty()) {
     target = timed_element.targetElement();
   } else {
-    target = DynamicTo<SVGElement>(SVGURIReference::ObserveTarget(
+    target = SVGURIReference::ObserveTarget(
         base_id_observer_, timed_element.GetTreeScope(), base_id_,
         WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
-                           WrapWeakPersistent(&timed_element))));
+                           WrapWeakPersistent(&timed_element)));
   }
   if (!target)
     return;
@@ -215,7 +215,6 @@ void SVGSMILElement::Condition::ConnectEventBase(
       MakeGarbageCollected<ConditionEventListener>(&timed_element, this);
   base_element_ = target;
   base_element_->addEventListener(name_, event_listener_, false);
-  timed_element.AddReferenceTo(base_element_);
 }
 
 void SVGSMILElement::Condition::DisconnectEventBase(
@@ -558,21 +557,13 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     cached_min_ = kInvalidCachedTime;
   } else if (name == svg_names::kMaxAttr) {
     cached_max_ = kInvalidCachedTime;
+  } else if (SVGURIReference::IsKnownAttribute(name)) {
+    // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
+    // is changed.
+    BuildPendingResource();
   } else {
     SVGElement::ParseAttribute(params);
   }
-}
-
-void SVGSMILElement::SvgAttributeChanged(
-    const SvgAttributeChangedParams& params) {
-  if (SVGURIReference::IsKnownAttribute(params.name)) {
-    // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
-    // is changed.
-    SVGElement::InvalidationGuard invalidation_guard(this);
-    BuildPendingResource();
-    return;
-  }
-  SVGElement::SvgAttributeChanged(params);
 }
 
 bool SVGSMILElement::IsPresentationAttribute(
@@ -581,6 +572,15 @@ bool SVGSMILElement::IsPresentationAttribute(
   if (attr_name == svg_names::kFillAttr)
     return false;
   return SVGElement::IsPresentationAttribute(attr_name);
+}
+
+void SVGSMILElement::CollectStyleForPresentationAttribute(
+    const QualifiedName& attr_name,
+    const AtomicString& value,
+    MutableCSSPropertyValueSet* style) {
+  if (attr_name == svg_names::kFillAttr)
+    return;
+  SVGElement::CollectStyleForPresentationAttribute(attr_name, value, style);
 }
 
 void SVGSMILElement::ConnectConditions() {
@@ -781,7 +781,8 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin) const {
 }
 
 SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
-                                             SMILTime end_after) const {
+                                             SMILTime end_after) {
+  const bool first = is_waiting_for_first_interval_;
   // Simplified version of the pseudocode in
   // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   const size_t kMaxIterations = std::max(begin_times_.size() * 4, 1000000u);
@@ -803,9 +804,18 @@ SMILInterval SVGSMILElement::ResolveInterval(SMILTime begin_after,
     SMILTime temp_end = ResolveActiveEnd(begin_item->Time());
     if (temp_end.IsUnresolved())
       break;
+    SMILInterval interval(begin_item->Time(), temp_end);
     // Don't allow the interval to end in the past.
     if (temp_end > end_after)
-      return SMILInterval(begin_item->Time(), temp_end);
+      return interval;
+    // The resolved interval was in the past. If it's the first interval being
+    // resolved, then update interval state since it could be active (frozen).
+    // Skip the interval if it ends before the time container starts
+    // (presentation time is 0).
+    if (first && temp_end > SMILTime()) {
+      interval_ = interval;
+      is_waiting_for_first_interval_ = false;
+    }
     // Ensure forward progress by only considering the part of the 'begin' list
     // after |begin_item| for the next iteration.
     search_start = begin_item;

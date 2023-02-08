@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.content.ContentOffsetProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
@@ -103,6 +104,9 @@ public class CompositorViewHolder extends FrameLayout
                    ChromeAccessibilityUtil.Observer, TabObscuringHandler.Observer,
                    ViewGroup.OnHierarchyChangeListener {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
+    private static MutableFlagWithSafeDefault sDeferKeepScreenOnFlag =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.DEFER_KEEP_SCREEN_ON_DURING_GESTURE, false);
     private Runnable mSetBackgroundRunnable;
 
     /**
@@ -766,6 +770,9 @@ public class CompositorViewHolder extends FrameLayout
         // TODO(https://crbug.com/1378716): Track fling as well.
         boolean inMotion = mInGesture || mContentViewScrolling;
         mInMotionSupplier.set(inMotion);
+        if (sDeferKeepScreenOnFlag.isEnabled()) {
+            mContentView.setDeferKeepScreenOnChanges(inMotion);
+        }
     }
 
     /**
@@ -1870,22 +1877,6 @@ public class CompositorViewHolder extends FrameLayout
 
     void setCompositorViewForTesting(CompositorView compositorView) {
         mCompositorView = compositorView;
-    }
-
-    /**
-     * Returns its height, in physical pixels, of the virtual keyboard if shown or 0 if hidden.
-     */
-    public int getVirtualKeyboardHeight() {
-        // TODO(https://crbug.com/1211066): This class shouldn't know so much about bottom insets.
-        // Make this an external value that CompositorViewHolder consumes.
-        int keyboardHeight = KeyboardVisibilityDelegate.getInstance().calculateKeyboardHeight(
-                this.getRootView());
-        int keyboardAccessoriesHeight = mAutofillUiBottomInsetSupplier != null
-                        && mAutofillUiBottomInsetSupplier.get() != null
-                ? mAutofillUiBottomInsetSupplier.get()
-                : 0;
-
-        return keyboardHeight + keyboardAccessoriesHeight;
     }
 
     @VirtualKeyboardMode.EnumType

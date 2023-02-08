@@ -253,30 +253,6 @@ void WebAppsCrosapi::Connect(
   subscribers_.Add(std::move(subscriber));
 }
 
-void WebAppsCrosapi::Launch(const std::string& app_id,
-                            int32_t event_flags,
-                            apps::mojom::LaunchSource launch_source,
-                            apps::mojom::WindowInfoPtr window_info) {
-  if (!LogIfNotConnected(FROM_HERE)) {
-    return;
-  }
-
-  controller_->Launch(
-      CreateCrosapiLaunchParamsWithEventFlags(
-          proxy_, app_id, event_flags,
-          ConvertMojomLaunchSourceToLaunchSource(launch_source),
-          window_info ? window_info->display_id : display::kInvalidDisplayId),
-      base::DoNothing());
-}
-
-void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
-                                  apps::mojom::MenuType menu_type,
-                                  int64_t display_id,
-                                  GetMenuModelCallback callback) {
-  GetMenuModel(app_id, ConvertMojomMenuTypeToMenuType(menu_type), display_id,
-               MenuItemsToMojomMenuItemsCallback(std::move(callback)));
-}
-
 void WebAppsCrosapi::OnGetMenuModelFromCrosapi(
     const std::string& app_id,
     MenuType menu_type,
@@ -486,16 +462,7 @@ void WebAppsCrosapi::PublishImpl(std::vector<AppPtr> deltas) {
 
 void WebAppsCrosapi::PublishCapabilityAccessesImpl(
     std::vector<CapabilityAccessPtr> deltas) {
-  if (base::FeatureList::IsEnabled(
-          apps::kAppServiceCapabilityAccessWithoutMojom)) {
-    proxy()->OnCapabilityAccesses(std::move(deltas));
-    return;
-  }
-
-  for (auto& subscriber : subscribers_) {
-    subscriber->OnCapabilityAccesses(
-        apps::ConvertCapabilityAccessesToMojomCapabilityAccesses(deltas));
-  }
+  proxy()->OnCapabilityAccesses(std::move(deltas));
 }
 
 }  // namespace apps

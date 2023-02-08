@@ -34,12 +34,20 @@ class MockPrivacySandboxSettingsDelegate
  public:
   MockPrivacySandboxSettingsDelegate();
   ~MockPrivacySandboxSettingsDelegate() override;
-  void SetUpDefaultResponse(bool restricted) {
+  void SetUpIsPrivacySandboxRestrictedResponse(bool restricted) {
     ON_CALL(*this, IsPrivacySandboxRestricted).WillByDefault([=]() {
       return restricted;
     });
   }
-  MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (override));
+
+  void SetUpIsIncognitoProfileResponse(bool incognito) {
+    ON_CALL(*this, IsIncognitoProfile).WillByDefault([=]() {
+      return incognito;
+    });
+  }
+
+  MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (const, override));
+  MOCK_METHOD(bool, IsIncognitoProfile, (), (const, override));
 };
 
 // Define an additional content setting value to simulate an unmanaged default
@@ -51,6 +59,14 @@ struct CookieContentSettingException {
   std::string secondary_pattern;
   ContentSetting content_setting;
 };
+
+// Sets up non-managed cookie preferences and content settings based on provided
+// parameters.
+void SetupMinimialTestStateForM1(
+    sync_preferences::TestingPrefServiceSyncable* testing_pref_service,
+    HostContentSettingsMap* map,
+    ContentSetting default_cookie_setting,
+    const std::vector<CookieContentSettingException>& user_cookie_exceptions);
 
 // Sets up preferences and content settings based on provided parameters.
 void SetupTestState(

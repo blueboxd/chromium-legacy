@@ -14,24 +14,7 @@ assert(!is_android, "Android does not use these settings")
 
 if (is_chromeos_ash) {
   group("closure_compile") {
-    deps = [
-      ":closure_compile_local",
-      "chromeos:closure_compile_module",
-    ]
-  }
-
-  js_type_check("closure_compile_local") {
-    is_polymer3 = true
-    closure_flags = settings_closure_flags
-    deps = [ ":router" ]
-  }
-
-  js_library("router") {
-    deps = [
-      "//ui/webui/resources/js:assert",
-      "//ui/webui/resources/js:load_time_data.m",
-    ]
-    externs_list = [ "$externs_path/metrics_private.js" ]
+    deps = [ "chromeos:closure_compile_module" ]
   }
 }
 
@@ -39,6 +22,8 @@ build_webui("build") {
   grd_prefix = "settings"
 
   static_files = [
+    "images/ad_privacy_banner_dark.svg",
+    "images/ad_privacy_banner.svg",
     "images/cookies_banner_dark.svg",
     "images/cookies_banner.svg",
     "images/googleg_standard_clr_32px.svg",
@@ -148,7 +133,6 @@ build_webui("build") {
     "controls/settings_dropdown_menu.ts",
     "controls/settings_radio_group.ts",
     "controls/settings_slider.ts",
-    "controls/settings_textarea.ts",
     "controls/settings_toggle_button.ts",
     "downloads_page/downloads_page.ts",
     "on_startup_page/on_startup_page.ts",
@@ -185,6 +169,10 @@ build_webui("build") {
     "privacy_page/privacy_guide/privacy_guide_welcome_fragment.ts",
     "privacy_page/privacy_guide/step_indicator.ts",
     "privacy_page/privacy_page.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_ad_measurement_subpage.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_fledge_subpage.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_page.ts",
+    "privacy_page/privacy_sandbox/privacy_sandbox_topics_subpage.ts",
     "privacy_page/secure_dns.ts",
     "privacy_page/secure_dns_input.ts",
     "privacy_page/security_keys_bio_enroll_dialog.ts",
@@ -236,9 +224,11 @@ build_webui("build") {
     "site_settings_page/recent_site_permissions.ts",
     "site_settings_page/site_settings_list.ts",
     "site_settings_page/site_settings_page.ts",
+    "site_settings_page/unused_site_permissions.ts",
     "site_settings/pdf_documents.ts",
     "site_settings/protocol_handlers.ts",
     "site_settings/settings_category_default_radio_group.ts",
+    "site_settings/site_data.ts",
     "site_settings/site_details_permission.ts",
     "site_settings/site_details.ts",
     "site_settings/site_entry.ts",
@@ -341,7 +331,6 @@ build_webui("build") {
     "prefs/prefs.ts",
     "prefs/prefs_types.ts",
     "prefs/pref_util.ts",
-    "privacy_page/autofill_assistant_browser_proxy.ts",
     "privacy_page/privacy_guide/constants.ts",
     "privacy_page/privacy_guide/privacy_guide_browser_proxy.ts",
     "privacy_page/privacy_page_browser_proxy.ts",
@@ -351,16 +340,15 @@ build_webui("build") {
     "relaunch_mixin.ts",
     "reset_page/reset_browser_proxy.ts",
     "route.ts",
-    "router.js",
+    "router.ts",
     "safety_check_page/safety_check_browser_proxy.ts",
     "search_engines_page/search_engines_browser_proxy.ts",
     "search_settings.ts",
-    "setting_id_param_util.ts",
     "settings.ts",
     "settings_page/main_page_mixin.ts",
-    "settings_routes.ts",
     "site_settings/constants.ts",
     "site_settings/site_settings_mixin.ts",
+    "site_settings/site_settings_permissions_browser_proxy.ts",
     "site_settings/site_settings_prefs_browser_proxy.ts",
     "site_settings/website_usage_browser_proxy.ts",
   ]
@@ -415,9 +403,10 @@ build_webui("build") {
 
     # subfolder files
     "autofill_page/passwords_shared.css",
+    "privacy_page/privacy_guide/privacy_guide_fragment_shared.css",
     "search_engines_page/search_engine_entry.css",
     "site_settings/clear_storage_dialog_shared.css",
-    "privacy_page/privacy_guide/privacy_guide_fragment_shared.css",
+    "site_settings_page/site_review_shared.css",
   ]
 
   ts_composite = true

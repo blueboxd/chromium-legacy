@@ -19,12 +19,12 @@
 #include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/continue_section_view.h"
-#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
@@ -92,7 +92,7 @@ void AppListTestHelper::WaitForFolderAnimation() {
 }
 
 void AppListTestHelper::ShowAppList() {
-  app_list_controller_->ShowAppList();
+  app_list_controller_->ShowAppList(AppListShowSource::kSearchKey);
 }
 
 void AppListTestHelper::ShowAndRunLoop(uint64_t display_id) {
@@ -105,7 +105,7 @@ void AppListTestHelper::Show(uint64_t display_id) {
 
 void AppListTestHelper::ShowAndRunLoop(uint64_t display_id,
                                        AppListShowSource show_source) {
-  app_list_controller_->Show(display_id, show_source, base::TimeTicks());
+  app_list_controller_->Show(display_id, show_source, base::TimeTicks(), true);
   WaitUntilIdle();
 }
 
@@ -353,8 +353,7 @@ AppListTestHelper::GetOrderedResultCategories() {
   return AppListModelProvider::Get()->search_model()->ordered_categories();
 }
 
-ProductivityLauncherSearchView*
-AppListTestHelper::GetProductivityLauncherSearchView() {
+AppListSearchView* AppListTestHelper::GetBubbleAppListSearchView() {
   return app_list_controller_->bubble_presenter_for_test()
       ->bubble_view_for_test()
       ->search_page_->search_view();

@@ -18,6 +18,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
+                  "download_vr_test_apks",
                   "mb"
                 ],
                 "build_config": "Release",
@@ -44,7 +45,11 @@
       ],
       "mirroring_builder_group_and_names": [
         {
-          "builder": "android-pie-arm64-rel",
+          "builder": "android-arm64-rel",
+          "group": "tryserver.chromium.android"
+        },
+        {
+          "builder": "android-arm64-rel-inverse-fyi",
           "group": "tryserver.chromium.android"
         }
       ]
@@ -65,6 +70,6 @@
   "builder_group": "chromium.android",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "android"
   ]
 }

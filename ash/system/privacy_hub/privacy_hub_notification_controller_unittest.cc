@@ -4,8 +4,12 @@
 
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 
+#include <string>
+#include <vector>
+
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/microphone_mute_notification_delegate.h"
+#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
+#include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/microphone_mute/microphone_mute_notification_controller.h"
@@ -24,11 +28,11 @@
 namespace ash {
 namespace {
 
-class FakeMicrophoneMuteNotificationDelegate
-    : public MicrophoneMuteNotificationDelegate {
+class FakeSensorDisabledNotificationDelegate
+    : public SensorDisabledNotificationDelegate {
  public:
-  absl::optional<std::u16string> GetAppAccessingMicrophone() override {
-    return absl::nullopt;
+  std::vector<std::u16string> GetAppsAccessingSensor(Sensor sensor) override {
+    return {};
   }
 };
 
@@ -51,7 +55,6 @@ class PrivacyHubNotificationControllerTest : public AshTestBase {
         Shell::Get()->system_notification_controller()->microphone_mute_.get();
     controller_ =
         Shell::Get()->system_notification_controller()->privacy_hub_.get();
-    ;
   }
   void TearDown() override { AshTestBase::TearDown(); }
 
@@ -124,7 +127,7 @@ class PrivacyHubNotificationControllerTest : public AshTestBase {
 
  private:
   base::raw_ptr<PrivacyHubNotificationController> controller_;
-  const FakeMicrophoneMuteNotificationDelegate delegate_;
+  const FakeSensorDisabledNotificationDelegate delegate_;
   const base::HistogramTester histogram_tester_;
   base::raw_ptr<MicrophoneMuteNotificationController>
       microphone_mute_controller_;
@@ -196,8 +199,19 @@ TEST_F(PrivacyHubNotificationControllerTest,
   EXPECT_FALSE(
       GetNotification(MicrophoneMuteNotificationController::kNotificationId));
 
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 0);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            0);
+
   ClickOnNotificationBody();
 
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            1);
   ExpectNoNotificationActive();
 
   // Go to (quick)settings and enable microphone.
@@ -257,9 +271,36 @@ TEST_F(PrivacyHubNotificationControllerTest, ClickOnNotificationBody) {
   ShowCombinedNotification();
   EXPECT_TRUE(GetNotification());
 
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 0);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            0);
+
   ClickOnNotificationBody();
 
   ExpectNoNotificationActive();
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            1);
+}
+
+TEST_F(PrivacyHubNotificationControllerTest, OpenPrivacyHubSettingsPage) {
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 0);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            0);
+
+  PrivacyHubNotificationController::OpenPrivacyHubSettingsPage();
+
+  EXPECT_EQ(GetSystemTrayClient()->show_os_settings_privacy_hub_count(), 1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                privacy_hub_metrics::kPrivacyHubOpenedHistogram,
+                privacy_hub_metrics::PrivacyHubNavigationOrigin::kNotification),
+            1);
 }
 
 }  // namespace ash

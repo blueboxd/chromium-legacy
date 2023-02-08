@@ -18,7 +18,6 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-class Profile;
 class SavedTabGroupModelObserver;
 class SavedTabGroup;
 
@@ -27,7 +26,6 @@ class SavedTabGroup;
 class SavedTabGroupModel {
  public:
   SavedTabGroupModel();
-  explicit SavedTabGroupModel(Profile* profile);
   SavedTabGroupModel(const SavedTabGroupModel&) = delete;
   SavedTabGroupModel& operator=(const SavedTabGroupModel& other) = delete;
   ~SavedTabGroupModel();
@@ -36,7 +34,6 @@ class SavedTabGroupModel {
   const std::vector<SavedTabGroup>& saved_tab_groups() const {
     return saved_tab_groups_;
   }
-  Profile* profile() const { return profile_; }
   std::vector<SavedTabGroup> saved_tab_groups() { return saved_tab_groups_; }
 
   // Returns the index of the SavedTabGroup if it exists in the vector. Else
@@ -95,12 +92,13 @@ class SavedTabGroupModel {
                      SavedTabGroupTab tab,
                      int index);
 
-  // Removes a saved tab from `index` in the specified group denoted by
-  // `group_id` if it exists.
+  // Removes saved tab `tab_id` in the specified group denoted by
+  // `group_id` if it exists. We delete the group instead if the last tab is
+  // removed from it.
   void RemoveTabFromGroup(const base::GUID& group_id, const base::GUID& tab_id);
 
-  // Replaces a saved tab at `index` in the specified group denoted by
-  // `group_id` if it exists.
+  // Replaces a saved tab `tab_id` in the specified group denoted by
+  // `group_id` if it exists with `new_tab`.
   void ReplaceTabInGroupAt(const base::GUID& group_id,
                            const base::GUID& tab_id,
                            SavedTabGroupTab new_tab);
@@ -114,9 +112,9 @@ class SavedTabGroupModel {
   // Attempts to merge the sync_specific with the local object that holds the
   // same guid.
   std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeGroup(
-      std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific);
+      const sync_pb::SavedTabGroupSpecifics& sync_specific);
   std::unique_ptr<sync_pb::SavedTabGroupSpecifics> MergeTab(
-      std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific);
+      const sync_pb::SavedTabGroupSpecifics& sync_specific);
 
   // Changes the index of a given tab group by id. The new index provided is the
   // expected index after the group is removed.
@@ -125,10 +123,10 @@ class SavedTabGroupModel {
   // Loads the entries (a sync_pb::SavedTabGroupSpecifics can be a group or a
   // tab) saved locally in the model type store (local storage) and attempts to
   // reconstruct the model by matching groups with their tabs using their
-  // `group_id`'s. We do this by adding the groups to the model first, then
-  // populating them with their respective tabs. Note: Any tabs that do not have
-  // a matching group, will be lost.
-  void LoadStoredEntries(std::vector<sync_pb::SavedTabGroupSpecifics> entries);
+  // `group_id`'s. Note: Any tabs that do not have a matching group, will be
+  // returned to the bridge to keep track of.
+  std::vector<sync_pb::SavedTabGroupSpecifics> LoadStoredEntries(
+      std::vector<sync_pb::SavedTabGroupSpecifics> entries);
 
   // Functions that should be called when a SavedTabGroup's corresponding
   // TabGroup is closed or opened.
@@ -141,6 +139,16 @@ class SavedTabGroupModel {
   void RemoveObserver(SavedTabGroupModelObserver* observer);
 
  private:
+  // Updates all group positions to match the index they are currently stored
+  // at.
+  void UpdatePositionsImpl();
+
+  // Insert `group` into sorted order based on its position compared to already
+  // stored groups in `saved_tab_groups_`. It should be noted that
+  // `saved_tab_groups` must already be in sorted order for this function to
+  // work as intended. To do this, UpdatePositionsImpl() can be called.
+  void InsertGroupImpl(const SavedTabGroup& group);
+
   // Implementations of CRUD operations.
   std::unique_ptr<SavedTabGroup> RemoveImpl(int index);
   void UpdateVisualDataImpl(int index,
@@ -149,12 +157,11 @@ class SavedTabGroupModel {
   // Obsevers of the model.
   base::ObserverList<SavedTabGroupModelObserver>::Unchecked observers_;
 
-  // Storage of all saved tab groups in the order they are displayed.
+  // Storage of all saved tab groups in the order they are displayed. The
+  // position of the groups must maintain sorted order as sync may not propagate
+  // an entire update completely leaving us with missing groups / gaps between
+  // the positions.
   std::vector<SavedTabGroup> saved_tab_groups_;
-
-  // SavedTabGroupModels are created on a per profile basis with a keyed
-  // service. Returns the Profile that made the SavedTabGroupModel
-  raw_ptr<Profile> profile_ = nullptr;
 };
 
 #endif  // COMPONENTS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_MODEL_H_

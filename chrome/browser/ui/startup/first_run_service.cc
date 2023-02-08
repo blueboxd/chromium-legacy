@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -38,23 +39,26 @@
 namespace {
 
 bool IsFirstRunEligibleProfile(Profile* profile) {
+  // Profile selections should exclude these already.
+  DCHECK(!profile->IsOffTheRecord());
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Skip for users without Gaia account (e.g. Active Directory, Kiosk, Guest…)
   if (!profiles::SessionHasGaiaAccount())
+    return false;
+
+  // The profile in Guest user sessions is considered "regular" but should
+  // also be excluded here.
+  if (profile->IsGuestSession())
     return false;
 
   // Having secondary profiles implies that the user already used Chrome and so
   // should not have to see the FRE. So we never want to run it for these.
   if (!profile->IsMainProfile())
     return false;
+#else
+  DCHECK(!profile->IsGuestSession());
 #endif
-
-  // Don't show the FRE if we are in a Guest user pod or in a Guest profile.
-  if (profile->IsGuestSession())
-    return false;
-
-  if (profile->IsOffTheRecord())
-    return false;
 
   return true;
 }
@@ -85,12 +89,9 @@ void SetFirstRunFinished() {
 // they were trying to do before they stopped to show the FRE. If the FRE's
 // `status` is not `ProfilePicker::FirstRunExitStatus::kCompleted`, that
 // `original_intent_callback` will be called with `proceed` set to false,
-// otherwise it will be called with true. `post_first_run_callback` will be
-// executed for completed flows, to perform tasks that the FRE requires after
-// the interrupted task is resumed.
+// otherwise it will be called with true.
 void OnFirstRunHasExited(ResumeTaskCallback original_intent_callback,
-                         ProfilePicker::FirstRunExitStatus status,
-                         base::OnceClosure post_first_run_callback) {
+                         ProfilePicker::FirstRunExitStatus status) {
   if (status != ProfilePicker::FirstRunExitStatus::kQuitEarly) {
     // The user got to the last step, we can mark the FRE as finished, whether
     // we eventually proceed with the original intent or not.
@@ -101,11 +102,6 @@ void OnFirstRunHasExited(ResumeTaskCallback original_intent_callback,
   LOG_IF(ERROR, !proceed) << "Not proceeding FirstRun: "
                           << static_cast<int>(status);
   std::move(original_intent_callback).Run(proceed);
-
-  if (proceed) {
-    DCHECK(post_first_run_callback);
-    std::move(post_first_run_callback).Run();
-  }
 }
 
 }  // namespace
@@ -122,6 +118,19 @@ FirstRunService::~FirstRunService() = default;
 
 bool FirstRunService::ShouldOpenFirstRun() const {
   DCHECK(IsFirstRunEligibleProfile(profile_));
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Lacros we want to run the FRE beyond the strict first run as defined by
+  // `IsChromeFirstRun()` for a few reasons:
+  // - Migrated profiles will have their first run sentinel imported from the
+  //   ash data dir, but we need to run the FRE in silent mode to re-enable sync
+  //   on the Lacros primary profile.
+  // - If the user exits the FRE without advancing beyond the first step, we
+  //   need to show the FRE again next time they open Chrome, this is definitely
+  //   not the "first run" anymore.
+  if (!first_run::IsChromeFirstRun())
+    return false;
+#endif
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -145,8 +154,8 @@ void FirstRunService::TryMarkFirstRunAlreadyFinished(
   if (ProfilePicker::IsFirstRunOpen())
     return;
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     ProfileMetrics::LogLacrosPrimaryProfileFirstRunOutcome(
         ProfileMetrics::ProfileSignedInFlowOutcome::kSkippedAlreadySyncing);
@@ -163,6 +172,14 @@ void FirstRunService::TryMarkFirstRunAlreadyFinished(
     SetFirstRunFinished();
 
     StartSilentSync(scoped_closure_runner.Release());
+    return;
+  }
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
+    // The FRE focuses on identity and offering the user to sign in. If the
+    // profile already has an account (e.g. the sentinel file was deleted or
+    // `--force-first-run` was passed) ensure we still skip it.
+    SetFirstRunFinished();
     return;
   }
 #endif
@@ -223,10 +240,10 @@ void FirstRunService::OpenFirstRunInternal(EntryPoint entry_point,
 FirstRunServiceFactory::FirstRunServiceFactory()
     : ProfileKeyedServiceFactory(
           "FirstRunServiceFactory",
-          // TODO(crbug.com/1375277): Update this instead of checking
-          // the profile compatibility with `IsFirstRunEligibleProfile()`?
           ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kOriginalOnly)
               .WithGuest(ProfileSelection::kNone)
+              .WithSystem(ProfileSelection::kNone)
               .Build()) {
   // Used for checking Sync consent level.
   DependsOn(IdentityManagerFactory::GetInstance());
@@ -250,6 +267,9 @@ FirstRunService* FirstRunServiceFactory::GetForBrowserContext(
 KeyedService* FirstRunServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  // `ProfileSelections` exclude some profiles already, but they do not check
+  // for some more specific conditions where we don't want to instantiate the
+  // service.
   if (!IsFirstRunEligibleProfile(profile))
     return nullptr;
 

@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   void SetCapture() override;
   void ReleaseCapture() override;
   bool HasCapture() const override;
-  void ToggleFullscreen() override;
+  void SetFullscreen(bool fullscreen, int64_t target_display_id) override;
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
@@ -163,6 +163,11 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   // |PlatformWindowInitProperties.bounds.size()| value until
   // |parent_viewport_watcher_| is bound and returns OnGetLayout().
   gfx::Rect bounds_;
+
+  // The offsets between the edges and the visible rectangle of the View, set
+  // based on fuchsia::ui::composition::LayoutInfo. Used to set
+  // `bounds_.system_ui_overlap` in `UpdateSize()`.
+  gfx::Insets view_inset_;
 
   // False if the View for this window is detached from the View tree, in which
   // case it is definitely not visible.

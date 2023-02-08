@@ -11,12 +11,17 @@
 #include "ash/constants/ash_features.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
+#include "ash/webui/firmware_update_ui/firmware_update_app_ui.h"
 #include "ash/webui/shortcut_customization_ui/shortcut_customization_app_ui.h"
 #include "ash/webui/system_extensions_internals_ui/system_extensions_internals_ui.h"
 #include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_manager_error_ui.h"
 #include "chrome/browser/ui/webui/ash/account_manager/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/ash/add_supervision/add_supervision_ui.h"
+#include "chrome/browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing.h"
+#include "chrome/browser/ui/webui/ash/arc_graphics_tracing/arc_graphics_tracing_ui.h"
+#include "chrome/browser/ui/webui/ash/arc_power_control/arc_power_control_ui.h"
+#include "chrome/browser/ui/webui/ash/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/ash/audio/audio_ui.h"
 #include "chrome/browser/ui/webui/ash/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/ash/certificate_manager_dialog_ui.h"
@@ -27,12 +32,12 @@
 #include "chrome/browser/ui/webui/ash/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_ui.h"
 #include "chrome/browser/ui/webui/ash/human_presence_internals_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_network_ui.h"
-#include "chrome/browser/ui/webui/ash/in_session_password_change/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/ash/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/ash/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/ash/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/ash/launcher_internals/launcher_internals_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_network_ui.h"
+#include "chrome/browser/ui/webui/ash/lock_screen_reauth/lock_screen_start_reauth_ui.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_internals/multidevice_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/multidevice_setup/multidevice_setup_dialog.h"
@@ -48,7 +53,6 @@
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/ash/sys_internals/sys_internals_ui.h"
 #include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
@@ -90,7 +94,12 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::AccountManagerErrorUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::AccountMigrationWelcomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::AddSupervisionUIConfig>());
-  map.AddWebUIConfig(std::make_unique<chromeos::AssistantOptInUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::ArcGraphicsTracingUIConfig<
+                         ash::ArcGraphicsTracingMode::kFull>>());
+  map.AddWebUIConfig(std::make_unique<ash::ArcGraphicsTracingUIConfig<
+                         ash::ArcGraphicsTracingMode::kOverview>>());
+  map.AddWebUIConfig(std::make_unique<ash::ArcPowerControlUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::AssistantOptInUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::AudioUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::BluetoothPairingDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::CertificateManagerDialogUIConfig>());
@@ -103,6 +112,7 @@ void RegisterAshChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<ash::CryptohomeUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::DriveInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::EmojiUIConfig>());
+  map.AddWebUIConfig(std::make_unique<ash::FirmwareUpdateAppUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::HumanPresenceInternalsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetConfigDialogUIConfig>());
   map.AddWebUIConfig(std::make_unique<ash::InternetDetailDialogUIConfig>());

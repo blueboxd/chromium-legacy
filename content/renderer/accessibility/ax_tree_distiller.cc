@@ -34,29 +34,33 @@ static const ax::mojom::Role kRolesToSkip[]{
     ax::mojom::Role::kContentInfo,
     ax::mojom::Role::kFooter,
     ax::mojom::Role::kFooterAsNonLandmark,
-    ax::mojom::Role::kHeader,
-    ax::mojom::Role::kHeaderAsNonLandmark,
     ax::mojom::Role::kImage,
     ax::mojom::Role::kLabelText,
     ax::mojom::Role::kNavigation,
 };
 
+// Find all of the main and article nodes.
 // TODO(crbug.com/1266555): Replace this with a call to
 // OneShotAccessibilityTreeSearch.
-const ui::AXNode* GetMainNode(const ui::AXNode* root) {
+void GetContentRootNodes(const ui::AXNode* root,
+                         std::vector<const ui::AXNode*>* content_root_nodes) {
   std::queue<const ui::AXNode*> queue;
   queue.push(root);
   while (!queue.empty()) {
     const ui::AXNode* node = queue.front();
     queue.pop();
-    if (node->GetRole() == ax::mojom::Role::kMain)
-      return node;
+    // If a main or article node is found, add it to the list of content root
+    // nodes and continue. Do not explore children for nested article nodes.
+    if (node->GetRole() == ax::mojom::Role::kMain ||
+        node->GetRole() == ax::mojom::Role::kArticle) {
+      content_root_nodes->push_back(node);
+      continue;
+    }
     for (auto iter = node->UnignoredChildrenBegin();
          iter != node->UnignoredChildrenEnd(); ++iter) {
       queue.push(iter.get());
     }
   }
-  return nullptr;
 }
 
 // Recurse through the root node, searching for content nodes (any node whose
@@ -95,19 +99,23 @@ AXTreeDistiller::~AXTreeDistiller() = default;
 
 void AXTreeDistiller::Distill(
     mojom::Frame::SnapshotAndDistillAXTreeCallback callback) {
-  if (callback_)
-    RunCallback();
-  callback_ = std::move(callback);
-  SnapshotAXTree();
-  DistillAXTree();
+  ui::AXTreeUpdate snapshot;
+  SnapshotAXTree(&snapshot);
+
+  // If Read Anything with Screen 2x is enabled, kick off Screen 2x run, which
+  // distills the AXTree in the utility process using ML.
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+  if (features::IsReadAnythingWithScreen2xEnabled()) {
+    DistillViaScreen2x(std::move(callback), snapshot);
+    return;
+  }
+#endif
+
+  // Otherwise, distill the AXTree in process using the rules-based algorithm.
+  DistillViaAlgorithm(std::move(callback), snapshot);
 }
 
-void AXTreeDistiller::SnapshotAXTree() {
-  // TODO(crbug.com/1266555): Consider doing nothing if |snapshot_| is already
-  // cached. We are disabling caching while the feature is still in development
-  // to ease debugging.
-  snapshot_ = std::make_unique<ui::AXTreeUpdate>();
-
+void AXTreeDistiller::SnapshotAXTree(ui::AXTreeUpdate* snapshot) {
   // Get page contents (via snapshot of a11y tree) for reader generation.
   // |ui::AXMode::kHTML| is needed for URL information.
   // |ui::AXMode::kScreenReader| is needed for heading level information.
@@ -119,70 +127,63 @@ void AXTreeDistiller::SnapshotAXTree() {
   // cause the snapshotter to hang.
   snapshotter.Snapshot(
       /* exclude_offscreen= */ false, /* max_node_count= */ 0,
-      /* timeout= */ {}, snapshot_.get());
+      /* timeout= */ {}, snapshot);
 }
 
-void AXTreeDistiller::DistillAXTree() {
-  // TODO(crbug.com/1266555): Consider finishing and running the callback if
-  // |content_node_ids_| is already cached. We are disabling caching while the
-  // feature is still in development to ease debugging.
-
-  // If Read Anything with Screen 2x is enabled, kick off Screen 2x run, which
-  // distills the AXTree in the utility process using ML.
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  if (features::IsReadAnythingWithScreen2xEnabled()) {
-    ScheduleScreen2xRun();
-    return;
-  }
-#endif
-
-  // Otherwise, distill the AXTree in process using the rules-based algorithm.
-  DistillViaAlgorithm();
-  RunCallback();
-}
-
-void AXTreeDistiller::DistillViaAlgorithm() {
-  content_node_ids_ = std::make_unique<std::vector<ui::AXNodeID>>();
-  DCHECK(snapshot_);
-  ui::AXTree tree;
+void AXTreeDistiller::DistillViaAlgorithm(
+    mojom::Frame::SnapshotAndDistillAXTreeCallback callback,
+    const ui::AXTreeUpdate& snapshot) {
   // Unserialize the snapshot. Failure to unserialize doesn't result in a crash:
   // we control both ends of the serialization-unserialization so any failures
   // are programming error.
-  if (!tree.Unserialize(*snapshot_))
+  ui::AXTree tree;
+  if (!tree.Unserialize(snapshot))
     NOTREACHED() << tree.error();
 
-  const ui::AXNode* main_node = GetMainNode(tree.root());
-  // If this page does not have a main node, this means it is not distillable.
-  if (!main_node)
-    return;
-
-  AddContentNodesToVector(main_node, content_node_ids_.get());
+  std::vector<const ui::AXNode*> content_root_nodes;
+  std::vector<ui::AXNodeID> content_node_ids;
+  GetContentRootNodes(tree.root(), &content_root_nodes);
+  for (const ui::AXNode* content_root_node : content_root_nodes) {
+    AddContentNodesToVector(content_root_node, &content_node_ids);
+  }
+  RunCallback(std::move(callback), snapshot, content_node_ids);
 }
 
-void AXTreeDistiller::RunCallback() {
-  std::move(callback_).Run(*snapshot_.get(), *content_node_ids_.get());
+void AXTreeDistiller::RunCallback(
+    mojom::Frame::SnapshotAndDistillAXTreeCallback callback,
+    const ui::AXTreeUpdate& snapshot,
+    const std::vector<ui::AXNodeID>& content_node_ids) {
+  std::move(callback).Run(snapshot, content_node_ids);
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-void AXTreeDistiller::ScheduleScreen2xRun() {
+void AXTreeDistiller::DistillViaScreen2x(
+    mojom::Frame::SnapshotAndDistillAXTreeCallback callback,
+    const ui::AXTreeUpdate& snapshot) {
   DCHECK(main_content_extractor_.is_bound());
-  DCHECK(snapshot_);
+  ui::AXTreeUpdate snapshot_copy(snapshot);
   main_content_extractor_->ExtractMainContent(
-      *snapshot_, base::BindOnce(&AXTreeDistiller::ProcessScreen2xResult,
-                                 weak_ptr_factory_.GetWeakPtr()));
+      snapshot_copy, base::BindOnce(&AXTreeDistiller::ProcessScreen2xResult,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(callback), std::move(snapshot)));
 }
 
 void AXTreeDistiller::ProcessScreen2xResult(
+    mojom::Frame::SnapshotAndDistillAXTreeCallback callback,
+    const ui::AXTreeUpdate& snapshot,
     const std::vector<ui::AXNodeID>& content_node_ids) {
-  content_node_ids_ =
-      std::make_unique<std::vector<ui::AXNodeID>>(content_node_ids);
-  // If no content nodes were identified, try the rules-based approach.
-  if (content_node_ids.empty())
-    DistillViaAlgorithm();
+  // If content nodes were identified, run callback.
+  if (!content_node_ids.empty()) {
+    RunCallback(std::move(callback), snapshot, content_node_ids);
+    return;
+  }
+
+  // Otherwise, try the rules-based approach.
+  DistillViaAlgorithm(std::move(callback), snapshot);
+
   // TODO(crbug.com/1266555): If still no content nodes were identified, and
   // there is a selection, try sending Screen2x a partial tree just containing
   // the selected nodes.
-  RunCallback();
 }
 #endif
 

@@ -229,8 +229,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     }
 
     @Override
-    public void forceRedrawAndWaitForPresentation(Runnable callback) {
-        RenderFrameHostImplJni.get().forceRedrawAndWaitForPresentation(
+    public void insertVisualStateCallback(Callback<Boolean> callback) {
+        if (mNativeRenderFrameHostAndroid == 0) {
+            callback.onResult(false);
+        }
+        RenderFrameHostImplJni.get().insertVisualStateCallback(
                 mNativeRenderFrameHostAndroid, callback);
     }
 
@@ -264,7 +267,7 @@ public class RenderFrameHostImpl implements RenderFrameHost {
                 RenderFrameHostImpl caller, String relyingPartyId, Origin effectiveOrigin,
                 boolean isPaymentCredentialCreation);
         int getLifecycleState(long nativeRenderFrameHostAndroid, RenderFrameHostImpl caller);
-        void forceRedrawAndWaitForPresentation(
-                long nativeRenderFrameHostAndroid, Runnable callback);
+        void insertVisualStateCallback(
+                long nativeRenderFrameHostAndroid, Callback<Boolean> callback);
     }
 }

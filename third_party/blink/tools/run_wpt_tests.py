@@ -12,6 +12,7 @@ import os
 import shutil
 import sys
 
+from blinkpy.common import exit_codes
 from blinkpy.common import path_finder
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.web_tests.port.android import (
@@ -94,12 +95,20 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
             product_cls = _product_registry[self.options.product_name]
             self.product = product_cls(self.host, self.options,
                                        self.select_python_executable())
+            self.add_default_child_process()
         except ValueError as exc:
             self._parser.error(str(exc))
 
     @property
     def _upstream_dir(self):
         return self.fs.join(self._tmp_dir, 'upstream_wpt')
+
+    def add_default_child_process(self):
+        if self._options.processes is None:
+            if self.product.name == 'chrome' or self.product.name == 'content_shell':
+                self._options.processes = self.port.default_child_processes()
+            else:
+                self._options.processes = 1
 
     def parse_args(self, args=None):
         super().parse_args(args)
@@ -192,9 +201,8 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
             if configs[self.options.flag_specific][1] is not None:
                 smoke_file_path = self.path_finder.path_from_web_tests(
                     configs[self.options.flag_specific][1])
-                # TODO(crbug.com/1376700): should prioritize --include
-                # if it exists
-                rest_args.append('--include-file=%s' % smoke_file_path)
+                if not self._has_explicit_tests:
+                    rest_args.append('--include-file=%s' % smoke_file_path)
 
         if self.options.test_filter:
             for pattern in self.options.test_filter.split(':'):
@@ -239,10 +247,10 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
 
     def _create_extra_run_info(self):
         run_info = {
-            # This property should always be present so that the metadata
+            # This property should always be a string so that the metadata
             # updater works, even when wptrunner is not running a flag-specific
             # suite.
-            'flag_specific': self.options.flag_specific,
+            'flag_specific': self.options.flag_specific or '',
             'used_upstream': self.options.use_upstream_wpt,
         }
         if self.options.use_upstream_wpt:
@@ -259,8 +267,10 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
             json.dump(run_info, file_handle)
 
     def do_post_test_run_tasks(self):
-        self.process_and_upload_results()
-        if self.options.show_results_in_browser:
+        process_return = self.process_and_upload_results()
+
+        if (process_return != exit_codes.INTERRUPTED_EXIT_STATUS
+                and self.options.show_results_in_browser):
             self.show_results_in_browser()
 
     def show_results_in_browser(self):
@@ -304,7 +314,6 @@ class WPTAdapter(wpt_common.BaseWptScriptAdapter):
             '--processes',
             '--child-processes',
             type=lambda processes: max(0, int(processes)),
-            default=1,
             help=('Number of drivers to start in parallel. (For Android, '
                   'this number is the number of emulators started.) '
                   'The actual number of devices tested may be higher '
@@ -575,8 +584,14 @@ class ChromeiOS(Product):
     @property
     def wpt_args(self):
         wpt_args = list(super().wpt_args)
+        cwt_chromedriver_path = os.path.realpath(
+            os.path.join(
+                os.path.dirname(__file__),
+                '../../../ios/chrome/test/wpt/tools/'
+                'run_cwt_chromedriver_wrapper.py'))
         wpt_args.extend([
             '--processes=%d' % self._options.processes,
+            '--webdriver-binary=%s' % cwt_chromedriver_path,
         ])
         return wpt_args
 
@@ -851,7 +866,8 @@ def get_devices(args):
                 instances.append(instance)
 
             SyncParallelizer(instances).Start(writable_system=True,
-                                              window=args.emulator_window)
+                                              window=args.emulator_window,
+                                              require_fast_start=True)
 
         #TODO(weizhong): when choose device, make sure abi matches with target
         yield device_utils.DeviceUtils.HealthyDevices()
@@ -863,8 +879,12 @@ def main():
     # This environment fix is needed on windows as codec is trying
     # to encode in cp1252 rather than utf-8 and throwing errors.
     os.environ['PYTHONUTF8'] = '1'
-    adapter = WPTAdapter()
-    return adapter.run_test()
+
+    try:
+        adapter = WPTAdapter()
+        return adapter.run_test()
+    except KeyboardInterrupt:
+        return exit_codes.INTERRUPTED_EXIT_STATUS
 
 
 # This is not really a "script test" so does not need to manually add

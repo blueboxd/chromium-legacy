@@ -161,6 +161,18 @@ source_set("system_identity") {
   frameworks = [ "Foundation.framework" ]
 }
 
+source_set("fake_account_details_view_controller") {
+  testonly = true
+  visibility = [ "//ios/public/provider/chrome/browser/signin:test_support" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "fake_account_details_view_controller.h",
+    "fake_account_details_view_controller.mm",
+  ]
+  deps = [ ":system_identity" ]
+  frameworks = [ "UIKit.framework" ]
+}
+
 source_set("fake_system_identity") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -289,6 +301,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/flags:system_flags",
+    "//ios/chrome/browser/lens",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs:browser_prefs",

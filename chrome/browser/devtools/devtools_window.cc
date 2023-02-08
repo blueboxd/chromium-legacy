@@ -283,7 +283,7 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
   absl::optional<base::Value> parsed_message = base::JSONReader::Read(message);
   if (!parsed_message || !parsed_message->is_list())
     return;
-  for (const auto& list_item : parsed_message->GetListDeprecated()) {
+  for (const auto& list_item : parsed_message->GetList()) {
     if (!list_item.is_dict())
       continue;
     int key_code = list_item.FindIntKey("keyCode").value_or(0);
@@ -847,10 +847,9 @@ DevToolsWindow::MaybeCreateNavigationThrottle(
     content::NavigationHandle* handle) {
   WebContents* web_contents = handle->GetWebContents();
   if (!web_contents || !web_contents->HasLiveOriginalOpenerChain() ||
-      (web_contents->GetController().GetLastCommittedEntry() &&
-       !web_contents->GetController()
-            .GetLastCommittedEntry()
-            ->IsInitialEntry())) {
+      !web_contents->GetController()
+           .GetLastCommittedEntry()
+           ->IsInitialEntry()) {
     return nullptr;
   }
 
@@ -1610,7 +1609,7 @@ void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
   absl::optional<base::Value> value = base::JSONReader::Read(cert_chain);
   CHECK(value && value->is_list());
   std::vector<std::string> decoded;
-  for (const auto& item : value->GetListDeprecated()) {
+  for (const auto& item : value->GetList()) {
     CHECK(item.is_string());
     std::string temp;
     CHECK(base::Base64Decode(item.GetString(), &temp));

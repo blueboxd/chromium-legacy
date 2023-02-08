@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.js';
 import {dispatchSimpleEvent} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {promisify} from '../../common/js/api.js';
 import {util} from '../../common/js/util.js';
@@ -272,7 +272,7 @@ export class VolumeManagerImpl extends EventTarget {
             return;
           }
 
-          case VolumeManagerCommon.VolumeError.ALREADY_MOUNTED: {
+          case VolumeManagerCommon.VolumeError.PATH_ALREADY_MOUNTED: {
             console.warn(
                 `Cannot mount (redacted): Already mounted as '${volumeId}'`);
             console.debug(`Cannot mount '${sourcePath}': Already mounted as '${

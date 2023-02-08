@@ -28,6 +28,7 @@
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/services/heap_profiling/public/cpp/merge_samples.h"
 #include "components/version_info/channel.h"
+#include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
 
 namespace heap_profiling {
 
@@ -137,6 +138,40 @@ void RecordUmaSnapshotInterval(base::TimeDelta interval,
   // Also summarize over all process types.
   base::UmaHistogramCustomTimes(base_name, interval, kMinHistogramTime,
                                 kMaxHistogramTime, 50);
+}
+
+// Records metrics about the quality of each stack that is sampled. `stack_size`
+// is the number of frames in the stack. `num_missing_modules` is the number of
+// frames that couldn't be mapped to a module using ModuleCache.
+void RecordUmaStackQualityMetrics(ProcessType process_type,
+                                  size_t stack_size,
+                                  size_t num_missing_modules) {
+  // From inspecting reports received on Android, most reports with only 1 to 3
+  // frames are clearly truncated, suggesting a problem with the unwinder, or
+  // contain a JNI base call that directly allocates. (These are not broken but
+  // don't have anything actionable in them.) Reports with 4 frames are more
+  // likely to be useful but still have a large proportion of truncated or
+  // non-actionable stacks. With 5 or more frames the stacks are more likely
+  // than not to be actionable.
+  constexpr size_t kMinFramesForGoodQuality = 5;
+
+  const bool has_few_frames = stack_size < kMinFramesForGoodQuality;
+  base::UmaHistogramBoolean("HeapProfiling.InProcess.ShortStacks",
+                            has_few_frames);
+  base::UmaHistogramBoolean(
+      ProcessHistogramName("HeapProfiling.InProcess.ShortStacks", process_type),
+      has_few_frames);
+
+  if (stack_size > 0) {
+    const double module_coverage =
+        100.0 * (stack_size - num_missing_modules) / stack_size;
+    base::UmaHistogramPercentage("HeapProfiling.InProcess.ModuleCoverage",
+                                 module_coverage);
+    base::UmaHistogramPercentage(
+        ProcessHistogramName("HeapProfiling.InProcess.ModuleCoverage",
+                             process_type),
+        module_coverage);
+  }
 }
 
 }  // namespace
@@ -250,16 +285,27 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
     ProcessType process_type,
     base::TimeDelta time_since_profiler_creation) {
   using Sample = base::SamplingHeapProfiler::Sample;
+
+  // Always log the total sampled memory before returning. If `samples` is empty
+  // this will be logged as 0 MB.
+  base::ClampedNumeric<uint64_t> total_sampled_bytes;
+  absl::Cleanup log_total_sampled_memory = [&total_sampled_bytes,
+                                            &process_type] {
+    constexpr int kBytesPerMB = 1024 * 1024;
+    base::UmaHistogramMemoryLargeMB(
+        ProcessHistogramName("HeapProfiling.InProcess.TotalSampledMemory",
+                             process_type),
+        base::ClampDiv(total_sampled_bytes, kBytesPerMB));
+  };
+
   std::vector<Sample> samples =
       base::SamplingHeapProfiler::Get()->GetSamples(0);
-  constexpr char kSamplesPerSnapshotHistogramName[] =
-      "HeapProfiling.InProcess.SamplesPerSnapshot";
   base::UmaHistogramCounts100000(
       ProcessHistogramName("HeapProfiling.InProcess.SamplesPerSnapshot",
                            process_type),
       samples.size());
   // Also summarize over all process types.
-  base::UmaHistogramCounts100000(kSamplesPerSnapshotHistogramName,
+  base::UmaHistogramCounts100000("HeapProfiling.InProcess.SamplesPerSnapshot",
                                  samples.size());
   if (samples.empty())
     return;
@@ -273,19 +319,26 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
 
   SampleMap merged_samples = MergeSamples(samples);
 
-  base::ClampedNumeric<uint64_t> total_sampled_bytes;
   for (auto& pair : merged_samples) {
     const Sample& sample = pair.first;
     const SampleValue& value = pair.second;
 
+    const size_t stack_size = sample.stack.size();
     std::vector<base::Frame> frames;
-    frames.reserve(sample.stack.size());
+    frames.reserve(stack_size);
+    size_t num_missing_modules = 0;
     for (const void* frame : sample.stack) {
-      uintptr_t address = reinterpret_cast<uintptr_t>(frame);
+      const uintptr_t address = reinterpret_cast<const uintptr_t>(frame);
       const base::ModuleCache::Module* module =
           module_cache.GetModuleForAddress(address);
+      if (!module) {
+        num_missing_modules += 1;
+      }
       frames.emplace_back(address, module);
     }
+
+    RecordUmaStackQualityMetrics(process_type, stack_size, num_missing_modules);
+
     // Heap "samples" represent allocation stacks aggregated over time so
     // do not have a meaningful timestamp.
     profile_builder.OnSampleCompleted(std::move(frames), base::TimeTicks(),
@@ -295,12 +348,6 @@ void HeapProfilerController::RetrieveAndSendSnapshot(
   }
 
   profile_builder.OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
-
-  constexpr int kBytesPerMB = 1024 * 1024;
-  base::UmaHistogramMemoryLargeMB(
-      ProcessHistogramName("HeapProfiling.InProcess.TotalSampledMemory",
-                           process_type),
-      base::ClampDiv(total_sampled_bytes, kBytesPerMB));
 }
 
 }  // namespace heap_profiling

@@ -40,9 +40,6 @@ void SetupConnectingScrollListItem(HoverHighlightView* view);
 // Add `subtext` with warning color to `view`.
 void SetWarningSubText(HoverHighlightView* view, std::u16string subtext);
 
-// Gets the current tray icon color for the given session state.
-SkColor TrayIconColor(session_manager::SessionState session_state);
-
 // Returns the insets above the shelf for positioning the quick settings bubble.
 gfx::Insets GetTrayBubbleInsets();
 
@@ -56,6 +53,10 @@ gfx::Insets GetSecondaryBubbleInsets();
 
 // Gets the InkDrop insets based on `ink_drop_style`.
 gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style);
+
+// Gets the maximum height possible for a tray bubble based on the available
+// screen space.
+int CalculateMaxTrayBubbleHeight();
 
 }  // namespace ash
 

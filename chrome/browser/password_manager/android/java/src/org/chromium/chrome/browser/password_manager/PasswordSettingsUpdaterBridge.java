@@ -9,11 +9,13 @@ import static org.chromium.chrome.browser.password_manager.PasswordManagerSettin
 
 import android.accounts.Account;
 
-import com.google.common.base.Optional;
+import com.google.android.gms.common.api.ResolvableApiException;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountUtils;
+
+import java.util.Optional;
 
 /**
  * Java-counterpart of the native PasswordSettingsUpdaterAndroidBridgeImpl. It forwards passwords
@@ -117,6 +119,11 @@ public class PasswordSettingsUpdaterBridge {
         int error = PasswordManagerAndroidBackendUtil.getBackendError(exception);
         int apiErrorCode = PasswordManagerAndroidBackendUtil.getApiErrorCode(exception);
 
+        if (exception instanceof ResolvableApiException) {
+            PasswordManagerAndroidBackendUtil.handleResolvableApiException(
+                    (ResolvableApiException) exception);
+        }
+
         PasswordSettingsUpdaterBridgeJni.get().onSettingFetchingError(
                 mNativeSettingsUpdaterBridge, setting, error, apiErrorCode);
     }
@@ -138,6 +145,11 @@ public class PasswordSettingsUpdaterBridge {
         int error = PasswordManagerAndroidBackendUtil.getBackendError(exception);
         int apiErrorCode = PasswordManagerAndroidBackendUtil.getApiErrorCode(exception);
 
+        if (exception instanceof ResolvableApiException) {
+            PasswordManagerAndroidBackendUtil.handleResolvableApiException(
+                    (ResolvableApiException) exception);
+        }
+
         PasswordSettingsUpdaterBridgeJni.get().onFailedSettingChange(
                 mNativeSettingsUpdaterBridge, setting, error, apiErrorCode);
     }
@@ -148,7 +160,7 @@ public class PasswordSettingsUpdaterBridge {
     }
 
     private Optional<Account> getAccount(String syncingAccount) {
-        if (syncingAccount == null) return Optional.absent();
+        if (syncingAccount == null) return Optional.empty();
         return Optional.of(AccountUtils.createAccountFromName(syncingAccount));
     }
 

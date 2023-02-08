@@ -95,10 +95,13 @@ sk_sp<SkColorFilter> ColorConversionSkFilterCache::Get(
 sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
     sk_sp<SkImage> image,
     sk_sp<SkColorSpace> target_color_space,
+    absl::optional<gfx::HDRMetadata> src_hdr_metadata,
     float sdr_max_luminance_nits,
     float dst_max_luminance_relative,
     bool enable_tone_mapping,
     GrDirectContext* context) {
+  DCHECK(image);
+  DCHECK(target_color_space);
   sk_sp<SkColorSpace> image_sk_color_space = image->refColorSpace();
   if (!image_sk_color_space)
     return image->makeColorSpace(target_color_space, context);
@@ -151,7 +154,7 @@ sk_sp<SkImage> ColorConversionSkFilterCache::ConvertImage(
   sk_sp<SkColorFilter> filter =
       Get(image_color_space, gfx::ColorSpace(*target_color_space),
           /*resource_offset=*/0, /*resource_multiplier=*/1,
-          /*src_bit_depth=*/absl::nullopt, /*src_hdr_metadata=*/absl::nullopt,
+          /*src_bit_depth=*/absl::nullopt, src_hdr_metadata,
           sdr_max_luminance_nits, dst_max_luminance_relative);
   SkPaint paint;
   paint.setBlendMode(SkBlendMode::kSrc);

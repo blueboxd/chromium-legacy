@@ -21,11 +21,16 @@
 
 namespace blink {
 
+class RuntimeFeatureStateOverrideContext;
+
 // A pure virtual interface for checking the availability of origin trial
-// features in a context.
+// features in a context as well as whether a feature's state has been
+// overridden.
 class PLATFORM_EXPORT FeatureContext {
  public:
   virtual bool FeatureEnabled(OriginTrialFeature) const = 0;
+  virtual RuntimeFeatureStateOverrideContext*
+  GetRuntimeFeatureStateOverrideContext() const = 0;
 };
 
 // A class that stores static enablers for all experimental features.
@@ -57,7 +62,12 @@ class PLATFORM_EXPORT RuntimeEnabledFeaturesBase {
     {% endfor %}
     return {{feature.data_member_name}};
   }
+
+  {% if feature.is_overridable_feature %}
+  static bool {{feature.name}}Enabled(const FeatureContext*);
+  {% else %}
   static bool {{feature.name}}Enabled(const FeatureContext*) { return {{feature.name}}Enabled(); }
+  {% endif %}
 
   {% endif %}
   {% endfor %}

@@ -151,7 +151,7 @@ void TestGuestViewManager::WaitUntilAttached(GuestViewBase* guest_view) {
   // considered in progress.
   while (!guest_view->attached()) {
     base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
@@ -203,17 +203,6 @@ void TestGuestViewManager::AttachGuest(int embedder_process_id,
   if (waiting_for_attach_ && (waiting_for_attach_ == guest_to_attach)) {
     attached_run_loop_->Quit();
     waiting_for_attach_ = nullptr;
-  }
-}
-
-void TestGuestViewManager::DeprecatedGetGuestWebContentsList(
-    std::vector<content::WebContents*>* guest_web_contents_list) {
-  for (auto& watcher : guest_view_watchers_) {
-    if (!watcher->IsDeleted()) {
-      auto ftn_id = watcher->GetFrameTreeNodeId();
-      guest_web_contents_list->push_back(
-          content::WebContents::FromFrameTreeNodeId(ftn_id));
-    }
   }
 }
 

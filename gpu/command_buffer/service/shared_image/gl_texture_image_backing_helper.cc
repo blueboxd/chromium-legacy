@@ -4,7 +4,6 @@
 
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -16,7 +15,38 @@
 
 namespace gpu {
 
-ScopedUnpackState::ScopedUnpackState(bool uploading_data, int unpack_row_length)
+ScopedPackState::ScopedPackState(int pack_row_length, int pack_alignment)
+    : api_(gl::g_current_gl_context) {
+  bool is_es3_capable = gl::g_current_gl_version->is_es3_capable;
+
+  if (is_es3_capable) {
+    // Need to unbind any GL_PIXEL_PACK_BUFFER for the nullptr in
+    // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
+    // buffer).
+    api_->glGetIntegervFn(GL_PIXEL_PACK_BUFFER_BINDING, &pack_buffer_);
+    if (pack_buffer_)
+      api_->glBindBufferFn(GL_PIXEL_PACK_BUFFER, 0);
+  }
+
+  pack_alignment_.emplace(GL_PACK_ALIGNMENT, pack_alignment);
+
+  if (is_es3_capable) {
+    pack_row_length_.emplace(GL_PACK_ROW_LENGTH, pack_row_length);
+    pack_skip_rows_.emplace(GL_PACK_SKIP_ROWS, 0);
+    pack_skip_pixels_.emplace(GL_PACK_SKIP_PIXELS, 0);
+  } else {
+    DCHECK_EQ(pack_row_length, 0);
+  }
+}
+
+ScopedPackState::~ScopedPackState() {
+  if (pack_buffer_)
+    api_->glBindBufferFn(GL_PIXEL_PACK_BUFFER, pack_buffer_);
+}
+
+ScopedUnpackState::ScopedUnpackState(bool uploading_data,
+                                     int unpack_row_length,
+                                     int unpack_alignment)
     : api_(gl::g_current_gl_context) {
   const auto* version_info = gl::g_current_gl_version;
   bool is_es3_capable = version_info->is_es3_capable;
@@ -30,7 +60,7 @@ ScopedUnpackState::ScopedUnpackState(bool uploading_data, int unpack_row_length)
       api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
   }
   if (uploading_data) {
-    unpack_alignment_.emplace(GL_UNPACK_ALIGNMENT, 4);
+    unpack_alignment_.emplace(GL_UNPACK_ALIGNMENT, unpack_alignment);
 
     if (is_es3_capable ||
         gl::g_current_gl_driver->ext.b_GL_EXT_unpack_subimage) {
@@ -90,13 +120,15 @@ GLTextureImageBackingHelper::ScopedRestoreTexture::~ScopedRestoreTexture() {
 }
 
 std::unique_ptr<DawnImageRepresentation>
-GLTextureImageBackingHelper::ProduceDawnCommon(SharedImageFactory* factory,
-                                               SharedImageManager* manager,
-                                               MemoryTypeTracker* tracker,
-                                               WGPUDevice device,
-                                               WGPUBackendType backend_type,
-                                               SharedImageBacking* backing,
-                                               bool use_passthrough) {
+GLTextureImageBackingHelper::ProduceDawnCommon(
+    SharedImageFactory* factory,
+    SharedImageManager* manager,
+    MemoryTypeTracker* tracker,
+    WGPUDevice device,
+    WGPUBackendType backend_type,
+    std::vector<WGPUTextureFormat> view_formats,
+    SharedImageBacking* backing,
+    bool use_passthrough) {
   DCHECK(factory);
   // Make SharedContextState from factory the current context
   SharedContextState* shared_context_state = factory->GetSharedContextState();
@@ -183,7 +215,8 @@ GLTextureImageBackingHelper::ProduceDawnCommon(SharedImageFactory* factory,
   // representation ref.
   factory->DestroySharedImage(dst_mailbox);
 
-  return manager->ProduceDawn(dst_mailbox, tracker, device, backend_type);
+  return manager->ProduceDawn(dst_mailbox, tracker, device, backend_type,
+                              std::move(view_formats));
 }
 
 // static

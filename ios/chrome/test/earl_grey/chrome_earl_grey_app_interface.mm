@@ -32,8 +32,11 @@
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils_test_support.h"
+#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
@@ -74,6 +77,7 @@
 #import "ios/web/public/web_state.h"
 #import "net/base/mac/url_conversions.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
+#import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -139,6 +143,15 @@ NSString* SerializedValue(const base::Value* value) {
 
   return testing::NSErrorWithLocalizedDescription(
       @"Clearing browser history timed out");
+}
+
++ (NSError*)clearBrowsingCookies {
+  if (chrome_test_util::ClearBrowsingCookies()) {
+    return nil;
+  }
+
+  return testing::NSErrorWithLocalizedDescription(
+      @"Clearing browser cookies timed out");
 }
 
 + (NSInteger)browsingHistoryEntryCountWithError:
@@ -872,15 +885,34 @@ NSString* SerializedValue(const base::Value* value) {
   chrome_test_util::StopSync();
 }
 
-+ (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(base::TimeDelta)timeout {
++ (NSError*)waitForSyncEngineInitialized:(BOOL)isInitialized
+                             syncTimeout:(base::TimeDelta)timeout {
   bool success = WaitUntilConditionOrTimeout(timeout, ^{
-    return chrome_test_util::IsSyncInitialized() == isInitialized;
+    return chrome_test_util::IsSyncEngineInitialized() == isInitialized;
   });
   if (!success) {
     NSString* errorDescription =
         [NSString stringWithFormat:@"Sync must be initialized: %@",
                                    isInitialized ? @"YES" : @"NO"];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
+}
+
++ (NSError*)waitForSyncFeatureEnabled:(BOOL)isEnabled
+                          syncTimeout:(base::TimeDelta)timeout {
+  bool success = WaitUntilConditionOrTimeout(timeout, ^{
+    ChromeBrowserState* browser_state =
+        chrome_test_util::GetOriginalBrowserState();
+    DCHECK(browser_state);
+    syncer::SyncService* syncService =
+        SyncServiceFactory::GetForBrowserState(browser_state);
+    return syncService->IsSyncFeatureEnabled() == isEnabled;
+  });
+  if (!success) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:@"Sync feature must be enabled: %@",
+                                   isEnabled ? @"YES" : @"NO"];
     return testing::NSErrorWithLocalizedDescription(errorDescription);
   }
   return nil;
@@ -1087,7 +1119,8 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isUseLensToSearchForImageEnabled {
   return base::FeatureList::IsEnabled(kUseLensToSearchForImage) &&
-         ios::provider::IsLensSupported();
+         ios::provider::IsLensSupported() &&
+         ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET;
 }
 
 + (BOOL)isThumbstripEnabledForWindowWithNumber:(int)windowNumber {
@@ -1097,6 +1130,10 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isWebChannelsEnabled {
   return base::FeatureList::IsEnabled(kEnableWebChannels);
+}
+
++ (BOOL)isSFSymbolEnabled {
+  return UseSymbols();
 }
 
 #pragma mark - ContentSettings
@@ -1322,17 +1359,7 @@ int watchRunNumber = 0;
 #pragma mark - Default Browser Promo Utilities
 
 + (void)clearDefaultBrowserPromoData {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSArray<NSString*>* keys = @[
-    @"lastTimeUserInteractedWithFullscreenPromo",
-    @"userHasInteractedWithFullscreenPromo",
-    @"userHasInteractedWithTailoredFullscreenPromo",
-    @"userInteractedWithNonModalPromoCount",
-    @"remindMeLaterPromoActionInteraction",
-  ];
-  for (NSString* key in keys) {
-    [defaults removeObjectForKey:key];
-  }
+  ClearDefaultBrowserPromoData();
 }
 
 + (void)copyURLToPasteBoard {

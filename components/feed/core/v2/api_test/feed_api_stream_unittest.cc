@@ -1097,6 +1097,19 @@ TEST_F(FeedApiTest, ShouldMakeFeedQueryRequestConsumesQuota) {
   ASSERT_EQ(LoadStreamStatus::kCannotLoadFromNetworkThrottled, status);
 }
 
+TEST_F(FeedApiTest, SingleWebFeedShouldIgnoreQuota) {
+  LoadStreamStatus status = LoadStreamStatus::kNoStatus;
+  for (int i = 0; i < 50; i++) {
+    status =
+        stream_
+            ->ShouldMakeFeedQueryRequest(StreamType(StreamKind::kSingleWebFeed),
+                                         LoadType::kInitialLoad)
+            .load_stream_status;
+  }
+
+  ASSERT_EQ(LoadStreamStatus::kNoStatus, status);
+}
+
 TEST_F(FeedApiTest, LoadStreamFromStore) {
   // Fill the store with stream data that is just barely fresh, and verify it
   // loads.
@@ -2848,19 +2861,6 @@ TEST_F(FeedApiTest, ClearAllOnStartupIfFeedIsDisabled) {
   histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
                                 UserSettingsOnStart::kFeedNotEnabledByPolicy,
                                 1);
-}
-
-TEST_F(FeedApiTest, FeedIsAblated) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::FieldTrialParams params;
-  scoped_feature_list.InitAndEnableFeature(kIsAblated);
-
-  base::HistogramTester histograms;
-  CreateStream();
-  histograms.ExpectUniqueSample("ContentSuggestions.Feed.UserSettingsOnStart",
-                                UserSettingsOnStart::kFeedNotEnabled, 1);
-
-  ASSERT_FALSE(network_.query_request_sent.has_value());
 }
 
 TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOnDpOff) {

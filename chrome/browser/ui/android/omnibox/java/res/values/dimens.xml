@@ -41,6 +41,7 @@ found in the LICENSE file.
     <dimen name="incognito_badge_lateral_padding">4dp</dimen>
     <dimen name="location_bar_status_icon_width">24dp</dimen>
     <dimen name="location_bar_status_icon_bg_size">32dp</dimen>
+    <dimen name="location_bar_status_icon_holding_space_size">8dp</dimen>
     <dimen name="location_bar_icon_end_padding">0dp</dimen>
     <dimen name="location_bar_icon_end_padding_focused">12dp</dimen>
     <dimen name="location_bar_verbose_start_padding_verbose_text">4dp</dimen>
@@ -49,7 +50,6 @@ found in the LICENSE file.
     <dimen name="location_bar_url_action_padding">8dp</dimen>
 
     <dimen name="location_bar_status_view_left_space_width">8dp</dimen>
-    <dimen name="location_bar_vertical_padding_phase2_active_color">4dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
 

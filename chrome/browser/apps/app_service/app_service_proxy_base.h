@@ -143,12 +143,6 @@ class AppServiceProxyBase : public KeyedService,
               int32_t event_flags,
               apps::LaunchSource launch_source,
               apps::WindowInfoPtr window_info = nullptr);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void Launch(const std::string& app_id,
-              int32_t event_flags,
-              apps::mojom::LaunchSource launch_source,
-              apps::mojom::WindowInfoPtr window_info = nullptr);
 
   // Launches the app for the given |app_id| with files from |file_paths|.
   // DEPRECATED. Prefer passing the files in an Intent through
@@ -214,12 +208,6 @@ class AppServiceProxyBase : public KeyedService,
                     MenuType menu_type,
                     int64_t display_id,
                     base::OnceCallback<void(MenuItems)> callback);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  void GetMenuModel(const std::string& app_id,
-                    apps::mojom::MenuType menu_type,
-                    int64_t display_id,
-                    apps::mojom::Publisher::GetMenuModelCallback callback);
 
   // Executes a shortcut menu |command_id| and |shortcut_id| for a menu item
   // previously built with GetMenuModel(). |app_id| is the menu app.
@@ -388,15 +376,9 @@ class AppServiceProxyBase : public KeyedService,
   void OnApps(std::vector<apps::mojom::AppPtr> deltas,
               apps::mojom::AppType app_type,
               bool should_notify_initialized) override;
-  void OnCapabilityAccesses(
-      std::vector<apps::mojom::CapabilityAccessPtr> deltas) override;
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
 
   IntentFilterPtr FindBestMatchingFilter(const IntentPtr& intent);
-  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
-  // interface.
-  apps::mojom::IntentFilterPtr FindBestMatchingMojomFilter(
-      const apps::mojom::IntentPtr& intent);
 
   virtual void PerformPostLaunchTasks(apps::LaunchSource launch_source);
 
@@ -417,8 +399,9 @@ class AppServiceProxyBase : public KeyedService,
   virtual bool ShouldReadIcons();
 
   // Reads icon image files from the local app_service icon directory on disk.
-  virtual void ReadIcons(const std::string& app_id,
-                         int32_t size_hint_in_dip,
+  virtual void ReadIcons(AppType app_type,
+                         const std::string& app_id,
+                         int32_t size_in_dip,
                          const IconKey& icon_key,
                          IconType icon_type,
                          LoadIconCallback callback) {}

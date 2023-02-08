@@ -378,7 +378,7 @@ bool SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
       if (ash::switches::IsTabletFormFactor()) {
         VLOG(1) << "Showing contact admin dialog managed user of tablet form "
                    "factor devices.";
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
+        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(&ShowContactAdminDialog));
       }
       return false;
@@ -614,7 +614,7 @@ bool IsPlayStoreAvailable() {
   if (!ash::DemoSession::IsDeviceInDemoMode())
     return false;
 
-  return chromeos::features::ShouldShowPlayStoreInDemoMode();
+  return ash::features::ShouldShowPlayStoreInDemoMode();
 }
 
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {

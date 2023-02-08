@@ -6,7 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -54,21 +54,25 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
                                       ExecutionContext* context) {
   // https://wicg.github.io/nav-speculation/speculation-rules.html#parse-a-speculation-rule
 
-  // If input has any key other than "source", "urls", "requires", and
-  // "target_hint", then return null.
-  const char* const kKnownKeys[] = {"source", "urls", "requires", "target_hint",
-                                    "where"};
+  // If input has any key other than "source", "urls", "requires", "target_hint"
+  // and "relative_to", then return null.
+  const char* const kKnownKeys[] = {"source",      "urls",  "requires",
+                                    "target_hint", "where", "relative_to"};
   for (wtf_size_t i = 0; i < input->size(); ++i) {
     const String& input_key = input->at(i).first;
     const bool conditionally_known_key =
-        RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled() &&
-        (input_key == "referrer_policy");
+        RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled(
+            context) &&
+        input_key == "referrer_policy";
     if (!base::Contains(kKnownKeys, input_key) && !conditionally_known_key)
       return nullptr;
   }
 
   bool document_rules_enabled =
       RuntimeEnabledFeatures::SpeculationRulesDocumentRulesEnabled(context);
+  const bool relative_to_enabled =
+      RuntimeEnabledFeatures::SpeculationRulesRelativeToDocumentEnabled(
+          context);
 
   // If input["source"] does not exist or is neither the string "list" nor the
   // string "document", then return null.
@@ -82,6 +86,21 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     // If input["where"] exists, then return null.
     if (input->Get("where"))
       return nullptr;
+
+    // For now, use the given base URL to construct the list rules.
+    KURL base_url_to_parse = base_url;
+    // If "relative_to" is present:
+    if (JSONValue* relative_to = input->Get("relative_to")) {
+      // If the value of "relative_to" is not a string, or the string value is
+      // not "document", the ruleset is invalid.
+      if (String value; !relative_to_enabled ||
+                        !relative_to->AsString(&value) || value != "document") {
+        return nullptr;
+      }
+      // If "relative_to": "document" is present, use the document's base URL to
+      // construct the list rules.
+      base_url_to_parse = context->BaseURL();
+    }
 
     // Let urls be an empty list.
     // If input["urls"] does not exist, is not a list, or has any element which
@@ -99,7 +118,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
 
       // Let parsedURL be the result of parsing urlString with baseURL.
       // If parsedURL is failure, then continue.
-      KURL parsed_url(base_url, url_string);
+      KURL parsed_url(base_url_to_parse, url_string);
       if (!parsed_url.IsValid() || !parsed_url.ProtocolIsInHTTPFamily())
         continue;
 
@@ -122,9 +141,13 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     // Otherwise, set predicate to the result of parsing a document rule
     // predicate given input["where"] and baseURL.
     else {
+      // "relative_to" outside the "href_matches" clause is not allowed for
+      // document rules.
+      if (input->Get("relative_to"))
+        return nullptr;
       document_rule_predicate =
           DocumentRulePredicate::Parse(input->GetJSONObject("where"), base_url,
-                                       IGNORE_EXCEPTION_FOR_TESTING);
+                                       context, IGNORE_EXCEPTION_FOR_TESTING);
     }
     if (!document_rule_predicate)
       return nullptr;
@@ -184,21 +207,24 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
   JSONValue* referrer_policy_value = input->Get("referrer_policy");
   if (referrer_policy_value) {
     // Feature gated due to known keys check above.
-    DCHECK(RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled());
+    DCHECK(RuntimeEnabledFeatures::SpeculationRulesReferrerPolicyKeyEnabled(
+        context));
 
     String referrer_policy_str;
     if (!referrer_policy_value->AsString(&referrer_policy_str))
       return nullptr;
 
-    network::mojom::ReferrerPolicy referrer_policy_out =
-        network::mojom::ReferrerPolicy::kDefault;
-    if (!SecurityPolicy::ReferrerPolicyFromString(
-            referrer_policy_str, kDoNotSupportReferrerPolicyLegacyKeywords,
-            &referrer_policy_out)) {
-      return nullptr;
+    if (!referrer_policy_str.empty()) {
+      network::mojom::ReferrerPolicy referrer_policy_out =
+          network::mojom::ReferrerPolicy::kDefault;
+      if (!SecurityPolicy::ReferrerPolicyFromString(
+              referrer_policy_str, kDoNotSupportReferrerPolicyLegacyKeywords,
+              &referrer_policy_out)) {
+        return nullptr;
+      }
+      DCHECK_NE(referrer_policy_out, network::mojom::ReferrerPolicy::kDefault);
+      referrer_policy = referrer_policy_out;
     }
-    DCHECK_NE(referrer_policy_out, network::mojom::ReferrerPolicy::kDefault);
-    referrer_policy = referrer_policy_out;
   }
 
   return MakeGarbageCollected<SpeculationRule>(
@@ -208,12 +234,45 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
 
 }  // namespace
 
+// ---- SpeculationRuleSet::Source implementation ----
+
+SpeculationRuleSet::Source::Source(const String& source_text,
+                                   Document& document)
+    : source_text_(source_text),
+      base_url_(absl::nullopt),
+      document_(document) {}
+
+SpeculationRuleSet::Source::Source(const String& source_text,
+                                   const KURL& base_url)
+    : source_text_(source_text), base_url_(base_url), document_(nullptr) {}
+
+const String& SpeculationRuleSet::Source::GetSourceText() const {
+  return source_text_;
+}
+
+KURL SpeculationRuleSet::Source::GetBaseURL() const {
+  if (base_url_) {
+    DCHECK(!document_);
+    return base_url_.value();
+  }
+  DCHECK(document_);
+  return document_->BaseURL();
+}
+
+void SpeculationRuleSet::Source::Trace(Visitor* visitor) const {
+  visitor->Trace(document_);
+}
+
+// ---- SpeculationRuleSet implementation ----
+
 // static
-SpeculationRuleSet* SpeculationRuleSet::Parse(const String& source_text,
-                                              const KURL& base_url,
+SpeculationRuleSet* SpeculationRuleSet::Parse(Source* source,
                                               ExecutionContext* context,
                                               String* out_error) {
   // https://wicg.github.io/nav-speculation/speculation-rules.html#parse-speculation-rules
+
+  const String& source_text = source->GetSourceText();
+  const KURL& base_url = source->GetBaseURL();
 
   // Let parsed be the result of parsing a JSON string to an Infra value given
   // input.
@@ -232,6 +291,7 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(const String& source_text,
 
   // Let result be an empty speculation rule set.
   SpeculationRuleSet* result = MakeGarbageCollected<SpeculationRuleSet>();
+  result->source_ = source;
 
   const auto parse_for_action =
       [&](const char* key, HeapVector<Member<SpeculationRule>>& destination,
@@ -262,6 +322,9 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(const String& source_text,
             continue;
           }
 
+          if (rule->predicate())
+            result->has_document_rule_ = true;
+
           // Append rule to result's prefetch/prerender rules.
           destination.push_back(rule);
         }
@@ -285,6 +348,7 @@ void SpeculationRuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(prefetch_rules_);
   visitor->Trace(prefetch_with_subresources_rules_);
   visitor->Trace(prerender_rules_);
+  visitor->Trace(source_);
 }
 
 }  // namespace blink

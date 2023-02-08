@@ -4,21 +4,30 @@
 
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 
+#include <memory>
 #include <tuple>
 
 #include "base/containers/span.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
 namespace {
+
+using testing::_;
 
 const char kSignedWebBundleId[] =
     "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic";
@@ -27,9 +36,9 @@ const char kAnotherSignedWebBundleId[] =
     "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic";
 
 // NOLINTNEXTLINE(runtime/string)
-const std::string kPrimaryUrl = std::string(chrome::kIsolatedAppScheme) +
-                                url::kStandardSchemeSeparator +
-                                kSignedWebBundleId;
+const std::string kUrl =
+    base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
+                  kSignedWebBundleId});
 
 // NOLINTNEXTLINE(runtime/string)
 const std::string kUrlFromAnotherIsolatedWebApp =
@@ -41,6 +50,19 @@ constexpr std::array<uint8_t, 32> kEd25519PublicKey = {
     0xb6, 0xc2, 0xd9, 0xf2, 0x02, 0x03, 0x42, 0x18, 0x10, 0x12, 0x26,
     0x62, 0x88, 0xf6, 0xa3, 0xa5, 0x47, 0x14, 0x69, 0x00, 0x73};
 
+class MockIsolatedWebAppTrustChecker : public IsolatedWebAppTrustChecker {
+ public:
+  MockIsolatedWebAppTrustChecker()
+      : IsolatedWebAppTrustChecker(TestingPrefServiceSimple()) {}
+
+  MOCK_METHOD(
+      IsolatedWebAppTrustChecker::Result,
+      IsTrusted,
+      (const web_package::SignedWebBundleId& web_bundle_id,
+       const std::vector<web_package::Ed25519PublicKey>& public_key_stack),
+      (const, override));
+};
+
 }  // namespace
 
 class IsolatedWebAppValidatorTest : public ::testing::Test {
@@ -51,9 +73,7 @@ class IsolatedWebAppValidatorTest : public ::testing::Test {
 class IsolatedWebAppValidatorIntegrityBlockTest
     : public IsolatedWebAppValidatorTest {};
 
-// TODO(crbug.com/1365852): Extend this test once we have implemented a
-// mechanism that provides the trusted public keys.
-TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, OnePublicKey) {
+TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, PublicKeysTrusted) {
   auto web_bundle_id =
       web_package::SignedWebBundleId::Create(kSignedWebBundleId);
   ASSERT_TRUE(web_bundle_id.has_value()) << web_bundle_id.error();
@@ -62,7 +82,16 @@ TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, OnePublicKey) {
       web_package::Ed25519PublicKey::Create(
           base::make_span(kEd25519PublicKey))};
 
-  IsolatedWebAppValidator validator;
+  auto isolated_web_app_trust_checker =
+      std::make_unique<MockIsolatedWebAppTrustChecker>();
+  EXPECT_CALL(*isolated_web_app_trust_checker,
+              IsTrusted(*web_bundle_id, public_key_stack))
+      .WillOnce([](auto web_bundle_id, auto public_key_stack)
+                    -> IsolatedWebAppTrustChecker::Result {
+        return {.status = IsolatedWebAppTrustChecker::Result::Status::kTrusted};
+      });
+
+  IsolatedWebAppValidator validator(std::move(isolated_web_app_trust_checker));
   base::test::TestFuture<absl::optional<std::string>> future;
   validator.ValidateIntegrityBlock(*web_bundle_id, public_key_stack,
                                    future.GetCallback());
@@ -70,6 +99,10 @@ TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, OnePublicKey) {
 }
 
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, UnexpectedWebBundleId) {
+  auto web_bundle_id =
+      web_package::SignedWebBundleId::Create(kSignedWebBundleId);
+  ASSERT_TRUE(web_bundle_id.has_value()) << web_bundle_id.error();
+
   std::vector<web_package::Ed25519PublicKey> public_key_stack = {
       web_package::Ed25519PublicKey::Create(
           base::make_span(kEd25519PublicKey))};
@@ -79,16 +112,25 @@ TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, UnexpectedWebBundleId) {
   ASSERT_TRUE(expected_web_bundle_id.has_value())
       << expected_web_bundle_id.error();
 
-  IsolatedWebAppValidator validator;
+  auto isolated_web_app_trust_checker =
+      std::make_unique<MockIsolatedWebAppTrustChecker>();
+  EXPECT_CALL(*isolated_web_app_trust_checker,
+              IsTrusted(*expected_web_bundle_id, public_key_stack))
+      .WillOnce(
+          [](auto web_bundle_id,
+             auto public_key_stack) -> IsolatedWebAppTrustChecker::Result {
+            return {
+                .status = IsolatedWebAppTrustChecker::Result::Status::
+                    kErrorWebBundleIdNotDerivedFromFirstPublicKey,
+                .message = "test error",
+            };
+          });
+
+  IsolatedWebAppValidator validator(std::move(isolated_web_app_trust_checker));
   base::test::TestFuture<absl::optional<std::string>> future;
   validator.ValidateIntegrityBlock(*expected_web_bundle_id, public_key_stack,
                                    future.GetCallback());
-  EXPECT_EQ(
-      future.Get(),
-      "The Web Bundle ID "
-      "(aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic) derived from "
-      "the public key does not match the expected Web Bundle ID "
-      "(berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic).");
+  EXPECT_EQ(future.Get(), "test error");
 }
 
 TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, EmptyPublicKeyStack) {
@@ -96,17 +138,33 @@ TEST_F(IsolatedWebAppValidatorIntegrityBlockTest, EmptyPublicKeyStack) {
       web_package::SignedWebBundleId::Create(kSignedWebBundleId);
   ASSERT_TRUE(web_bundle_id.has_value()) << web_bundle_id.error();
 
-  IsolatedWebAppValidator validator;
+  std::vector<web_package::Ed25519PublicKey> public_key_stack = {
+      web_package::Ed25519PublicKey::Create(
+          base::make_span(kEd25519PublicKey))};
+
+  auto isolated_web_app_trust_checker =
+      std::make_unique<MockIsolatedWebAppTrustChecker>();
+  EXPECT_CALL(*isolated_web_app_trust_checker,
+              IsTrusted(*web_bundle_id, public_key_stack))
+      .WillOnce(
+          [](auto web_bundle_id,
+             auto public_key_stack) -> IsolatedWebAppTrustChecker::Result {
+            return {.status = IsolatedWebAppTrustChecker::Result::Status::
+                        kErrorPublicKeysNotTrusted,
+                    .message = "test error"};
+          });
+
+  IsolatedWebAppValidator validator(std::move(isolated_web_app_trust_checker));
   base::test::TestFuture<absl::optional<std::string>> future;
-  validator.ValidateIntegrityBlock(*web_bundle_id, {}, future.GetCallback());
-  EXPECT_EQ(future.Get(),
-            "The Isolated Web App must have at least one signature.");
+  validator.ValidateIntegrityBlock(*web_bundle_id, public_key_stack,
+                                   future.GetCallback());
+  EXPECT_EQ(future.Get(), "test error");
 }
 
 class IsolatedWebAppValidatorMetadataTest
     : public IsolatedWebAppValidatorTest,
       public ::testing::WithParamInterface<
-          std::tuple<std::string,
+          std::tuple<absl::optional<std::string>,
                      std::vector<std::string>,
                      absl::optional<std::string>>> {
  public:
@@ -119,7 +177,7 @@ class IsolatedWebAppValidatorMetadataTest
   }
 
  protected:
-  GURL primary_url_;
+  absl::optional<GURL> primary_url_;
   std::vector<GURL> entries_;
   absl::optional<std::string> error_message_;
 };
@@ -129,7 +187,9 @@ TEST_P(IsolatedWebAppValidatorMetadataTest, Validate) {
       web_package::SignedWebBundleId::Create(kSignedWebBundleId);
   ASSERT_TRUE(web_bundle_id.has_value()) << web_bundle_id.error();
 
-  IsolatedWebAppValidator validator;
+  auto isolated_web_app_trust_checker =
+      std::make_unique<MockIsolatedWebAppTrustChecker>();
+  IsolatedWebAppValidator validator(std::move(isolated_web_app_trust_checker));
   EXPECT_EQ(validator.ValidateMetadata(*web_bundle_id, primary_url_, entries_),
             error_message_);
 }
@@ -138,38 +198,30 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     IsolatedWebAppValidatorMetadataTest,
     ::testing::Values(
-        std::make_tuple(kPrimaryUrl,
-                        std::vector<std::string>({kPrimaryUrl}),
+        std::make_tuple(absl::nullopt,
+                        std::vector<std::string>({kUrl}),
                         absl::nullopt),
-        std::make_tuple(kPrimaryUrl,
-                        std::vector<std::string>({kPrimaryUrl,
-                                                  kPrimaryUrl + "/foo#bar"}),
-                        "Invalid metadata: The URL of an exchange is invalid: "
-                        "URLs must not have a fragment part."),
-        std::make_tuple(kPrimaryUrl,
-                        std::vector<std::string>({kPrimaryUrl,
-                                                  kPrimaryUrl + "/foo?bar"}),
-                        "Invalid metadata: The URL of an exchange is invalid: "
-                        "URLs must not have a query part."),
+        std::make_tuple(absl::nullopt,
+                        std::vector<std::string>({kUrl, kUrl + "/foo#bar"}),
+                        "The URL of an exchange is invalid: URLs must not have "
+                        "a fragment part."),
+        std::make_tuple(absl::nullopt,
+                        std::vector<std::string>({kUrl, kUrl + "/foo?bar"}),
+                        "The URL of an exchange is invalid: URLs must not have "
+                        "a query part."),
         std::make_tuple(
-            kPrimaryUrl + "/foo",
-            std::vector<std::string>({kPrimaryUrl}),
-            "Invalid metadata: Primary URL must be "
-            "isolated-app://"
-            "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic/, but "
-            "was "
-            "isolated-app://"
-            "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic/foo"),
-        std::make_tuple(kPrimaryUrl,
-                        std::vector<std::string>({kPrimaryUrl, "https://foo/"}),
-                        "Invalid metadata: The URL of an exchange is invalid: "
-                        "The URL scheme must be isolated-app, but was https"),
+            kUrl,
+            std::vector<std::string>({kUrl}),
+            "Primary URL must not be present, but was isolated-app://"
+            "aerugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic/"),
+        std::make_tuple(absl::nullopt,
+                        std::vector<std::string>({kUrl, "https://foo/"}),
+                        "The URL of an exchange is invalid: The URL scheme "
+                        "must be isolated-app, but was https"),
         std::make_tuple(
-            kPrimaryUrl,
-            std::vector<std::string>({kPrimaryUrl,
-                                      kUrlFromAnotherIsolatedWebApp}),
-            "Invalid metadata: The URL of an exchange contains the wrong "
-            "Signed Web Bundle ID: "
+            absl::nullopt,
+            std::vector<std::string>({kUrl, kUrlFromAnotherIsolatedWebApp}),
+            "The URL of an exchange contains the wrong Signed Web Bundle ID: "
             "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic")));
 
 }  // namespace web_app

@@ -39,14 +39,6 @@ ComputedStyleBase::ComputedStyleBase() :
   {% endfor %}
 }
 
-void ComputedStyleBase::PropagateIndependentInheritedProperties(
-    const ComputedStyleBase& parentStyle) {
-  {% for field in computed_style.all_fields if field.is_property and field.is_independent %}
-  if ({{field.is_inherited_method_name}}())
-    {{setter_expression(field)}} = parentStyle.{{getter_expression(field)}};
-  {% endfor %}
-}
-
 {% for name, groups_to_diff in diff_functions_map.items() %}
 bool ComputedStyleBase::{{name}}(const ComputedStyle& a, const ComputedStyle& b) {
   {{fieldwise_diff(groups_to_diff)|indent(4)}}
@@ -82,6 +74,7 @@ ComputedStyleBase::DebugDiffFields(const ComputedStyleBase& o) const {
 
 void ComputedStyleBuilderBase::InheritFrom(const ComputedStyleBase& other,
                                     IsAtShadowBoundary isAtShadowBoundary) {
+  ComputedStyleBase& style = *style_;
   {{fieldwise_copy(computed_style, computed_style.all_fields
       |selectattr("is_property")
       |selectattr("is_inherited")
@@ -91,11 +84,21 @@ void ComputedStyleBuilderBase::InheritFrom(const ComputedStyleBase& other,
 
 void ComputedStyleBuilderBase::CopyNonInheritedFromCached(
     const ComputedStyleBase& other) {
+  ComputedStyleBase& style = *style_;
   {{fieldwise_copy(computed_style, computed_style.all_fields
       |rejectattr("has_custom_compare_and_copy")
       |rejectattr("is_inherited")
       |list
     )|indent(2)}}
+}
+
+void ComputedStyleBuilderBase::PropagateIndependentInheritedProperties(
+    const ComputedStyleBase& parent_style) {
+  ComputedStyleBase& style = *style_;
+  {% for field in computed_style.all_fields if field.is_property and field.is_independent %}
+  if ({{field.is_inherited_method_name}}())
+    style.{{setter_expression(field)}} = parent_style.{{getter_expression(field)}};
+  {% endfor %}
 }
 
 } // namespace blink

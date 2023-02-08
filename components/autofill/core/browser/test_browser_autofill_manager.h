@@ -55,7 +55,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       const FormData& form,
       const FormFieldData& field,
       const gfx::RectF& bounding_box,
-      int query_id,
       AutoselectFirstSuggestion autoselect_first_suggestion,
       FormElementWasClicked form_element_was_clicked) override;
   void OnJavaScriptChangedAutofilledValue(
@@ -69,16 +68,17 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   // BrowserAutofillManager overrides.
   bool IsAutofillProfileEnabled() const override;
   bool IsAutofillCreditCardEnabled() const override;
-  void UploadFormData(const FormStructure& submitted_form,
-                      bool observed_submission) override;
+  void StoreUploadVotesAndLogQualityCallback(
+      FormSignature form_signature,
+      base::OnceClosure callback) override;
+  void UploadVotesAndLogQuality(std::unique_ptr<FormStructure> submitted_form,
+                                base::TimeTicks interaction_time,
+                                base::TimeTicks submission_time,
+                                bool observed_submission) override;
   const gfx::Image& GetCardImage(const CreditCard& credit_card) const override;
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
       bool observed_submission) override;
-  void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
-                                   const base::TimeTicks& interaction_time,
-                                   const base::TimeTicks& submission_time,
-                                   bool observed_submission) override;
   // Immediately triggers the refill.
   void ScheduleRefill(const FormData& form) override;
 
@@ -116,7 +116,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   void OnAskForValuesToFillTest(
       const FormData& form,
       const FormFieldData& field,
-      int query_id = 0,
       const gfx::RectF& bounding_box = {},
       AutoselectFirstSuggestion autoselect_first_suggestion =
           AutoselectFirstSuggestion(false),
@@ -132,8 +131,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   void SetExpectedObservedSubmission(bool expected);
 
-  void SetCallParentUploadFormData(bool value);
-
   struct MakeFrontendIdParams {
     std::string credit_card_id;
     std::string profile_id;
@@ -147,7 +144,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   bool autofill_profile_enabled_ = true;
   bool autofill_credit_card_enabled_ = true;
-  bool call_parent_upload_form_data_ = false;
   absl::optional<bool> expected_observed_submission_;
   const gfx::Image card_image_ = gfx::test::CreateImage(32, 20);
 

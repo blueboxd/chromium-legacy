@@ -6,7 +6,7 @@ import {TimeZoneAutoDetectMethod, TimeZoneBrowserProxyImpl} from 'chrome://os-se
 import {CrSettingsPrefs, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assert} from 'chrome://resources/js/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.js';
+import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -20,7 +20,7 @@ class TestTimeZoneBrowserProxy extends TestBrowserProxy {
       'dateTimePageReady',
       'getTimeZones',
       'showParentAccessForTimeZone',
-      'showSetDateTimeUI',
+      'showSetDateTimeUi',
     ]);
 
     /** @private {!Array<!Array<string>>} */
@@ -49,8 +49,8 @@ class TestTimeZoneBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  showSetDateTimeUI() {
-    this.methodCalled('showSetDateTimeUI');
+  showSetDateTimeUi() {
+    this.methodCalled('showSetDateTimeUi');
   }
 }
 
@@ -516,10 +516,10 @@ suite('settings-date-time-page', function() {
     await flushTasks();
     assertGT(setDateTimeButton.offsetHeight, 0);
 
-    assertEquals(0, testBrowserProxy.getCallCount('showSetDateTimeUI'));
+    assertEquals(0, testBrowserProxy.getCallCount('showSetDateTimeUi'));
     setDateTimeButton.click();
 
-    assertEquals(1, testBrowserProxy.getCallCount('showSetDateTimeUI'));
+    assertEquals(1, testBrowserProxy.getCallCount('showSetDateTimeUi'));
 
     // Make the date and time not editable.
     webUIListenerCallback('can-set-date-time-changed', false);

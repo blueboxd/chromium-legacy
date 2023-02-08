@@ -12,10 +12,12 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
@@ -181,9 +183,15 @@ ConsumerHost::TracingSession::TracingSession(
   }
 #endif
 
+#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  const std::string kDataSourceName = "track_event";
+#else
+  const std::string kDataSourceName = mojom::kTraceEventDataSourceName;
+#endif
+
   filtered_pids_.clear();
   for (const auto& ds_config : trace_config.data_sources()) {
-    if (ds_config.config().name() == mojom::kTraceEventDataSourceName) {
+    if (ds_config.config().name() == kDataSourceName) {
       for (const auto& filter : ds_config.producer_name_filter()) {
         base::ProcessId pid;
         if (PerfettoService::ParsePidFromProducerName(filter, &pid)) {
@@ -385,7 +393,7 @@ void ConsumerHost::TracingSession::ReadBuffers(
       StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
       base::BindOnce(&TracingSession::OnConsumerClientDisconnected,
                      weak_factory_.GetWeakPtr()),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   host_->consumer_endpoint()->ReadBuffers();
 }
@@ -412,7 +420,7 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
       StreamWriter::CreateTaskRunner(), std::move(stream), std::move(callback),
       base::BindOnce(&TracingSession::OnConsumerClientDisconnected,
                      weak_factory_.GetWeakPtr()),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   if (privacy_filtering_enabled) {
     // For filtering/allowlisting to be possible at JSON export time,
@@ -726,6 +734,10 @@ void ConsumerHost::OnTraceStats(bool success,
   if (tracing_session_) {
     tracing_session_->OnTraceStats(success, stats);
   }
+}
+
+void ConsumerHost::OnSessionCloned(bool, const std::string&) {
+  NOTREACHED();
 }
 
 void ConsumerHost::DestructTracingSession() {

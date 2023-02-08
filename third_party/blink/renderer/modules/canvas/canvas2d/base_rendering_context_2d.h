@@ -29,26 +29,29 @@ class CanvasImageSource;
 class Color;
 class Image;
 class Path2D;
-class V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString;
+struct V8CanvasStyle;
+enum class V8CanvasStyleType;
 class V8UnionCanvasFilterOrString;
 using cc::UsePaintCache;
 
 class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
  public:
+  static constexpr unsigned kFallbackToCPUAfterReadbacks = 2;
+
   BaseRenderingContext2D(const BaseRenderingContext2D&) = delete;
   BaseRenderingContext2D& operator=(const BaseRenderingContext2D&) = delete;
 
   ~BaseRenderingContext2D() override;
 
-  V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* strokeStyle()
-      const;
-  void setStrokeStyle(
-      const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style);
+  v8::Local<v8::Value> strokeStyle(ScriptState* script_state) const;
+  void setStrokeStyle(v8::Isolate* isolate,
+                      v8::Local<v8::Value> value,
+                      ExceptionState& exception_state);
 
-  V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* fillStyle()
-      const;
-  void setFillStyle(
-      const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style);
+  v8::Local<v8::Value> fillStyle(ScriptState* script_state) const;
+  void setFillStyle(v8::Isolate* isolate,
+                    v8::Local<v8::Value> value,
+                    ExceptionState& exception_state);
 
   double lineWidth() const;
   void setLineWidth(double);
@@ -447,6 +450,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
                      BaseRenderingContext2D::OverdrawOp overdraw_op);
 
   HeapVector<Member<CanvasRenderingContext2DState>> state_stack_;
+  unsigned max_state_stack_depth_ = 1;
   // Counts how many states have been pushed with BeginLayer.
   int layer_count_ = 0;
   AntiAliasingMode clip_antialiasing_;
@@ -634,15 +638,20 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
 
   // Only call if identifiability_study_helper_.ShouldUpdateBuilder() returns
   // true.
-  void IdentifiabilityUpdateForStyleUnion(
-      const V8UnionCSSColorValueOrCanvasGradientOrCanvasPatternOrString* style);
+  void IdentifiabilityUpdateForStyleUnion(const V8CanvasStyle& style);
 
   RespectImageOrientationEnum RespectImageOrientationInternal(
       CanvasImageSource*);
 
+  // Updates the identifiability study before changing stroke or fill styles.
+  void UpdateIdentifiabilityStudyBeforeSettingStrokeOrFill(
+      const V8CanvasStyle& v8_style,
+      CanvasOps op);
+
   bool origin_tainted_by_content_;
   UsePaintCache path2d_use_paint_cache_;
   int num_readbacks_performed_ = 0;
+  unsigned read_count_ = 0;
 };
 
 ALWAYS_INLINE void BaseRenderingContext2D::CheckOverdraw(

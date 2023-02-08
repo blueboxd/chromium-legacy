@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/strings/strcat.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
@@ -88,6 +89,18 @@ std::unique_ptr<network::SimpleURLLoader> BuildSimpleUrlLoader(
   simple_url_loader->SetTimeoutDuration(base::Seconds(30));
   return simple_url_loader;
 }
+
+std::vector<InterestGroupManager::InterestGroupDataKey>
+ConvertOwnerJoinerPairsToDataKeys(
+    std::vector<std::pair<url::Origin, url::Origin>> owner_joiner_pairs) {
+  std::vector<InterestGroupManager::InterestGroupDataKey> data_keys;
+  for (auto& key : owner_joiner_pairs) {
+    data_keys.emplace_back(
+        InterestGroupManager::InterestGroupDataKey{key.first, key.second});
+  }
+  return data_keys;
+}
+
 }  // namespace
 
 InterestGroupManagerImpl::ReportRequest::ReportRequest() = default;
@@ -122,6 +135,23 @@ InterestGroupManagerImpl::~InterestGroupManagerImpl() = default;
 void InterestGroupManagerImpl::GetAllInterestGroupJoiningOrigins(
     base::OnceCallback<void(std::vector<url::Origin>)> callback) {
   impl_.AsyncCall(&InterestGroupStorage::GetAllInterestGroupJoiningOrigins)
+      .Then(std::move(callback));
+}
+
+void InterestGroupManagerImpl::GetAllInterestGroupDataKeys(
+    base::OnceCallback<void(std::vector<InterestGroupDataKey>)> callback) {
+  impl_.AsyncCall(&InterestGroupStorage::GetAllInterestGroupOwnerJoinerPairs)
+      .Then(base::BindOnce(&ConvertOwnerJoinerPairsToDataKeys)
+                .Then(std::move(callback)));
+}
+
+void InterestGroupManagerImpl::RemoveInterestGroupsByDataKey(
+    InterestGroupDataKey data_key,
+    base::OnceClosure callback) {
+  impl_
+      .AsyncCall(
+          &InterestGroupStorage::RemoveInterestGroupsMatchingOwnerAndJoiner)
+      .WithArgs(data_key.owner, data_key.joining_origin)
       .Then(std::move(callback));
 }
 
@@ -218,8 +248,10 @@ void InterestGroupManagerImpl::RecordInterestGroupWin(
       .WithArgs(group_key, std::move(ad_json));
 }
 
-void InterestGroupManagerImpl::RegisterAdAsWon(const GURL& render_url) {
-  k_anonymity_manager_->RegisterAdAsWon(render_url);
+void InterestGroupManagerImpl::RegisterAdAsWon(
+    const blink::InterestGroup& group,
+    const blink::InterestGroup::Ad& ad) {
+  k_anonymity_manager_->RegisterAdAsWon(group, ad);
 }
 
 void InterestGroupManagerImpl::GetInterestGroup(
@@ -247,7 +279,9 @@ void InterestGroupManagerImpl::GetInterestGroupsForOwner(
     base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback) {
   impl_.AsyncCall(&InterestGroupStorage::GetInterestGroupsForOwner)
       .WithArgs(owner)
-      .Then(std::move(callback));
+      .Then(
+          base::BindOnce(&InterestGroupManagerImpl::OnGetInterestGroupsComplete,
+                         weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void InterestGroupManagerImpl::DeleteInterestGroupData(
@@ -324,7 +358,6 @@ void InterestGroupManagerImpl::ClearPermissionsCache() {
 void InterestGroupManagerImpl::QueueKAnonymityUpdateForInterestGroup(
     const StorageInterestGroup& group) {
   k_anonymity_manager_->QueryKAnonymityForInterestGroup(group);
-  k_anonymity_manager_->RegisterInterestGroupAsJoined(group.interest_group);
 }
 
 void InterestGroupManagerImpl::UpdateKAnonymity(
@@ -409,6 +442,17 @@ void InterestGroupManagerImpl::ReportUpdateFailed(
       .WithArgs(group_key, parse_failure);
 }
 
+void InterestGroupManagerImpl::OnGetInterestGroupsComplete(
+    base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback,
+    std::vector<StorageInterestGroup> groups) {
+  for (const auto& group : groups) {
+    NotifyInterestGroupAccessed(InterestGroupObserverInterface::kLoaded,
+                                group.interest_group.owner.Serialize(),
+                                group.interest_group.name);
+  }
+  std::move(callback).Run(std::move(groups));
+}
+
 void InterestGroupManagerImpl::NotifyInterestGroupAccessed(
     InterestGroupObserverInterface::AccessType type,
     const std::string& owner_origin,
@@ -485,7 +529,7 @@ void InterestGroupManagerImpl::OnOneReportSent(
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
   DCHECK_GT(num_active_, 0);
 
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&InterestGroupManagerImpl::TrySendingOneReport,
                      weak_factory_.GetWeakPtr()),

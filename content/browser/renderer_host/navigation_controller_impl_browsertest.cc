@@ -22,7 +22,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -2142,16 +2141,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
       static_cast<WebContentsImpl*>(new_shell->web_contents())
           ->GetPrimaryFrameTree()
           .root();
+  EXPECT_TRUE(new_shell->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
 
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(new_shell->web_contents()
-                    ->GetController()
-                    .GetLastCommittedEntry()
-                    ->IsInitialEntry());
-  } else {
-    EXPECT_FALSE(
-        new_shell->web_contents()->GetController().GetLastCommittedEntry());
-  }
   // Make a new iframe in it.
   {
     LoadCommittedCapturer capturer(new_shell->web_contents());
@@ -2162,22 +2156,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   }
   ASSERT_EQ(1U, new_root->child_count());
   ASSERT_NE(nullptr, new_root->child_at(0));
-  // The subframe navigations will only be ignored if we didn't create initial
-  // NavigationEntry.
-  bool subframe_navigation_should_not_be_ignored =
-      blink::features::IsInitialNavigationEntryEnabled();
 
-  // If the subframe navigation is not ignored, we will create a
+  // The subframe navigation should not be ignored, and we will create a
   // FrameNavigationEntry for the new iframe.
-  if (subframe_navigation_should_not_be_ignored) {
-    EXPECT_TRUE(
-        static_cast<NavigationEntryImpl*>(
-            new_shell->web_contents()->GetController().GetLastCommittedEntry())
-            ->GetFrameEntry(new_root->child_at(0)));
-  } else {
-    EXPECT_FALSE(
-        new_shell->web_contents()->GetController().GetLastCommittedEntry());
-  }
+  EXPECT_TRUE(
+      static_cast<NavigationEntryImpl*>(
+          new_shell->web_contents()->GetController().GetLastCommittedEntry())
+          ->GetFrameEntry(new_root->child_at(0)));
 
   // Navigate it cross-site.
   GURL frame_url = embedded_test_server()->GetURL(
@@ -2189,17 +2174,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
     capturer.Wait();
   }
 
-  // If the subframe navigation is not ignored, we will create a
+  // The subframe navigation should not ignored, and we will create a
   // FrameNavigationEntry for the new iframe.
-  if (subframe_navigation_should_not_be_ignored) {
-    EXPECT_TRUE(
-        static_cast<NavigationEntryImpl*>(
-            new_shell->web_contents()->GetController().GetLastCommittedEntry())
-            ->GetFrameEntry(new_root->child_at(0)));
-  } else {
-    EXPECT_FALSE(
-        new_shell->web_contents()->GetController().GetLastCommittedEntry());
-  }
+  EXPECT_TRUE(
+      static_cast<NavigationEntryImpl*>(
+          new_shell->web_contents()->GetController().GetLastCommittedEntry())
+          ->GetFrameEntry(new_root->child_at(0)));
 
   // A nested iframe with a cross-site URL should also be able to commit.
   GURL grandchild_url(embedded_test_server()->GetURL(
@@ -2212,19 +2192,14 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   }
   ASSERT_EQ(1U, new_root->child_at(0)->child_count());
   EXPECT_EQ(grandchild_url, new_root->child_at(0)->child_at(0)->current_url());
-  // If the subframe navigation is not ignored, we will create a
+  // The subframe navigation should not be ignored, and we will create a
   // FrameNavigationEntry for the new grandchild iframe.
-  if (subframe_navigation_should_not_be_ignored) {
-    EXPECT_EQ(
-        grandchild_url,
-        static_cast<NavigationEntryImpl*>(
-            new_shell->web_contents()->GetController().GetLastCommittedEntry())
-            ->GetFrameEntry(new_root->child_at(0)->child_at(0))
-            ->url());
-  } else {
-    EXPECT_FALSE(
-        new_shell->web_contents()->GetController().GetLastCommittedEntry());
-  }
+  EXPECT_EQ(
+      grandchild_url,
+      static_cast<NavigationEntryImpl*>(
+          new_shell->web_contents()->GetController().GetLastCommittedEntry())
+          ->GetFrameEntry(new_root->child_at(0)->child_at(0))
+          ->url());
 }
 
 // Test that the renderer is not killed after an auto subframe navigation if the
@@ -4567,13 +4542,6 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
 // navigation entirely.
 IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
                        NavigateNewWindow) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below expect the initial empty document replacement behavior
-    // is using the "always replace initial empty document or initial
-    // NavigationEntry" mode, which isn't what is used when the
-    // InitialNavigationEntry feature is disabled.
-    return;
-  }
   GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
   GURL hung_url(embedded_test_server()->GetURL("/hung"));
@@ -4861,278 +4829,6 @@ IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
   }
 }
 
-// Same as NavigateNewWindow above, but expects the replacement behavior that
-// only applies when InitialNavigationEntry is turned off.
-IN_PROC_BROWSER_TEST_P(InitialEmptyDocNavigationControllerBrowserTest,
-                       NavigateNewWindow_NoInitialNavigationEntry) {
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    return;
-  }
-  GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
-  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
-  GURL hung_url(embedded_test_server()->GetURL("/hung"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_window_url));
-  EXPECT_TRUE(ExecJs(contents(), "var last_opened_window = null;"));
-
-  // 1) Navigate to |url_2| on a new window that hasn't done any navigation.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 1.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-  }
-
-  // 2) Navigate to about:blank on a new window that hasn't done any navigation.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 2.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank will be classified as NEW_ENTRY
-    // and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank"),
-                           true /* wait_for_previous_navigations */,
-                           false /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank#foo will be classified as a same-
-    // document NEW_ENTRY, and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(2, controller.GetEntryCount());
-
-    // The window is still marked as no longer being on the initial empty
-    // document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 3) Navigate to about:blank#foo on a new window that hasn't done any
-  // navigation.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 3.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to about:blank#foo will be classified as a same-
-    // document NEW_ENTRY, and will add a new entry.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window should still be on the initial empty document.
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-  }
-
-  // 4) Navigate to |url_2| on a new window that initially loaded about:blank
-  // and has done a same-document navigation to about:blank#foo.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 4.");
-
-    // Create a new window with URL set to about:blank, which will create a
-    // NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), GURL("about:blank"));
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(1, controller.GetEntryCount());
-    NavigationEntryImpl* last_entry = controller.GetLastCommittedEntry();
-    EXPECT_TRUE(last_entry);
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Do a navigation on the window to about:blank#foo, creating a
-    // same-document navigation.
-    NavigateWindowAndCheck(new_contents, GURL("about:blank#foo"),
-                           true /* wait_for_previous_navigations */,
-                           true /* expect_same_document */,
-                           NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-                           false /* expect_replace */);
-    EXPECT_EQ(2, controller.GetEntryCount());
-    EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
-    // Check that we did a same-document navigation (the DSN stays the same).
-    EXPECT_EQ(last_entry->GetMainFrameDocumentSequenceNumber(),
-              controller.GetLastCommittedEntry()
-                  ->GetMainFrameDocumentSequenceNumber());
-    last_entry = controller.GetLastCommittedEntry();
-
-    // The window should still be on the initial empty document.
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(3, controller.GetEntryCount());
-    EXPECT_NE(last_entry, controller.GetLastCommittedEntry());
-
-    // The window is no longer on theinitial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 5) Navigate to |url_2| on a new window that has started a navigation to
-  // a URL that never committed.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 5.");
-
-    // Create a new window with URL set to a URL that never commits, which will
-    // not create a NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), hung_url);
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on the initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigate to |url_2|, and ensure that we won't wait for the |hung_url|
-    // navigation to finish.
-    NavigateWindowAndCheck(
-        new_contents, url_2, false /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-
-  // 6) Navigate to |url_2| on a new window that has done a document.open().
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 6.");
-
-    // Create a new blank window that won't create a NavigationEntry.
-    Shell* new_shell = OpenBlankWindow(contents());
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on its initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Do a document.open() on the blank window.
-    TestNavigationObserver nav_observer(new_contents);
-    EXPECT_TRUE(ExecJs(contents(), R"(
-      last_opened_window.document.open();
-          last_opened_window.document.write("foo");
-          last_opened_window.document.close();
-    )"));
-
-    // Ensure the URL update from the document.open() above has finished before
-    // continuing by waiting for a renderer round-trip to run this script.
-    EXPECT_TRUE(ExecJs(new_contents, "true"));
-
-    // The document.open() changed the window's URL in the renderer to be the
-    // same as the main tab's URL, but doesn't actually commit a navigation.
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_EQ(GURL("about:blank"),
-              new_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
-    EXPECT_EQ(
-        main_window_url,
-        new_contents->GetPrimaryMainFrame()->last_document_url_in_renderer());
-
-    // The window lost its "initial empty document" status.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-  }
-
-  // 7) Navigate to |url_2| on a new window that has navigated to a javascript:
-  // URL that replaced the initial empty document.
-  {
-    SCOPED_TRACE(testing::Message() << " Testing case 7.");
-
-    // Create a new window with URL set to a javascript: URL that replaces the
-    // document, which will not create a NavigationEntry.
-    Shell* new_shell = OpenWindow(contents(), GURL("javascript:'foo'"));
-    WebContentsImpl* new_contents =
-        static_cast<WebContentsImpl*>(new_shell->web_contents());
-    NavigationControllerImpl& controller = new_contents->GetController();
-    EXPECT_EQ(0, controller.GetEntryCount());
-    EXPECT_FALSE(controller.GetLastCommittedEntry());
-
-    // The window should be on its initial empty document.
-    FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
-    EXPECT_TRUE(new_root->is_on_initial_empty_document());
-
-    // Navigating the window to |url_2| will be classified as NEW_ENTRY and will
-    // add a new entry.
-    NavigateWindowAndCheck(
-        new_contents, url_2, true /* wait_for_previous_navigations */,
-        false /* expect_same_document */, NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
-        false /* expect_replace */);
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-
-    // The window is no longer on the initial empty document.
-    EXPECT_FALSE(new_root->is_on_initial_empty_document());
-  }
-}
-
 // Test a same-document navigation in a new window's initial empty document to
 // ensure it is classified correctly.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
@@ -5146,12 +4842,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
       static_cast<WebContentsImpl*>(new_shell->web_contents());
   NavigationControllerImpl& controller = new_contents->GetController();
   FrameTreeNode* root = new_contents->GetPrimaryFrameTree().root();
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, controller.GetEntryCount());
-    EXPECT_TRUE(controller.GetLastCommittedEntry());
-  } else {
-    EXPECT_EQ(0, controller.GetEntryCount());
-  }
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_TRUE(controller.GetLastCommittedEntry());
 
   {
     // Do a same-document navigation.
@@ -5181,11 +4873,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // will fail.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        InitialNavigationEntryStatus_MainFrame) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL main_window_url(embedded_test_server()->GetURL("/title1.html"));
   GURL no_commit_url(embedded_test_server()->GetURL("/page204.html"));
   GURL cross_document_url(embedded_test_server()->GetURL("/title2.html"));
@@ -5436,11 +5123,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // that is not for synchronous about:blank will fail.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        InitialNavigationEntryStatus_SubframeAndRestore) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL main_window_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   GURL no_commit_url(embedded_test_server()->GetURL("/page204.html"));
@@ -8662,14 +8344,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // TODO(https://crbug.com/1287624): A selected index of -1 should not be
   // allowed.
   EXPECT_EQ(2, new_controller.GetEntryCount());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    // When InitialNavigationEntry is enabled, there is always a valid index.
-    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
-  } else {
-    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
-  }
+
+  // There is always a valid index.
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(url_1, new_controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url_2, new_controller.GetEntryAtIndex(1)->GetURL());
+
   // The pending entry is not cleared and the back navigation is still pending.
   EXPECT_EQ(entry1, new_controller.GetPendingEntry());
   EXPECT_TRUE(new_root->navigation_request());
@@ -8685,12 +8365,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // `url_1` is loaded.
   // TODO(https://crbug.com/1287624): A selected index of -1 should not be
   // allowed.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(2, new_controller.GetEntryCount());
-  } else {
-    // Somehow the later entry is pruned in this unusual case.
-    EXPECT_EQ(1, new_controller.GetEntryCount());
-  }
+  EXPECT_EQ(2, new_controller.GetEntryCount());
   EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
   NavigationEntryImpl* current_entry = new_controller.GetLastCommittedEntry();
   EXPECT_EQ(url_1, current_entry->GetURL());
@@ -14113,7 +13788,8 @@ class RequestMonitoringNavigationBrowserTest
     // |accumulated_requests_| container.
     embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
         &RequestMonitoringNavigationBrowserTest::MonitorRequestOnIoThread,
-        weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
+        weak_factory_.GetWeakPtr(),
+        base::SequencedTaskRunner::GetCurrentDefault()));
 
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -14362,26 +14038,21 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, NavigateToEmptyURL) {
     WebContentsImpl* new_contents =
         static_cast<WebContentsImpl*>(new_shell->web_contents());
 
-    // The initial NavigationEntry, if it exists, will have an empty URL, and
-    // its initiator origin is set to the origin of the document that opened the
-    // window.
+    // The initial NavigationEntry will have an empty URL, and its initiator
+    // origin is set to the origin of the document that opened the window.
     NavigationControllerImpl& new_controller = new_contents->GetController();
-    if (blink::features::IsInitialNavigationEntryEnabled()) {
-      EXPECT_EQ(1, new_controller.GetEntryCount());
-      entry = new_controller.GetLastCommittedEntry();
-      EXPECT_TRUE(entry->IsInitialEntry());
-      EXPECT_EQ(GURL(), entry->GetURL());
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+    entry = new_controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry->IsInitialEntry());
+    EXPECT_EQ(GURL(), entry->GetURL());
 
-      scoped_refptr<FrameNavigationEntry> frame_entry =
-          entry->root_node()->frame_entry.get();
-      ASSERT_TRUE(frame_entry->initiator_origin().has_value());
-      EXPECT_EQ(opener_origin, frame_entry->initiator_origin().value());
-      EXPECT_EQ(opener_origin, new_shell->web_contents()
-                                   ->GetPrimaryMainFrame()
-                                   ->GetLastCommittedOrigin());
-    } else {
-      EXPECT_EQ(0, new_controller.GetEntryCount());
-    }
+    scoped_refptr<FrameNavigationEntry> frame_entry =
+        entry->root_node()->frame_entry.get();
+    ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+    EXPECT_EQ(opener_origin, frame_entry->initiator_origin().value());
+    EXPECT_EQ(opener_origin, new_shell->web_contents()
+                                 ->GetPrimaryMainFrame()
+                                 ->GetLastCommittedOrigin());
   }
 
   {
@@ -14393,30 +14064,25 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, NavigateToEmptyURL) {
         ExecJs(shell(), "window.open('/page204.html', '_blank', 'noopener');"));
     Shell* new_shell = new_shell_observer.GetShell();
 
-    // The initial NavigationEntry, if it exists, will have an empty URL, and
-    // its initiator origin is set to an opaque origin (not the opener's
-    // origin).
+    // The initial NavigationEntry will have an empty URL, and its initiator
+    // origin is set to an opaque origin (not the opener's origin).
     NavigationControllerImpl& new_controller =
         static_cast<WebContentsImpl*>(new_shell->web_contents())
             ->GetController();
-    if (blink::features::IsInitialNavigationEntryEnabled()) {
-      EXPECT_EQ(1, new_controller.GetEntryCount());
-      entry = new_controller.GetLastCommittedEntry();
-      EXPECT_TRUE(entry->IsInitialEntry());
-      EXPECT_EQ(GURL(), entry->GetURL());
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+    entry = new_controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry->IsInitialEntry());
+    EXPECT_EQ(GURL(), entry->GetURL());
 
-      scoped_refptr<FrameNavigationEntry> frame_entry =
-          entry->root_node()->frame_entry.get();
-      ASSERT_TRUE(frame_entry->initiator_origin().has_value());
-      EXPECT_NE(opener_origin, frame_entry->initiator_origin().value());
-      EXPECT_TRUE(frame_entry->initiator_origin()->opaque());
-      EXPECT_EQ(frame_entry->initiator_origin().value(),
-                new_shell->web_contents()
-                    ->GetPrimaryMainFrame()
-                    ->GetLastCommittedOrigin());
-    } else {
-      EXPECT_EQ(0, new_controller.GetEntryCount());
-    }
+    scoped_refptr<FrameNavigationEntry> frame_entry =
+        entry->root_node()->frame_entry.get();
+    ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+    EXPECT_NE(opener_origin, frame_entry->initiator_origin().value());
+    EXPECT_TRUE(frame_entry->initiator_origin()->opaque());
+    EXPECT_EQ(frame_entry->initiator_origin().value(),
+              new_shell->web_contents()
+                  ->GetPrimaryMainFrame()
+                  ->GetLastCommittedOrigin());
   }
 
   {
@@ -16590,7 +16256,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16600,7 +16266,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16625,7 +16291,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16635,7 +16301,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16660,7 +16326,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16670,7 +16336,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16695,7 +16361,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_TRUE(url2_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16705,7 +16371,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16731,7 +16397,7 @@ IN_PROC_BROWSER_TEST_P(
     url1_capturer.Wait();
     EXPECT_FALSE(url1_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16741,7 +16407,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_FALSE(url2_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16751,7 +16417,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_TRUE(url3_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16761,7 +16427,7 @@ IN_PROC_BROWSER_TEST_P(
     url4_capturer.Wait();
     EXPECT_FALSE(url4_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16778,7 +16444,7 @@ IN_PROC_BROWSER_TEST_P(
     url5_capturer.Wait();
     EXPECT_TRUE(url5_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -16810,7 +16476,7 @@ IN_PROC_BROWSER_TEST_P(
     url1_capturer.Wait();
     EXPECT_TRUE(url1_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16820,7 +16486,7 @@ IN_PROC_BROWSER_TEST_P(
     url2_capturer.Wait();
     EXPECT_FALSE(url2_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16830,7 +16496,7 @@ IN_PROC_BROWSER_TEST_P(
     url3_capturer.Wait();
     EXPECT_FALSE(url3_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   {
@@ -16847,7 +16513,7 @@ IN_PROC_BROWSER_TEST_P(
     url4_capturer.Wait();
     EXPECT_TRUE(url4_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
 }
 
@@ -19168,8 +18834,10 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 
  public:
   DidCommitNavigationCanceller(WebContents* web_contents,
+                               const GURL& url_to_cancel,
                                CallbackScriptRunner callback)
-      : DidCommitNavigationInterceptor(web_contents) {
+      : DidCommitNavigationInterceptor(web_contents),
+        url_to_cancel_(url_to_cancel) {
     callback_ = std::move(callback);
   }
 
@@ -19179,12 +18847,16 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
       mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
       override {
-    std::move(callback_).Run();
-    return false;
+    if (navigation_request->GetURL() == url_to_cancel_) {
+      std::move(callback_).Run();
+      return false;
+    }
+    return true;
   }
 
  private:
   CallbackScriptRunner callback_;
+  GURL url_to_cancel_;
 };
 
 }  //  namespace
@@ -19211,7 +18883,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                               ->child_at(0);
 
   DidCommitNavigationCanceller canceller(
-      shell()->web_contents(), base::BindLambdaForTesting([iframe]() {
+      shell()->web_contents(), main_frame_url_2,
+      base::BindLambdaForTesting([iframe]() {
         EXPECT_TRUE(
             ExecJs(iframe, "parent.location.href = 'chrome-guest://1234';"));
       }));
@@ -20930,11 +20603,6 @@ class AllNavigationStateChangedDelegate : public WebContentsDelegate {
 // initial NavigationEntry dispatches the expected NavigationStateChanged calls.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationStateChangedForInitialNavigationEntry) {
-  if (!blink::features::IsInitialNavigationEntryEnabled()) {
-    // The tests below specifically tests the "initial NavigationEntry" state,
-    // which is not used when InitialNavigationEntry is disabled.
-    return;
-  }
   GURL url1 = embedded_test_server()->GetURL("/title1.html");
   GURL url2 = embedded_test_server()->GetURL("/title2.html");
   EXPECT_TRUE(NavigateToURL(shell(), url1));
@@ -21046,31 +20714,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   }
 }
 
-// Tests with InitialNavigationEntry enabled/disabled.
-class NavigationControllerInitialNavigationEntryBrowserTest
-    : public NavigationControllerBrowserTestBase,
-      public testing::WithParamInterface<bool> {
- protected:
-  void SetUp() override {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          blink::features::kInitialNavigationEntry);
-    } else {
-      feature_list_.InitAndDisableFeature(
-          blink::features::kInitialNavigationEntry);
-    }
-    NavigationControllerBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Verify that calling Restore() with a non-empty entry list on a new
 // NavigationController will not result in an initial NavigationEntry.
 // See https://crbug.com/1295723.
 IN_PROC_BROWSER_TEST_P(
-    NavigationControllerInitialNavigationEntryBrowserTest,
+    NavigationControllerBrowserTest,
     RestoreRemovesInitialEmptyDocumentOnFreshNavigationController) {
   GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -21112,15 +20760,10 @@ IN_PROC_BROWSER_TEST_P(
   NavigationControllerImpl& new_controller =
       static_cast<NavigationControllerImpl&>(
           new_shell->web_contents()->GetController());
-  // The new tab's root is on the initial NavigationEntry (if the flag is
-  // enabled) and is marked as "on initial empty document" as it hasn't
-  // navigated anywhere.
+  // The new tab's root is on the initial NavigationEntry and is marked as
+  // "on initial empty document" as it hasn't navigated anywhere.
   EXPECT_TRUE(new_root->is_on_initial_empty_document());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, new_controller.GetEntryCount());
-  }
+  EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
 
   // 4. Call Restore() with the entry from the old tab.
   new_controller.Restore(entries.size() - 1, RestoreType::kRestored, &entries);
@@ -21147,7 +20790,7 @@ IN_PROC_BROWSER_TEST_P(
 // Verify that calling Restore with an empty set of entries on a fresh/unused
 // NavigationController does not crash, since this may be possible via Android
 // WebView's restoreState() API. See https://crbug.com/1287624.
-IN_PROC_BROWSER_TEST_P(NavigationControllerInitialNavigationEntryBrowserTest,
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        RestoreEmptyAndLoadOnFreshNavigationController) {
   // 1. Create a new tab with a new NavigationController, and don't navigate it
   // anywhere.
@@ -21161,32 +20804,20 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerInitialNavigationEntryBrowserTest,
   NavigationControllerImpl& new_controller =
       static_cast<NavigationControllerImpl&>(
           new_shell->web_contents()->GetController());
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    // When InitialNavigationEntry is enabled, the new tab is on the initial
-    // NavigationEntry.
-    EXPECT_EQ(1, new_controller.GetEntryCount());
-    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
-    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, new_controller.GetEntryCount());
-    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
-  }
+  // The new tab is on the initial NavigationEntry.
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
 
   // 2. Restore an empty set of entries in the new tab, which is possible via
   // Android WebView's restoreState API.
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   new_controller.Restore(-1, RestoreType::kRestored, &entries);
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    // When InitialNavigationEntry is enabled, there is always a valid index,
-    // and the initial NavigationEntry is kept to ensure that there is always
-    // at least 1 entry.
-    EXPECT_EQ(1, new_controller.GetEntryCount());
-    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
-    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, new_controller.GetEntryCount());
-    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
-  }
+  // There is always a valid index, and the initial NavigationEntry is kept to
+  // ensure that there is always at least 1 entry.
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
 
   // 3. Call LoadIfNecessary() in the new tab.
   ASSERT_EQ(0u, entries.size());
@@ -21201,9 +20832,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerInitialNavigationEntryBrowserTest,
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(new_shell, url));
   capturer.Wait();
-  // The navigation should replace the initial NavigationEntry (if it existed).
-  EXPECT_EQ(blink::features::IsInitialNavigationEntryEnabled(),
-            capturer.did_replace_entry());
+  // The navigation should replace the initial NavigationEntry .
+  EXPECT_TRUE(capturer.did_replace_entry());
   EXPECT_EQ(1, new_controller.GetEntryCount());
   EXPECT_EQ(url, new_controller.GetLastCommittedEntry()->GetURL());
 }
@@ -22091,6 +21721,599 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
+// Verifies that deletion of speculative RenderFrameHost due to navigation
+// cancellation doesn't crash.
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    DeleteSpeculativeRenderFrameHostDueToNavigationCancellation_MainFrame) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  // Navigate to the original page.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
+
+  if (ShouldCreateNewHostForAllFrames()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing main frame same-site navigation.");
+    // Main frame same-site navigation creates a speculative RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_a);
+    EXPECT_TRUE(ExecJs(root, JsReplace("location.href = $1;", url_a)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(root->render_manager()->speculative_frame_host());
+
+    // Cancel the navigation. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    EXPECT_FALSE(root->render_manager()->speculative_frame_host());
+  }
+
+  if (AreAllSitesIsolatedForTesting() || ShouldCreateNewHostForAllFrames()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing main frame cross-site navigation.");
+    // Main frame cross-site navigation creates a speculative RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_b);
+    EXPECT_TRUE(ExecJs(root, JsReplace("location.href = $1;", url_b)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(root->render_manager()->speculative_frame_host());
+    // Cancel the navigation. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    EXPECT_FALSE(root->render_manager()->speculative_frame_host());
+  }
+}
+
+// Same as above but for subframes.
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    DeleteSpeculativeRenderFrameHostDueToNavigationCancellation_Subframe) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  // Navigate to a page with an iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
+  FrameTreeNode* child = root->child_at(0);
+
+  if (ShouldCreateNewHostForSameSiteSubframe()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing subframe same-site navigation.");
+    // Subframe same-site navigation creates a speculative RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_a);
+    EXPECT_TRUE(ExecJs(child, JsReplace("location.href = $1;", url_a)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(child->render_manager()->speculative_frame_host());
+    // Cancel the navigation. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    child->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+    EXPECT_FALSE(child->render_manager()->speculative_frame_host());
+  }
+
+  if (AreAllSitesIsolatedForTesting() ||
+      ShouldCreateNewHostForSameSiteSubframe()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing subframe same-site navigation.");
+    // Subframe cross-site navigation creates a speculative RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_b);
+    EXPECT_TRUE(ExecJs(child, JsReplace("location.href = $1;", url_b)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(child->render_manager()->speculative_frame_host());
+    child->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+
+    // Cancel the navigation. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    EXPECT_FALSE(child->render_manager()->speculative_frame_host());
+  }
+}
+
+// Verifies that deletion of speculative RenderFrameHost due to deletion of
+// the frame it's committing in doesn't crash.
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    DeleteSpeculativeRenderFrameHostDueToFrameDeletion_MainFrame) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  // Navigate to the original page.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* original_root = contents()->GetPrimaryFrameTree().root();
+
+  if (ShouldCreateNewHostForAllFrames()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing main frame same-site navigation.");
+
+    // Open a new window.
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(original_root,
+                       "var w = window.open('" + main_url.spec() + "');"));
+    Shell* new_shell = new_shell_observer.GetShell();
+    ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+    FrameTreeNode* new_window_root =
+        static_cast<WebContentsImpl*>(new_shell->web_contents())
+            ->GetPrimaryFrameTree()
+            .root();
+
+    // Main frame same-site navigation in the new window creates a speculative
+    // RenderFrameHost.
+    TestNavigationManager navigation_manager(new_shell->web_contents(), url_a);
+    EXPECT_TRUE(
+        ExecJs(new_window_root, JsReplace("location.href = $1;", url_a)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(new_window_root->render_manager()->speculative_frame_host());
+
+    // Close the window. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    EXPECT_TRUE(ExecJs(original_root, "w.close()"));
+    navigation_manager.WaitForNavigationFinished();
+    EXPECT_FALSE(navigation_manager.was_committed());
+  }
+
+  if (AreAllSitesIsolatedForTesting() || ShouldCreateNewHostForAllFrames()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing main frame cross-site navigation.");
+
+    // Open a new window.
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(original_root,
+                       "var w = window.open('" + main_url.spec() + "');"));
+    Shell* new_shell = new_shell_observer.GetShell();
+    ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+    FrameTreeNode* new_window_root =
+        static_cast<WebContentsImpl*>(new_shell->web_contents())
+            ->GetPrimaryFrameTree()
+            .root();
+
+    // Main frame cross-site navigation in the new window creates a speculative
+    // RenderFrameHost.
+    TestNavigationManager navigation_manager(new_shell->web_contents(), url_b);
+    EXPECT_TRUE(
+        ExecJs(new_window_root, JsReplace("location.href = $1;", url_b)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(new_window_root->render_manager()->speculative_frame_host());
+
+    // Close the window. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    EXPECT_TRUE(ExecJs(original_root, "w.close()"));
+    navigation_manager.WaitForNavigationFinished();
+    EXPECT_FALSE(navigation_manager.was_committed());
+  }
+}
+
+// Same as above but for subframes.
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    DeleteSpeculativeRenderFrameHostDueToFrameDeletion_Subframe) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  // Navigate to the original page.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
+
+  if (ShouldCreateNewHostForSameSiteSubframe()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing subframe same-site navigation.");
+
+    {
+      // Create a new iframe.
+      LoadCommittedCapturer capturer(contents());
+      EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, main_url)));
+      capturer.Wait();
+    }
+
+    // Subframe same-site navigation in the new iframe creates a speculative
+    // RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_a);
+    EXPECT_TRUE(
+        ExecJs(root->child_at(0), JsReplace("location.href = $1;", url_a)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(root->child_at(0)->render_manager()->speculative_frame_host());
+
+    // Close the window. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    EXPECT_TRUE(
+        ExecJs(root, "document.getElementsByTagName('iframe')[0].remove()"));
+    navigation_manager.WaitForNavigationFinished();
+    EXPECT_FALSE(navigation_manager.was_committed());
+  }
+
+  if (AreAllSitesIsolatedForTesting() ||
+      ShouldCreateNewHostForSameSiteSubframe()) {
+    SCOPED_TRACE(testing::Message()
+                 << " Testing subframe cross-site navigation.");
+
+    {
+      // Create a new iframe.
+      LoadCommittedCapturer capturer(contents());
+      EXPECT_TRUE(ExecJs(root, JsReplace(kAddFrameWithSrcScript, main_url)));
+      capturer.Wait();
+    }
+
+    // Subframe cross-site navigation in the new iframe creates a speculative
+    // RenderFrameHost.
+    TestNavigationManager navigation_manager(contents(), url_b);
+    EXPECT_TRUE(
+        ExecJs(root->child_at(0), JsReplace("location.href = $1;", url_b)));
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    EXPECT_TRUE(root->child_at(0)->render_manager()->speculative_frame_host());
+
+    // Close the iframe. This should trigger the deletion of the
+    // speculative RenderFrameHost.
+    EXPECT_TRUE(
+        ExecJs(root, "document.getElementsByTagName('iframe')[0].remove()"));
+    navigation_manager.WaitForNavigationFinished();
+    EXPECT_FALSE(navigation_manager.was_committed());
+  }
+}
+
+// Test that starting a new navigation will cancel a previous navigation that
+// had started earlier if one of the navigations uses a speculative
+// RenderFrameHost and the other one does not.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       StartNewNavigationWithExistingNavigation_RequestStart) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test expects cross-site main frame navigations to change
+    // RenderFrameHosts, and same-site main frame navigations to reuse the
+    // current RenderFrameHosts.
+    return;
+  }
+  // Ensure same-site navigation won't change RenderFrameHosts due to BFCache.
+  DisableBackForwardCacheForTesting(
+      contents(), BackForwardCacheImpl::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_a3(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+
+  // 2) Start a same-RFH navigation to A2, but don't commit it yet.
+  TestNavigationManager a2_navigation(shell()->web_contents(), url_a2);
+  shell()->LoadURL(url_a2);
+  EXPECT_TRUE(a2_navigation.WaitForRequestStart());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(root->navigation_request(), a2_navigation.GetNavigationHandle());
+
+  // 3) Start a cross-RFH navigation to B1, which will cancel the navigation to
+  // A2.
+  TestNavigationManager b1_navigation(shell()->web_contents(), url_b1);
+  shell()->LoadURL(url_b1);
+  EXPECT_TRUE(b1_navigation.WaitForRequestStart());
+  EXPECT_EQ(url_b1, b1_navigation.GetNavigationHandle()->GetURL());
+  EXPECT_EQ(root->navigation_request(), b1_navigation.GetNavigationHandle());
+
+  // Assert that the navigation to A2 gets cancelled.
+  a2_navigation.WaitForNavigationFinished();
+  EXPECT_FALSE(a2_navigation.was_committed());
+
+  // 4) Start another same-RFH navigation to A3, which will cancel the
+  // previous cross-RFH navigation to B1.
+  TestNavigationManager a3_navigation(shell()->web_contents(), url_a3);
+  shell()->LoadURL(url_a3);
+  EXPECT_TRUE(a3_navigation.WaitForRequestStart());
+  EXPECT_EQ(url_a3, a3_navigation.GetNavigationHandle()->GetURL());
+  EXPECT_EQ(root->navigation_request(), a3_navigation.GetNavigationHandle());
+
+  // Assert that the navigation to B1 gets cancelled.
+  b1_navigation.WaitForNavigationFinished();
+  EXPECT_FALSE(b1_navigation.was_committed());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerBrowserTest,
+    StartNewNavigationWithExistingNavigation_RequestStart_History) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test expects cross-site main frame navigations to change
+    // RenderFrameHosts, and same-site main frame navigations to reuse the
+    // current RenderFrameHosts.
+    return;
+  }
+  // Ensure same-site navigation won't change RenderFrameHosts due to BFCache.
+  DisableBackForwardCacheForTesting(
+      contents(), BackForwardCacheImpl::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+
+  // 1) Navigate to A1, then B1, then B2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  NavigationEntryImpl* entry_a1 = controller.GetLastCommittedEntry();
+  SiteInstance* site_instance_a1 =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(site_instance_a1, entry_a1->site_instance());
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b1));
+  NavigationEntryImpl* entry_b1 = controller.GetLastCommittedEntry();
+  SiteInstance* site_instance_b1 =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(site_instance_b1, entry_b1->site_instance());
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_b2));
+  NavigationEntryImpl* entry_b2 = controller.GetLastCommittedEntry();
+  SiteInstance* site_instance_b2 =
+      root->current_frame_host()->GetSiteInstance();
+  EXPECT_EQ(site_instance_b2, entry_b2->site_instance());
+
+  // 2) Go back to trigger a same-RFH history navigation to B1, but don't commit
+  // it yet.
+  TestNavigationManager b1_navigation(shell()->web_contents(), url_b1);
+  controller.GoBack();
+  EXPECT_TRUE(b1_navigation.WaitForRequestStart());
+  EXPECT_EQ(root->navigation_request(), b1_navigation.GetNavigationHandle());
+
+  // 3) Go back again to trigger a cross-RFH navigation to A1, which will cancel
+  // the navigation to B1.
+  TestNavigationManager a1_navigation(shell()->web_contents(), url_a1);
+  controller.GoBack();
+  EXPECT_TRUE(a1_navigation.WaitForRequestStart());
+  EXPECT_EQ(url_a1, a1_navigation.GetNavigationHandle()->GetURL());
+  EXPECT_EQ(root->navigation_request(), a1_navigation.GetNavigationHandle());
+
+  // Assert that the navigation to B1 gets cancelled.
+  b1_navigation.WaitForNavigationFinished();
+  EXPECT_FALSE(b1_navigation.was_committed());
+
+  // Assert that the navigation to A1 succesfully commits.
+  a1_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(a1_navigation.was_successful());
+  // Assert that the correct NavigationEntry is used, and no entry gets
+  // corrupted.
+  EXPECT_EQ(entry_a1, controller.GetLastCommittedEntry());
+  EXPECT_EQ(site_instance_a1, entry_a1->site_instance());
+  EXPECT_EQ(site_instance_b1, entry_b1->site_instance());
+  EXPECT_EQ(site_instance_b2, entry_b2->site_instance());
+}
+
+namespace {
+// Starts a navigation to `new_navigation_url` when the navigation mamnaged by
+// `prev_navigation_manager` gets to the ReadyToCommit stage.
+void StartNavigationOnReadyToCommit(
+    Shell* shell,
+    TestNavigationManager& prev_navigation_manager,
+    GURL& new_navigation_url) {
+  base::RunLoop run_loop;
+  static_cast<NavigationRequest*>(prev_navigation_manager.GetNavigationHandle())
+      ->set_ready_to_commit_callback_for_testing(run_loop.QuitClosure());
+  prev_navigation_manager.ResumeNavigation();
+  run_loop.Run();
+  shell->LoadURL(new_navigation_url);
+}
+}  // namespace
+
+// Same as StartNewNavigationWithExistingNavigation_RequestStart but start the
+// new navigation when the previous navigation is at the "ReadyToCommit" stage,
+// after the NavigationRequest's ownership had moved to the committing
+// RenderFrameHost. The behavior is a bit different as the cancellation behavior
+// differs depending on which navigation starts or commits first.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       StartNewNavigationWithExistingNavigation_ReadyToCommit) {
+  if (ShouldCreateNewHostForAllFrames()) {
+    // This test expects cross-site main frame navigations to change
+    // RenderFrameHosts, and same-site main frame navigations to reuse the
+    // current RenderFrameHosts.
+    return;
+  }
+  // Ensure same-site navigation won't change RenderFrameHosts due to BFCache.
+  DisableBackForwardCacheForTesting(
+      contents(), BackForwardCacheImpl::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_a3(embedded_test_server()->GetURL("a.com", "/title3.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  // 1) Navigate to A1.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+
+  // 2) Start a same-RFH navigation to A2, but don't commit it yet.
+  TestNavigationManager a2_navigation(shell()->web_contents(), url_a2);
+  shell()->LoadURL(url_a2);
+  EXPECT_TRUE(a2_navigation.WaitForResponse());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(root->navigation_request(), a2_navigation.GetNavigationHandle());
+
+  // 3) Start a cross-RFH navigation to B1 after A2 gets to "pending commit"
+  // stage, which will not cancel the navigation to A2 as A2's NavigationRequest
+  // had moved.
+  TestNavigationManager b1_navigation(shell()->web_contents(), url_b1);
+  StartNavigationOnReadyToCommit(shell(), a2_navigation, url_b1);
+  EXPECT_TRUE(b1_navigation.WaitForRequestStart());
+  EXPECT_EQ(url_b1, b1_navigation.GetNavigationHandle()->GetURL());
+  EXPECT_EQ(root->navigation_request(), b1_navigation.GetNavigationHandle());
+
+  // Assert that the navigation to A2 didn't get cancelled, and finish
+  // committing A2. This shouldn't cancel the navigation to B1.
+  a2_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(a2_navigation.was_successful());
+
+  // A2's navigation commit didn't cancel B1's navigation.
+  EXPECT_TRUE(b1_navigation.GetNavigationHandle());
+
+  // 4) Start a same-RFH navigation to A3 after B1 gets to "pending commit"
+  // stage, which will cancel the previous cross-RFH navigation to B1, because
+  // when a same-RFH navigation starts it will delete the speculative RFH.
+  // TODO(https://crbug.com/1220337): Ensure that pending-commit navigations
+  // won't get deleted.
+  TestNavigationManager a3_navigation(shell()->web_contents(), url_a3);
+  EXPECT_TRUE(b1_navigation.WaitForResponse());
+  StartNavigationOnReadyToCommit(shell(), b1_navigation, url_a3);
+  EXPECT_TRUE(a3_navigation.WaitForResponse());
+  EXPECT_EQ(url_a3, a3_navigation.GetNavigationHandle()->GetURL());
+  EXPECT_EQ(root->navigation_request(), a3_navigation.GetNavigationHandle());
+
+  // Assert that the navigation to B1 gets cancelled.
+  b1_navigation.WaitForNavigationFinished();
+  EXPECT_FALSE(b1_navigation.was_committed());
+
+  // 5) Start a cross-RFH navigation to B2 after A3 gets to "pending commit"
+  // stage, which will cancel the previous same-RFH navigation to A3 when B2
+  // commits first, because when the previous RFH gets unloaded it will
+  // cancel all ongoing navigations in the pending deletion RFH.
+  TestNavigationManager b2_navigation(shell()->web_contents(), url_b2);
+  // Ignore A3's commit so that B2's navigation can start and finish committing
+  // before A3 finishes committing.
+  DidCommitNavigationCanceller ignore_a3_commit(
+      shell()->web_contents(), url_a3,
+      base::BindLambdaForTesting([&]() { shell()->LoadURL(url_b2); }));
+  // Continue the A3 navigation, but its commit will be dropped.
+  a3_navigation.ResumeNavigation();
+  // The navigation to B2 will start, but won't cancel A3's navigation just yet.
+  EXPECT_TRUE(b2_navigation.WaitForResponse());
+  EXPECT_TRUE(a3_navigation.GetNavigationHandle());
+
+  // The navigation to B2 finished committing, and cancels A3's navigation.
+  b2_navigation.WaitForNavigationFinished();
+  EXPECT_TRUE(b2_navigation.was_successful());
+  // Assert A3's navigation finished but didn't get committed.
+  a3_navigation.WaitForNavigationFinished();
+  EXPECT_FALSE(a3_navigation.was_committed());
+}
+
+// Tests that calling FrameTreeNode::ResetNavigationRequest() cancels the
+// navigation owned by the FrameTreeNode but won't reset a speculative RFH that
+// has a pending commit navigation, even if it was used by the deleted
+// navigation.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       ResetNavigationRequestWontDeletePendingCommitRFH) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  // Load `main_url`.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  RenderFrameHostImplWrapper rfh_a(current_main_frame_host());
+
+  // Start the cross-site navigation to `url_b1`. Then, start a cross-site
+  // navigation to `url_b2` after the `url_b1` navigation is in the
+  // "pending commit" stage, so that both navigations can exist at the same
+  // time (the previous NavigationRequest had already been moved to the
+  //"pending commit" speculative RFH, and they both use the same speculative
+  // RFH).
+  TestNavigationManager b1_nav(shell()->web_contents(), url_b1);
+  TestNavigationManager b2_nav(shell()->web_contents(), url_b2);
+  // Start the navigation to `url_b1` then drop its DidCommit message from the
+  // renderer, so that it will stay in the "pending commit" stage for the rest
+  // of the test. Then, start a navigation to `url_b2`.
+  DidCommitNavigationCanceller ignore_b1_commit(
+      shell()->web_contents(), url_b1,
+      base::BindLambdaForTesting([&]() { shell()->LoadURL(url_b2); }));
+  shell()->LoadURL(url_b1);
+  // Assert tht the `url_b1` navigation had started.
+  EXPECT_TRUE(b1_nav.WaitForResponse());
+  EXPECT_EQ(b1_nav.GetNavigationHandle(), root->navigation_request());
+
+  b1_nav.ResumeNavigation();
+  // Assert that the `url_b2` navigation had started, and didn't cancel the
+  // `url_b1` navigation.
+  EXPECT_TRUE(b2_nav.WaitForRequestStart());
+  EXPECT_EQ(b2_nav.GetNavigationHandle(), root->navigation_request());
+  EXPECT_TRUE(b1_nav.GetNavigationHandle());
+
+  // Cancel the navigation to `url_b2` by calling ResetNavigationRequest().
+  // This shouldn't cancel the navigation to `url_b1`.
+  root->ResetNavigationRequest(NavigationDiscardReason::kCancelled);
+  b2_nav.WaitForNavigationFinished();
+  EXPECT_FALSE(b2_nav.was_committed());
+  EXPECT_FALSE(b2_nav.GetNavigationHandle());
+
+  // Assert that the `url_b1` navigation and the speculative RenderFrameHost is
+  // still around. Note that we can't wait for the navigation to finish here
+  // because we've dropped the DidCommit message for this navigation.
+  EXPECT_TRUE(b1_nav.GetNavigationHandle());
+  EXPECT_TRUE(root->render_manager()->speculative_frame_host());
+  EXPECT_EQ(b1_nav.GetNavigationHandle()->GetRenderFrameHost(),
+            root->render_manager()->speculative_frame_host());
+}
+
+// Tests that when a RenderFrameHost gets into the "pending deletion" state due
+// to another RenderFrameHost committing in the same FrameTreeNode, it won't
+// cancel other navigations happening in the same FrameTreeNode.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       UnloadingPreviousRFHOnCommitWontCancelNavigation) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b1(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL url_b2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  // Load `main_url`.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  RenderFrameHostImplWrapper rfh_a(current_main_frame_host());
+
+  // Start the cross-site navigation to `url_b1`, then start the cross-site
+  // navigation to `url_b2` just before the navigation to `url_b1` processes its
+  // DidCommitNavigation message, so that both navigation can exist at the same
+  // time (the previous NavigationRequest has already been moved to the pending
+  // commit speculative RFH, and they both use the same speculative RFH because
+  // they use the same SiteInstance).
+  TestNavigationManager b1_nav(shell()->web_contents(), url_b1);
+  TestNavigationManager b2_nav(shell()->web_contents(), url_b2);
+  NavigationStarterBeforeDidCommitNavigation urlb2_navigation_starter(
+      contents(), shell(), url_b1, url_b2);
+  shell()->LoadURL(url_b1);
+
+  // Check the navigation to `url_b1` started.
+  EXPECT_TRUE(b1_nav.WaitForResponse());
+  EXPECT_EQ(b1_nav.GetNavigationHandle(), root->navigation_request());
+  b1_nav.ResumeNavigation();
+
+  // Check the navigation to `url_b2` started.
+  EXPECT_TRUE(b2_nav.WaitForRequestStart());
+  EXPECT_EQ(b2_nav.GetNavigationHandle(), root->navigation_request());
+
+  // Wait for the `url_b1` navigation to finish.
+  b1_nav.WaitForNavigationFinished();
+  EXPECT_TRUE(b1_nav.was_successful());
+
+  // The RenderFrameHost had changed, which means we have started to unload the
+  // previous RenderFrameHost or saved it in BFCache.
+  RenderFrameHostImplWrapper rfh_b(current_main_frame_host());
+  EXPECT_NE(rfh_b.get(), rfh_a.get());
+  EXPECT_TRUE(!rfh_a.get() || !rfh_a->IsActive());
+
+  // Check that the `url_b2` navigation didn't get cancelled and its associate
+  // RFH type is set to NONE.
+  EXPECT_NE(nullptr, root->navigation_request());
+  EXPECT_EQ(b2_nav.GetNavigationHandle(), root->navigation_request());
+  EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+            NavigationRequest::AssociatedRenderFrameHostType::NONE);
+
+  // Check that the `url_b2` navigation's associated RFH type gets updated when
+  // it gets its final RenderFrameHost.
+  b2_nav.ResumeNavigation();
+  EXPECT_TRUE(b2_nav.WaitForResponse());
+  if (IsBackForwardCacheEnabled() || ShouldCreateNewHostForAllFrames()) {
+    // When BFCache or RenderDocument is enabled, the `url_b2` navigation won't
+    // reuse the current RFH.
+    EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+              NavigationRequest::AssociatedRenderFrameHostType::SPECULATIVE);
+  } else {
+    EXPECT_EQ(root->navigation_request()->GetAssociatedRFHType(),
+              NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
+  }
+
+  // Assert that the `url_b2` navigation committed successfully.
+  b2_nav.WaitForNavigationFinished();
+  EXPECT_TRUE(b2_nav.was_successful());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     NavigationControllerAlertDialogBrowserTest,
@@ -22171,7 +22394,4 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
                      testing::Bool()),
     LoadDataWithBaseURLBrowserTest::DescribeParams);
-INSTANTIATE_TEST_SUITE_P(All,
-                         NavigationControllerInitialNavigationEntryBrowserTest,
-                         testing::Bool());
 }  // namespace content

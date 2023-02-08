@@ -5,6 +5,7 @@
 #include "chrome/common/profiler/unwind_util.h"
 
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include "base/android/library_loader/anchor_functions.h"
@@ -30,24 +31,38 @@
 #define ANDROID_ARM32_UNWINDING_SUPPORTED 0
 #endif
 
+#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_ARM64) && \
+    BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#define ANDROID_ARM64_UNWINDING_SUPPORTED 1
+#else
+#define ANDROID_ARM64_UNWINDING_SUPPORTED 0
+#endif
+
+#if ANDROID_ARM32_UNWINDING_SUPPORTED || ANDROID_ARM64_UNWINDING_SUPPORTED
+#define ANDROID_UNWINDING_SUPPORTED 1
+#else
+#define ANDROID_UNWINDING_SUPPORTED 0
+#endif
+
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
 #include "base/android/apk_assets.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/profiler/arm_cfi_table.h"
-#include "chrome/android/modules/stack_unwinder/public/module.h"
-
-#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
-#include "base/profiler/chrome_unwinder_android_v2.h"
-#else
 #include "base/profiler/chrome_unwinder_android.h"
-#endif
+#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+
+#if ANDROID_ARM64_UNWINDING_SUPPORTED
+#include "base/profiler/frame_pointer_unwinder.h"
+#endif  // ANDROID_ARM64_UNWINDING_SUPPORTED
+
+#if ANDROID_UNWINDING_SUPPORTED
+#include "chrome/android/modules/stack_unwinder/public/module.h"
 
 extern "C" {
 // The address of |__executable_start| is the base address of the executable or
 // shared library.
 extern char __executable_start;
 }
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // ANDROID_UNWINDING_SUPPORTED
 
 // See `RequestUnwindPrerequisitesInstallation` below.
 BASE_FEATURE(kInstallAndroidUnwindDfm,
@@ -56,8 +71,8 @@ BASE_FEATURE(kInstallAndroidUnwindDfm,
 
 namespace {
 
+// Encapsulates the setup required to create the Chrome unwinder on Android.
 #if ANDROID_ARM32_UNWINDING_SUPPORTED
-#if BUILDFLAG(USE_ANDROID_UNWINDER_V2)
 class ChromeUnwinderCreator {
  public:
   ChromeUnwinderCreator() {
@@ -75,7 +90,7 @@ class ChromeUnwinderCreator {
   ChromeUnwinderCreator& operator=(const ChromeUnwinderCreator&) = delete;
 
   std::unique_ptr<base::Unwinder> Create() {
-    return std::make_unique<base::ChromeUnwinderAndroidV2>(
+    return std::make_unique<base::ChromeUnwinderAndroid>(
         base::CreateChromeUnwindInfoAndroid(
             {chrome_cfi_file_.data(), chrome_cfi_file_.length()}),
         /* chrome_module_base_address= */
@@ -86,40 +101,25 @@ class ChromeUnwinderCreator {
  private:
   base::MemoryMappedFile chrome_cfi_file_;
 };
-#else   // BUILDFLAG(USE_ANDROID_UNWINDER_V2)
-// Encapsulates the setup required to create the Chrome unwinder on Android.
+#elif ANDROID_ARM64_UNWINDING_SUPPORTED  // ANDROID_ARM32_UNWINDING_SUPPORTED
 class ChromeUnwinderCreator {
  public:
-  ChromeUnwinderCreator() {
-    constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
-    constexpr char kSplitName[] = "stack_unwinder";
-
-    base::MemoryMappedFile::Region cfi_region;
-    int fd = base::android::OpenApkAsset(kCfiFileName, kSplitName, &cfi_region);
-    DCHECK_GE(fd, 0);
-    bool mapped_file_ok =
-        chrome_cfi_file_.Initialize(base::File(fd), cfi_region);
-    DCHECK(mapped_file_ok);
-    chrome_cfi_table_ = base::ArmCFITable::Parse(
-        {chrome_cfi_file_.data(), chrome_cfi_file_.length()});
-    DCHECK(chrome_cfi_table_);
-  }
-
-  ChromeUnwinderCreator(const ChromeUnwinderCreator&) = delete;
-  ChromeUnwinderCreator& operator=(const ChromeUnwinderCreator&) = delete;
-
   std::unique_ptr<base::Unwinder> Create() {
-    return std::make_unique<base::ChromeUnwinderAndroid>(
-        chrome_cfi_table_.get(),
-        reinterpret_cast<uintptr_t>(&__executable_start));
+    return std::make_unique<base::FramePointerUnwinder>();
   }
 
- private:
-  base::MemoryMappedFile chrome_cfi_file_;
-  std::unique_ptr<base::ArmCFITable> chrome_cfi_table_;
+  // Since this class is trivially destructible, it cannot be wrapped in
+  // `base::NoDestructor`. However, other versions of this class *are* wrapped
+  // in `base::NoDestructor`. These overloads allow consistently calling member
+  // functions, regardless of whether a version of this class is wrapped in
+  // `base::NoDestructor` or not (please see `CreateCoreUnwinders` below for
+  // more context).
+  const ChromeUnwinderCreator* operator->() const { return this; }
+  ChromeUnwinderCreator* operator->() { return this; }
 };
-#endif  // BUILDFLAG(USE_ANDROID_UNWINDER_V2)
+#endif                                   // ANDROID_ARM32_UNWINDING_SUPPORTED
 
+#if ANDROID_UNWINDING_SUPPORTED
 // Encapsulates the setup required to create the Android native unwinder.
 class NativeUnwinderCreator {
  public:
@@ -146,7 +146,10 @@ std::vector<std::unique_ptr<base::Unwinder>> CreateCoreUnwinders(
 
   static base::NoDestructor<NativeUnwinderCreator> native_unwinder_creator(
       stack_unwinder_module);
-  static base::NoDestructor<ChromeUnwinderCreator> chrome_unwinder_creator;
+  static std::conditional<
+      std::is_trivially_destructible_v<ChromeUnwinderCreator>,
+      ChromeUnwinderCreator, base::NoDestructor<ChromeUnwinderCreator>>::type
+      chrome_unwinder_creator;
 
   // Note order matters: the more general unwinder must appear first in the
   // vector.
@@ -176,7 +179,7 @@ class ModuleUnwindPrerequisitesDelegate : public UnwindPrerequisitesDelegate {
     return stack_unwinder::Module::IsInstalled();
   }
 };
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // ANDROID_UNWINDING_SUPPORTED
 
 }  // namespace
 
@@ -188,7 +191,7 @@ void RequestUnwindPrerequisitesInstallation(
   if (AreUnwindPrerequisitesAvailable(channel, prerequites_delegate)) {
     return;
   }
-#if ANDROID_ARM32_UNWINDING_SUPPORTED && defined(OFFICIAL_BUILD) && \
+#if ANDROID_UNWINDING_SUPPORTED && defined(OFFICIAL_BUILD) && \
     BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ModuleUnwindPrerequisitesDelegate default_delegate;
   if (prerequites_delegate == nullptr) {
@@ -211,7 +214,20 @@ void RequestUnwindPrerequisitesInstallation(
 bool AreUnwindPrerequisitesAvailable(
     version_info::Channel channel,
     UnwindPrerequisitesDelegate* prerequites_delegate) {
-#if ANDROID_ARM32_UNWINDING_SUPPORTED
+// While non-Android platforms do not need any specific prerequisites beyond
+// what is already bundled and available with Chrome for their platform-specific
+// unwinders to work, Android, in particular, requires a DFM to be installed.
+//
+// Therefore, unwind prerequisites for non-supported Android platforms are not
+// considered to be available by default, but prerequisites for non-Android
+// platforms are considered to be available by default.
+//
+// This is also why we do not need to check `prerequites_delegate` for
+// non-Android platforms. Regardless of the provided delegate, unwind
+// prerequisites are always considered to be available for non-Android
+// platforms.
+#if BUILDFLAG(IS_ANDROID)
+#if ANDROID_UNWINDING_SUPPORTED
 #if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Sometimes, DFMs can be installed even if not requested by Chrome
   // explicitly (for instance, in some app stores). Therefore, even if the
@@ -228,29 +244,32 @@ bool AreUnwindPrerequisitesAvailable(
     prerequites_delegate = &default_delegate;
   }
   return prerequites_delegate->AreAvailable(channel);
-#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
+#else   // ANDROID_UNWINDING_SUPPORTED
+  return false;
+#endif  // ANDROID_UNWINDING_SUPPORTED
+#else   // BUILDFLAG(IS_ANDROID)
   return true;
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
-#if ANDROID_ARM32_UNWINDING_SUPPORTED
+#if ANDROID_UNWINDING_SUPPORTED
 stack_unwinder::Module* GetOrLoadModule() {
   DCHECK(AreUnwindPrerequisitesAvailable(chrome::GetChannel()));
   static base::NoDestructor<std::unique_ptr<stack_unwinder::Module>>
       stack_unwinder_module(stack_unwinder::Module::Load());
   return stack_unwinder_module.get()->get();
 }
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // ANDROID_UNWINDING_SUPPORTED
 
 base::StackSamplingProfiler::UnwindersFactory CreateCoreUnwindersFactory() {
   if (!AreUnwindPrerequisitesAvailable(chrome::GetChannel())) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
-#if ANDROID_ARM32_UNWINDING_SUPPORTED
+#if ANDROID_UNWINDING_SUPPORTED
   return base::BindOnce(CreateCoreUnwinders, GetOrLoadModule());
-#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
+#else   // ANDROID_UNWINDING_SUPPORTED
   return base::StackSamplingProfiler::UnwindersFactory();
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // ANDROID_UNWINDING_SUPPORTED
 }
 
 base::StackSamplingProfiler::UnwindersFactory
@@ -258,9 +277,9 @@ CreateLibunwindstackUnwinderFactory() {
   if (!AreUnwindPrerequisitesAvailable(chrome::GetChannel())) {
     return base::StackSamplingProfiler::UnwindersFactory();
   }
-#if ANDROID_ARM32_UNWINDING_SUPPORTED
+#if ANDROID_UNWINDING_SUPPORTED
   return base::BindOnce(CreateLibunwindstackUnwinders, GetOrLoadModule());
-#else   // ANDROID_ARM32_UNWINDING_SUPPORTED
+#else   // ANDROID_UNWINDING_SUPPORTED
   return base::StackSamplingProfiler::UnwindersFactory();
-#endif  // ANDROID_ARM32_UNWINDING_SUPPORTED
+#endif  // ANDROID_UNWINDING_SUPPORTED
 }

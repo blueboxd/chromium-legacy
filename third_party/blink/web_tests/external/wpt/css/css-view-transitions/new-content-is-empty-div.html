@@ -23,6 +23,7 @@ div {
 }
 #hidden {
   background: red;
+  view-transition-name: hidden;
 }
 
 html::view-transition-group(hidden) { animation-duration: 300s; }
@@ -45,6 +46,8 @@ html::view-transition { background: lightpink; }
 <div id=hidden></div>
 
 <script>
+failIfNot(document.startViewTransition, "Missing document.startViewTransition");
+
 async function runTest() {
   source.style = "view-transition-name: shared";
   document.startViewTransition(() => {

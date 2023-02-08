@@ -13,7 +13,7 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 
 class PrefChangeRegistrar;
@@ -31,7 +31,7 @@ class SystemClockObserver;
 // that is responsible for correct time formatting. It listens to events that
 // modify on-screen time representation (like ActiveUserChanged) and notifies
 // observers.
-class SystemClock : public chromeos::LoginState::Observer,
+class SystemClock : public LoginState::Observer,
                     public ProfileObserver,
                     public user_manager::UserManager::UserSessionStateObserver {
  public:
@@ -101,13 +101,5 @@ class SystemClock : public chromeos::LoginState::Observer,
 
 }  // namespace system
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when Chrome OS code migration is
-// done.
-namespace chromeos {
-namespace system {
-using ::ash::system::SystemClock;
-}  // namespace system
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_SYSTEM_SYSTEM_CLOCK_H_

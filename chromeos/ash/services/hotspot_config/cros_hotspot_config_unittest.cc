@@ -9,10 +9,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/services/hotspot_config/public/cpp/cros_hotspot_config_test_observer.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -228,30 +228,15 @@ TEST_F(CrosHotspotConfigTest, GetHotspotInfo) {
   EXPECT_EQ(GetHotspotInfo()->state, mojom::HotspotState::kDisabled);
   EXPECT_EQ(observer()->hotspot_info_changed_count(), 4u);
 
-  // Simulate user starting tethering and failed.
+  // Simulate user starting tethering
   SetHotspotStateInShill(shill::kTetheringStateStarting);
+  EXPECT_EQ(GetHotspotInfo()->state, mojom::HotspotState::kEnabling);
   EXPECT_EQ(observer()->hotspot_info_changed_count(), 5u);
-  // Update tethering status to failure in Shill.
-  base::Value status_dict(base::Value::Type::DICTIONARY);
-  status_dict.GetDict().Set(shill::kTetheringStatusStateProperty,
-                            base::Value(shill::kTetheringStateFailure));
-  status_dict.GetDict().Set(
-      shill::kTetheringStatusErrorProperty,
-      base::Value(shill::kTetheringErrorUpstreamNotReady));
-  helper()->manager_test()->SetManagerProperty(shill::kTetheringStatusProperty,
-                                               status_dict);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(GetHotspotInfo()->state, mojom::HotspotState::kDisabled);
-  EXPECT_EQ(observer()->hotspot_info_changed_count(), 6u);
-  EXPECT_EQ(observer()->hotspot_state_failed_count(), 1u);
-  EXPECT_EQ(shill::kTetheringErrorUpstreamNotReady,
-            observer()->last_hotspot_failed_error());
 }
 
 TEST_F(CrosHotspotConfigTest, SetHotspotConfig) {
   SetupObserver();
-  // Vrerifies that return failed when the user is not login.
+  // Verifies that set hotspot config return failed when the user is not login.
   EXPECT_EQ(mojom::SetHotspotConfigResult::kFailedNotLogin,
             SetHotspotConfig(GenerateTestConfig()));
   EXPECT_FALSE(GetHotspotInfo()->config);

@@ -50,6 +50,7 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -93,6 +94,7 @@ try_.builder(
     try_settings = builder_config.try_settings(
         retry_failed_shards = False,
     ),
+    goma_backend = None,
 )
 
 try_.builder(
@@ -107,4 +109,5 @@ try_.builder(
         is_compile_only = True,
         retry_failed_shards = False,
     ),
+    goma_backend = None,
 )

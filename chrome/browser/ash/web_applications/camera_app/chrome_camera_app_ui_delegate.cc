@@ -278,9 +278,14 @@ void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
   auto my_files_folder_path =
       file_manager::util::GetMyFilesFolderForProfile(profile);
 
+  auto* swa_manager = ash::SystemWebAppManager::Get(profile);
+  if (!swa_manager)
+    return;
+
   absl::optional<web_app::AppId> app_id =
-      ash::SystemWebAppManager::Get(profile)->GetAppIdForSystemApp(
-          ash::SystemWebAppType::CAMERA);
+      swa_manager->GetAppIdForSystemApp(ash::SystemWebAppType::CAMERA);
+  if (!app_id.has_value())
+    return;
 
   // The launch directory is passed here rather than
   // `SystemWebAppDelegate::LaunchAndNavigateSystemWebApp()` to handle the case
@@ -303,9 +308,12 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
-  source->AddBoolean("multiPageDocScan",
-                     base::FeatureList::IsEnabled(
-                         chromeos::features::kCameraAppMultiPageDocScan));
+  source->AddBoolean(
+      "multiPageDocScan",
+      base::FeatureList::IsEnabled(ash::features::kCameraAppMultiPageDocScan));
+  source->AddBoolean(
+      "lowStorageWarning",
+      base::FeatureList::IsEnabled(ash::features::kCameraAppLowStorageWarning));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {
@@ -404,8 +412,9 @@ void ChromeCameraAppUIDelegate::MaybeTriggerSurvey() {
 
 void ChromeCameraAppUIDelegate::StartStorageMonitor(
     base::RepeatingCallback<void(StorageMonitorStatus)> monitor_callback) {
-  auto monitor_callback_on_current_thread = base::BindPostTask(
-      base::SequencedTaskRunnerHandle::Get(), monitor_callback, FROM_HERE);
+  auto monitor_callback_on_current_thread =
+      base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
+                         monitor_callback, FROM_HERE);
   auto monitor_path = GetMyFilesFolder();
   storage_task_runner_->PostTask(
       FROM_HERE,

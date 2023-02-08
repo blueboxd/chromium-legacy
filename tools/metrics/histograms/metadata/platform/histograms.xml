@@ -233,7 +233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.CrOS.CrashSenderRemoveReason"
-    enum="CrosCrashSenderRemoveReason" expires_after="2023-03-19">
+    enum="CrosCrashSenderRemoveReason" expires_after="2023-06-04">
   <owner>iby@chromium.org</owner>
   <owner>mutexlox@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -914,7 +914,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Meminfo" units="KB" expires_after="2023-03-19">
+<histogram name="Platform.Meminfo" units="KB" expires_after="2023-06-04">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kouhei@chromium.org</owner>
   <owner>sonnyrao@chromium.org</owner>
@@ -924,7 +924,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-03-19">
+<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-05-27">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -937,7 +937,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Browser" units="MiB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -949,7 +949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Daemons" units="MiB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -959,7 +959,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.Gpu" units="MiB" expires_after="2023-03-19">
+<histogram name="Platform.Memory.Gpu" units="MiB" expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -970,7 +970,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Memory.Renderers" units="MiB"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -980,7 +980,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.VMs" units="MiB" expires_after="2023-03-19">
+<histogram name="Platform.Memory.VMs" units="MiB" expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -1037,7 +1037,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MiniDiag.Launch" units="launches"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>roccochen@chromium.org</owner>
   <owner>chromeos-minidiag-eng@google.com</owner>
   <summary>
@@ -1045,6 +1045,73 @@ chromium-metrics-reviews@google.com.
     the last upload. This metrics is recorded right after booting into ChromeOS.
     This metrics leverages a coreboot command, elogtool, to retrieve the event
     log and count launch events.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MiniDiag.OpenDuration" units="seconds"
+    expires_after="2023-03-26">
+  <owner>roccochen@chromium.org</owner>
+  <owner>chromeos-minidiag-eng@google.com</owner>
+  <summary>
+    Records the duration that the MiniDiag (pre-boot diagnostic tool) is open.
+    This metrics is recorded right after booting into ChromeOS. This metrics
+    leverages a coreboot command, elogtool, to retrieve the event log and count
+    launch events.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MiniDiag.{TestType}.OpenDuration" units="seconds"
+    expires_after="2023-03-26">
+  <owner>roccochen@chromium.org</owner>
+  <owner>chromeos-minidiag-eng@google.com</owner>
+  <summary>
+    Test item-specific duration of the MiniDiag (pre-boot diagnostic tool) since
+    the last upload. This metrics is recorded right after booting into ChromeOS.
+    This metrics leverages a coreboot command, elogtool, to retrieve the event
+    log and count launch events. The TestType is the same as
+    cros_diagnostics_diag_types listed in coreboot/util/cbfstool/eventlog.c
+    since all the data are parsed from them.
+  </summary>
+  <token key="TestType">
+    <variant name="MemoryCheckFull"/>
+    <variant name="MemoryCheckQuick"/>
+    <variant name="StorageHealthInfo"/>
+    <variant name="StorageSelfTestExtended"/>
+    <variant name="StorageSelfTestShort"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.MiniDiag.{TestType}.Result" enum="MiniDiagResultType"
+    expires_after="2023-03-26">
+  <owner>roccochen@chromium.org</owner>
+  <owner>chromeos-minidiag-eng@google.com</owner>
+  <summary>
+    Test item-specific results of the MiniDiag (pre-boot diagnostic tool) since
+    the last upload. This metrics is recorded right after booting into ChromeOS.
+    This metrics leverages a coreboot command, elogtool, to retrieve the event
+    log and count launch events. The TestType and MiniDiagResultType are the
+    same as cros_diagnostics_diag_types and cros_diagnostics_diag_results listed
+    in coreboot/util/cbfstool/eventlog.c since all the data are parsed from
+    them.
+  </summary>
+  <token key="TestType">
+    <variant name="MemoryCheckFull"/>
+    <variant name="MemoryCheckQuick"/>
+    <variant name="StorageHealthInfo"/>
+    <variant name="StorageSelfTestExtended"/>
+    <variant name="StorageSelfTestShort"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.Missive.ClientEnqueueResult"
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-11-30">
+  <owner>lbaraz@chromium.org</owner>
+  <owner>xuhong@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Recorded when missive clientlib calls ReportQueue::Enqueue to post an event
+    to ERP. It counts occurrences of the call returning success or each possible
+    error Status.
   </summary>
 </histogram>
 
@@ -1069,6 +1136,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     The amount of memory that the Missive daemon has been using. This is
     reported once every 10 minutes and only if the Missive daemon is running.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.ResourceExhaustedCase"
+    enum="ResourceExhaustedCase" expires_after="2023-11-17">
+  <owner>xuhong@chromium.org</owner>
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Counter of each case RESOURCE_EXHAUSTED error was returned by missive
+    Storage to the caller. This is reported only when such error happens
+    (rarely), and only if the Missive daemon is running.
   </summary>
 </histogram>
 
@@ -1537,7 +1616,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.FirmwareUpdate.Result"
-    enum="TPMFirmwareUpdateResult" expires_after="2023-03-19">
+    enum="TPMFirmwareUpdateResult" expires_after="2023-05-27">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Status of a complete TPM firmware update attempt.</summary>
@@ -1613,12 +1692,12 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.TPM2.CommandAndResponse.{Client}"
-    enum="TPM2CommandAndResponse" expires_after="2023-04-20">
+<histogram name="Platform.TPM1.CommandAndResponse.{Client}"
+    enum="TPM1CommandAndResponse" expires_after="2023-04-20">
   <owner>chingkang@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
-    The TPM2 command and response code send from |Client| to trunks. The value
+    The TPM1 command and response code send from {Client} to trousers. The value
     is the encoding of 2 bytes command code and 2 bytes response code.
   </summary>
   <token key="Client">
@@ -1628,6 +1707,27 @@ chromium-metrics-reviews@google.com.
     <variant name="TpmManager"/>
     <variant name="TrunksSend"/>
     <variant name="U2f"/>
+    <variant name="Unknown"/>
+    <variant name="Vtpm"/>
+  </token>
+</histogram>
+
+<histogram name="Platform.TPM2.CommandAndResponse.{Client}"
+    enum="TPM2CommandAndResponse" expires_after="2023-04-20">
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The TPM2 command and response code send from {Client} to trunks. The value
+    is the encoding of 2 bytes command code and 2 bytes response code.
+  </summary>
+  <token key="Client">
+    <variant name="Attestation"/>
+    <variant name="Chaps"/>
+    <variant name="Cryptohome"/>
+    <variant name="TpmManager"/>
+    <variant name="TrunksSend"/>
+    <variant name="U2f"/>
+    <variant name="Unknown"/>
     <variant name="Vtpm"/>
   </token>
 </histogram>
@@ -1661,7 +1761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.TpmErrorCode" enum="TPMResponseCode"
-    expires_after="2023-04-02">
+    expires_after="2023-06-04">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1693,7 +1793,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTimeTooBig" units="seconds"
-    expires_after="2023-03-26">
+    expires_after="2023-06-04">
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -1717,8 +1817,13 @@ chromium-metrics-reviews@google.com.
   <owner>mutexlox@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
-    Count of crashes (unclean shutdown) during the previous day, or the most
-    recent day the device was in use. Reported at most once a day.
+    Count of unclean OS shutdowns during the previous day, or the most recent
+    day the device was in use. Specifically, the counter is incremented during
+    boot if the OS did not shut down cleanly and the previous shutdown was not
+    due to a kernel crash (kernel crashes are counted elsewere) and the previous
+    shutdown did not occur while the device was suspended (failures while
+    suspended are assumed to be the battery running down). Reported at most once
+    a day.
   </summary>
 </histogram>
 
@@ -1745,7 +1850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiDeviceCount" units="wifi devices"
-    expires_after="2022-12-01">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1755,7 +1860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiDisapppearedFromPCI" units="units"
-    expires_after="2022-12-01">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1768,7 +1873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiStatusAfterForcedPCIRescan" enum="WiFiPCIStatus"
-    expires_after="2022-12-01">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1884,6 +1989,25 @@ chromium-metrics-reviews@google.com.
     The fraction of compressed memory that consists of zero-filled pages.
     Snapshot every 30s.
   </summary>
+</histogram>
+
+<histogram name="Platform.{GSC}.ARVStatus" enum="GscArvStatus"
+    expires_after="2023-11-09">
+  <owner>vbendeb@chromium.org</owner>
+  <owner>ti50-core+uma@chromium.org</owner>
+  <summary>
+    A histogram of values representing AP RO verification state on ChromeOS
+    devices in the field. The values are collected on each ChromeOS start up and
+    are clustered in two ranges: 0..7 and 20..34, both ranges could grow.
+
+    Cr50 and Ti50 are two generations of GSC (Google Security Chip), their AP RO
+    verification states are named such that it is clear which particular chip
+    version they refer to.
+  </summary>
+  <token key="GSC">
+    <variant name="Cr50"/>
+    <variant name="Ti50"/>
+  </token>
 </histogram>
 
 <histogram name="Platform.{GSC}.BoardIdFlags" enum="Cr50BoardIdFlags"

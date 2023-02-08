@@ -90,7 +90,7 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
   }
 
   if (host_->ShouldReadIcons()) {
-    host_->ReadIcons(app_id, size_hint_in_dip, icon_key, icon_type,
+    host_->ReadIcons(app_type, app_id, size_hint_in_dip, icon_key, icon_type,
                      std::move(callback));
     return nullptr;
   }
@@ -301,33 +301,6 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
       });
 }
 
-void AppServiceProxyBase::Launch(const std::string& app_id,
-                                 int32_t event_flags,
-                                 apps::mojom::LaunchSource mojom_launch_source,
-                                 apps::mojom::WindowInfoPtr window_info) {
-  if (app_service_.is_connected()) {
-    app_registry_cache_.ForOneApp(
-        app_id, [this, event_flags, mojom_launch_source,
-                 &window_info](const apps::AppUpdate& update) {
-          if (MaybeShowLaunchPreventionDialog(update)) {
-            return;
-          }
-
-          apps::LaunchSource launch_source =
-              ConvertMojomLaunchSourceToLaunchSource(mojom_launch_source);
-          RecordAppLaunch(update.AppId(), launch_source);
-          RecordAppPlatformMetrics(profile_, update, launch_source,
-                                   apps::LaunchContainer::kLaunchContainerNone);
-
-          app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
-                               update.AppId(), event_flags, mojom_launch_source,
-                               std::move(window_info));
-
-          PerformPostLaunchTasks(launch_source);
-        });
-  }
-}
-
 void AppServiceProxyBase::LaunchAppWithFiles(
     const std::string& app_id,
     int32_t event_flags,
@@ -506,42 +479,17 @@ void AppServiceProxyBase::GetMenuModel(
   }
 }
 
-void AppServiceProxyBase::GetMenuModel(
-    const std::string& app_id,
-    apps::mojom::MenuType menu_type,
-    int64_t display_id,
-    apps::mojom::Publisher::GetMenuModelCallback callback) {
-  if (!app_service_.is_connected()) {
-    return;
-  }
-
-  auto app_type = app_registry_cache_.GetAppType(app_id);
-  app_service_->GetMenuModel(ConvertAppTypeToMojomAppType(app_type), app_id,
-                             menu_type, display_id, std::move(callback));
-}
-
 void AppServiceProxyBase::ExecuteContextMenuCommand(
     const std::string& app_id,
     int command_id,
     const std::string& shortcut_id,
     int64_t display_id) {
-  if (base::FeatureList::IsEnabled(kAppServiceWithoutMojom)) {
-    auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
-    if (publisher) {
-      publisher->ExecuteContextMenuCommand(app_id, command_id, shortcut_id,
-                                           display_id);
-    }
-    return;
+  auto* publisher = GetPublisher(app_registry_cache_.GetAppType(app_id));
+  if (publisher) {
+    publisher->ExecuteContextMenuCommand(app_id, command_id, shortcut_id,
+                                         display_id);
   }
-
-  if (!app_service_.is_connected()) {
-    return;
-  }
-
-  auto app_type = app_registry_cache_.GetAppType(app_id);
-  app_service_->ExecuteContextMenuCommand(
-      ConvertAppTypeToMojomAppType(app_type), app_id, command_id, shortcut_id,
-      display_id);
+  return;
 }
 
 void AppServiceProxyBase::OpenNativeSettings(const std::string& app_id) {
@@ -786,11 +734,6 @@ void AppServiceProxyBase::OnCapabilityAccesses(
   app_capability_access_cache_.OnCapabilityAccesses(std::move(deltas));
 }
 
-void AppServiceProxyBase::OnCapabilityAccesses(
-    std::vector<apps::mojom::CapabilityAccessPtr> deltas) {
-  app_capability_access_cache_.OnCapabilityAccesses(std::move(deltas));
-}
-
 void AppServiceProxyBase::Clone(
     mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
   receivers_.Add(this, std::move(receiver));
@@ -816,37 +759,6 @@ IntentFilterPtr AppServiceProxyBase::FindBestMatchingFilter(
             continue;
           }
           best_matching_intent_filter = std::move(filter);
-          best_match_level = match_level;
-        }
-      });
-  return best_matching_intent_filter;
-}
-
-apps::mojom::IntentFilterPtr AppServiceProxyBase::FindBestMatchingMojomFilter(
-    const apps::mojom::IntentPtr& mojom_intent) {
-  apps::mojom::IntentFilterPtr best_matching_intent_filter;
-  if (!app_service_.is_bound() || !mojom_intent) {
-    return best_matching_intent_filter;
-  }
-
-  auto intent = ConvertMojomIntentToIntent(mojom_intent);
-  if (!intent) {
-    return best_matching_intent_filter;
-  }
-  int best_match_level = static_cast<int>(IntentFilterMatchLevel::kNone);
-  app_registry_cache_.ForEachApp(
-      [&intent, &best_match_level,
-       &best_matching_intent_filter](const apps::AppUpdate& update) {
-        for (const auto& filter : update.IntentFilters()) {
-          if (!intent->MatchFilter(filter)) {
-            continue;
-          }
-          auto match_level = filter->GetFilterMatchLevel();
-          if (match_level <= best_match_level) {
-            continue;
-          }
-          best_matching_intent_filter =
-              ConvertIntentFilterToMojomIntentFilter(filter);
           best_match_level = match_level;
         }
       });

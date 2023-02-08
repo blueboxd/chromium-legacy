@@ -32,18 +32,15 @@ TrustImplTypeToMojom(net::TrustStoreMac::TrustImplType input) {
     case net::TrustStoreMac::TrustImplType::kUnknown:
       return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
           kUnknown;
-    case net::TrustStoreMac::TrustImplType::kDomainCache:
-      return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
-          kDomainCache;
     case net::TrustStoreMac::TrustImplType::kSimple:
       return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
           kSimple;
-    case net::TrustStoreMac::TrustImplType::kLruCache:
-      return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
-          kLruCache;
     case net::TrustStoreMac::TrustImplType::kDomainCacheFullCerts:
       return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
           kDomainCacheFullCerts;
+    case net::TrustStoreMac::TrustImplType::kKeychainCacheFullCerts:
+      return cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::
+          kKeychainCacheFullCerts;
   }
 }
 #endif

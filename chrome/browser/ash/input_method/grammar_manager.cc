@@ -17,7 +17,6 @@
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/text_input_target.h"
-#include "ui/base/ime/text_input_flags.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ash {
@@ -83,7 +82,8 @@ bool GrammarManager::IsOnDeviceGrammarEnabled() {
   return base::FeatureList::IsEnabled(features::kOnDeviceGrammarCheck);
 }
 
-void GrammarManager::OnFocus(int context_id, int text_input_flags) {
+void GrammarManager::OnFocus(int context_id,
+                             ui::SpellcheckMode spellcheck_mode) {
   if (context_id != context_id_) {
     current_text_ = u"";
     last_sentence_ = Sentence();
@@ -93,7 +93,7 @@ void GrammarManager::OnFocus(int context_id, int text_input_flags) {
     recorded_marker_hashes_.clear();
   }
   context_id_ = context_id;
-  text_input_flags_ = text_input_flags;
+  spellcheck_mode_ = spellcheck_mode;
 }
 
 bool GrammarManager::OnKeyEvent(const ui::KeyEvent& event) {
@@ -155,7 +155,7 @@ bool GrammarManager::OnKeyEvent(const ui::KeyEvent& event) {
 bool GrammarManager::HandleSurroundingTextChange(const std::u16string& text,
                                                  int cursor_pos,
                                                  int anchor_pos) {
-  if (text_input_flags_ & ui::TEXT_INPUT_FLAG_SPELLCHECK_OFF)
+  if (spellcheck_mode_ == ui::SpellcheckMode::kDisabled)
     return false;
 
   bool text_updated = text != current_text_;
@@ -341,8 +341,6 @@ void GrammarManager::AcceptSuggestion() {
     const uint32_t after =
         current_fragment_.range.end() - surrounding_text.selection_range.end();
     input_context->DeleteSurroundingText(before, after);
-    input_context->SetSelectionRange(current_fragment_.range.start(),
-                                     current_fragment_.range.start());
     // Insert the suggestion and put cursor after it.
     input_context->CommitText(
         base::UTF8ToUTF16(current_fragment_.suggestion),

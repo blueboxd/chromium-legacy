@@ -15,9 +15,9 @@
 #include "chrome/browser/net/nss_service.h"
 #include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/tpm/tpm_token_info_getter.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
-#include "chromeos/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -73,13 +73,13 @@ namespace crosapi {
 
 CertDatabaseAsh::CertDatabaseAsh() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(chromeos::LoginState::IsInitialized());
-  chromeos::LoginState::Get()->AddObserver(this);
+  DCHECK(ash::LoginState::IsInitialized());
+  ash::LoginState::Get()->AddObserver(this);
 }
 
 CertDatabaseAsh::~CertDatabaseAsh() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  chromeos::LoginState::Get()->RemoveObserver(this);
+  ash::LoginState::Get()->RemoveObserver(this);
 }
 
 void CertDatabaseAsh::BindReceiver(
@@ -95,7 +95,7 @@ void CertDatabaseAsh::GetCertDatabaseInfo(
   // TODO(crbug.com/1146430): For now Lacros-Chrome will initialize certificate
   // database only in session. Revisit later to decide what to do on the login
   // screen.
-  if (!chromeos::LoginState::Get()->IsUserLoggedIn()) {
+  if (!ash::LoginState::Get()->IsUserLoggedIn()) {
     LOG(ERROR) << "Not implemented";
     std::move(callback).Run(nullptr);
     return;

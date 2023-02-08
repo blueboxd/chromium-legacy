@@ -306,7 +306,6 @@ SharedStorageDocumentServiceImpl::SharedStorageDocumentServiceImpl(
           rfh->GetOutermostMainFrame()->GetLastCommittedOrigin()),
       main_frame_id_(
           static_cast<RenderFrameHostImpl*>(rfh->GetOutermostMainFrame())
-              ->frame_tree_node()
               ->devtools_frame_token()
               .ToString()) {}
 
@@ -345,7 +344,7 @@ bool SharedStorageDocumentServiceImpl::IsSharedStorageAllowed() {
     return true;
 
   return GetContentClient()->browser()->IsSharedStorageAllowed(
-      render_frame_host().GetBrowserContext(), main_frame_origin_,
+      &render_frame_host(), main_frame_origin_,
       render_frame_host().GetLastCommittedOrigin());
 }
 

@@ -8,6 +8,8 @@
 
 #include "base/check.h"
 #include "base/logging.h"
+#include "ui/base/wayland/wayland_display_util.h"
+#include "ui/display/screen.h"
 
 namespace ui {
 
@@ -16,8 +18,9 @@ WaylandZAuraOutput::WaylandZAuraOutput(zaura_output* aura_output)
   DCHECK(obj_);
 
   static constexpr zaura_output_listener kZAuraOutputListener = {
-      &OnScale,  &OnConnection,       &OnDeviceScaleFactor,
-      &OnInsets, &OnLogicalTransform, &OnDisplayId};
+      &OnScale,    &OnConnection,       &OnDeviceScaleFactor,
+      &OnInsets,   &OnLogicalTransform, &OnDisplayId,
+      &OnActivated};
   zaura_output_add_listener(obj_.get(), &kZAuraOutputListener, this);
 }
 
@@ -66,8 +69,18 @@ void WaylandZAuraOutput::OnDisplayId(void* data,
                                      uint32_t display_id_hi,
                                      uint32_t display_id_lo) {
   if (auto* aura_output = static_cast<WaylandZAuraOutput*>(data)) {
-    aura_output->display_id_ = static_cast<int64_t>(display_id_hi) << 32 |
-                               static_cast<int64_t>(display_id_lo);
+    aura_output->display_id_ =
+        ui::wayland::FromWaylandDisplayIdPair({display_id_hi, display_id_lo});
+  }
+}
+
+void WaylandZAuraOutput::OnActivated(void* data,
+                                     struct zaura_output* zaura_output) {
+  auto* aura_output = static_cast<WaylandZAuraOutput*>(data);
+  if (aura_output && aura_output->IsReady()) {
+    DCHECK(display::Screen::GetScreen());
+    display::Screen::GetScreen()->SetDisplayForNewWindows(
+        aura_output->display_id_.value());
   }
 }
 

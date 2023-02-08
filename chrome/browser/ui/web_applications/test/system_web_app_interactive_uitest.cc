@@ -24,6 +24,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
@@ -34,9 +35,9 @@
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/ash/web_applications/os_url_handler_system_web_app_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
-#include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
@@ -524,8 +525,8 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
           // Wait one execution loop for
           // on_apps_synchronized() to be called on all
           // listeners.
-          base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                        run_loop.QuitClosure());
+          base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+              FROM_HERE, run_loop.QuitClosure());
         }));
     run_loop.Run();
   }
@@ -653,8 +654,11 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerMultiDesktopLaunchBrowserTest,
   const AppId& app_id1 = GetAppId(profile1);
   const AppId& app_id2 = GetAppId(profile2);
 
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile2->GetPath(), base::DoNothing());
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .MaybeScheduleProfileForDeletion(
+          profile2->GetPath(), base::DoNothing(),
+          ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 
   {
     auto launch_params = apps::AppLaunchParams(

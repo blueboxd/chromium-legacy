@@ -57,14 +57,25 @@ scoped_refptr<CommandBufferHelper> CreateCommandBufferHelper(
   return CommandBufferHelper::Create(stub);
 }
 
-bool BindImage(scoped_refptr<CommandBufferHelper> command_buffer_helper,
-               uint32_t client_texture_id,
-               uint32_t texture_target,
-               const scoped_refptr<gl::GLImage>& image,
-               bool can_bind_to_sampler) {
-  return command_buffer_helper->BindImage(client_texture_id, image.get(),
-                                          can_bind_to_sampler);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+bool BindDecoderManagedImage(
+    scoped_refptr<CommandBufferHelper> command_buffer_helper,
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    const scoped_refptr<gl::GLImage>& image) {
+  return command_buffer_helper->BindDecoderManagedImage(client_texture_id,
+                                                        image.get());
 }
+#else
+bool BindClientManagedImage(
+    scoped_refptr<CommandBufferHelper> command_buffer_helper,
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    const scoped_refptr<gl::GLImage>& image) {
+  return command_buffer_helper->BindClientManagedImage(client_texture_id,
+                                                       image.get());
+}
+#endif
 
 std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
     const gpu::GpuPreferences& gpu_preferences,
@@ -81,8 +92,16 @@ std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
         &CommandBufferHelper::GetGLContext, command_buffer_helper);
     gl_client.make_context_current = base::BindRepeating(
         &CommandBufferHelper::MakeContextCurrent, command_buffer_helper);
+    // The semantics of |bind_image| vary per-platform: On Windows and Mac it
+    // must mark the image as needing binding by the decoder, while on other
+    // platforms it must mark the image as *not* needing binding by the decoder.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
     gl_client.bind_image =
-        base::BindRepeating(&BindImage, command_buffer_helper);
+        base::BindRepeating(&BindDecoderManagedImage, command_buffer_helper);
+#else
+    gl_client.bind_image =
+        base::BindRepeating(&BindClientManagedImage, command_buffer_helper);
+#endif
     gl_client.is_passthrough = command_buffer_helper->IsPassthrough();
     gl_client.supports_arb_texture_rectangle =
         command_buffer_helper->SupportsTextureRectangle();
@@ -705,7 +724,10 @@ void VdaVideoDecoder::PictureReadyOnParentThread(Picture picture) {
     EnterErrorState();
     return;
   }
-  frame->set_hdr_metadata(config_.hdr_metadata());
+  // Some streams may have varying metadata, so bitstream metadata should be
+  // preferred over metadata provide by the configuration.
+  frame->set_hdr_metadata(picture.hdr_metadata() ? picture.hdr_metadata()
+                                                 : config_.hdr_metadata());
 
   output_cb_.Run(std::move(frame));
 }

@@ -659,10 +659,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return FlipForWritingMode(ContentsVisualOverflowRect());
   }
 
-  // Returns the visual overflow rect, expanded to the area affected by any
-  // filters that paint outside of the box, in physical coordinates.
-  PhysicalRect PhysicalVisualOverflowRectIncludingFilters() const;
-
   // These methods don't mean the box *actually* has top/left overflow. They
   // mean that *if* the box overflows, it will overflow to the top/left rather
   // than the bottom/right. This happens when child content is laid out
@@ -1281,9 +1277,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     wtf_size_t IndexOf(const NGPhysicalBoxFragment& fragment) const;
     bool Contains(const NGPhysicalBoxFragment& fragment) const;
 
-    class CORE_EXPORT Iterator : public std::iterator<std::forward_iterator_tag,
-                                                      NGPhysicalBoxFragment> {
+    class CORE_EXPORT Iterator {
      public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = NGPhysicalBoxFragment;
+      using difference_type = std::ptrdiff_t;
+      using pointer = NGPhysicalBoxFragment*;
+      using reference = NGPhysicalBoxFragment&;
+
       explicit Iterator(const NGLayoutResultList::const_iterator& iterator)
           : iterator_(iterator) {}
 

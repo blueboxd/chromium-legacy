@@ -437,7 +437,6 @@ bool CreateDesktopShortcut(base::Environment* env,
       DeleteShortcutOnDesktop(shortcut_filename);
 
     if (create_shortcut_in_startup)
-      // if (creation_locations.in_startup)
       DeleteShortcutInAutoStart(env, shortcut_filename);
 
     if (applications_menu_location != APP_MENU_LOCATION_NONE) {
@@ -485,6 +484,14 @@ bool CreateDesktopShortcut(base::Environment* env,
         std::move(shortcut_info.actions));
     success =
         CreateShortcutInAutoStart(env, shortcut_filename, contents) && success;
+  }
+
+  if (shortcut_override) {  // IN-TEST
+    std::vector<std::string> protocol_handler(
+        shortcut_info.protocol_handlers.begin(),
+        shortcut_info.protocol_handlers.end());
+    shortcut_override->protocol_scheme_registrations.emplace_back(
+        shortcut_info.extension_id, std::move(protocol_handler));
   }
 
   if (applications_menu_location == APP_MENU_LOCATION_NONE) {
@@ -660,7 +667,7 @@ bool DeleteAllDesktopShortcuts(base::Environment* env,
   return result;
 }
 
-void UpdateDesktopShortcuts(base::Environment* env,
+bool UpdateDesktopShortcuts(base::Environment* env,
                             const ShortcutInfo& shortcut_info) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -675,7 +682,7 @@ void UpdateDesktopShortcuts(base::Environment* env,
   if (creation_locations.applications_menu_location == APP_MENU_LOCATION_NONE)
     creation_locations.applications_menu_location = APP_MENU_LOCATION_HIDDEN;
 
-  CreateDesktopShortcut(env, shortcut_info, creation_locations);
+  return CreateDesktopShortcut(env, shortcut_info, creation_locations);
 }
 
 std::vector<base::FilePath> GetShortcutLocations(
@@ -751,11 +758,12 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
                                     shortcut_info.extension_id)));
 }
 
-void UpdatePlatformShortcuts(const base::FilePath& /*web_app_path*/,
-                             const std::u16string& /*old_app_title*/,
-                             const ShortcutInfo& shortcut_info) {
+Result UpdatePlatformShortcuts(const base::FilePath& /*web_app_path*/,
+                               const std::u16string& /*old_app_title*/,
+                               const ShortcutInfo& shortcut_info) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  UpdateDesktopShortcuts(env.get(), shortcut_info);
+  return (UpdateDesktopShortcuts(env.get(), shortcut_info) ? Result::kOk
+                                                           : Result::kError);
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {

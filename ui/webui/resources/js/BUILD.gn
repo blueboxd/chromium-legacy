@@ -51,14 +51,17 @@ preprocess_if_expr("preprocess_src_ts") {
     "focus_row.ts",
     "icon.ts",
     "keyboard_shortcut_list.ts",
+    "load_time_data.ts",
     "parse_html_subset.ts",
     "platform.ts",
     "plural_string_proxy.ts",
+    "promise_resolver.ts",
     "search_highlight_utils.ts",
     "static_types.ts",
     "store_ts.ts",
     "test_loader.ts",
     "test_loader_util.ts",
+    "util_ts.ts",
   ]
 
   if (is_chromeos) {
@@ -79,13 +82,16 @@ preprocess_if_expr("preprocess_src") {
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
   in_files = [
     "assert.js",
-    "cr.m.js",
-    "cr/event_target.js",
-    "load_time_data.m.js",
     "load_time_data_deprecated.js",
-    "promise_resolver.js",
-    "util.js",
   ]
+
+  if (is_chromeos_ash) {
+    # Used by ChromeOS UIs.
+    in_files += [
+      "cr.m.js",
+      "load_time_data.m.js",
+    ]
+  }
 
   if (is_chromeos_ash || is_ios) {
     # Used by ChromeOS UIs and ios inspect and omaha UIs
@@ -105,7 +111,6 @@ group("closure_compile") {
 }
 
 js_type_check("js_resources") {
-  uses_legacy_modules = true
   deps = [ ":load_time_data_deprecated" ]
 
   if (is_ios) {
@@ -127,37 +132,25 @@ if (is_chromeos_ash) {
 
 # Targets for type-checking JS Modules
 
-group("closure_compile_modules") {
-  deps = [
-    ":js_resources_modules",
-    "cr:closure_compile_modules",
-  ]
-}
-
-js_type_check("js_resources_modules") {
+js_type_check("closure_compile_modules") {
   is_polymer3 = true
-  deps = [
-    ":assert",
-    ":cr.m",
-    ":load_time_data.m",
-    ":promise_resolver",
-    ":util",
-  ]
+  deps = [ ":assert" ]
+
+  if (is_chromeos_ash) {
+    deps += [
+      ":cr.m",
+      ":load_time_data.m",
+    ]
+  }
 }
 
 js_library("assert") {
 }
 
-js_library("cr.m") {
-}
+if (is_chromeos_ash) {
+  js_library("cr.m") {
+  }
 
-js_library("load_time_data.m") {
-}
-
-js_library("promise_resolver") {
-  deps = [ ":assert" ]
-}
-
-js_library("util") {
-  deps = [ ":assert" ]
+  js_library("load_time_data.m") {
+  }
 }

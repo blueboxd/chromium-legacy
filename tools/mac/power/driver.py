@@ -85,7 +85,7 @@ class DriverContext:
     # battery is no longer reporting being fully charged before benchmarking.
 
     power_sampler_args = [
-        self._power_sample_path, "sample-every-nth-notification=1",
+        self._power_sample_path, "--sample-on-notification",
         "--samplers=battery", "--sample-count=1"
     ]
 
@@ -182,22 +182,22 @@ class DriverContext:
       if hasattr(scenario_driver, 'browser'):
         browser_process = scenario_driver.browser.browser_process
 
-
+      # "-i 60000" to emit a sample every minute. This is the same frequency as
+      # power_sampler, which emits a sample on IOPMPowerSource notification,
+      # which happens every minute.
       powermetrics_args = [
           "sudo", "powermetrics", "-f", "plist", "--samplers",
           "tasks,cpu_power,gpu_power,thermal,disk,network",
           "--show-process-coalition", "--show-process-gpu",
-          "--show-process-energy", "-i", f"{int(cycle_length_in_secs*1000)}",
-          "--output-file", powermetrics_output
+          "--show-process-energy", "-i", "60000", "--output-file",
+          powermetrics_output
       ]
 
-      powermetrics_process = subprocess.Popen(powermetrics_args,
-                                              stdout=subprocess.PIPE,
-                                              stdin=subprocess.PIPE)
+      powermetrics_process = subprocess.Popen(powermetrics_args)
 
       power_sampler_args = [
-          self._power_sample_path,
-          f"--sample-every-nth-notification={int(cycle_length_in_secs/60)}",
+          self._power_sample_path, f"--sample-on-notification",
+          f"--initial-sample",
           "--samplers=battery,smc,user_idle_level,main_display",
           f"--timeout={int(scenario_driver.duration.total_seconds())}",
           f"--json-output-file={power_sampler_output}"
@@ -207,11 +207,14 @@ class DriverContext:
         power_sampler_args += [
             f"--resource-coalition-pid={browser_process.pid}"
         ]
-      power_sampler_process = subprocess.Popen(power_sampler_args,
-                                               stdout=subprocess.PIPE,
-                                               stdin=subprocess.PIPE)
+      power_sampler_process = subprocess.Popen(power_sampler_args)
+
       scenario_driver.Wait()
+
+      logging.debug("Waiting for power_sampler to exit")
       power_sampler_process.wait()
+      logging.debug(
+          f"power_sampler returned {power_sampler_process.returncode}")
 
     finally:
       scenario_driver.TearDown()

@@ -140,32 +140,6 @@ void FixWindowStackingAccordingToGlobalMru(aura::Window* window_to_fix) {
   }
 }
 
-// Returns true for windows that are interesting from an all-desk z-order
-// tracking perspective.
-bool IsZOrderTracked(aura::Window* window) {
-  return window->GetType() == aura::client::WindowType::WINDOW_TYPE_NORMAL &&
-         window->GetProperty(aura::client::kZOrderingKey) ==
-             ui::ZOrderLevel::kNormal;
-}
-
-// Get the position of `window` in `windows` (as filtered by `IsZOrderTracked`)
-// in reverse order. If `window` is not in the list (or isn't z-order tracked),
-// then nullopt is returned.
-absl::optional<size_t> GetWindowZOrder(
-    const std::vector<aura::Window*>& windows,
-    aura::Window* window) {
-  size_t position = 0;
-  for (aura::Window* w : base::Reversed(windows)) {
-    if (IsZOrderTracked(w)) {
-      if (w == window)
-        return position;
-      ++position;
-    }
-  }
-
-  return absl::nullopt;
-}
-
 // Used to temporarily turn off the automatic window positioning while windows
 // are being moved between desks.
 class ScopedWindowPositionerDisabler {
@@ -367,7 +341,8 @@ void Desk::AddWindowToDesk(aura::Window* window) {
 
     // Find z-order of the added window.
     auto* container = GetDeskContainerForRoot(root);
-    if (auto order = GetWindowZOrder(container->children(), window)) {
+    if (auto order =
+            desks_util::GetWindowZOrder(container->children(), window)) {
       for (auto& adw : adw_data) {
         // All desk windows that are below the added window will have their
         // order updated (since they are now farther from the top).
@@ -427,7 +402,7 @@ void Desk::WillRemoveWindowFromDesk(aura::Window* window) {
     return;
 
   aura::Window* container = GetDeskContainerForRoot(root);
-  if (auto order = GetWindowZOrder(container->children(), window)) {
+  if (auto order = desks_util::GetWindowZOrder(container->children(), window)) {
     for (auto& info : adw_data) {
       // All-desk windows that are below the removed window will have their
       // order updated (since they are now closer to the top).
@@ -522,7 +497,15 @@ void Desk::Activate(bool update_window_activation) {
   // the user switched to another desk, so as not to break the user's workflow.
   for (auto* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
-    if (!base::Contains(windows_, window))
+    const auto* window_state = WindowState::Get(window);
+    // Floated window should be activated with the desk window, but it doesn't
+    // belong to `windows_`.
+    if (!base::Contains(windows_, window) && !window_state->IsFloated()) {
+      continue;
+    }
+
+    // Do not activate minimized windows, otherwise they will unminimize.
+    if (window_state->IsMinimized())
       continue;
 
     if (features::IsPerDeskZOrderEnabled() &&
@@ -541,10 +524,6 @@ void Desk::Activate(bool update_window_activation) {
 
       continue;
     }
-
-    // Do not activate minimized windows, otherwise they will unminimize.
-    if (WindowState::Get(window)->IsMinimized())
-      continue;
 
     wm::ActivateWindow(window);
     return;
@@ -831,7 +810,7 @@ void Desk::BuildAllDeskStackingData() {
     adw_data.clear();
     size_t order = 0;
     for (aura::Window* window : base::Reversed(desk_windows)) {
-      if (IsZOrderTracked(window)) {
+      if (desks_util::IsZOrderTracked(window)) {
         if (desks_util::IsWindowVisibleOnAllWorkspaces(window))
           adw_data.push_back({.window = window, .order = order});
         ++order;

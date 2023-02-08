@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -267,15 +268,25 @@ TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
                                           0,                    /* border */
                                           GL_RGBA, GL_UNSIGNED_BYTE);
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
-  abstract_texture->BindImage(image.get(), GetParam());
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  abstract_texture->SetUnboundImage(image.get());
+#else
+  abstract_texture->SetBoundImage(image.get());
+#endif
+
   auto* validating_texture =
       static_cast<ValidatingAbstractTextureImpl*>(abstract_texture.get());
   TextureRef* texture_ref = validating_texture->GetTextureRefForTesting();
   Texture::ImageState state;
   EXPECT_EQ(texture_ref->texture()->GetLevelImage(target, 0, &state),
             image.get());
-  EXPECT_EQ(state, GetParam() ? Texture::ImageState::BOUND
-                              : Texture::ImageState::UNBOUND);
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  EXPECT_EQ(state, Texture::ImageState::UNBOUND);
+#else
+  EXPECT_EQ(state, Texture::ImageState::BOUND);
+#endif
 
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
   abstract_texture.reset();
@@ -315,17 +326,31 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
 
   // Attach an image and see if it works.
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
-  abstract_texture->BindImage(image.get(), true);
+
+  // NOTE: For this test, it doesn't actually matter whether the image is
+  // client-managed or decoder-managed.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  abstract_texture->SetUnboundImage(image.get());
+#else
+  abstract_texture->SetBoundImage(image.get());
+#endif
+
   EXPECT_EQ(abstract_texture->GetImageForTesting(), image.get());
   // Binding an image should make the texture renderable.
   EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
 
   // Unbinding should make it not renderable.
-  abstract_texture->BindImage(nullptr, false);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  abstract_texture->SetUnboundImage(nullptr);
+#else
+  abstract_texture->SetBoundImage(nullptr);
+#endif
+
   EXPECT_EQ(texture->SafeToRenderFrom(), false);
   EXPECT_EQ(abstract_texture->GetImageForTesting(), nullptr);
 
+#if BUILDFLAG(IS_ANDROID)
   // Attach a stream image, and verify that the image changes and the service_id
   // matches the one we provide.
   scoped_refptr<gl::GLImage> stream_image(new gl::GLImageStub);
@@ -335,6 +360,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), stream_image.get());
   EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
+#endif
 
   // Deleting |abstract_texture| should delete the platform texture as well,
   // since we haven't make a copy of the TextureRef.  Also make sure that the

@@ -181,11 +181,6 @@ Page::Page(base::PassKey<Page>,
            bool is_ordinary)
     : SettingsDelegate(std::make_unique<Settings>()),
       main_frame_(nullptr),
-      fenced_frames_impl_(
-          features::IsFencedFramesEnabled()
-              ? absl::optional<features::FencedFramesImplementationType>(
-                    features::kFencedFramesImplementationTypeParam.Get())
-              : absl::nullopt),
       agent_group_scheduler_(agent_group_scheduler),
       animator_(MakeGarbageCollected<PageAnimator>(*this)),
       autoscroll_controller_(MakeGarbageCollected<AutoscrollController>(*this)),
@@ -333,6 +328,12 @@ void Page::SetMainFrame(Frame* main_frame) {
   main_frame_ = main_frame;
 
   page_scheduler_->SetIsMainFrameLocal(main_frame->IsLocalFrame());
+}
+
+Frame* Page::TakePreviousMainFrameForLocalSwap() {
+  Frame* frame = previous_main_frame_for_local_swap_;
+  previous_main_frame_for_local_swap_ = nullptr;
+  return frame;
 }
 
 LocalFrame* Page::DeprecatedLocalMainFrame() const {
@@ -949,6 +950,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(link_highlight_);
   visitor->Trace(spatial_navigation_controller_);
   visitor->Trace(main_frame_);
+  visitor->Trace(previous_main_frame_for_local_swap_);
   visitor->Trace(plugin_data_);
   visitor->Trace(validation_message_client_);
   visitor->Trace(plugins_changed_observers_);

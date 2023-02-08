@@ -19,10 +19,12 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1076785341346483463">Synchroniser avec un compte géré</translation>
 <translation id="1084365883616172403">Post Facebook publié.</translation>
 <translation id="1085696779717592361">Utiliser Chrome par défaut</translation>
-<translation id="1103523840287552314">Toujours traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
+<translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
 <translation id="110724200315609752">Passer à une autre fenêtre ouverte</translation>
 <translation id="1112015203684611006">Échec impr.</translation>
 <translation id="1125564390852150847">Créer un onglet</translation>
+<translation id="1126013303640354461">Les adresses et les modes de paiement Google Pay ne seront pas chiffrés. L'historique de navigation de Chrome ne sera pas synchronisé.
+Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. Google ne reçoit ni n'enregistre votre phrase secrète. Si vous l'avez oubliée ou si vous voulez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="1126809382673880764">Ce mode ne vous protège pas contre les téléchargements, les extensions et les sites Web dangereux. Le cas échéant, vous bénéficierez toujours de la protection offerte par la navigation sécurisée dans d'autres services Google, tels que Gmail et la recherche.</translation>
 <translation id="1145536944570833626">Supprimer les données existantes</translation>
 <translation id="1147031633655575115">Connecté en tant que <ph name="USER" /></translation>
@@ -99,10 +101,11 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1650222530560417226">Appuyez sur le bouton "Débuter la journalisation" pour recueillir les prochains journaux de la console JavaScript et les erreurs à partir de tous les onglets. Les journaux sont recueillis (et stockés uniquement en mémoire) jusqu'à ce que cette page soit fermée ou que vous appuyiez sur "Débuter la journalisation".</translation>
+<translation id="1653432787084483144">{count,plural, =1{{count} mot de passe enregistré disponible au-dessus de votre clavier.}one{{count} mot de passe enregistré disponible au-dessus de votre clavier.}other{{count} mots de passe enregistrés disponibles au-dessus de votre clavier.}}</translation>
 <translation id="1657011748321897393">Échec du partage, car vous n'êtes pas connecté au réseau.</translation>
 <translation id="1657641691196698092">Cookies bloqués</translation>
 <translation id="165877110639533037">Aucun onglet ouvert</translation>
-<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> vers <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> à <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1683483432843341018">Demander le site mobile</translation>
 <translation id="168715261339224929">Activez la synchronisation pour accéder à vos favoris sur tous vos appareils.</translation>
 <translation id="1687475363370981210">Tout marquer comme lu</translation>
@@ -133,11 +136,13 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1981118202195772574">Mobile</translation>
 <translation id="1989112275319619282">Parcourir</translation>
+<translation id="1990820278544963435">Rechercher</translation>
 <translation id="199425419756152024">Afficher le mot de passe</translation>
 <translation id="2010008505735295285">Actualiser</translation>
 <translation id="2015722694326466240">Pour afficher les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="2021670401941426298">Lisez les instructions du moteur de recherche pour supprimer l'historique de vos recherches, le cas échéant.</translation>
 <translation id="202292859882676807">Accès au micro autorisé</translation>
+<translation id="2050196510205866090">{count,plural, =1{{count} mode de paiement enregistré disponible au-dessus de votre clavier.}one{{count} mode de paiement enregistré disponible au-dessus de votre clavier.}other{{count} modes de paiement enregistrés disponibles au-dessus de votre clavier.}}</translation>
 <translation id="2073572773299281212">Actif il y a <ph name="DAYS" /> jours</translation>
 <translation id="2074131957428911366">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
@@ -179,6 +184,7 @@ Ils ne peuvent pas non plus en utiliser pour voir votre activité de navigation 
 <translation id="2375243552872247702">Voir des contenus sur mesure</translation>
 <translation id="2381405137052800939">Paramètres de base</translation>
 <translation id="2386793615875593361">1 photo sélectionnée</translation>
+<translation id="2411749908844615428">{count,plural, =1{{count} adresse enregistrée disponible au-dessus de votre clavier.}one{{count} adresse enregistrée disponible au-dessus de votre clavier.}other{{count} adresses enregistrées disponibles au-dessus de votre clavier.}}</translation>
 <translation id="2421004566762153674">Blocage des cookies tiers</translation>
 <translation id="2421044535038393232">Poursuivre les modifications</translation>
 <translation id="2434405374328098816">Vous avez déjà enregistré un mot de passe pour "<ph name="USERNAME" />" sur <ph name="WEBSITE" /></translation>
@@ -438,6 +444,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="4389019817280890563">Appuyez pour modifier la langue.</translation>
+<translation id="4420409367264901497">Modifier le favori</translation>
 <translation id="4442550905108052454">Accédez aux <ph name="BEGIN_BOLD" />Réglages<ph name="END_BOLD" /></translation>
 <translation id="4454246407045105932">Ajouter une langue</translation>
 <translation id="4462491365653392320">Suivi des prix dans les onglets</translation>
@@ -476,6 +483,7 @@ Lisez les instructions du moteur de recherche pour supprimer l'historique de vos
 Vos données sont chiffrées avec votre phrase secrète de synchronisation. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="4682686630151240767">1. Ouvrez les réglages de l'iPhone</translation>
 <translation id="4689564913179979534">Gérer les modes de paiement…</translation>
+<translation id="469300482518076788">Fermer l'onglet</translation>
 <translation id="4697071790493980729">Aucun résultat trouvé</translation>
 <translation id="470966556546083668">Ne pas synchroniser</translation>
 <translation id="4737560986434232178">Rechercher dans les onglets récents</translation>
@@ -550,7 +558,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="519530786644929958">Échec du téléchargement. Nouvelle tentative impossible.</translation>
 <translation id="5197255632782567636">Internet</translation>
-<translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5219295696240154694">Contribuer à améliorer la sécurité sur le Web pour tous</translation>
 <translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5232485538978018676">Se connecter avec un compte géré</translation>
@@ -560,6 +567,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5295239312320826323">Supprimer le compte <ph name="USER_EMAIL" /> ?</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
+<translation id="5318298563956633672">Vous suivez déjà ce produit.</translation>
 <translation id="5339316356165661760">Activer la synchronisation</translation>
 <translation id="536067926684072644">Afficher les favoris</translation>
 <translation id="5360976571138293719">Pour accéder à d'autres paramètres liés à la confidentialité, à la sécurité et à la collecte de données, consultez la page <ph name="BEGIN_LINK" />Services Google<ph name="END_LINK" />.</translation>
@@ -624,6 +632,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="581659025233126501">Activer la synchronisation</translation>
 <translation id="5819208479324046259">Géré par <ph name="MANAGER" />. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="5833643789537100742">Enregistrez vos mots de passe, vos modes de paiement et vos adresses pour que la saisie automatique dans Chrome soit effectuée plus tard.</translation>
+<translation id="5834415013958049700">Image Lens que vous avez copiée</translation>
 <translation id="5846482154967366008">Moteur de recherche</translation>
 <translation id="5854790677617711513">Datant de plus de 30 jours</translation>
 <translation id="5857090052475505287">Nouveau dossier</translation>
@@ -787,7 +796,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="6801927553864092214">Pour parcourir le Web en mode privé, ouvrez un onglet de navigation privée</translation>
 <translation id="6807889908376551050">Tout afficher…</translation>
 <translation id="681368974849482173">Élément créé</translation>
-<translation id="683022620450280906">Vous pouvez utiliser les mots de passe enregistrés sur n'importe quel appareil. Ils sont enregistrés dans le Gestionnaire de mots de passe de Google pour <ph name="EMAIL" />.</translation>
+<translation id="683022620450280906">Vous pouvez utiliser les mots de passe enregistrés sur n'importe quel appareil. Ils sont enregistrés dans le Gestionnaire de mots de passe Google pour <ph name="EMAIL" />.</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6842136130964845393">Pour toujours avoir accès à vos mots de passe enregistrés, confirmez votre identité</translation>
 <translation id="6851516051005285358">Voir la version pour ordinateur</translation>
@@ -874,6 +883,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7531345132340165516">Site actuel</translation>
 <translation id="7537586195939242955">Impossible d'installer votre Pass dans Passbook actuellement.</translation>
 <translation id="7553234618121028547">Pour désactiver, ouvrez <ph name="BEGIN_LINK" />Réglages<ph name="END_LINK" />, puis accédez à "Options de mots de passe".</translation>
+<translation id="7554645225856321710">Tout fermer</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="7583004045319035904">Utilisez "<ph name="BIOMETRIC_AUTHENITCATION_TYPE" />" pour déverrouiller vos onglets de navigation privée.</translation>
@@ -911,6 +921,7 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7856733331829174190">Téléchargement impossible</translation>
 <translation id="785938070103630874">Ouvrez la section des mots de passe, des modes de paiement, de l'adresse, etc.</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
+<translation id="7870750252270996949">Image Lens copiée</translation>
 <translation id="7879275349003161544">Afficher les téléchargements</translation>
 <translation id="7884694604461143138">Rechercher dans l'historique (nombre de résultats : <ph name="COUNT" />)</translation>
 <translation id="7887198238286927132">Pour protéger votre vie privée, Chrome ne renseigne pas automatiquement de champ.</translation>
@@ -926,7 +937,6 @@ Lorsque vous êtes en navigation privée, ils ne peuvent pas utiliser de cookies
 <translation id="7966516440812255683">Les sites peuvent utiliser des cookies pour améliorer votre expérience de navigation (par exemple, pour maintenir votre connexion ou mémoriser les articles de votre panier).
 
 Ils peuvent également s'en servir pour voir votre activité de navigation sur l'ensemble des différents sites (par exemple, pour personnaliser les annonces).</translation>
-<translation id="7966904497916178308">La protection standard est activée</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
 <translation id="797413074872316787">Activez la synchronisation pour accéder à vos données et les personnaliser sur tous vos appareils.</translation>
 <translation id="7978018860671536736">3. Appuyez sur "Saisir automatiquement les mots de passe"</translation>
@@ -1023,6 +1033,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8730621377337864115">OK</translation>
 <translation id="8731388423028622182">Vous avez été déconnecté de votre compte <ph name="USER_NAME" /> lors de la réinitialisation de votre iPhone. Appuyez sur "Continuer" ci-dessous pour vous connecter.</translation>
 <translation id="87371078663613140">Explorez les options de la barre de menu</translation>
+<translation id="8737620822084008350">{count,plural, =1{{count} profil enregistré disponible au-dessus de votre clavier.}one{{count} profil enregistré disponible au-dessus de votre clavier.}other{{count} profils enregistrés disponibles au-dessus de votre clavier.}}</translation>
 <translation id="8741995161408053644">Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8750037785291841318">Vos onglets s'afficheront ici</translation>
 <translation id="8756969031206844760">Mettre à jour le mot de passe ?</translation>
@@ -1079,7 +1090,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="9097506547406246598">Impossible de vous désabonner en raison d'une erreur.</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9107664647686727385">Pour vérifier la présence de mots de passe compromis</translation>
-<translation id="9124387962554796433">Google pourra utiliser votre historique pour personnaliser la recherche et d'autres de ses services.</translation>
+<translation id="9124387962554796433">Google peut utiliser votre historique pour personnaliser la recherche et d'autres services Google.</translation>
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
@@ -1087,6 +1098,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9200875785104711666">Il y a <ph name="TIME" /> j</translation>
 <translation id="9203116392574189331">Handoff</translation>
+<translation id="9219154867334666734">Rechercher dans les onglets…</translation>
 <translation id="9223358826628549784">Le rapport d'erreur a bien été envoyé.</translation>
 <translation id="941747855997058526">Sélectionner un mot de passe</translation>
 <translation id="952704832371081537">Annuler</translation>

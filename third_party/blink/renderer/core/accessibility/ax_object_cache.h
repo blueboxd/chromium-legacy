@@ -98,7 +98,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Remove(AccessibleNode*) = 0;
   // Returns true if the AXObject is removed.
   virtual bool Remove(LayoutObject*) = 0;
-  virtual void Remove(Node*) = 0;
+  virtual void Remove(const Node*) = 0;
   virtual void Remove(Document*) = 0;
   virtual void Remove(AbstractInlineTextBox*) = 0;
 
@@ -124,7 +124,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                              Element* new_focused_node) = 0;
   virtual void HandleInitialFocus() = 0;
   virtual void HandleEditableTextContentChanged(Node*) = 0;
-  virtual void HandleScaleAndLocationChanged(Document*) = 0;
   virtual void HandleTextMarkerDataAdded(Node* start, Node* end) = 0;
   virtual void HandleTextFormControlChanged(Node*) = 0;
   virtual void HandleValueChanged(Node*) = 0;
@@ -213,6 +212,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual AXObject* GetPluginRoot() = 0;
 
+  // Serialize entire tree, returning true if successful.
   virtual bool SerializeEntireTree(bool exclude_offscreen,
                                    size_t max_node_count,
                                    base::TimeDelta timeout,
@@ -245,7 +245,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   // Note that any pending event also causes its corresponding object to
   // become dirty.
-  virtual bool HasDirtyObjects() = 0;
+  virtual bool HasDirtyObjects() const = 0;
 
   // Adds the event to a list of pending events that is cleared out by
   // a subsequent call to  duplicates are not represented.. Returns false if
@@ -254,7 +254,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
                                bool insert_at_beginning) = 0;
 
   // Ensure that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  virtual void ScheduleAXUpdate() = 0;
+  virtual void ScheduleAXUpdate() const = 0;
 
  protected:
   friend class ScopedBlinkAXEventIntent;

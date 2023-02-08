@@ -11,17 +11,23 @@ import '../common/js/tslib_shim.js';
 
 import {customElement, property, query, state} from 'chrome://resources/mwc/lit/decorators.js';
 import {classMap} from 'chrome://resources/mwc/lit/directives/class-map.js';
-import {css, html, LitElement, PropertyValues} from 'chrome://resources/mwc/lit/index.js';
+import {ifDefined} from 'chrome://resources/mwc/lit/directives/if-defined.js';
+import {styleMap} from 'chrome://resources/mwc/lit/directives/style-map.js';
+import {css, CSSResult, CSSResultGroup, html, LitElement, PropertyValues} from 'chrome://resources/mwc/lit/index.js';
 
 export {
   classMap,
   css,
+  CSSResult,
+  CSSResultGroup,
   customElement,
   html,
+  ifDefined,
   property,
   PropertyValues,
   query,
   state,
+  styleMap,
 };
 
 /**

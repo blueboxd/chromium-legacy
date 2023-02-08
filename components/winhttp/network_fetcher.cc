@@ -24,9 +24,9 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "components/winhttp/net_util.h"
 #include "components/winhttp/proxy_info.h"
@@ -63,7 +63,8 @@ void CrackUrl(const GURL& url,
 NetworkFetcher::NetworkFetcher(
     const HINTERNET& session_handle,
     scoped_refptr<ProxyConfiguration> proxy_configuration)
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : main_thread_task_runner_(
+          base::SingleThreadTaskRunner::GetCurrentDefault()),
       session_handle_(session_handle),
       proxy_configuration_(proxy_configuration) {}
 
@@ -267,9 +268,14 @@ HRESULT NetworkFetcher::SendRequest(const std::string& data) {
 
   VLOG(2) << data;
 
-  const uint32_t bytes_to_send = base::saturated_cast<uint32_t>(data.size());
-  void* request_body =
-      bytes_to_send ? const_cast<char*>(data.c_str()) : WINHTTP_NO_REQUEST_DATA;
+  // Make a copy of the request data to ensure the buffer is available until
+  // the request is processed.
+  request_data_ = data;
+
+  const uint32_t bytes_to_send =
+      base::saturated_cast<uint32_t>(request_data_.size());
+  void* request_body = bytes_to_send ? const_cast<char*>(request_data_.c_str())
+                                     : WINHTTP_NO_REQUEST_DATA;
   if (!::WinHttpSendRequest(request_handle_.get(),
                             WINHTTP_NO_ADDITIONAL_HEADERS, 0, request_body,
                             bytes_to_send, bytes_to_send, context())) {

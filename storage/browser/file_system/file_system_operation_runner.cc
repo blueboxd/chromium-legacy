@@ -17,8 +17,8 @@
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/bind_post_task.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/file_system/copy_or_move_hook_delegate.h"
 #include "storage/browser/file_system/file_observers.h"
@@ -569,7 +569,7 @@ void FileSystemOperationRunner::DidFinish(const OperationID id,
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidFinish,
                                   weak_ptr_, id, std::move(callback), rv));
     return;
@@ -590,7 +590,7 @@ void FileSystemOperationRunner::DidGetMetadata(
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemOperationRunner::DidGetMetadata, weak_ptr_,
                        id, std::move(callback), rv, file_info));
@@ -613,7 +613,7 @@ void FileSystemOperationRunner::DidReadDirectory(
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemOperationRunner::DidReadDirectory, weak_ptr_,
                        id, callback, rv, std::move(entries), has_more));
@@ -636,7 +636,7 @@ void FileSystemOperationRunner::DidWrite(const OperationID id,
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemOperationRunner::DidWrite, weak_ptr_, id,
                        callback, rv, bytes, complete));
@@ -659,7 +659,7 @@ void FileSystemOperationRunner::DidOpenFile(
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemOperationRunner::DidOpenFile, weak_ptr_, id,
                        std::move(callback), std::move(file),
@@ -669,8 +669,9 @@ void FileSystemOperationRunner::DidOpenFile(
   base::ScopedClosureRunner scoped_on_close_callback;
   if (on_close_callback) {
     // Wrap `on_close_callback` to ensure it always runs, and on the IO thread.
-    scoped_on_close_callback = base::ScopedClosureRunner(base::BindPostTask(
-        base::SequencedTaskRunnerHandle::Get(), std::move(on_close_callback)));
+    scoped_on_close_callback = base::ScopedClosureRunner(
+        base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
+                           std::move(on_close_callback)));
   }
 
   std::move(callback).Run(std::move(file), std::move(scoped_on_close_callback));
@@ -691,7 +692,7 @@ void FileSystemOperationRunner::DidCreateSnapshot(
 
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSystemOperationRunner::DidCreateSnapshot, weak_ptr_,
                        id, std::move(callback), rv, file_info, platform_path,

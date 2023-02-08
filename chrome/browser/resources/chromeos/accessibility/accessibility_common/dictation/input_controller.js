@@ -20,6 +20,16 @@ const StateType = chrome.automation.StateType;
  */
 let SurroundingInfo;
 
+/**
+ * @typedef {{
+ * node: !AutomationNode,
+ * value: string,
+ * selStart: number,
+ * selEnd: number,
+ * }}
+ */
+let EditableNodeData;
+
 /** InputController handles interaction with input fields for Dictation. */
 export class InputController {
   constructor(stopDictationCallback, focusHandler) {
@@ -131,6 +141,7 @@ export class InputController {
     this.activeImeContextId_ = InputController.NO_ACTIVE_IME_CONTEXT_ID_;
     chrome.inputMethodPrivate.setCurrentInputMethod(this.previousImeEngineId_);
     this.previousImeEngineId_ = '';
+    this.surroundingInfo_ = null;
   }
 
   /**
@@ -142,11 +153,12 @@ export class InputController {
       return;
     }
 
-    const data = this.getEditableNodeData_();
-    if (LocaleInfo.allowSmartCapAndSpacing() && data) {
-      const {value, caretIndex} = data;
-      text = EditingUtil.smartCapitalization(value, caretIndex, text);
-      text = EditingUtil.smartSpacing(value, caretIndex, text);
+    const data = this.getEditableNodeData();
+    if (LocaleInfo.allowSmartCapAndSpacing() &&
+        this.checkEditableNodeData_(data)) {
+      const {value, selStart, selEnd} = data;
+      text = EditingUtil.smartCapitalization(value, selStart, text);
+      text = EditingUtil.smartSpacing(value, selStart, text);
     }
 
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
@@ -204,14 +216,14 @@ export class InputController {
    * intersects.
    */
   deletePrevSentence() {
-    const data = this.getEditableNodeData_();
-    if (!data) {
+    const data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {value, caretIndex} = data;
-    const prevSentenceStart = EditingUtil.navPrevSent(value, caretIndex);
-    const length = caretIndex - prevSentenceStart;
+    const {value, selStart, selEnd} = data;
+    const prevSentenceStart = EditingUtil.navPrevSent(value, selStart);
+    const length = selStart - prevSentenceStart;
     this.deleteSurroundingText_(length, -length);
   }
 
@@ -247,14 +259,14 @@ export class InputController {
    * @param {string} insertPhrase The phrase to be inserted.
    */
   replacePhrase(deletePhrase, insertPhrase) {
-    let data = this.getEditableNodeData_();
-    if (!data) {
+    let data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {value, caretIndex} = data;
-    data = EditingUtil.replacePhrase(
-        value, caretIndex, deletePhrase, insertPhrase);
+    const {value, selStart, selEnd} = data;
+    data =
+        EditingUtil.replacePhrase(value, selStart, deletePhrase, insertPhrase);
     const newValue = data.value;
     const newIndex = data.caretIndex;
     this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
@@ -269,14 +281,14 @@ export class InputController {
    * @param {string} beforePhrase
    */
   insertBefore(insertPhrase, beforePhrase) {
-    let data = this.getEditableNodeData_();
-    if (!data) {
+    let data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {value, caretIndex} = data;
+    const {value, selStart, selEnd} = data;
     data =
-        EditingUtil.insertBefore(value, caretIndex, insertPhrase, beforePhrase);
+        EditingUtil.insertBefore(value, selStart, insertPhrase, beforePhrase);
     const newValue = data.value;
     const newIndex = data.caretIndex;
     this.setEditableValueAndUpdateCaretPosition_(newValue, newIndex);
@@ -291,14 +303,14 @@ export class InputController {
    * @param {string} endPhrase
    */
   selectBetween(startPhrase, endPhrase) {
-    const data = this.getEditableNodeData_();
-    if (!data) {
+    const data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {node, value, caretIndex} = data;
+    const {node, value, selStart, selEnd} = data;
     const selection =
-        EditingUtil.selectBetween(value, caretIndex, startPhrase, endPhrase);
+        EditingUtil.selectBetween(value, selStart, startPhrase, endPhrase);
     if (!selection) {
       return;
     }
@@ -308,25 +320,25 @@ export class InputController {
 
   /** Moves the text caret to the next sentence. */
   navNextSent() {
-    const data = this.getEditableNodeData_();
-    if (!data) {
+    const data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {node, value, caretIndex} = data;
-    const newCaretIndex = EditingUtil.navNextSent(value, caretIndex);
+    const {node, value, selStart, selEnd} = data;
+    const newCaretIndex = EditingUtil.navNextSent(value, selStart);
     node.setSelection(newCaretIndex, newCaretIndex);
   }
 
   /** Moves the text caret to the previous sentence. */
   navPrevSent() {
-    const data = this.getEditableNodeData_();
-    if (!data) {
+    const data = this.getEditableNodeData();
+    if (!this.checkEditableNodeData_(data)) {
       return;
     }
 
-    const {node, value, caretIndex} = data;
-    const newCaretIndex = EditingUtil.navPrevSent(value, caretIndex);
+    const {node, value, selStart, selEnd} = data;
+    const newCaretIndex = EditingUtil.navPrevSent(value, selStart);
     node.setSelection(newCaretIndex, newCaretIndex);
   }
 
@@ -358,45 +370,61 @@ export class InputController {
   }
 
   /**
-   * Returns the value and caret index of the currently focused editable node.
-   * Only returns valid data if there isn't a selection.
-   * TODO(crbug.com/1344888): Add support for when there is a selection.
+   * Returns the editable node, its value, the selection start, and the
+   * selection end.
    * TODO(crbug.com/1353871): Only return text that is visible on-screen.
-   * @return {!{node: !AutomationNode, value: string, caretIndex: number}|null}
-   * @private
+   * @return {?EditableNodeData}
    */
-  getEditableNodeData_() {
+  getEditableNodeData() {
     const node = this.focusHandler_.getEditableNode();
     if (!node) {
       return null;
     }
 
     let value;
-    let caretIndex;
+    let selStart;
+    let selEnd;
     const isContentEditable = node.state[StateType.RICHLY_EDITABLE];
     if (isContentEditable && this.surroundingInfo_) {
+      const info = this.surroundingInfo_;
       // Use IME data only in contenteditables.
-      if (this.surroundingInfo_.anchor !== this.surroundingInfo_.focus) {
-        // Selection check.
-        return null;
-      }
-
-      value = this.surroundingInfo_.text;
-      caretIndex = this.surroundingInfo_.anchor;
-      return {node, value, caretIndex};
-    }
-
-    if (node.textSelStart !== undefined && node.textSelEnd !== undefined &&
-        node.textSelStart !== node.textSelEnd) {
-      // Selection check.
-      return null;
+      value = info.text;
+      selStart = Math.min(info.anchor, info.focus);
+      selEnd = Math.max(info.anchor, info.focus);
+      return {node, value, selStart, selEnd};
     }
 
     // Fall back to data from Automation.
     value = node.value || '';
-    caretIndex =
-        node.textSelStart !== undefined ? node.textSelStart : value.length;
-    return {node, value, caretIndex};
+    selStart = (node.textSelStart !== undefined && node.textSelStart !== -1) ?
+        node.textSelStart :
+        value.length;
+    selEnd = (node.textSelEnd !== undefined && node.textSelEnd !== -1) ?
+        node.textSelEnd :
+        value.length;
+    return {
+      node,
+      value,
+      selStart: Math.min(selStart, selEnd),
+      selEnd: Math.max(selStart, selEnd),
+    };
+  }
+
+  /**
+   * Returns whether or not `data` meets the prerequisites for performing an
+   * editing command.
+   * @param {?EditableNodeData} data
+   * @return {boolean}
+   * @private
+   */
+  checkEditableNodeData_(data) {
+    if (!data || data.selStart !== data.selEnd) {
+      // TODO(b:259353226): Move this selection check into checkContext()
+      // method.
+      return false;
+    }
+
+    return true;
   }
 }
 

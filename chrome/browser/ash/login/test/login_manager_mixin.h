@@ -19,6 +19,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
+
 namespace test {
 
 constexpr char kTestEmail[] = "test_user@gmail.com";
@@ -126,6 +127,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
       const UserContext& user_context,
       std::unique_ptr<StubAuthenticatorBuilder> authenticator_builder);
 
+  // Starts login attempt for a user, using actual authenticator backed by
+  // FakeUserDataAuthClient.
+  // Note that this will not wait for the login attempt to finish.
+  void AttemptLoginUsingFakeDataAuthClient(const UserContext& user_context);
+
   // Waits for the session state to change to ACTIVE. Returns immediately if the
   // session is already active.
   void WaitForActiveSession();
@@ -181,15 +187,5 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after //chrome/browser/chromeos
-// source migration is finished.
-namespace chromeos {
-namespace test {
-using ::ash::test::kTestEmail;
-using ::ash::test::kTestGaiaId;
-}  // namespace test
-using ::ash::LoginManagerMixin;
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_LOGIN_MANAGER_MIXIN_H_

@@ -136,7 +136,9 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   static constexpr webui::ResourcePath kResources[] = {
-    {"account_manager_shared_css.js", IDR_ACCOUNT_MANAGER_SHARED_CSS_JS},
+    {"account_manager_shared.css.js", IDR_ACCOUNT_MANAGER_SHARED_CSS_JS},
+    {"error_screen.html.js",
+     IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_HTML_JS},
     {"error_screen.js", IDR_ACCOUNT_MANAGER_COMPONENTS_ERROR_SCREEN_JS},
     // Resources for the server-based edu coexistence flow.
     {"edu-coexistence", IDR_EDU_COEXISTENCE_EDU_COEXISTENCE_HTML},
@@ -240,7 +242,7 @@ content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
       ash::AccountAppsAvailability::IsArcAccountRestrictionsEnabled()
           ? false
           : profile->GetPrefs()->GetBoolean(
-                chromeos::prefs::kShouldSkipInlineLoginWelcomePage));
+                ash::prefs::kShouldSkipInlineLoginWelcomePage));
   if (ash::AccountAppsAvailability::IsArcAccountRestrictionsEnabled()) {
     int message_id =
         profiles::IsGuestModeEnabled()
@@ -344,17 +346,20 @@ bool IsValidChromeSigninReason(const GURL& url) {
 }  // namespace
 
 InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
+  // Always instantiate the WebUIDataSource so that tests pulling deps from
+  // from chrome://chrome-signin/gaia_auth_host/ can work.
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* source = CreateWebUIDataSource(profile);
+  content::WebUIDataSource::Add(profile, source);
+
   if (!IsValidChromeSigninReason(web_ui->GetWebContents()->GetVisibleURL()))
     return;
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* source = CreateWebUIDataSource(profile);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::u16string username =
       ash::ProfileHelper::Get()->GetUserByProfile(profile)->GetGivenName();
   AddEduStrings(source, username);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  content::WebUIDataSource::Add(profile, source);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   web_ui->AddMessageHandler(

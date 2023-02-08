@@ -28,6 +28,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -43,6 +44,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_controllee_request_handler.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -393,12 +395,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-    StoragePartition* partition = shell()
-                                      ->web_contents()
-                                      ->GetBrowserContext()
-                                      ->GetDefaultStoragePartition();
-    wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
-        partition->GetServiceWorkerContext());
+    SetServiceWorkerContextWrapper();
     ShellContentBrowserClient::Get()
         ->browser_context()
         ->set_client_hints_controller_delegate(
@@ -414,6 +411,15 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
         .FlushForTesting();
     content::RunAllTasksUntilIdle();
     wrapper_ = nullptr;
+  }
+
+  void SetServiceWorkerContextWrapper() {
+    StoragePartition* partition = shell()
+                                      ->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
+    wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
+        partition->GetServiceWorkerContext());
   }
 
   // Starts the test server and navigates the renderer to an empty page. Call
@@ -2615,7 +2621,8 @@ class ServiceWorkerV8CodeCacheForCacheStorageBadOriginTest
     code_cache_host_interfaces_.emplace_back(
         receiver_set.SwapImplForTesting(receiver_id, std::move(interceptor))
             .release(),
-        base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+        base::OnTaskRunnerDeleter(
+            base::SequencedTaskRunner::GetCurrentDefault()));
   }
 
  private:
@@ -3119,7 +3126,8 @@ class ServiceWorkerThrottlingTest : public ServiceWorkerBrowserTest {
       base::WeakPtr<BlockingResponse> owner_;
     };
 
-    BlockingResponse() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+    BlockingResponse()
+        : task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {}
 
     // Mint an HttpResponse suitable for returning to the EmbeddedTestServer
     // that will forward to this BlockingResponse.
@@ -4116,18 +4124,35 @@ class ServiceWorkerBrowserTestWithStoragePartitioning
 INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
     ServiceWorkerBrowserTestWithStoragePartitioning);
 
-IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTestWithStoragePartitioning,
-                       StorageKeyWithHostPermissionsWithDedicatedWorkers) {
+// http://crbug.com/1385779
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_StorageKeyWithHostPermissionsWithDedicatedWorkers \
+  DISABLED_StorageKeyWithHostPermissionsWithDedicatedWorkers
+#else
+#define MAYBE_StorageKeyWithHostPermissionsWithDedicatedWorkers \
+  StorageKeyWithHostPermissionsWithDedicatedWorkers
+#endif
+IN_PROC_BROWSER_TEST_P(
+    ServiceWorkerBrowserTestWithStoragePartitioning,
+    MAYBE_StorageKeyWithHostPermissionsWithDedicatedWorkers) {
   RunTestWithWorkers("with-worker");
 }
 
 // Android does not have Shared Workers, so skip the shared worker test.
 #if !BUILDFLAG(IS_ANDROID)
+// http://crbug.com/1385779
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_StorageKeyWithHostPermissionsWithSharedWorkers \
+  DISABLED_StorageKeyWithHostPermissionsWithSharedWorkers
+#else
+#define MAYBE_StorageKeyWithHostPermissionsWithSharedWorkers \
+  StorageKeyWithHostPermissionsWithSharedWorkers
+#endif  // BUILDFLAG(IS_MAC)
 IN_PROC_BROWSER_TEST_P(ServiceWorkerBrowserTestWithStoragePartitioning,
-                       StorageKeyWithHostPermissionsWithSharedWorkers) {
+                       MAYBE_StorageKeyWithHostPermissionsWithSharedWorkers) {
   RunTestWithWorkers("with-shared-worker");
 }
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 enum class SpeculativeStartupNavigationType {
   kBrowserInitiatedNavigation,
@@ -4230,6 +4255,257 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerSpeculativeStartupBrowserTest,
   histogram_tester().ExpectBucketCount(
       "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT",
       static_cast<int>(blink::ServiceWorkerStatusCode::kOk), 1);
+}
+
+enum class ServiceWorkerBypassFetchHandlerBypassedOriginType {
+  kBypassed,
+  kNotBypassed
+};
+
+class ServiceWorkerBypassFetchHandlerTest
+    : public ServiceWorkerBrowserTest,
+      public testing::WithParamInterface<
+          ServiceWorkerBypassFetchHandlerBypassedOriginType> {
+ public:
+  ServiceWorkerBypassFetchHandlerTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kServiceWorkerBypassFetchHandler,
+          {{"origins_to_bypass", "https://a.test"}}}},
+        {});
+  }
+  ~ServiceWorkerBypassFetchHandlerTest() override = default;
+
+  void SetUpOnMainThread() override {
+    SetServiceWorkerContextWrapper();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    net::test_server::RegisterDefaultHandlers(&https_server_);
+    ASSERT_TRUE(https_server()->Start());
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+  WebContents* web_contents() const { return shell()->web_contents(); }
+
+  RenderFrameHost* GetPrimaryMainFrame() {
+    return web_contents()->GetPrimaryMainFrame();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ServiceWorkerBypassFetchHandlerTest,
+    testing::Values(
+        ServiceWorkerBypassFetchHandlerBypassedOriginType::kBypassed,
+        ServiceWorkerBypassFetchHandlerBypassedOriginType::kNotBypassed));
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBypassFetchHandlerTest, UrlInAllowList) {
+  std::string origin;
+  switch (GetParam()) {
+    case ServiceWorkerBypassFetchHandlerBypassedOriginType::kBypassed:
+      origin = "a.test";
+      break;
+    case ServiceWorkerBypassFetchHandlerBypassedOriginType::kNotBypassed:
+      origin = "b.test";
+      break;
+  }
+
+  const GURL create_service_worker_url(https_server()->GetURL(
+      origin, "/service_worker/create_service_worker.html"));
+  const GURL out_scope_url(https_server()->GetURL(origin, "/empty.html"));
+  const GURL in_scope_url(
+      https_server()->GetURL(origin, "/service_worker/empty.html"));
+
+  // Register a service worker.
+  WorkerRunningStatusObserver observer1(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(), create_service_worker_url));
+  EXPECT_EQ("DONE",
+            EvalJs(GetPrimaryMainFrame(),
+                   "register('/service_worker/fetch_event_pass_through.js')"));
+  observer1.WaitUntilRunning();
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer1.version_id());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  // Stop the current running service worker.
+  StopServiceWorker(version.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Navigate away from the service worker's scope.
+  EXPECT_TRUE(NavigateToURL(shell(), out_scope_url));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // This script asks the service worker what fetch events it saw.
+  const std::string script = R"(
+      (async () => {
+        const saw_message = new Promise(resolve => {
+          navigator.serviceWorker.onmessage = event => {
+            resolve(event.data);
+          };
+        });
+        const registration = await navigator.serviceWorker.ready;
+        registration.active.postMessage('');
+        const message = await saw_message;
+        return message.length;
+      })();
+  )";
+
+  // Navigate to the service worker's scope.
+  EXPECT_TRUE(NavigateToURL(shell(), in_scope_url));
+
+  switch (GetParam()) {
+    case ServiceWorkerBypassFetchHandlerBypassedOriginType::kBypassed:
+      // If bypassing is allowed, the service worker was bypassed and the
+      // navigation request shouldn't be handled by the fetch handler.
+      EXPECT_EQ(0, EvalJs(GetPrimaryMainFrame(), script));
+      break;
+    case ServiceWorkerBypassFetchHandlerBypassedOriginType::kNotBypassed:
+      // If bypassing is not allowed, the navigation request should be handled
+      // by the fetch handler.
+      EXPECT_EQ(1, EvalJs(GetPrimaryMainFrame(), script));
+      break;
+  }
+}
+
+class ServiceWorkerSkipEmptyFetchHandlerBrowserTest
+    : public ServiceWorkerBrowserTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ServiceWorkerSkipEmptyFetchHandlerBrowserTest() {
+    if (is_feature_enabled()) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kServiceWorkerSkipIgnorableFetchHandler,
+            {{"SkipEmptyFetchHandler", "true"}}}},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {}, {{features::kServiceWorkerSkipIgnorableFetchHandler}});
+    }
+  }
+  ~ServiceWorkerSkipEmptyFetchHandlerBrowserTest() override = default;
+
+  WebContents* web_contents() const { return shell()->web_contents(); }
+
+  RenderFrameHost* GetPrimaryMainFrame() {
+    return web_contents()->GetPrimaryMainFrame();
+  }
+
+  bool is_feature_enabled() { return GetParam(); }
+
+ protected:
+  void SetUpOnMainThread() override {
+    ServiceWorkerBrowserTest::SetUpOnMainThread();
+    StartServerAndNavigateToSetup();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ServiceWorkerSkipEmptyFetchHandlerBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerSkipEmptyFetchHandlerBrowserTest,
+                       HasNotSkippedMetrics) {
+  base::HistogramTester tester;
+
+  const GURL create_service_worker_url(embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html"));
+  const GURL out_scope_url(embedded_test_server()->GetURL("/empty.html"));
+  const GURL in_scope_url(
+      embedded_test_server()->GetURL("/service_worker/empty.html"));
+
+  // Register a service worker.
+  WorkerRunningStatusObserver observer(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(), create_service_worker_url));
+  EXPECT_EQ(
+      "DONE",
+      EvalJs(GetPrimaryMainFrame(),
+             "register('/service_worker/fetch_event_respond_with_fetch.js')"));
+  observer.WaitUntilRunning();
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer.version_id());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  // Stop the current running service worker.
+  StopServiceWorker(version.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Navigate away from the service worker's scope.
+  EXPECT_TRUE(NavigateToURL(shell(), out_scope_url));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Conduct a main resource load.
+  EXPECT_TRUE(NavigateToURL(shell(), in_scope_url));
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  tester.ExpectUniqueSample("ServiceWorker.FetchHandler.SkipReason",
+                            ServiceWorkerControlleeRequestHandler::
+                                FetchHandlerSkipReason::kNotSkipped,
+                            1);
+  tester.ExpectUniqueSample(
+      "ServiceWorker.FetchHandler."
+      "TypeAtContinueWithActivatedVersion",
+      ServiceWorkerVersion::FetchHandlerType::kNotSkippable, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerSkipEmptyFetchHandlerBrowserTest,
+                       HasSkippedForEmptyFetchHandlerMetrics) {
+  base::HistogramTester tester;
+
+  const GURL create_service_worker_url(embedded_test_server()->GetURL(
+      "/service_worker/create_service_worker.html"));
+  const GURL out_scope_url(embedded_test_server()->GetURL("/empty.html"));
+  const GURL in_scope_url(
+      embedded_test_server()->GetURL("/service_worker/empty.html"));
+
+  // Register a service worker.
+  WorkerRunningStatusObserver observer1(public_context());
+  EXPECT_TRUE(NavigateToURL(shell(), create_service_worker_url));
+  EXPECT_EQ("DONE", EvalJs(GetPrimaryMainFrame(),
+                           "register('/service_worker/empty_fetch_event.js')"));
+  observer1.WaitUntilRunning();
+  scoped_refptr<ServiceWorkerVersion> version =
+      wrapper()->GetLiveVersion(observer1.version_id());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+
+  // Stop the current running service worker.
+  StopServiceWorker(version.get());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Navigate away from the service worker's scope.
+  EXPECT_TRUE(NavigateToURL(shell(), out_scope_url));
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+
+  // Conduct a main resource load.
+  EXPECT_TRUE(NavigateToURL(shell(), in_scope_url));
+  if (is_feature_enabled()) {
+    // If the feature is enabled, navigation request doesn't start the service
+    // worker if the fetch handler is skipped.
+    EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
+    tester.ExpectUniqueSample(
+        "ServiceWorker.FetchHandler.SkipReason",
+        ServiceWorkerControlleeRequestHandler::FetchHandlerSkipReason::
+            kSkippedForEmptyFetchHandler,
+        1);
+
+  } else {
+    EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
+    tester.ExpectUniqueSample("ServiceWorker.FetchHandler.SkipReason",
+                              ServiceWorkerControlleeRequestHandler::
+                                  FetchHandlerSkipReason::kNotSkipped,
+                              1);
+  }
+  tester.ExpectUniqueSample(
+      "ServiceWorker.FetchHandler."
+      "TypeAtContinueWithActivatedVersion",
+      ServiceWorkerVersion::FetchHandlerType::kEmptyFetchHandler, 1);
 }
 
 }  // namespace content

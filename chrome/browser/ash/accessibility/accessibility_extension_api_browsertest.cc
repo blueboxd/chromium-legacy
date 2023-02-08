@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest, OpenSettingsSubpage) {
   Profile* profile = AccessibilityManager::Get()->profile();
 
   // Install the Settings App.
-  ash::SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
+  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
 
   ASSERT_TRUE(RunSubtest("testOpenSettingsSubpage")) << message_;
 
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityPrivateApiTest,
   Profile* profile = AccessibilityManager::Get()->profile();
 
   // Install the Settings App.
-  ash::SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
+  SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
 
   ASSERT_TRUE(RunSubtest("testOpenSettingsSubpageInvalidSubpage")) << message_;
 
@@ -130,10 +130,10 @@ class AccessibilityPrivateApiFeatureTest : public AccessibilityPrivateApiTest {
     AccessibilityPrivateApiTest::SetUpCommandLine(command_line);
     if (enabled) {
       scoped_feature_list_.InitAndEnableFeature(
-          ::features::kEnhancedNetworkVoices);
+          ::features::kExperimentalAccessibilityDictationMoreCommands);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          ::features::kEnhancedNetworkVoices);
+          ::features::kExperimentalAccessibilityDictationMoreCommands);
     }
   }
 

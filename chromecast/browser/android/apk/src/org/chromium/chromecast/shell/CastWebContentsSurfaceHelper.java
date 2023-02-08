@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.chromium.base.Consumer;
 import org.chromium.base.Log;
 import org.chromium.chromecast.base.Both;
 import org.chromium.chromecast.base.Controller;
@@ -20,6 +19,8 @@ import org.chromium.chromecast.base.Observers;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.function.Consumer;
 
 /**
  * A util class for CastWebContentsActivity to show WebContents on its views.
@@ -102,8 +103,8 @@ class CastWebContentsSurfaceHelper {
      * @param webContentsView A Observer that displays incoming WebContents.
      * @param finishCallback Invoked to tell host to finish.
      */
-    CastWebContentsSurfaceHelper(
-            Observer<WebContents> webContentsView, Consumer<Uri> finishCallback) {
+    CastWebContentsSurfaceHelper(Observer<WebContents> webContentsView,
+            Consumer<Uri> finishCallback, Observable<Unit> surfaceAvailable) {
         Handler handler = new Handler();
 
         mMediaSessionGetter =
@@ -161,6 +162,9 @@ class CastWebContentsSurfaceHelper {
 
         // webContentsView is responsible for displaying each new WebContents.
         webContentsState.subscribe(webContentsView);
+        webContentsState.and(surfaceAvailable)
+                .map(Both::getFirst)
+                .subscribe(Observers.onExit(WebContents::tearDownDialogOverlays));
 
         // Take audio focus when receiving new WebContents if not the remote control app.
         mStartParamsState.filter(params -> !params.isRemoteControlMode)

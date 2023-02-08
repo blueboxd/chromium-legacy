@@ -5,19 +5,20 @@
 #include "ui/base/interaction/interactive_test.h"
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
+#include "base/functional/callback_helpers.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_test_util.h"
+#include "ui/base/interaction/interaction_sequence.h"
 #include "ui/base/interaction/interaction_test_util.h"
 #include "ui/base/interaction/interactive_test_internal.h"
 
 namespace ui::test {
-
-namespace {
-DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kEnsureNotPresentCheckEvent);
-}
 
 using internal::kInteractiveTestPivotElementId;
 
@@ -30,6 +31,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::PressButton(
     ElementSpecifier button,
     InputType input_type) {
   StepBuilder builder;
+  builder.SetDescription("PressButton()");
   internal::SpecifyElement(builder, button);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
@@ -43,6 +45,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectMenuItem(
     ElementSpecifier menu_item,
     InputType input_type) {
   StepBuilder builder;
+  builder.SetDescription("SelectMenuItem()");
   internal::SpecifyElement(builder, menu_item);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
@@ -58,6 +61,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::DoDefaultAction(
     ElementSpecifier element,
     InputType input_type) {
   StepBuilder builder;
+  builder.SetDescription("DoDefaultAction()");
   internal::SpecifyElement(builder, element);
   builder.SetMustRemainVisible(false);
   builder.SetStartCallback(base::BindOnce(
@@ -74,6 +78,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectTab(
     size_t tab_index,
     InputType input_type) {
   StepBuilder builder;
+  builder.SetDescription(base::StringPrintf("SelectTab( %zu )", tab_index));
   internal::SpecifyElement(builder, tab_collection);
   builder.SetStartCallback(base::BindOnce(
       [](size_t index, InputType input_type, InteractiveTestApi* test,
@@ -89,6 +94,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectDropdownItem(
     size_t item,
     InputType input_type) {
   StepBuilder builder;
+  builder.SetDescription(base::StringPrintf("SelectDropdownItem( %zu )", item));
   internal::SpecifyElement(builder, collection);
   builder.SetStartCallback(base::BindOnce(
       [](size_t item, InputType input_type, InteractiveTestApi* test,
@@ -99,9 +105,71 @@ InteractionSequence::StepBuilder InteractiveTestApi::SelectDropdownItem(
   return builder;
 }
 
+InteractionSequence::StepBuilder InteractiveTestApi::EnterText(
+    ElementSpecifier element,
+    std::u16string text,
+    TextEntryMode mode) {
+  StepBuilder builder;
+  builder.SetDescription(base::StringPrintf("EnterText( \"%s\" )",
+                                            base::UTF16ToUTF8(text).c_str()));
+  internal::SpecifyElement(builder, element);
+  builder.SetStartCallback(base::BindOnce(
+      [](std::u16string text, TextEntryMode mode, InteractiveTestApi* test,
+         InteractionSequence*, TrackedElement* el) {
+        test->test_util().EnterText(el, std::move(text), mode);
+      },
+      std::move(text), mode, base::Unretained(this)));
+  return builder;
+}
+
+InteractionSequence::StepBuilder InteractiveTestApi::ActivateSurface(
+    ElementSpecifier element) {
+  StepBuilder builder;
+  builder.SetDescription("ActivateSurface()");
+  internal::SpecifyElement(builder, element);
+  builder.SetStartCallback(base::BindOnce(
+      [](InteractiveTestApi* test, InteractionSequence*, TrackedElement* el) {
+        test->test_util().ActivateSurface(el);
+      },
+      base::Unretained(this)));
+  return builder;
+}
+
+#if !BUILDFLAG(IS_IOS)
+InteractionSequence::StepBuilder InteractiveTestApi::SendAccelerator(
+    ElementSpecifier element,
+    Accelerator accelerator) {
+  StepBuilder builder;
+  builder.SetDescription(base::StringPrintf(
+      "SendAccelerator( %s )",
+      base::UTF16ToUTF8(accelerator.GetShortcutText()).c_str()));
+  internal::SpecifyElement(builder, element);
+  builder.SetStartCallback(base::BindOnce(
+      [](Accelerator accelerator, InteractiveTestApi* test,
+         InteractionSequence*, TrackedElement* el) {
+        test->test_util().SendAccelerator(el, accelerator);
+      },
+      accelerator, base::Unretained(this)));
+  return builder;
+}
+#endif  // !BUILDFLAG(IS_IOS)
+
+InteractionSequence::StepBuilder InteractiveTestApi::Confirm(
+    ElementSpecifier element) {
+  StepBuilder builder;
+  builder.SetDescription("Confirm()");
+  internal::SpecifyElement(builder, element);
+  builder.SetStartCallback(
+      base::BindOnce([](InteractiveTestApi* test, InteractionSequence*,
+                        TrackedElement* el) { test->test_util().Confirm(el); },
+                     base::Unretained(this)));
+  return builder;
+}
+
 InteractiveTestApi::StepBuilder InteractiveTestApi::Check(
     CheckCallback check_callback) {
   StepBuilder builder;
+  builder.SetDescription("Check()");
   builder.SetElementID(kInteractiveTestPivotElementId);
   builder.SetStartCallback(base::BindOnce(
       [](CheckCallback check_callback, InteractionSequence* seq,
@@ -118,6 +186,7 @@ InteractiveTestApi::StepBuilder InteractiveTestApi::Check(
 InteractiveTestApi::StepBuilder InteractiveTestApi::Do(
     base::OnceClosure action) {
   StepBuilder builder;
+  builder.SetDescription("Do()");
   builder.SetElementID(kInteractiveTestPivotElementId);
   builder.SetStartCallback(std::move(action));
   return builder;
@@ -135,6 +204,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::WaitForShow(
     ElementSpecifier element,
     bool transition_only_on_event) {
   StepBuilder step;
+  step.SetDescription("WaitForShow()");
   internal::SpecifyElement(step, element);
   step.SetTransitionOnlyOnEvent(transition_only_on_event);
   return step;
@@ -145,6 +215,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::WaitForHide(
     ElementSpecifier element,
     bool transition_only_on_event) {
   StepBuilder step;
+  step.SetDescription("WaitForHide()");
   internal::SpecifyElement(step, element);
   step.SetType(InteractionSequence::StepType::kHidden);
   step.SetTransitionOnlyOnEvent(transition_only_on_event);
@@ -155,6 +226,7 @@ InteractionSequence::StepBuilder InteractiveTestApi::WaitForHide(
 InteractionSequence::StepBuilder InteractiveTestApi::WaitForActivate(
     ElementSpecifier element) {
   StepBuilder step;
+  step.SetDescription("WaitForActivate()");
   internal::SpecifyElement(step, element);
   step.SetType(InteractionSequence::StepType::kActivated);
   return step;
@@ -165,6 +237,8 @@ InteractionSequence::StepBuilder InteractiveTestApi::WaitForEvent(
     ElementSpecifier element,
     CustomElementEventType event) {
   StepBuilder step;
+  step.SetDescription(
+      base::StringPrintf("WaitForEvent( %s )", event.GetName().c_str()));
   internal::SpecifyElement(step, element);
   step.SetType(InteractionSequence::StepType::kCustomEvent, event);
   return step;
@@ -174,28 +248,9 @@ InteractionSequence::StepBuilder InteractiveTestApi::WaitForEvent(
 InteractiveTestApi::MultiStep InteractiveTestApi::EnsureNotPresent(
     ElementIdentifier element_to_check,
     bool in_any_context) {
-  MultiStep steps;
-  steps.emplace_back(WithElement(
-      kInteractiveTestPivotElementId,
-      base::BindOnce([](TrackedElement* element) {
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                [](ElementIdentifier id, ElementContext context) {
-                  auto* const element =
-                      ElementTracker::GetElementTracker()
-                          ->GetFirstMatchingElement(id, context);
-                  if (element) {
-                    ElementTracker::GetFrameworkDelegate()->NotifyCustomEvent(
-                        element, kEnsureNotPresentCheckEvent);
-                  }
-                  // Note: if the element is no longer present, the sequence was
-                  // already aborted; there is no need to send further errors.
-                },
-                element->identifier(), element->context()));
-      })));
-  steps.emplace_back(AfterEvent(
-      kInteractiveTestPivotElementId, kEnsureNotPresentCheckEvent,
+  return internal::InteractiveTestPrivate::PostTask(
+      base::StringPrintf("EnsureNotPresent( %s, %d )",
+                         element_to_check.GetName().c_str(), in_any_context),
       base::BindOnce(
           [](ElementIdentifier element_to_check, bool in_any_context,
              InteractionSequence* seq, TrackedElement* reference) {
@@ -212,15 +267,64 @@ InteractiveTestApi::MultiStep InteractiveTestApi::EnsureNotPresent(
               seq->FailForTesting();
             }
           },
-          element_to_check, in_any_context)));
-  return steps;
+          element_to_check, in_any_context));
+}
+
+// static
+InteractiveTestApi::MultiStep InteractiveTestApi::EnsurePresent(
+    ElementSpecifier element_to_check,
+    bool in_any_context) {
+  return Steps(
+      FlushEvents(),
+      std::move(
+          WithElement(element_to_check, base::DoNothing())
+              .SetDescription(base::StringPrintf(
+                  "EnsurePresent( %s, %d )",
+                  internal::DescribeElement(element_to_check).c_str(),
+                  in_any_context))
+              .SetContext(in_any_context
+                              ? InteractionSequence::ContextMode::kAny
+                              : InteractionSequence::ContextMode::kInitial)));
+}
+
+// static
+InteractiveTestApi::MultiStep InteractiveTestApi::FlushEvents() {
+  return internal::InteractiveTestPrivate::PostTask("FlushEvents()",
+                                                    base::DoNothing());
 }
 
 // static
 InteractiveTestApi::MultiStep InteractiveTestApi::InAnyContext(
     MultiStep steps) {
-  for (auto& step : steps)
-    step.SetFindElementInAnyContext(true);
+  for (auto& step : steps) {
+    step.SetContext(InteractionSequence::ContextMode::kAny)
+        .FormatDescription("InAnyContext( %s )");
+  }
+  return steps;
+}
+
+// static
+InteractiveTestApi::MultiStep InteractiveTestApi::InSameContext(
+    MultiStep steps) {
+  for (auto& step : steps) {
+    step.SetContext(InteractionSequence::ContextMode::kFromPreviousStep)
+        .FormatDescription("InSameContext( %s )");
+  }
+  return steps;
+}
+
+// static
+InteractiveTestApi::MultiStep InteractiveTestApi::InContext(
+    ElementContext context,
+    MultiStep steps) {
+  // This context may not yet exist, but we want the pivot element to exist.
+  private_test_impl_->MaybeAddPivotElement(context);
+  const auto fmt = base::StringPrintf("InContext( %p, %%s )",
+                                      static_cast<const void*>(context));
+  for (auto& step : steps) {
+    step.SetContext(context).FormatDescription(fmt);
+  }
+
   return steps;
 }
 
@@ -229,15 +333,8 @@ bool InteractiveTestApi::RunTestSequenceImpl(
     InteractionSequence::Builder builder) {
   builder.SetContext(context);
 
-  // Pivot element also serves as a re-entrancy guard.
-  CHECK(!private_test_impl_->pivot_element_);
-  auto pivot_element =
-      std::make_unique<TestElement>(kInteractiveTestPivotElementId, context);
-  pivot_element->Show();
-  base::AutoReset<std::unique_ptr<TrackedElement>> pivot_element_reset(
-      &private_test_impl_->pivot_element_, std::move(pivot_element));
+  private_test_impl_->Init(context);
 
-  private_test_impl_->success_ = false;
   builder.SetCompletedCallback(
       base::BindOnce(&internal::InteractiveTestPrivate::OnSequenceComplete,
                      base::Unretained(private_test_impl_.get())));
@@ -246,6 +343,9 @@ bool InteractiveTestApi::RunTestSequenceImpl(
                      base::Unretained(private_test_impl_.get())));
   auto sequence = builder.Build();
   sequence->RunSynchronouslyForTesting();
+
+  private_test_impl_->Cleanup();
+
   return private_test_impl_->success_;
 }
 

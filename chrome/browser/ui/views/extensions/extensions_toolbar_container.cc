@@ -23,14 +23,14 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_request_access_button.h"
-#include "chrome/browser/ui/views/extensions/extensions_tabbed_menu_coordinator.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_hover_card_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
-#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "extensions/common/extension_features.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
@@ -94,23 +94,18 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
     : ToolbarIconContainerView(/*uses_highlight=*/true),
       browser_(browser),
       model_(ToolbarActionsModel::Get(browser_->profile())),
-      extensions_tabbed_menu_coordinator_(
+      extensions_menu_coordinator_(
           base::FeatureList::IsEnabled(
               extensions_features::kExtensionsMenuAccessControl)
-              ? std::make_unique<ExtensionsTabbedMenuCoordinator>(
-                    browser,
-                    this,
-                    CanShowIconInToolbar())
+              ? std::make_unique<ExtensionsMenuCoordinator>()
               : nullptr),
-      extensions_button_(
-          base::FeatureList::IsEnabled(
-              extensions_features::kExtensionsMenuAccessControl)
-              ? nullptr
-              : new ExtensionsToolbarButton(
-                    browser,
-                    this,
-                    ExtensionsToolbarButton::ButtonType::kExtensions,
-                    extensions_tabbed_menu_coordinator_.get())),
+      extensions_button_(base::FeatureList::IsEnabled(
+                             extensions_features::kExtensionsMenuAccessControl)
+                             ? nullptr
+                             : new ExtensionsToolbarButton(
+                                   browser,
+                                   this,
+                                   extensions_menu_coordinator_.get())),
       extensions_controls_(
           base::FeatureList::IsEnabled(
               extensions_features::kExtensionsMenuAccessControl)
@@ -118,13 +113,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
                     std::make_unique<ExtensionsToolbarButton>(
                         browser,
                         this,
-                        ExtensionsToolbarButton::ButtonType::kExtensions,
-                        extensions_tabbed_menu_coordinator_.get()),
-                    std::make_unique<ExtensionsToolbarButton>(
-                        browser,
-                        this,
-                        ExtensionsToolbarButton::ButtonType::kSiteAccess,
-                        extensions_tabbed_menu_coordinator_.get()),
+                        extensions_menu_coordinator_.get()),
                     std::make_unique<ExtensionsRequestAccessButton>(browser_))
               : nullptr),
       display_mode_(display_mode),
@@ -238,7 +227,10 @@ void ExtensionsToolbarContainer::ShowWidgetForExtension(
   UpdateIconVisibility(extension_id);
   GetAnimatingLayoutManager()->PostOrQueueAction(base::BindOnce(
       &ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately,
-      weak_ptr_factory_.GetWeakPtr(), base::UnsafeDanglingUntriaged(widget)));
+      weak_ptr_factory_.GetWeakPtr(),
+      // This is safe as `widget` is checked for membership in
+      // `anchored_widgets_` which has ownership.
+      base::UnsafeDangling(widget)));
 }
 
 views::Widget*
@@ -252,14 +244,14 @@ ExtensionsToolbarContainer::GetAnchoredWidgetForExtensionForTesting(
 bool ExtensionsToolbarContainer::IsExtensionsMenuShowing() const {
   return base::FeatureList::IsEnabled(
              extensions_features::kExtensionsMenuAccessControl)
-             ? extensions_tabbed_menu_coordinator_->IsShowing()
+             ? extensions_menu_coordinator_->IsShowing()
              : ExtensionsMenuView::IsShowing();
 }
 
 void ExtensionsToolbarContainer::HideExtensionsMenu() {
   if (base::FeatureList::IsEnabled(
           extensions_features::kExtensionsMenuAccessControl))
-    extensions_tabbed_menu_coordinator_->Hide();
+    extensions_menu_coordinator_->Hide();
   else
     ExtensionsMenuView::Hide();
 }

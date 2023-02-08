@@ -606,7 +606,6 @@ external/wpt/custom-elements/upgrading/upgrading-parser-created-element.html
 external/wpt/delegated-ink/exception-thrown-bad-color.tentative.html
 external/wpt/density-size-correction/srcset-cross-origin.sub.html
 external/wpt/direct-sockets/open-securecontext.http.html
-external/wpt/document-policy/experimental-features/document-domain/document-domain.tentative.sub.html
 external/wpt/document-policy/font-display/reporting-blank.tentative.html
 external/wpt/document-policy/reporting/lossy-images-max-bpp-reporting-tentative.html
 external/wpt/document-policy/required-policy/document-policy.html
@@ -1342,7 +1341,6 @@ images/cross-fade-blending.html
 images/directly-composited-image-orientation.html
 images/drag-image.html
 images/jpeg-with-color-profile.html
-images/jxl/jxl-images.html
 images/png-suite/test.html
 images/png-with-color-profile.html
 images/yuv-decode-eligible/color-profile-border-radius.html
@@ -1569,8 +1567,6 @@ virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/old-con
 virtual/view-transition/external/wpt/css/css-view-transitions/
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/nested-opaque-ad-sizes.https.html
 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/opaque-ad-sizes.https.html
-virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/nested-opaque-ad-sizes.https.html
-virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/opaque-ad-sizes.https.html
 virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-03.html
 virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-10.html
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/backplate/forced-colors-mode-backplate-11.html
@@ -1581,7 +1577,6 @@ virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-i
 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html
 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/jpeg-missing-eoi.html
 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/webp-color-profile-lossy.html
-virtual/jxl-enabled/images/jxl/jxl-images.html
 virtual/main-threaded-percent-based-scrolling/fast/events/wheel/continuous-platform-wheelevent-in-scrolling-div.html
 virtual/off-main-thread-css-paint/http/tests/csspaint/border-color.html
 virtual/off-main-thread-css-paint/http/tests/csspaint/entire-canvas-visible-zoom.html

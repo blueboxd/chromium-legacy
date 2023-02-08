@@ -39,7 +39,6 @@
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
-#include "chrome/browser/ash/file_manager/fusebox_mounter.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/snapshot_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
@@ -717,13 +716,7 @@ void VolumeManager::Initialize() {
     return;
   }
 
-  if (!fusebox_mounter_)
-    fusebox_mounter_.reset(FuseBoxMounter::Create());
-
-  // The fusebox_mounter_ is enabled by a chrome flag: Create() will return
-  // nullptr if the flag is disabled. Check it before attempting to Mount.
-  if (fusebox_mounter_)
-    fusebox_mounter_->Mount(disk_mount_manager_);
+  fusebox_mounter_.Mount(disk_mount_manager_);
 
   const base::FilePath localVolume =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
@@ -754,16 +747,9 @@ void VolumeManager::Initialize() {
   // Subscribe to ARC DocumentsProvider events about roots.
   documents_provider_root_manager_->AddObserver(this);
 
-  // Subscribe to FileSystemProviderService and register currently mounted
-  // volumes for the profile.
+  // Subscribe to FileSystemProviderService.
   if (file_system_provider_service_) {
     file_system_provider_service_->AddObserver(this);
-
-    auto restore_provided_file_systems =
-        base::BindOnce(&VolumeManager::RestoreProvidedFileSystems,
-                       weak_ptr_factory_.GetWeakPtr());
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, std::move(restore_provided_file_systems));
   }
 
   // Subscribe to Profile Preference change.
@@ -809,6 +795,7 @@ void VolumeManager::Shutdown() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 
+  fusebox_mounter_.Unmount(disk_mount_manager_);
   snapshot_manager_.reset();
   pref_change_registrar_.RemoveAll();
   disk_mount_manager_->RemoveObserver(this);
@@ -834,10 +821,6 @@ void VolumeManager::Shutdown() {
             arc::ArcSessionManager::Get())
       session_manager->RemoveObserver(this);
   }
-
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (fusebox_mounter_)
-    fusebox_mounter_->Unmount(disk_mount_manager_);
 }
 
 void VolumeManager::AddObserver(VolumeManagerObserver* observer) {
@@ -1284,19 +1267,6 @@ void VolumeManager::OnRenameEvent(
   NOTREACHED() << "Unexpected RenameEvent " << event;
 }
 
-void VolumeManager::RestoreProvidedFileSystems() {
-  DCHECK(file_system_provider_service_);
-
-  std::vector<ash::file_system_provider::ProvidedFileSystemInfo>
-      file_system_info_list =
-          file_system_provider_service_->GetProvidedFileSystemInfoList();
-  for (const auto& file_system_info : file_system_info_list) {
-    OnProvidedFileSystemMount(file_system_info,
-                              ash::file_system_provider::MOUNT_CONTEXT_RESTORE,
-                              base::File::FILE_OK);
-  }
-}
-
 void VolumeManager::OnProvidedFileSystemMount(
     const ash::file_system_provider::ProvidedFileSystemInfo& file_system_info,
     ash::file_system_provider::MountContext context,
@@ -1329,10 +1299,6 @@ void VolumeManager::OnProvidedFileSystemMount(
 
   DoMountEvent(std::move(volume_sans_fusebox), mount_error);
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // The FSP is not added to chrome::storage if mounting failed.
   if (error != base::File::FILE_OK)
     return;
@@ -1348,7 +1314,7 @@ void VolumeManager::OnProvidedFileSystemMount(
 
   // Attach the FSP storage device to the fusebox daemon.
   const std::string subdir = FuseBoxSubdirFSP(file_system_info);
-  fusebox_mounter_->AttachStorage(subdir, url, !file_system_info.writable());
+  fusebox_mounter_.AttachStorage(subdir, url, !file_system_info.writable());
 
   // Create a Volume for the fusebox FSP storage device.
   const base::FilePath mount_path =
@@ -1396,10 +1362,6 @@ void VolumeManager::OnProvidedFileSystemUnmount(
       file_system_info, MOUNT_CONTEXT_UNKNOWN);
   DoUnmountEvent(*volume, mount_error);
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // Get FSP chrome::storage |fsid| and fusebox daemon |subdir|.
   const std::string fsid =
       file_system_info.mount_path().BaseName().AsUTF8Unsafe();
@@ -1419,7 +1381,7 @@ void VolumeManager::OnProvidedFileSystemUnmount(
       {util::kFuseBoxMountNamePrefix, util::kFuseBoxSubdirPrefixFSP, fsid}));
 
   // Detach the fusebox FSP storage device from the fusebox daemon.
-  fusebox_mounter_->DetachStorage(subdir);
+  fusebox_mounter_.DetachStorage(subdir);
 }
 
 void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
@@ -1585,10 +1547,6 @@ void VolumeManager::DoAttachMtpStorage(
       Volume::CreateForMTP(path, label, read_only);
   DoMountEvent(std::move(volume_sans_fusebox));
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // Get the FileSystemURL of the MTP storage device.
   auto mtp_file_system_url = mount_points->CreateExternalFileSystemURL(
       blink::StorageKey(util::GetFilesAppOrigin()), fsid, {});
@@ -1597,7 +1555,7 @@ void VolumeManager::DoAttachMtpStorage(
 
   // Attach the MTP storage device to the fusebox daemon.
   std::string subdir = FuseBoxSubdirMTP(info.device_id());
-  fusebox_mounter_->AttachStorage(subdir, url, read_only);
+  fusebox_mounter_.AttachStorage(subdir, url, read_only);
 
   // Create a Volume for the fusebox MTP storage device.
   const base::FilePath mount_path =
@@ -1649,10 +1607,6 @@ void VolumeManager::OnRemovableStorageDetached(
                      base::Unretained(MTPDeviceMapService::GetInstance()),
                      fsid));
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // Unmount the fusebox MTP storage device in files app.
   if (base::WeakPtr<Volume> volume = FindVolumeById(util::kFuseBox + volume_id))
     DoUnmountEvent(*volume);
@@ -1663,7 +1617,7 @@ void VolumeManager::OnRemovableStorageDetached(
       base::StrCat({util::kFuseBoxMountNamePrefix, subdir}));
 
   // Detach the fusebox MTP storage device from the fusebox daemon.
-  fusebox_mounter_->DetachStorage(subdir);
+  fusebox_mounter_.DetachStorage(subdir);
 }
 
 void VolumeManager::OnDocumentsProviderRootAdded(
@@ -1681,10 +1635,6 @@ void VolumeManager::OnDocumentsProviderRootAdded(
       authority, root_id, document_id, title, summary, icon_url, read_only,
       /*optional_fusebox_subdir=*/std::string()));
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // Get the FileSystemURL of the ADP storage device.
   auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
   auto adp_file_system_url = mount_points->CreateExternalFileSystemURL(
@@ -1695,7 +1645,7 @@ void VolumeManager::OnDocumentsProviderRootAdded(
 
   // Attach the ADP storage device to the fusebox daemon.
   std::string subdir = FuseBoxSubdirADP(authority, root_id);
-  fusebox_mounter_->AttachStorage(subdir, url, read_only);
+  fusebox_mounter_.AttachStorage(subdir, url, read_only);
 
   // Create a Volume for the fusebox ADP storage device.
   std::unique_ptr<Volume> volume =
@@ -1725,10 +1675,6 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->UnregisterRoot(
       authority, document_id);
 
-  // The fusebox_mounter_ is enabled by a chrome flag.
-  if (!fusebox_mounter_)
-    return;
-
   // Unmount the fusebox ADP storage device in files app.
   std::string volume_id = arc::GetDocumentsProviderVolumeId(authority, root_id);
   if (base::WeakPtr<Volume> volume = FindVolumeById(util::kFuseBox + volume_id))
@@ -1741,7 +1687,7 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
       base::StrCat({util::kFuseBoxMountNamePrefix, subdir}));
 
   // Detach the fusebox ADP storage device from the fusebox daemon.
-  fusebox_mounter_->DetachStorage(subdir);
+  fusebox_mounter_.DetachStorage(subdir);
 }
 
 void VolumeManager::AddSmbFsVolume(const base::FilePath& mount_point,

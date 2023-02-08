@@ -59,6 +59,7 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
+#include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
@@ -89,6 +90,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/profiles/profile_selections.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/reduce_accept_language/reduce_accept_language_factory.h"
@@ -106,12 +108,10 @@
 #include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service_factory.h"
-#include "chrome/browser/webid/federated_identity_active_session_permission_context.h"
-#include "chrome/browser/webid/federated_identity_active_session_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
-#include "chrome/browser/webid/federated_identity_sharing_permission_context.h"
-#include "chrome/browser/webid/federated_identity_sharing_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_permission_context.h"
+#include "chrome/browser/webid/federated_identity_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -128,6 +128,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/download/public/common/in_progress_download_manager.h"
 #include "components/heavy_ad_intervention/heavy_ad_service.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -158,9 +159,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "content/public/browser/federated_identity_active_session_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
-#include "content/public/browser/federated_identity_sharing_permission_context_delegate.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_process_host.h"
@@ -657,6 +656,7 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
     auto& map = profile_policy_connector_->policy_service()->GetPolicies(
         policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
     crosapi::browser_util::CacheLacrosAvailability(map);
+    crosapi::browser_util::CacheLacrosDataBackwardMigrationMode(map);
   }
 #endif
 }
@@ -723,27 +723,33 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   UpdateSupervisedUserIdInStorage();
   UpdateIsEphemeralInStorage();
 
+  // Background mode and plugins are not used with all profiles. These use
+  // KeyedServices that might not be available such as the ExtensionSystem for
+  // some profiles, e.g. the System profile.
+  if (!AreKeyedServicesDisabledForProfileByDefault(this)) {
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-  // Initialize the BackgroundModeManager - this has to be done here before
-  // InitExtensions() is called because it relies on receiving notifications
-  // when extensions are loaded. BackgroundModeManager is not needed under
-  // ChromeOS because Chrome is always running, no need for special keep-alive
-  // or launch-on-startup support unless kKeepAliveForTest is set.
-  bool init_background_mode_manager = true;
+    // Initialize the BackgroundModeManager - this has to be done here before
+    // InitExtensions() is called because it relies on receiving notifications
+    // when extensions are loaded. BackgroundModeManager is not needed under
+    // ChromeOS because Chrome is always running, no need for special keep-alive
+    // or launch-on-startup support unless kKeepAliveForTest is set.
+    bool init_background_mode_manager = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kKeepAliveForTest))
-    init_background_mode_manager = false;
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kKeepAliveForTest)) {
+      init_background_mode_manager = false;
+    }
 #endif
-  if (init_background_mode_manager) {
-    if (g_browser_process->background_mode_manager())
+    if (init_background_mode_manager &&
+        g_browser_process->background_mode_manager()) {
       g_browser_process->background_mode_manager()->RegisterProfile(this);
-  }
+    }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
+    ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
+  }
 
   auto* db_provider = GetDefaultStoragePartition()->GetProtoDatabaseProvider();
   key_->SetProtoDatabaseProvider(db_provider);
@@ -779,7 +785,12 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
     model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
 
-  HeavyAdServiceFactory::GetForBrowserContext(this)->Initialize(GetPath());
+  // The ad service might not be available for some irregular profiles, like the
+  // System Profile.
+  if (heavy_ad_intervention::HeavyAdService* heavy_ad_service =
+          HeavyAdServiceFactory::GetForBrowserContext(this)) {
+    heavy_ad_service->Initialize(GetPath());
+  }
 
   PushMessagingServiceImpl::InitializeForProfile(this);
 
@@ -835,8 +846,12 @@ void ProfileImpl::DoFinalInit(CreateMode create_mode) {
   }
 #endif
 
-  AnnouncementNotificationServiceFactory::GetForProfile(this)
-      ->MaybeShowNotification();
+  // The announcement notification  service might not be available for some
+  // irregular profiles, like the System Profile.
+  if (AnnouncementNotificationService* announcement_notification =
+          AnnouncementNotificationServiceFactory::GetForProfile(this)) {
+    announcement_notification->MaybeShowNotification();
+  }
 
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerKeyedServiceFactory::GetForBrowserContext(this);
@@ -886,9 +901,13 @@ ProfileImpl::~ProfileImpl() {
     ProfileDestroyer::DestroyOTRProfileImmediately(otr_profile);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!primary_otr_available) {
-    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
-        ->ClearAllIncognitoSessionOnlyPreferences();
+  if (!primary_otr_available &&
+      !extensions::ChromeContentBrowserClientExtensionsPart::
+          AreExtensionsDisabledForProfile(this)) {
+    ExtensionPrefValueMap* pref_value_map =
+        ExtensionPrefValueMapFactory::GetForBrowserContext(this);
+    DCHECK(pref_value_map);
+    pref_value_map->ClearAllIncognitoSessionOnlyPreferences();
   }
 #endif
 
@@ -1011,9 +1030,13 @@ void ProfileImpl::DestroyOffTheRecordProfile(Profile* otr_profile) {
   otr_profiles_.erase(profile_id);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Extensions are only supported on primary OTR profile.
-  if (profile_id == OTRProfileID::PrimaryID()) {
-    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
-        ->ClearAllIncognitoSessionOnlyPreferences();
+  if (profile_id == OTRProfileID::PrimaryID() &&
+      !extensions::ChromeContentBrowserClientExtensionsPart::
+          AreExtensionsDisabledForProfile(this)) {
+    ExtensionPrefValueMap* pref_value_map =
+        ExtensionPrefValueMapFactory::GetForBrowserContext(this);
+    DCHECK(pref_value_map);
+    pref_value_map->ClearAllIncognitoSessionOnlyPreferences();
   }
 #endif
 }
@@ -1076,7 +1099,13 @@ void ProfileImpl::OnLocaleReady(CreateMode create_mode) {
   // Note: Extension preferences can be keyed off the extension ID, so need to
   // be handled specially (rather than directly as part of
   // MigrateObsoleteProfilePrefs()).
-  extensions::ExtensionPrefs::Get(this)->MigrateObsoleteExtensionPrefs();
+  if (!extensions::ChromeContentBrowserClientExtensionsPart::
+          AreExtensionsDisabledForProfile(this)) {
+    extensions::ExtensionPrefs* extension_prefs =
+        extensions::ExtensionPrefs::Get(this);
+    DCHECK(extension_prefs);
+    extension_prefs->MigrateObsoleteExtensionPrefs();
+  }
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1153,6 +1182,7 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
       auto& map = profile_policy_connector_->policy_service()->GetPolicies(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
       crosapi::browser_util::CacheLacrosAvailability(map);
+      crosapi::browser_util::CacheLacrosDataBackwardMigrationMode(map);
     }
 
     ash::UserSessionManager::GetInstance()->RespectLocalePreferenceWrapper(
@@ -1348,15 +1378,9 @@ ProfileImpl::GetFederatedIdentityApiPermissionContext() {
   return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
 }
 
-content::FederatedIdentityActiveSessionPermissionContextDelegate*
-ProfileImpl::GetFederatedIdentityActiveSessionPermissionContext() {
-  return FederatedIdentityActiveSessionPermissionContextFactory::GetForProfile(
-      this);
-}
-
-content::FederatedIdentitySharingPermissionContextDelegate*
-ProfileImpl::GetFederatedIdentitySharingPermissionContext() {
-  return FederatedIdentitySharingPermissionContextFactory::GetForProfile(this);
+content::FederatedIdentityPermissionContextDelegate*
+ProfileImpl::GetFederatedIdentityPermissionContext() {
+  return FederatedIdentityPermissionContextFactory::GetForProfile(this);
 }
 
 content::KAnonymityServiceDelegate*
@@ -1378,8 +1402,8 @@ std::string ProfileImpl::GetMediaDeviceIDSalt() {
   return media_device_id_salt_->GetSalt();
 }
 
-download::InProgressDownloadManager*
-ProfileImpl::RetriveInProgressDownloadManager() {
+std::unique_ptr<download::InProgressDownloadManager>
+ProfileImpl::RetrieveInProgressDownloadManager() {
   return DownloadManagerUtils::RetrieveInProgressDownloadManager(this);
 }
 

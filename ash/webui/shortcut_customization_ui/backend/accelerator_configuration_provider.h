@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
@@ -21,7 +22,8 @@ namespace shortcut_ui {
 
 class AcceleratorConfigurationProvider
     : public shortcut_customization::mojom::AcceleratorConfigurationProvider,
-      public ui::InputDeviceEventObserver {
+      public ui::InputDeviceEventObserver,
+      public input_method::InputMethodManager::Observer {
  public:
   using AcceleratorConfigurationMap =
       base::flat_map<mojom::AcceleratorSource,
@@ -51,6 +53,11 @@ class AcceleratorConfigurationProvider
   // ui::InputDeviceEventObserver:
   void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
+  // InputMethodManager::Observer:
+  void InputMethodChanged(input_method::InputMethodManager* manager,
+                          Profile* profile,
+                          bool show_message) override;
+
   void BindInterface(
       mojo::PendingReceiver<
           shortcut_customization::mojom::AcceleratorConfigurationProvider>
@@ -62,13 +69,34 @@ class AcceleratorConfigurationProvider
   void OnAcceleratorsUpdated(mojom::AcceleratorSource source,
                              const ActionIdToAcceleratorsMap& mapping);
 
-  mojom::AcceleratorType GetAcceleratorType(ui::Accelerator accelerator);
+  mojom::AcceleratorType GetAcceleratorType(ui::Accelerator accelerator) const;
 
   void UpdateKeyboards();
 
   AcceleratorConfigurationMap CreateConfigurationMap();
 
   void NotifyAcceleratorsUpdated();
+
+  // Create base accelerator info using accelerator.
+  mojom::AcceleratorInfoPtr CreateBaseAcceleratorInfo(
+      ui::Accelerator accelerator) const;
+
+  // Create alias accelerator info for top row key if applicable.
+  mojom::AcceleratorInfoPtr CreateRemappedTopRowAcceleratorInfo(
+      ui::Accelerator accelerator) const;
+
+  // Create alias accelerator info for six pack key if applicable.
+  mojom::AcceleratorInfoPtr CreateRemappedSixPackAcceleratorInfo(
+      ui::Accelerator accelerator) const;
+
+  // Create alias accelerator infos when the accelerator contains a top row key
+  // or six pack key. For |top_row_key|, replace the base accelerator with
+  // top-row remapped accelerator, For |six_pack_key|, show both the base
+  // accelerator and the six-pack remapped accelerator. Therefore, return a
+  // vector here since it may display two accelerator infos for six pack
+  // remapping case.
+  std::vector<mojom::AcceleratorInfoPtr> CreateAcceleratorInfoVariants(
+      ui::Accelerator accelerator) const;
 
   std::vector<mojom::AcceleratorLayoutInfoPtr> layout_infos_;
 

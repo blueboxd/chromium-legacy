@@ -267,16 +267,6 @@ bool WebViewAutofillClientIOS::IsFastCheckoutTriggerForm(
   return false;
 }
 
-bool WebViewAutofillClientIOS::FastCheckoutScriptSupportsConsentlessExecution(
-    const url::Origin& origin) {
-  return false;
-}
-
-bool WebViewAutofillClientIOS::
-    FastCheckoutClientSupportsConsentlessExecution() {
-  return false;
-}
-
 bool WebViewAutofillClientIOS::ShowFastCheckout(
     base::WeakPtr<FastCheckoutDelegate> delegate) {
   NOTREACHED();
@@ -393,6 +383,10 @@ WebViewAutofillClientIOS::GetCurrentFormInteractionsFlowId() {
   return {};
 }
 
+bool WebViewAutofillClientIOS::IsLastQueriedField(FieldGlobalId field_id) {
+  return [bridge_ isLastQueriedField:field_id];
+}
+
 void WebViewAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   [bridge_ loadRiskData:std::move(callback)];
@@ -400,10 +394,6 @@ void WebViewAutofillClientIOS::LoadRiskData(
 
 LogManager* WebViewAutofillClientIOS::GetLogManager() const {
   return log_manager_.get();
-}
-
-bool WebViewAutofillClientIOS::IsQueryIDRelevant(int query_id) {
-  return [bridge_ isQueryIDRelevant:query_id];
 }
 
 }  // namespace autofill

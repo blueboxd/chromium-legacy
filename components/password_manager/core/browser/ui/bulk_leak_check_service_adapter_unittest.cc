@@ -16,12 +16,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/task_environment.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -104,6 +104,8 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled, true);
     prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                            false);
+    presenter_.Init();
+    RunUntilIdle();
   }
 
   ~BulkLeakCheckServiceAdapterTest() override {
@@ -125,7 +127,8 @@ class BulkLeakCheckServiceAdapterTest : public ::testing::Test {
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
   MockAffiliationService affiliation_service_;
-  SavedPasswordsPresenter presenter_{&affiliation_service_, store_};
+  SavedPasswordsPresenter presenter_{&affiliation_service_, store_,
+                                     /*account_store=*/nullptr};
   BulkLeakCheckService service_{
       identity_test_env_.identity_manager(),
       base::MakeRefCounted<network::TestSharedURLLoaderFactory>()};
@@ -258,11 +261,8 @@ TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedNoPrefs) {
 
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
-  store().AddLogin(password);
-  // When |password| is read back from the store, its |in_store| member will be
-  // set, and SavedPasswordsPresenter::EditPassword() actually depends on that.
-  // So set it here too.
   password.in_store = PasswordForm::Store::kProfileStore;
+  store().AddLogin(password);
   RunUntilIdle();
 
   EXPECT_CALL(factory(), TryCreateBulkLeakCheck).Times(0);
@@ -278,11 +278,8 @@ TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedNoPrefs) {
 TEST_F(BulkLeakCheckServiceAdapterTest, OnEditedWithPrefs) {
   PasswordForm password =
       MakeSavedPassword(kExampleCom, kUsername1, kPassword1);
-  store().AddLogin(password);
-  // When |password| is read back from the store, its |in_store| member will be
-  // set, and SavedPasswordsPresenter::EditPassword() actually depends on that.
-  // So set it here too.
   password.in_store = PasswordForm::Store::kProfileStore;
+  store().AddLogin(password);
   RunUntilIdle();
 
   std::vector<LeakCheckCredential> expected;

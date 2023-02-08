@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/views/bubble/webui_bubble_dialog_view.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 
 #include <memory>
@@ -86,8 +87,6 @@ IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest, TestNameAndDrag) {
-  BrowserView* const browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser());
   const char kWebContentsName[] = "WebContents";
   gfx::Point p1;
   gfx::Point p2;
@@ -99,24 +98,19 @@ IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest, TestNameAndDrag) {
          gfx::Vector2d(5, 5);
     return p2;
   });
-  auto* const browser_el =
-      views::ElementTrackerViews::GetInstance()->GetElementForView(
-          browser_view, /* assign_temporary_id =*/true);
 
   RunTestSequence(
       // Name the browser's primary webview and calculate a point in its upper
       // left.
-      ui::InteractionSequence::WithInitialElement(
-          browser_el,
-          base::BindLambdaForTesting(
-              [&](ui::InteractionSequence* seq, ui::TrackedElement*) {
-                views::InteractionSequenceViews::NameView(
-                    seq, browser_view->contents_web_view(), kWebContentsName);
-                p1 = browser_view->contents_web_view()
-                         ->GetBoundsInScreen()
-                         .origin() +
-                     gfx::Vector2d(5, 5);
-              })),
+      NameViewRelative(
+          kBrowserViewElementId, kWebContentsName,
+          base::BindOnce([](BrowserView* browser_view) -> views::View* {
+            return browser_view->contents_web_view();
+          })),
+      WithView(kWebContentsName,
+               base::BindLambdaForTesting([&p1](views::View* view) {
+                 p1 = view->GetBoundsInScreen().origin() + gfx::Vector2d(5, 5);
+               })),
       // Move the mouse to the point. Use the gfx::Point* version so we can
       // dynamically receive the value calculated in the previous step.
       MoveMouseTo(&p1),
@@ -154,11 +148,60 @@ IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest, TestNameAndDrag) {
 }
 
 IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
+                       MouseToNewWindowAndDoActionsInSameContext) {
+  Browser* const incognito = CreateIncognitoBrowser();
+
+  RunTestSequence(
+      InContext(incognito->window()->GetElementContext(),
+                WaitForShow(kBrowserViewElementId)),
+      InSameContext(Steps(
+          ActivateSurface(kBrowserViewElementId), FlushEvents(),
+          MoveMouseTo(kAppMenuButtonElementId), ClickMouse(),
+          SelectMenuItem(AppMenuModel::kDownloadsMenuItem),
+          WaitForHide(AppMenuModel::kDownloadsMenuItem),
+          // These two types of actions use PostTask() internally and bounce off
+          // the pivot element. Make sure they still work in a "InSameContext".
+          FlushEvents(), EnsureNotPresent(AppMenuModel::kDownloadsMenuItem),
+          // Make sure this picks up the correct button, since it was after a
+          // string of non-element-specific actions.
+          WithElement(kAppMenuButtonElementId,
+                      base::BindOnce(base::BindLambdaForTesting(
+                          [incognito](ui::TrackedElement* el) {
+                            EXPECT_EQ(incognito->window()->GetElementContext(),
+                                      el->context());
+                          }))))));
+}
+
+IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
+                       MouseToNewWindowAndDoActionsInSpecificContext) {
+  auto* const incognito = CreateIncognitoBrowser();
+
+  RunTestSequence(InContext(
+      incognito->window()->GetElementContext(),
+      Steps(ActivateSurface(kBrowserViewElementId), FlushEvents(),
+            MoveMouseTo(kAppMenuButtonElementId), ClickMouse(),
+            SelectMenuItem(AppMenuModel::kDownloadsMenuItem),
+            WaitForHide(AppMenuModel::kDownloadsMenuItem),
+            // These two types of actions use PostTask() internally and
+            // bounce off the pivot element. Make sure they still work in a
+            // "InSameContext".
+            FlushEvents(), EnsureNotPresent(AppMenuModel::kDownloadsMenuItem),
+            // Make sure this picks up the correct button, since it was
+            // after a string of non-element-specific actions.
+            WithElement(kAppMenuButtonElementId,
+                        base::BindOnce(base::BindLambdaForTesting(
+                            [incognito](ui::TrackedElement* el) {
+                              EXPECT_EQ(
+                                  incognito->window()->GetElementContext(),
+                                  el->context());
+                            }))))));
+}
+
+IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
                        WebPageNavigateStateAndLocation) {
   const GURL url = embedded_test_server()->GetURL(kDocumentWithNamedElement);
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebPageId);
   DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kElementReadyEvent);
-  InstrumentTab(browser(), kWebPageId);
 
   const DeepQuery kDeepQuery{"#select"};
   StateChange state_change;
@@ -167,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
   state_change.where = kDeepQuery;
 
   RunTestSequence(
-      WaitForWebContentsReady(kWebPageId),
+      InstrumentTab(kWebPageId),
 
       // Load a different page. We could use NavigateWebContents() but that's
       // tested elsewhere and this test will test WaitForWebContentsNavigation()
@@ -210,20 +253,43 @@ IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kBrowserPageId);
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kIncognitoPageId);
 
-  Browser* const other_browser = this->CreateIncognitoBrowser();
-
-  InstrumentTab(browser(), kBrowserPageId);
-  InstrumentTab(other_browser, kIncognitoPageId);
+  Browser* const incognito_browser = this->CreateIncognitoBrowser();
 
   // Run the test in the context of the incognito browser.
   RunTestSequenceInContext(
-      other_browser->window()->GetElementContext(),
-      WaitForWebContentsReady(kIncognitoPageId),
-      InAnyContext(WaitForWebContentsReady(kBrowserPageId)),
+      incognito_browser->window()->GetElementContext(),
+      // Instrument the tabs but do not force them to load.
+      InstrumentTab(kIncognitoPageId, absl::nullopt, CurrentBrowser(),
+                    /* wait_for_ready =*/false),
+      InstrumentTab(kBrowserPageId, absl::nullopt, browser(),
+                    /* wait_for_ready =*/false),
+      // Wait for the pages to load. Manually specify that the incognito page
+      // must be in the default context (otherwise, this verb defaults to being
+      // context-agnostic).
+      WaitForWebContentsReady(kIncognitoPageId)
+          .SetContext(ui::InteractionSequence::ContextMode::kInitial),
+      WaitForWebContentsReady(kBrowserPageId),
       // The regular browser page is not present if we do not specify
       // InAnyContext().
       EnsureNotPresent(kBrowserPageId),
       // But we can find a page in the correct context even if we specify
       // InAnyContext().
       InAnyContext(WithElement(kIncognitoPageId, base::DoNothing())));
+}
+
+IN_PROC_BROWSER_TEST_F(InteractiveBrowserTestUiTest,
+                       InstrumentNonTabAsTestStep) {
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebContentsId);
+  const char kTabSearchWebViewName[] = "Tab Search WebView";
+
+  RunTestSequence(
+      PressButton(kTabSearchButtonElementId),
+      WaitForShow(kTabSearchBubbleElementId),
+      NameViewRelative(
+          kTabSearchBubbleElementId, kTabSearchWebViewName,
+          base::BindOnce([](WebUIBubbleDialogView* view) -> views::View* {
+            return view->web_view();
+          })),
+      InstrumentNonTabWebView(kWebContentsId, kTabSearchWebViewName),
+      WithElement(kTabSearchWebViewName, base::DoNothing()));
 }

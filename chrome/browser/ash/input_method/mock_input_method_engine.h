@@ -50,8 +50,8 @@ class MockInputMethodEngine : public ui::TextInputMethod {
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void AssistiveWindowChanged(const ash::ime::AssistiveWindow& window) override;
-  void SetMirroringEnabled(bool mirroring_enabled) override;
-  void SetCastingEnabled(bool casting_enabled) override;
+  void SetMirroringEnabled(bool mirroring_enabled);
+  void SetCastingEnabled(bool casting_enabled);
   bool IsReadyForTesting() override;
 
   const std::string& GetActiveComponentId() const;
@@ -68,12 +68,5 @@ class MockInputMethodEngine : public ui::TextInputMethod {
 
 }  // namespace input_method
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
-namespace chromeos {
-namespace input_method {
-using ::ash::input_method::MockInputMethodEngine;
-}  // namespace input_method
-}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_

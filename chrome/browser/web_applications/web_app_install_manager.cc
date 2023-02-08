@@ -145,76 +145,6 @@ bool WebAppInstallManager::IsAppIdAlreadyEnqueued(const AppId& app_id) const {
   return false;
 }
 
-void WebAppInstallManager::InstallWebAppsAfterSync(
-    std::vector<WebApp*> web_apps,
-    RepeatingInstallCallback callback) {
-  if (!started_)
-    return;
-
-  if (install_web_apps_after_sync_delegate_) {
-    install_web_apps_after_sync_delegate_.Run(std::move(web_apps), callback);
-  } else {
-    for (WebApp* web_app : web_apps) {
-      DCHECK(web_app->is_from_sync_and_pending_installation());
-      InstallFromSyncCommand::Params params = InstallFromSyncCommand::Params(
-          web_app->app_id(), web_app->manifest_id(), web_app->start_url(),
-          web_app->sync_fallback_data().name,
-          web_app->sync_fallback_data().scope,
-          web_app->sync_fallback_data().theme_color,
-          web_app->user_display_mode(),
-          web_app->sync_fallback_data().icon_infos);
-      command_manager_->ScheduleCommand(
-          std::make_unique<InstallFromSyncCommand>(
-              url_loader_.get(), profile_, finalizer_.get(), registrar_.get(),
-              data_retriever_factory_.Run(), params, callback));
-    }
-  }
-}
-
-void WebAppInstallManager::UninstallFromSync(
-    const std::vector<AppId>& web_apps,
-    RepeatingUninstallCallback callback) {
-  if (!started_)
-    return;
-
-  if (uninstall_from_sync_before_registry_update_delegate_) {
-    uninstall_from_sync_before_registry_update_delegate_.Run(web_apps,
-                                                             callback);
-  } else {
-    if (uninstall_callback_for_testing_)
-      callback = uninstall_callback_for_testing_;
-
-    for (auto& app_id : web_apps) {
-      // Sync uninstalls do not require an install source to be passed.
-      finalizer_->ScheduleUninstallCommand(
-          app_id, /*external_install_source=*/absl::nullopt,
-          webapps::WebappUninstallSource::kSync,
-          base::BindOnce(callback, app_id));
-    }
-  }
-}
-
-void WebAppInstallManager::RetryIncompleteUninstalls(
-    const base::flat_set<AppId>& apps_to_uninstall) {
-  if (!started_)
-    return;
-
-  if (retry_incomplete_uninstalls_delegate_)
-    retry_incomplete_uninstalls_delegate_.Run(apps_to_uninstall);
-  else
-    finalizer_->RetryIncompleteUninstalls(apps_to_uninstall);
-}
-
-void WebAppInstallManager::SetDataRetrieverFactoryForTesting(
-    DataRetrieverFactory data_retriever_factory) {
-  data_retriever_factory_ = std::move(data_retriever_factory);
-}
-
-void WebAppInstallManager::SetUrlLoaderForTesting(
-    std::unique_ptr<WebAppUrlLoader> url_loader) {
-  url_loader_ = std::move(url_loader);
-}
-
 void WebAppInstallManager::EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
                                        base::OnceClosure start_task) {
   DCHECK(web_contents_);
@@ -262,26 +192,6 @@ void WebAppInstallManager::TakeCommandErrorLog(
     base::Value log) {
   if (error_log_)
     LogErrorObject(std::move(log));
-}
-
-void WebAppInstallManager::SetUninstallCallbackForTesting(
-    RepeatingUninstallCallback uninstall_callback_for_testing) {
-  uninstall_callback_for_testing_ = uninstall_callback_for_testing;
-}
-
-void WebAppInstallManager::SetInstallWebAppsAfterSyncDelegateForTesting(
-    InstallWebAppsAfterSyncDelegate delegate) {
-  install_web_apps_after_sync_delegate_ = std::move(delegate);
-}
-
-void WebAppInstallManager::SetUninstallFromSyncDelegateForTesting(
-    UninstallFromSyncDelegate delegate) {
-  uninstall_from_sync_before_registry_update_delegate_ = std::move(delegate);
-}
-
-void WebAppInstallManager::SetRetryIncompleteUninstallsDelegateForTesting(
-    RetryIncompleteUninstallsDelegate delegate) {
-  retry_incomplete_uninstalls_delegate_ = std::move(delegate);
 }
 
 void WebAppInstallManager::DeleteTask(WebAppInstallTask* task) {

@@ -22,11 +22,12 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/simple_task_executor.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
@@ -46,8 +47,12 @@ namespace {
 // because its Stop method was called.  This allows us to catch cases where
 // MessageLoop::QuitWhenIdle() is called directly, which is unexpected when
 // using a Thread to setup and run a MessageLoop.
-base::LazyInstance<base::ThreadLocalBoolean>::Leaky lazy_tls_bool =
+LazyInstance<ThreadLocalBoolean>::Leaky lazy_tls_bool =
     LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+namespace internal {
 
 class SequenceManagerThreadDelegate : public Thread::Delegate {
  public:
@@ -55,7 +60,8 @@ class SequenceManagerThreadDelegate : public Thread::Delegate {
       MessagePumpType message_pump_type,
       OnceCallback<std::unique_ptr<MessagePump>()> message_pump_factory)
       : sequence_manager_(
-            sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
+            sequence_manager::internal::CreateUnboundSequenceManagerImpl(
+                PassKey<base::internal::SequenceManagerThreadDelegate>(),
                 sequence_manager::SequenceManager::Settings::Builder()
                     .SetMessagePumpType(message_pump_type)
                     .Build())),
@@ -102,7 +108,7 @@ class SequenceManagerThreadDelegate : public Thread::Delegate {
   absl::optional<SimpleTaskExecutor> simple_task_executor_;
 };
 
-}  // namespace
+}  // namespace internal
 
 Thread::Options::Options() = default;
 
@@ -191,10 +197,10 @@ bool Thread::StartWithOptions(Options options) {
     DCHECK(!options.message_pump_factory);
     delegate_ = std::move(options.delegate);
   } else if (options.message_pump_factory) {
-    delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
+    delegate_ = std::make_unique<internal::SequenceManagerThreadDelegate>(
         MessagePumpType::CUSTOM, options.message_pump_factory);
   } else {
-    delegate_ = std::make_unique<SequenceManagerThreadDelegate>(
+    delegate_ = std::make_unique<internal::SequenceManagerThreadDelegate>(
         options.message_pump_type,
         BindOnce([](MessagePumpType type) { return MessagePump::Create(type); },
                  options.message_pump_type));
@@ -373,7 +379,7 @@ void Thread::ThreadMain() {
   // This binds CurrentThread and ThreadTaskRunnerHandle.
   delegate_->BindToCurrentThread(timer_slack_);
   DCHECK(CurrentThread::Get());
-  DCHECK(ThreadTaskRunnerHandle::IsSet());
+  DCHECK(SingleThreadTaskRunner::HasCurrentDefault());
 #if (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)) || BUILDFLAG(IS_FUCHSIA)
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher API.
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher;

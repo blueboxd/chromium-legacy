@@ -85,6 +85,12 @@ export class Dictation {
     /** @private {?function(boolean):void} */
     this.onToggleDictationListener_ = null;
 
+    /** @private {boolean} */
+    this.isContextCheckingFeatureEnabled_ = false;
+
+    /** @private {Macro} */
+    this.prevMacro_ = null;
+
     this.initialize_();
   }
 
@@ -132,6 +138,14 @@ export class Dictation {
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         this.onToggleDictationListener_);
+
+    const contextCheckingFeature =
+        chrome.accessibilityPrivate.AccessibilityFeature
+            .DICTATION_CONTEXT_CHECKING;
+    chrome.accessibilityPrivate.isFeatureEnabled(
+        contextCheckingFeature, enabled => {
+          this.isContextCheckingFeatureEnabled_ = enabled;
+        });
   }
 
   /**
@@ -296,12 +310,15 @@ export class Dictation {
       return;
     }
 
-    const macro = await this.speechParser_.parse(transcript);
+    let macro = await this.speechParser_.parse(transcript);
     MetricsUtils.recordMacroRecognized(macro);
+    macro = this.handleRepeat_(macro);
+
     // Check if the macro can execute.
     // TODO(crbug.com/1264544): Deal with ambiguous results here.
     const checkContextResult = macro.checkContext();
-    if (!checkContextResult.canTryAction) {
+    if (!checkContextResult.canTryAction &&
+        this.isContextCheckingFeatureEnabled_) {
       this.showMacroExecutionFailed_(macro, transcript);
       return;
     }
@@ -518,6 +535,28 @@ export class Dictation {
    */
   increaseNoFocusedImeTimeoutForTesting_() {
     Dictation.Timeouts.NO_FOCUSED_IME_MS = 20 * 1000;
+  }
+
+  /**
+   * @param {!Macro} macro
+   * @return {!Macro}
+   * @private
+   */
+  handleRepeat_(macro) {
+    let newMacro = macro;
+    if (newMacro.getMacroName() === MacroName.REPEAT && this.prevMacro_) {
+      // If this is the REPEAT macro, then we actually want the previously
+      // executed macro.
+      newMacro = this.prevMacro_;
+    }
+
+    this.prevMacro_ = newMacro;
+    return newMacro;
+  }
+
+  /** @private */
+  disablePumpkinForTesting_() {
+    this.speechParser_.disablePumpkinForTesting();
   }
 }
 

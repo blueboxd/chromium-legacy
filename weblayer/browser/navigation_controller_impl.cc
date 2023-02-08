@@ -10,6 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -361,9 +362,10 @@ void NavigationControllerImpl::Stop() {
 }
 
 int NavigationControllerImpl::GetNavigationListSize() {
-  content::NavigationEntry* current_entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (current_entry && current_entry->IsInitialEntry()) {
+  if (web_contents()
+          ->GetController()
+          .GetLastCommittedEntry()
+          ->IsInitialEntry()) {
     // If we're currently on the initial NavigationEntry, no navigation has
     // committed, so the initial NavigationEntry should not be part of the
     // "Navigation List", and we should return 0 as the navigation list size.
@@ -376,9 +378,10 @@ int NavigationControllerImpl::GetNavigationListSize() {
 }
 
 int NavigationControllerImpl::GetNavigationListCurrentIndex() {
-  content::NavigationEntry* current_entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (current_entry && current_entry->IsInitialEntry()) {
+  if (web_contents()
+          ->GetController()
+          .GetLastCommittedEntry()
+          ->IsInitialEntry()) {
     // If we're currently on the initial NavigationEntry, no navigation has
     // committed, so the initial NavigationEntry should not be part of the
     // "Navigation List", and we should return -1 as the current index. This
@@ -699,7 +702,7 @@ void NavigationControllerImpl::DoNavigate(
 void NavigationControllerImpl::ScheduleDelayedLoad(
     std::unique_ptr<content::NavigationController::LoadURLParams> params) {
   delayed_load_params_ = std::move(params);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&NavigationControllerImpl::ProcessDelayedLoad,
                                 weak_ptr_factory_.GetWeakPtr()));
 }

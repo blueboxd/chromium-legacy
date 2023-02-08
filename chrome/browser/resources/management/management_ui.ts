@@ -13,7 +13,7 @@ import './icons.html.js';
 import './strings.m.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -75,7 +75,7 @@ class ManagementUiElement extends ManagementUiElementBase {
       pluginVmDataCollectionEnabled_: Boolean,
       eolAdminMessage_: String,
       eolMessage_: String,
-      showProxyServerPrivacyDisclosure_: Boolean,
+      showMonitoredNetworkPrivacyDisclosure_: Boolean,
       // </if>
 
       subtitle_: String,
@@ -103,7 +103,7 @@ class ManagementUiElement extends ManagementUiElementBase {
   private pluginVmDataCollectionEnabled_: boolean;
   private eolAdminMessage_: string;
   private eolMessage_: string;
-  private showProxyServerPrivacyDisclosure_: boolean;
+  private showMonitoredNetworkPrivacyDisclosure_: boolean;
   // </if>
 
   private subtitle_: string;
@@ -127,22 +127,22 @@ class ManagementUiElement extends ManagementUiElementBase {
     this.initBrowserReportingInfo_();
     this.getThreatProtectionInfo_();
 
-    this.addWebUIListener(
+    this.addWebUiListener(
         'browser-reporting-info-updated',
         (reportingInfo: BrowserReportingResponse[]) =>
             this.onBrowserReportingInfoReceived_(reportingInfo));
 
     // <if expr="is_chromeos">
-    this.addWebUIListener(
+    this.addWebUiListener(
         'plugin-vm-data-collection-updated',
         (enabled: boolean) => this.pluginVmDataCollectionEnabled_ = enabled);
     // </if>
 
-    this.addWebUIListener('managed_data_changed', () => {
+    this.addWebUiListener('managed_data_changed', () => {
       this.updateManagedFields_();
     });
 
-    this.addWebUIListener(
+    this.addWebUiListener(
         'threat-protection-info-updated',
         (info: ThreatProtectionInfo) => this.threatProtectionInfo_ = info);
 
@@ -367,8 +367,8 @@ class ManagementUiElement extends ManagementUiElementBase {
       this.customerLogo_ = data.customerLogo;
       this.managementOverview_ = data.overview;
       this.eolMessage_ = data.eolMessage;
-      this.showProxyServerPrivacyDisclosure_ =
-          data.showProxyServerPrivacyDisclosure;
+      this.showMonitoredNetworkPrivacyDisclosure_ =
+          data.showMonitoredNetworkPrivacyDisclosure;
       try {
         // Sanitizing the message could throw an error if it contains non
         // supported markup.

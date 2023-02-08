@@ -8,17 +8,26 @@
 #include <numeric>
 #include <vector>
 
-#include "ash/components/phonehub/notification.h"
+#include "ash/constants/ash_features.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/phone_hub_recent_app_button.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/webui/eche_app_ui/mojom/eche_app.mojom.h"
 #include "base/cxx17_backports.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/ash/components/phonehub/notification.h"
+#include "chromeos/ash/components/phonehub/phone_hub_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -44,6 +53,13 @@ constexpr auto kContentTextLabelInsetsDip =
 
 // Typography.
 constexpr int kHeaderTextFontSizeDip = 15;
+
+// Max number of apps can be shown with more apps button
+constexpr int kMaxAppsWithMoreAppsButton = 5;
+
+// Sizing of more apps button.
+constexpr gfx::Rect kMoreAppsButtonArea = gfx::Rect(57, 32);
+constexpr int kMoreAppsButtonRadius = 16;
 
 class HeaderView : public views::Label {
  public:
@@ -94,8 +110,10 @@ class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
 };
 
 PhoneHubRecentAppsView::PhoneHubRecentAppsView(
-    phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler)
-    : recent_apps_interaction_handler_(recent_apps_interaction_handler) {
+    phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler,
+    phonehub::PhoneHubManager* phone_hub_manager)
+    : recent_apps_interaction_handler_(recent_apps_interaction_handler),
+      phone_hub_manager_(phone_hub_manager) {
   SetID(PhoneHubViewID::kPhoneHubRecentAppsView);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -155,6 +173,7 @@ void PhoneHubRecentAppsView::RecentAppButtonsView::Layout() {
                       [](int width, const auto* v) {
                         return width + v->GetPreferredSize().width();
                       });
+
   int spacing = 0;
   if (visible_children.size() > 1) {
     spacing = (child_area.width() - visible_child_width -
@@ -206,21 +225,62 @@ void PhoneHubRecentAppsView::Update() {
           recent_apps_interaction_handler_->FetchRecentAppMetadataList();
 
       for (const auto& recent_app : recent_apps_list) {
+        if (features::IsEcheLauncherEnabled() &&
+            recent_app_button_list_.size() == kMaxAppsWithMoreAppsButton) {
+          recent_app_button_list_.push_back(
+              recent_app_buttons_view_->AddRecentAppButton(
+                  GenerateMoreAppsButton()));
+          break;
+        }
+
         auto pressed_callback = base::BindRepeating(
             &phonehub::RecentAppsInteractionHandler::NotifyRecentAppClicked,
-            base::Unretained(recent_apps_interaction_handler_), recent_app);
+            base::Unretained(recent_apps_interaction_handler_), recent_app,
+            eche_app::mojom::AppStreamLaunchEntryPoint::RECENT_APPS);
         recent_app_button_list_.push_back(
             recent_app_buttons_view_->AddRecentAppButton(
                 std::make_unique<PhoneHubRecentAppButton>(
                     recent_app.icon, recent_app.visible_app_name,
                     pressed_callback)));
       }
+
       recent_app_buttons_view_->SetVisible(true);
       placeholder_view_->SetVisible(false);
       SetVisible(true);
       break;
   }
   PreferredSizeChanged();
+}
+
+void PhoneHubRecentAppsView::SwitchToFullAppsList() {
+  if (!features::IsEcheLauncherEnabled()) {
+    return;
+  }
+  phone_hub_manager_->GetAppStreamLauncherDataModel()
+      ->SetShouldShowMiniLauncher(true);
+}
+
+std::unique_ptr<views::ImageButton>
+PhoneHubRecentAppsView::GenerateMoreAppsButton() {
+  auto more_apps_button = std::make_unique<views::ImageButton>(
+      base::BindRepeating(&PhoneHubRecentAppsView::SwitchToFullAppsList,
+                          base::Unretained(this)));
+
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kPhoneHubFullAppsListIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor));
+  more_apps_button->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::ImageSkiaOperations::ExtractSubset(image, kMoreAppsButtonArea));
+  more_apps_button->SetBackground(views::CreateRoundedRectBackground(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
+      kMoreAppsButtonRadius));
+  more_apps_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_FULL_APPS_LIST_BUTTON_TITLE));
+
+  return more_apps_button;
 }
 
 }  // namespace ash

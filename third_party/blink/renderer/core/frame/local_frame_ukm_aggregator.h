@@ -112,9 +112,10 @@ enum class DocumentUpdateReason;
 //
 // |ukm_enum| should be an entry in LocalFrameUkmAggregator's enum of
 // metric names (which in turn corresponds to names from ukm.xml).
-#define SCOPED_UMA_AND_UKM_TIMER(aggregator, ukm_enum) \
-  auto scoped_ukm_hierarchical_timer =                 \
-      aggregator.GetScopedTimer(static_cast<size_t>(ukm_enum));
+#define SCOPED_UMA_AND_UKM_TIMER(aggregator, ukm_enum)                       \
+  absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> timer; \
+  if (aggregator)                                                            \
+    timer.emplace(aggregator->GetScopedTimer(static_cast<size_t>(ukm_enum)));
 
 class CORE_EXPORT LocalFrameUkmAggregator
     : public RefCounted<LocalFrameUkmAggregator> {
@@ -175,35 +176,35 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // Add an entry in this array every time a new metric is added.
   static base::span<const MetricInitializationData> metrics_data() {
     static const MetricInitializationData data[] = {
-        {"CompositingCommit", true},
-        {"CompositingInputs", true},
-        {"ImplCompositorCommit", true},
-        {"IntersectionObservation", true},
-        {"IntersectionObservationInternalCount", true},
-        {"IntersectionObservationJavascriptCount", true},
-        {"Paint", true},
-        {"PrePaint", true},
-        {"Style", true},
-        {"Layout", true},
-        {"HandleInputEvents", true},
-        {"Animate", true},
-        {"UpdateLayers", false},
-        {"WaitForCommit", true},
-        {"DisplayLockIntersectionObserver", true},
-        {"JavascriptIntersectionObserver", true},
-        {"LazyLoadIntersectionObserver", true},
-        {"MediaIntersectionObserver", true},
-        {"AnchorElementMetricsIntersectionObserver", true},
-        {"UpdateViewportIntersection", true},
-        {"ForcedStyleAndLayout", true},
-        {"ContentDocumentUpdate", true},
-        {"HitTestDocumentUpdate", true},
-        {"JavascriptDocumentUpdate", true},
-        {"ScrollDocumentUpdate", true},
-        {"ServiceDocumentUpdate", true},
-        {"UserDrivenDocumentUpdate", true},
-        {"ParseStyleSheet", true},
-        {"Accessibility", true}};
+        {"Blink.CompositingCommit.UpdateTime", true},
+        {"Blink.CompositingInputs.UpdateTime", true},
+        {"Blink.ImplCompositorCommit.UpdateTime", true},
+        {"Blink.IntersectionObservation.UpdateTime", true},
+        {"Blink.IntersectionObservationInternalCount.UpdateTime", true},
+        {"Blink.IntersectionObservationJavascriptCount.UpdateTime", true},
+        {"Blink.Paint.UpdateTime", true},
+        {"Blink.PrePaint.UpdateTime", true},
+        {"Blink.Style.UpdateTime", true},
+        {"Blink.Layout.UpdateTime", true},
+        {"Blink.HandleInputEvents.UpdateTime", true},
+        {"Blink.Animate.UpdateTime", true},
+        {"Blink.UpdateLayers.UpdateTime", false},
+        {"Blink.WaitForCommit.UpdateTime", true},
+        {"Blink.DisplayLockIntersectionObserver.UpdateTime", true},
+        {"Blink.JavascriptIntersectionObserver.UpdateTime", true},
+        {"Blink.LazyLoadIntersectionObserver.UpdateTime", true},
+        {"Blink.MediaIntersectionObserver.UpdateTime", true},
+        {"Blink.AnchorElementMetricsIntersectionObserver.UpdateTime", true},
+        {"Blink.UpdateViewportIntersection.UpdateTime", true},
+        {"Blink.ForcedStyleAndLayout.UpdateTime", true},
+        {"Blink.ContentDocumentUpdate.UpdateTime", true},
+        {"Blink.HitTestDocumentUpdate.UpdateTime", true},
+        {"Blink.JavascriptDocumentUpdate.UpdateTime", true},
+        {"Blink.ScrollDocumentUpdate.UpdateTime", true},
+        {"Blink.ServiceDocumentUpdate.UpdateTime", true},
+        {"Blink.UserDrivenDocumentUpdate.UpdateTime", true},
+        {"Blink.ParseStyleSheet.UpdateTime", true},
+        {"Blink.Accessibility.UpdateTime", true}};
     static_assert(std::size(data) == kCount, "Metrics data mismatch");
     return data;
   }
@@ -259,7 +260,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
     int64_t metric_index_ = -1;
   };
 
-  LocalFrameUkmAggregator(int64_t source_id, ukm::UkmRecorder*);
+  LocalFrameUkmAggregator(int64_t source_id,
+                          ukm::UkmRecorder*,
+                          bool is_for_main_frame_local_frame_root);
   LocalFrameUkmAggregator(const LocalFrameUkmAggregator&) = delete;
   LocalFrameUkmAggregator& operator=(const LocalFrameUkmAggregator&) = delete;
   ~LocalFrameUkmAggregator();
@@ -291,6 +294,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
 
   // Record a sample for a count-based sub-metric.
   void RecordCountSample(size_t metric_index, int64_t count);
+
+  // Mark the beginning of a forced layout.
+  void BeginForcedLayout();
 
   // Record a ForcedLayout sample. The reason will determine which, if any,
   // additional metrics are reported in order to diagnose the cause of
@@ -388,7 +394,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
   const base::TickClock* clock_;
 
   // Event and metric data
-  const char* const event_name_;
   AbsoluteMetricRecord primary_metric_;
   std::array<AbsoluteMetricRecord, kCount> absolute_metric_records_;
 
@@ -429,6 +434,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // most of the benefit even if we downsample them. This value controls how
   // frequently we collect granular IntersectionObserver metrics.
   size_t intersection_observer_sample_period_ = 10;
+
+  // True if the local frame root that instantiated this is the main frame.
+  bool is_for_main_frame_ = false;
 };
 
 }  // namespace blink

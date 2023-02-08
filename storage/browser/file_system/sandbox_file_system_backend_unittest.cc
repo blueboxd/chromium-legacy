@@ -14,11 +14,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_features.h"
@@ -106,8 +107,9 @@ class SandboxFileSystemBackendTest
   void SetUpNewDelegate(const FileSystemOptions& options) {
     incognito_env_override_ = leveldb_chrome::NewMemEnv("FileSystem");
     delegate_ = std::make_unique<SandboxFileSystemBackendDelegate>(
-        quota_manager_->proxy(), base::ThreadTaskRunnerHandle::Get(),
-        data_dir_.GetPath(), /*special_storage_policy=*/nullptr, options,
+        quota_manager_->proxy(),
+        base::SingleThreadTaskRunner::GetCurrentDefault(), data_dir_.GetPath(),
+        /*special_storage_policy=*/nullptr, options,
         options.is_in_memory() ? incognito_env_override_.get() : nullptr);
   }
 
@@ -128,8 +130,9 @@ class SandboxFileSystemBackendTest
         FROM_HERE, base::BindOnce(
                        [](const scoped_refptr<QuotaManager>& quota_manager) {
                          QuotaSettings settings;
-                         settings.per_host_quota = 25 * 1024 * 1024;
-                         settings.pool_size = settings.per_host_quota * 5;
+                         settings.per_storage_key_quota = 25 * 1024 * 1024;
+                         settings.pool_size =
+                             settings.per_storage_key_quota * 5;
                          settings.must_remain_available = 10 * 1024 * 1024;
                          settings.refresh_interval = base::TimeDelta::Max();
                          quota_manager->SetQuotaSettings(settings);
@@ -144,7 +147,7 @@ class SandboxFileSystemBackendTest
     BucketInitParams params = BucketInitParams::ForDefaultBucket(storage_key);
     params.name = "non-default bucket";
     quota_manager_->proxy()->UpdateOrCreateBucket(
-        params, base::SequencedTaskRunnerHandle::Get(),
+        params, base::SequencedTaskRunner::GetCurrentDefault(),
         custom_future.GetCallback());
     QuotaErrorOr<BucketInfo> custom_bucket = custom_future.Take();
     CHECK(custom_bucket.ok());

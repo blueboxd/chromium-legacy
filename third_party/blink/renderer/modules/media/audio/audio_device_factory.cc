@@ -127,8 +127,6 @@ AudioDeviceFactory::NewAudioRendererSink(
   if (IsMixable(source_type))
     return NewMixableSink(source_type, frame_token, params);
 
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
-                        false);
   return NewFinalAudioRendererSink(frame_token, params,
                                    GetDefaultAuthTimeout());
 }
@@ -166,6 +164,7 @@ media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
   constexpr base::TimeDelta kDeleteTimeout = base::Milliseconds(5000);
 
   if (!sink_cache_) {
+    // Do we actually need a separate thread pool just for deleting audio sinks?
     sink_cache_ = std::make_unique<AudioRendererSinkCache>(
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::TaskPriority::BEST_EFFORT,

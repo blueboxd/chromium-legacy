@@ -25,7 +25,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/task_runner_util.h"
 #include "crypto/mac_security_services_lock.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/pki/extended_key_usage.h"
@@ -75,12 +74,19 @@ OSStatus CopyCertChain(SecCertificateRef cert_handle,
   ScopedCFTypeRef<SecTrustRef> trust(trust_ref);
 
   // Evaluate trust, which creates the cert chain.
-  SecTrustResultType status;
   {
     base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    result = SecTrustEvaluate(trust, &status);
-    if (result)
-      return result;
+    if (__builtin_available(macOS 10.14, *)) {
+      // The return value is intentionally ignored since we only care about
+      // building a cert chain, not whether it is trusted (the server is the
+      // only one that can decide that.)
+      std::ignore = SecTrustEvaluateWithError(trust, nullptr);
+    } else {
+      SecTrustResultType status;
+      result = SecTrustEvaluate(trust, &status);
+      if (result)
+        return result;
+    }
     *out_cert_chain = x509_util::CertificateChainFromSecTrust(trust);
   }
   return result;
@@ -402,8 +408,8 @@ ClientCertStoreMac::~ClientCertStoreMac() = default;
 
 void ClientCertStoreMac::GetClientCerts(const SSLCertRequestInfo& request,
                                         ClientCertListCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      GetSSLPlatformKeyTaskRunner().get(), FROM_HERE,
+  GetSSLPlatformKeyTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
       // Caller is responsible for keeping the |request| alive
       // until the callback is run, so std::cref is safe.
       base::BindOnce(&GetClientCertsOnBackgroundThread, std::cref(request)),

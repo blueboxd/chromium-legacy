@@ -64,7 +64,6 @@ test("device_unittests") {
 
   if (is_mac) {
     sources += [
-      "bluetooth/bluetooth_adapter_mac_metrics_unittest.mm",
       "bluetooth/bluetooth_adapter_mac_unittest.mm",
       "bluetooth/bluetooth_low_energy_advertisement_manager_mac_unittest.mm",
       "bluetooth/test/bluetooth_test_mac.h",
@@ -279,6 +278,7 @@ test("device_unittests") {
       "bluetooth/floss/bluetooth_socket_floss_unittest.cc",
       "bluetooth/floss/exported_callback_manager_unittest.cc",
       "bluetooth/floss/floss_adapter_client_unittest.cc",
+      "bluetooth/floss/floss_admin_client_unittest.cc",
       "bluetooth/floss/floss_advertiser_client_unittest.cc",
       "bluetooth/floss/floss_battery_manager_client_unittest.cc",
       "bluetooth/floss/floss_dbus_client_unittest.cc",

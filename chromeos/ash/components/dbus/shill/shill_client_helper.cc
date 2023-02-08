@@ -11,8 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/device_event_log/device_event_log.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -30,7 +29,7 @@ class ShillClientHelper::RefHolder {
  public:
   explicit RefHolder(base::WeakPtr<ShillClientHelper> helper)
       : helper_(helper),
-        origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+        origin_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
     helper_->AddRef();
   }
   ~RefHolder() {
@@ -153,6 +152,34 @@ void OnValueMethod(ShillClientHelper::RefHolder* ref_holder,
   std::move(callback).Run(std::move(value));
 }
 
+// Handles responses for methods with base::Value::Dict results.
+void OnDictValueMethod(ShillClientHelper::RefHolder* ref_holder,
+                       chromeos::DBusMethodCallback<base::Value::Dict> callback,
+                       dbus::Response* response,
+                       dbus::ErrorResponse* error_response) {
+  if (!response) {
+    if (error_response) {
+      dbus::MessageReader reader(error_response);
+      std::string error_message;
+      reader.PopString(&error_message);
+      NET_LOG(ERROR) << "DBus call failed. Error: "
+                     << error_response->GetErrorName()
+                     << " Message: " << error_message;
+    } else {
+      NET_LOG(ERROR) << "DBus call failed with no error.";
+    }
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+  dbus::MessageReader reader(response);
+  base::Value value(dbus::PopDataAsValue(&reader));
+  if (value.is_none()) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+  std::move(callback).Run(std::move(value).TakeDict());
+}
+
 // Handles responses for methods without results.
 void OnVoidMethodWithErrorCallback(ShillClientHelper::RefHolder* ref_holder,
                                    base::OnceClosure callback,
@@ -190,7 +217,7 @@ void OnListValueMethodWithErrorCallback(
         .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  std::move(callback).Run(base::Value::AsListValue(value));
+  std::move(callback).Run(value.GetList());
 }
 
 // Handles running appropriate error callbacks.
@@ -300,6 +327,17 @@ void ShillClientHelper::CallValueMethod(
   proxy_->CallMethodWithErrorResponse(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnValueMethod,
+                     base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
+                     std::move(callback)));
+}
+
+void ShillClientHelper::CallDictValueMethod(
+    dbus::MethodCall* method_call,
+    chromeos::DBusMethodCallback<base::Value::Dict> callback) {
+  DCHECK(!callback.is_null());
+  proxy_->CallMethodWithErrorResponse(
+      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&OnDictValueMethod,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
                      std::move(callback)));
 }

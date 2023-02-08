@@ -23,7 +23,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -423,10 +423,9 @@ AppManagerImpl::State AppManagerImpl::AddAppToLockScreenProfile(
 
   std::string error;
   scoped_refptr<extensions::Extension> lock_profile_app =
-      extensions::Extension::Create(
-          lock_profile_app_path, app->location(),
-          base::Value::AsDictionaryValue(app->manifest()->value()->Clone()),
-          app->creation_flags(), app->id(), &error);
+      extensions::Extension::Create(lock_profile_app_path, app->location(),
+                                    app->manifest()->value()->GetDict(),
+                                    app->creation_flags(), app->id(), &error);
 
   // While extension creation can fail in general, in this case the lock screen
   // profile extension creation arguments come from an app already installed in
@@ -466,7 +465,7 @@ AppManagerImpl::State AppManagerImpl::AddAppToLockScreenProfile(
                   &AppManagerImpl::CompleteLockScreenChromeAppInstall,
                   weak_ptr_factory_.GetWeakPtr(), install_count_,
                   tick_clock_->NowTicks()),
-              base::ThreadTaskRunnerHandle::Get())));
+              base::SingleThreadTaskRunner::GetCurrentDefault())));
   return State::kActivating;
 }
 
@@ -567,10 +566,9 @@ AppManagerImpl::GetChromeAppForLockScreenAppLaunch() {
 
   std::string error;
   scoped_refptr<extensions::Extension> lock_profile_app =
-      extensions::Extension::Create(
-          app->path(), app->location(),
-          base::Value::AsDictionaryValue(app->manifest()->value()->Clone()),
-          app->creation_flags(), app->id(), &error);
+      extensions::Extension::Create(app->path(), app->location(),
+                                    app->manifest()->value()->GetDict(),
+                                    app->creation_flags(), app->id(), &error);
 
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(lock_screen_profile_)

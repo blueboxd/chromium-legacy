@@ -11,7 +11,9 @@ js_type_check("closure_compile_module") {
   closure_flags = default_closure_args + mojom_js_args
 
   deps = [
+    ":apn_detail_dialog",
     ":apn_list",
+    ":apn_list_item",
     ":cellular_utils",
     ":cr_policy_network_behavior_mojo",
     ":cr_policy_network_indicator_mojo",
@@ -68,11 +70,27 @@ js_library("cr_policy_network_indicator_mojo") {
 
 js_library("apn_list") {
   deps = [
+    ":onc_mojo",
     "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources/network:apn_list_item",
+    "//chromeos/services/network_config/public/mojom:mojom_webui_js",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = []
+}
+
+js_library("apn_list_item") {
+  deps = [
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources/network:cellular_utils",
+    "//chromeos/services/network_config/public/mojom:mojom_webui_js",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu_externs.js",
+  ]
 }
 
 js_library("network_apnlist") {
@@ -100,6 +118,23 @@ js_library("network_choose_mobile") {
   ]
   externs_list =
       [ "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js" ]
+}
+
+js_library("apn_detail_dialog") {
+  deps = [
+    ":onc_mojo",
+    "//ash/webui/common/resources:i18n_behavior",
+    "//ash/webui/common/resources/network:cellular_utils",
+    "//chromeos/services/network_config/public/mojom:mojom_webui_js",
+    "//third_party/polymer/v3_0/components-chromium/iron-collapse:iron-collapse",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert",
+  ]
+  externs_list = [
+    "//ui/webui/resources/cr_elements/cr_button/cr_button_externs.js",
+    "//ui/webui/resources/cr_elements/cr_dialog/cr_dialog_externs.js",
+    "//ui/webui/resources/cr_elements/cr_input/cr_input_externs.js",
+  ]
 }
 
 js_library("network_config") {

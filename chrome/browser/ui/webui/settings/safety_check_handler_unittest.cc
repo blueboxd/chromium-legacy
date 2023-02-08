@@ -31,10 +31,10 @@
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/password_form.h"
-#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -151,6 +151,8 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
  public:
   TestPasswordsDelegate() {
     store_->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
+    presenter_.Init();
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() {
@@ -261,10 +263,10 @@ class TestPasswordsDelegate : public extensions::TestPasswordsPrivateDelegate {
   scoped_refptr<password_manager::TestPasswordStore> store_ =
       base::MakeRefCounted<password_manager::TestPasswordStore>();
   password_manager::MockAffiliationService affiliation_service_;
-  password_manager::SavedPasswordsPresenter presenter_{&affiliation_service_,
-                                                       store_};
-  password_manager::InsecureCredentialsManager credentials_manager_{&presenter_,
-                                                                    store_};
+  password_manager::SavedPasswordsPresenter presenter_{
+      &affiliation_service_, store_, /*account_store=*/nullptr};
+  password_manager::InsecureCredentialsManager credentials_manager_{
+      &presenter_, store_, /*account_store=*/nullptr};
 };
 
 class TestSafetyCheckExtensionService : public TestExtensionService {

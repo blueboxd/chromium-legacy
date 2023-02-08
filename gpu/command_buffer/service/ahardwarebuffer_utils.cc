@@ -10,9 +10,9 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "ui/gfx/color_space.h"
@@ -22,6 +22,13 @@
 #include "ui/gl/scoped_binders.h"
 
 namespace gpu {
+
+// Helper to allow for easy friending of the below restricted function.
+void SetColorSpaceOnGLImage(gl::GLImage* gl_image,
+                            const gfx::ColorSpace& color_space) {
+  gl_image->SetColorSpace(color_space);
+}
+
 namespace {
 
 gles2::Texture* MakeGLTexture(
@@ -49,7 +56,6 @@ scoped_refptr<gles2::TexturePassthrough> MakeGLTexturePassthrough(
       base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
   passthrough_texture->SetEstimatedSize(estimated_size);
   passthrough_texture->SetLevelImage(target, 0, egl_image.get());
-  passthrough_texture->set_is_bind_pending(false);
   return passthrough_texture;
 }
 
@@ -85,7 +91,7 @@ void GenGLTextureInternal(
     api->glDeleteTexturesFn(1, &service_id);
     return;
   }
-  egl_image->SetColorSpace(color_space);
+  SetColorSpaceOnGLImage(egl_image.get(), color_space);
 
   if (passthrough_texture) {
     *passthrough_texture = MakeGLTexturePassthrough(

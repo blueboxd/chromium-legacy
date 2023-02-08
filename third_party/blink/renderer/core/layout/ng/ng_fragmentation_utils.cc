@@ -467,6 +467,19 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     final_block_size =
         std::min(final_block_size, desired_intrinsic_block_size) -
         trailing_border_padding;
+
+    // TODO(crbug.com/1381327): We shouldn't get negative sizes here, but this
+    // happens if we have incorrectly added trailing border/padding of a
+    // block-size-restricted container (of a spanner) in a previous fragment, so
+    // that we're past the block-end border edge, in which case
+    // desired_block_size will be zero (because of an overly large
+    // previously_consumed_block_size) - so that subtracting
+    // trailing_border_padding here might result in a negative value. Note that
+    // the code block right below has some subtractable_border_padding logic
+    // that could have saved us here, but it still wouldn't be correct. We
+    // should never add block-end border/padding if we're interrupted by as
+    // spanner. So just clamp to zero, to avoid DCHECK failures.
+    final_block_size = final_block_size.ClampNegativeToZero();
   } else if (space_left != kIndefiniteSize && desired_block_size > space_left &&
              space.HasBlockFragmentation()) {
     // We're taller than what we have room for. We don't want to use more than
@@ -532,12 +545,12 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     return NGBreakStatus::kContinue;
   }
 
-  if (builder->HasChildBreakInside()) {
-    // We broke before or inside one of our children. Even if we fit within the
-    // remaining space, and even if the child involved in the break were to be
-    // in a parallel flow, we still need to prepare a break token for this node,
-    // so that we can resume layout of its broken or unstarted children in the
-    // next fragmentainer.
+  if (builder->ShouldBreakInside()) {
+    // We need to break before or inside one of our children (or have already
+    // done so). Even if we fit within the remaining space, and even if the
+    // child involved in the break were to be in a parallel flow, we still need
+    // to prepare a break token for this node, so that we can resume layout of
+    // its broken or unstarted children in the next fragmentainer.
     //
     // If we're at the end of the node, we need to mark the outgoing break token
     // as such. This is a way for the parent algorithm to determine whether we
@@ -564,8 +577,7 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
       // at the end. If block-size is unconstrained (or at least allowed to grow
       // a bit more), we're only at the end if no in-flow content inside broke.
       if (!was_broken_by_child || builder->IsKnownToFitInFragmentainer()) {
-        if (node.HasNonVisibleBlockOverflow() &&
-            builder->HasChildBreakInside()) {
+        if (node.HasNonVisibleBlockOverflow() && builder->ShouldBreakInside()) {
           // We have reached the end of a fragmentable node that clips overflow
           // in the block direction. If something broke inside at this point, we
           // need to relayout without fragmentation, so that we don't generate

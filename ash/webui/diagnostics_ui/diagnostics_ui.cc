@@ -34,7 +34,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -96,11 +96,11 @@ base::Value::Dict GetDataSourceUpdate() {
   update.Set("settingsLinkText",
              base::Value(GetLinkLabel(IDS_DIAGNOSTICS_SETTINGS_LINK_TEXT,
                                       "chrome://os-settings/")));
-  // TODO(crbug.com/1207678): update this link when the Help Center is ready.
   update.Set(
       "keyboardTesterHelpLink",
-      base::Value(GetLinkLabel(IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_HELP_LINK,
-                               "https://support.google.com/chromebook/")));
+      base::Value(GetLinkLabel(
+          IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_HELP_LINK,
+          "https://support.google.com/chromebook?p=keyboard_troubleshoot")));
   return update;
 }
 
@@ -156,6 +156,7 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"currentNowTooltipText", IDS_DIAGNOSTICS_CURRENT_NOW_TOOLTIP_TEXT},
       {"cycleCount", IDS_DIAGNOSTICS_CYCLE_COUNT_LABEL},
       {"cycleCountTooltipText", IDS_DIAGNOSTICS_CYCLE_COUNT_TOOLTIP_TEXT},
+      {"deviceDisconnected", IDS_INPUT_DIAGNOSTICS_DEVICE_DISCONNECTED},
       {"diagnosticsTitle", IDS_DIAGNOSTICS_TITLE},
       {"disabledText", IDS_DIAGNOSTICS_DISABLED_TEXT},
       {"dischargeTestResultText", IDS_DISCHARGE_TEST_RESULT},
@@ -206,8 +207,15 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
       {"inputDescriptionUsbTouchscreen", IDS_INPUT_DIAGNOSTICS_USB_TOUCHSCREEN},
       {"inputDeviceTest", IDS_INPUT_DIAGNOSTICS_RUN_TEST},
       {"inputDeviceUntestableNote", IDS_INPUT_DIAGNOSTICS_UNTESTABLE_NOTE},
+      {"inputKeyboardUntestableLidClosedNote",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_UNTESTABLE_LID_CLOSED_NOTE},
+      {"inputKeyboardUntestableTabletModeNote",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_UNTESTABLE_TABLET_MODE_NOTE},
+      {"inputKeyboardTesterClosedToastLidClosed",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_CLOSED_LID_CLOSED_NOTE},
+      {"inputKeyboardTesterClosedToastTabletMode",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_CLOSED_TABLET_MODE_NOTE},
       {"inputTesterDone", IDS_INPUT_DIAGNOSTICS_TESTER_DONE},
-      {"inputText", IDS_DIAGNOSTICS_INPUT},
       {"internetConnectivityGroupLabel",
        IDS_DIAGNOSTICS_INTERNET_CONNECTIVITY_GROUP_LABEL},
       {"ipConfigInfoDrawerGateway",
@@ -220,7 +228,10 @@ void AddDiagnosticsStrings(content::WebUIDataSource* html_source) {
        IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_FOCUS_LOSS_MESSAGE},
       {"keyboardTesterInstruction",
        IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_INSTRUCTION},
+      {"keyboardTesterShortcutInstruction",
+       IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_SHORTCUT_INSTRUCTION},
       {"keyboardTesterTitle", IDS_INPUT_DIAGNOSTICS_KEYBOARD_TESTER_TITLE},
+      {"keyboardText", IDS_DIAGNOSTICS_KEYBOARD},
       {"joinNetworkLinkText", IDS_DIAGNOSTICS_JOIN_NETWORK_LINK_TEXT},
       {"lanConnectivityFailedText",
        IDS_DIAGNOSTICS_LAN_CONNECTIVITY_FAILED_TEXT},

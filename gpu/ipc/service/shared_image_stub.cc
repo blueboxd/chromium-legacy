@@ -78,6 +78,11 @@ void SharedImageStub::ExecuteDeferredRequest(
           std::move(request->get_create_shared_image_with_data()));
       break;
 
+    case mojom::DeferredSharedImageRequest::Tag::kCreateSharedImageWithBuffer:
+      OnCreateSharedImageWithBuffer(
+          std::move(request->get_create_shared_image_with_buffer()));
+      break;
+
     case mojom::DeferredSharedImageRequest::Tag::kCreateGmbSharedImage:
       OnCreateGMBSharedImage(std::move(request->get_create_gmb_shared_image()));
       break;
@@ -122,7 +127,6 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
                                         gfx::GpuMemoryBufferHandle handle,
                                         gfx::BufferFormat format,
                                         gfx::BufferPlane plane,
-                                        SurfaceHandle surface_handle,
                                         const gfx::Size& size,
                                         const gfx::ColorSpace& color_space,
                                         GrSurfaceOrigin surface_origin,
@@ -140,9 +144,9 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
     OnError();
     return false;
   }
-  if (!factory_->CreateSharedImage(
-          mailbox, client_id, std::move(handle), format, plane, surface_handle,
-          size, color_space, surface_origin, alpha_type, usage)) {
+  if (!factory_->CreateSharedImage(mailbox, client_id, std::move(handle),
+                                   format, plane, size, color_space,
+                                   surface_origin, alpha_type, usage)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return false;
@@ -258,17 +262,49 @@ void SharedImageStub::OnCreateSharedImageWithData(
   sync_point_client_state_->ReleaseFenceSync(params->release_id);
 }
 
+void SharedImageStub::OnCreateSharedImageWithBuffer(
+    mojom::CreateSharedImageWithBufferParamsPtr params) {
+  TRACE_EVENT2("gpu", "SharedImageStub::OnCreateSharedImageWithBuffer", "width",
+               params->size.width(), "height", params->size.height());
+
+  // TODO(kylechar): Add support for single-planar formats and remove this.
+  if (!params->format.is_multi_plane()) {
+    LOG(ERROR) << "SharedImageStub: Incompatible format.";
+    OnError();
+    return;
+  }
+  if (!params->mailbox.IsSharedImage()) {
+    LOG(ERROR) << "SharedImageStub: Trying to create a SharedImage with a "
+                  "non-SharedImage mailbox.";
+    OnError();
+    return;
+  }
+
+  if (!MakeContextCurrent()) {
+    OnError();
+    return;
+  }
+  if (!factory_->CreateSharedImage(
+          params->mailbox, params->format, params->size, params->color_space,
+          params->surface_origin, params->alpha_type, params->usage,
+          std::move(params->buffer_handle))) {
+    LOG(ERROR) << "SharedImageStub: Unable to create shared image";
+    OnError();
+    return;
+  }
+
+  sync_point_client_state_->ReleaseFenceSync(params->release_id);
+}
+
 void SharedImageStub::OnCreateGMBSharedImage(
     mojom::CreateGMBSharedImageParamsPtr params) {
   TRACE_EVENT2("gpu", "SharedImageStub::OnCreateGMBSharedImage", "width",
                params->size.width(), "height", params->size.height());
-  // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
-  constexpr SurfaceHandle surface_handle = kNullSurfaceHandle;
   if (!CreateSharedImage(params->mailbox, channel_->client_id(),
                          std::move(params->buffer_handle), params->format,
-                         params->plane, surface_handle, params->size,
-                         params->color_space, params->surface_origin,
-                         params->alpha_type, params->usage)) {
+                         params->plane, params->size, params->color_space,
+                         params->surface_origin, params->alpha_type,
+                         params->usage)) {
     return;
   }
 

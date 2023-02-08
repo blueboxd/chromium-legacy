@@ -98,7 +98,7 @@ void FlatlandSurfaceFactory::Initialize(
   base::AutoLock lock(surface_lock_);
   DCHECK(surface_map_.empty());
 
-  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  main_thread_task_runner_ = base::SingleThreadTaskRunner::GetCurrentDefault();
   DCHECK(main_thread_task_runner_);
 
   DCHECK(!gpu_host_);
@@ -203,6 +203,19 @@ FlatlandSurfaceFactory::CreateVulkanImplementation(
   return std::make_unique<ui::VulkanImplementationFlatland>(
       this, &flatland_sysmem_buffer_manager_, use_swiftshader,
       allow_protected_memory);
+}
+
+std::vector<gfx::BufferFormat>
+FlatlandSurfaceFactory::GetSupportedFormatsForTexturing() const {
+  return {
+      gfx::BufferFormat::R_8,
+      gfx::BufferFormat::RG_88,
+      gfx::BufferFormat::RGBA_8888,
+      gfx::BufferFormat::RGBX_8888,
+      gfx::BufferFormat::BGRA_8888,
+      gfx::BufferFormat::BGRX_8888,
+      gfx::BufferFormat::YUV_420_BIPLANAR,
+  };
 }
 
 void FlatlandSurfaceFactory::AddSurface(gfx::AcceleratedWidget widget,

@@ -9,10 +9,11 @@
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/network_interfaces.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor.h"
@@ -606,9 +607,9 @@ bool X11Window::HasCapture() const {
   return X11WindowManager::GetInstance()->located_events_grabber() == this;
 }
 
-void X11Window::ToggleFullscreen() {
-  // Check if we need to fullscreen the window or not.
-  bool fullscreen = state_ != PlatformWindowState::kFullScreen;
+void X11Window::SetFullscreen(bool fullscreen, int64_t target_display_id) {
+  // TODO(crbug.com/1034783) Support `target_display_id` on this platform.
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (fullscreen)
     CancelResize();
 
@@ -2410,7 +2411,7 @@ void X11Window::DispatchResize(bool origin_changed) {
     // _NET_WM_SYNC_REQUEST is disabled by the compositor.
     delayed_resize_task_.Reset(base::BindOnce(
         &X11Window::DelayedResize, base::Unretained(this), origin_changed));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, delayed_resize_task_.callback());
     return;
   }

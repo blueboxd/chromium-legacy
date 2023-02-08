@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/sync/base/features.h"
+
 #include "base/feature_list.h"
 
 namespace syncer {
@@ -33,7 +34,7 @@ BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kSyncAndroidPromosWithAlternativeTitle,
              "SyncAndroidPromosWithAlternativeTitle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kSyncAndroidPromosWithIllustration,
              "SyncAndroidPromosWithIllustration",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -42,7 +43,7 @@ BASE_FEATURE(kSyncAndroidPromosWithSingleButton,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kSyncAndroidPromosWithTitle,
              "SyncAndroidPromosWithTitle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kSyncAutofillWalletUsageData,
@@ -83,15 +84,9 @@ BASE_FEATURE(kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling,
              "SyncTrustedVaultDegradedRecoverabilityHandler",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_IOS)
-BASE_FEATURE(kSyncTrustedVaultPassphraseiOSRPC,
-             "SyncTrustedVaultPassphraseiOSRPC",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_IOS)
-
 BASE_FEATURE(kSyncTrustedVaultPassphrasePromo,
              "SyncTrustedVaultPassphrasePromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Keep this entry in sync with the equivalent name in
 // ChromeFeatureList.java.
@@ -131,13 +126,6 @@ BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
              "SkipInvalidationOptimizationsWhenDeviceInfoUpdated",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_IOS)
-bool IsSyncTrustedVaultPassphraseiOSRPCEnabled() {
-  return base::FeatureList::IsEnabled(kSyncTrustedVaultPassphraseRecovery) &&
-         base::FeatureList::IsEnabled(kSyncTrustedVaultPassphraseiOSRPC);
-}
-#endif  // BUILDFLAG(IS_IOS)
-
 BASE_FEATURE(kSyncEnableHistoryDataType,
              "SyncEnableHistoryDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -155,5 +143,9 @@ BASE_FEATURE(kSyncPauseUponAnyPersistentAuthError,
 BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
              "SyncEnforceBookmarksCountLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncIgnoreAccountWithoutRefreshToken,
+             "SyncIgnoreAccountWithoutRefreshToken",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace syncer

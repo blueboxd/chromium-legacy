@@ -98,8 +98,17 @@ class MockPersonalizationAppThemeProvider
               (override));
   MOCK_METHOD(void, SetColorModePref, (bool dark_mode_enabled), (override));
   MOCK_METHOD(void,
+              SetColorScheme,
+              (ash::ColorScheme color_scheme),
+              (override));
+  MOCK_METHOD(void, SetStaticColor, (::SkColor static_color), (override));
+  MOCK_METHOD(void,
               SetColorModeAutoScheduleEnabled,
               (bool enabled),
+              (override));
+  MOCK_METHOD(void,
+              GetStaticColor,
+              (GetStaticColorCallback callback),
               (override));
   MOCK_METHOD(void,
               IsDarkModeEnabled,

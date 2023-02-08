@@ -33,10 +33,6 @@ class CrashesDOMHandler;
 class ChromeCameraAppUIDelegate;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace autofill_assistant {
-class AssistantFieldTrialUtilChrome;
-}  // namespace autofill_assistant
-
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }
@@ -44,7 +40,7 @@ class DomainReliabilityServiceFactory;
 namespace extensions {
 class ChromeGuestViewManagerDelegate;
 class ChromeMetricsPrivateDelegate;
-}
+}  // namespace extensions
 
 namespace first_run {
 class FirstRunMasterPrefsVariationsSeedTest;
@@ -53,7 +49,7 @@ class FirstRunMasterPrefsVariationsSeedTest;
 namespace metrics {
 class ChromeOSPerUserMetricsBrowserTestBase;
 class UkmConsentParamBrowserTest;
-}
+}  // namespace metrics
 
 namespace welcome {
 void JoinOnboardingGroup(Profile* profile);
@@ -93,10 +89,6 @@ class IsMetricsAndCrashReportingEnabled;
 }
 }  // namespace webauthn
 
-namespace autofill_assistant {
-class CommonDependenciesChrome;
-}  // namespace autofill_assistant
-
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
@@ -115,7 +107,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   static void SetMetricsAndCrashReportingForTesting(const bool* value);
 
  private:
-  friend class autofill_assistant::AssistantFieldTrialUtilChrome;
   friend class ::CrashesDOMHandler;
   friend class ChromeBrowserFieldTrials;
   // For ClangPGO.
@@ -152,7 +143,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class WebUITabStripFieldTrial;
   friend class feed::FeedServiceDelegateImpl;
   friend class browser_sync::DeviceInfoSyncClientImpl;
-  friend class autofill_assistant::CommonDependenciesChrome;
   friend class feed::WebFeedSubscriptionCoordinator;
   friend class HttpsFirstModeService;
   friend class webauthn::authenticator::IsMetricsAndCrashReportingEnabled;
@@ -174,6 +164,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ClonedInstallClientIdResetBrowserTest;
   friend class metrics::ChromeOSPerUserMetricsBrowserTestBase;
   friend class SampledOutClientIdSavedBrowserTest;
+  friend class MetricsInternalsUIBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServicesManagerClientTest,

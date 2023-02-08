@@ -23,6 +23,7 @@
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
+#import "components/password_manager/core/browser/leak_detection/mock_leak_detection_check_factory.h"
 #import "components/password_manager/core/browser/mock_password_store_interface.h"
 #import "components/password_manager/core/browser/password_form_manager.h"
 #import "components/password_manager/core/browser/password_form_metrics_recorder.h"
@@ -33,6 +34,7 @@
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
+#import "components/password_manager/ios/shared_password_controller+private.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/password_manager/ios/test_helpers.h"
 #import "components/prefs/pref_registry_simple.h"
@@ -214,14 +216,6 @@ struct TestPasswordFormData {
 
 }  // namespace
 
-@interface PasswordFormHelper (Testing)
-
-- (void)findPasswordFormsInFrame:(web::WebFrame*)frame
-               completionHandler:(void (^)(const std::vector<PasswordForm>&))
-                                     completionHandler;
-
-@end
-
 // Real FormSuggestionController is wrapped to register the addition of
 // suggestions.
 @interface PasswordsTestSuggestionController : FormSuggestionController
@@ -237,18 +231,6 @@ struct TestPasswordFormData {
 - (void)updateKeyboardWithSuggestions:(NSArray*)suggestions {
   self.suggestions = suggestions;
 }
-
-@end
-
-@interface SharedPasswordController (Testing)
-
-// Provides access for testing.
-@property(nonatomic, assign) BOOL isPasswordGenerated;
-
-- (void)injectGeneratedPasswordForFormId:(FormRendererId)formIdentifier
-                                 inFrame:(web::WebFrame*)frame
-                       generatedPassword:(NSString*)generatedPassword
-                       completionHandler:(void (^)())completionHandler;
 
 @end
 
@@ -280,6 +262,9 @@ class PasswordControllerTest : public PlatformTest {
 
     passwordController_ =
         CreatePasswordController(web_state(), store_.get(), &weak_client_);
+    passwordController_.passwordManager->set_leak_factory(
+        std::make_unique<
+            NiceMock<password_manager::MockLeakDetectionCheckFactory>>());
 
     ON_CALL(*weak_client_, IsSavingAndFillingEnabled)
         .WillByDefault(Return(true));
@@ -1248,6 +1233,9 @@ class PasswordControllerTestSimple : public PlatformTest {
 
     passwordController_ =
         CreatePasswordController(&web_state_, store_.get(), &weak_client_);
+    passwordController_.passwordManager->set_leak_factory(
+        std::make_unique<
+            NiceMock<password_manager::MockLeakDetectionCheckFactory>>());
 
     ON_CALL(*weak_client_, IsSavingAndFillingEnabled)
         .WillByDefault(Return(true));

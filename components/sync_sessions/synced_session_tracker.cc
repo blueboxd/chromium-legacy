@@ -12,6 +12,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync_device_info/device_info_proto_enum_util.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 
 namespace sync_sessions {
@@ -127,7 +128,16 @@ void PopulateSyncedSessionFromSpecifics(
     synced_session->session_name = header_specifics.client_name();
   }
   if (header_specifics.has_device_type()) {
-    synced_session->device_type = header_specifics.device_type();
+    syncer::DeviceInfo::FormFactor device_form_factor;
+    if (header_specifics.has_device_form_factor()) {
+      device_form_factor =
+          syncer::ToDeviceInfoFormFactor(header_specifics.device_form_factor());
+    } else { /*Fallback to derive from old device type enum*/
+      device_form_factor = syncer::DeriveFormFactorFromDeviceType(
+          header_specifics.device_type());
+    }
+    synced_session->SetDeviceTypeAndFormFactor(header_specifics.device_type(),
+                                               device_form_factor);
   }
   synced_session->modified_time =
       std::max(mtime, synced_session->modified_time);
@@ -163,14 +173,16 @@ SyncedSessionTracker::~SyncedSessionTracker() = default;
 void SyncedSessionTracker::InitLocalSession(
     const std::string& local_session_tag,
     const std::string& local_session_name,
-    sync_pb::SyncEnums::DeviceType local_device_type) {
+    sync_pb::SyncEnums::DeviceType local_device_type,
+    syncer::DeviceInfo::FormFactor local_device_form_factor) {
   DCHECK(local_session_tag_.empty());
   DCHECK(!local_session_tag.empty());
   local_session_tag_ = local_session_tag;
 
   SyncedSession* local_session = GetSession(local_session_tag);
   local_session->session_name = local_session_name;
-  local_session->device_type = local_device_type;
+  local_session->SetDeviceTypeAndFormFactor(local_device_type,
+                                            local_device_form_factor);
   local_session->session_tag = local_session_tag;
 }
 
@@ -263,25 +275,19 @@ SyncedSession* SyncedSessionTracker::GetSession(
   return &GetTrackedSession(session_tag)->synced_session;
 }
 
-bool SyncedSessionTracker::DeleteForeignSession(
+void SyncedSessionTracker::DeleteForeignSession(
     const std::string& session_tag) {
   DCHECK_NE(local_session_tag_, session_tag);
 
   auto iter = session_map_.find(session_tag);
   if (iter == session_map_.end()) {
-    return false;
+    return;
   }
 
-  // An implicitly created session that has children tabs but no header node
-  // will have never had the device_type changed from unset.
-  const bool header_existed =
-      iter->second.synced_session.device_type != sync_pb::SyncEnums::TYPE_UNSET;
   // SyncedSession's destructor will trigger deletion of windows which will in
   // turn trigger the deletion of tabs. This doesn't affect the convenience
   // maps.
   session_map_.erase(iter);
-
-  return header_existed;
 }
 
 void SyncedSessionTracker::ResetSessionTracking(

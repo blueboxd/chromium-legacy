@@ -342,6 +342,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
 
   auto* frame = To<WebRemoteFrameImpl>(parent).CreateRemoteChild(
       mojom::blink::TreeScopeType::kDocument, RemoteFrameToken(),
+      /*is_loading=*/false,
       /*devtools_frame_token=*/base::UnguessableToken(), /*opener=*/nullptr,
       CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
           mojo::NullAssociatedRemote()),
@@ -482,6 +483,12 @@ WebViewImpl* WebViewHelper::InitializeAndLoad(
   return GetWebView();
 }
 
+WebViewImpl* WebViewHelper::InitializePlaceholderRemote() {
+  return InitializeRemoteWithOpenerAndAssociatedRemoteAndReceivers(
+      nullptr, nullptr, nullptr, mojo::NullAssociatedRemote(),
+      mojo::NullAssociatedReceiver());
+}
+
 WebViewImpl* WebViewHelper::InitializeRemote(
     scoped_refptr<SecurityOrigin> security_origin,
     WebViewClient* web_view_client) {
@@ -492,6 +499,22 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
     WebFrame* opener,
     scoped_refptr<SecurityOrigin> security_origin,
     WebViewClient* web_view_client) {
+  return InitializeRemoteWithOpenerAndAssociatedRemoteAndReceivers(
+      opener, security_origin, web_view_client,
+      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
+          mojo::NullAssociatedRemote()),
+      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
+          .BindNewEndpointAndPassDedicatedReceiver());
+}
+
+WebViewImpl*
+WebViewHelper::InitializeRemoteWithOpenerAndAssociatedRemoteAndReceivers(
+    WebFrame* opener,
+    scoped_refptr<SecurityOrigin> security_origin,
+    WebViewClient* web_view_client,
+    mojo::PendingAssociatedRemote<mojom::blink::RemoteFrameHost>
+        remote_frame_host,
+    mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrame> receiver) {
   Reset();
 
   InitializeWebView(web_view_client, nullptr, absl::nullopt);
@@ -502,12 +525,9 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
   replication_state->origin = security_origin;
 
   WebRemoteFrameImpl::CreateMainFrame(
-      web_view_, RemoteFrameToken(),
+      web_view_, RemoteFrameToken(), /*is_loading=*/false,
       /*devtools_frame_token=*/base::UnguessableToken(), opener,
-      CreateStubRemoteIfNeeded<mojom::blink::RemoteFrameHost>(
-          mojo::NullAssociatedRemote()),
-      mojo::AssociatedRemote<mojom::blink::RemoteFrame>()
-          .BindNewEndpointAndPassDedicatedReceiver(),
+      std::move(remote_frame_host), std::move(receiver),
       std::move(replication_state));
   return web_view_;
 }
@@ -554,7 +574,7 @@ WebLocalFrameImpl* WebViewHelper::CreateProvisional(
   client = CreateDefaultClientIfNeeded(client, owned_client);
   auto* frame = To<WebLocalFrameImpl>(WebLocalFrame::CreateProvisional(
       client, nullptr, LocalFrameToken(), &old_frame, FramePolicy(),
-      WebFrame::ToCoreFrame(old_frame)->Tree().GetName()));
+      WebFrame::ToCoreFrame(old_frame)->Tree().GetName(), old_frame.View()));
   client->Bind(frame, std::move(owned_client));
 
   // Create a widget, if necessary.
@@ -739,6 +759,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const WebFrameOwnerProperties&,
     FrameOwnerElementType,
     WebPolicyContainerBindParams policy_container_bind_params,
+    ukm::SourceId document_ukm_source_id,
     FinishChildFrameCreationFn finish_creation) {
   MockPolicyContainerHost mock_policy_container_host;
   mock_policy_container_host.BindWithNewEndpoint(
@@ -903,17 +924,16 @@ void TestWebFrameWidget::DispatchThroughCcInputHandler(
   GetWidgetInputHandlerManager()->DispatchEvent(
       std::make_unique<WebCoalescedInputEvent>(event.Clone(),
                                                ui::LatencyInfo()),
-      base::BindOnce(
-          [](WeakMember<TestWebFrameWidget> widget,
-             mojom::blink::InputEventResultSource, const ui::LatencyInfo&,
-             mojom::blink::InputEventResultState,
+      WTF::BindOnce(
+          [](TestWebFrameWidget* widget, mojom::blink::InputEventResultSource,
+             const ui::LatencyInfo&, mojom::blink::InputEventResultState,
              mojom::blink::DidOverscrollParamsPtr overscroll,
              mojom::blink::TouchActionOptionalPtr,
              mojom::blink::ScrollResultDataPtr) {
             if (widget)
               widget->last_overscroll_ = std::move(overscroll);
           },
-          this));
+          WrapWeakPersistent(this)));
   FlushInputHandlerTasks();
 }
 

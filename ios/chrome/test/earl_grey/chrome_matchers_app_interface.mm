@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/price_notifications/price_notifications_constants.h"
 #import "ios/chrome/browser/ui/settings/price_notifications/tracking_price/tracking_price_constants.h"
@@ -185,14 +186,12 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return imageMatcher;
 }
 
-+ (id<GREYMatcher>)imageViewWithImage:(int)imageID {
-  UIImage* expectedImage = NativeImage(imageID);
++ (id<GREYMatcher>)imageViewWithImage:(UIImage*)image {
   GREYMatchesBlock matches = ^BOOL(UIImageView* imageView) {
-    return ui::test::uiimage_utils::UIImagesAreEqual(expectedImage,
-                                                     imageView.image);
+    return ui::test::uiimage_utils::UIImagesAreEqual(image, imageView.image);
   };
   NSString* descriptionString =
-      [NSString stringWithFormat:@"Images matching %i", imageID];
+      [NSString stringWithFormat:@"Images matching image %@", image];
   GREYDescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:descriptionString];
   };
@@ -664,14 +663,8 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)settingsMenuPrivacyButton {
-  if (base::FeatureList::IsEnabled(safe_browsing::kEnhancedProtection)) {
-    return [ChromeMatchersAppInterface
-        buttonWithAccessibilityLabelID:(IDS_IOS_SETTINGS_PRIVACY_TITLE)];
-  }
-
   return [ChromeMatchersAppInterface
-      buttonWithAccessibilityLabelID:
-          (IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)];
+      buttonWithAccessibilityLabelID:(IDS_IOS_SETTINGS_PRIVACY_TITLE)];
 }
 
 + (id<GREYMatcher>)settingsMenuPriceNotificationsButton {
@@ -812,7 +805,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)systemSelectionCalloutOverflowButton {
-  return grey_accessibilityID(@"show.next.items.menu.button");
+  if (@available(iOS 16.0, *)) {
+    return grey_allOf(
+        grey_accessibilityLabel(@"Forward"),
+        grey_kindOfClass(NSClassFromString(@"_UIEditMenuPageButton")), nil);
+  } else {
+    return grey_accessibilityID(@"show.next.items.menu.button");
+  }
 }
 
 + (id<GREYMatcher>)copyActivityButton {
@@ -990,7 +989,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)settingsPasswordMatcher {
-  return grey_accessibilityID(kPasswordsTableViewId);
+  return grey_accessibilityID(kPasswordsSettingsTableViewId);
 }
 
 + (id<GREYMatcher>)settingsPasswordSearchMatcher {
@@ -1053,6 +1052,38 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 
 + (id<GREYMatcher>)settingsToolbarAddButton {
   return grey_accessibilityID(kSettingsToolbarAddButtonId);
+}
+
++ (id<GREYMatcher>)cellCanBeSwipedToDismissed {
+  GREYMatchesBlock matches = ^BOOL(id element) {
+    if (![element isKindOfClass:UITableViewCell.class])
+      return NO;
+
+    UITableViewCell* cell = base::mac::ObjCCastStrict<UITableViewCell>(element);
+
+    // Try to find the TableView containing the cell.
+    UIView* potential_table_view = [cell superview];
+    while (![potential_table_view isKindOfClass:UITableView.class] &&
+           potential_table_view.superview) {
+      potential_table_view = potential_table_view.superview;
+    }
+
+    if (![potential_table_view isKindOfClass:UITableView.class])
+      return NO;
+
+    UITableView* table_view =
+        base::mac::ObjCCastStrict<UITableView>(potential_table_view);
+
+    NSIndexPath* index_path = [table_view indexPathForCell:cell];
+
+    return [table_view.dataSource tableView:table_view
+                      canEditRowAtIndexPath:index_path];
+  };
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description appendText:@"cellCanBeSwipedToDismissed"];
+  };
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 #pragma mark - Overflow Menu Destinations

@@ -24,7 +24,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/ranges/algorithm.h"
 #include "base/ranges/functional.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "cc/paint/paint_flags.h"
@@ -328,11 +328,11 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr model,
       l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW)));
 
   save_button_ = AddChildView(std::make_unique<views::MdTextButton>(
-      base::BindRepeating(&DownloadItemView::SaveOrDiscardButtonPressed,
+      base::BindRepeating(&DownloadItemView::ExecuteCommand,
                           base::Unretained(this), DownloadCommands::KEEP)));
 
   discard_button_ = AddChildView(std::make_unique<views::MdTextButton>(
-      base::BindRepeating(&DownloadItemView::SaveOrDiscardButtonPressed,
+      base::BindRepeating(&DownloadItemView::ExecuteCommand,
                           base::Unretained(this), DownloadCommands::DISCARD),
       l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
 
@@ -520,7 +520,7 @@ void DownloadItemView::OnDownloadOpened() {
     label->SetText(filename);
     StyleFilename(*label, 0, filename.length());
   };
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(std::move(reenable), weak_ptr_factory_.GetWeakPtr()),
       base::Seconds(3));
@@ -539,13 +539,6 @@ void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
 
 void DownloadItemView::AnimationEnded(const gfx::Animation* animation) {
   AnimationProgressed(animation);
-}
-
-void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
-    DownloadCommands::Command command) {
-  if (!model_->ShouldAllowDownloadFeedback() ||
-      !SubmitDownloadToFeedbackService(command))
-    ExecuteCommand(command);
 }
 
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
@@ -883,15 +876,8 @@ void DownloadItemView::UpdateButtons() {
 void DownloadItemView::UpdateAccessibleAlertAndAnimationsForNormalMode() {
   using State = download::DownloadItem::DownloadState;
   const State state = model_->GetState();
-  const std::u16string web_drive = model_->GetWebDriveName();
   if ((state == State::IN_PROGRESS) && !model_->IsPaused()) {
-    if (web_drive.empty()) {
-      UpdateAccessibleAlert(GetInProgressAccessibleAlertText());
-    } else {
-      announce_accessible_alert_soon_ = true;
-      UpdateAccessibleAlert(
-          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_UPLOADING, web_drive));
-    }
+    UpdateAccessibleAlert(GetInProgressAccessibleAlertText());
 
     if (!indeterminate_progress_timer_.IsRunning()) {
       indeterminate_progress_start_time_ = base::TimeTicks::Now();
@@ -922,17 +908,8 @@ void DownloadItemView::UpdateAccessibleAlertAndAnimationsForNormalMode() {
         {State::COMPLETE, IDS_DOWNLOAD_COMPLETE_ACCESSIBLE_ALERT},
         {State::CANCELLED, IDS_DOWNLOAD_CANCELLED_ACCESSIBLE_ALERT},
     });
-    const std::u16string alert_text =
-        (web_drive.empty() || state == State::CANCELLED)
-            ? l10n_util::GetStringFUTF16(
-                  kMap.at(state),
-                  model_->GetFileNameToReportUser().LossyDisplayName())
-            // When the file is rereouted to web drive and not cancelled, use
-            // regular string formulated in DownloadUIModel.
-            // TODO(https://crbug.com/1240372) Update with accessibility
-            // specific localized strings.
-            : model_->GetStatusText();
-
+    const std::u16string alert_text = l10n_util::GetStringFUTF16(
+        kMap.at(state), model_->GetFileNameToReportUser().LossyDisplayName());
     announce_accessible_alert_soon_ = true;
     UpdateAccessibleAlert(alert_text);
   }
@@ -1240,15 +1217,6 @@ void DownloadItemView::OpenButtonPressed() {
   }
 }
 
-void DownloadItemView::SaveOrDiscardButtonPressed(
-    DownloadCommands::Command command) {
-  if (is_mixed_content(mode_))
-    ExecuteCommand(command);
-  else
-    MaybeSubmitDownloadToFeedbackService(command);
-  // WARNING: |this| may be deleted!
-}
-
 void DownloadItemView::DropdownButtonPressed(const ui::Event& event) {
   SetDropdownPressed(true);
 
@@ -1326,7 +1294,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
     // function (which wants to know if the button was already pressed) is
     // reached -- so delay marking the button as "released" until the callstack
     // unwinds.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadItemView::SetDropdownPressed,
                                   std::move(view), false));
   };
@@ -1341,27 +1309,9 @@ void DownloadItemView::OpenDownloadDuringAsyncScanning() {
   model_->SetOpenWhenComplete(true);
 }
 
-bool DownloadItemView::SubmitDownloadToFeedbackService(
-    DownloadCommands::Command command) const {
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  auto* const sb_service = g_browser_process->safe_browsing_service();
-  if (!sb_service)
-    return false;
-  auto* const dp_service = sb_service->download_protection_service();
-  if (!dp_service)
-    return false;
-  // TODO(shaktisahu): Enable feedback service for offline item.
-  return !model_->GetDownloadItem() ||
-         dp_service->MaybeBeginFeedbackForDownload(
-             shelf_->browser()->profile(), model_->GetDownloadItem(), command);
-#else
-  NOTREACHED();
-  return false;
-#endif
-}
-
 void DownloadItemView::ExecuteCommand(DownloadCommands::Command command) {
   commands_.ExecuteCommand(command);
+  // WARNING: |this| may be deleted!
 }
 
 std::u16string DownloadItemView::GetStatusTextForTesting() const {

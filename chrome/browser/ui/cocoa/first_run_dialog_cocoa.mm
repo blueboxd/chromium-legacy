@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/current_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
@@ -54,7 +54,7 @@ FirstRunShowBridge::FirstRunShowBridge(FirstRunDialogController* controller)
 void FirstRunShowBridge::ShowDialog(base::OnceClosure quit_closure) {
   // Proceeding past the modal dialog requires user interaction. Allow nested
   // tasks to run so that signal handlers operate correctly.
-  base::CurrentThread::ScopedNestableTaskAllower allow_nested;
+  base::CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop allow;
   [controller_ show];
   std::move(quit_closure).Run();
 }
@@ -152,7 +152,7 @@ void ShowFirstRunDialogCocoa() {
 
   // Barring a shutdown signal, the run loop will quit when the user closes the
   // first run dialog.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&FirstRunShowBridge::ShowDialog, bridge.get(),
                                 run_loop.QuitClosure()));
   run_loop.Run();

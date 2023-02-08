@@ -70,6 +70,10 @@ api::developer_private::ViewType ConvertViewType(const mojom::ViewType type) {
       developer_private_type =
           api::developer_private::VIEW_TYPE_OFFSCREEN_DOCUMENT;
       break;
+    case mojom::ViewType::kExtensionSidePanel:
+      developer_private_type =
+          api::developer_private::VIEW_TYPE_EXTENSION_SIDE_PANEL;
+      break;
     default:
       developer_private_type = api::developer_private::VIEW_TYPE_NONE;
       NOTREACHED();
@@ -186,10 +190,9 @@ void InspectableViewsFinder::GetViewsForExtensionProcess(
         url = extension_host->initial_url();
     }
 
-    bool is_iframe = web_contents->GetPrimaryMainFrame() != host;
     content::RenderProcessHost* process = host->GetProcess();
     result->push_back(ConstructView(url, process->GetID(), host->GetRoutingID(),
-                                    is_incognito, is_iframe,
+                                    is_incognito, !host->IsInPrimaryMainFrame(),
                                     ConvertViewType(host_type)));
   }
 

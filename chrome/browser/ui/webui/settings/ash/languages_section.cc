@@ -154,12 +154,12 @@ const std::vector<SearchConcept>& GetEmojiSuggestionSearchConcepts() {
 }
 
 bool IsAssistivePersonalInfoAllowed() {
-  return !features::IsGuestModeActive() &&
-         base::FeatureList::IsEnabled(ash::features::kAssistPersonalInfo);
+  return !IsGuestModeActive() &&
+         base::FeatureList::IsEnabled(features::kAssistPersonalInfo);
 }
 
 bool IsPredictiveWritingAllowed() {
-  return ash::features::IsAssistiveMultiWordEnabled();
+  return features::IsAssistiveMultiWordEnabled();
 }
 
 // TODO(crbug/1113611): As Smart Inputs page is renamed to Suggestions.
@@ -357,7 +357,13 @@ void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "allowDiacriticsOnPhysicalKeyboardLongpress",
       base::FeatureList::IsEnabled(
-          ash::features::kDiacriticsOnPhysicalKeyboardLongpress));
+          features::kDiacriticsOnPhysicalKeyboardLongpress));
+  html_source->AddBoolean(
+      "allowAutocorrectToggle",
+      base::FeatureList::IsEnabled(features::kAutocorrectToggle));
+  html_source->AddBoolean(
+      "autocorrectEnableByDefault",
+      base::FeatureList::IsEnabled(features::kAutocorrectByDefault));
 }
 
 void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
@@ -558,12 +564,12 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enableLanguageSettingsV2Update2", true);
   html_source->AddBoolean(
       "onDeviceGrammarCheckEnabled",
-      base::FeatureList::IsEnabled(ash::features::kOnDeviceGrammarCheck));
+      base::FeatureList::IsEnabled(features::kOnDeviceGrammarCheck));
   html_source->AddBoolean("languagePacksHandwritingEnabled",
-                          ash::features::IsLanguagePacksEnabled());
-  html_source->AddBoolean("systemJapanesePhysicalTyping",
-                          ::base::FeatureList::IsEnabled(
-                              ash::features::kSystemJapanesePhysicalTyping));
+                          features::IsLanguagePacksEnabled());
+  html_source->AddBoolean(
+      "systemJapanesePhysicalTyping",
+      base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping));
 }
 
 void LanguagesSection::AddHandlers(content::WebUI* web_ui) {

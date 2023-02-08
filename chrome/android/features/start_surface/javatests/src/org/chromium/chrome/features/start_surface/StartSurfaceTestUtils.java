@@ -11,9 +11,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -32,13 +34,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
 import androidx.test.uiautomator.UiDevice;
 
+import com.google.android.material.appbar.AppBarLayout;
+
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 
 import org.chromium.base.CommandLine;
@@ -96,6 +103,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Utility methods and classes for testing Start Surface.
  */
 public class StartSurfaceTestUtils {
+    private static final int ARTICLE_SECTION_HEADER_POSITION = 0;
     public static final String INSTANT_START_TEST_BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:"
             + ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
@@ -180,27 +188,65 @@ public class StartSurfaceTestUtils {
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
         ChromeTabbedActivity cta = activityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
     }
 
     /**
-     * Wait for the start surface homepage or tab switcher page visible.
+     * Wait for the start surface homepage visible.
      * @param cta The ChromeTabbedActivity under test.
      */
-    public static void waitForOverviewVisible(ChromeTabbedActivity cta) {
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+    public static void waitForStartSurfaceVisible(ChromeTabbedActivity cta) {
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), getStartSurfaceLayoutType());
     }
 
     /**
-     * Wait for the start surface homepage or tab switcher page visible.
+     * Wait for the tab switcher page visible.
+     * @param cta The ChromeTabbedActivity under test.
+     */
+    public static void waitForTabSwitcherVisible(ChromeTabbedActivity cta) {
+        if (ChromeFeatureList.sStartSurfaceRefactor.isEnabled()) {
+            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
+        } else {
+            // TODO(1347089): Removes here when the Start surface refactoring is enabled by default.
+            onViewWaiting(withId(R.id.secondary_tasks_surface_view));
+        }
+    }
+
+    public static @LayoutType int getStartSurfaceLayoutType() {
+        return ChromeFeatureList.sStartSurfaceRefactor.isEnabled() ? LayoutType.START_SURFACE
+                                                                   : LayoutType.TAB_SWITCHER;
+    }
+
+    /**
+     * Wait for the start surface homepage visible.
      * @param layoutChangedCallbackHelper The call back function to help check whether layout is
      *         changed.
      * @param currentlyActiveLayout The current active layout.
      * @param cta The ChromeTabbedActivity under test.
      */
-    public static void waitForOverviewVisible(CallbackHelper layoutChangedCallbackHelper,
+    public static void waitForStartSurfaceVisible(CallbackHelper layoutChangedCallbackHelper,
             @LayoutType int currentlyActiveLayout, ChromeTabbedActivity cta) {
-        if (currentlyActiveLayout == LayoutType.TAB_SWITCHER) {
+        waitForLayoutVisible(layoutChangedCallbackHelper, currentlyActiveLayout, cta,
+                getStartSurfaceLayoutType());
+    }
+
+    /**
+     * Wait for the tab switcher page visible.
+     * @param layoutChangedCallbackHelper The call back function to help check whether layout is
+     *         changed.
+     * @param currentlyActiveLayout The current active layout.
+     * @param cta The ChromeTabbedActivity under test.
+     */
+    public static void waitForTabSwitcherVisible(CallbackHelper layoutChangedCallbackHelper,
+            @LayoutType int currentlyActiveLayout, ChromeTabbedActivity cta) {
+        waitForLayoutVisible(
+                layoutChangedCallbackHelper, currentlyActiveLayout, cta, LayoutType.TAB_SWITCHER);
+    }
+
+    private static void waitForLayoutVisible(CallbackHelper layoutChangedCallbackHelper,
+            @LayoutType int currentlyActiveLayout, ChromeTabbedActivity cta,
+            @LayoutType int layoutType) {
+        if (currentlyActiveLayout == layoutType) {
             StartSurfaceTestUtils.waitForTabModel(cta);
             return;
         }
@@ -307,7 +353,8 @@ public class StartSurfaceTestUtils {
     }
 
     /**
-     * Scroll the start surface to make toolbar scrolled off.
+     * Try to scroll the start surface to make toolbar scrolled off. Notice that if Start surface is
+     * not scrollable, nothing will happen.
      * @param cta The ChromeTabbedActivity under test.
      */
     public static void scrollToolbar(ChromeTabbedActivity cta) {
@@ -321,15 +368,28 @@ public class StartSurfaceTestUtils {
 
         // Drag the Feed header title to scroll the toolbar to the top.
         int toY = -cta.getResources().getDimensionPixelOffset(R.dimen.toolbar_height_no_shadow);
+        onViewWaiting(allOf(withId(R.id.header_title), isDisplayed()));
         TestTouchUtils.dragCompleteView(InstrumentationRegistry.getInstrumentation(),
                 cta.findViewById(R.id.header_title), 0, 0, 0, toY, 10);
+    }
 
-        // The start surface toolbar should be scrolled up and not be displayed.
+    /**
+     * Scroll the start surface to make toolbar scrolled off and verify the corresponding UI
+     * changes.
+     * @param cta The ChromeTabbedActivity under test.
+     */
+    public static void scrollToolbarAndVerify(ChromeTabbedActivity cta) {
+        scrollToolbar(cta);
+
+        int toY = -cta.getResources().getDimensionPixelOffset(R.dimen.toolbar_height_no_shadow);
+        AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
+
+        // The start surface toolbar and tasks surface header should be scrolled up.
         CriteriaHelper.pollInstrumentationThread(
                 ()
-                        -> cta.findViewById(R.id.tab_switcher_toolbar).getTranslationY()
-                        <= (float) -cta.getResources().getDimensionPixelOffset(
-                                R.dimen.toolbar_height_no_shadow));
+                        -> taskSurfaceHeader.getBottom() != taskSurfaceHeader.getHeight()
+                        && cta.findViewById(R.id.tab_switcher_toolbar).getTranslationY()
+                                <= (float) toY);
 
         // Toolbar layout view should show.
         onViewWaiting(withId(R.id.toolbar));
@@ -419,17 +479,13 @@ public class StartSurfaceTestUtils {
     }
 
     /**
-     * Click "more_tabs" to navigate to tab switcher surface.
+     * Click the tab switcher button to navigate to tab switcher surface.
      * @param cta The ChromeTabbedActivity under test.
      */
-    public static void clickMoreTabs(ChromeTabbedActivity cta) {
-        // Note that onView(R.id.more_tabs).perform(click()) can not be used since it requires 90
-        // percent of the view's area is displayed to the users. However, this view has negative
-        // margin which makes the percentage is less than 90.
-        // TODO(crbug.com/1186752): Investigate whether this would be a problem for real users.
+    public static void clickTabSwitcherButton(ChromeTabbedActivity cta) {
         try {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> cta.findViewById(R.id.more_tabs).performClick());
+                    () -> cta.findViewById(R.id.start_tab_switcher_button).performClick());
         } catch (ExecutionException e) {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
@@ -452,13 +508,8 @@ public class StartSurfaceTestUtils {
      */
     public static List<SiteSuggestion> createFakeSiteSuggestions() {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>();
-        siteSuggestions.add(new SiteSuggestion("0 EXPLORE_SITES",
-                // Use pre-serialized GURL to avoid loading native.
-                JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), TileTitleSource.UNKNOWN,
-                TileSource.EXPLORE, TileSectionType.PERSONALIZED));
-
         String urlTemplate = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1_NUMERAL).serialize();
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 8; i++) {
             siteSuggestions.add(new SiteSuggestion(String.valueOf(i),
                     // Use pre-serialized GURL to avoid loading native.
                     GURL.deserialize(urlTemplate.replace("www.1.com", "www." + i + ".com")),
@@ -499,6 +550,26 @@ public class StartSurfaceTestUtils {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
         ChromeApplicationTestUtils.waitUntilChromeInBackground();
+    }
+
+    /**
+     * Toggles the Feed header and checks whether the header has the right status.
+     * @param expanded Whether the header should be expanded.
+     */
+    public static void toggleFeedHeader(boolean expanded) {
+        onView(Matchers.allOf(
+                       instanceOf(RecyclerView.class), withId(R.id.feed_stream_recycler_view)))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
+        onView(withId(R.id.header_menu)).perform(click());
+
+        onView(withText(expanded ? R.string.ntp_turn_on_feed : R.string.ntp_turn_off_feed))
+                .perform(click());
+
+        // There must be one and only one view with "Discover on/off" text being displayed.
+        onView(Matchers.allOf(
+                       withText(expanded ? R.string.ntp_discover_on : R.string.ntp_discover_off),
+                       withEffectiveVisibility(Visibility.VISIBLE)))
+                .check(matches(isDisplayed()));
     }
 
     /**

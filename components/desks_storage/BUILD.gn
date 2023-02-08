@@ -21,6 +21,8 @@ static_library("desks_storage") {
     "core/desk_template_util.h",
     "core/local_desk_data_manager.cc",
     "core/local_desk_data_manager.h",
+    "core/local_desk_data_manager_metrics_util.cc",
+    "core/local_desk_data_manager_metrics_util.h",
   ]
   deps = [
     "//ash/public/cpp",
@@ -32,6 +34,7 @@ static_library("desks_storage") {
     "//components/sync",
     "//components/sync/model",
     "//components/sync/protocol",
+    "//components/tab_groups",
     "//components/version_info:channel",
     "//third_party/re2",
     "//ui/gfx/geometry",
@@ -80,5 +83,7 @@ source_set("unit_tests") {
     "//components/app_constants",
     "//components/sync:test_support",
     "//testing/gtest",
+    "//ui/gfx/geometry",
+    "//ui/gfx/range",
   ]
 }

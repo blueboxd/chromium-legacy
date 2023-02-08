@@ -62,9 +62,11 @@ void SendResponseHelper::WaitForResponse() {
   run_loop_.Run();
 }
 
-std::unique_ptr<base::DictionaryValue> ParseDictionary(
-    const std::string& data) {
-  return base::DictionaryValue::From(base::JSONReader::ReadDeprecated(data));
+absl::optional<base::Value::Dict> ParseDictionary(const std::string& data) {
+  absl::optional<base::Value> value = base::JSONReader::Read(data);
+  if (!value || !value->is_dict())
+    return absl::nullopt;
+  return std::move(*value).TakeDict();
 }
 
 bool GetBoolean(const base::Value::Dict& dict, const std::string& key) {
@@ -135,7 +137,7 @@ absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
   RunFunction(function.get(), std::move(args), std::move(dispatcher), flags);
   EXPECT_TRUE(function->GetError().empty())
       << "Unexpected error: " << function->GetError();
-  const base::Value::List* results = function->GetResultList();
+  const base::Value::List* results = function->GetResultListForTest();
   if (!results || results->empty())
     return absl::nullopt;
   return (*results)[0].Clone();
@@ -177,7 +179,7 @@ std::string RunFunctionAndReturnError(ExtensionFunction* function,
   RunFunction(function, args, std::move(dispatcher), flags);
   // When sending a response, the function will set an empty list value if there
   // is no specified result.
-  const base::Value::List* results = function->GetResultList();
+  const base::Value::List* results = function->GetResultListForTest();
   CHECK(results);
   EXPECT_TRUE(results->empty()) << "Did not expect a result";
   CHECK(function->response_type());

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/metrics/power/power_metrics.h"
 #include "chrome/browser/metrics/power/process_metrics_recorder_util.h"
 #include "chrome/browser/metrics/power/usage_scenario.h"
@@ -73,6 +74,30 @@ void BatteryDischargeReporter::OnBatteryStateSampled(
     battery_discharge.mode = BatteryDischargeMode::kInvalidInterval;
   }
 
+#if BUILDFLAG(IS_WIN)
+  if (battery_discharge.mode == BatteryDischargeMode::kDischarging) {
+    base::UmaHistogramBoolean(
+        "Power.BatteryDischargeGranularityAvailable",
+        battery_state->battery_discharge_granularity.has_value());
+
+    if (battery_state->battery_discharge_granularity.has_value()) {
+      base::UmaHistogramCustomCounts(
+          "Power.BatteryDischargeGranularityMilliwattHours",
+          battery_state->battery_discharge_granularity.value(),
+          /*min=*/0, /*exclusive_max=*/20000,
+          /*buckets=*/50);
+
+      uint32_t granularity_relative =
+          battery_state->battery_discharge_granularity.value() * 10000 /
+          battery_state->full_charged_capacity.value();
+      base::UmaHistogramCustomCounts(
+          "Power.BatteryDischargeGranularityRelative", granularity_relative,
+          /*min=*/0, /*exclusive_max=*/20000,
+          /*buckets=*/50);
+    }
+  }
+#endif
+
   auto interval_data = battery_usage_scenario_data_store_->ResetIntervalData();
 
   // Get scenario data.
@@ -82,8 +107,8 @@ void BatteryDischargeReporter::OnBatteryStateSampled(
   // suffix.
   const std::vector<const char*> long_interval_suffixes{
       "", long_interval_scenario_params.histogram_suffix};
-  ReportAlignedBatteryHistograms(sampling_event_delta, battery_discharge,
-                                 is_initial_interval_, long_interval_suffixes);
+  ReportBatteryHistograms(sampling_event_delta, battery_discharge,
+                          is_initial_interval_, long_interval_suffixes);
   is_initial_interval_ = false;
 }
 

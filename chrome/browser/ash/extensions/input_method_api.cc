@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/extensions/dictionary_event_router.h"
 #include "chrome/browser/ash/extensions/ime_menu_event_router.h"
 #include "chrome/browser/ash/extensions/input_method_event_router.h"
@@ -24,9 +25,11 @@
 #include "chrome/browser/ash/input_method/native_input_method_engine.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -39,6 +42,7 @@
 #include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
+#include "ui/display/screen.h"
 
 namespace {
 
@@ -69,12 +73,6 @@ namespace GetSettings = extensions::api::input_method_private::GetSettings;
 namespace SetSettings = extensions::api::input_method_private::SetSettings;
 namespace SetCompositionRange =
     extensions::api::input_method_private::SetCompositionRange;
-namespace GetAutocorrectRange =
-    extensions::api::input_method_private::GetAutocorrectRange;
-namespace GetAutocorrectCharacterBounds =
-    extensions::api::input_method_private::GetAutocorrectCharacterBounds;
-namespace SetAutocorrectRange =
-    extensions::api::input_method_private::SetAutocorrectRange;
 namespace OnInputMethodOptionsChanged =
     extensions::api::input_method_private::OnInputMethodOptionsChanged;
 namespace OnAutocorrect = extensions::api::input_method_private::OnAutocorrect;
@@ -172,11 +170,11 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   ash::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
       manager->GetActiveIMEState();
-  std::unique_ptr<ash::input_method::InputMethodDescriptors> input_methods =
+  ash::input_method::InputMethodDescriptors input_methods =
       ime_state->GetEnabledInputMethodsSortedByLocalizedDisplayNames();
-  for (size_t i = 0; i < input_methods->size(); ++i) {
+  for (size_t i = 0; i < input_methods.size(); ++i) {
     const ash::input_method::InputMethodDescriptor& input_method =
-        (*input_methods)[i];
+        input_methods[i];
     base::Value::Dict val;
     val.Set("id", input_method.id());
     val.Set("name", util->GetInputMethodLongName(input_method));
@@ -287,10 +285,25 @@ InputMethodPrivateOpenOptionsPageFunction::Run() {
                            params->input_method_id.c_str()),
         static_function_name())));
 
-  content::WebContents* web_contents = GetSenderWebContents();
-  if (web_contents) {
-    const GURL& options_page_url = ime->options_page_url();
-    if (!options_page_url.is_empty()) {
+  const GURL& options_page_url = ime->options_page_url();
+  if (!options_page_url.is_empty()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // If Lacros is the only browser, open the options page in an Ash app window
+    // instead of a regular Ash browser window.
+    if (!crosapi::browser_util::IsAshWebBrowserEnabled()) {
+      auto* profile = ProfileManager::GetPrimaryUserProfile();
+      ash::SystemAppLaunchParams launch_params;
+      launch_params.url = options_page_url;
+      int64_t display_id =
+          display::Screen::GetScreen()->GetDisplayForNewWindows().id();
+      ash::LaunchSystemWebAppAsync(
+          profile, ash::SystemWebAppType::OS_URL_HANDLER, launch_params,
+          std::make_unique<apps::WindowInfo>(display_id));
+      return RespondNow(NoArguments());
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+    content::WebContents* web_contents = GetSenderWebContents();
+    if (web_contents) {
       Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
       content::OpenURLParams url_params(options_page_url, content::Referrer(),
                                         WindowOpenDisposition::SINGLETON_TAB,
@@ -437,49 +450,6 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
-InputMethodPrivateGetAutocorrectRangeFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params = GetAutocorrectRange::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  const gfx::Range range =
-      engine->InputMethodEngine::GetAutocorrectRange(params.context_id, &error);
-  base::Value::Dict ret;
-  ret.Set("start", static_cast<int>(range.is_empty() ? 0 : range.start()));
-  ret.Set("end", static_cast<int>(range.is_empty() ? 0 : range.end()));
-  return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
-InputMethodPrivateGetAutocorrectCharacterBoundsFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params =
-      GetAutocorrectCharacterBounds::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  const gfx::Rect rect =
-      engine->InputMethodEngine::GetAutocorrectCharacterBounds(
-          params.context_id, &error);
-  if (rect.IsEmpty()) {
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-  }
-  base::Value::Dict ret;
-  ret.Set("x", rect.x());
-  ret.Set("y", rect.y());
-  ret.Set("width", rect.width());
-  ret.Set("height", rect.height());
-  return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
 InputMethodPrivateGetTextFieldBoundsFunction::Run() {
   std::string error;
   InputMethodEngine* engine =
@@ -500,24 +470,6 @@ InputMethodPrivateGetTextFieldBoundsFunction::Run() {
   ret.Set("width", rect.width());
   ret.Set("height", rect.height());
   return RespondNow(WithArguments(std::move(ret)));
-}
-
-ExtensionFunction::ResponseAction
-InputMethodPrivateSetAutocorrectRangeFunction::Run() {
-  std::string error;
-  InputMethodEngine* engine =
-      GetEngineIfActive(browser_context(), extension_id(), &error);
-  if (!engine)
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-
-  const auto parent_params = SetAutocorrectRange::Params::Create(args());
-  const auto& params = parent_params->parameters;
-  if (!engine->InputMethodEngine::SetAutocorrectRange(
-          params.context_id,
-          gfx::Range(params.selection_start, params.selection_end), &error)) {
-    return RespondNow(Error(InformativeError(error, static_function_name())));
-  }
-  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputMethodPrivateResetFunction::Run() {
@@ -588,8 +540,6 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
   registry
       .RegisterFunction<InputMethodPrivateFetchAllDictionaryWordsFunction>();
   registry.RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
-  registry
-      .RegisterFunction<InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
   registry.RegisterFunction<InputMethodPrivateOpenOptionsPageFunction>();
 }
 

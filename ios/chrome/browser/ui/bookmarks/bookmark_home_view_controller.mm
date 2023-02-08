@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_empty_background.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
@@ -196,10 +195,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Scrim when search box in focused.
 @property(nonatomic, strong) UIControl* scrimView;
-
-// Background shown when there is no bookmarks or folders at the current root
-// node.
-@property(nonatomic, strong) BookmarkEmptyBackground* emptyTableBackgroundView;
 
 // Illustrated View displayed when the current root node is empty.
 @property(nonatomic, strong) TableViewIllustratedEmptyView* emptyViewBackground;
@@ -371,14 +366,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.navigationItem.searchController = self.searchController;
   self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-  // Center search bar vertically so it looks centered in the header when
-  // searching.  The cancel button is centered / decentered on
-  // viewWillAppear and viewDidDisappear.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-      offset;
-
   self.searchTerm = @"";
 
   if (self.bookmarks->loaded()) {
@@ -409,26 +396,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if ([self isDisplayingBookmarkRoot]) {
     [self refreshContents];
   }
-
-  // Center search bar's cancel button vertically so it looks centered.
-  // We change the cancel button proxy styles, so we will return it to
-  // default in viewDidDisappear.
-  UIOffset offset =
-      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:offset
-                             forBarMetrics:UIBarMetricsDefault];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-  [super viewWillDisappear:animated];
-
-  // Restore to default origin offset for cancel button proxy style.
-  UIBarButtonItem* cancelButton = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-  [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -456,17 +423,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self.sharedState.editingFolderCell stopEdit];
 }
 
-- (NSArray*)keyCommands {
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return UIStatusBarStyleDefault;
+}
+
+#pragma mark - UIResponder
+
+// To always be able to register key commands via -keyCommands, the VC must be
+// able to become first responder.
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
+- (NSArray<UIKeyCommand*>*)keyCommands {
   return @[ UIKeyCommand.cr_close ];
 }
 
 - (void)keyCommand_close {
   base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
   [self navigationBarCancel:nil];
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-  return UIStatusBarStyleDefault;
 }
 
 #pragma mark - Protected
@@ -541,6 +516,17 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 #pragma mark - BookmarkHomeConsumer
+
+- (void)setTableViewEditing:(BOOL)editing {
+  self.sharedState.currentlyInEditMode = editing;
+  [self setContextBarState:editing ? BookmarksContextBarBeginSelection
+                                   : BookmarksContextBarDefault];
+  self.searchController.searchBar.userInteractionEnabled = !editing;
+  self.searchController.searchBar.alpha =
+      editing ? kTableViewNavigationAlphaForDisabledSearchBar : 1.0;
+
+  self.tableView.dragInteractionEnabled = !editing;
+}
 
 - (void)refreshContents {
   if (self.sharedState.currentlyShowingSearchResults) {
@@ -1189,19 +1175,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   controller.snackbarCommandsHandler = self.snackbarCommandsHandler;
 
   return controller;
-}
-
-// Sets the editing mode for tableView, update context bar and search state
-// accordingly.
-- (void)setTableViewEditing:(BOOL)editing {
-  self.sharedState.currentlyInEditMode = editing;
-  [self setContextBarState:editing ? BookmarksContextBarBeginSelection
-                                   : BookmarksContextBarDefault];
-  self.searchController.searchBar.userInteractionEnabled = !editing;
-  self.searchController.searchBar.alpha =
-      editing ? kTableViewNavigationAlphaForDisabledSearchBar : 1.0;
-
-  self.tableView.dragInteractionEnabled = !editing;
 }
 
 // Row selection of the tableView will be cleared after reloadData.  This
@@ -2307,11 +2280,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         return [UIMenu menuWithTitle:@"" children:@[]];
 
       // Record that this context menu was shown to the user.
-      RecordMenuShown(MenuScenario::kBookmarkEntry);
+      RecordMenuShown(MenuScenarioHistogram::kBookmarkEntry);
 
       BrowserActionFactory* actionFactory = [[BrowserActionFactory alloc]
           initWithBrowser:strongSelf.browser
-                 scenario:MenuScenario::kBookmarkEntry];
+                 scenario:MenuScenarioHistogram::kBookmarkEntry];
 
       NSMutableArray<UIMenuElement*>* menuElements =
           [[NSMutableArray alloc] init];
@@ -2405,10 +2378,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
         return [UIMenu menuWithTitle:@"" children:@[]];
 
       // Record that this context menu was shown to the user.
-      RecordMenuShown(MenuScenario::kBookmarkFolder);
+      RecordMenuShown(MenuScenarioHistogram::kBookmarkFolder);
 
       ActionFactory* actionFactory = [[ActionFactory alloc]
-          initWithScenario:MenuScenario::kBookmarkFolder];
+          initWithScenario:MenuScenarioHistogram::kBookmarkFolder];
 
       NSMutableArray<UIMenuElement*>* menuElements =
           [[NSMutableArray alloc] init];

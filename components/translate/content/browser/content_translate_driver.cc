@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/google/core/common/google_util.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/content/browser/content_record_page_language.h"
@@ -92,7 +91,7 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
   // has finished.
   if (web_contents()->IsLoading() && attempt < max_reload_check_attempts_) {
     int backoff = attempt * kMaxTranslateLoadCheckAttempts;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ContentTranslateDriver::InitiateTranslation,
                        weak_pointer_factory_.GetWeakPtr(), page_lang,
@@ -108,8 +107,7 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
 // TranslateDriver methods
 
 bool ContentTranslateDriver::IsLinkNavigation() {
-  return web_contents()->GetController().GetLastCommittedEntry() &&
-         ui::PageTransitionCoreTypeIs(web_contents()
+  return ui::PageTransitionCoreTypeIs(web_contents()
                                           ->GetController()
                                           .GetLastCommittedEntry()
                                           ->GetTransitionType(),
@@ -172,9 +170,10 @@ bool ContentTranslateDriver::HasCurrentPage() {
   // TODO(https://crbug.com/524208): This function used to check the existence
   // of GetLastCommittedEntry(), which will always exist now. Consider removing
   // this function, making the callers assume HasCurrentPage() is always true.
-  content::NavigationEntry* current_entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  return current_entry && !current_entry->IsInitialEntry();
+  return !web_contents()
+              ->GetController()
+              .GetLastCommittedEntry()
+              ->IsInitialEntry();
 }
 
 void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
@@ -232,7 +231,7 @@ void ContentTranslateDriver::InitiateTranslationIfReload(
   // by WebContentsObservers is undefined and might result in the current
   // infobars being removed. Since the translation initiation process might add
   // an infobar, it must be done after that.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(&ContentTranslateDriver::InitiateTranslation,
                      weak_pointer_factory_.GetWeakPtr(),
@@ -341,8 +340,7 @@ void ContentTranslateDriver::RegisterPage(
     // associated, thus avoiding the potential for corner cases where the
     // detected language is attributed to the wrong page.
     auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (entry != nullptr)
-      SetPageLanguageInNavigation(details.adopted_language, entry);
+    SetPageLanguageInNavigation(details.adopted_language, entry);
   }
 
   for (auto& observer : language_detection_observers())

@@ -14,7 +14,8 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -65,6 +66,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
+#include "url/url_features.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -212,7 +214,7 @@ class OmniboxViewTest : public InProcessBrowserTest {
                            int modifiers) {
     // Press the accelerator after starting to wait for a browser to close as
     // the close may be synchronous.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](const Browser* browser, ui::KeyboardCode key, int modifiers) {
@@ -1422,6 +1424,11 @@ class NavigationMetricsRecorderIDNABrowserTest : public InProcessBrowserTest {
   static constexpr char kHistogram[] =
       "Navigation.HostnameHasDeviationCharacters";
 
+  NavigationMetricsRecorderIDNABrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        url::kUseIDNA2008NonTransitional);
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
@@ -1453,7 +1460,7 @@ class NavigationMetricsRecorderIDNABrowserTest : public InProcessBrowserTest {
     // Press enter and wait for the navigation to finish.
     content::TestNavigationObserver navigation_observer(
         browser()->tab_strip_model()->GetActiveWebContents(), 1);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](const Browser* browser) {
@@ -1467,6 +1474,7 @@ class NavigationMetricsRecorderIDNABrowserTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderIDNABrowserTest,

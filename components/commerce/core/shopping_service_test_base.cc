@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/commerce/core/commerce_feature_list.h"
@@ -48,14 +48,14 @@ void MockOptGuideDecider::CanApplyOptimization(
   bool url_matches = response_url_.has_value() && url == response_url_.value();
 
   if (!type_matches || !url_matches) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), OptimizationGuideDecision::kUnknown,
                        OptimizationMetadata()));
     return;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), optimization_decision_.value(),
                      optimization_data_.value()));
@@ -87,7 +87,7 @@ void MockOptGuideDecider::CanApplyOptimizationOnDemand(
           decision_map;
       decision_map[OptimizationType::PRICE_TRACKING] =
           on_demand_shopping_responses_[url.spec()];
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(callback, url, std::move(decision_map)));
     }
   }
@@ -119,7 +119,9 @@ OptimizationMetadata MockOptGuideDecider::BuildPriceTrackingResponse(
     const std::string& image_url,
     const uint64_t offer_id,
     const uint64_t product_cluster_id,
-    const std::string& country_code) {
+    const std::string& country_code,
+    const int64_t amount_micros,
+    const std::string& currency_code) {
   OptimizationMetadata meta;
 
   PriceTrackingData price_tracking_data;
@@ -138,12 +140,39 @@ OptimizationMetadata MockOptGuideDecider::BuildPriceTrackingResponse(
   if (!country_code.empty())
     buyable_product->set_country_code(country_code);
 
+  ProductPrice* price = buyable_product->mutable_current_price();
+  price->set_currency_code(currency_code);
+  price->set_amount_micros(amount_micros);
+
   Any any;
   any.set_type_url(price_tracking_data.GetTypeName());
   price_tracking_data.SerializeToString(any.mutable_value());
   meta.set_any_metadata(any);
 
   return meta;
+}
+
+void MockOptGuideDecider::AddPriceUpdateToPriceTrackingResponse(
+    OptimizationMetadata* out_meta,
+    const std::string& currency_code,
+    const int64_t current_price,
+    const int64_t previous_price) {
+  PriceTrackingData price_tracking_data =
+      optimization_guide::ParsedAnyMetadata<PriceTrackingData>(
+          out_meta->any_metadata().value())
+          .value();
+
+  ProductPriceUpdate* price_update =
+      price_tracking_data.mutable_product_update();
+  price_update->mutable_new_price()->set_amount_micros(current_price);
+  price_update->mutable_new_price()->set_currency_code(currency_code);
+  price_update->mutable_old_price()->set_amount_micros(previous_price);
+  price_update->mutable_old_price()->set_currency_code(currency_code);
+
+  Any any;
+  any.set_type_url(price_tracking_data.GetTypeName());
+  price_tracking_data.SerializeToString(any.mutable_value());
+  out_meta->set_any_metadata(any);
 }
 
 OptimizationMetadata MockOptGuideDecider::BuildMerchantTrustResponse(
@@ -189,12 +218,12 @@ void MockWebWrapper::RunJavascript(
     const std::u16string& script,
     base::OnceCallback<void(const base::Value)> callback) {
   if (!mock_js_result_) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::Value()));
     return;
   }
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), mock_js_result_->Clone()));
 }
 
@@ -211,8 +240,8 @@ ShoppingServiceTestBase::ShoppingServiceTestBase()
           std::make_unique<network::TestURLLoaderFactory>()) {
   RegisterPrefs(pref_service_->registry());
   shopping_service_ = std::make_unique<ShoppingService>(
-      bookmark_model_.get(), opt_guide_.get(), pref_service_.get(),
-      identity_test_env_->identity_manager(),
+      "us", "en-us", bookmark_model_.get(), opt_guide_.get(),
+      pref_service_.get(), identity_test_env_->identity_manager(),
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           test_url_loader_factory_.get()),
       nullptr, nullptr);

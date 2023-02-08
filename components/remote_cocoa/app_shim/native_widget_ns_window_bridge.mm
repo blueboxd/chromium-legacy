@@ -451,7 +451,7 @@ void NativeWidgetNSWindowBridge::InitWindow(
   // Validate the window's initial state, otherwise the bridge's initial
   // tracking state will be incorrect.
   DCHECK(![window_ isVisible]);
-  DCHECK(!IsFullscreen());
+  DCHECK_EQ(0u, [window_ styleMask] & NSWindowStyleMaskFullScreen);
 
   // Include "regular" windows without the standard frame in the window cycle.
   // These use NSWindowStyleMaskBorderless so do not get it by default.
@@ -606,7 +606,7 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
     // calling Widget::Close() doesn't expect things to be deleted upon return.
     // Ensure |window| is retained by a block. Note in some cases during
     // teardown, [window sheetParent] may be nil.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(base::RetainBlock(^{
           [NSApp endSheet:window];
         })));
@@ -643,7 +643,7 @@ void NativeWidgetNSWindowBridge::CloseWindow() {
   // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
   // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
   // does not do this. So post a regular task.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(base::RetainBlock(^{
         [window close];
       })));
@@ -760,8 +760,9 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     [NSApp activateIgnoringOtherApps:YES];
   } else if (new_state == WindowVisibilityState::kShowInactive && !parent_ &&
              ![window_ isMiniaturized]) {
-    if ([[NSApp mainWindow] screen] == [window_ screen] ||
-        ![[NSApp mainWindow] isKeyWindow]) {
+    NSWindow* mainWindow = [NSApp mainWindow];
+    if (mainWindow && ([mainWindow screen] == [window_ screen] ||
+                       ![mainWindow isKeyWindow])) {
       // When the new window is on the same display as the main window or the
       // main window is inactive, order the window relative to the main window.
       // Avoid making it the front window (with e.g. orderFront:), which can
@@ -862,11 +863,6 @@ bool NativeWidgetNSWindowBridge::HasWindowRestorationData() {
   return !pending_restoration_data_.empty();
 }
 
-bool NativeWidgetNSWindowBridge::IsFullscreen() {
-  return ([window_ styleMask] & NSWindowStyleMaskFullScreen) ==
-         NSWindowStyleMaskFullScreen;
-}
-
 bool NativeWidgetNSWindowBridge::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   // https://crbug.com/876493
   CHECK(!HasCapture());
@@ -923,9 +919,10 @@ void NativeWidgetNSWindowBridge::DisableImmersiveFullscreen() {
   immersive_mode_controller_.reset();
 }
 
-void NativeWidgetNSWindowBridge::UpdateToolbarVisibility(bool always_show) {
+void NativeWidgetNSWindowBridge::UpdateToolbarVisibility(
+    remote_cocoa::mojom::ToolbarVisibilityStyle style) {
   if (immersive_mode_controller_) {
-    immersive_mode_controller_->UpdateToolbarVisibility(always_show);
+    immersive_mode_controller_->UpdateToolbarVisibility(style);
   }
 }
 
@@ -933,6 +930,18 @@ void NativeWidgetNSWindowBridge::OnTopContainerViewBoundsChanged(
     const gfx::Rect& bounds) {
   if (immersive_mode_controller_) {
     immersive_mode_controller_->OnTopViewBoundsChanged(bounds);
+  }
+}
+
+void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealLock() {
+  if (immersive_mode_controller_) {
+    immersive_mode_controller_->RevealLock();
+  }
+}
+
+void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealUnlock() {
+  if (immersive_mode_controller_) {
+    immersive_mode_controller_->RevealUnlock();
   }
 }
 
@@ -1285,10 +1294,15 @@ void NativeWidgetNSWindowBridge::FullscreenControllerToggleFullscreen() {
   }
 
   bool is_key_window = [window_ isKeyWindow];
-  bool was_fullscreen = IsFullscreen();
   [window_ toggleFullScreen:nil];
-  // Ensure the transitioning window maintains focus (crbug.com/1338659).
-  if (!was_fullscreen && is_key_window)
+  // Ensure the transitioning window maintains focus.
+  // When a key window moves to a different space, AppKit will focus a
+  // different window on the previouly focused space to become key, which can
+  // break cross-display fullscreen transitions by losing focus of the
+  // transitioning window (crbug.com/1338659) or changing the z-order of
+  // windows on the previous space. Making the window key here seems to
+  // alleviate those apparent defects (crbug.com/1392542). 
+  if (is_key_window)
     [window_ makeKeyAndOrderFront:nil];
 }
 
@@ -1700,7 +1714,7 @@ void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
     // sheet (which will be executed on a fresh stack, which will not block
     // the message).
     // https://crbug.com/1234509
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(begin_sheet_closure));
   } else {
     std::move(begin_sheet_closure).Run();

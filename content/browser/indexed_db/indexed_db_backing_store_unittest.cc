@@ -26,11 +26,11 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/synchronization/waitable_event_watcher.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
@@ -216,7 +216,7 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
       filesystem_proxy->WriteFileAtomically(path, "fake contents");
     }
 
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        storage::mojom::WriteBlobToFileResult::kSuccess));
@@ -265,7 +265,7 @@ class MockFileSystemAccessContext
           pending_token,
       SerializeHandleCallback callback) override {
     writes_.emplace_back(std::move(pending_token));
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -308,17 +308,18 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*is_incognito=*/false, temp_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(), nullptr);
+        base::SingleThreadTaskRunner::GetCurrentDefault(), nullptr);
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
-        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
+        quota_manager_.get(),
+        base::SingleThreadTaskRunner::GetCurrentDefault());
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), quota_manager_proxy_,
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*file_system_access_context=*/mojo::NullRemote(),
-        base::SequencedTaskRunnerHandle::Get(),
-        base::SequencedTaskRunnerHandle::Get());
+        base::SequencedTaskRunner::GetCurrentDefault(),
+        base::SequencedTaskRunner::GetCurrentDefault());
 
     // Needed to get the QuotaClient bound.
     {
@@ -404,7 +405,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
             &leveldb_close_event,
             base::BindLambdaForTesting(
                 [&](base::WaitableEvent*) { loop.Quit(); }),
-            base::SequencedTaskRunnerHandle::Get());
+            base::SequencedTaskRunner::GetCurrentDefault());
 
         idb_context_->ForceClose(
             bucket_id,

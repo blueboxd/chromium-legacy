@@ -44,7 +44,6 @@ component("modules") {
     "//third_party/blink/renderer:non_test_config",
     "//third_party/blink/renderer:inside_blink",
     "//third_party/blink/renderer/core:blink_core_pch",
-    "//tools/v8_context_snapshot:use_v8_context_snapshot",
     "//v8:external_startup_data",
   ]
 
@@ -56,7 +55,6 @@ component("modules") {
     "//third_party/blink/renderer/modules/animationworklet",
     "//third_party/blink/renderer/modules/app_banner",
     "//third_party/blink/renderer/modules/audio_output_devices",
-    "//third_party/blink/renderer/modules/autofill_assistant",
     "//third_party/blink/renderer/modules/background_fetch",
     "//third_party/blink/renderer/modules/background_sync",
     "//third_party/blink/renderer/modules/badging",
@@ -143,6 +141,7 @@ component("modules") {
     "//third_party/blink/renderer/modules/service_worker",
     "//third_party/blink/renderer/modules/shapedetection",
     "//third_party/blink/renderer/modules/shared_storage",
+    "//third_party/blink/renderer/modules/smart_card",
     "//third_party/blink/renderer/modules/speech",
     "//third_party/blink/renderer/modules/srcobject",
     "//third_party/blink/renderer/modules/storage",
@@ -191,6 +190,7 @@ component("modules") {
     "//third_party/icu",
     "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib",
+    "//tools/v8_context_snapshot:buildflags",
   ]
 
   public_deps = sub_modules
@@ -429,13 +429,14 @@ source_set("unit_tests") {
     "animationworklet/animation_worklet_global_scope_test.cc",
     "animationworklet/animation_worklet_proxy_client_test.cc",
     "animationworklet/worklet_animation_test.cc",
-    "autofill_assistant/node_signals_test.cc",
     "background_fetch/background_fetch_icon_loader_test.cc",
     "background_fetch/background_fetch_manager_test.cc",
     "broadcastchannel/broadcast_channel_unittest.cc",
     "cache_storage/cache_test.cc",
     "canvas/canvas2d/canvas_rendering_context_2d_api_test.cc",
     "canvas/canvas2d/canvas_rendering_context_2d_test.cc",
+    "canvas/canvas2d/canvas_style_test_utils.cc",
+    "canvas/canvas2d/canvas_style_test_utils.h",
     "canvas/htmlcanvas/html_canvas_element_module_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_rendering_api_ukm_metrics_test.cc",
     "canvas/offscreencanvas/offscreen_canvas_test.cc",

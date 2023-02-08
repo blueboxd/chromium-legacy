@@ -16,7 +16,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class Widget;
@@ -32,8 +31,7 @@ class TrayBubbleView;
 // opens a bubble with a scrollable list of all current notifications.
 class ASH_EXPORT NotificationCenterTray
     : public TrayBackgroundView,
-      public message_center::MessageCenterObserver,
-      public views::WidgetObserver {
+      public message_center::MessageCenterObserver {
  public:
   METADATA_HEADER(NotificationCenterTray);
 
@@ -45,6 +43,9 @@ class ASH_EXPORT NotificationCenterTray
   // Called when UnifiedSystemTray's preferred visibility changes.
   void OnSystemTrayVisibilityChanged(bool system_tray_visible);
 
+  // True if the bubble is shown.
+  bool IsBubbleShown() const;
+
   // TrayBackgroundView:
   std::u16string GetAccessibleNameForTray() override;
   void HandleLocaleChange() override;
@@ -55,6 +56,8 @@ class ASH_EXPORT NotificationCenterTray
   void UpdateAfterLoginStatusChange() override;
   TrayBubbleView* GetBubbleView() override;
   views::Widget* GetBubbleWidget() const override;
+  void OnAnyBubbleVisibilityChanged(views::Widget* bubble_widget,
+                                    bool visible) override;
 
  private:
   friend class NotificationCenterTestApi;
@@ -69,9 +72,6 @@ class ASH_EXPORT NotificationCenterTray
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override;
   void OnNotificationUpdated(const std::string& notification_id) override;
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Update the visibility of the tray button based on available notifications.
   // If there are no notifications the tray button should be hidden and shown

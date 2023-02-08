@@ -16,11 +16,11 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
 #include "base/task/common/task_annotator.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
@@ -175,6 +175,10 @@ void BackForwardCacheBrowserTest::SetUpCommandLine(
   EnableFeatureAndSetParams(blink::features::kLoadingTasksUnfreezable,
                             "grace_period_to_finish_loading_in_seconds",
                             base::NumberToString(INT_MAX));
+  // Enable capturing not-restored-reasons tree.
+  EnableFeatureAndSetParams(
+      blink::features::kBackForwardCacheSendNotRestoredReasons, "", "");
+
   // Do not trigger NotReached() for JavaScript execution.
   DisableFeature(
       blink::features::kBackForwardCacheNotReachedOnJavaScriptExecution);
@@ -383,6 +387,53 @@ void BackForwardCacheBrowserTest::NavigateAndBlock(GURL url,
   WaitForLoadStop(web_contents());
   ASSERT_EQ(current_frame_host()->GetLastCommittedURL(), url);
   ASSERT_TRUE(current_frame_host()->IsErrorDocument());
+}
+
+ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
+    const testing::Matcher<blink::mojom::BFCacheBlocked>& blocked,
+    const absl::optional<SameOriginMatcher>& same_origin_details) {
+  return testing::Pointee(testing::AllOf(
+      testing::Field("blocked",
+                     &blink::mojom::BackForwardCacheNotRestoredReasons::blocked,
+                     blocked),
+      testing::Field(
+          "same_origin_details",
+          &blink::mojom::BackForwardCacheNotRestoredReasons::
+              same_origin_details,
+          same_origin_details.has_value()
+              ? same_origin_details.value()
+              : testing::Property(
+                    "is_null",
+                    &blink::mojom::SameOriginBfcacheNotRestoredDetailsPtr::
+                        is_null,
+                    true))));
+}
+
+SameOriginMatcher BackForwardCacheBrowserTest::MatchesSameOriginDetails(
+    const testing::Matcher<std::string>& id,
+    const testing::Matcher<std::string>& name,
+    const testing::Matcher<std::string>& src,
+    const testing::Matcher<std::string>& url,
+    const std::vector<testing::Matcher<std::string>>& reasons,
+    const std::vector<ReasonsMatcher>& children) {
+  return testing::Pointee(testing::AllOf(
+      testing::Field(
+          "id", &blink::mojom::SameOriginBfcacheNotRestoredDetails::id, id),
+      testing::Field("name",
+                     &blink::mojom::SameOriginBfcacheNotRestoredDetails::name,
+                     name),
+      testing::Field(
+          "src", &blink::mojom::SameOriginBfcacheNotRestoredDetails::src, src),
+      testing::Field(
+          "url", &blink::mojom::SameOriginBfcacheNotRestoredDetails::url, url),
+      testing::Field(
+          "reasons",
+          &blink::mojom::SameOriginBfcacheNotRestoredDetails::reasons,
+          testing::UnorderedElementsAreArray(reasons)),
+      testing::Field(
+          "children",
+          &blink::mojom::SameOriginBfcacheNotRestoredDetails::children,
+          testing::ElementsAreArray(children))));
 }
 
 std::initializer_list<RenderFrameHostImpl*> Elements(
@@ -711,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(HighCacheSizeBackForwardCacheBrowserTest,
   // the BFCache restore navigation to B from step 5, which is currently waiting
   // for a BeforeUnloadCompleted call.
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
         root->navigator().BeforeUnloadCompleted(root, true /* proceed */,
                                                 base::TimeTicks::Now());
@@ -2202,7 +2253,7 @@ IN_PROC_BROWSER_TEST_F(
     params_capturer.Wait();
     EXPECT_TRUE(params_capturer.has_user_gesture());
     EXPECT_TRUE(root->current_frame_host()
-                    ->last_navigation_started_with_transient_activation());
+                    ->last_committed_common_params_has_user_gesture());
   }
   RenderFrameHostImpl* rfh_a = current_frame_host();
 
@@ -2210,7 +2261,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
   EXPECT_FALSE(root->current_frame_host()
-                   ->last_navigation_started_with_transient_activation());
+                   ->last_committed_common_params_has_user_gesture());
 
   // 3) GoBack to A. RenderFrameHost of A should be restored from the
   // back-forward cache, and "has_user_gesture" is set to false correctly.
@@ -2229,7 +2280,7 @@ IN_PROC_BROWSER_TEST_F(
     // The navigation doesn't have user gesture.
     EXPECT_FALSE(params_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 
   // 4) Same-document navigation to A#foo without user gesture. At this point
@@ -2244,7 +2295,7 @@ IN_PROC_BROWSER_TEST_F(
     // The navigation doesn't have user gesture.
     EXPECT_FALSE(params_capturer.has_user_gesture());
     EXPECT_FALSE(root->current_frame_host()
-                     ->last_navigation_started_with_transient_activation());
+                     ->last_committed_common_params_has_user_gesture());
   }
 }
 

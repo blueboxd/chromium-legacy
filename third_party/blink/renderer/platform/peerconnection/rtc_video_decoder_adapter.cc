@@ -110,10 +110,39 @@ bool HasSoftwareFallback(media::VideoCodec video_codec) {
 #endif
 }
 
+struct EncodedImageExternalMemory
+    : public media::DecoderBuffer::ExternalMemory {
+ public:
+  explicit EncodedImageExternalMemory(
+      rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> buffer_interface)
+      : ExternalMemory(base::make_span(buffer_interface->data(),
+                                       buffer_interface->size())),
+        buffer_interface_(std::move(buffer_interface)) {}
+  ~EncodedImageExternalMemory() override = default;
+
+ private:
+  rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> buffer_interface_;
+};
+
 scoped_refptr<media::DecoderBuffer> ConvertToDecoderBuffer(
     const webrtc::EncodedImage& input_image) {
-  std::vector<uint32_t> spatial_layer_frame_size;
+  TRACE_EVENT0("webrtc", "RTCVideoDecoderAdapter::ConvertToDecoderBuffer");
+
+  DCHECK(input_image.GetEncodedData());
+  auto buffer = media::DecoderBuffer::FromExternalMemory(
+      std::make_unique<EncodedImageExternalMemory>(
+          input_image.GetEncodedData()));
+  DCHECK(buffer);
+  buffer->set_timestamp(base::Microseconds(input_image.Timestamp()));
+  buffer->set_is_key_frame(input_image._frameType ==
+                           webrtc::VideoFrameType::kVideoFrameKey);
+
   const int max_sl_index = input_image.SpatialIndex().value_or(0);
+  if (max_sl_index == 0)
+    return buffer;
+
+  std::vector<uint32_t> spatial_layer_frame_size;
+  spatial_layer_frame_size.reserve(max_sl_index);
   for (int i = 0; i <= max_sl_index; i++) {
     const absl::optional<size_t>& frame_size =
         input_image.SpatialLayerFrameSize(i);
@@ -123,22 +152,14 @@ scoped_refptr<media::DecoderBuffer> ConvertToDecoderBuffer(
         base::checked_cast<uint32_t>(*frame_size));
   }
 
-  // TODO(sandersd): What is |render_time_ms|?
-  scoped_refptr<media::DecoderBuffer> buffer;
   if (spatial_layer_frame_size.size() > 1) {
     const uint8_t* side_data =
         reinterpret_cast<const uint8_t*>(spatial_layer_frame_size.data());
     size_t side_data_size =
         spatial_layer_frame_size.size() * sizeof(uint32_t) / sizeof(uint8_t);
-    buffer = media::DecoderBuffer::CopyFrom(
-        input_image.data(), input_image.size(), side_data, side_data_size);
-  } else {
-    buffer =
-        media::DecoderBuffer::CopyFrom(input_image.data(), input_image.size());
+    buffer->CopySideDataFrom(side_data, side_data_size);
   }
-  buffer->set_timestamp(base::Microseconds(input_image.Timestamp()));
-  buffer->set_is_key_frame(input_image._frameType ==
-                           webrtc::VideoFrameType::kVideoFrameKey);
+
   return buffer;
 }
 
@@ -337,6 +358,9 @@ void RTCVideoDecoderAdapter::Impl::Decode(
     base::WaitableEvent* waiter,
     absl::optional<RTCVideoDecoderAdapter::DecodeResult>* result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(media_sequence_checker_);
+  TRACE_EVENT1("webrtc", "RTCVideoDecoderAdapter::Impl::Decode", "buffer",
+               buffer->AsHumanReadableString());
+
   auto enque_result = EnqueueBuffer(std::move(buffer));
   if (const auto* fallback_reason =
           absl::get_if<RTCVideoDecoderFallbackReason>(&enque_result)) {
@@ -678,6 +702,8 @@ bool RTCVideoDecoderAdapter::Configure(const Settings& settings) {
 int32_t RTCVideoDecoderAdapter::Decode(const webrtc::EncodedImage& input_image,
                                        bool missing_frames,
                                        int64_t render_time_ms) {
+  TRACE_EVENT1("webrtc", "RTCVideoDecoderAdapter::Decode", "timestamp",
+               base::Microseconds(input_image.Timestamp()));
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoding_sequence_checker_);
   if (!impl_)
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;

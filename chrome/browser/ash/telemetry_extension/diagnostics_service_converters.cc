@@ -7,8 +7,8 @@
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
-#include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom-shared.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
+#include "chromeos/ash/services/cros_healthd/public/mojom/nullable_primitives.mojom.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -67,11 +67,17 @@ crosapi::mojom::DiagnosticsRunRoutineResponsePtr UncheckedConvertPtr(
       input->id, Convert(input->status));
 }
 
+cros_healthd::mojom::NullableUint32Ptr UncheckedConvertPtr(
+    crosapi::mojom::UInt32ValuePtr value) {
+  return cros_healthd::mojom::NullableUint32::New(value->value);
+}
 }  // namespace unchecked
 
 absl::optional<crosapi::mojom::DiagnosticsRoutineEnum> Convert(
     cros_healthd::mojom::DiagnosticRoutineEnum input) {
   switch (input) {
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kUnknown:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kUnknown;
     case cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity:
       return crosapi::mojom::DiagnosticsRoutineEnum::kBatteryCapacity;
     case cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryHealth:
@@ -110,6 +116,14 @@ absl::optional<crosapi::mojom::DiagnosticsRoutineEnum> Convert(
       return crosapi::mojom::DiagnosticsRoutineEnum::kSignalStrength;
     case cros_healthd::mojom::DiagnosticRoutineEnum::kGatewayCanBePinged:
       return crosapi::mojom::DiagnosticsRoutineEnum::kGatewayCanBePinged;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kSensitiveSensor:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kSensitiveSensor;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::kFingerprintAlive:
+      return crosapi::mojom::DiagnosticsRoutineEnum::kFingerprintAlive;
+    case cros_healthd::mojom::DiagnosticRoutineEnum::
+        kSmartctlCheckWithPercentageUsed:
+      return crosapi::mojom::DiagnosticsRoutineEnum::
+          kSmartctlCheckWithPercentageUsed;
     default:
       return absl::nullopt;
   }
@@ -137,6 +151,9 @@ crosapi::mojom::DiagnosticsRoutineUserMessageEnum Convert(
       return crosapi::mojom::DiagnosticsRoutineUserMessageEnum::kUnplugACPower;
     case cros_healthd::mojom::DiagnosticRoutineUserMessageEnum::kPlugInACPower:
       return crosapi::mojom::DiagnosticsRoutineUserMessageEnum::kPlugInACPower;
+    case cros_healthd::mojom::DiagnosticRoutineUserMessageEnum::kCheckLedColor:
+      NOTIMPLEMENTED();
+      return crosapi::mojom::DiagnosticsRoutineUserMessageEnum::kUnknown;
   }
   NOTREACHED();
   return static_cast<crosapi::mojom::DiagnosticsRoutineUserMessageEnum>(

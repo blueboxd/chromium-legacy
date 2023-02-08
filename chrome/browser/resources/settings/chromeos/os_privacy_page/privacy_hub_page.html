@@ -1,6 +1,11 @@
 <style include="settings-shared">
-    iron-list > :not(:last-of-type) {
+    .list-item:not(:last-of-type) {
       border-bottom: var(--cr-separator-line);
+    }
+
+    .list-frame {
+      padding-bottom: 8px;
+      padding-top: 8px;
     }
 </style>
 
@@ -24,13 +29,11 @@
     </template>
 
     <template is="dom-if" if="[[!isCameraListEmpty_]]" restamp>
-      <iron-list id="cameraList" items="[[camerasConnected_]]">
-        <template>
-          <div class="list-item">
-            [[item]]
-          </div>
-        </template>
-      </iron-list>
+      <template id="cameraList" is="dom-repeat" items="[[camerasConnected_]]">
+        <div class="list-item">
+          [[item]]
+        </div>
+      </template>
     </template>
   </div>
 </div>
@@ -45,6 +48,12 @@
       sub-label="$i18n{microphoneToggleSubtext}"
       disabled="[[shouldDisableMicrophoneToggle_]]"
       on-change="onMicrophoneToggleChanged_">
+    <cr-tooltip-icon
+      hidden$="[[!microphoneHardwareToggleActive_]]"
+      tooltip-text="$i18n{microphoneHwToggleTooltip}"
+      icon-class="cr:info-outline"
+      slot="more-actions">
+    </cr-tooltip-icon>
   </settings-toggle-button>
 
   <div class="list-frame">
@@ -55,13 +64,11 @@
     </template>
 
     <template is="dom-if" if="[[!isMicListEmpty_]]" restamp>
-      <iron-list id="micList" items="[[microphonesConnected_]]">
-        <template>
-          <div class="list-item">
-            [[item]]
-          </div>
-        </template>
-      </iron-list>
+      <template id="micList" is="dom-repeat" items="[[microphonesConnected_]]">
+        <div class="list-item">
+          [[item]]
+        </div>
+      </template>
     </template>
   </div>
 </div>
@@ -77,6 +84,15 @@
   </settings-toggle-button>
 </template>
 
+<if expr="_google_chrome">
+  <settings-metrics-consent-toggle-button
+      class="settings-box no-padding"
+      id="metricsConsentToggle"
+      deep-link-focus-id$="[[Setting.kUsageStatsAndCrashReports]]"
+      prefs="{{prefs}}">
+  </settings-metrics-consent-toggle-button>
+</if>
+
 <settings-toggle-button
     class="settings-box"
     id="suggested-content"
@@ -85,12 +101,3 @@
     sub-label="$i18n{enableSuggestedContentDesc}"
     learn-more-url="$i18n{suggestedContentLearnMoreURL}">
 </settings-toggle-button>
-
-<if expr="_google_chrome">
-    <settings-metrics-consent-toggle-button
-        class="settings-box no-padding"
-        id="metricsConsentToggle"
-        deep-link-focus-id$="[[Setting.kUsageStatsAndCrashReports]]"
-        prefs="{{prefs}}">
-    </settings-metrics-consent-toggle-button>
-</if>

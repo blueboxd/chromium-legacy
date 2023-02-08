@@ -245,15 +245,14 @@
       custom_compare: true,
     },
     {
-      name: "PseudoBits",
+      name: "PseudoElementStyles",
       field_template: "primitive",
       field_size: 12,
       default_value: "kPseudoIdNone",
       type_name: "unsigned",
       custom_copy: true,
       custom_compare: true,
-      computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
+      computed_style_custom_functions: ["getter"],
     },
     // Whether any non-universal highlight selectors were found when collecting
     // rules for the originating element. Stored in the *originating* style, and
@@ -498,7 +497,6 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "inherited",
       computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
     },
     {
       name: "HighlightData",
@@ -522,7 +520,6 @@
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
       computed_style_custom_functions: ["setter"],
-      writable: true,
     },
     {
       name: "Mask",
@@ -616,7 +613,6 @@
       wrapper_pointer_name: "std::unique_ptr",
       include_paths: ["third_party/blink/renderer/core/style/style_non_inherited_variables.h"],
       computed_style_custom_functions: ["getter", "setter"],
-      writable: true,
     },
     {
       name: "PageSizeType",
@@ -824,7 +820,7 @@
       type_name: "bool",
       default_value: "true",
       inherited: true,
-      computed_style_custom_functions: ["getter"],
+      computed_style_protected_functions: ["getter"],
     },
     {
       name: "InternalVisitedColorIsCurrentColor",
@@ -833,7 +829,7 @@
       type_name: "bool",
       default_value: "true",
       inherited: true,
-      computed_style_custom_functions: ["getter"],
+      computed_style_protected_functions: ["getter"],
     },
     {
       name: "WillChangeProperties",
@@ -965,17 +961,17 @@
       custom_compare: true,
     },
     {
-      name: "IsFlexOrGridItem",
-      field_template: "monotonic_flag",
-      default_value: "false",
-      custom_compare: true,
-    },
-    {
       name: "IsEnsuredOutsideFlatTree",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_compare: true,
       inherited: true,
+    },
+    {
+      name: "IsInsideDisplayIgnoringFloatingChildren",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_compare: true,
     },
     {
       name: "IsInsideListElement",

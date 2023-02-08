@@ -50,15 +50,20 @@ std::unique_ptr<omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
     Profile* profile,
     const std::string& extension_id) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
-
-  std::unique_ptr<omnibox::SuggestResult> suggestion;
-  const base::DictionaryValue* dict = nullptr;
-  if (prefs && prefs->ReadPrefAsDictionary(extension_id,
-                                           kOmniboxDefaultSuggestion,
-                                           &dict)) {
-    suggestion = std::make_unique<omnibox::SuggestResult>();
-    omnibox::SuggestResult::Populate(*dict, suggestion.get());
+  if (!prefs) {
+    return nullptr;
   }
+
+  const base::Value::Dict* dict =
+      prefs->ReadPrefAsDict(extension_id, kOmniboxDefaultSuggestion);
+  if (!dict) {
+    return nullptr;
+  }
+
+  auto suggestion = std::make_unique<omnibox::SuggestResult>();
+  omnibox::SuggestResult::Populate(base::Value(dict->Clone()),
+                                   suggestion.get());
+
   return suggestion;
 }
 
@@ -227,7 +232,7 @@ void OmniboxAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
         url_service_->RegisterOmniboxKeyword(
             extension->id(), extension->short_name(), keyword,
             GetTemplateURLStringForExtension(extension->id()),
-            ExtensionPrefs::Get(profile_)->GetInstallTime(extension->id()));
+            ExtensionPrefs::Get(profile_)->GetLastUpdateTime(extension->id()));
       } else {
         pending_extensions_.insert(extension);
       }
@@ -259,7 +264,7 @@ void OmniboxAPI::OnTemplateURLsLoaded() {
     url_service_->RegisterOmniboxKeyword(
         i->id(), i->short_name(), OmniboxInfo::GetKeyword(i),
         GetTemplateURLStringForExtension(i->id()),
-        ExtensionPrefs::Get(profile_)->GetInstallTime(i->id()));
+        ExtensionPrefs::Get(profile_)->GetLastUpdateTime(i->id()));
   }
   pending_extensions_.clear();
 }

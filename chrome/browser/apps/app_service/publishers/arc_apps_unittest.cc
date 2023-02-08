@@ -20,12 +20,12 @@
 #include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ash/app_list/arc/intent.h"
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/arc/intent.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -133,22 +133,18 @@ class ArcAppsPublisherTest : public testing::Test {
     // We will manually start ArcApps after setting up IntentHelper, this allows
     // ArcApps to observe the correct IntentHelper during initialization.
     arc_test_.set_start_app_service_publisher(false);
+    // We want to use the real ArcIntentHelper KeyedService so that it's the
+    // same object that ArcApps uses.
+    arc_test_.set_initialize_real_intent_helper_bridge(true);
     arc_test_.SetUp(profile());
 
     auto* arc_bridge_service =
         arc_test_.arc_service_manager()->arc_bridge_service();
 
-    // Initialize Host interfaces so that our fake Instances can connect via
-    // mojo. We want to use the real ArcIntentHelper KeyedService so that
-    // it's the same object that ArcApps uses.
     intent_helper_ =
-        arc::ArcIntentHelperBridge::GetForBrowserContextForTesting(profile());
+        arc::ArcIntentHelperBridge::GetForBrowserContext(profile());
     arc_file_system_bridge_ = std::make_unique<arc::ArcFileSystemBridge>(
         profile(), arc_bridge_service);
-
-    intent_helper_instance_ = std::make_unique<arc::FakeIntentHelperInstance>();
-    arc_bridge_service->intent_helper()->SetInstance(intent_helper_instance());
-    arc::WaitForInstanceReady(arc_bridge_service->intent_helper());
 
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
@@ -161,6 +157,7 @@ class ArcAppsPublisherTest : public testing::Test {
 
   void TearDown() override {
     arc_test_.StopArcInstance();
+    apps::ArcAppsFactory::GetInstance()->ShutDownForTesting(profile());
     arc_test_.TearDown();
   }
 
@@ -198,7 +195,7 @@ class ArcAppsPublisherTest : public testing::Test {
   arc::ArcIntentHelperBridge* intent_helper() { return intent_helper_; }
 
   arc::FakeIntentHelperInstance* intent_helper_instance() {
-    return intent_helper_instance_.get();
+    return arc_test_.intent_helper_instance();
   }
 
   arc::FakeFileSystemInstance* file_system_instance() {
@@ -229,7 +226,6 @@ class ArcAppsPublisherTest : public testing::Test {
   TestingProfile profile_;
   apps::AppServiceTest app_service_test_;
   arc::ArcIntentHelperBridge* intent_helper_;
-  std::unique_ptr<arc::FakeIntentHelperInstance> intent_helper_instance_;
   std::unique_ptr<arc::FakeFileSystemInstance> file_system_instance_;
   std::unique_ptr<arc::ArcFileSystemBridge> arc_file_system_bridge_;
 };

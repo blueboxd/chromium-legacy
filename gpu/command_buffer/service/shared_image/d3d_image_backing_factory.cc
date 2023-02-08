@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/direct_composition_support.h"
@@ -54,9 +55,8 @@ bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
 
 // Only RGBA formats supported by CreateSharedImage.
 absl::optional<DXGI_FORMAT> GetSupportedRGBAFormat(
-    viz::SharedImageFormat viz_si_format) {
-  auto viz_resource_format = viz_si_format.resource_format();
-  switch (viz_resource_format) {
+    viz::SharedImageFormat si_format) {
+  switch (si_format.resource_format()) {
     case viz::RGBA_F16:
       return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case viz::BGRA_8888:
@@ -67,6 +67,10 @@ absl::optional<DXGI_FORMAT> GetSupportedRGBAFormat(
       return DXGI_FORMAT_R8_UNORM;
     case viz::RG_88:
       return DXGI_FORMAT_R8G8_UNORM;
+    case viz::R16_EXT:
+      return DXGI_FORMAT_R16_UNORM;
+    case viz::RG16_EXT:
+      return DXGI_FORMAT_R16G16_UNORM;
     default:
       NOTREACHED();
       return {};
@@ -89,7 +93,7 @@ DXGI_FORMAT GetDXGIFormat(gfx::BufferFormat buffer_format) {
   }
 }
 
-// Formats supported by CreateSharedImage(GMB).
+// Typeless formats supported by CreateSharedImage(GMB) for XR.
 DXGI_FORMAT GetDXGITypelessFormat(gfx::BufferFormat buffer_format) {
   switch (buffer_format) {
     case gfx::BufferFormat::RGBA_8888:
@@ -234,6 +238,7 @@ D3DImageBackingFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
   dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory));
   DCHECK(dxgi_factory);
 
+  auto si_format = viz::SharedImageFormat::SinglePlane(format);
   DXGI_SWAP_CHAIN_DESC1 desc = {};
   desc.Width = size.width();
   desc.Height = size.height();
@@ -245,8 +250,8 @@ D3DImageBackingFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
   desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-  desc.AlphaMode = viz::HasAlpha(format) ? DXGI_ALPHA_MODE_PREMULTIPLIED
-                                         : DXGI_ALPHA_MODE_IGNORE;
+  desc.AlphaMode = si_format.HasAlpha() ? DXGI_ALPHA_MODE_PREMULTIPLIED
+                                        : DXGI_ALPHA_MODE_IGNORE;
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain;
 
@@ -426,7 +431,6 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat format,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -495,6 +499,10 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
                                          gfx::GpuMemoryBufferType gmb_type,
                                          GrContextType gr_context_type,
                                          base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane()) {
+    return false;
+  }
+
   if (!pixel_data.empty()) {
     return false;
   }
@@ -508,17 +516,11 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
   }
 
   if (gmb_type == gfx::EMPTY_BUFFER) {
-    if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD) {
-      // Only allow single NV12 shared memory GMBs for now. This excludes
-      // dual shared memory GMBs used by software video decoder.
-      if (format.resource_format() != viz::YUV_420_BIPLANAR)
-        return false;
-    } else {
-      if (!GetSupportedRGBAFormat(format))
-        return false;
-    }
+    // We only support rendering or uploading to RGBA formats.
+    if (!GetSupportedRGBAFormat(format))
+      return false;
   } else if (gmb_type == gfx::DXGI_SHARED_HANDLE) {
-    if (GetDXGIFormat(viz::BufferFormat(format)) == DXGI_FORMAT_UNKNOWN)
+    if (GetDXGIFormat(ToBufferFormat(format)) == DXGI_FORMAT_UNKNOWN)
       return false;
   } else {
     return false;

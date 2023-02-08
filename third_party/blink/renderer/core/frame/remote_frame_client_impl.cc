@@ -41,9 +41,10 @@ bool RemoteFrameClientImpl::InShadowTree() const {
 void RemoteFrameClientImpl::Detached(FrameDetachType type) {
   // We only notify the browser process when the frame is being detached for
   // removal, not after a swap.
-  if (type == FrameDetachType::kRemove)
+  if (type == FrameDetachType::kRemove &&
+      web_frame_->GetFrame()->IsRemoteFrameHostRemoteBound()) {
     web_frame_->GetFrame()->GetRemoteFrameHostRemote().Detach();
-
+  }
   web_frame_->Close();
 
   if (web_frame_->Parent()) {
@@ -70,13 +71,14 @@ void RemoteFrameClientImpl::CreateRemoteChild(
     const absl::optional<FrameToken>& opener_frame_token,
     mojom::blink::TreeScopeType tree_scope_type,
     mojom::blink::FrameReplicationStatePtr replication_state,
+    bool is_loading,
     const base::UnguessableToken& devtools_frame_token,
     mojom::blink::RemoteFrameInterfacesFromBrowserPtr remote_frame_interfaces) {
   WebFrame* opener = nullptr;
   if (opener_frame_token)
     opener = WebFrame::FromFrameToken(opener_frame_token.value());
   web_frame_->CreateRemoteChild(
-      tree_scope_type, token, devtools_frame_token, opener,
+      tree_scope_type, token, is_loading, devtools_frame_token, opener,
       std::move(remote_frame_interfaces->frame_host),
       std::move(remote_frame_interfaces->frame_receiver),
       std::move(replication_state));

@@ -13,7 +13,7 @@ import 'chrome://support-tool/url_generator.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BrowserProxy, BrowserProxyImpl, DataCollectorItem, IssueDetails, PiiDataItem, UrlGenerationResult} from 'chrome://support-tool/browser_proxy.js';
 import {DataExportResult, SupportToolElement, SupportToolPageIndex} from 'chrome://support-tool/support_tool.js';
@@ -86,7 +86,7 @@ class TestSupportToolBrowserProxy extends TestBrowserProxy implements
       'startDataExport',
       'showExportedDataInFolder',
       'getAllDataCollectors',
-      'generateCustomizedURL',
+      'generateCustomizedUrl',
     ]);
   }
 
@@ -135,8 +135,8 @@ class TestSupportToolBrowserProxy extends TestBrowserProxy implements
 
   // Returns this.urlGenerationResult as response. Please call
   // this.setUrlGenerationResult() before using this function in tests.
-  generateCustomizedURL(caseId: string, dataCollectors: DataCollectorItem[]) {
-    this.methodCalled('generateCustomizedURL', caseId, dataCollectors);
+  generateCustomizedUrl(caseId: string, dataCollectors: DataCollectorItem[]) {
+    this.methodCalled('generateCustomizedUrl', caseId, dataCollectors);
     return Promise.resolve(this.urlGenerationResult_);
   }
 }
@@ -302,7 +302,7 @@ suite('UrlGeneratorTest', function() {
     browserProxy.setUrlGenerationResult(expectedResult);
     // Click the button to generate URL and copy to clipboard.
     copyLinkButton.click();
-    await browserProxy.whenCalled('generateCustomizedURL');
+    await browserProxy.whenCalled('generateCustomizedUrl');
     // Check the URL value copied to clipboard if it's as expected.
     const copiedLink = await navigator.clipboard.readText();
     assertEquals(copiedLink, expectedLink);
@@ -323,7 +323,7 @@ suite('UrlGeneratorTest', function() {
     copyLinkButton.disabled = false;
     // Click the button to generate URL.
     copyLinkButton!.click();
-    await browserProxy.whenCalled('generateCustomizedURL');
+    await browserProxy.whenCalled('generateCustomizedUrl');
     // Check that there's an error message shown to user.
     assertTrue(urlGenerator.$.errorMessageToast.open);
   });

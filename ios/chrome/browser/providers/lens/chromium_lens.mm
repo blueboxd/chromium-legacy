@@ -49,6 +49,10 @@ bool IsLensWebResultsURL(const GURL& url) {
   return false;
 }
 
+absl::optional<LensEntrypoint> GetLensEntryPointFromURL(const GURL& url) {
+  return absl::nullopt;
+}
+
 web::NavigationManager::WebLoadParams GenerateLensLoadParamsForImage(
     UIImage* image,
     LensEntrypoint entry_point,
@@ -62,6 +66,11 @@ void GenerateLensLoadParamsForImageAsync(UIImage* image,
                                          LensEntrypoint entry_point,
                                          bool is_incognito,
                                          LensWebParamsCallback completion) {
+  NOTREACHED() << "Lens is not supported.";
+}
+
+void GenerateLensLoadParamsAsync(LensQuery* query,
+                                 LensWebParamsCallback completion) {
   NOTREACHED() << "Lens is not supported.";
 }
 

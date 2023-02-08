@@ -266,42 +266,6 @@ class RenderAccessibilityImplTest : public RenderViewTest {
 
   ~RenderAccessibilityImplTest() override = default;
 
-  void ScheduleSendPendingAccessibilityEvents() {
-    GetRenderAccessibilityImpl()->ScheduleSendPendingAccessibilityEvents();
-  }
-
-  void ExpectScheduleStatusScheduledDeferred() {
-    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
-              RenderAccessibilityImpl::EventScheduleStatus::kScheduledDeferred);
-  }
-
-  void ExpectScheduleStatusScheduledImmediate() {
-    EXPECT_EQ(
-        GetRenderAccessibilityImpl()->event_schedule_status_,
-        RenderAccessibilityImpl::EventScheduleStatus::kScheduledImmediate);
-  }
-
-  void ExpectScheduleStatusWaitingForAck() {
-    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
-              RenderAccessibilityImpl::EventScheduleStatus::kWaitingForAck);
-  }
-
-  void ExpectScheduleStatusNotWaiting() {
-    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
-              RenderAccessibilityImpl::EventScheduleStatus::kNotWaiting);
-  }
-
-  void ExpectScheduleModeDeferEvents() {
-    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_mode_,
-              RenderAccessibilityImpl::EventScheduleMode::kDeferEvents);
-  }
-
-  void ExpectScheduleModeProcessEventsImmediately() {
-    EXPECT_EQ(
-        GetRenderAccessibilityImpl()->event_schedule_mode_,
-        RenderAccessibilityImpl::EventScheduleMode::kProcessEventsImmediately);
-  }
-
  protected:
   RenderFrameImpl* frame() {
     return static_cast<RenderFrameImpl*>(RenderViewTest::GetMainRenderFrame());
@@ -326,8 +290,6 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     EXPECT_FALSE(document.IsNull());
     WebAXObject root_obj = WebAXObject::FromWebDocument(document);
     EXPECT_FALSE(root_obj.IsNull());
-    GetRenderAccessibilityImpl()->HandleAXEvent(
-        ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kLayoutComplete));
     SendPendingAccessibilityEvents();
   }
 
@@ -348,7 +310,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     // Ensure that a valid RenderAccessibilityImpl object is created and
     // associated to the RenderFrame, so that calls from tests to methods of
     // RenderAccessibilityImpl will work.
-    frame()->SetAccessibilityModeForTest(ui::kAXModeWebContentsOnly.mode());
+    frame()->SetAccessibilityModeForTest(ui::kAXModeWebContentsOnly.flags());
   }
 
   void TearDown() override {
@@ -362,7 +324,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   }
 
   void SetMode(ui::AXMode mode) {
-    frame()->GetRenderAccessibilityManager()->SetMode(mode.mode());
+    frame()->GetRenderAccessibilityManager()->SetMode(mode);
   }
 
   ui::AXTreeUpdate GetLastAccUpdate() {
@@ -397,7 +359,8 @@ class RenderAccessibilityImplTest : public RenderViewTest {
     // be able to properly check later on the nodes that have been updated, and
     // also wait for the mojo messages to be processed once they are sent.
     task_environment_.RunUntilIdle();
-    GetRenderAccessibilityImpl()->SendPendingAccessibilityEvents();
+    GetRenderAccessibilityImpl()->ScheduleImmediateAXUpdate();
+    GetRenderAccessibilityImpl()->GetAXContext()->UpdateAXForAllDocuments();
     task_environment_.RunUntilIdle();
   }
 
@@ -429,8 +392,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   ClearHandledUpdates();
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj, false);
   SendPendingAccessibilityEvents();
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
   {
@@ -446,8 +408,6 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   document = GetMainFrame()->GetDocument();
   root_obj = WebAXObject::FromWebDocument(document);
   ClearHandledUpdates();
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kLayoutComplete));
   SendPendingAccessibilityEvents();
   EXPECT_EQ(6, CountAccessibilityNodesSentToBrowser());
 
@@ -491,22 +451,21 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   WebAXObject node_b = node_a.ChildAt(0);
   WebAXObject node_c = node_b.ChildAt(0);
 
+  // Send a childrenChanged on "A".
+  ClearHandledUpdates();
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(node_a, false);
+
   // Hide node "B" ("C" stays visible).
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'hidden';");
-  GetRenderAccessibilityImpl()->GetAXContext()->UpdateAXForAllDocuments();
 
-  // Send a childrenChanged on "A".
-  ClearHandledUpdates();
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(node_a.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();
   ui::AXTreeUpdate update = GetLastAccUpdate();
   ASSERT_EQ(2U, update.nodes.size());
 
   // Since ignored nodes are included in the ax tree with State::kIgnored set,
   // "C" is NOT reparented, only the changed nodes are re-serialized.
-  // "A" updates because it handled Event::kChildrenChanged
+  // "A" updates because it handled dirty object
   // "B" updates because its State::kIgnored has changed
   EXPECT_EQ(0, update.node_id_to_clear);
   EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
@@ -541,21 +500,19 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   WebAXObject node_b = node_a.ChildAt(0);
   WebAXObject node_c = node_b.ChildAt(0);
 
-  // Show node "B", then send a childrenChanged on "A".
+  // Send a childrenChanged on "A" and show node "B",
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(node_a, false);
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'visible';");
-  GetRenderAccessibilityImpl()->GetAXContext()->UpdateAXForAllDocuments();
 
   ClearHandledUpdates();
 
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(node_a.AxID(), ax::mojom::Event::kChildrenChanged));
   SendPendingAccessibilityEvents();
   ui::AXTreeUpdate update = GetLastAccUpdate();
 
   // Since ignored nodes are included in the ax tree with State::kIgnored set,
   // "C" is NOT reparented, only the changed nodes are re-serialized.
-  // "A" updates because it handled Event::kChildrenChanged
+  // "A" updates because it handled the dirty
   // "B" updates because its State::kIgnored has changed
   ASSERT_EQ(2U, update.nodes.size());
   EXPECT_EQ(0, update.node_id_to_clear);
@@ -1261,8 +1218,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
   // No URL-keyed metrics should be fired after we send one event.
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj, false);
   SendPendingAccessibilityEvents();
   EXPECT_EQ(0, ukm_recorder()->calls());
   histogram_tester.ExpectTotalCount(
@@ -1271,8 +1227,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
   // No URL-keyed metrics should be fired even after an event that takes
   // 300 ms, but we should now have something to send.
   // This must be >= kMinSerializationTimeToSendInMS
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj, false);
   SendPendingAccessibilityEvents();
   SetTimeDelayForNextSerialize(base::Milliseconds(300));
   EXPECT_EQ(0, ukm_recorder()->calls());
@@ -1282,8 +1237,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
   // After 1000 seconds have passed, the next time we send an event we should
   // send URL-keyed metrics.
   task_environment_.FastForwardBy(base::Seconds(1000));
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj, false);
   SendPendingAccessibilityEvents();
   EXPECT_EQ(1, ukm_recorder()->calls());
   histogram_tester.ExpectTotalCount(
@@ -1292,8 +1246,7 @@ TEST_F(RenderAccessibilityImplUKMTest, TestFireUKMs) {
   // Send another event that takes a long (simulated) time to serialize.
   // This must be >= kMinSerializationTimeToSend
   SetTimeDelayForNextSerialize(base::Milliseconds(200));
-  GetRenderAccessibilityImpl()->HandleAXEvent(
-      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kChildrenChanged));
+  GetRenderAccessibilityImpl()->MarkWebAXObjectDirty(root_obj, false);
   SendPendingAccessibilityEvents();
   histogram_tester.ExpectTotalCount(
       "Accessibility.Performance.SendPendingAccessibilityEvents", 4);

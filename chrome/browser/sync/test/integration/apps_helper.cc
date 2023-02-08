@@ -18,9 +18,9 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
-#include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -55,7 +55,7 @@ void FlushPendingOperations(std::vector<Profile*> profiles) {
 
     std::vector<web_app::AppId> apps_to_be_sync_installed =
         web_app::WebAppProvider::GetForTest(profile)
-            ->registrar()
+            ->registrar_unsafe()
             .GetAppsFromSyncAndPendingInstallation();
     apps_to_be_installed.insert(apps_to_be_sync_installed.begin(),
                                 apps_to_be_sync_installed.end());
@@ -227,7 +227,7 @@ bool AwaitWebAppQuiescence(std::vector<Profile*> profiles) {
     // registry.
     auto* provider = web_app::WebAppProvider::GetForTest(profile);
     std::vector<web_app::AppId> sync_apps_pending_install =
-        provider->registrar().GetAppsFromSyncAndPendingInstallation();
+        provider->registrar_unsafe().GetAppsFromSyncAndPendingInstallation();
     if (!sync_apps_pending_install.empty()) {
       LOG(ERROR) << "Apps from sync are still pending installation: "
                  << sync_apps_pending_install.size();
@@ -235,7 +235,7 @@ bool AwaitWebAppQuiescence(std::vector<Profile*> profiles) {
     }
 
     std::vector<web_app::AppId> apps_in_uninstall =
-        provider->registrar().GetAppsPendingUninstall();
+        provider->registrar_unsafe().GetAppsPendingUninstall();
     if (!apps_in_uninstall.empty()) {
       LOG(ERROR) << "App uninstalls are still pending: "
                  << apps_in_uninstall.size();
@@ -250,23 +250,21 @@ web_app::AppId InstallWebApp(Profile* profile, const WebAppInstallInfo& info) {
   base::RunLoop run_loop;
   web_app::AppId app_id;
   auto* provider = web_app::WebAppProvider::GetForTest(profile);
-  provider->command_manager().ScheduleCommand(
-      std::make_unique<web_app::InstallFromInfoCommand>(
-          std::make_unique<WebAppInstallInfo>(info.Clone()),
-          &provider->install_finalizer(),
-          /*overwrite_existing_manifest_fields=*/true,
-          webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
-          base::BindLambdaForTesting(
-              [&run_loop, &app_id](const web_app::AppId& new_app_id,
-                                   webapps::InstallResultCode code) {
-                DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
-                app_id = new_app_id;
-                run_loop.Quit();
-              })));
+  provider->scheduler().InstallFromInfo(
+      std::make_unique<WebAppInstallInfo>(info.Clone()),
+      /*overwrite_existing_manifest_fields=*/true,
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      base::BindLambdaForTesting(
+          [&run_loop, &app_id](const web_app::AppId& new_app_id,
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
+            app_id = new_app_id;
+            run_loop.Quit();
+          }));
 
   run_loop.Run();
 
-  const web_app::WebAppRegistrar& registrar = provider->registrar();
+  const web_app::WebAppRegistrar& registrar = provider->registrar_unsafe();
   DCHECK_EQ(base::UTF8ToUTF16(registrar.GetAppShortName(app_id)), info.title);
   DCHECK_EQ(registrar.GetAppStartUrl(app_id), info.start_url);
 
@@ -291,7 +289,7 @@ AppsStatusChangeChecker::AppsStatusChangeChecker()
         ->updater()
         ->SetUpdatingStartedCallbackForTesting(base::BindLambdaForTesting(
             [self = weak_ptr_factory_.GetWeakPtr(), profile]() {
-              base::ThreadTaskRunnerHandle::Get()->PostTask(
+              base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
                   FROM_HERE,
                   base::BindOnce(&AppsStatusChangeChecker::InstallSyncedApps,
                                  self, base::Unretained(profile)));

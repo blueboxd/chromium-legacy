@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 
 #import "base/strings/sys_string_conversions.h"
-#import "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#import "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/browser/well_known_change_password_util.h"
@@ -20,6 +20,8 @@
     (const password_manager::CredentialUIEntry&)credential {
   self = [super init];
   if (self) {
+    _signonRealm = [NSString
+        stringWithUTF8String:credential.GetFirstSignonRealm().c_str()];
     auto facetUri = password_manager::FacetURI::FromPotentiallyInvalidSpec(
         credential.GetFirstSignonRealm());
     if (facetUri.IsValidAndroidFacetURI()) {
@@ -51,6 +53,13 @@
     } else {
       _federation =
           base::SysUTF8ToNSString(credential.federation_origin.host());
+    }
+
+    _credentialType = credential.blocked_by_user ? CredentialTypeBlocked
+                                                 : CredentialTypeRegular;
+    if (_credentialType == CredentialTypeRegular &&
+        !credential.federation_origin.opaque()) {
+      _credentialType = CredentialTypeFederation;
     }
   }
   return self;

@@ -7,8 +7,9 @@ import 'chrome://resources/js/ios/web_ui.js';
 // </if>
 
 import 'chrome://resources/js/jstemplate_compiled.js';
-import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
-import {$} from 'chrome://resources/js/util.js';
+
+import {addWebUiListener} from 'chrome://resources/js/cr.js';
+import {$} from 'chrome://resources/js/util_ts.js';
 
 const initialize = function() {
   $('submit-update').addEventListener('click', function(event) {
@@ -32,10 +33,10 @@ const initialize = function() {
     }
   });
 
-  addWebUIListener('receive-source-info', state => {
+  addWebUiListener('receive-source-info', state => {
     jstProcess(new JsEvalContext(state), $('sources'));
   });
-  addWebUIListener('receive-sites', sites => {
+  addWebUiListener('receive-sites', sites => {
     jstProcess(new JsEvalContext(sites), $('sites'));
   });
   chrome.send('registerForEvents');

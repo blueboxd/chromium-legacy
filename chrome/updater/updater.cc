@@ -26,27 +26,31 @@
 #include "chrome/updater/app/app_uninstall.h"
 #include "chrome/updater/app/app_update.h"
 #include "chrome/updater/app/app_wake.h"
+#include "chrome/updater/app/app_wakeall.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_POSIX)
+#include "chrome/updater/ipc/ipc_support.h"
+#endif
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/process_startup_helper.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
-#include "chrome/updater/win/win_util.h"
+#include "chrome/updater/util/win_util.h"
 #elif BUILDFLAG(IS_MAC)
 #include "chrome/updater/app/server/mac/server.h"
 #elif BUILDFLAG(IS_LINUX)
 #include "chrome/updater/app/server/linux/server.h"
-#include "chrome/updater/linux/ipc_support.h"
 #endif
 
 // Instructions For Windows.
@@ -118,10 +122,10 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
     // TODO(crbug.com/1294543) - is there a more specific error needed?
     return kErrorComInitializationFailed;
   }
-  if (FAILED(DisableCOMExceptionHandling())) {
-    // Failing to disable COM exception handling is a critical error.
-    CHECK(false) << "Failed to disable COM exception handling.";
-  }
+
+  // Failing to disable COM exception handling is a critical error.
+  CHECK(SUCCEEDED(DisableCOMExceptionHandling()))
+      << "Failed to disable COM exception handling.";
   base::win::RegisterInvalidParamHandler();
   VLOG(1) << GetUACState();
 #endif
@@ -131,13 +135,11 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
       base::BindOnce([]() { base::ThreadPoolInstance::Get()->Shutdown(); }));
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
-  if (command_line->HasSwitch(kCrashMeSwitch)) {
-    // Records a backtrace in the log, crashes the program, saves a crash dump,
-    // and reports the crash.
-    CHECK(false) << "--crash-me was used.";
-  }
+  // Records a backtrace in the log, crashes the program, saves a crash dump,
+  // and reports the crash.
+  CHECK(!command_line->HasSwitch(kCrashMeSwitch)) << "--crash-me was used.";
 
-#if BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_POSIX)
   // As long as this object is alive, all Mojo API surface relevant to IPC
   // connections is usable, and message pipes which span a process boundary will
   // continue to function.
@@ -187,6 +189,10 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
     return MakeAppWake()->Run();
   }
 
+  if (command_line->HasSwitch(kWakeAllSwitch)) {
+    return MakeAppWakeAll()->Run();
+  }
+
   VLOG(1) << "Unknown command line switch.";
   return kErrorUnknownCommandLine;
 }
@@ -203,8 +209,8 @@ const char* GetUpdaterCommand(const base::CommandLine* command_line) {
       kTestSwitch,           kUninstallIfUnusedSwitch,
       kUninstallSelfSwitch,  kUninstallSwitch,
       kUpdateSwitch,         kWakeSwitch,
-      kHealthCheckSwitch,    kHandoffSwitch,
-      kRuntimeSwitch,
+      kWakeAllSwitch,        kHealthCheckSwitch,
+      kHandoffSwitch,        kRuntimeSwitch,
   };
   const char** it = base::ranges::find_if(commands, [command_line](auto cmd) {
     return command_line->HasSwitch(cmd);

@@ -72,22 +72,13 @@ class MockAutofillManager : public AutofillManager {
               (const FormData& form,
                const FormFieldData& field,
                const CreditCard& credit_card,
-               const std::u16string& cvc,
-               int query_id),
+               const std::u16string& cvc),
               (override));
   MOCK_METHOD(void,
               FillProfileFormImpl,
               (const FormData& form,
                const FormFieldData& field,
                const AutofillProfile& profile),
-              (override));
-  MOCK_METHOD(void,
-              SetProfileFillViaAutofillAssistantIntent,
-              (const autofill_assistant::AutofillAssistantIntent intent),
-              (override));
-  MOCK_METHOD(void,
-              SetCreditCardFillViaAutofillAssistantIntent,
-              (const autofill_assistant::AutofillAssistantIntent intent),
               (override));
   MOCK_METHOD(void,
               OnFocusNoLongerOnFormImpl,
@@ -138,7 +129,6 @@ class MockAutofillManager : public AutofillManager {
               (const FormData& form,
                const FormFieldData& field,
                const gfx::RectF& bounding_box,
-               int query_id,
                AutoselectFirstSuggestion autoselect_first_suggestion,
                FormElementWasClicked form_element_was_clicked),
               (override));

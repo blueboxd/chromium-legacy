@@ -12,12 +12,16 @@ SavedTabGroupTab::SavedTabGroupTab(
     const std::u16string& title,
     const base::GUID& group_guid,
     SavedTabGroup* group,
-    absl::optional<base::GUID> guid,
+    absl::optional<base::GUID> saved_tab_guid,
+    absl::optional<base::Token> local_tab_id,
     absl::optional<base::Time> creation_time_windows_epoch_micros,
     absl::optional<base::Time> update_time_windows_epoch_micros,
     absl::optional<gfx::Image> favicon)
-    : guid_(guid.has_value() ? guid.value() : base::GUID::GenerateRandomV4()),
-      group_guid_(group_guid),
+    : saved_tab_guid_(saved_tab_guid.has_value()
+                          ? saved_tab_guid.value()
+                          : base::GUID::GenerateRandomV4()),
+      saved_group_guid_(group_guid),
+      local_tab_id_(local_tab_id),
       saved_tab_group_(group),
       url_(url),
       title_(title),
@@ -34,9 +38,9 @@ SavedTabGroupTab::SavedTabGroupTab(const SavedTabGroupTab& other) = default;
 SavedTabGroupTab::~SavedTabGroupTab() = default;
 
 bool SavedTabGroupTab::ShouldMergeTab(
-    sync_pb::SavedTabGroupSpecifics* sync_specific) {
+    const sync_pb::SavedTabGroupSpecifics& sync_specific) {
   bool sync_update_is_latest =
-      sync_specific->update_time_windows_epoch_micros() >=
+      sync_specific.update_time_windows_epoch_micros() >=
       update_time_windows_epoch_micros()
           .ToDeltaSinceWindowsEpoch()
           .InMicroseconds();
@@ -44,12 +48,12 @@ bool SavedTabGroupTab::ShouldMergeTab(
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupTab::MergeTab(
-    std::unique_ptr<sync_pb::SavedTabGroupSpecifics> sync_specific) {
-  if (ShouldMergeTab(sync_specific.get())) {
-    SetURL(GURL(sync_specific->tab().url()));
-    SetTitle(base::UTF8ToUTF16(sync_specific->tab().title()));
+    const sync_pb::SavedTabGroupSpecifics& sync_specific) {
+  if (ShouldMergeTab(sync_specific)) {
+    SetURL(GURL(sync_specific.tab().url()));
+    SetTitle(base::UTF8ToUTF16(sync_specific.tab().title()));
     SetUpdateTimeWindowsEpochMicros(base::Time::FromDeltaSinceWindowsEpoch(
-        base::Microseconds(sync_specific->update_time_windows_epoch_micros())));
+        base::Microseconds(sync_specific.update_time_windows_epoch_micros())));
   }
 
   return ToSpecifics();
@@ -69,15 +73,15 @@ SavedTabGroupTab SavedTabGroupTab::FromSpecifics(
   base::Time update_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(specific.update_time_windows_epoch_micros()));
 
-  return SavedTabGroupTab(url, title, group_guid, nullptr, guid, creation_time,
-                          update_time);
+  return SavedTabGroupTab(url, title, group_guid, nullptr, guid, absl::nullopt,
+                          creation_time, update_time);
 }
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupTab::ToSpecifics()
     const {
   std::unique_ptr<sync_pb::SavedTabGroupSpecifics> pb_specific =
       std::make_unique<sync_pb::SavedTabGroupSpecifics>();
-  pb_specific->set_guid(guid().AsLowercaseString());
+  pb_specific->set_guid(saved_tab_guid().AsLowercaseString());
   pb_specific->set_creation_time_windows_epoch_micros(
       creation_time_windows_epoch_micros()
           .ToDeltaSinceWindowsEpoch()
@@ -89,7 +93,7 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupTab::ToSpecifics()
 
   sync_pb::SavedTabGroupTab* pb_tab = pb_specific->mutable_tab();
   pb_tab->set_url(url().spec());
-  pb_tab->set_group_guid(group_guid().AsLowercaseString());
+  pb_tab->set_group_guid(saved_group_guid().AsLowercaseString());
   pb_tab->set_title(base::UTF16ToUTF8(title()));
 
   return pb_specific;

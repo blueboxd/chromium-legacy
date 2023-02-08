@@ -141,19 +141,31 @@ void WebAppProvider::Start() {
   StartImpl();
 }
 
-WebAppRegistrar& WebAppProvider::registrar() {
+WebAppRegistrar& WebAppProvider::registrar_unsafe() {
   CheckIsConnected();
   return *registrar_;
+}
+
+const WebAppRegistrar& WebAppProvider::registrar_unsafe() const {
+  CheckIsConnected();
+  return *registrar_;
+}
+
+WebAppRegistrar& WebAppProvider::registrar() {
+  return registrar_unsafe();
 }
 
 const WebAppRegistrar& WebAppProvider::registrar() const {
+  return registrar_unsafe();
+}
+
+WebAppSyncBridge& WebAppProvider::sync_bridge_unsafe() {
   CheckIsConnected();
-  return *registrar_;
+  return *sync_bridge_;
 }
 
 WebAppSyncBridge& WebAppProvider::sync_bridge() {
-  CheckIsConnected();
-  return *sync_bridge_;
+  return sync_bridge_unsafe();
 }
 
 WebAppInstallManager& WebAppProvider::install_manager() {
@@ -293,7 +305,7 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
   }
 
   command_manager_ = std::make_unique<WebAppCommandManager>(profile, this);
-  command_scheduler_ = std::make_unique<WebAppCommandScheduler>(this);
+  command_scheduler_ = std::make_unique<WebAppCommandScheduler>(*profile, this);
 
   registrar_ = std::move(registrar);
   sync_bridge_ = std::move(sync_bridge);
@@ -302,8 +314,8 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
 void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
-  sync_bridge_->SetSubsystems(database_factory_.get(), install_manager_.get(),
-                              command_manager_.get());
+  sync_bridge_->SetSubsystems(database_factory_.get(), command_manager_.get(),
+                              command_scheduler_.get());
   icon_manager_->SetSubsystems(registrar_.get(), install_manager_.get());
   install_finalizer_->SetSubsystems(
       install_manager_.get(), registrar_.get(), ui_manager_.get(),
@@ -321,7 +333,7 @@ void WebAppProvider::ConnectSubsystems() {
       command_scheduler_.get());
   externally_managed_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
-      command_manager_.get(), sync_bridge_.get());
+      command_scheduler_.get(), sync_bridge_.get());
   preinstalled_web_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(),
       externally_managed_app_manager_.get());

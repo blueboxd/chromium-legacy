@@ -5,6 +5,7 @@
 #include "content/browser/network_context_client_base_impl.h"
 
 #include "base/bind.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -81,7 +82,7 @@ void OnScopedFilesAccessAcquired(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&HandleFileUploadRequest, process_id, async, file_paths,
                      std::move(callback),
-                     base::SequencedTaskRunnerHandle::Get(),
+                     base::SequencedTaskRunner::GetCurrentDefault(),
                      std::move(scoped_file_access)));
 }
 
@@ -137,15 +138,6 @@ void NetworkContextClientBase::OnGenerateHttpNegotiateAuthToken(
 #if BUILDFLAG(IS_CHROMEOS)
 void NetworkContextClientBase::OnTrustAnchorUsed() {}
 #endif
-
-void NetworkContextClientBase::OnTrustTokenIssuanceDivertedToSystem(
-    network::mojom::FulfillTrustTokenIssuanceRequestPtr request,
-    OnTrustTokenIssuanceDivertedToSystemCallback callback) {
-  auto response = network::mojom::FulfillTrustTokenIssuanceAnswer::New();
-  response->status =
-      network::mojom::FulfillTrustTokenIssuanceAnswer::Status::kNotFound;
-  std::move(callback).Run(std::move(response));
-}
 
 void NetworkContextClientBase::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {

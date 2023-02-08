@@ -170,7 +170,7 @@ void PersonalizationAppUserProviderImpl::SelectImageFromDisk() {
 
 void PersonalizationAppUserProviderImpl::SelectDefaultImage(int index) {
   if (!ash::default_user_image::IsInCurrentImageSet(index)) {
-    mojo::ReportBadMessage("Invalid user image selected");
+    user_receiver_.ReportBadMessage("Invalid user image selected");
     return;
   }
 
@@ -394,5 +394,4 @@ void PersonalizationAppUserProviderImpl::SetUserImageFileSelectorForTesting(
     std::unique_ptr<ash::UserImageFileSelector> file_selector) {
   user_image_file_selector_ = std::move(file_selector);
 }
-
 }  // namespace ash::personalization_app

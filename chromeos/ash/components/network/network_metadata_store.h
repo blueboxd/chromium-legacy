@@ -11,12 +11,12 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/network/network_configuration_observer.h"
 #include "chromeos/ash/components/network/network_connection_observer.h"
 #include "chromeos/ash/components/network/network_metadata_observer.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
-#include "chromeos/login/login_state/login_state.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -108,11 +108,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
 
   // Stores a list of user-entered APN entries for a cellular network. Takes
   // ownership of |list|.
-  void SetCustomAPNList(const std::string& network_guid, base::Value list);
+  void SetCustomApnList(const std::string& network_guid,
+                        base::Value::List list);
 
   // Returns custom apn list for cellular network with given guid. Returns
   // nullptr if no pref exists for |network_guid|.
-  const base::Value* GetCustomAPNList(const std::string& network_guid);
+  virtual const base::Value::List* GetCustomApnList(
+      const std::string& network_guid);
 
   // When the active user is the device owner and its the first login, this
   // marks networks that were added in OOBE to the user's list.
@@ -136,6 +138,18 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // reset. Returns nullptr if no pref exists for |network_guid|.
   const base::Value* GetDayOfTrafficCountersAutoReset(
       const std::string& network_guid);
+
+  // Records if the default network is configured to use secure DNS template
+  // URIs which contain user or device identifiers.
+  void set_secure_dns_templates_with_identifiers_active(bool active) {
+    secure_dns_templates_with_identifiers_active_ = active;
+  }
+
+  // Returns whether the default network is configured to use secure DNS
+  // template URIs which contain user or device identifiers.
+  bool secure_dns_templates_with_identifiers_active() const {
+    return secure_dns_templates_with_identifiers_active_;
+  }
 
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);
@@ -175,6 +189,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   PrefService* device_pref_service_;
   bool is_enterprise_managed_;
   bool has_profile_loaded_ = false;
+  bool secure_dns_templates_with_identifiers_active_ = false;
   base::WeakPtrFactory<NetworkMetadataStore> weak_ptr_factory_{this};
 };
 

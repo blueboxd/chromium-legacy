@@ -33,12 +33,12 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
-#include "chrome/updater/unittest_util.h"
 #include "chrome/updater/updater_branding.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
-#include "chrome/updater/win/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -65,7 +65,7 @@ const char kUnitTestSwitch[] = "a_switch";
 class TaskSchedulerTests : public ::testing::Test {
  public:
   void SetUp() override {
-    DeleteLogFile();
+    DeleteUpdaterLog();
 
     task_scheduler_ = TaskScheduler::CreateInstance();
     EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
@@ -83,7 +83,7 @@ class TaskSchedulerTests : public ::testing::Test {
                                  TestTimeouts::action_max_timeout());
     EXPECT_FALSE(test::IsProcessRunning(kTestProcessExecutableName));
 
-    DeleteLogFile();
+    DeleteUpdaterLog();
   }
 
   // Converts a base::Time that is in UTC and returns the corresponding local
@@ -106,15 +106,13 @@ class TaskSchedulerTests : public ::testing::Test {
     return base::Time::FromFileTime(file_time_local);
   }
 
-  void DeleteLogFile() {
-    const absl::optional<base::FilePath> log_dir =
-        GetBaseDataDirectory(GetTestScope());
-    if (log_dir) {
-      base::DeleteFile(log_dir->Append(FILE_PATH_LITERAL("updater.log")));
+  void DeleteUpdaterLog() {
+    const absl::optional<base::FilePath> log_file =
+        GetLogFilePath(GetTestScope());
+    if (log_file) {
+      base::DeleteFile(*log_file);
     }
   }
-
-  static void SetUpTestCase() { InitLogging(GetTestScope()); }
 
  protected:
   std::unique_ptr<TaskScheduler> task_scheduler_;
@@ -314,7 +312,8 @@ TEST_F(TaskSchedulerTests, GetTaskInfoExecActions) {
   EXPECT_EQ(0UL, info.exec_actions.size());
   EXPECT_TRUE(task_scheduler_->GetTaskInfo(kTaskName1, &info));
   ASSERT_EQ(1UL, info.exec_actions.size());
-  EXPECT_EQ(command_line1.GetProgram(), info.exec_actions[0].application_path);
+  EXPECT_EQ(base::StrCat({L"\"", command_line1.GetProgram().value(), L"\""}),
+            info.exec_actions[0].application_path.value());
   EXPECT_EQ(command_line1.GetArgumentsString(), info.exec_actions[0].arguments);
 
   base::CommandLine command_line2 = GetTestProcessCommandLine(GetTestScope());
@@ -328,7 +327,8 @@ TEST_F(TaskSchedulerTests, GetTaskInfoExecActions) {
   // the previous contents of the struct.
   EXPECT_TRUE(task_scheduler_->GetTaskInfo(kTaskName2, &info));
   ASSERT_EQ(1UL, info.exec_actions.size());
-  EXPECT_EQ(command_line2.GetProgram(), info.exec_actions[0].application_path);
+  EXPECT_EQ(base::StrCat({L"\"", command_line2.GetProgram().value(), L"\""}),
+            info.exec_actions[0].application_path.value());
   EXPECT_EQ(command_line2.GetArgumentsString(), info.exec_actions[0].arguments);
 
   EXPECT_TRUE(task_scheduler_->DeleteTask(kTaskName1));
@@ -352,10 +352,10 @@ TEST_F(TaskSchedulerTests, GetTaskInfoNameAndDescription) {
   EXPECT_EQ(kTaskDescription1, info.description);
   EXPECT_EQ(kTaskName1, info.name);
 
-  const std::wstring expected_task_folder = base::StrCat(
-      {L"\\" COMPANY_SHORTNAME_STRING,
-       GetTestScope() == UpdaterScope::kSystem ? L"System " : L"User ",
-       L"\\" PRODUCT_FULLNAME_STRING});
+  const std::wstring expected_task_folder =
+      base::StrCat({L"\\" COMPANY_SHORTNAME_STRING,
+                    IsSystemInstall(GetTestScope()) ? L"System" : L"User",
+                    L"\\" PRODUCT_FULLNAME_STRING});
   EXPECT_EQ(task_scheduler_->GetTaskSubfolderName(GetTestScope()),
             expected_task_folder);
   EXPECT_TRUE(task_scheduler_->HasTaskFolder(expected_task_folder.c_str()));
@@ -364,7 +364,7 @@ TEST_F(TaskSchedulerTests, GetTaskInfoNameAndDescription) {
 }
 
 TEST_F(TaskSchedulerTests, GetTaskInfoLogonType) {
-  const bool is_system = GetTestScope() == UpdaterScope::kSystem;
+  const bool is_system = IsSystemInstall(GetTestScope());
 
   base::CommandLine command_line1 = GetTestProcessCommandLine(GetTestScope());
 
@@ -385,7 +385,7 @@ TEST_F(TaskSchedulerTests, GetTaskInfoLogonType) {
 }
 
 TEST_F(TaskSchedulerTests, GetTaskInfoUserId) {
-  const bool is_system = GetTestScope() == UpdaterScope::kSystem;
+  const bool is_system = IsSystemInstall(GetTestScope());
 
   base::CommandLine command_line1 = GetTestProcessCommandLine(GetTestScope());
 

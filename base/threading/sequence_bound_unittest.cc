@@ -14,10 +14,10 @@
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,12 +57,11 @@ struct DirectVariation {
   template <typename T>
   class Wrapper : public SequenceBound<T> {
    public:
-    using SequenceBound = SequenceBound<T>;
-
     template <typename... Args>
     explicit Wrapper(scoped_refptr<SequencedTaskRunner> task_runner,
                      Args&&... args)
-        : SequenceBound(std::move(task_runner), std::forward<Args>(args)...) {}
+        : SequenceBound<T>(std::move(task_runner),
+                           std::forward<Args>(args)...) {}
 
     template <typename... Args>
     void WrappedEmplace(scoped_refptr<SequencedTaskRunner> task_runner,
@@ -70,11 +69,11 @@ struct DirectVariation {
       this->emplace(std::move(task_runner), std::forward<Args>(args)...);
     }
 
-    using SequenceBound::SequenceBound;
-    using SequenceBound::operator=;
+    using SequenceBound<T>::SequenceBound;
+    using SequenceBound<T>::operator=;
 
    private:
-    using SequenceBound::emplace;
+    using SequenceBound<T>::emplace;
   };
 };
 
@@ -84,13 +83,12 @@ struct UniquePtrVariation {
   template <typename T>
   struct Wrapper : public SequenceBound<std::unique_ptr<T>> {
    public:
-    using SequenceBound = SequenceBound<std::unique_ptr<T>>;
-
     template <typename... Args>
     explicit Wrapper(scoped_refptr<SequencedTaskRunner> task_runner,
                      Args&&... args)
-        : SequenceBound(std::move(task_runner),
-                        std::make_unique<T>(std::forward<Args>(args)...)) {}
+        : SequenceBound<std::unique_ptr<T>>(
+              std::move(task_runner),
+              std::make_unique<T>(std::forward<Args>(args)...)) {}
 
     template <typename... Args>
     void WrappedEmplace(scoped_refptr<SequencedTaskRunner> task_runner,
@@ -99,11 +97,11 @@ struct UniquePtrVariation {
                     std::make_unique<T>(std::forward<Args>(args)...));
     }
 
-    using SequenceBound::SequenceBound;
-    using SequenceBound::operator=;
+    using SequenceBound<std::unique_ptr<T>>::SequenceBound;
+    using SequenceBound<std::unique_ptr<T>>::operator=;
 
    private:
-    using SequenceBound::emplace;
+    using SequenceBound<std::unique_ptr<T>>::emplace;
   };
 };
 
@@ -722,7 +720,7 @@ class NoArgsVoidReturn {
   void set_loop(RunLoop* loop) { loop_ = loop; }
 
  private:
-  RunLoop* loop_ = nullptr;
+  raw_ptr<RunLoop> loop_ = nullptr;
 };
 
 class NoArgsIntReturn {
@@ -1107,7 +1105,7 @@ class SequenceBoundDeathTest : public ::testing::Test {
   // Death tests use fork(), which can interact (very) poorly with threads.
   test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<SequencedTaskRunner> task_runner_ =
-      SequencedTaskRunnerHandle::Get();
+      SequencedTaskRunner::GetCurrentDefault();
 };
 
 TEST_F(SequenceBoundDeathTest, AsyncCallIntArgNoWithArgsShouldCheck) {

@@ -65,6 +65,14 @@ static_library("model_executor") {
     "//components/optimization_guide:machine_learning_tflite_buildflags",
     "//third_party/re2",
   ]
+  deps = [
+    ":features",
+    "//base",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//net",
+    "//url",
+  ]
+
   if (build_with_tflite_lib) {
     public_deps += [
       "//components/optimization_guide/core:machine_learning",
@@ -74,15 +82,8 @@ static_library("model_executor") {
       "//third_party/tflite_support",
       "//third_party/tflite_support:tflite_support_proto",
     ]
+    deps += [ ":machine_learning" ]
   }
-  deps = [
-    ":features",
-    ":machine_learning",
-    "//base",
-    "//components/optimization_guide/proto:optimization_guide_proto",
-    "//net",
-    "//url",
-  ]
 }
 
 mojom("interfaces") {
@@ -205,10 +206,10 @@ static_library("core") {
       "model_validator.h",
       "page_content_annotation_job_executor.cc",
       "page_content_annotation_job_executor.h",
-      "page_entities_model_executor.cc",
-      "page_entities_model_executor.h",
-      "page_topics_model_executor.cc",
-      "page_topics_model_executor.h",
+      "page_entities_model_handler.cc",
+      "page_entities_model_handler.h",
+      "page_topics_model_handler.cc",
+      "page_topics_model_handler.h",
       "page_visibility_model_handler.cc",
       "page_visibility_model_handler.h",
     ]
@@ -216,8 +217,8 @@ static_library("core") {
       sources += [
         "entity_annotator_native_library.cc",
         "entity_annotator_native_library.h",
-        "page_entities_model_executor_impl.cc",
-        "page_entities_model_executor_impl.h",
+        "page_entities_model_handler_impl.cc",
+        "page_entities_model_handler_impl.h",
       ]
     }
   }
@@ -267,6 +268,8 @@ static_library("core") {
 
 static_library("prediction") {
   sources = [
+    "model_store_metadata_entry.cc",
+    "model_store_metadata_entry.h",
     "prediction_manager.cc",
     "prediction_manager.h",
     "prediction_model_download_manager.cc",
@@ -274,6 +277,8 @@ static_library("prediction") {
     "prediction_model_download_observer.h",
     "prediction_model_override.cc",
     "prediction_model_override.h",
+    "prediction_model_store.cc",
+    "prediction_model_store.h",
   ]
   deps = [
     "//components/crx_file",
@@ -387,6 +392,7 @@ source_set("unit_tests") {
     "prediction_manager_unittest.cc",
     "prediction_model_download_manager_unittest.cc",
     "prediction_model_fetcher_unittest.cc",
+    "prediction_model_store_unittest.cc",
     "push_notification_manager_unittest.cc",
     "store_update_data_unittest.cc",
     "url_pattern_with_wildcards_unittest.cc",
@@ -396,14 +402,14 @@ source_set("unit_tests") {
       "bert_model_executor_unittest.cc",
       "model_validator_unittest.cc",
       "page_content_annotation_job_executor_unittest.cc",
-      "page_topics_model_executor_unittest.cc",
+      "page_topics_model_handler_unittest.cc",
       "page_visibility_model_handler_unittest.cc",
       "tflite_model_executor_unittest.cc",
     ]
     if (build_with_internal_optimization_guide) {
       sources += [
         "entity_annotator_native_library_unittest.cc",
-        "page_entities_model_executor_impl_unittest.cc",
+        "page_entities_model_handler_impl_unittest.cc",
       ]
     }
   }
@@ -484,7 +490,6 @@ if (is_mac && build_with_internal_optimization_guide) {
 }
 
 if (build_with_tflite_lib) {
-  # TODO(b/249585782): Extend this to support NL models as well.
   template("bert_model_fuzzer") {
     forward_variables_from(invoker, "*")
 
@@ -509,5 +514,18 @@ if (build_with_tflite_lib) {
   bert_model_fuzzer("page_topics") {
     optimization_target = "OPTIMIZATION_TARGET_PAGE_TOPICS_V2"
     model_file_basename = "bert_page_topics_model.tflite"
+  }
+
+  fuzzer_test("optimization_guide_page_visibility_model_fuzzer") {
+    sources = [ "page_visibility_model_fuzzer.cc" ]
+    deps = [
+      ":core",
+      ":features",
+      ":machine_learning",
+      ":model_executor",
+      "//base:base",
+      "//base/test:test_support",
+      "//components/optimization_guide/proto:optimization_guide_proto",
+    ]
   }
 }

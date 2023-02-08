@@ -167,7 +167,7 @@ struct ResourceRequest;
 }  // namespace network
 
 namespace sandbox {
-class SeatbeltExecClient;
+class SandboxCompiler;
 class TargetPolicy;
 namespace mojom {
 enum class Sandbox;
@@ -642,12 +642,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsIsolatedContextAllowedForUrl(BrowserContext* browser_context,
                                               const GURL& lock_url);
 
-  // Checks whether isolated apps developer mode is allowed by the
-  // AllowIsolatedWebAppsDeveloperMode policy (chrome-only, the respective
-  // override can be found in ChromeContentBrowserClient). Returns true by
-  // default.
-  virtual bool IsIsolatedWebAppsDeveloperModeAllowed(BrowserContext* context);
-
   // Check if applications whose origin is |origin| are allowed to perform
   // all-screens-auto-selection, which allows automatic capturing of all
   // screens with the getDisplayMediaSet API.
@@ -859,6 +853,8 @@ class CONTENT_EXPORT ContentBrowserClient {
     kSource,
     kTrigger,
     kReport,
+    kSourceVerboseDebugReport,
+    kTriggerVerboseDebugReport,
     kAny,
   };
 
@@ -882,7 +878,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
-  virtual bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
+  virtual bool IsSharedStorageAllowed(content::RenderFrameHost* rfh,
                                       const url::Origin& top_frame_origin,
                                       const url::Origin& accessing_origin);
 
@@ -1946,6 +1942,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |initiator_document| refers to the document that initiated the navigation,
   // if it is still available. Use |initiating_origin| instead for security
   // decisions.
+  //
+  // |out_factory| allows the embedder to continue the navigation, by providing
+  // their own URLLoader. If it isn't set, the navigation is canceled. It is
+  // canceled either silently when this function returns true, or with an error
+  // page otherwise.
   virtual bool HandleExternalProtocol(
       const GURL& url,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
@@ -2248,7 +2249,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // parameters were set up.
   virtual bool SetupEmbedderSandboxParameters(
       sandbox::mojom::Sandbox sandbox_type,
-      sandbox::SeatbeltExecClient* client);
+      sandbox::SandboxCompiler* compiler);
 #endif  // BUILDFLAG(IS_MAC)
 
   virtual void GetHyphenationDictionary(
@@ -2317,9 +2318,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // embedder to call content::FirstPartySetsHandler::SetPublicFirstPartySets.
   virtual bool WillProvidePublicFirstPartySets();
 
-  // Gets information required for an alternative error page from web app's
-  // manifest for |url|, including theme color, background color and app short
-  // name. The |error_code| is the network error as specified in
+  // This returns a dictionary that an embedder can use to pass data from the
+  // browser to the renderer for error pages.
+  // The |error_code| is the network error as specified in
   // `net/base/net_error_list.h`. Information is returned in a struct. Default
   // implementation returns nullptr.
   virtual mojom::AlternativeErrorPageOverrideInfoPtr

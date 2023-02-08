@@ -43,8 +43,10 @@
 <translation id="1378727793141957596">Karibu kwenye Hifadhi ya Google!</translation>
 <translation id="1379911846207762492">Unaweza kufanya faili zipatikane nje ya mtandao ili uweze kuzipata wakati huna muunganisho wa intaneti.</translation>
 <translation id="1383876407941801731">Tafuta</translation>
+<translation id="1388045380422025115">Aina zote</translation>
 <translation id="1395262318152388157">Tafuta Kitelezi</translation>
 <translation id="1399511500114202393">Hakuna cheti cha mtumiaji</translation>
+<translation id="1403008701842173542">Kila mahali</translation>
 <translation id="1404323374378969387">Kinorwe</translation>
 <translation id="1433628812591023318">Ili uweze kudondosha faili katika Parallels Desktop, ni lazima faili hiyo iwe imehamishiwa kwenye folda ya faili za Windows.</translation>
 <translation id="1435838927755162558">Shiriki folda na Parallels Desktop</translation>
@@ -102,6 +104,7 @@
 <translation id="1834290891154666894">Jina mbadala la kichwa linalolingana si sahihi</translation>
 <translation id="1838709767668011582">Tovuti ya Google</translation>
 <translation id="1853795129690976061">Umeshiriki folda hii na Linux</translation>
+<translation id="1859422890169495746">Chromebook hii</translation>
 <translation id="1864756863218646478">Faili haikupatikana.</translation>
 <translation id="1884013283844450420">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Unganisha</translation>
 <translation id="1920670151694390848">Unukuzi wa mfumo wa kuandika Kimalayalamu</translation>
@@ -133,6 +136,7 @@
 <translation id="2143778271340628265">Usanidi wa proksi na mtumiaji</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2163152940313951844">Herufi si sahihi: <ph name="CHARACTER_NAME" /></translation>
+<translation id="2178056538281447670">Microsoft 365</translation>
 <translation id="2184934335987813305">Kireno kwenye kibodi ya Kimataifa ya Marekani (PC)</translation>
 <translation id="2193661397560634290">Umetumia <ph name="SPACE_USED" /></translation>
 <translation id="2198315389084035571">Kichina Kilichorahisishwa</translation>
@@ -152,6 +156,7 @@
 <translation id="2307462900900812319">Sanidi mtandao</translation>
 <translation id="2325650632570794183">Aina hii ya faili haihimiliwi. Tafadhali tembelea Duka la Wavuti la Chrome ili kupata programu ambayo inaweza kufungua aina hii ya faili.</translation>
 <translation id="2326539130272988168">Kibulgaria</translation>
+<translation id="2337715497728194187">Shiriki na Bruschetta</translation>
 <translation id="23721837607121582">Pakua maelezo ya eSIM ya vifaa vya mkononi, Mtandao <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Tumia mwonekano wa orodha</translation>
 <translation id="2377590462528165447">Umeshiriki folda <ph name="NUMBER_OF_ITEMS" /> katika Linux</translation>
@@ -181,6 +186,7 @@
 <translation id="2544853746127077729">Cheti cha uthibitishaji kimekataliwa na mtandao</translation>
 <translation id="255937426064304553">Kiingereza cha Marekani cha Kimataifa</translation>
 <translation id="2563185590376525700">Chura</translation>
+<translation id="2574327434504608656">Folda 1 imeshirikiwa na Bruschetta</translation>
 <translation id="2578394532502990878">Fonetiki ya Kitamili</translation>
 <translation id="2579959351793446050">Kiodia</translation>
 <translation id="2602810353103180630">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao, <ph name="SIGNAL_STRENGTH" />%, Umezuiwa na Msimamizi wako, Maelezo</translation>
@@ -274,6 +280,7 @@
 <translation id="3408072735282270043">Washa, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Kijerumani (Ujerumani) kwenye kibodi ya Neo 2</translation>
 <translation id="3414856743105198592">Uumbizaji wa media inayohamishika kutafuta data yote. Je, ungependa kuendelea?</translation>
+<translation id="3435143625481187092">Ipatie Bruschetta idhini ya kufikia faili zako zilizo kwenye folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Wakati ilipoundwa</translation>
 <translation id="343907260260897561">Kamera ya Papo Hapo</translation>
 <translation id="3455931012307786678">Kiestonia</translation>
@@ -319,6 +326,7 @@
 <translation id="3801082500826908679">Kifaroe</translation>
 <translation id="3809272675881623365">Sungura</translation>
 <translation id="3810973564298564668">Dhibiti</translation>
+<translation id="3811408895933919563">Kiingereza (Pakistani)</translation>
 <translation id="3811494700605067549">Faili 1 imechaguliwa</translation>
 <translation id="3817579325494460411">Haijatolewa</translation>
 <translation id="3819448694985509187">PIN si sahihi. Umebakisha jaribio moja.</translation>
@@ -353,6 +361,7 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> imehamishwa.</translation>
 <translation id="4176286497474237543">Safisha tupio sasa</translation>
 <translation id="4179621117429069925">Kipengee hiki kipo katika tupio lako</translation>
+<translation id="4181839429935094755">Folda <ph name="NUMBER_OF_ITEMS" /> zimeshirikiwa na Bruschetta</translation>
 <translation id="4186579485882418952">Washa hali ya Nje ya Mtandao</translation>
 <translation id="4193154014135846272">Hati za Google</translation>
 <translation id="4197674956721858839">Punguza uchaguzi</translation>
@@ -414,6 +423,7 @@
 <translation id="4646813851450205600">Kicheki kwenye kibodi ya Qwerty</translation>
 <translation id="4656777537938206294">Fanya faili zipatikane nje ya mtandao</translation>
 <translation id="4658782175094886150">Mtu kwenye theluji</translation>
+<translation id="466782788172479199">Ipatie Bruschetta idhini ya kufikia faili zilizo kwenye Hifadhi yako ya Google. Mabadiliko yatasawazishwa kwenye vifaa vyako vingine.</translation>
 <translation id="4669606053856530811">Wanachama wa '<ph name="SOURCE_NAME" />' hawataweza kuifikia isipokuwa vipengee hivi viwe vinashirikiwa nao.</translation>
 <translation id="467809019005607715">Slaidi za Google</translation>
 <translation id="4690246192099372265">Kisweden</translation>
@@ -447,6 +457,7 @@
 <translation id="4850886885716139402">Mwonekano</translation>
 <translation id="485316830061041779">Kijerumani</translation>
 <translation id="4867079195717347957">Bofya ili upange safu wima katika mpangilio wa kushuka.</translation>
+<translation id="4867297348137739678">Wiki iliyopita</translation>
 <translation id="4873265419374180291">Baiti <ph name="NUMBER_OF_BYTES" /></translation>
 <translation id="4874569719830985133">Futa kabisa</translation>
 <translation id="4880214202172289027">Kitelezi cha sauti</translation>
@@ -520,6 +531,7 @@
 <translation id="5330145655348521461">Faili hizi zilifunguka kwenye eneo-kazi tofauti. Sogea kwenye <ph name="USER_NAME" /> ( <ph name="MAIL_ADDRESS" /> ) ili uzione.</translation>
 <translation id="5330512191124428349">Pata maelezo</translation>
 <translation id="5337538975554986899">URL zote zinaweza kufikia faili isipokuwa <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
+<translation id="5344246330454251646">Dhibiti hali ya kushiriki na Bruschetta</translation>
 <translation id="535792325654997756">Mtu aliye na paka</translation>
 <translation id="5358764674931277">Kasi ya picha</translation>
 <translation id="5363339716524495120">Lugha ya kuweka data ni Kichina</translation>
@@ -565,6 +577,7 @@
 <translation id="5700087501958648444">Maelezo ya faili ya sauti</translation>
 <translation id="5720028165859493293"><ph name="FILE_NAME" /> imehamishiwa kwenye tupio</translation>
 <translation id="5724172041621205163">Kitai kwenye kibodi ya Pattachote</translation>
+<translation id="57383366388012121">Mwezi uliopita</translation>
 <translation id="5756666464756035725">QWERTY ya Kihungaria</translation>
 <translation id="5763377084591234761">Kijerumani (Uswizi)</translation>
 <translation id="5769519078756170258">Seva pangishi au kikoa kitakachotengwa</translation>
@@ -674,6 +687,7 @@
 <translation id="6710213216561001401">Iliyopita</translation>
 <translation id="6732801395666424405">Vyeti havijapakiwa</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
+<translation id="6740270213273127264">Shiriki folda na Bruschetta</translation>
 <translation id="6751256176799620176">Folda 1 imechaguliwa</translation>
 <translation id="6755827872271341378">Kifaa cha ChromeOS Flex</translation>
 <translation id="6790428901817661496">Cheza</translation>
@@ -693,7 +707,6 @@
 <translation id="6874758081814639712">Mtu anayefanya 'tai chi'</translation>
 <translation id="6876155724392614295">Baiskeli</translation>
 <translation id="6878261347041253038">Kibodi ya Kidevanagari (Fonetiki)</translation>
-<translation id="6881853403185175088">Ofisi</translation>
 <translation id="6885780034956018177">Konokono</translation>
 <translation id="6896758677409633944">Nakili</translation>
 <translation id="6898028766943174120">Folda nyingine ndogo...</translation>
@@ -703,6 +716,7 @@
 <translation id="6935521024859866267">Juu Chini</translation>
 <translation id="6943836128787782965">HTTP imeshindikana</translation>
 <translation id="6949408524333579394">Unukuzi wa mfumo wa kuandika Kiserbia</translation>
+<translation id="69548399407432279">Mwaka uliopita</translation>
 <translation id="6960565108681981554">Haijawashwa. Wasiliana na mtoa huduma wako.</translation>
 <translation id="696203921837389374">Washa inasawazisha kwenye data ya kifaa cha mkononi</translation>
 <translation id="6965382102122355670">Sawa</translation>
@@ -711,6 +725,7 @@
 <translation id="6973630695168034713">Folda</translation>
 <translation id="6976795442547527108">Simba</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
+<translation id="6979737339423435258">Wakati wote</translation>
 <translation id="6989942356279143254">Kiswidi</translation>
 <translation id="6990081529015358884">Nafasi yako imeisha</translation>
 <translation id="6993826899923627728">Vipengee hivi vipo kwenye tupio lako</translation>
@@ -845,6 +860,7 @@
 <translation id="8042602468072383151">Faili ya sauti ya <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">Kiromania</translation>
 <translation id="8049184478152619004">Weka Nambari Binafsi ya Kufungua (PUK)</translation>
+<translation id="8055538340801153769">Folda hii</translation>
 <translation id="807187749540895545">Inatoa <ph name="FILE_NAME" /> ...</translation>
 <translation id="8087576439476816834">Pakua, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Zilizoshirikiwa na mimi</translation>

@@ -10,6 +10,7 @@
 
 #include "base/values.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
+#include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -64,6 +65,8 @@ class FakeDiagnosticsService : public crosapi::mojom::DiagnosticsService {
   void RunFloatingPointAccuracyRoutine(
       uint32_t length_seconds,
       RunFloatingPointAccuracyRoutineCallback callback) override;
+  void RunFingerprintAliveRoutine(
+      RunFingerprintAliveRoutineCallback callback) override;
   void RunGatewayCanBePingedRoutine(
       RunGatewayCanBePingedRoutineCallback callback) override;
   void RunLanConnectivityRoutine(
@@ -77,9 +80,12 @@ class FakeDiagnosticsService : public crosapi::mojom::DiagnosticsService {
       RunNvmeWearLevelRoutineCallback callback) override;
   void RunPrimeSearchRoutine(uint32_t length_seconds,
                              RunPrimeSearchRoutineCallback callback) override;
+  void RunSensitiveSensorRoutine(
+      RunSensitiveSensorRoutineCallback callback) override;
   void RunSignalStrengthRoutine(
       RunSignalStrengthRoutineCallback callback) override;
   void RunSmartctlCheckRoutine(
+      crosapi::mojom::UInt32ValuePtr percentage_used_threshold,
       RunSmartctlCheckRoutineCallback callback) override;
 
   // Sets the return value for |Run*Routine|.

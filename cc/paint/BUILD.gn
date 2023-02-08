@@ -49,8 +49,12 @@ cc_component("paint") {
     "paint_image_builder.h",
     "paint_image_generator.cc",
     "paint_image_generator.h",
+    "paint_op.cc",
+    "paint_op.h",
     "paint_op_buffer.cc",
     "paint_op_buffer.h",
+    "paint_op_buffer_iterator.cc",
+    "paint_op_buffer_iterator.h",
     "paint_op_buffer_serializer.cc",
     "paint_op_buffer_serializer.h",
     "paint_op_reader.cc",
@@ -132,7 +136,6 @@ cc_component("paint") {
     "//components/crash/core/common:crash_key",
     "//gpu/command_buffer/common:mailbox",
     "//ui/gfx/animation",
-    "//ui/gfx/ipc/color",
   ]
 
   if (skia_support_skottie) {

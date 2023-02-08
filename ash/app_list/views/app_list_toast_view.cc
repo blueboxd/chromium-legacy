@@ -11,6 +11,7 @@
 #include "ash/bubble/bubble_utils.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
@@ -200,6 +201,7 @@ AppListToastView::AppListToastView(const std::u16string title) {
 
   title_label_ =
       label_container_->AddChildView(std::make_unique<views::Label>(title));
+  bubble_utils::ApplyStyle(title_label_, bubble_utils::TypographyStyle::kBody2);
   title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   // TODO(crbug/682266): This is a temporary fix for the issue where the multi
@@ -223,15 +225,6 @@ void AppListToastView::StyleForTabletMode() {
 
 void AppListToastView::OnThemeChanged() {
   views::View::OnThemeChanged();
-  if (title_label_) {
-    bubble_utils::ApplyStyle(title_label_,
-                             bubble_utils::TypographyStyle::kBody2);
-  }
-  if (subtitle_label_) {
-    bubble_utils::ApplyStyle(
-        subtitle_label_, bubble_utils::TypographyStyle::kAnnotation1,
-        AshColorProvider::ContentLayerType::kTextColorSecondary);
-  }
 
   if (style_for_tablet_mode_) {
     SetBackground(views::CreateRoundedRectBackground(
@@ -270,7 +263,7 @@ void AppListToastView::SetCloseButton(
   DCHECK(close_button_callback);
 
   close_button_ = AddChildView(std::make_unique<IconButton>(
-      close_button_callback, IconButton::Type::kSmallFloating,
+      close_button_callback, IconButton::Type::kMediumFloating,
       &vector_icons::kCloseIcon,
       IDS_ASH_LAUNCHER_CLOSE_SORT_TOAST_BUTTON_SPOKEN_TEXT));
   close_button_->SetProperty(views::kMarginsKey, kCloseButtonMargin);
@@ -288,6 +281,9 @@ void AppListToastView::SetSubtitle(const std::u16string subtitle) {
 
   subtitle_label_ =
       label_container_->AddChildView(std::make_unique<views::Label>(subtitle));
+  bubble_utils::ApplyStyle(subtitle_label_,
+                           bubble_utils::TypographyStyle::kAnnotation1,
+                           kColorAshTextColorSecondary);
   subtitle_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 }
 

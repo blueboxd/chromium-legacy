@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/ash/login/test/feature_parameter_interface.h"
@@ -74,7 +73,7 @@ class OobeTest : public OobeBaseTest, public FeatureAsParameterInterface<1> {
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&chrome::AttemptExit));
       RunUntilBrowserProcessQuits();
     }
@@ -98,9 +97,6 @@ class OobeTest : public OobeBaseTest, public FeatureAsParameterInterface<1> {
 IN_PROC_BROWSER_TEST_P(OobeTest, NewUser) {
   WaitForGaiaPageLoad();
 
-  // Make the MountEx cryptohome call fail iff the `create` field is missing,
-  // which simulates the real cryptohomed's behavior for the new user mount.
-  FakeUserDataAuthClient::TestApi::Get()->set_mount_create_required(true);
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()

@@ -16,12 +16,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -218,12 +218,12 @@ class FakeJob : public RemoteCommandJob {
   // Finish this job and report success.
   void FinishWithSuccess(const std::string& payload) {
     DCHECK(!succeed_callback_.is_null());
-    std::move(succeed_callback_).Run(std::make_unique<StringPayload>(payload));
+    std::move(succeed_callback_).Run(payload);
   }
   // Finish this job and report an error.
   void FinishWithFailure(const std::string& payload) {
     DCHECK(!failed_callback_.is_null());
-    std::move(failed_callback_).Run(std::make_unique<StringPayload>(payload));
+    std::move(failed_callback_).Run(payload);
   }
 
   void Finish() { FinishWithSuccess(""); }
@@ -244,22 +244,6 @@ class FakeJob : public RemoteCommandJob {
   }
 
  private:
-  class StringPayload : public RemoteCommandJob::ResultPayload {
-   public:
-    explicit StringPayload(const std::string& payload) : payload_(payload) {}
-    StringPayload(const StringPayload&) = delete;
-    StringPayload& operator=(const StringPayload&) = delete;
-    ~StringPayload() override = default;
-
-    // RemoteCommandJob::ResultPayload implementation:
-    std::unique_ptr<std::string> Serialize() override {
-      return std::make_unique<std::string>(payload_);
-    }
-
-   private:
-    const std::string payload_;
-  };
-
   const enterprise_management::RemoteCommand_Type type_;
 
   // The payload passed to ParseCommandPayload().
@@ -367,7 +351,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
         server_->FetchCommands(std::move(last_command_id), command_results);
 
     // Asynchronously send the response from the DMServer back to client.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), DM_STATUS_SUCCESS, commands));
   }

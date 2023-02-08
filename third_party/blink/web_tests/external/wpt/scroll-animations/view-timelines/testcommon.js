@@ -1,5 +1,12 @@
 'use strict';
 
+function assert_px_equals(observed, expected, description) {
+  assert_equals(observed.unit, 'px',
+                `Unexpected unit type for '${description}'`);
+  assert_approx_equals(observed.value, expected, 0.0001,
+                       `Unexpected value for ${description}`);
+}
+
 function CreateViewTimelineOpacityAnimation(test, target, options) {
   const viewTimelineOptions = {
     subject: target,
@@ -123,6 +130,8 @@ async function runTimelineInsetTest(t, options) {
     fill: 'both'
   }
   const length = options.inset.length;
-  const range = options.inset.join(' ');
+  const range =
+      (options.inset instanceof Array) ? options.inset.join(' ')
+                                       : options.inset;
   return runTimelineRangeTest(t, options, range);
 }

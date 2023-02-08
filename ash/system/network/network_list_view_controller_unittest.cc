@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/fake_network_detailed_network_view.h"
 #include "ash/system/network/fake_network_list_mobile_header_view.h"
@@ -26,6 +28,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/network/mock_managed_network_configuration_handler.h"
+#include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/network/network_handler_test_helper.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_type_pattern.h"
@@ -39,7 +43,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -49,9 +57,14 @@ using bluetooth_config::ScopedBluetoothConfigTestHelper;
 using bluetooth_config::mojom::BluetoothSystemState;
 using ::chromeos::network_config::NetworkTypeMatchesType;
 using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::ManagedPropertiesPtr;
+using ::chromeos::network_config::mojom::ManagedString;
 using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using ::chromeos::network_config::mojom::NetworkType;
+using ::chromeos::network_config::mojom::PolicySource;
 using ::testing::_;
+using ::testing::IsNull;
+using ::testing::NotNull;
 using ::testing::Return;
 
 const std::string kCellularName = "cellular";
@@ -141,9 +154,67 @@ class TestNetworkStateHandlerObserver : public NetworkStateHandlerObserver {
   size_t tether_scan_request_count_ = 0;
 };
 
+bool IsManagedIcon(views::ImageView* icon) {
+  const gfx::ImageSkia managed_icon = gfx::CreateVectorIcon(
+      kSystemTrayManagedIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary));
+  return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
+                              *managed_icon.bitmap());
+}
+
+bool IsSystemIcon(views::ImageView* icon) {
+  const gfx::ImageSkia system_icon = gfx::CreateVectorIcon(
+      kSystemMenuInfoIcon,
+      AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary));
+  return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
+                              *system_icon.bitmap());
+}
+
+NetworkStatePropertiesPtr GetDefaultNetworkWithProxy(const std::string& guid) {
+  auto default_network =
+      chromeos::network_config::mojom::NetworkStateProperties::New();
+  default_network->guid = guid;
+  default_network->proxy_mode =
+      ::chromeos::network_config::mojom::ProxyMode::kAutoDetect;
+
+  return default_network;
+}
+
+ManagedPropertiesPtr GetManagedNetworkPropertiesWithVPN(bool is_managed) {
+  auto managed_properties =
+      chromeos::network_config::mojom::ManagedProperties::New();
+  auto host = ManagedString::New();
+  host->active_value = "test";
+  host->policy_source =
+      is_managed ? PolicySource::kUserPolicyEnforced : PolicySource::kNone;
+  auto vpn = chromeos::network_config::mojom::ManagedVPNProperties::New();
+  vpn->host = std::move(host);
+  managed_properties->type_properties =
+      chromeos::network_config::mojom::NetworkTypeManagedProperties::NewVpn(
+          std::move(vpn));
+  return managed_properties;
+}
+
+ManagedPropertiesPtr GetManagedNetworkPropertiesWithProxy(bool is_managed) {
+  auto managed_properties =
+      chromeos::network_config::mojom::ManagedProperties::New();
+  auto proxy_type = ManagedString::New();
+  proxy_type->active_value = "test";
+  proxy_type->policy_source =
+      is_managed ? PolicySource::kUserPolicyEnforced : PolicySource::kNone;
+  auto proxy_settings =
+      chromeos::network_config::mojom::ManagedProxySettings::New();
+  proxy_settings->type = std::move(proxy_type);
+  managed_properties->proxy_settings = std::move(proxy_settings);
+  return managed_properties;
+}
+
 }  // namespace
 
-class NetworkListViewControllerTest : public AshTestBase {
+class NetworkListViewControllerTest : public AshTestBase,
+                                      public testing::WithParamInterface<bool> {
  public:
   NetworkListViewControllerTest()
       : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
@@ -153,6 +224,15 @@ class NetworkListViewControllerTest : public AshTestBase {
   ~NetworkListViewControllerTest() override = default;
 
   void SetUp() override {
+    if (IsQsRevampEnabled()) {
+      feature_list_.InitWithFeatures(
+          {features::kQsRevamp, features::kQsRevampWip,
+           features::kQuickSettingsNetworkRevamp},
+          {});
+    } else {
+      feature_list_.InitAndEnableFeature(features::kQuickSettingsNetworkRevamp);
+    }
+
     // Initialize CrosNetworkConfigTestHelper here, so we can use
     // MockManagedNetworkConfigurationHandler.
     cros_network_config_test_helper_ =
@@ -174,8 +254,6 @@ class NetworkListViewControllerTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    feature_list_.InitAndEnableFeature(features::kQuickSettingsNetworkRevamp);
-
     fake_network_detailed_network_view_ =
         std::make_unique<FakeNetworkDetailedNetworkView>(
             /*delegate=*/nullptr);
@@ -188,6 +266,8 @@ class NetworkListViewControllerTest : public AshTestBase {
         std::make_unique<TestNetworkStateHandlerObserver>();
     network_state_handler()->AddObserver(network_state_handler_observer_.get());
   }
+
+  bool IsQsRevampEnabled() { return GetParam(); }
 
   void SetGlobalPolicyConfig(bool allow_only_policy) {
     base::Value::Dict global_config_dict;
@@ -207,13 +287,17 @@ class NetworkListViewControllerTest : public AshTestBase {
           ->FlushGlobalPolicyForTesting();
       base::RunLoop().RunUntilIdle();
     }
+
+    NetworkHandler::Get()->managed_network_configuration_handler()->SetPolicy(
+        ::onc::ONC_SOURCE_DEVICE_POLICY, /*userhash=*/std::string(),
+        base::ListValue(), global_config_);
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
     network_state_handler()->RemoveObserver(
         network_state_handler_observer_.get());
     network_state_handler_observer_.reset();
-
     network_list_view_controller_impl_.reset();
     fake_network_detailed_network_view_.reset();
     cros_network_config_test_helper_.reset();
@@ -277,6 +361,12 @@ class NetworkListViewControllerTest : public AshTestBase {
     return FindViewById<views::Label*>(
         NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
             kConnectionWarningLabel);
+  }
+
+  views::ImageView* GetConnectionWarningIcon() {
+    return FindViewById<views::ImageView*>(
+        NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
+            kConnectionWarningIcon);
   }
 
   views::View* GetViewInNetworkList(std::string id) {
@@ -345,9 +435,18 @@ class NetworkListViewControllerTest : public AshTestBase {
     }
 
     for (int i = 0; i < wifi_network_count; i++) {
-      CheckNetworkListItem(NetworkType::kWiFi, index, /*guid=*/absl::nullopt);
-      EXPECT_STREQ(network_list()->children().at(index++)->GetClassName(),
-                   kNetworkListNetworkItemView);
+      if (IsQsRevampEnabled()) {
+        // There's a wifi group label above the item view.
+        CheckNetworkListItem(NetworkType::kWiFi, index + 1,
+                             /*guid=*/absl::nullopt);
+        EXPECT_STREQ(network_list()->children().at(index + 1)->GetClassName(),
+                     kNetworkListNetworkItemView);
+        index++;
+      } else {
+        CheckNetworkListItem(NetworkType::kWiFi, index, /*guid=*/absl::nullopt);
+        EXPECT_STREQ(network_list()->children().at(index++)->GetClassName(),
+                     kNetworkListNetworkItemView);
+      }
     }
 
     if (!wifi_network_count) {
@@ -481,14 +580,13 @@ class NetworkListViewControllerTest : public AshTestBase {
     CellularInhibitor::InhibitReason inhibit_reason =
         CellularInhibitor::InhibitReason::kInstallingProfile;
     std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock;
-    cros_network_config_test_helper_->cellular_inhibitor()
-        ->InhibitCellularScanning(
-            inhibit_reason,
-            base::BindLambdaForTesting(
-                [&](std::unique_ptr<CellularInhibitor::InhibitLock> result) {
-                  inhibit_lock = std::move(result);
-                  inhibit_loop.Quit();
-                }));
+    NetworkHandler::Get()->cellular_inhibitor()->InhibitCellularScanning(
+        inhibit_reason,
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<CellularInhibitor::InhibitLock> result) {
+              inhibit_lock = std::move(result);
+              inhibit_loop.Quit();
+            }));
     inhibit_loop.Run();
     return inhibit_lock;
   }
@@ -499,17 +597,6 @@ class NetworkListViewControllerTest : public AshTestBase {
       ConnectionStateType connection_state) {
     return cros_network_config_test_helper_->CreateStandaloneNetworkProperties(
         id, type, connection_state, kSignalStrength);
-  }
-
-  bool GetNetworkListItemIsEnabled(size_t index) {
-    EXPECT_STREQ(network_list()->children().at(index)->GetClassName(),
-                 kNetworkListNetworkItemView);
-
-    NetworkListNetworkItemView* network =
-        static_cast<NetworkListNetworkItemView*>(
-            network_list()->children().at(index));
-
-    return network->GetEnabled();
   }
 
   void SetBluetoothAdapterState(BluetoothSystemState system_state) {
@@ -532,12 +619,23 @@ class NetworkListViewControllerTest : public AshTestBase {
         .IsRunning();
   }
 
-  NetworkStateHandler* network_state_handler() {
-    return network_state_helper()->network_state_handler();
+  void SetDefaultNetworkForTesting(NetworkStatePropertiesPtr default_network) {
+    network_list_view_controller_impl_->SetDefaultNetworkForTesting(
+        std::move(default_network));
   }
 
-  NetworkStateTestHelper* network_state_helper() {
-    return &cros_network_config_test_helper_->network_state_helper();
+  void SetManagedNetworkPropertiesForTesting(
+      ManagedPropertiesPtr managed_properties) {
+    network_list_view_controller_impl_->SetManagedNetworkPropertiesForTesting(
+        std::move(managed_properties));
+  }
+
+  NetworkStateHandler* network_state_handler() {
+    return NetworkHandler::Get()->network_state_handler();
+  }
+
+  NetworkHandlerTestHelper* network_state_helper() {
+    return &network_handler_test_helper_;
   }
 
   views::View* network_list() {
@@ -578,9 +676,15 @@ class NetworkListViewControllerTest : public AshTestBase {
 
   std::unique_ptr<TestNetworkStateHandlerObserver>
       network_state_handler_observer_;
+
+  NetworkHandlerTestHelper network_handler_test_helper_;
 };
 
-TEST_F(NetworkListViewControllerTest, MobileDataSectionIsShown) {
+INSTANTIATE_TEST_SUITE_P(QsRevamp,
+                         NetworkListViewControllerTest,
+                         testing::Bool() /* IsQsRevampEnabled() */);
+
+TEST_P(NetworkListViewControllerTest, MobileDataSectionIsShown) {
   EXPECT_EQ(nullptr, GetMobileSubHeader());
   EXPECT_EQ(nullptr, GetMobileSeparator());
   histogram_tester.ExpectBucketCount("ChromeOS.SystemTray.Network.SectionShown",
@@ -638,7 +742,7 @@ TEST_F(NetworkListViewControllerTest, MobileDataSectionIsShown) {
                                      DetailedViewSection::kMobileSection, 4);
 }
 
-TEST_F(NetworkListViewControllerTest, WifiSectionHeader) {
+TEST_P(NetworkListViewControllerTest, WifiSectionHeader) {
   EXPECT_EQ(nullptr, GetWifiSubHeader());
   EXPECT_EQ(nullptr, GetWifiSeparator());
   histogram_tester.ExpectBucketCount("ChromeOS.SystemTray.Network.SectionShown",
@@ -670,7 +774,7 @@ TEST_F(NetworkListViewControllerTest, WifiSectionHeader) {
                                      DetailedViewSection::kWifiSection, 1);
 }
 
-TEST_F(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
+TEST_P(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
   EXPECT_EQ(nullptr, GetMobileSubHeader());
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
 
@@ -712,7 +816,7 @@ TEST_F(NetworkListViewControllerTest, MobileSectionHeaderAddEsimButtonStates) {
   EXPECT_FALSE(GetMobileSubHeader()->is_add_esim_visible());
 }
 
-TEST_F(NetworkListViewControllerTest, HasCorrectMobileNetworkList) {
+TEST_P(NetworkListViewControllerTest, HasCorrectMobileNetworkList) {
   EXPECT_EQ(0u, network_list()->children().size());
   EXPECT_EQ(nullptr, GetMobileSubHeader());
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
@@ -777,7 +881,7 @@ TEST_F(NetworkListViewControllerTest, HasCorrectMobileNetworkList) {
                        /*guid=*/kTetherName);
 }
 
-TEST_F(NetworkListViewControllerTest, HasCorrectEthernetNetworkList) {
+TEST_P(NetworkListViewControllerTest, HasCorrectEthernetNetworkList) {
   std::vector<NetworkStatePropertiesPtr> networks;
   histogram_tester.ExpectBucketCount("ChromeOS.SystemTray.Network.SectionShown",
                                      DetailedViewSection::kEthernetSection, 0);
@@ -844,7 +948,7 @@ TEST_F(NetworkListViewControllerTest, HasCorrectEthernetNetworkList) {
                        /*guid=*/kCellularName);
 }
 
-TEST_F(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
+TEST_P(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
   std::vector<NetworkStatePropertiesPtr> networks;
 
   // Add an enabled wifi device.
@@ -855,13 +959,20 @@ TEST_F(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
       kWifiName, NetworkType::kWiFi, ConnectionStateType::kNotConnected);
   networks.push_back(std::move(wifi_network));
   UpdateNetworkList(networks);
-
   CheckNetworkListOrdering(/*ethernet_network_count=*/0,
                            /*mobile_network_count=*/-1,
                            /*wifi_network_count=*/1);
+  if (IsQsRevampEnabled()) {
+    EXPECT_EQ(
+        u"Unknown networks",
+        static_cast<views::Label*>(network_list()->children()[1])->GetText());
 
-  // Wifi list item will be at index 1 after Wifi header.
-  CheckNetworkListItem(NetworkType::kWiFi, /*index=*/1u, /*guid=*/kWifiName);
+    // Wifi list item will be at index 2 after Wifi group label.
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/2u, /*guid=*/kWifiName);
+  } else {
+    // Wifi list item will be at index 1 after Wifi header.
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/1u, /*guid=*/kWifiName);
+  }
 
   // Add mobile network.
   AddEuicc();
@@ -876,9 +987,16 @@ TEST_F(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
                            /*mobile_network_count=*/1,
                            /*wifi_network_count=*/1);
 
-  // Wifi list item be at index 4 after Mobile header, Mobile network
-  // item, Wifi separator and header.
-  CheckNetworkListItem(NetworkType::kWiFi, /*index=*/4u, /*guid=*/kWifiName);
+  if (IsQsRevampEnabled()) {
+    EXPECT_EQ(
+        u"Unknown networks",
+        static_cast<views::Label*>(network_list()->children()[4])->GetText());
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/5u, /*guid=*/kWifiName);
+  } else {
+    // Wifi list item be at index 4 after Mobile header, Mobile network
+    // item, Wifi separator and header.
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/4u, /*guid=*/kWifiName);
+  }
 
   // Add a second Wifi network.
   wifi_network = CreateStandaloneNetworkProperties(
@@ -889,11 +1007,19 @@ TEST_F(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
   CheckNetworkListOrdering(/*ethernet_network_count=*/0,
                            /*mobile_network_count=*/1,
                            /*wifi_network_count=*/2);
-  CheckNetworkListItem(NetworkType::kWiFi, /*index=*/4u, /*guid=*/kWifiName);
-  CheckNetworkListItem(NetworkType::kWiFi, /*index=*/5u, /*guid=*/kWifiName2);
+  if (IsQsRevampEnabled()) {
+    EXPECT_EQ(
+        u"Unknown networks",
+        static_cast<views::Label*>(network_list()->children()[4])->GetText());
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/5u, /*guid=*/kWifiName);
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/6u, /*guid=*/kWifiName2);
+  } else {
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/4u, /*guid=*/kWifiName);
+    CheckNetworkListItem(NetworkType::kWiFi, /*index=*/5u, /*guid=*/kWifiName2);
+  }
 }
 
-TEST_F(NetworkListViewControllerTest,
+TEST_P(NetworkListViewControllerTest,
        CellularStatusMessageAndToggleButtonState) {
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
 
@@ -1002,7 +1128,7 @@ TEST_F(NetworkListViewControllerTest,
   EXPECT_FALSE(GetMobileSubHeader()->is_toggle_enabled());
 }
 
-TEST_F(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
+TEST_P(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
   // Mobile section is not shown if Tether network is unavailable.
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
 
@@ -1056,7 +1182,7 @@ TEST_F(NetworkListViewControllerTest, HasCorrectTetherStatusMessage) {
   EXPECT_EQ(nullptr, GetMobileStatusMessage());
 }
 
-TEST_F(NetworkListViewControllerTest, HasCorrectWifiStatusMessage) {
+TEST_P(NetworkListViewControllerTest, HasCorrectWifiStatusMessage) {
   EXPECT_EQ(nullptr, GetWifiStatusMessage());
 
   // Add an enabled wifi device.
@@ -1090,28 +1216,103 @@ TEST_F(NetworkListViewControllerTest, HasCorrectWifiStatusMessage) {
                            /*wifi_network_count=*/1);
 }
 
-TEST_F(NetworkListViewControllerTest, HasConnectionWarning) {
+TEST_P(NetworkListViewControllerTest, ConnectionWarningSystemIconVpn) {
   EXPECT_EQ(nullptr, GetConnectionWarning());
 
+  SetManagedNetworkPropertiesForTesting(GetManagedNetworkPropertiesWithVPN(
+      /*is_managed=*/false));
   AddVpnDevice();
   std::vector<NetworkStatePropertiesPtr> networks;
   networks.push_back(CreateStandaloneNetworkProperties(
       kVpnName, NetworkType::kVPN, ConnectionStateType::kConnected));
   UpdateNetworkList(networks);
+  base::RunLoop().RunUntilIdle();
 
-  EXPECT_NE(nullptr, GetConnectionWarning());
-  EXPECT_NE(nullptr, GetConnectionLabelView());
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING),
       GetConnectionLabelView()->GetText());
   EXPECT_EQ(network_list()->children().at(0), GetConnectionWarning());
+  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(icon, NotNull());
+  EXPECT_TRUE(IsSystemIcon(icon));
 
   // Clear all devices and make sure warning is no longer being shown.
   network_state_helper()->ClearDevices();
   EXPECT_EQ(nullptr, GetConnectionWarning());
 }
 
-TEST_F(NetworkListViewControllerTest, NetworkScanning) {
+TEST_P(NetworkListViewControllerTest, ConnectionWarningManagedIconVpn) {
+  EXPECT_EQ(nullptr, GetConnectionWarning());
+
+  SetManagedNetworkPropertiesForTesting(GetManagedNetworkPropertiesWithVPN(
+      /*is_managed=*/true));
+  AddVpnDevice();
+  std::vector<NetworkStatePropertiesPtr> networks;
+  networks.push_back(CreateStandaloneNetworkProperties(
+      kVpnName, NetworkType::kVPN, ConnectionStateType::kConnected));
+  UpdateNetworkList(networks);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING),
+      GetConnectionLabelView()->GetText());
+  EXPECT_EQ(network_list()->children().at(0), GetConnectionWarning());
+  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(icon, NotNull());
+  EXPECT_TRUE(IsManagedIcon(icon));
+
+  // Clear all devices and make sure warning is no longer being shown.
+  network_state_helper()->ClearDevices();
+  EXPECT_EQ(nullptr, GetConnectionWarning());
+}
+
+TEST_P(NetworkListViewControllerTest, ConnectionWarningSystemIconProxy) {
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  SetDefaultNetworkForTesting(GetDefaultNetworkWithProxy(kWifiName));
+  SetManagedNetworkPropertiesForTesting(
+      GetManagedNetworkPropertiesWithProxy(/*is_managed*/ false));
+  AddWifiDevice();
+
+  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(icon, NotNull());
+  EXPECT_TRUE(IsSystemIcon(icon));
+}
+
+TEST_P(NetworkListViewControllerTest, ConnectionWarningManagedIconProxy) {
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  SetDefaultNetworkForTesting(GetDefaultNetworkWithProxy(kWifiName));
+  SetManagedNetworkPropertiesForTesting(GetManagedNetworkPropertiesWithProxy(
+      /*is_managed=*/true));
+  AddWifiDevice();
+
+  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(icon, NotNull());
+  EXPECT_TRUE(IsManagedIcon(icon));
+}
+
+TEST_P(NetworkListViewControllerTest,
+       ConnectionWarningDnsTemplateUriWithIdentifier) {
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+  auto default_network =
+      chromeos::network_config::mojom::NetworkStateProperties::New();
+  default_network->guid = kWifiName;
+  default_network->dns_queries_monitored = true;
+  SetDefaultNetworkForTesting(std::move(default_network));
+
+  AddWifiDevice();
+
+  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(icon, NotNull());
+  EXPECT_TRUE(IsManagedIcon(icon));
+}
+
+TEST_P(NetworkListViewControllerTest, NetworkScanning) {
   network_state_helper()->ClearDevices();
   network_state_helper()->manager_test()->SetInteractiveDelay(
       kInteractiveDelay);
@@ -1170,32 +1371,6 @@ TEST_F(NetworkListViewControllerTest, NetworkScanning) {
   EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
   EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
   EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
-}
-
-TEST_F(NetworkListViewControllerTest, NetworkItemIsEnabled) {
-  AddEuicc();
-  SetupCellular();
-  ASSERT_THAT(GetMobileSubHeader(), testing::NotNull());
-
-  std::vector<NetworkStatePropertiesPtr> networks;
-
-  NetworkStatePropertiesPtr cellular_network =
-      CreateStandaloneNetworkProperties(kCellularName, NetworkType::kCellular,
-                                        ConnectionStateType::kConnected);
-  cellular_network->prohibited_by_policy = false;
-  networks.push_back(std::move(cellular_network));
-  UpdateNetworkList(networks);
-
-  CheckNetworkListItem(NetworkType::kCellular, /*index=*/1u, kCellularName);
-  EXPECT_TRUE(GetNetworkListItemIsEnabled(1u));
-
-  networks.front()->prohibited_by_policy = true;
-  UpdateNetworkList(networks);
-  EXPECT_FALSE(GetNetworkListItemIsEnabled(1u));
-
-  networks.front()->prohibited_by_policy = false;
-  UpdateNetworkList(networks);
-  EXPECT_TRUE(GetNetworkListItemIsEnabled(1u));
 }
 
 }  // namespace ash

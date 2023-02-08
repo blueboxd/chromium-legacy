@@ -70,6 +70,17 @@ class HTMLAreaElement;
 class LocalFrameView;
 class WebLocalFrameClient;
 
+// Describes a decicion on whether to create an AXNodeObject, an AXLayoutObject,
+// or nothing (which will cause the AX subtree to be pruned at that point).
+// Currently this also mirrors the decision on whether to back the object by a
+// node or a layout object. When the AXObject is backed by a node, it's
+// AXID can be looked up in node_object_mapping_, and when the AXObject is
+// backed by layout, it's AXID can be looked up in layout_object_mapping_.
+// TODO(accessibility) Split the decision of what to use for backing from what
+// type of object to create, and use a node whenever possible, in order to
+// enable more stable IDs for most objects.
+enum AXObjectType { kPruneSubtree = 0, kAXNodeObject, kAXLayoutObject };
+
 // This class should only be used from inside the accessibility directory.
 class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
@@ -103,7 +114,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Ensure that a full document lifecycle will occur, which in turn ensures
   // that a call to ProcessDeferredAccessibilityEvents() will occur soon.
-  void ScheduleAXUpdate() override;
+  void ScheduleAXUpdate() const override;
 
   void Dispose() override;
 
@@ -142,7 +153,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void Remove(AccessibleNode*) override;
   // Returns false if no associated AXObject exists in the cache.
   bool Remove(LayoutObject*) override;
-  void Remove(Node*) override;
+  void Remove(const Node*) override;
   void Remove(Document*) override;
   void Remove(AbstractInlineTextBox*) override;
   void Remove(AXObject*);  // Calls more specific Remove methods as necessary.
@@ -183,7 +194,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleInitialFocus() override;
   void HandleTextFormControlChanged(Node*) override;
   void HandleEditableTextContentChanged(Node*) override;
-  void HandleScaleAndLocationChanged(Document*) override;
   void HandleTextMarkerDataAdded(Node* start, Node* end) override;
   void HandleValueChanged(Node*) override;
   void HandleUpdateActiveMenuOption(Node*) override;
@@ -313,11 +323,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAriaPressedChangedWithCleanLayout(Element*);
   void HandleNodeLostFocusWithCleanLayout(Node*);
   void HandleNodeGainedFocusWithCleanLayout(Node*);
-  void HandleLoadCompleteWithCleanLayout(Node*);
   void UpdateCacheAfterNodeIsAttachedWithCleanLayout(Node*);
   void DidShowMenuListPopupWithCleanLayout(Node*);
   void DidHideMenuListPopupWithCleanLayout(Node*);
-  void StyleChangedWithCleanLayout(Node*);
   void HandleScrollPositionChangedWithCleanLayout(Node*);
   void HandleValidationMessageVisibilityChangedWithCleanLayout(const Node*);
   void HandleUpdateActiveMenuOptionWithCleanLayout(Node*);
@@ -341,6 +349,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void PostNotification(const LayoutObject*, ax::mojom::blink::Event);
   // Creates object if necessary.
   void EnsurePostNotification(Node*, ax::mojom::blink::Event);
+  void EnsureMarkDirtyWithCleanLayout(Node*);
   // Does not create object.
   // TODO(accessibility) Find out if we can merge with EnsurePostNotification().
   void PostNotification(Node*, ax::mojom::blink::Event);
@@ -455,9 +464,7 @@ class MODULES_EXPORT AXObjectCacheImpl
     pending_events_.clear();
   }
 
-  bool HasDirtyObjects() override {
-    return !dirty_objects_.empty();
-  }
+  bool HasDirtyObjects() const override { return !dirty_objects_.empty(); }
 
   bool AddPendingEvent(const ui::AXEvent& event,
                        bool insert_at_beginning) override;
@@ -514,10 +521,16 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Create an AXObject, and do not check if a previous one exists.
   // Also, initialize the object and add it to maps for later retrieval.
-  AXObject* CreateAndInit(Node*, AXObject* parent_if_known, AXID use_axid = 0);
-  AXObject* CreateAndInit(LayoutObject*,
-                          AXObject* parent_if_known,
-                          AXID use_axid = 0);
+  AXObject* CreateAndInit(
+      Node*,
+      AXObject* parent_if_known,
+      AXID use_axid = 0,
+      absl::optional<AXObjectType> ax_object_type = absl::nullopt);
+  AXObject* CreateAndInit(
+      LayoutObject*,
+      AXObject* parent_if_known,
+      AXID use_axid = 0,
+      absl::optional<AXObjectType> ax_object_type = absl::nullopt);
 
   // Mark object as invalid and needing to be refreshed when layout is clean.
   // Will result in a new object with the same AXID, and will also call
@@ -835,10 +848,17 @@ class MODULES_EXPORT AXObjectCacheImpl
   TreeUpdateCallbackQueue tree_update_callback_queue_main_;
   TreeUpdateCallbackQueue tree_update_callback_queue_popup_;
 
+  // Help de-dupe processing of repetitive events.
   HeapHashSet<WeakMember<Node>> nodes_with_pending_children_changed_;
+  HashSet<AXID> nodes_with_pending_location_changed_;
 
   // Nodes with document markers that have received accessibility updates.
   HeapHashSet<WeakMember<Node>> nodes_with_spelling_or_grammar_markers_;
+
+  // True when layout has changed, and changed locations must be serialized.
+  bool need_to_send_location_changes_ = false;
+
+  AXID last_value_change_node_ = ui::AXNodeData::kInvalidAXID;
 
   // If tree_update_callback_queue_ gets improbably large, stop
   // enqueueing updates and fire a single ChildrenChanged event on the

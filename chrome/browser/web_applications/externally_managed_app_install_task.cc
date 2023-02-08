@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -21,7 +21,7 @@
 #include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -53,13 +53,13 @@ ExternallyManagedAppInstallTask::ExternallyManagedAppInstallTask(
     WebAppRegistrar* registrar,
     WebAppUiManager* ui_manager,
     WebAppInstallFinalizer* install_finalizer,
-    WebAppCommandManager* command_manager,
+    WebAppCommandScheduler* command_scheduler,
     ExternalInstallOptions install_options)
     : profile_(profile),
       url_loader_(url_loader),
       registrar_(registrar),
       install_finalizer_(install_finalizer),
-      command_manager_(command_manager),
+      command_scheduler_(command_scheduler),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
       install_options_(std::move(install_options)) {}
@@ -160,7 +160,7 @@ void ExternallyManagedAppInstallTask::OnUrlLoaded(
       break;
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(retry_on_failure),
                      ExternallyManagedAppManager::InstallResult(code)));
@@ -177,14 +177,14 @@ void ExternallyManagedAppInstallTask::InstallFromInfo(
     web_app_info->additional_search_terms.push_back(std::move(search_term));
   }
   web_app_info->install_url = install_params.install_url;
-  command_manager_->ScheduleCommand(std::make_unique<InstallFromInfoCommand>(
-      std::move(web_app_info), install_finalizer_,
+  command_scheduler_->InstallFromInfoWithParams(
+      std::move(web_app_info),
       /*overwrite_existing_manifest_fields=*/install_params.force_reinstall,
       internal_install_source,
       base::BindOnce(&ExternallyManagedAppInstallTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), /* is_placeholder=*/false,
                      /*offline_install=*/true, std::move(result_callback)),
-      install_params));
+      install_params);
 }
 
 void ExternallyManagedAppInstallTask::UninstallPlaceholderApp(
@@ -235,14 +235,13 @@ void ExternallyManagedAppInstallTask::ContinueWebAppInstall(
         []() { return std::make_unique<WebAppDataRetriever>(); });
   }
 
-  command_manager_->ScheduleCommand(
-      std::make_unique<ExternallyManagedInstallCommand>(
-          install_options_,
-          base::BindOnce(&ExternallyManagedAppInstallTask::OnWebAppInstalled,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         /*is_placeholder=*/false,
-                         /*offline_install=*/false, std::move(result_callback)),
-          web_contents->GetWeakPtr(), data_retriever_factory_.Run()));
+  command_scheduler_->InstallExternallyManagedApp(
+      install_options_,
+      base::BindOnce(&ExternallyManagedAppInstallTask::OnWebAppInstalled,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*is_placeholder=*/false,
+                     /*offline_install=*/false, std::move(result_callback)),
+      web_contents->GetWeakPtr(), data_retriever_factory_.Run());
 }
 
 void ExternallyManagedAppInstallTask::InstallPlaceholder(
@@ -256,7 +255,7 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
 
   if (app_id.has_value() && !install_options_.force_reinstall) {
     // No need to install a placeholder app again.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback),
@@ -309,7 +308,7 @@ void ExternallyManagedAppInstallTask::OnCustomIconFetched(
     return;
   }
   // Retry download.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ExternallyManagedAppInstallTask::FetchCustomIcon,
                      weak_ptr_factory_.GetWeakPtr(), image_url, web_contents,

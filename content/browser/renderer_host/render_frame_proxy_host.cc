@@ -46,6 +46,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
+#include "third_party/blink/public/mojom/navigation/navigation_initiator_activation_and_ad_status.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -262,28 +263,30 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     if (!parent_proxy->is_render_frame_proxy_live())
       return false;
 
+    // The current RenderFrameHost's devtools_frame_token can be used here
+    // because it is not expected to differ when there is a RenderFrameProxyHost
+    // in a separate window. The token may change on MPArch activations in the
+    // main frame (e.g., prerender), but those cannot occur if the
+    // BrowsingInstance has more than one window. Same for the
+    // CreateRemoteMainFrame call below.
     parent_proxy->GetAssociatedRemoteFrame()->CreateRemoteChild(
         frame_token_, opener_frame_token, frame_tree_node_->tree_scope_type(),
         frame_tree_node_->current_replication_state().Clone(),
-        frame_tree_node_->devtools_frame_token(),
+        frame_tree_node_->IsLoading(),
+        frame_tree_node_->current_frame_host()->devtools_frame_token(),
         CreateAndBindRemoteFrameInterfaces());
 
   } else {
     GetRenderViewHost()->GetAssociatedPageBroadcast()->CreateRemoteMainFrame(
         frame_token_, opener_frame_token,
         frame_tree_node_->current_replication_state().Clone(),
-        frame_tree_node_->devtools_frame_token(),
+        frame_tree_node_->IsLoading(),
+        frame_tree_node_->current_frame_host()->devtools_frame_token(),
         CreateAndBindRemoteFrameInterfaces(),
         CreateAndBindRemoteMainFrameInterfaces());
   }
 
   SetRenderFrameProxyCreated(true);
-
-  // If this proxy was created for a frame that hasn't yet finished loading,
-  // let the renderer know so it can also mark the proxy as loading. See
-  // https://crbug.com/916137.
-  if (frame_tree_node_->IsLoading())
-    GetAssociatedRemoteFrame()->DidStartLoading();
 
   // For subframes, initialize the proxy's FrameOwnerProperties only if they
   // differ from default values.
@@ -438,7 +441,7 @@ void RenderFrameProxyHost::DidFocusFrame() {
   // If a fenced frame has requested focus something wrong has gone on. We do
   // not support programmatic focus between the embedder and embeddee because
   // that could be a side channel.
-  if (frame_tree_node_->frame_tree()->type() == FrameTree::Type::kFencedFrame &&
+  if (frame_tree_node_->frame_tree().type() == FrameTree::Type::kFencedFrame &&
       frame_tree_node_->render_manager()->GetProxyToOuterDelegate() == this) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RFPH_FOCUSED_FENCED_FRAME);
@@ -450,8 +453,7 @@ void RenderFrameProxyHost::DidFocusFrame() {
   // Do not focus inactive RenderFrameHost.
   if (!render_frame_host->IsActive())
     return;
-  render_frame_host->delegate()->SetFocusedFrame(frame_tree_node_,
-                                                 site_instance_group());
+  frame_tree_node_->SetFocusedFrame(site_instance_group());
 }
 
 void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
@@ -705,7 +707,8 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
       params->post_body ? "POST" : "GET", params->post_body,
       params->extra_headers, std::move(blob_url_loader_factory),
       std::move(params->source_location), params->user_gesture,
-      params->is_form_submission, params->impression, navigation_start_time);
+      params->is_form_submission, params->impression,
+      params->initiator_activation_and_ad_status, navigation_start_time);
 }
 
 void RenderFrameProxyHost::UpdateViewportIntersection(
@@ -726,7 +729,7 @@ void RenderFrameProxyHost::AdvanceFocus(
     const blink::LocalFrameToken& source_frame_token) {
   // TODO(crbug.com/1292671): Correctly attribute to a fenced frame embedded
   // inside a portal to avoid focusing.
-  if (frame_tree_node_->frame_tree()->IsPortal()) {
+  if (frame_tree_node_->frame_tree().IsPortal()) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);
     return;
@@ -829,7 +832,7 @@ void RenderFrameProxyHost::WriteIntoTrace(
   if (site_instance) {
     proto->set_rvh_map_id(
         frame_tree_node_->frame_tree()
-            ->GetRenderViewHostMapId(
+            .GetRenderViewHostMapId(
                 static_cast<SiteInstanceImpl*>(site_instance)->group())
             .value());
     proto->set_site_instance_id(site_instance->GetId().value());

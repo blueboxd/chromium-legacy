@@ -14,10 +14,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_checker.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
 #include "ui/base/win/event_creation_utils.h"
 #include "ui/display/win/screen_win.h"
@@ -130,6 +130,10 @@ class InputDispatcher {
   // The desired mouse position for a mouse move event.
   const gfx::Point expected_mouse_location_;
 
+  // Whether all desired messages were observed, but MatchingMessageProcessed()
+  // is flushing remaining messages of type `system_queue_flag_`.
+  bool flushing_messages_ = false;
+
   base::WeakPtrFactory<InputDispatcher> weak_factory_{this};
 };
 
@@ -226,7 +230,7 @@ void InputDispatcher::InstallHook() {
     if (message_waiting_for_ == WM_MOUSEMOVE) {
       // Things don't go well with move events sometimes. Bail out if it takes
       // too long.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&InputDispatcher::OnTimeout,
                          weak_factory_.GetWeakPtr()),
@@ -258,7 +262,7 @@ LRESULT CALLBACK InputDispatcher::KeyHook(int n_code,
                                           LPARAM l_param) {
   if ((n_code == HC_ACTION) && (HIWORD(l_param) & KF_UP)) {
     DCHECK(current_dispatcher_);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
                        current_dispatcher_->weak_factory_.GetWeakPtr(), false));
@@ -287,7 +291,7 @@ void InputDispatcher::DispatchedMessage(
           << expected_mouse_location_.y()
           << "); check the math in SendMouseMoveImpl.";
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
                        weak_factory_.GetWeakPtr(), definitively_done));
@@ -301,7 +305,7 @@ void InputDispatcher::DispatchedMessage(
                  << "This may result in different event processing behavior. "
                  << "If you need a single click try moving the mouse between "
                  << "down events.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
                                   weak_factory_.GetWeakPtr(), false));
   }
@@ -310,7 +314,11 @@ void InputDispatcher::DispatchedMessage(
 void InputDispatcher::MatchingMessageProcessed(bool definitively_done) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (message_waiting_for_ == WM_KEYUP && --num_keyups_awaited_ > 0)
+  // Guard against re-entrancy.
+  if (flushing_messages_)
+    return;
+
+  if (message_waiting_for_ == WM_KEYUP && --num_keyups_awaited_ != 0)
     return;
 
   // Unless specified otherwise by |definitively_done| : resume on the last
@@ -318,21 +326,20 @@ void InputDispatcher::MatchingMessageProcessed(bool definitively_done) {
   // InputDispatcher is created while there are preexisting matching events
   // remaining in the queue. Emit a warning to help diagnose flakes should the
   // queue somehow never become empty of such events.
-  if (HIWORD(::GetQueueStatus(system_queue_flag_)) && !definitively_done) {
-    LOG(WARNING)
-        << "Skipping message notification per remaining events in the queue "
-           "(will try again shortly) : "
-        << system_queue_flag_;
+  if (!definitively_done) {
+    while (HIWORD(::GetQueueStatus(system_queue_flag_))) {
+      LOG(WARNING) << "Got all expected messages, but the queue still contains "
+                      "messages of type "
+                   << system_queue_flag_
+                   << ". Pumping messages until it's no longer the case.";
 
-    // Check back on the next loop instead of relying on the remaining event
-    // being caught by our hooks (all events don't seem to reliably make it
-    // there).
-    if (message_waiting_for_ == WM_KEYUP)
-      ++num_keyups_awaited_;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&InputDispatcher::MatchingMessageProcessed,
-                                  weak_factory_.GetWeakPtr(), false));
-    return;
+      // RunLoop::Run() calls MessagePumpForUI::ProcessNextWindowsMessage(),
+      // which should remove at least one message from the queue.
+      flushing_messages_ = true;
+      auto weak_ptr = weak_factory_.GetWeakPtr();
+      base::RunLoop().RunUntilIdle();
+      DCHECK(weak_ptr);
+    }
   }
 
   // Delete |this| before running the callback to allow callers to chain input
@@ -504,7 +511,8 @@ bool SendMouseMoveImpl(int screen_x, int screen_y, base::OnceClosure task) {
   ::GetCursorPos(&current_pos);
   if (screen_point.x() == current_pos.x && screen_point.y() == current_pos.y) {
     if (task)
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE, std::move(task));
     return true;
   }
 

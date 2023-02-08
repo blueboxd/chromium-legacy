@@ -53,23 +53,27 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/ash/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/drive/drivefs_test_support.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/file_tasks_observer.h"
 #include "chrome/browser/ash/file_manager/mount_test_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/guest_os/guest_id.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
@@ -85,7 +89,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
-#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -858,7 +861,6 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(photos_documents_provider)
   PRINT_IF_NOT_DEFAULT(single_partition_format)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
-  PRINT_IF_NOT_DEFAULT(enable_guest_os_files)
   PRINT_IF_NOT_DEFAULT(enable_virtio_blk_for_data)
 
 #undef PRINT_IF_NOT_DEFAULT
@@ -1914,9 +1916,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   enabled_features.push_back(arc::kUsbStorageUIFeature);
 
   if (options.files_experimental) {
-    enabled_features.push_back(chromeos::features::kFilesAppExperimental);
+    enabled_features.push_back(ash::features::kFilesAppExperimental);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesAppExperimental);
+    disabled_features.push_back(ash::features::kFilesAppExperimental);
   }
 
   if (options.arc) {
@@ -1925,26 +1927,20 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (options.drive_dss_pin) {
     enabled_features.push_back(
-        chromeos::features::kDriveFsBidirectionalNativeMessaging);
+        ash::features::kDriveFsBidirectionalNativeMessaging);
   } else {
     disabled_features.push_back(
-        chromeos::features::kDriveFsBidirectionalNativeMessaging);
-  }
-
-  if (options.extract_archive) {
-    enabled_features.push_back(chromeos::features::kFilesExtractArchive);
-  } else {
-    disabled_features.push_back(chromeos::features::kFilesExtractArchive);
+        ash::features::kDriveFsBidirectionalNativeMessaging);
   }
 
   if (options.single_partition_format) {
-    enabled_features.push_back(chromeos::features::kFilesSinglePartitionFormat);
+    enabled_features.push_back(ash::features::kFilesSinglePartitionFormat);
   }
 
   if (options.enable_trash) {
-    enabled_features.push_back(chromeos::features::kFilesTrash);
+    enabled_features.push_back(ash::features::kFilesTrash);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesTrash);
+    disabled_features.push_back(ash::features::kFilesTrash);
   }
 
   if (options.enable_dlp_files_restriction) {
@@ -1954,33 +1950,27 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.enable_mirrorsync) {
-    enabled_features.push_back(chromeos::features::kDriveFsMirroring);
+    enabled_features.push_back(ash::features::kDriveFsMirroring);
   } else {
-    disabled_features.push_back(chromeos::features::kDriveFsMirroring);
+    disabled_features.push_back(ash::features::kDriveFsMirroring);
   }
 
   if (options.enable_inline_status_sync) {
-    enabled_features.push_back(chromeos::features::kFilesInlineSyncStatus);
+    enabled_features.push_back(ash::features::kFilesInlineSyncStatus);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesInlineSyncStatus);
+    disabled_features.push_back(ash::features::kFilesInlineSyncStatus);
   }
 
   if (options.enable_upload_office_to_cloud) {
-    enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
+    enabled_features.push_back(ash::features::kUploadOfficeToCloud);
   } else {
-    disabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
+    disabled_features.push_back(ash::features::kUploadOfficeToCloud);
   }
 
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage) &&
       options.guest_mode != IN_INCOGNITO) {
     devtools_code_coverage_dir_ =
         command_line->GetSwitchValuePath(switches::kDevtoolsCodeCoverage);
-  }
-
-  if (options.enable_guest_os_files) {
-    enabled_features.push_back(chromeos::features::kGuestOsFiles);
-  } else {
-    disabled_features.push_back(chromeos::features::kGuestOsFiles);
   }
 
   if (options.enable_virtio_blk_for_data) {
@@ -1990,9 +1980,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.enable_filters_in_recents_v2) {
-    enabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
+    enabled_features.push_back(ash::features::kFiltersInRecentsV2);
   } else {
-    disabled_features.push_back(chromeos::features::kFiltersInRecentsV2);
+    disabled_features.push_back(ash::features::kFiltersInRecentsV2);
   }
 
   if (options.enable_file_transfer_connector) {
@@ -2003,6 +1993,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(
         enterprise_connectors::kEnterpriseConnectorsEnabled);
     disabled_features.push_back(features::kFileTransferEnterpriseConnector);
+  }
+
+  if (options.enable_search_v2) {
+    enabled_features.push_back(ash::features::kFilesSearchV2);
+  } else {
+    disabled_features.push_back(ash::features::kFilesSearchV2);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the
@@ -2089,6 +2085,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
                                 "testuser", "/home/testuser",
                                 "PLACEHOLDER_IP"));
+    guest_os::GuestOsSharePath::GetForProfile(profile()->GetOriginalProfile())
+        ->RegisterGuest(crostini::DefaultContainerId());
     static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
         ->AddCustomMountPointCallback(
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
@@ -2293,10 +2291,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isFilesAppExperimental") {
     // Return whether the flag Files Experimental is enabled.
-    *output =
-        base::FeatureList::IsEnabled(chromeos::features::kFilesAppExperimental)
-            ? "true"
-            : "false";
+    *output = base::FeatureList::IsEnabled(ash::features::kFilesAppExperimental)
+                  ? "true"
+                  : "false";
     return;
   }
 
@@ -2845,6 +2842,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setOfficeSetupComplete") {
+    absl::optional<bool> complete = value.FindBool("complete");
+    ASSERT_TRUE(complete.has_value());
+    file_tasks::SetOfficeSetupComplete(profile(), complete.value());
+    return;
+  }
+
   if (name == "setDriveEnabled") {
     absl::optional<bool> enabled = value.FindBool("enabled");
     ASSERT_TRUE(enabled.has_value());
@@ -2874,6 +2878,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(enabled.has_value());
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
                                       enabled.value());
+    if (enabled.value()) {
+      guest_os::GuestOsSharePath::GetForProfile(profile())->RegisterGuest(
+          crostini::DefaultContainerId());
+    } else {
+      guest_os::GuestOsSharePath::GetForProfile(profile())->UnregisterGuest(
+          crostini::DefaultContainerId());
+    }
     return;
   }
 
@@ -3068,7 +3079,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     const std::string* timezone = value.FindString("timezone");
     ASSERT_TRUE(timezone);
     auto* user = user_manager::UserManager::Get()->GetActiveUser();
-    chromeos::system::SetSystemTimezone(user, *timezone);
+    ash::system::SetSystemTimezone(user, *timezone);
     return;
   }
 
@@ -3283,7 +3294,7 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
       std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
   if (options.guest_mode != IN_INCOGNITO && options.mount_volumes &&
       profile->GetBaseName().value() == "user") {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(base::IgnoreResult(&LocalTestVolume::Mount),
                        base::Unretained(local_volume_.get()), profile));

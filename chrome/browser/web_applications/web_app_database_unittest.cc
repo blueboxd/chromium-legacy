@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -74,8 +75,8 @@ class WebAppDatabaseTest : public WebAppTest {
     provider_->SetSyncBridge(std::move(sync_bridge));
 
     sync_bridge_->SetSubsystems(database_factory_,
-                                &provider_->GetInstallManager(),
-                                &provider_->GetCommandManager());
+                                &provider_->GetCommandManager(),
+                                &provider_->scheduler());
 
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
@@ -157,9 +158,9 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
  private:
-  WebAppSyncBridge* sync_bridge_;
-  FakeWebAppDatabaseFactory* database_factory_;
-  FakeWebAppProvider* provider_;
+  raw_ptr<WebAppSyncBridge> sync_bridge_;
+  raw_ptr<FakeWebAppDatabaseFactory> database_factory_;
+  raw_ptr<FakeWebAppProvider> provider_;
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 };

@@ -11,6 +11,7 @@
 #include "net/base/net_export.h"
 #include "net/http/structured_headers.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -23,7 +24,17 @@ class HttpResponseHeaders;
 class NET_EXPORT_PRIVATE HttpNoVarySearchData {
  public:
   HttpNoVarySearchData(const HttpNoVarySearchData&);
+  HttpNoVarySearchData(HttpNoVarySearchData&&);
   ~HttpNoVarySearchData();
+  HttpNoVarySearchData& operator=(const HttpNoVarySearchData&);
+  HttpNoVarySearchData& operator=(HttpNoVarySearchData&&);
+
+  static HttpNoVarySearchData CreateFromNoVaryParams(
+      const std::vector<std::string>& no_vary_params,
+      bool vary_on_key_order);
+  static HttpNoVarySearchData CreateFromVaryParams(
+      const std::vector<std::string>& vary_params,
+      bool vary_on_key_order);
 
   // Parse No-Vary-Search from response headers.
   //
@@ -36,13 +47,16 @@ class NET_EXPORT_PRIVATE HttpNoVarySearchData {
   static absl::optional<HttpNoVarySearchData> ParseFromHeaders(
       const HttpResponseHeaders& response_headers);
 
+  bool AreEquivalent(const GURL& a, const GURL& b) const;
+
   const base::flat_set<std::string>& no_vary_params() const;
   const base::flat_set<std::string>& vary_params() const;
   bool vary_on_key_order() const;
   bool vary_by_default() const;
 
  private:
-  explicit HttpNoVarySearchData();
+  HttpNoVarySearchData();
+
   static absl::optional<HttpNoVarySearchData> ParseNoVarySearchDictionary(
       const structured_headers::Dictionary& dict);
 

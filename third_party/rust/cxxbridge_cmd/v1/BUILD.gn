@@ -12,14 +12,18 @@ cargo_crate("cxxbridge") {
   build_native_rust_unit_tests = false
   sources = [ "crate/src/main.rs" ]
   edition = "2018"
-  cargo_pkg_version = "1.0.68"
+  cargo_pkg_version = "1.0.82"
   cargo_pkg_authors = "David Tolnay <dtolnay@gmail.com>"
   cargo_pkg_name = "cxxbridge-cmd"
   cargo_pkg_description =
       "C++ code generator for integrating `cxx` crate into a non-Cargo build."
+  library_configs -= [ "//build/config/compiler:chromium_code" ]
+  library_configs += [ "//build/config/compiler:no_chromium_code" ]
+  executable_configs -= [ "//build/config/compiler:chromium_code" ]
+  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
     ":lib",
-    "//third_party/rust/clap/v3:lib",
+    "//third_party/rust/clap/v4:lib",
     "//third_party/rust/codespan_reporting/v0_11:lib",
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/quote/v1:lib",
@@ -36,13 +40,17 @@ cargo_crate("lib") {
   build_native_rust_unit_tests = false
   sources = [ "crate/src/lib.rs" ]
   edition = "2018"
-  cargo_pkg_version = "1.0.68"
+  cargo_pkg_version = "1.0.82"
   cargo_pkg_authors = "David Tolnay <dtolnay@gmail.com>"
   cargo_pkg_name = "cxxbridge-cmd"
   cargo_pkg_description =
       "C++ code generator for integrating `cxx` crate into a non-Cargo build."
+  library_configs -= [ "//build/config/compiler:chromium_code" ]
+  library_configs += [ "//build/config/compiler:no_chromium_code" ]
+  executable_configs -= [ "//build/config/compiler:chromium_code" ]
+  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//third_party/rust/clap/v3:lib",
+    "//third_party/rust/clap/v4:lib",
     "//third_party/rust/codespan_reporting/v0_11:lib",
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/quote/v1:lib",

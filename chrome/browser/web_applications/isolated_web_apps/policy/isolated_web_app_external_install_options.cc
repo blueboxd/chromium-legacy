@@ -19,6 +19,9 @@ IsolatedWebAppExternalInstallOptions::IsolatedWebAppExternalInstallOptions(
   DCHECK(update_manifest_url_.is_valid());
 }
 
+IsolatedWebAppExternalInstallOptions::IsolatedWebAppExternalInstallOptions(
+    const IsolatedWebAppExternalInstallOptions& other) = default;
+
 IsolatedWebAppExternalInstallOptions::~IsolatedWebAppExternalInstallOptions() =
     default;
 
@@ -31,7 +34,7 @@ IsolatedWebAppExternalInstallOptions::FromPolicyPrefValue(
   }
 
   const std::string* const update_manifest_url_raw =
-      entry.FindStringKey(kUpdateManifestUrlKey);
+      entry.FindStringKey(kPolicyUpdateManifestUrlKey);
   if (!update_manifest_url_raw) {
     return base::unexpected(
         "Update manifest URL value is not found or has the wrong type");
@@ -43,7 +46,7 @@ IsolatedWebAppExternalInstallOptions::FromPolicyPrefValue(
   }
 
   const std::string* const web_bundle_id_raw =
-      entry.FindStringKey(kWebBundleIdKey);
+      entry.FindStringKey(kPolicyWebBundleIdKey);
   if (!web_bundle_id_raw) {
     return base::unexpected(
         "Web Bundle ID value is not found or has the wrong type");

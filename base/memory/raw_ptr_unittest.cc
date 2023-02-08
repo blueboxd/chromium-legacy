@@ -37,11 +37,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if BUILDFLAG(ENABLE_BASE_TRACING) && BUILDFLAG(PA_USE_BASE_TRACING)
-#include "third_party/perfetto/include/perfetto/test/traced_value_test_support.h"  // no-presubmit-check nogncheck
-#endif  // BUILDFLAG(ENABLE_BASE_TRACING) && BUILDFLAG(PA_USE_BASE_TRACING)
-
-#if defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 #include "base/allocator/partition_allocator/partition_tag_types.h"
 #endif
 
@@ -60,7 +56,7 @@ static_assert(sizeof(raw_ptr<int>) == sizeof(int*),
 static_assert(sizeof(raw_ptr<std::string>) == sizeof(std::string*),
               "raw_ptr shouldn't add memory overhead");
 
-#if !BUILDFLAG(USE_BACKUP_REF_PTR)
+#if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 // |is_trivially_copyable| assertion means that arrays/vectors of raw_ptr can
 // be copied by memcpy.
 static_assert(std::is_trivially_copyable<raw_ptr<void>>::value,
@@ -89,7 +85,7 @@ static_assert(std::is_trivially_default_constructible<raw_ptr<int>>::value,
 static_assert(
     std::is_trivially_default_constructible<raw_ptr<std::string>>::value,
     "raw_ptr should be trivially default constructible");
-#endif  // !BUILDFLAG(USE_BACKUP_REF_PTR)
+#endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 // Don't use base::internal for testing raw_ptr API, to test if code outside
 // this namespace calls the correct functions from this namespace.
@@ -1231,7 +1227,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
       vector.emplace_back(&x);
     number_of_capacity_changes++;
   } while (number_of_capacity_changes < 10);
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   // TODO(lukasza): In the future (once C++ language and std library
   // support custom trivially relocatable objects) this #if branch can
   // be removed (keeping only the right long-term expectation from the
@@ -1247,7 +1243,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // the EXPECT_EQ is correct + the assertion should be true in the
   // long-term.)
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
-#endif
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
   // Basic smoke test that raw_ptr elements in a vector work okay.
   for (const auto& elem : vector) {
@@ -1260,7 +1256,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   RawPtrCountingImpl::ClearCounters();
   size_t number_of_cleared_elements = vector.size();
   vector.clear();
-#if BUILDFLAG(USE_BACKUP_REF_PTR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   EXPECT_EQ((int)number_of_cleared_elements,
             RawPtrCountingImpl::release_wrapped_ptr_cnt);
 #else
@@ -1272,7 +1268,7 @@ TEST_F(RawPtrTest, TrivialRelocability) {
   // ships to the Stable channel).
   EXPECT_EQ(0, RawPtrCountingImpl::release_wrapped_ptr_cnt);
   std::ignore = number_of_cleared_elements;
-#endif
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 }
 
 struct BaseStruct {
@@ -1306,31 +1302,6 @@ TEST_F(RawPtrTest, DerivedStructsComparison) {
             checked_derived2_ptr);
 }
 
-#if BUILDFLAG(ENABLE_BASE_TRACING) && BUILDFLAG(PA_USE_BASE_TRACING)
-TEST_F(RawPtrTest, TracedValueSupport) {
-  // Serialise nullptr.
-  EXPECT_EQ(perfetto::TracedValueToString(raw_ptr<int>()), "0x0");
-
-  {
-    // If the pointer is non-null, its dereferenced value will be serialised.
-    int value = 42;
-    EXPECT_EQ(perfetto::TracedValueToString(raw_ptr<int>(&value)), "42");
-  }
-
-  struct WithTraceSupport {
-    void WriteIntoTrace(perfetto::TracedValue ctx) const {
-      std::move(ctx).WriteString("result");
-    }
-  };
-
-  {
-    WithTraceSupport value;
-    EXPECT_EQ(perfetto::TracedValueToString(raw_ptr<WithTraceSupport>(&value)),
-              "result");
-  }
-}
-#endif  // BUILDFLAG(ENABLE_BASE_TRACING) && BUILDFLAG(PA_USE_BASE_TRACING)
-
 class PmfTestBase {
  public:
   int MemFunc(char, double) const { return 11; }
@@ -1347,7 +1318,8 @@ class PmfTestDerived : public PmfTestBase {
 namespace base {
 namespace internal {
 
-#if BUILDFLAG(USE_BACKUP_REF_PTR) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && \
+    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 void HandleOOM(size_t unused_size) {
   LOG(FATAL) << "Out of memory";
@@ -1507,13 +1479,21 @@ void RunBackupRefPtrImplAdvanceTest(
   protected_ptr = protected_ptr + 123;
   protected_ptr = protected_ptr - 123;
   protected_ptr += requested_size / 2;
-  protected_ptr =
-      protected_ptr + requested_size / 2;  // end-of-allocation address is ok
+  // end-of-allocation address should not cause an error immediately, but it may
+  // result in the pointer being poisoned.
+  protected_ptr = protected_ptr + requested_size / 2;
+#if defined(PA_USE_OOB_POISON)
+  EXPECT_DEATH_IF_SUPPORTED(*protected_ptr = ' ', "");
+  protected_ptr -= 1;  // This brings the pointer back within
+                       // bounds, which causes the poison to be removed.
+  *protected_ptr = ' ';
+  protected_ptr += 1;  // Reposition pointer back past end of allocation.
+#endif
   EXPECT_CHECK_DEATH(protected_ptr = protected_ptr + 1);
   EXPECT_CHECK_DEATH(protected_ptr += 1);
   EXPECT_CHECK_DEATH(++protected_ptr);
 
-  // Even though |protected_ptr| is already puinting to the end of the
+  // Even though |protected_ptr| is already pointing to the end of the
   // allocation, assign it explicitly to make sure the underlying implementation
   // doesn't "switch" to the next slot.
   protected_ptr = ptr + requested_size;
@@ -1536,7 +1516,7 @@ TEST_F(BackupRefPtrTest, Advance) {
   size_t slot_size = 512;
   size_t requested_size =
       allocator_.root()->AdjustSizeForExtrasSubtract(slot_size);
-  // Verify that we're indeed fillin up the slot.
+  // Verify that we're indeed filling up the slot.
   ASSERT_EQ(
       requested_size,
       allocator_.root()->AllocationCapacityFromRequestedSize(requested_size));
@@ -1851,7 +1831,48 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
 #endif
 }
 
-#endif  // BUILDFLAG(USE_BACKUP_REF_PTR) &&
+TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
+  size_t slot_size = 512;
+  size_t requested_size =
+      allocator_.root()->AdjustSizeForExtrasSubtract(slot_size);
+  // Verify that we're indeed filling up the slot.
+  ASSERT_EQ(
+      requested_size,
+      allocator_.root()->AllocationCapacityFromRequestedSize(requested_size));
+
+  int* ptr =
+      reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size, ""));
+  raw_ptr<int> protected_ptr = ptr;
+
+  int gen_val = 1;
+  std::generate(protected_ptr, protected_ptr + requested_size / sizeof(int),
+                [&gen_val]() {
+                  gen_val ^= gen_val + 1;
+                  return gen_val;
+                });
+
+  allocator_.root()->Free(ptr);
+}
+
+#if defined(PA_USE_OOB_POISON)
+TEST_F(BackupRefPtrTest, Duplicate) {
+  size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
+  char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
+  raw_ptr<char> protected_ptr1 = ptr;
+  protected_ptr1 += requested_size;  // Pointer should now be poisoned.
+
+  // Duplicating a poisoned pointer should be allowed.
+  raw_ptr<char> protected_ptr2 = protected_ptr1;
+
+  // The poison bit should be propagated to the duplicate such that the OOB
+  // access is disallowed:
+  EXPECT_DEATH_IF_SUPPORTED(*protected_ptr2 = ' ', "");
+
+  allocator_.root()->Free(ptr);
+}
+#endif  // PA_USE_OOB_POISON
+
+#endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
@@ -2271,7 +2292,7 @@ TEST_F(AsanBackupRefPtrTest, AccessOnThreadPoolThread) {
 
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
-#if defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#if defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 static constexpr size_t kTagOffsetForTest = 2;
 
@@ -2497,7 +2518,7 @@ TEST(MTECheckedPtrImpl, PointerBeyondAllocationCanBeExtracted) {
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
-#endif  // defined(RAW_PTR_USE_MTE_CHECKED_PTR)
+#endif  // defined(PA_ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 }  // namespace internal
 }  // namespace base

@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "ui/ozone/platform/wayland/test/test_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
@@ -33,7 +34,7 @@ struct GtkPrimarySelectionOffer final : public TestSelectionOffer::Delegate {
 
   void OnDestroying() override { delete this; }
 
-  TestSelectionOffer* offer = nullptr;
+  raw_ptr<TestSelectionOffer> offer = nullptr;
 };
 
 struct GtkPrimarySelectionDevice final : public TestSelectionDevice::Delegate {
@@ -68,7 +69,7 @@ struct GtkPrimarySelectionDevice final : public TestSelectionDevice::Delegate {
 
   void OnDestroying() override { delete this; }
 
-  TestSelectionDevice* device = nullptr;
+  raw_ptr<TestSelectionDevice> device = nullptr;
 };
 
 struct GtkPrimarySelectionSource : public TestSelectionSource::Delegate {
@@ -76,7 +77,7 @@ struct GtkPrimarySelectionSource : public TestSelectionSource::Delegate {
                 base::ScopedFD write_fd) override {
     gtk_primary_selection_source_send_send(source->resource(),
                                            mime_type.c_str(), write_fd.get());
-    TestWaylandServerThread::FlushClientForResource(source->resource());
+    wl_client_flush(wl_resource_get_client(source->resource()));
   }
 
   void SendFinished() override {
@@ -93,7 +94,7 @@ struct GtkPrimarySelectionSource : public TestSelectionSource::Delegate {
 
   void OnDestroying() override { delete this; }
 
-  TestSelectionSource* source = nullptr;
+  raw_ptr<TestSelectionSource> source = nullptr;
 };
 
 struct GtkPrimarySelectionDeviceManager

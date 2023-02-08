@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
-#include "build/chromeos_buildflags.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_exchange_delegate.h"
@@ -185,7 +184,7 @@ TEST_F(DataDeviceTest, DataEventsDrop) {
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kMotion, events[0]);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
                                 base::Unretained(&delegate_), true));
 
@@ -279,7 +278,7 @@ TEST_F(DataDeviceTest, DataEventsPreventMotion) {
   other_surface->window()->GetToplevelWindow()->ClearProperty(
       chromeos::kCanAttachToAnotherWindowKey);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
                                 base::Unretained(&delegate_), true));
 
@@ -317,7 +316,7 @@ TEST_F(DataDeviceTest, DeleteDataDeviceDuringDrop) {
                             ui::DragDropTypes::DRAG_MOVE);
   ui::Event::DispatcherApi(&event).set_target(surface_->window());
   device_->OnDragEntered(event);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() { device_.reset(); }));
   auto drop_cb = device_->GetDropCallback();
   DragOperation output_drag_op;
@@ -364,7 +363,7 @@ TEST_F(DataDeviceTest, DataOfferNotFinished) {
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kMotion, events[0]);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
                                 base::Unretained(&delegate_), false));
 
@@ -415,7 +414,7 @@ TEST_F(DataDeviceTest, DropCallback_Run) {
 
   auto drop_cb = device_->GetDropCallback();
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
                                 base::Unretained(&delegate_), true));
 

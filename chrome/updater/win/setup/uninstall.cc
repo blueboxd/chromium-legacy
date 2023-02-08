@@ -28,11 +28,11 @@
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util.h"
+#include "chrome/updater/util/util.h"
+#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/win/win_constants.h"
-#include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
@@ -72,13 +72,14 @@ void DeleteComService(bool uninstall_all) {
   }
 }
 
-void DeleteComInterfaces(HKEY root, bool uninstall_all) {
+void DeleteComInterfaces(UpdaterScope scope, bool uninstall_all) {
   for (const IID& iid : JoinVectors(
-           GetSideBySideInterfaces(),
-           uninstall_all ? GetActiveInterfaces() : std::vector<IID>())) {
+           GetSideBySideInterfaces(scope),
+           uninstall_all ? GetActiveInterfaces(scope) : std::vector<IID>())) {
     for (const auto& reg_path :
          {GetComIidRegistryPath(iid), GetComTypeLibRegistryPath(iid)}) {
-      installer::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+      installer::DeleteRegistryKey(UpdaterScopeToHKeyRoot(scope), reg_path,
+                                   WorkItem::kWow64Default);
     }
   }
 }
@@ -101,7 +102,7 @@ int RunUninstallScript(UpdaterScope scope, bool uninstall_all) {
     return kErrorNoVersionedDirectory;
   }
   const absl::optional<base::FilePath> base_dir = GetBaseDataDirectory(scope);
-  if (scope == UpdaterScope::kSystem && !base_dir) {
+  if (IsSystemInstall(scope) && !base_dir) {
     LOG(ERROR) << "GetBaseDataDirectory failed.";
     return kErrorNoBaseDirectory;
   }
@@ -142,7 +143,7 @@ int RunUninstallScript(UpdaterScope scope, bool uninstall_all) {
 // the function uninstalls only the internal updater.
 int UninstallImpl(UpdaterScope scope, bool uninstall_all) {
   VLOG(1) << __func__ << ", scope: " << scope;
-  DCHECK(scope == UpdaterScope::kUser || ::IsUserAnAdmin());
+  DCHECK(!IsSystemInstall(scope) || ::IsUserAnAdmin());
 
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
@@ -153,12 +154,12 @@ int UninstallImpl(UpdaterScope scope, bool uninstall_all) {
   if (uninstall_all)
     DeleteGoogleUpdateFilesAndKeys(scope);
 
-  DeleteComInterfaces(UpdaterScopeToHKeyRoot(scope), uninstall_all);
-  if (scope == UpdaterScope::kSystem)
+  DeleteComInterfaces(scope, uninstall_all);
+  if (IsSystemInstall(scope))
     DeleteComService(uninstall_all);
   DeleteComServer(scope, uninstall_all);
 
-  if (scope == UpdaterScope::kUser)
+  if (!IsSystemInstall(scope))
     UnregisterUserRunAtStartup(GetTaskNamePrefix(scope));
 
   return RunUninstallScript(scope, uninstall_all);

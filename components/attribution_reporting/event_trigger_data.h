@@ -8,21 +8,29 @@
 #include <stdint.h>
 
 #include "base/component_export.h"
+#include "base/types/expected.h"
+#include "base/values.h"
+#include "components/attribution_reporting/bounded_list.h"
+#include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
 
 struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) EventTriggerData {
+  static base::expected<EventTriggerData, mojom::TriggerRegistrationError>
+  FromJSON(base::Value& value);
+
   // Data associated with trigger.
   // Will be sanitized to a lower entropy by the `AttributionStorageDelegate`
   // before storage.
-  uint64_t data;
+  uint64_t data = 0;
 
   // Priority specified in conversion redirect. Used to prioritize which
   // reports to send among multiple different reports for the same attribution
   // source. Defaults to 0 if not provided.
-  int64_t priority;
+  int64_t priority = 0;
 
   // Key specified in conversion redirect for deduplication against existing
   // conversions with the same source. If absent, no deduplication is
@@ -37,12 +45,19 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) EventTriggerData {
   // fields are used.
   Filters not_filters;
 
+  EventTriggerData();
+
   EventTriggerData(uint64_t data,
                    int64_t priority,
                    absl::optional<uint64_t> dedup_key,
                    Filters filters,
                    Filters not_filters);
+
+  base::Value::Dict ToJson() const;
 };
+
+using EventTriggerDataList =
+    BoundedList<EventTriggerData, kMaxEventTriggerData>;
 
 }  // namespace attribution_reporting
 

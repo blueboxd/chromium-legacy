@@ -39,7 +39,6 @@ android_library("java") {
     "org/chromium/weblayer/ActionModeItemType.java",
     "org/chromium/weblayer/BroadcastReceiver.java",
     "org/chromium/weblayer/Browser.java",
-    "org/chromium/weblayer/BrowserControlsOffsetCallback.java",
     "org/chromium/weblayer/BrowserRestoreCallback.java",
     "org/chromium/weblayer/BrowsingDataType.java",
     "org/chromium/weblayer/Callback.java",
@@ -97,7 +96,6 @@ android_library("java") {
     "org/chromium/weblayer/ScrollNotificationType.java",
     "org/chromium/weblayer/ScrollOffsetCallback.java",
     "org/chromium/weblayer/SettingType.java",
-    "org/chromium/weblayer/SettingsFragmentEventHandler.java",
     "org/chromium/weblayer/Tab.java",
     "org/chromium/weblayer/TabCallback.java",
     "org/chromium/weblayer/TabListCallback.java",
@@ -133,6 +131,7 @@ android_library("java") {
     ":client_version",
     ":webengine_interfaces_java",
     ":weblayer_client_manifest",
+    "//base:base_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_core_core_java",
@@ -211,10 +210,7 @@ android_aidl("webengine_aidl") {
 }
 
 android_library("webengine_interfaces_java") {
-  sources = [
-    "org/chromium/webengine/interfaces/ExceptionType.java",
-    "org/chromium/webengine/interfaces/RestrictedAPIException.java",
-  ]
+  sources = [ "org/chromium/webengine/interfaces/ExceptionType.java" ]
   deps = [
     "//base:base_java",
     "//third_party/androidx:androidx_annotation_annotation_jvm_java",
@@ -231,6 +227,7 @@ android_library("webengine_java") {
     "org/chromium/webengine/Navigation.java",
     "org/chromium/webengine/NavigationObserver.java",
     "org/chromium/webengine/NavigationObserverDelegate.java",
+    "org/chromium/webengine/RestrictedAPIException.java",
     "org/chromium/webengine/Tab.java",
     "org/chromium/webengine/TabListObserver.java",
     "org/chromium/webengine/TabListObserverDelegate.java",

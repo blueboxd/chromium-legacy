@@ -59,6 +59,17 @@
             sub-label="[[cookieSettingDescription_]]"
             on-click="onCookiesClick_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+        <template is="dom-if" if=
+            "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
+          <cr-link-row id="privacySandboxLinkRow"
+              start-icon="settings20:privacy-sandbox"
+              class="hr"
+              label="$i18n{adPrivacyLinkRowLabel}"
+              sub-label="$i18n{adPrivacyLinkRowSubLabel}"
+              on-click="onPrivacySandboxClick_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
+        </template>
         <cr-link-row id="securityLinkRow" start-icon="cr:security"
             class="hr" label="$i18n{securityPageTitle}"
             sub-label="$i18n{securityPageDescription}"
@@ -69,7 +80,8 @@
             sub-label="$i18n{permissionsPageDescription}"
             on-click="onPermissionsPageClick_"
             role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-        <template is="dom-if" if="[[!isPrivacySandboxRestricted_]]">
+        <template is="dom-if" if=
+            "[[isPrivacySandboxSettings3Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
           <cr-link-row id="privacySandboxLinkRow"
               start-icon="settings20:experiment"
               class="hr"
@@ -132,6 +144,53 @@
               focus-config="[[focusConfig_]]">
           </settings-security-page>
         </settings-subpage>
+      </template>
+
+      <template is="dom-if" if=
+          "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
+        <template is="dom-if" route-path="/adPrivacy">
+          <!-- TODO(b/254413940): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox"
+              page-title="$i18n{adPrivacyPageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-page prefs="{{prefs}}">
+            </settings-privacy-sandbox-page>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/interests">
+          <!-- TODO(b/254413439): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-topics"
+              page-title="$i18n{topicsPageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-topics-subpage prefs="{{prefs}}">
+            </settings-privacy-sandbox-topics-subpage>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/sites">
+          <!-- TODO(b/254411472): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-fledge"
+              page-title="$i18n{fledgePageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-fledge-subpage prefs="{{prefs}}">
+            </settings-privacy-sandbox-fledge-subpage>
+          </settings-subpage>
+        </template>
+
+        <template is="dom-if" route-path="/adPrivacy/measurement">
+          <!-- TODO(b/254412702): Add learn-more-url. -->
+          <settings-subpage id="privacy-sandbox-ad-measurement"
+              page-title="$i18n{adMeasurementPageTitle}"
+              associated-control="[[$$('#privacySandboxLinkRow')]]"
+              learn-more-url="">
+            <settings-privacy-sandbox-ad-measurement-subpage prefs="{{prefs}}">
+            </settings-privacy-sandbox-ad-measurement-subpage>
+          </settings-subpage>
+        </template>
       </template>
 
       <template is="dom-if" route-path="/content/all" no-search>
@@ -318,6 +377,14 @@
                     "$i18n{siteSettingsFederatedIdentityApiBlockedExceptions}"
                 search-filter="[[searchFilter_]]">
             </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
+      <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
+        <template is="dom-if" route-path="/content/siteData" no-search>
+          <!-- TODO(crbug/1378703): Update title. -->
+          <settings-subpage page-title="$i18n{privacyPageTitle}">
+            <settings-site-data prefs="{{prefs}}"></settings-site-data>
           </settings-subpage>
         </template>
       </template>

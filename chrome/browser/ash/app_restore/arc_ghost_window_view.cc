@@ -31,6 +31,8 @@
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/layout_provider.h"
 
+namespace ash::full_restore {
+
 namespace {
 
 constexpr char kGhostWindowTypeHistogram[] = "Arc.GhostWindowViewType";
@@ -101,8 +103,6 @@ class Throbber : public views::View {
 };
 
 }  // namespace
-
-namespace ash::full_restore {
 
 ArcGhostWindowView::ArcGhostWindowView(
     ArcGhostWindowShellSurface* shell_surface,
@@ -204,7 +204,7 @@ void ArcGhostWindowView::LoadIcon(const std::string& app_id) {
 
   apps::AppServiceProxyFactory::GetForProfile(profile)->LoadIcon(
       apps::AppType::kArc, app_id, apps::IconType::kStandard,
-      ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+      SharedAppListConfig::instance().default_grid_icon_dimension(),
       /*allow_placeholder_icon=*/false,
       icon_loaded_cb_for_testing_.is_null()
           ? base::BindOnce(&ArcGhostWindowView::OnIconLoaded,
@@ -269,9 +269,9 @@ void ArcGhostWindowView::AddChildrenViewsForAppLaunchType() {
                   .SetPreferredSize(gfx::Size(kThrobberDiameterNewStyle,
                                               kThrobberDiameterNewStyle)),
               views::Builder<views::Label>()
-                  .SetText(l10n_util::GetStringUTF16(
-                               IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_MESSAGE) +
-                           u" " + base::UTF8ToUTF16(app_name_))
+                  .SetText(l10n_util::GetStringFUTF16(
+                      IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_MESSAGE,
+                      base::UTF8ToUTF16(app_name_)))
                   .SetTextContext(views::style::CONTEXT_LABEL)
                   .SetTextStyle(views::style::STYLE_SECONDARY)
                   .SetMultiLine(true)

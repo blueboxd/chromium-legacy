@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/task/bind_post_task.h"
-#include "base/task/task_runner_util.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -30,6 +29,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/origin.h"
@@ -226,8 +226,8 @@ MediaStreamDispatcherHost::MediaStreamDispatcherHost(
   base::RepeatingClosure focus_callback =
       base::BindRepeating(&MediaStreamDispatcherHost::OnWebContentsFocused,
                           weak_factory_.GetWeakPtr());
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&StartObservingWebContents, render_process_id_,
                      render_frame_id_, std::move(focus_callback)),
       base::BindOnce(&MediaStreamDispatcherHost::SetWebContentsObserver,
@@ -434,8 +434,8 @@ void MediaStreamDispatcherHost::GenerateStreams(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &MediaStreamDispatcherHost::GenerateStreamsChecksOnUIThread,
           /*render_process_id=*/render_process_id_,
@@ -544,8 +544,8 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoOpenDevice,
@@ -595,6 +595,12 @@ void MediaStreamDispatcherHost::SetCapturingLinkSecured(
 void MediaStreamDispatcherHost::OnStreamStarted(const std::string& label) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (base::FeatureList::IsEnabled(
+          blink::features::kStartMediaStreamCaptureIndicatorInBrowser)) {
+    ReceivedBadMessage(render_process_id_,
+                       bad_message::MSDH_ON_STREAM_STARTED_DISALLOWED);
+    return;
+  }
   media_stream_manager_->OnStreamStarted(label);
 }
 
@@ -694,8 +700,8 @@ void MediaStreamDispatcherHost::GetOpenDevice(
   // on it", and whether we can/need to specific the destination renderer/frame
   // in this case.
 
-  base::PostTaskAndReplyWithResult(
-      GetUIThreadTaskRunner({}).get(), FROM_HERE,
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGetOpenDevice,

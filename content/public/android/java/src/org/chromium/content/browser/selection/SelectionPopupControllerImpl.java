@@ -705,9 +705,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     private void hideActionModeTemporarily(long duration) {
         assert isFloatingActionMode();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (isActionModeValid()) ApiHelperForM.hideActionMode(mActionMode, duration);
-        }
+        if (isActionModeValid()) ApiHelperForM.hideActionMode(mActionMode, duration);
     }
 
     private boolean isFloatingActionMode() {
@@ -887,12 +885,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private static Intent createProcessTextIntent() {
         return new Intent().setAction(Intent.ACTION_PROCESS_TEXT).setType("text/plain");
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private Intent createProcessTextIntentForResolveInfo(ResolveInfo info) {
         boolean isReadOnly = !isFocusedNodeEditable();
         return createProcessTextIntent()

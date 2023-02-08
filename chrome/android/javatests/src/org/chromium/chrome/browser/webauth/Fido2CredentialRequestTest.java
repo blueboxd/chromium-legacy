@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
@@ -153,7 +152,7 @@ public class Fido2CredentialRequestTest {
                         .name("notSupportedError"),
                 new ParameterSet()
                         .value(Fido2Api.CONSTRAINT_ERR, FILLER_ERROR_MSG,
-                                Integer.valueOf(AuthenticatorStatus.CREDENTIAL_EXCLUDED))
+                                Integer.valueOf(AuthenticatorStatus.UNKNOWN_ERROR))
                         .name("constraintErrorReRegistration"),
                 new ParameterSet()
                         .value(Fido2Api.INVALID_STATE_ERR, FILLER_ERROR_MSG,
@@ -455,12 +454,8 @@ public class Fido2CredentialRequestTest {
      * Used to enable early exit of tests on bots that don't support GmsCore v16.1+
      */
     private boolean gmsVersionSupported() {
-        if (PackageUtils.getPackageVersion(
-                    ContextUtils.getApplicationContext(), GOOGLE_PLAY_SERVICES_PACKAGE)
-                >= AuthenticatorImpl.GMSCORE_MIN_VERSION) {
-            return true;
-        }
-        return false;
+        return PackageUtils.getPackageVersion(GOOGLE_PLAY_SERVICES_PACKAGE)
+                >= AuthenticatorImpl.GMSCORE_MIN_VERSION;
     }
 
     @Test
@@ -712,7 +707,9 @@ public class Fido2CredentialRequestTest {
 
         mCallback.blockUntilCalled();
         Assert.assertEquals(mCallback.getStatus(), Integer.valueOf(AuthenticatorStatus.SUCCESS));
-        Fido2ApiTestHelper.validateMakeCredentialResponse(mCallback.getMakeCredentialResponse());
+        MakeCredentialAuthenticatorResponse response = mCallback.getMakeCredentialResponse();
+        Fido2ApiTestHelper.validateMakeCredentialResponse(response);
+        Assert.assertFalse(response.echoCredProps);
         Fido2ApiTestHelper.verifyRespondedBeforeTimeout(mStartTimeMs);
     }
 
@@ -827,6 +824,34 @@ public class Fido2CredentialRequestTest {
         byte[] actualPrefix =
                 Arrays.copyOfRange(response.attestationObject, 0, expectedPrefix.length);
         Assert.assertArrayEquals(expectedPrefix, actualPrefix);
+    }
+
+    @Test
+    @SmallTest
+    public void testInternalAuthenticatorMakeCredential_credprops() throws Exception {
+        // This test can't work on Android N because it lacks the java.nio.file
+        // APIs used to load the test data.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
+        mIntentSender.setNextResultIntent(
+                Fido2ApiTestHelper.createSuccessfulMakeCredentialIntentWithCredProps());
+
+        PublicKeyCredentialCreationOptions creationOptions =
+                Fido2ApiTestHelper.createDefaultMakeCredentialOptions();
+        creationOptions.credProps = true;
+
+        mRequest.handleMakeCredentialRequest(creationOptions, mFrameHost, mOrigin,
+                (responseStatus, response)
+                        -> mCallback.onRegisterResponse(responseStatus, response),
+                errorStatus -> mCallback.onError(errorStatus));
+        mCallback.blockUntilCalled();
+        Assert.assertEquals(mCallback.getStatus(), Integer.valueOf(AuthenticatorStatus.SUCCESS));
+        MakeCredentialAuthenticatorResponse response = mCallback.getMakeCredentialResponse();
+        Assert.assertTrue(response.echoCredProps);
+        Assert.assertTrue(response.hasCredPropsRk);
+        Assert.assertTrue(response.credPropsRk);
     }
 
     @Test

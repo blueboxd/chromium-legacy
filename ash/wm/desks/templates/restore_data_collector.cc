@@ -94,6 +94,7 @@ void RestoreDataCollector::CaptureActiveDeskAsTemplate(
   // unsupported apps.
   if (!has_supported_apps) {
     calls_.erase(current_serial);
+    std::move(callback).Run(nullptr);
     return;
   }
 
@@ -145,8 +146,13 @@ void RestoreDataCollector::SendDeskTemplate(uint32_t serial) {
   DCHECK(call_it != calls_.end());
   Call& call = call_it->second;
 
+  base::GUID desk_template_guid =
+      call.template_type == DeskTemplateType::kFloatingWorkspace
+          ? base::GUID::ParseLowercase(kFloatingWorkspaceTemplateUuid)
+          : base::GUID::GenerateRandomV4();
+
   auto desk_template = std::make_unique<DeskTemplate>(
-      base::GUID::GenerateRandomV4(), DeskTemplateSource::kUser,
+      std::move(desk_template_guid), DeskTemplateSource::kUser,
       call.template_name, base::Time::Now(), call.template_type);
   desk_template->set_desk_restore_data(std::move(call.data));
 
@@ -161,8 +167,11 @@ void RestoreDataCollector::SendDeskTemplate(uint32_t serial) {
       root_window_to_show = Shell::Get()->GetPrimaryRootWindow();
 
     // There were some unsupported apps in the active desk so open up a dialog
-    // to let the user know.
-    saved_desk_util::GetSavedDeskDialogController()->ShowUnsupportedAppsDialog(
+    // to let the user know. The dialog controller should always be available
+    // here since we have already determined that we are in overview mode.
+    auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
+    DCHECK(dialog_controller);
+    dialog_controller->ShowUnsupportedAppsDialog(
         root_window_to_show, call.unsupported_apps, call.incognito_window_count,
         std::move(call.callback), std::move(desk_template));
   } else {

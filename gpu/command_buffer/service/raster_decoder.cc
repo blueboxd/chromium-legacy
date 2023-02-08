@@ -25,6 +25,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_cache.h"
+#include "cc/paint/paint_op.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/transfer_cache_deserialize_helper.h"
 #include "cc/paint/transfer_cache_entry.h"
@@ -55,6 +56,7 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/wrapped_sk_image_backing_factory.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -389,7 +391,6 @@ class RasterDecoderImpl final : public RasterDecoder,
                     const GpuPreferences& gpu_preferences,
                     MemoryTracker* memory_tracker,
                     SharedImageManager* shared_image_manager,
-                    ImageFactory* image_factory,
                     scoped_refptr<SharedContextState> shared_context_state,
                     bool is_privileged);
 
@@ -469,10 +470,17 @@ class RasterDecoderImpl final : public RasterDecoder,
                           int num_entries,
                           int* entries_processed) override;
   base::StringPiece GetLogPrefix() override;
-  void BindImage(uint32_t client_texture_id,
-                 uint32_t texture_target,
-                 gl::GLImage* image,
-                 bool can_bind_to_sampler) override;
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
+                                              uint32_t texture_target,
+                                              gl::GLImage* image) override;
+#else
+  void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
+                                             uint32_t texture_target,
+                                             gl::GLImage* image) override;
+#endif
+
   gles2::ContextGroup* GetContextGroup() override;
   gles2::ErrorState* GetErrorState() override;
   std::unique_ptr<gles2::AbstractTexture> CreateAbstractTexture(
@@ -734,11 +742,13 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoClearPaintCacheINTERNAL();
 
   void FlushSurface(SkiaImageRepresentation::ScopedWriteAccess* access) {
-    auto* surface = access->surface();
+    int num_planes = access->representation()->format().NumberOfPlanes();
     auto end_state = access->TakeEndState();
-
-    DCHECK(surface);
-    surface->flush({}, end_state.get());
+    for (int plane_index = 0; plane_index < num_planes; plane_index++) {
+      auto* surface = access->surface(plane_index);
+      DCHECK(surface);
+      surface->flush({}, end_state.get());
+    }
   }
 
   void SubmitIfNecessary(std::vector<GrBackendSemaphore> signal_semaphores) {
@@ -834,7 +844,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   bool gpu_raster_enabled_ = false;
   bool use_gpu_raster_ = false;
-  bool texture_storage_image_enabled_ = false;
   bool use_passthrough_ = false;
 
   // The current decoder error communicates the decoder error through command
@@ -927,13 +936,12 @@ RasterDecoder* RasterDecoder::Create(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    ImageFactory* image_factory,
     scoped_refptr<SharedContextState> shared_context_state,
     bool is_privileged) {
-  return new RasterDecoderImpl(
-      client, command_buffer_service, outputter, gpu_feature_info,
-      gpu_preferences, memory_tracker, shared_image_manager, image_factory,
-      std::move(shared_context_state), is_privileged);
+  return new RasterDecoderImpl(client, command_buffer_service, outputter,
+                               gpu_feature_info, gpu_preferences,
+                               memory_tracker, shared_image_manager,
+                               std::move(shared_context_state), is_privileged);
 }
 
 RasterDecoder::RasterDecoder(DecoderClient* client,
@@ -985,7 +993,6 @@ RasterDecoderImpl::RasterDecoderImpl(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    ImageFactory* image_factory,
     scoped_refptr<SharedContextState> shared_context_state,
     bool is_privileged)
     : RasterDecoder(client, command_buffer_service, outputter),
@@ -996,8 +1003,6 @@ RasterDecoderImpl::RasterDecoderImpl(
       gpu_raster_enabled_(
           gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
           kGpuFeatureStatusEnabled),
-      texture_storage_image_enabled_(
-          image_factory && image_factory->SupportsCreateAnonymousImage()),
       use_passthrough_(gles2::PassthroughCommandDecoderSupported() &&
                        gpu_preferences.use_passthrough_cmd_decoder),
       gpu_preferences_(gpu_preferences),
@@ -1178,7 +1183,8 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
       gpu_preferences_.texture_target_exception_list;
   caps.texture_format_bgra8888 =
       feature_info()->feature_flags().ext_texture_format_bgra8888;
-  caps.texture_storage_image = texture_storage_image_enabled_;
+  caps.supports_scanout_shared_images =
+      SharedImageManager::SupportsScanoutImages();
   // TODO(piman): have a consistent limit in shared image backings.
   // https://crbug.com/960588
   if (shared_context_state_->GrContextIsGL()) {
@@ -1569,12 +1575,21 @@ base::StringPiece RasterDecoderImpl::GetLogPrefix() {
   return logger_.GetLogPrefix();
 }
 
-void RasterDecoderImpl::BindImage(uint32_t client_texture_id,
-                                  uint32_t texture_target,
-                                  gl::GLImage* image,
-                                  bool can_bind_to_sampler) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void RasterDecoderImpl::AttachImageToTextureWithDecoderBinding(
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    gl::GLImage* image) {
   NOTIMPLEMENTED();
 }
+#else
+void RasterDecoderImpl::AttachImageToTextureWithClientBinding(
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    gl::GLImage* image) {
+  NOTIMPLEMENTED();
+}
+#endif
 
 gles2::ContextGroup* RasterDecoderImpl::GetContextGroup() {
   return nullptr;
@@ -2053,33 +2068,63 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
                          "Couldn't create SkImage from source shared image.");
     }
 
-    auto* canvas = dest_scoped_access->surface()->getCanvas();
-    SkPaint paint;
-
     // Skia will flip the image if the surface origins do not match.
     DCHECK_EQ(unpack_flip_y, source_shared_image->surface_origin() !=
                                  dest_shared_image->surface_origin());
-    paint.setBlendMode(SkBlendMode::kSrc);
+    auto dest_format = dest_shared_image->format();
+    if (dest_format.is_single_plane()) {
+      // Destination shared image cannot prefer external sampler.
+      DCHECK(!dest_format.IsLegacyMultiplanar());
 
-    // Reinterpret the source image as being in the destination color space, to
-    // disable color conversion.
-    auto source_image_reinterpreted = source_image;
-    if (canvas->imageInfo().colorSpace()) {
-      source_image_reinterpreted = source_image->reinterpretColorSpace(
-          canvas->imageInfo().refColorSpace());
+      auto* canvas = dest_scoped_access->surface()->getCanvas();
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrc);
+
+      // Reinterpret the source image as being in the destination color space,
+      // to disable color conversion.
+      auto source_image_reinterpreted = source_image;
+      if (canvas->imageInfo().colorSpace()) {
+        source_image_reinterpreted = source_image->reinterpretColorSpace(
+            canvas->imageInfo().refColorSpace());
+      }
+      canvas->drawImageRect(source_image_reinterpreted,
+                            gfx::RectToSkRect(source_rect),
+                            gfx::RectToSkRect(dest_rect), SkSamplingOptions(),
+                            &paint, SkCanvas::kStrict_SrcRectConstraint);
+    } else {
+      SkSurface* yuva_sk_surfaces[SkYUVAInfo::kMaxPlanes] = {};
+      for (int plane_index = 0; plane_index < dest_format.NumberOfPlanes();
+           plane_index++) {
+        // Get surface per plane from destination scoped write access.
+        yuva_sk_surfaces[plane_index] =
+            dest_scoped_access->surface(plane_index);
+      }
+
+      // TODO(crbug.com/828599): This should really default to rec709.
+      SkYUVColorSpace yuv_color_space = kRec601_SkYUVColorSpace;
+      dest_shared_image->color_space().ToSkYUVColorSpace(
+          dest_format.MultiplanarBitDepth(), &yuv_color_space);
+
+      SkYUVAInfo yuva_info(gfx::SizeToSkISize(dest_shared_image->size()),
+                           ToSkYUVAPlaneConfig(dest_format),
+                           ToSkYUVASubsampling(dest_format), yuv_color_space);
+      // Perform skia::BlitRGBAToYUVA for the multiplanar YUV format image.
+      skia::BlitRGBAToYUVA(source_image.get(), yuva_sk_surfaces, yuva_info);
     }
 
-    canvas->drawImageRect(source_image_reinterpreted,
-                          gfx::RectToSkRect(source_rect),
-                          gfx::RectToSkRect(dest_rect), SkSamplingOptions(),
-                          &paint, SkCanvas::kStrict_SrcRectConstraint);
-
     FlushSurface(dest_scoped_access.get());
-
+    auto source_format = source_shared_image->format();
     if (auto end_state = source_scoped_access->TakeEndState()) {
-      gr_context()->setBackendTextureState(
-          source_scoped_access->promise_image_texture()->backendTexture(),
-          *end_state);
+      // Only one texture for external sampler case in source shared image.
+      const int num_planes = source_format.PrefersExternalSampler()
+                                 ? 1
+                                 : source_format.NumberOfPlanes();
+      for (int plane_index = 0; plane_index < num_planes; plane_index++) {
+        gr_context()->setBackendTextureState(
+            source_scoped_access->promise_image_texture(plane_index)
+                ->backendTexture(),
+            *end_state);
+      }
     }
 
     if (!dest_shared_image->IsCleared()) {
@@ -2181,8 +2226,8 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
     return;
   }
 
-  if (SkColorTypeBytesPerPixel(viz::ResourceFormatToClosestSkColorType(
-          true, dest_shared_image->format())) !=
+  if (SkColorTypeBytesPerPixel(
+          viz::ToClosestSkColorType(true, dest_shared_image->format())) !=
       SkColorTypeBytesPerPixel(static_cast<SkColorType>(src_sk_color_type))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
                        "Bytes per pixel for src SkColorType and dst "
@@ -3111,7 +3156,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLfloat r,
   DCHECK(locked_handles_.empty());
   DCHECK(!raster_canvas_);
 
-  SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
+  SkColorType sk_color_type = viz::ToClosestSkColorType(
       /*gpu_compositing=*/true, shared_image->format());
 
   int final_msaa_count;
@@ -3292,7 +3337,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   }
 
   alignas(
-      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
+      cc::PaintOpBuffer::kPaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
 
   size_t paint_buffer_size = raster_shm_size;
   gl::ScopedProgressReporter report_progress(

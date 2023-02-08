@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
@@ -26,6 +27,7 @@
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -126,7 +128,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       time_since_last_check_(time_since_last_check),
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                       base::SequencedTaskRunnerHandle::Get()),
+                       base::SequencedTaskRunner::GetCurrentDefault()),
       callback_(std::move(callback)) {
   DCHECK(browser_context);
 
@@ -182,7 +184,8 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
       network::SharedURLLoaderFactory::Create(loader_factory->Clone()),
       std::move(throttles), GlobalRequestID::MakeBrowserInitiated().request_id,
       options, &resource_request, network_client_remote_.get(),
-      kUpdateCheckTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
+      kUpdateCheckTrafficAnnotation,
+      base::SingleThreadTaskRunner::GetCurrentDefault());
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted);
   network_loader_state_ =
@@ -298,7 +301,11 @@ void ServiceWorkerSingleScriptUpdateChecker::OnUploadProgress(
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnTransferSizeUpdated(
-    int32_t transfer_size_diff) {}
+    int32_t transfer_size_diff) {
+  network::RecordOnTransferSizeUpdatedUMA(
+      network::OnTransferSizeUpdatedFrom::
+          kServiceWorkerSingleScriptUpdateChecker);
+}
 
 void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
     const network::URLLoaderCompletionStatus& status) {

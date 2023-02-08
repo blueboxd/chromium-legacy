@@ -10,7 +10,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
@@ -103,7 +102,8 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
   if (client->is_registered()) {
     // If the client is already registered, it means this error must have
     // come from a policy fetch.
-    if (client->status() == DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED) {
+    if (client->last_dm_status() ==
+        DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED) {
       // OK, policy fetch failed with MANAGEMENT_NOT_SUPPORTED - this is our
       // trigger to revert to "unmanaged" mode (we will check for management
       // being re-enabled on the next restart and/or login).
@@ -111,13 +111,13 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
 
       // Can't shutdown now because we're in the middle of a callback from
       // the CloudPolicyClient, so queue up a task to do the shutdown.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
               &UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager,
               weak_factory_.GetWeakPtr()));
     } else {
-      DVLOG(1) << "Error fetching policy: " << client->status();
+      DVLOG(1) << "Error fetching policy: " << client->last_dm_status();
     }
   }
 }
@@ -351,7 +351,7 @@ void UserPolicySigninServiceBase::
     // immediately without queueing a task. This is the case for Desktop.
     RegisterCloudPolicyService();
   } else {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&UserPolicySigninServiceBase::RegisterCloudPolicyService,
                        weak_factory_for_registration_.GetWeakPtr()),

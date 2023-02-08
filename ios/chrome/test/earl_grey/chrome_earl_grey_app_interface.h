@@ -41,6 +41,11 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
+// Clears browsing cookies and waits for cookies to finish clearing before
+// returning. Returns nil on success, or else an NSError indicating why the
+// operation failed.
++ (NSError*)clearBrowsingCookies;
+
 // Clears all web state browsing data and waits to finish clearing before
 // returning. Returns nil on success, otherwise an NSError indicating why
 // the operation failed.
@@ -358,11 +363,17 @@
 // Stops the sync server. The server should be running when calling this.
 + (void)stopSync;
 
-// Waits for sync to be initialized or not.
-// Returns nil on success, or else an NSError indicating why the
-// operation failed.
-+ (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(base::TimeDelta)timeout;
+// Waits for sync engine to be initialized or not. It doesn't necessarily mean
+// that data types are configured and ready to use. See
+// SyncService::IsEngineInitialized() for details. If not succeeded a GREYAssert
+// is induced.
++ (NSError*)waitForSyncEngineInitialized:(BOOL)isInitialized
+                             syncTimeout:(base::TimeDelta)timeout;
+
+// Waits for the sync feature to be enabled/disabled. See SyncService::
+// IsSyncFeatureEnabled() for details. If not succeeded a GREYAssert is induced.
++ (NSError*)waitForSyncFeatureEnabled:(BOOL)isEnabled
+                          syncTimeout:(base::TimeDelta)timeout;
 
 // Returns the current sync cache GUID. The sync server must be running when
 // calling this.
@@ -537,6 +548,9 @@
 
 // Returns whether the Web Channels feature is enabled.
 + (BOOL)isWebChannelsEnabled;
+
+// Returns whether SF Symbols are used.
++ (BOOL)isSFSymbolEnabled;
 
 #pragma mark - ContentSettings
 

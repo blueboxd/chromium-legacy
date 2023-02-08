@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -383,7 +384,6 @@ class TimeSourceInputControllerTestWithDeviceListener
     settings.noise_suppression = false;
     settings.transient_noise_suppression = false;
     settings.automatic_gain_control = false;
-    settings.experimental_automatic_gain_control = false;
     settings.high_pass_filter = false;
     settings.multi_channel_capture_processing = false;
     settings.stereo_mirroring = false;
@@ -423,8 +423,8 @@ TEST_P(InputControllerTestWithDeviceListener,
   ASSERT_TRUE(controller_.get());
 
   base::RunLoop loop;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   loop.QuitClosure());
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           loop.QuitClosure());
   loop.Run();
 
   // |controller_| should have bound the pending AudioProcessorControls
@@ -448,8 +448,8 @@ TEST_P(InputControllerTestWithDeviceListener,
   ASSERT_TRUE(controller_.get());
 
   base::RunLoop loop;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   loop.QuitClosure());
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(FROM_HERE,
+                                                           loop.QuitClosure());
   loop.Run();
 
   // When all forms of audio processing are disabled, |controller_| should
@@ -590,7 +590,7 @@ TEST_P(SystemTimeInputControllerTestWithDeviceListener, CreateRecordAndClose) {
   bool data_processed_by_fifo = false;
 
   if (IsProcessingFifoEnabled()) {
-    auto main_sequence = base::SequencedTaskRunnerHandle::Get();
+    auto main_sequence = base::SequencedTaskRunner::GetCurrentDefault();
     auto verify_data_processed = [&data_processed_by_fifo, main_sequence]() {
       // Data should be processed on its own thread.
       EXPECT_FALSE(main_sequence->RunsTasksInCurrentSequence());

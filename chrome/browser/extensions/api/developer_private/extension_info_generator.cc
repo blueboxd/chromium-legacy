@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/extensions/extension_allowlist.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -281,7 +279,7 @@ developer::RuntimeHostPermissions CreateRuntimeHostPermissionsInfo(
   // Add the host access data, including the mode and any runtime-granted
   // hosts.
   if (!PermissionsManager::Get(browser_context)
-           ->HasWithheldHostPermissions(extension.id())) {
+           ->HasWithheldHostPermissions(extension)) {
     granted_permissions =
         extension_prefs->GetGrantedPermissions(extension.id());
     runtime_host_permissions.host_access = developer::HOST_ACCESS_ON_ALL_SITES;
@@ -328,10 +326,10 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
     return permissions;
   };
 
-  ScriptingPermissionsModifier permissions_modifier(
-      browser_context, base::WrapRefCounted(&extension));
+  PermissionsManager* permissions_manager =
+      PermissionsManager::Get(browser_context);
   bool enable_runtime_host_permissions =
-      permissions_modifier.CanAffectExtension();
+      permissions_manager->CanAffectExtension(extension);
 
   if (!enable_runtime_host_permissions) {
     // Without runtime host permissions, everything goes into
@@ -404,7 +402,7 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
 
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(list_)));
     list_.clear();
   } else {
@@ -441,7 +439,7 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
 
   if (pending_image_loads_ == 0) {
     // Don't call the callback re-entrantly.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), std::move(list_)));
     list_.clear();
   } else {

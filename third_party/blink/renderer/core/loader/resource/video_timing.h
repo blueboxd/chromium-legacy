@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/media_timing.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -23,6 +24,9 @@ class VideoTiming final : public GarbageCollected<VideoTiming>,
 
   void SetUrl(const KURL& url) { url_ = url; }
   const KURL& Url() const override { return url_; }
+
+  bool IsDataUrl() const override { return Url().ProtocolIsData(); }
+  AtomicString MediaType() const override { return AtomicString("video"); }
 
   void SetIsSufficientContentLoadedForPaint() override { is_loaded_ = true; }
   bool IsSufficientContentLoadedForPaint() const override { return is_loaded_; }

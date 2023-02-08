@@ -5,13 +5,16 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
 
 #include <bitset>
+#include <limits>
 #include <memory>
 #include <utility>
 
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_try_rule.h"
@@ -30,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/style_rule_counter_style.h"
+#include "third_party/blink/renderer/core/css/style_rule_font_feature_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_font_palette_values.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
@@ -109,6 +113,27 @@ StyleRule::RuleType RuleTypeForMutableDeclaration(
     default:
       return StyleRule::kStyle;
   }
+}
+
+absl::optional<StyleRuleFontFeature::FeatureType> ToStyleRuleFontFeatureType(
+    CSSAtRuleID rule_id) {
+  switch (rule_id) {
+    case CSSAtRuleID::kCSSAtRuleStylistic:
+      return StyleRuleFontFeature::FeatureType::kStylistic;
+    case CSSAtRuleID::kCSSAtRuleStyleset:
+      return StyleRuleFontFeature::FeatureType::kStyleset;
+    case CSSAtRuleID::kCSSAtRuleCharacterVariant:
+      return StyleRuleFontFeature::FeatureType::kCharacterVariant;
+    case CSSAtRuleID::kCSSAtRuleSwash:
+      return StyleRuleFontFeature::FeatureType::kSwash;
+    case CSSAtRuleID::kCSSAtRuleOrnaments:
+      return StyleRuleFontFeature::FeatureType::kOrnaments;
+    case CSSAtRuleID::kCSSAtRuleAnnotation:
+      return StyleRuleFontFeature::FeatureType::kAnnotation;
+    default:
+      NOTREACHED();
+  }
+  return absl::nullopt;
 }
 
 }  // namespace
@@ -305,9 +330,11 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
     std::unique_ptr<CachedCSSTokenizer> cached_tokenizer) {
   absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> timer;
   if (context->GetDocument() && context->GetDocument()->View()) {
-    timer.emplace(
-        context->GetDocument()->View()->EnsureUkmAggregator().GetScopedTimer(
-            static_cast<size_t>(LocalFrameUkmAggregator::kParseStyleSheet)));
+    if (auto* metrics_aggregator =
+            context->GetDocument()->View()->GetUkmAggregator()) {
+      timer.emplace(metrics_aggregator->GetScopedTimer(
+          static_cast<size_t>(LocalFrameUkmAggregator::kParseStyleSheet)));
+    }
   }
   TRACE_EVENT_BEGIN2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
                      "baseUrl", context->BaseURL().GetString().Utf8(), "mode",
@@ -401,11 +428,13 @@ CSSSelectorList* CSSParserImpl::ParsePageSelector(
       base::span<CSSSelector>(selectors));
 }
 
-std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
+std::unique_ptr<Vector<KeyframeOffset>> CSSParserImpl::ParseKeyframeKeyList(
+    const CSSParserContext* context,
     const String& key_list) {
   CSSTokenizer tokenizer(key_list);
   // TODO(crbug.com/661854): Use streams instead of ranges
-  return ConsumeKeyframeKeyList(CSSParserTokenRange(tokenizer.TokenizeToEOF()));
+  return ConsumeKeyframeKeyList(context,
+                                CSSParserTokenRange(tokenizer.TokenizeToEOF()));
 }
 
 bool CSSParserImpl::ConsumeSupportsDeclaration(CSSParserTokenStream& stream) {
@@ -528,7 +557,7 @@ bool CSSParserImpl::ConsumeRuleList(CSSParserTokenStream& stream,
   bool seen_rule = false;
   bool first_rule_valid = false;
   while (!stream.AtEnd()) {
-    StyleRuleBase* rule;
+    StyleRuleBase* rule = nullptr;
     switch (stream.UncheckedPeek().GetType()) {
       case kWhitespaceToken:
         stream.UncheckedConsume();
@@ -640,10 +669,9 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
     CountAtRule(context_, id);
   }
 
-  if (allowed_rules == kKeyframeRules || allowed_rules == kFontFeatureRules ||
-      allowed_rules == kNoRules) {
+  if (allowed_rules == kKeyframeRules || allowed_rules == kNoRules) {
     // Parse error, no at-rules supported inside @keyframes,
-    // @font-feature-values, or blocks supported inside declaration lists.
+    // or blocks supported inside declaration lists.
     ConsumeErroneousAtRule(stream);
     return nullptr;
   }
@@ -663,6 +691,17 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
       return ConsumeTryRule(stream);
     ConsumeErroneousAtRule(stream);
     return nullptr;
+  } else if (allowed_rules == kFontFeatureRules) {
+    if (id == CSSAtRuleID::kCSSAtRuleStylistic ||
+        id == CSSAtRuleID::kCSSAtRuleStyleset ||
+        id == CSSAtRuleID::kCSSAtRuleCharacterVariant ||
+        id == CSSAtRuleID::kCSSAtRuleSwash ||
+        id == CSSAtRuleID::kCSSAtRuleOrnaments ||
+        id == CSSAtRuleID::kCSSAtRuleAnnotation) {
+      return ConsumeFontFeatureRule(id, stream);
+    } else {
+      return nullptr;
+    }
   } else {
     DCHECK_LE(allowed_rules, kRegularRules);
 
@@ -677,6 +716,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
         return ConsumeFontFaceRule(stream);
       case CSSAtRuleID::kCSSAtRuleFontPaletteValues:
         return ConsumeFontPaletteValuesRule(stream);
+      case CSSAtRuleID::kCSSAtRuleFontFeatureValues:
+        return ConsumeFontFeatureValuesRule(stream);
       case CSSAtRuleID::kCSSAtRuleWebkitKeyframes:
         return ConsumeKeyframesRule(true, stream);
       case CSSAtRuleID::kCSSAtRuleKeyframes:
@@ -699,6 +740,12 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRuleContents(
       case CSSAtRuleID::kCSSAtRuleNamespace:
       case CSSAtRuleID::kCSSAtRuleScrollTimeline:
       case CSSAtRuleID::kCSSAtRuleTry:
+      case CSSAtRuleID::kCSSAtRuleStylistic:
+      case CSSAtRuleID::kCSSAtRuleStyleset:
+      case CSSAtRuleID::kCSSAtRuleCharacterVariant:
+      case CSSAtRuleID::kCSSAtRuleSwash:
+      case CSSAtRuleID::kCSSAtRuleOrnaments:
+      case CSSAtRuleID::kCSSAtRuleAnnotation:
         ConsumeErroneousAtRule(stream);
         return nullptr;  // Parse error, unrecognised or not-allowed at-rule
     }
@@ -732,28 +779,14 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     return keyframe_style_rule;
   }
   if (allowed_rules == kFontFeatureRules) {
-    stream.ConsumeWhitespace();
-    if (stream.AtEnd())
-      return nullptr;  // Parse error, EOF instead of qualified rule block
-    bool prelude_invalid = false;
+    // We get here if something other than an at rule (e.g. @swash,
+    // @ornaments... ) was found within @font-feature-values. As we don't
+    // support font-display in @font-feature-values, we try to it by scanning
+    // until the at-rule or until the block may end. Compare
+    // https://drafts.csswg.org/css-fonts-4/#ex-invalid-ignored
     stream.EnsureLookAhead();
-    if (stream.UncheckedPeek().GetType() != kLeftBraceToken) {
-      prelude_invalid = true;
-      while (!stream.AtEnd() &&
-             stream.UncheckedPeek().GetType() != kLeftBraceToken)
-        stream.UncheckedConsumeComponentValue();
-      if (stream.AtEnd())
-        return nullptr;
-    }
-
-    CSSParserTokenStream::BlockGuard guard(stream);
-    if (prelude_invalid)
-      return nullptr;
-    ConsumeDeclarationList(stream, StyleRule::kFontFace,
-                           /*parent_rule_for_nesting=*/nullptr,
-                           /*child_rules=*/nullptr);
-    return MakeGarbageCollected<StyleRuleFontFace>(
-        CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
+    stream.ConsumeUntilPeekedTypeIs<kAtKeywordToken>();
+    return nullptr;
   }
   if (allowed_rules == kTryRules) {
     // We reach here only when there's a parse error. Treat everything before
@@ -1060,6 +1093,189 @@ StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
   return keyframe_rule;
 }
 
+StyleRuleFontFeature* CSSParserImpl::ConsumeFontFeatureRule(
+    CSSAtRuleID rule_id,
+    CSSParserTokenStream& stream) {
+  DCHECK(RuntimeEnabledFeatures::FontVariantAlternatesEnabled());
+
+  absl::optional<StyleRuleFontFeature::FeatureType> feature_type =
+      ToStyleRuleFontFeatureType(rule_id);
+  if (!feature_type)
+    return nullptr;
+
+  wtf_size_t max_allowed_values = 1;
+  if (feature_type == StyleRuleFontFeature::FeatureType::kCharacterVariant)
+    max_allowed_values = 2;
+  if (feature_type == StyleRuleFontFeature::FeatureType::kStyleset)
+    max_allowed_values = std::numeric_limits<wtf_size_t>::max();
+
+  stream.ConsumeWhitespace();
+
+  if (stream.Peek().GetType() != kLeftBraceToken)
+    return nullptr;
+
+  CSSParserTokenStream::BlockGuard guard(stream);
+  stream.ConsumeWhitespace();
+
+  auto* font_feature_rule =
+      MakeGarbageCollected<StyleRuleFontFeature>(*feature_type);
+
+  while (!stream.AtEnd()) {
+    const CSSParserToken& alias_token = stream.Peek();
+
+    if (alias_token.GetType() != kIdentToken)
+      return nullptr;
+    AtomicString alias =
+        stream.ConsumeIncludingWhitespace().Value().ToAtomicString();
+
+    const CSSParserToken& colon_token = stream.Peek();
+
+    if (colon_token.GetType() != kColonToken)
+      return nullptr;
+
+    stream.UncheckedConsume();
+    stream.ConsumeWhitespace();
+
+    CSSValueList* numbers = CSSValueList::CreateSpaceSeparated();
+
+    CSSParserTokenRange list =
+        stream.ConsumeUntilPeekedTypeIs<kSemicolonToken>();
+    list.ConsumeWhitespace();
+
+    do {
+      if (numbers->length() == max_allowed_values) {
+        return nullptr;
+      }
+      CSSPrimitiveValue* parsed_number =
+          css_parsing_utils::ConsumeIntegerOrNumberCalc(
+              list, *context_,
+              CSSPrimitiveValue::ValueRange::kNonNegativeInteger);
+      if (!parsed_number) {
+        return nullptr;
+      }
+      numbers->Append(*parsed_number);
+    } while (!list.AtEnd());
+
+    if (!numbers->length())
+      return nullptr;
+
+    Vector<uint32_t> parsed_numbers;
+    for (auto value : *numbers) {
+      const CSSPrimitiveValue* number_value =
+          DynamicTo<CSSPrimitiveValue>(*value);
+      if (!number_value)
+        return nullptr;
+      parsed_numbers.push_back(number_value->GetIntValue());
+    }
+
+    const CSSParserToken& expected_semicolon = stream.Peek();
+    if (expected_semicolon.GetType() == kSemicolonToken)
+      stream.UncheckedConsume();
+    stream.ConsumeWhitespace();
+
+    font_feature_rule->UpdateAlias(alias, parsed_numbers);
+  }
+
+  return font_feature_rule;
+}
+
+StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
+    CSSParserTokenStream& stream) {
+  DCHECK(RuntimeEnabledFeatures::FontVariantAlternatesEnabled());
+
+  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
+  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream))
+    return nullptr;
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kFontFeatureValues,
+                               prelude_offset_start);
+    observer_->EndRuleHeader(prelude_offset_end);
+    observer_->StartRuleBody(stream.Offset());
+  }
+
+  CSSValueList* family_list = css_parsing_utils::ConsumeFontFamily(prelude);
+
+  if (!family_list || !family_list->length()) {
+    return nullptr;
+  }
+
+  // The nesting logic for parsing @font-feature-values looks as follow:
+  // 1) ConsumeRuleList, calls ConsumeAtRule, and in turn ConsumeAtRuleContents
+  // 2) ConsumeAtRuleContents uses new ids for inner at-rules, for swash,
+  // styleset etc.
+  // 3) ConsumeFeatureRule (with type) consumes the inner mappings from aliases
+  // to number lists.
+
+  FontFeatureAliases stylistic;
+  FontFeatureAliases styleset;
+  FontFeatureAliases character_variant;
+  FontFeatureAliases swash;
+  FontFeatureAliases ornaments;
+  FontFeatureAliases annotation;
+
+  HeapVector<StyleRuleFontFeature*> feature_rules;
+  bool had_valid_rules = false;
+  // ConsumeRuleList returns true only if the first rule is true, but we need to
+  // be more generous with the internals of what's inside a font feature value
+  // declaration, e.g. inside a @stylsitic, @styleset, etc.
+  if (ConsumeRuleList(stream, kFontFeatureRuleList,
+                      /*parent_rule_for_nesting=*/nullptr,
+                      [&feature_rules, &had_valid_rules](StyleRuleBase* rule) {
+                        if (rule)
+                          had_valid_rules = true;
+                        feature_rules.push_back(To<StyleRuleFontFeature>(rule));
+                      }) ||
+      had_valid_rules) {
+    // https://drafts.csswg.org/css-fonts-4/#font-feature-values-syntax
+    // "Specifying the same <font-feature-value-type> more than once is valid;
+    // their contents are cascaded together."
+    for (auto* feature_rule : feature_rules) {
+      switch (feature_rule->GetFeatureType()) {
+        case StyleRuleFontFeature::FeatureType::kStylistic:
+          feature_rule->OverrideAliasesIn(stylistic);
+          break;
+        case StyleRuleFontFeature::FeatureType::kStyleset:
+          feature_rule->OverrideAliasesIn(styleset);
+          break;
+        case StyleRuleFontFeature::FeatureType::kCharacterVariant:
+          feature_rule->OverrideAliasesIn(character_variant);
+          break;
+        case StyleRuleFontFeature::FeatureType::kSwash:
+          feature_rule->OverrideAliasesIn(swash);
+          break;
+        case StyleRuleFontFeature::FeatureType::kOrnaments:
+          feature_rule->OverrideAliasesIn(ornaments);
+          break;
+        case StyleRuleFontFeature::FeatureType::kAnnotation:
+          feature_rule->OverrideAliasesIn(annotation);
+          break;
+      }
+    }
+  }
+
+  Vector<AtomicString> families;
+  for (const auto family_entry : *family_list) {
+    const CSSFontFamilyValue* family_value =
+        DynamicTo<CSSFontFamilyValue>(*family_entry);
+    if (!family_value)
+      return nullptr;
+    families.push_back(family_value->Value());
+  }
+
+  auto* feature_values_rule = MakeGarbageCollected<StyleRuleFontFeatureValues>(
+      families, stylistic, styleset, character_variant, swash, ornaments,
+      annotation);
+
+  if (observer_)
+    observer_->EndRuleBody(stream.Offset());
+
+  return feature_values_rule;
+}
+
 StyleRulePage* CSSParserImpl::ConsumePageRule(CSSParserTokenStream& stream) {
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
   CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
@@ -1143,8 +1359,6 @@ StyleRuleCounterStyle* CSSParserImpl::ConsumeCounterStyleRule(
 
 StyleRuleFontPaletteValues* CSSParserImpl::ConsumeFontPaletteValuesRule(
     CSSParserTokenStream& stream) {
-  DCHECK(RuntimeEnabledFeatures::FontPaletteEnabled());
-
   wtf_size_t prelude_offset_start = stream.LookAheadOffset();
   CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
   wtf_size_t prelude_offset_end = stream.LookAheadOffset();
@@ -1345,11 +1559,14 @@ StyleRulePositionFallback* CSSParserImpl::ConsumePositionFallbackRule(
   if (!prelude.AtEnd())
     return nullptr;
 
-  String name;  // <dashed-ident>
+  // <dashed-ident>, and -internal-* for UA sheets only.
+  String name;
   if (name_token.GetType() == kIdentToken) {
     name = name_token.Value().ToString();
-    if (!name.StartsWith("--"))
+    if (!name.StartsWith("--") &&
+        !(context_->Mode() == kUASheetMode && name.StartsWith("-internal-"))) {
       return nullptr;
+    }
   } else {
     return nullptr;
   }
@@ -1403,7 +1620,8 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
     CSSParserTokenStream& block) {
-  std::unique_ptr<Vector<double>> key_list = ConsumeKeyframeKeyList(prelude);
+  std::unique_ptr<Vector<KeyframeOffset>> key_list =
+      ConsumeKeyframeKeyList(context_, prelude);
   if (!key_list)
     return nullptr;
 
@@ -1828,23 +2046,43 @@ bool CSSParserImpl::RemoveImportantAnnotationIfPresent(
   return false;
 }
 
-std::unique_ptr<Vector<double>> CSSParserImpl::ConsumeKeyframeKeyList(
+std::unique_ptr<Vector<KeyframeOffset>> CSSParserImpl::ConsumeKeyframeKeyList(
+    const CSSParserContext* context,
     CSSParserTokenRange range) {
-  std::unique_ptr<Vector<double>> result = std::make_unique<Vector<double>>();
+  std::unique_ptr<Vector<KeyframeOffset>> result =
+      std::make_unique<Vector<KeyframeOffset>>();
   while (true) {
     range.ConsumeWhitespace();
-    const CSSParserToken& token = range.ConsumeIncludingWhitespace();
+    const CSSParserToken& token = range.Peek();
     if (token.GetType() == kPercentageToken && token.NumericValue() >= 0 &&
-        token.NumericValue() <= 100)
-      result->push_back(token.NumericValue() / 100);
-    else if (token.GetType() == kIdentToken &&
-             EqualIgnoringASCIICase(token.Value(), "from"))
-      result->push_back(0);
-    else if (token.GetType() == kIdentToken &&
-             EqualIgnoringASCIICase(token.Value(), "to"))
-      result->push_back(1);
-    else
-      return nullptr;  // Parser error, invalid value in keyframe selector
+        token.NumericValue() <= 100) {
+      result->push_back(KeyframeOffset(Timing::TimelineNamedPhase::kNone,
+                                       token.NumericValue() / 100));
+      range.ConsumeIncludingWhitespace();
+    } else if (token.GetType() == kIdentToken) {
+      if (EqualIgnoringASCIICase(token.Value(), "from")) {
+        result->push_back(KeyframeOffset(Timing::TimelineNamedPhase::kNone, 0));
+        range.ConsumeIncludingWhitespace();
+      } else if (EqualIgnoringASCIICase(token.Value(), "to")) {
+        result->push_back(KeyframeOffset(Timing::TimelineNamedPhase::kNone, 1));
+        range.ConsumeIncludingWhitespace();
+      } else {
+        auto* range_name_percent = To<CSSValueList>(
+            css_parsing_utils::ConsumeTimelineRangeNameAndPercent(range,
+                                                                  *context));
+        if (!range_name_percent)
+          return nullptr;
+
+        auto range_name = To<CSSIdentifierValue>(range_name_percent->Item(0))
+                              .ConvertTo<Timing::TimelineNamedPhase>();
+        auto percent =
+            To<CSSPrimitiveValue>(range_name_percent->Item(1)).GetFloatValue();
+        result->push_back(KeyframeOffset(range_name, percent / 100.0));
+      }
+    } else {
+      return nullptr;
+    }
+
     if (range.AtEnd())
       return result;
     if (range.Consume().GetType() != kCommaToken)

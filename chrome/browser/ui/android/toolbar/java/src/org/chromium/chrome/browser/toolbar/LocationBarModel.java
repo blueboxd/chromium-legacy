@@ -308,27 +308,35 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
         return tab != null && tab.isInitialized() ? tab.getUrl() : GURL.emptyGURL();
     }
 
+    /**
+     * Reterived updated cached values for the current URL.
+     * @return whether the URL value has changed.
+     */
     @VisibleForTesting
-    void updateVisibleGurl() {
-        if (!mOptimizationsEnabled) return;
+    boolean updateVisibleGurl() {
+        if (!mOptimizationsEnabled) return true;
         try (TraceEvent te = TraceEvent.scoped("LocationBarModel.updateVisibleGurl")) {
             if (isInOverviewAndShowingOmnibox()) {
                 mFormattedFullUrl = "";
                 mUrlForDisplay = "";
                 mVisibleGurl = UrlConstants.ntpGurl();
-                return;
+                return true;
             }
 
             GURL gurl = getUrlOfVisibleNavigationEntry();
             if (!gurl.equals(mVisibleGurl)) {
                 mVisibleGurl = gurl;
                 recalculateFormattedUrls();
+                return true;
             }
         }
+        return false;
     }
 
     public void notifyUrlChanged() {
-        updateVisibleGurl();
+        if (!updateVisibleGurl()) return;
+        // Url has changed, propagate it.
+
         for (LocationBarDataProvider.Observer observer : mLocationBarDataObservers) {
             observer.onUrlChanged();
         }

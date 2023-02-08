@@ -17,8 +17,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/views/view.h"
 
-namespace arc {
-namespace input_overlay {
+namespace arc::input_overlay {
 
 class Action;
 class DisplayOverlayController;
@@ -141,7 +140,7 @@ class ActionView : public views::View {
   // By default, no label is unbound.
   int unbind_label_index_ = kDefaultLabelIndex;
   // The position when starting to drag.
-  gfx::Point start_drag_pos_;
+  gfx::Point start_drag_event_pos_;
   // TODO(b/250900717): Update when the final UX/UI is ready.
   raw_ptr<views::ImageButton> trash_button_ = nullptr;
 
@@ -150,11 +149,14 @@ class ActionView : public views::View {
   // MVP confirm that circle is not needed anymore.
   bool show_circle_ = false;
 
-  // TODO(cuicuiruan): This can be removed when removing the flag.
+  // TODO(b/260937747): Update or remove when removing flags
+  // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
+  bool allow_reposition_;
+  // Corresponding to |kArcInputOverlayBeta| flag to turn on/off the editor
+  // feature of adding or removing actions.
   bool beta_;
 };
 
-}  // namespace input_overlay
-}  // namespace arc
+}  // namespace arc::input_overlay
 
 #endif  // CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_

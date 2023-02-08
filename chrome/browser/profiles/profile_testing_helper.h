@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_TESTING_HELPER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_TESTING_HELPER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/browser_task_environment.h"
 
@@ -31,20 +32,42 @@ class ProfileTestingHelper {
   Profile* system_profile_otr() { return system_profile_otr_; }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  TestingProfile* signin_profile() { return signin_profile_; }
+  Profile* signin_profile_otr() { return signin_profile_otr_; }
+
+  TestingProfile* lockscreen_profile() { return lockscreen_profile_; }
+  Profile* lockscreen_profile_otr() { return lockscreen_profile_otr_; }
+
+  TestingProfile* lockscreenapp_profile() { return lockscreenapp_profile_; }
+  Profile* lockscreenapp_profile_otr() { return lockscreenapp_profile_otr_; }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager manager_;
 
-  TestingProfile* regular_profile_ = nullptr;
-  Profile* incognito_profile_ = nullptr;
+  raw_ptr<TestingProfile> regular_profile_ = nullptr;
+  raw_ptr<Profile> incognito_profile_ = nullptr;
 
-  TestingProfile* guest_profile_ = nullptr;
-  Profile* guest_profile_otr_ = nullptr;
+  raw_ptr<TestingProfile> guest_profile_ = nullptr;
+  raw_ptr<Profile> guest_profile_otr_ = nullptr;
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
-  TestingProfile* system_profile_ = nullptr;
-  Profile* system_profile_otr_ = nullptr;
+  raw_ptr<TestingProfile> system_profile_ = nullptr;
+  raw_ptr<Profile> system_profile_otr_ = nullptr;
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  TestingProfile* signin_profile_ = nullptr;
+  Profile* signin_profile_otr_ = nullptr;
+
+  TestingProfile* lockscreen_profile_ = nullptr;
+  Profile* lockscreen_profile_otr_ = nullptr;
+
+  TestingProfile* lockscreenapp_profile_ = nullptr;
+  Profile* lockscreenapp_profile_otr_ = nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 #endif  // !CHROME_BROWSER_PROFILES_PROFILE_TESTING_HELPER_H_

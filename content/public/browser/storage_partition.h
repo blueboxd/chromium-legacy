@@ -50,10 +50,11 @@ class URLLoaderNetworkServiceObserver;
 }  // namespace network
 
 namespace storage {
-class QuotaManager;
-class SpecialStoragePolicy;
-struct QuotaSettings;
 class DatabaseTracker;
+class QuotaManager;
+struct QuotaSettings;
+class SharedStorageManager;
+class SpecialStoragePolicy;
 }  // namespace storage
 
 namespace url {
@@ -96,6 +97,10 @@ class CONTENT_EXPORT StoragePartition {
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
   // caller should not hold onto this pointer beyond the same message loop task.
   virtual network::mojom::NetworkContext* GetNetworkContext() = 0;
+
+  // Returns the SharedStorageManager for the StoragePartition, or nullptr if it
+  // doesn't exist because the feature is disabled.
+  virtual storage::SharedStorageManager* GetSharedStorageManager() = 0;
 
   // Returns a pointer/info to a URLLoaderFactory/CookieManager owned by
   // the storage partition. Prefer to use this instead of creating a new
@@ -223,6 +228,12 @@ class CONTENT_EXPORT StoragePartition {
                                   uint32_t quota_storage_remove_mask,
                                   const GURL& storage_origin,
                                   base::OnceClosure callback) = 0;
+
+  // Starts a task that will clear the data of each bucket name for the
+  // specified storage key.
+  virtual void ClearDataForBuckets(const blink::StorageKey& storage_key,
+                                   const std::set<std::string>& storage_buckets,
+                                   base::OnceClosure callback) = 0;
 
   // A callback type to check if a given StorageKey matches a storage policy.
   // Can be passed empty/null where used, which means the StorageKey will always

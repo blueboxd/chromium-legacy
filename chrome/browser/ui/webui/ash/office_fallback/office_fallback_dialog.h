@@ -15,12 +15,14 @@ namespace ash::office_fallback {
 using DialogChoiceCallback =
     base::OnceCallback<void(const std::string& choice)>;
 
-// The reason for why the user's file can't open
+// The reason for why the user's file can't open. The enum should be consistent
+// with the FallbackReason enum in office_fallback_dialog.ts.
 enum class FallbackReason {
   kOffline,
   kDriveUnavailable,
   kOneDriveUnavailable,
   kErrorOpeningWeb,
+  kInvalidGoogleDocsURL,
 };
 
 // Defines the web dialog used to allow users to choose what to do when failing
@@ -34,19 +36,19 @@ class OfficeFallbackDialog : public SystemWebDialogDelegate {
   // effectively created.
   static bool Show(const std::vector<storage::FileSystemURL>& file_urls,
                    const FallbackReason fallback_reason,
-                   const std::u16string& task_title,
+                   const std::string& action_id,
                    DialogChoiceCallback callback);
 
-  // Receives user's fallback choice and runs callback. Does nothing
-  // if they chose `cancel`.
-  void OnDialogClosed(const std::string& json_retval) override;
+  // Receives user's dialog choice and runs callback.
+  void OnDialogClosed(const std::string& choice) override;
 
   ~OfficeFallbackDialog() override;
 
  protected:
   OfficeFallbackDialog(const std::vector<storage::FileSystemURL>& file_urls,
-                       const FallbackReason fallback_reason,
-                       const std::u16string& task_title,
+                       const std::string& title_text,
+                       const std::string& reason_message,
+                       const std::string& instructions_message,
                        DialogChoiceCallback callback);
   std::string GetDialogArgs() const override;
   void GetDialogSize(gfx::Size* size) const override;
@@ -54,8 +56,9 @@ class OfficeFallbackDialog : public SystemWebDialogDelegate {
 
  private:
   const std::vector<storage::FileSystemURL> file_urls_;
-  const FallbackReason fallback_reason_;
-  const std::u16string task_title_;
+  const std::string title_text_;
+  const std::string reason_message_;
+  const std::string instructions_message_;
   DialogChoiceCallback callback_;
 };
 

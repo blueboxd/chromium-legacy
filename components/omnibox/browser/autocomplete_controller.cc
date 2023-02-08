@@ -24,7 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -508,7 +508,8 @@ AutocompleteController::AutocompleteController(
 #endif
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "AutocompleteController", base::ThreadTaskRunnerHandle::Get());
+      this, "AutocompleteController",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 AutocompleteController::~AutocompleteController() {
@@ -888,14 +889,6 @@ void AutocompleteController::SetMatchDestinationURL(
 #endif
 }
 
-void AutocompleteController::SetTailSuggestContentPrefixes() {
-  result_.SetTailSuggestContentPrefixes();
-}
-
-void AutocompleteController::SetTailSuggestCommonPrefixes() {
-  result_.SetTailSuggestCommonPrefixes();
-}
-
 const AutocompleteResult& AutocompleteController::result() const {
   return DebouncingEnabled() ? published_result_ : result_;
 }
@@ -948,22 +941,10 @@ void AutocompleteController::UpdateResult(
     result_.MergeSuggestionGroupsMap(provider->suggestion_groups_map());
   }
 
-  // Zero suggest state is determined implicitly from focus state and is
-  // used to inform tab matching and action attachment below.
-  // Only attach for the default focus case (not on focus or on delete).
-  const bool is_zero_suggest =
-      input_.focus_type() != metrics::OmniboxFocusType::INTERACTION_DEFAULT;
-
-  bool perform_tab_match = !is_zero_suggest;
-#if BUILDFLAG(IS_ANDROID)
-  // Do not look for matching tabs on Android unless we collected all the
-  // suggestions. Tab matching is an expensive process with multiple JNI calls
-  // involved. Run it only when all the suggestions are collected.
-  perform_tab_match &= done_;
-#endif
-
-  if (perform_tab_match)
-    result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
+  // Update scoring signals of suggestions in the result. The updated signals in
+  // `result_` will be lost when UpdateResult() is called again. Currently,
+  // `result_` is updated in each UpdateResult() call.
+  UpdateScoringSignals();
 
   // Sort the matches and trim to a small number of "best" matches.
   // Conditionally preserve the default match.
@@ -995,8 +976,18 @@ void AutocompleteController::UpdateResult(
 #endif  // DCHECK_IS_ON()
 
   // Below are all annotations after the match list is ready.
+  if (!input_.IsZeroSuggest()) {
+    bool perform_tab_match = true;
+#if BUILDFLAG(IS_ANDROID)
+    // Do not look for matching tabs on Android unless we collected all the
+    // suggestions. Tab matching is an expensive process with multiple JNI calls
+    // involved. Run it only when all the suggestions are collected.
+    perform_tab_match &= done_;
+#endif
+    if (perform_tab_match) {
+      result_.ConvertOpenTabMatches(provider_client_.get(), &input_);
+    }
 
-  if (!is_zero_suggest) {
     result_.AttachPedalsToMatches(input_, *provider_client_);
 
 #if !BUILDFLAG(IS_IOS)
@@ -1005,9 +996,12 @@ void AutocompleteController::UpdateResult(
                                  provider_client_->GetPrefs(), result_);
 #endif
   }
+
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);
   UpdateAssistedQueryStats(&result_);
+  UpdateTailSuggestPrefix(&result_);
+
   if (search_provider_)
     search_provider_->RegisterDisplayedAnswers(result_);
 
@@ -1051,6 +1045,15 @@ void AutocompleteController::UpdateResult(
 
   DelayedNotifyChanged(force_notify_default_match_changed ||
                        notify_default_match);
+}
+
+void AutocompleteController::UpdateScoringSignals() {
+  // If enabled, update scoring signals of URL suggestions.
+  if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    for (const auto& annotator : url_scoring_signals_annotators_) {
+      annotator->AnnotateResult(&result_);
+    }
+  }
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(
@@ -1235,6 +1238,17 @@ void AutocompleteController::UpdateAssistedQueryStats(
   }
 }
 
+void AutocompleteController::UpdateTailSuggestPrefix(
+    AutocompleteResult* result) {
+  const auto common_prefix = result->GetCommonPrefix();
+  if (!common_prefix.empty()) {
+    for (auto& match : *result) {
+      if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
+        match.tail_suggest_common_prefix = common_prefix;
+    }
+  }
+}
+
 void AutocompleteController::NotifyChanged() {
   // Will log metrics for how many matches changed. Will also log timing metrics
   // for the current request if it's complete; otherwise, will just update
@@ -1259,6 +1273,7 @@ void AutocompleteController::DelayedNotifyChanged(bool notify_default_match) {
   if (notify_default_match)
     notify_changed_default_match_ = true;
   if (done_ || in_start_) {
+    notify_changed_debouncer_.ResetTimeLastRun();
     NotifyChanged();
   } else {
     notify_changed_debouncer_.RequestRun(base::BindOnce(

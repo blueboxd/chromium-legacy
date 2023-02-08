@@ -28,6 +28,7 @@ const char kJsonDeviceTypeKey[] = "device_type";
 const char kJsonMeasureLatencyKey[] = "measure_latency";
 const char kJsonSendStartSignalingKey[] = "send_start_signaling";
 const char kJsonDisableStunServerKey[] = "disable_stun_server";
+const char kJsonCheckAndroidNetworkInfoKey[] = "check_android_network_info";
 
 using chromeos::network_config::mojom::ConnectionStateType;
 // TODO(https://crbug.com/1164001): remove when it moved to ash.
@@ -98,6 +99,10 @@ void SystemInfoProvider::GetSystemInfo(
       kJsonDisableStunServerKey,
       base::FeatureList::IsEnabled(features::kEcheSWADisableStunServer));
 
+  json_dictionary.SetBoolKey(
+      kJsonCheckAndroidNetworkInfoKey,
+      base::FeatureList::IsEnabled(features::kEcheSWACheckAndroidNetworkInfo));
+
   std::string json_message;
   base::JSONWriter::Write(json_dictionary, &json_message);
   std::move(callback).Run(json_message);
@@ -132,6 +137,24 @@ void SystemInfoProvider::SetTabletModeChanged(bool enabled) {
 
   PA_LOG(VERBOSE) << "OnReceivedTabletModeChanged:" << enabled;
   observer_remote_->OnReceivedTabletModeChanged(enabled);
+}
+
+void SystemInfoProvider::SetAndroidDeviceNetworkInfoChanged(
+    bool is_different_network,
+    bool android_device_on_cellular) {
+  PA_LOG(INFO) << "echeapi SystemInfoProvider "
+                  "SetAndroidDeviceNetworkInfoChanged is_different_network:"
+               << is_different_network;
+  PA_LOG(INFO)
+      << "echeapi SystemInfoProvider "
+         "SetAndroidDeviceNetworkInfoChanged android_device_on_cellular:"
+      << android_device_on_cellular;
+  if (!observer_remote_.is_bound())
+    return;
+
+  PA_LOG(VERBOSE) << "OnAndroidDeviceNetworkInfoChanged";
+  observer_remote_->OnAndroidDeviceNetworkInfoChanged(
+      is_different_network, android_device_on_cellular);
 }
 
 // TabletModeObserver implementation:

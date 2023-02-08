@@ -16,7 +16,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/ash/components/login/login_state/login_state.h"
 #include "components/app_constants/constants.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
@@ -199,7 +199,7 @@ void GiveItSomeTime(base::TimeDelta delta) {
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   auto* compositor = Shell::GetPrimaryRootWindow()->GetHost()->compositor();
   compositor->ScheduleFullRedraw();
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), delta);
   run_loop.Run();
 }
@@ -250,9 +250,8 @@ class LoginUnlockThroughputRecorderTestBase
 
   void LoginOwner() {
     CreateUserSessions(1);
-    LoginState::Get()->SetLoggedInState(
-        LoginState::LOGGED_IN_ACTIVE,
-        chromeos::LoginState::LOGGED_IN_USER_OWNER);
+    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                        LoginState::LOGGED_IN_USER_OWNER);
   }
 
   void LockScreenAndAnimate() {

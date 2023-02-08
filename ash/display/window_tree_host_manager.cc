@@ -32,7 +32,7 @@
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -336,19 +336,6 @@ void WindowTreeHostManager::InitHosts() {
     }
   }
 
-  // Record display zoom for the primary display for https://crbug.com/955071.
-  // This can be removed after M79.
-  const display::ManagedDisplayInfo& display_info =
-      display_manager->GetDisplayInfo(primary_display_id);
-  int zoom_percent = std::round(display_info.zoom_factor() * 100);
-  constexpr int kMaxValue = 300;
-  constexpr int kBucketSize = 5;
-  constexpr int kBucketCount = kMaxValue / kBucketSize + 1;
-  base::LinearHistogram::FactoryGet(
-      "Ash.Display.PrimaryDisplayZoomAtStartup", kBucketSize, kMaxValue,
-      kBucketCount, base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(zoom_percent);
-
   for (auto& observer : observers_)
     observer.OnDisplaysInitialized();
 }
@@ -623,7 +610,8 @@ void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
     Shell::SetRootWindowForNewWindows(primary_root_after_host_deletion);
   }
   // NOTE: ShelfWidget is gone, but Shelf still exists until this task runs.
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, controller);
+  base::SingleThreadTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE,
+                                                                controller);
 }
 
 void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {

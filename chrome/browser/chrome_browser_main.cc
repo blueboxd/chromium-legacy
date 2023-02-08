@@ -40,15 +40,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
-#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
@@ -189,6 +188,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -203,7 +203,7 @@
 #include "chrome/browser/ui/page_info/chrome_page_info_client.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
-#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
+#include "chrome/browser/profiles/delete_profile_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resources_integrity.h"
 #include "chrome/browser/ui/browser.h"
@@ -568,7 +568,7 @@ void ChromeBrowserMainParts::ProfileInitManager::OnProfileAdded(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore ChromeOS helper profiles (sign-in, lockscreen, etc).
-  if (!chromeos::ProfileHelper::IsUserProfile(profile)) {
+  if (!ash::ProfileHelper::IsUserProfile(profile)) {
     // Notify of new profile initialization only for regular profiles. The
     // startup profile initialization is triggered by another code path.
     return;
@@ -777,7 +777,8 @@ void ChromeBrowserMainParts::PostCreateMainMessageLoop() {
   UpgradeDetector::GetInstance()->Init();
 #endif
 
-  ThreadProfiler::SetMainThreadTaskRunner(base::ThreadTaskRunnerHandle::Get());
+  ThreadProfiler::SetMainThreadTaskRunner(
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 
   // TODO(sebmarchand): Allow this to be created earlier if startup tracing is
   // enabled.
@@ -1029,7 +1030,15 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // properly. See issue 37766.
   // (Note that the callback mask here is empty. I don't want to register for
   // any callbacks, I just want to initialize the mechanism.)
+
+  // Much of the Keychain API was marked deprecated as of the macOS 13 SDK.
+  // Removal of its use is tracked in https://crbug.com/1348251 but deprecation
+  // warnings are disabled in the meanwhile.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   SecKeychainAddCallback(&KeychainCallback, 0, nullptr);
+#pragma clang diagnostic pop
+
 #endif  // BUILDFLAG(IS_MAC)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -1066,6 +1075,21 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         switches::kDisableSiteIsolationForPolicy);
   }
 #endif
+
+  if (local_state->IsManagedPreference(
+          prefs::kThrottleNonVisibleCrossOriginIframesAllowed) &&
+      !local_state->GetBoolean(
+          prefs::kThrottleNonVisibleCrossOriginIframesAllowed)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        blink::switches::kDisableThrottleNonVisibleCrossOriginIframes);
+  }
+
+  if (local_state->IsManagedPreference(
+          prefs::kNewBaseUrlInheritanceBehaviorAllowed) &&
+      !local_state->GetBoolean(prefs::kNewBaseUrlInheritanceBehaviorAllowed)) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        blink::switches::kDisableNewBaseUrlInheritanceBehavior);
+  }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
   // this.
@@ -1147,9 +1171,13 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 #if !BUILDFLAG(IS_ANDROID)
   // Ephemeral profiles may have been left behind if the browser crashed.
-  g_browser_process->profile_manager()->CleanUpEphemeralProfiles();
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .CleanUpEphemeralProfiles();
   // Files of deleted profiles can also be left behind after a crash.
-  g_browser_process->profile_manager()->CleanUpDeletedProfiles();
+  g_browser_process->profile_manager()
+      ->GetDeleteProfileHelper()
+      .CleanUpDeletedProfiles();
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1293,10 +1321,6 @@ void ChromeBrowserMainParts::PostBrowserStart() {
         ->PostTask(FROM_HERE,
                    base::BindOnce(&WebUsbDetector::Initialize,
                                   base::Unretained(web_usb_detector_.get())));
-  }
-  if (base::FeatureList::IsEnabled(features::kTabMetricsLogging)) {
-    // Initialize the TabActivityWatcher to begin logging tab activity events.
-    resource_coordinator::TabActivityWatcher::GetInstance();
   }
 #endif
 
@@ -1976,7 +2000,7 @@ bool ChromeBrowserMainParts::ProcessSingletonNotificationCallback(
   // cross-apartment shell objects (via IVirtualDesktopManager). That is not
   // allowed within a SendMessage handler, which this function is a part of.
   // So, we post a task to asynchronously finish the command line processing.
-  return base::ThreadTaskRunnerHandle::Get()->PostTask(
+  return base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ProcessSingletonNotificationCallbackImpl,
                                 command_line, current_directory));
 }

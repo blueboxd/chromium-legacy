@@ -14,6 +14,8 @@
 
 namespace {
 
+const double kThinControllerHeight = 0.5;
+
 // TODO(https://crbug.com/1373552): use constraints / autoresizingmask instead
 // of manually setting the frame size.
 void PropagateFrameSizeToViewsSubviews(NSView* view) {
@@ -241,7 +243,7 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   NSWindow* window = base::mac::ObjCCastStrict<NSWindow>(object);
   if (visible) {
     if (_controller) {
-      _controller->RevealLock();
+      _controller->TitlebarLock();
     }
     return;
   }
@@ -251,7 +253,7 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   // These assumptions makes adding and removing the visible observer trival.
   [window removeObserver:self forKeyPath:@"visible"];
   if (_controller) {
-    _controller->RevealUnlock();
+    _controller->TitlebarUnlock();
   }
 }
 
@@ -274,6 +276,14 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
       weak_ptr_factory_(this) {
   immersive_mode_window_observer_.reset([[ImmersiveModeWindowObserver alloc]
       initWithController:weak_ptr_factory_.GetWeakPtr()]);
+
+  // A style of NSTitlebarSeparatorStyleAutomatic (default) will show a black
+  // line separator when removing the NSWindowStyleMaskFullSizeContentView style
+  // bit. We do not want a separator. Pre-macOS 11 there is no titlebar
+  // separator.
+  if (@available(macOS 11.0, *)) {
+    browser_widget_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleNone;
+  }
 
   // Create a new NSTitlebarAccessoryViewController that will host the
   // overlay_view_.
@@ -322,6 +332,15 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
   immersive_mode_titlebar_view_controller_.get().layoutAttribute =
       NSLayoutAttributeBottom;
 
+  thin_titlebar_view_controller_.reset(
+      [[NSTitlebarAccessoryViewController alloc] init]);
+  thin_titlebar_view_controller_.get().view =
+      [[[NSView alloc] init] autorelease];
+  thin_titlebar_view_controller_.get().layoutAttribute =
+      NSLayoutAttributeBottom;
+  thin_titlebar_view_controller_.get().fullScreenMinHeight =
+      kThinControllerHeight;
+
   ObserveOverlayChildWindows();
 }
 
@@ -330,6 +349,7 @@ ImmersiveModeController::~ImmersiveModeController() {
   [immersive_mode_titlebar_view_controller_ setTitlebarObserver:nil];
 
   // Rollback the view shuffling from enablement.
+  [thin_titlebar_view_controller_ removeFromParentViewController];
   NSView* overlay_content_view =
       immersive_mode_titlebar_view_controller_.get().view.subviews.firstObject;
   [overlay_content_view removeFromSuperview];
@@ -338,6 +358,9 @@ ImmersiveModeController::~ImmersiveModeController() {
   [immersive_mode_titlebar_view_controller_.get().view release];
   immersive_mode_titlebar_view_controller_.reset();
   browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+  if (@available(macOS 11.0, *)) {
+    browser_widget_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleAutomatic;
+  }
 }
 
 void ImmersiveModeController::Enable() {
@@ -345,6 +368,11 @@ void ImmersiveModeController::Enable() {
   enabled_ = true;
   [browser_widget_ addTitlebarAccessoryViewController:
                        immersive_mode_titlebar_view_controller_];
+  [browser_widget_
+      addTitlebarAccessoryViewController:thin_titlebar_view_controller_];
+  NSRect frame = thin_titlebar_view_controller_.get().view.frame;
+  frame.size.height = kThinControllerHeight;
+  thin_titlebar_view_controller_.get().view.frame = frame;
 }
 
 void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
@@ -356,30 +384,46 @@ void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
   size.height = frame.size.height;
   [overlay_view setFrameSize:size];
   PropagateFrameSizeToViewsSubviews(overlay_view);
+  UpdateToolbarVisibility(last_used_style_);
 }
 
-void ImmersiveModeController::UpdateToolbarVisibility(bool always_show) {
-  // Remember the last used always_show for internal use of
-  // UpdateToolbarVisibility.
-  always_show_toolbar_ = always_show;
+void ImmersiveModeController::UpdateToolbarVisibility(
+    mojom::ToolbarVisibilityStyle style) {
+  // Remember the last used style for internal use of UpdateToolbarVisibility.
+  last_used_style_ = style;
 
   // Only make changes if there are no outstanding reveal locks.
-  if (revealed_lock_count_ > 0) {
+  if (titlebar_lock_count_ > 0 || reveal_lock_count_ > 0) {
     return;
   }
 
-  if (always_show) {
-    immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
-        immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
-    browser_widget_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
+  switch (style) {
+    case mojom::ToolbarVisibilityStyle::kAlways:
+      immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
+          immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
+      thin_titlebar_view_controller_.get().hidden = YES;
+      browser_widget_.styleMask &= ~NSWindowStyleMaskFullSizeContentView;
 
-    // Toggling the controller will allow the content view to resize below Top
-    // Chrome.
-    immersive_mode_titlebar_view_controller_.get().hidden = YES;
-    immersive_mode_titlebar_view_controller_.get().hidden = NO;
-  } else {
-    immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
-    browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+      // Toggling the controller will allow the content view to resize below Top
+      // Chrome.
+      immersive_mode_titlebar_view_controller_.get().hidden = YES;
+      immersive_mode_titlebar_view_controller_.get().hidden = NO;
+      break;
+    case mojom::ToolbarVisibilityStyle::kAutohide:
+      immersive_mode_titlebar_view_controller_.get().hidden = NO;
+
+      // The thin titlebar controller keeps a tiny portion of the AppKit
+      // fullscreen NSWindow on screen as a workaround for
+      // https://crbug.com/1369643.
+      thin_titlebar_view_controller_.get().hidden = NO;
+
+      immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
+      browser_widget_.styleMask |= NSWindowStyleMaskFullSizeContentView;
+      break;
+    case mojom::ToolbarVisibilityStyle::kNone:
+      thin_titlebar_view_controller_.get().hidden = YES;
+      immersive_mode_titlebar_view_controller_.get().hidden = YES;
+      break;
   }
 
   // Unpin the titlebar.
@@ -402,7 +446,8 @@ void ImmersiveModeController::SetTitlebarPinned(bool pinned) {
   }
 
   clear_titlebar_view_controller_.reset([[ClearTitlebarViewController alloc]
-      initWithHeight:browser_widget_.contentView.frame.size.height]);
+      initWithHeight:browser_widget_.contentView.frame.size.height -
+                     kThinControllerHeight]);
   clear_titlebar_view_controller_.get().view =
       [[[NSView alloc] init] autorelease];
   clear_titlebar_view_controller_.get().layoutAttribute =
@@ -428,15 +473,31 @@ void ImmersiveModeController::ObserveOverlayChildWindows() {
   };
 }
 
-void ImmersiveModeController::RevealLock() {
-  revealed_lock_count_++;
+void ImmersiveModeController::TitlebarLock() {
+  titlebar_lock_count_++;
   SetTitlebarPinned(true);
 }
 
-void ImmersiveModeController::RevealUnlock() {
-  if (--revealed_lock_count_ < 1) {
+void ImmersiveModeController::TitlebarUnlock() {
+  if (--titlebar_lock_count_ < 1) {
     SetTitlebarPinned(false);
   }
+  DCHECK(titlebar_lock_count_ >= 0);
+}
+
+void ImmersiveModeController::RevealLock() {
+  reveal_lock_count_++;
+  immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
+      immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
+}
+
+void ImmersiveModeController::RevealUnlock() {
+  if (--reveal_lock_count_ < 1 &&
+      immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight > 0 &&
+      last_used_style_ == mojom::ToolbarVisibilityStyle::kAutohide) {
+    immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
+  }
+  DCHECK(reveal_lock_count_ >= 0);
 }
 
 }  // namespace remote_cocoa

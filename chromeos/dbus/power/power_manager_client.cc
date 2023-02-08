@@ -240,7 +240,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
     RegisterSuspendDelays();
     RequestStatusUpdate();
     RequestThermalState();
-    CheckAmbientColorSupport();
   }
 
   // PowerManagerClient overrides:
@@ -336,6 +335,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::BindOnce(
             &PowerManagerClientImpl::OnGetScreenOrKeyboardBrightnessPercent,
             weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void SetKeyboardBrightness(
+      const power_manager::SetBacklightBrightnessRequest& request) override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kSetKeyboardBrightnessMethod);
+    if (!dbus::MessageWriter(&method_call).AppendProtoAsArrayOfBytes(request)) {
+      POWER_LOG(ERROR) << "Error serializing "
+                       << power_manager::kSetKeyboardBrightnessMethod
+                       << " request";
+      return;
+    }
+    power_manager_proxy_->CallMethod(&method_call,
+                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                     base::DoNothing());
   }
 
   void RequestStatusUpdate() override {
@@ -491,26 +505,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void SetKeyboardBacklightToggledOff(bool toggled_off) override {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSetKeyboardBacklightToggledOffMethod);
-    dbus::MessageWriter(&method_call).AppendBool(toggled_off);
+  void ToggleKeyboardBacklight() override {
+    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
+                                 power_manager::kToggleKeyboardBacklightMethod);
     power_manager_proxy_->CallMethod(&method_call,
                                      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                      base::DoNothing());
-  }
-
-  void GetKeyboardBacklightToggledOff(
-      DBusMethodCallback<bool> callback) override {
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kGetKeyboardBacklightToggledOffMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(
-            &PowerManagerClientImpl::OnGetKeyboardBacklightToggledOff,
-            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetSwitchStates(DBusMethodCallback<SwitchStates> callback) override {
@@ -557,10 +557,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
     suspend_readiness_registry_.erase(registration);
     MaybeReportSuspendReadiness();
-  }
-
-  bool SupportsAmbientColor() override {
-    return device_supports_ambient_color_;
   }
 
   void CreateArcTimers(
@@ -625,17 +621,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   base::TimeDelta GetDarkSuspendDelayTimeout() override {
     return max_dark_suspend_delay_timeout_;
-  }
-
-  void RefreshBluetoothBattery(const std::string& address) override {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kRefreshBluetoothBatteryMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(address);
-    // This refresh request is best effort, so we don't have to handle errors.
-    power_manager_proxy_->CallMethod(&method_call,
-                                     dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                                     base::DoNothing());
   }
 
   void SetExternalDisplayALSBrightness(bool enabled) override {
@@ -933,50 +918,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
     std::move(callback).Run(state);
-  }
-
-  void OnGetKeyboardBacklightToggledOff(DBusMethodCallback<bool> callback,
-                                        dbus::Response* response) {
-    if (!response) {
-      POWER_LOG(ERROR) << "Error calling "
-                       << power_manager::kGetKeyboardBacklightToggledOffMethod;
-      std::move(callback).Run(absl::nullopt);
-      return;
-    }
-    dbus::MessageReader reader(response);
-    bool toggled_off = false;
-    if (!reader.PopBool(&toggled_off)) {
-      POWER_LOG(ERROR) << "Error reading response from powerd: "
-                       << response->ToString();
-      std::move(callback).Run(absl::nullopt);
-      return;
-    }
-    std::move(callback).Run(toggled_off);
-  }
-
-  void CheckAmbientColorSupport() {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kHasAmbientColorDeviceMethod);
-    power_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&PowerManagerClientImpl::OnHasAmbientColorDevice,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  void OnHasAmbientColorDevice(dbus::Response* response) {
-    if (!response) {
-      device_supports_ambient_color_ = false;
-      return;
-    }
-    dbus::MessageReader reader(response);
-    bool is_supported = false;
-    if (!reader.PopBool(&is_supported)) {
-      POWER_LOG(ERROR) << "Error reading response from powerd: "
-                       << response->ToString();
-      device_supports_ambient_color_ = false;
-      return;
-    }
-    device_supports_ambient_color_ = is_supported;
   }
 
   void OnGetSwitchStates(DBusMethodCallback<SwitchStates> callback,
@@ -1466,10 +1407,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   // Last state passed to SetIsProjecting().
   bool last_is_projecting_ = false;
-
-  // Whether the device supports ambient color. This value is checked when the
-  // DBUS service starts and is cached.
-  bool device_supports_ambient_color_ = false;
 
   // The last proto received from D-Bus; initially empty.
   absl::optional<power_manager::PowerSupplyProperties> proto_;

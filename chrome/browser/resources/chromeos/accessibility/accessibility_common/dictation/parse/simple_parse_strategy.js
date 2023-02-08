@@ -15,6 +15,7 @@ import {ListCommandsMacro} from '../macros/list_commands_macro.js';
 import {Macro} from '../macros/macro.js';
 import {MacroName} from '../macros/macro_names.js';
 import {NavNextSentMacro, NavPrevSentMacro} from '../macros/nav_sent_macro.js';
+import {RepeatMacro} from '../macros/repeat_macro.js';
 import * as RepeatableKeyPress from '../macros/repeatable_key_press_macro.js';
 import {SmartDeletePhraseMacro} from '../macros/smart_delete_phrase_macro.js';
 import {SmartInsertBeforeMacro} from '../macros/smart_insert_before_macro.js';
@@ -107,6 +108,7 @@ class SimpleMacroFactory {
       case MacroName.DELETE_PREV_SENT:
       case MacroName.NAV_NEXT_SENT:
       case MacroName.NAV_PREV_SENT:
+      case MacroName.UNSELECT_TEXT:
       case MacroName.SMART_DELETE_PHRASE:
       case MacroName.SMART_REPLACE_PHRASE:
       case MacroName.SMART_INSERT_BEFORE:
@@ -237,41 +239,9 @@ class SimpleMacroFactory {
         messageId: 'dictation_command_nav_prev_sent',
         build: NavPrevSentMacro,
       },
-      [MacroName.DELETE_ALL_TEXT]: {
-        messageId: 'dictation_command_delete_all_text',
-        build: RepeatableKeyPress.DeleteAllText,
-      },
-      [MacroName.NAV_START_TEXT]: {
-        messageId: 'dictation_command_nav_start_text',
-        build: RepeatableKeyPress.NavStartText,
-      },
-      [MacroName.NAV_END_TEXT]: {
-        messageId: 'dictation_command_nav_end_text',
-        build: RepeatableKeyPress.NavEndText,
-      },
-      [MacroName.SELECT_PREV_WORD]: {
-        messageId: 'dictation_command_select_prev_word',
-        build: RepeatableKeyPress.SelectPrevWord,
-      },
-      [MacroName.SELECT_NEXT_WORD]: {
-        messageId: 'dictation_command_select_next_word',
-        build: RepeatableKeyPress.SelectNextWord,
-      },
-      [MacroName.SELECT_NEXT_CHAR]: {
-        messageId: 'dictation_command_select_next_char',
-        build: RepeatableKeyPress.SelectNextChar,
-      },
-      [MacroName.SELECT_PREV_CHAR]: {
-        messageId: 'dictation_command_select_prev_char',
-        build: RepeatableKeyPress.SelectPrevChar,
-      },
     };
   }
 }
-// TODO(crbug.com/1362842) Do not release any Macros
-// hidden under the DictationMoreCommands Flag
-// using the simple_parse_strategy, rather
-// move them over to the pumpkin_parse_strategy
 
 /** A parsing strategy that utilizes SimpleMacroFactory. */
 export class SimpleParseStrategy extends ParseStrategy {
@@ -285,42 +255,49 @@ export class SimpleParseStrategy extends ParseStrategy {
      */
     this.macroFactoryMap_ = new Map();
 
-    /** @private {boolean} */
-    this.isMoreCommandsFeatureEnabled_ = false;
-
-    /** @private {!Array<!MacroName>}*/
-    this.moreCommandsSet_ = [
-      MacroName.DELETE_ALL_TEXT,
-      MacroName.NAV_START_TEXT,
-      MacroName.NAV_END_TEXT,
-      MacroName.SELECT_PREV_WORD,
-      MacroName.SELECT_NEXT_WORD,
-      MacroName.SELECT_NEXT_CHAR,
-      MacroName.SELECT_PREV_CHAR,
-    ];
+    /** @private {!Set<!MacroName>} */
+    this.supportedMacros_ = new Set();
 
     this.initialize_();
   }
 
   /** @private */
   initialize_() {
-    for (const key in MacroName) {
-      const name = MacroName[key];
-      if (name === MacroName.INPUT_TEXT_VIEW ||
-          name === MacroName.UNSPECIFIED) {
-        continue;
-      }
+    // Adds all macros that are supported by regular expressions. If a macro
+    // has a string associated with it in dictation_strings.grd, then it belongs
+    // in this set. Don't add macros that require arguments in their utterances
+    // e.g. "select <phrase_or_word>" - these macros are better handled by
+    // Pumpkin.
+    this.supportedMacros_.add(MacroName.DELETE_PREV_CHAR)
+        .add(MacroName.NAV_PREV_CHAR)
+        .add(MacroName.NAV_NEXT_CHAR)
+        .add(MacroName.NAV_PREV_LINE)
+        .add(MacroName.NAV_NEXT_LINE)
+        .add(MacroName.COPY_SELECTED_TEXT)
+        .add(MacroName.PASTE_TEXT)
+        .add(MacroName.CUT_SELECTED_TEXT)
+        .add(MacroName.UNDO_TEXT_EDIT)
+        .add(MacroName.REDO_ACTION)
+        .add(MacroName.SELECT_ALL_TEXT)
+        .add(MacroName.UNSELECT_TEXT)
+        .add(MacroName.LIST_COMMANDS)
+        .add(MacroName.NEW_LINE)
+        .add(MacroName.STOP_LISTENING)
+        .add(MacroName.DELETE_PREV_WORD)
+        .add(MacroName.DELETE_PREV_SENT)
+        .add(MacroName.NAV_NEXT_WORD)
+        .add(MacroName.NAV_PREV_WORD)
+        .add(MacroName.SMART_DELETE_PHRASE)
+        .add(MacroName.SMART_REPLACE_PHRASE)
+        .add(MacroName.SMART_INSERT_BEFORE)
+        .add(MacroName.SMART_SELECT_BTWN_INCL)
+        .add(MacroName.NAV_NEXT_SENT)
+        .add(MacroName.NAV_PREV_SENT);
 
+    this.supportedMacros_.forEach((name) => {
       this.macroFactoryMap_.set(
           name, new SimpleMacroFactory(name, this.getInputController()));
-    }
-
-    const moreCommandsFeature = chrome.accessibilityPrivate.AccessibilityFeature
-                                    .DICTATION_MORE_COMMANDS;
-    chrome.accessibilityPrivate.isFeatureEnabled(
-        moreCommandsFeature, enabled => {
-          this.isMoreCommandsFeatureEnabled_ = enabled;
-        });
+    });
   }
 
   /** @override */
@@ -334,30 +311,12 @@ export class SimpleParseStrategy extends ParseStrategy {
     this.initialize_();
   }
 
-  /**
-   * @param {Macro} macro
-   * @return {boolean}
-   * @private
-   */
-  shouldAddMacro_(macro) {
-    if (!macro) {
-      return false;
-    }
-
-    const isNewCommand = this.moreCommandsSet_.includes(macro.getMacroName());
-    if (!isNewCommand) {
-      return true;
-    }
-
-    return this.isMoreCommandsFeatureEnabled_;
-  }
-
   /** @override */
   async parse(text) {
     const macros = [];
     for (const [name, factory] of this.macroFactoryMap_) {
       const macro = factory.createMacro(text);
-      if (this.shouldAddMacro_(macro)) {
+      if (macro) {
         macros.push(macro);
       }
     }

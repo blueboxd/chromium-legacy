@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/web_package/web_bundle_parser.h"
@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/corb/corb_api.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/record_ontransfersizeupdate_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/http_raw_headers.mojom.h"
@@ -155,6 +156,9 @@ class WebBundleURLLoaderClient : public network::mojom::URLLoaderClient {
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    network::RecordOnTransferSizeUpdatedUMA(
+        network::OnTransferSizeUpdatedFrom::kWebBundleURLLoaderClient);
+
     wrapped_->OnTransferSizeUpdated(transfer_size_diff);
   }
 
@@ -453,7 +457,7 @@ class WebBundleURLLoaderFactory::BundleDataSource
       if (memory_quota_exceeded_closure_) {
         // Defer calling |memory_quota_exceeded_closure_| to avoid the
         // UAF call in DataPipeDrainer::ReadData().
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
+        base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, std::move(memory_quota_exceeded_closure_));
       }
       return;
@@ -471,7 +475,7 @@ class WebBundleURLLoaderFactory::BundleDataSource
     DCHECK(data_completed_closure_);
     // Defer calling |data_completed_closure_| not to run
     // |data_completed_closure_| before |memory_quota_exceeded_closure_|.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(data_completed_closure_));
     finished_loading_ = true;
     ProcessPendingReads();

@@ -49,26 +49,6 @@ chromium-metrics-reviews@google.com.
       summary="Recorded for Translate Infobar."/>
 </variants>
 
-<histogram name="Mobile.AppMenu.HighlightMenuItem.Clicked"
-    enum="AppMenuHighlightItem" expires_after="2021-09-19">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Records which menu item was clicked when a user clicks on a menu item from
-    the app menu that was highlighted. Android only.
-  </summary>
-</histogram>
-
-<histogram name="Mobile.AppMenu.HighlightMenuItem.Shown"
-    enum="AppMenuHighlightItem" expires_after="2021-09-19">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Records which menu item was highlighted when the app menu was opened by the
-    user. Android only.
-  </summary>
-</histogram>
-
 <histogram name="Mobile.AppMenu.TimeToTakeAction.Abandoned" units="ms"
     expires_after="2023-05-07">
   <owner>gangwu@chromium.org</owner>
@@ -115,7 +95,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2023-04-01">
+    expires_after="2023-06-04">
   <owner>seblalancette@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -192,6 +172,8 @@ chromium-metrics-reviews@google.com.
     <variant name="BookmarkFolder" summary="Bookmark folder"/>
     <variant name="HistoryEntry" summary="History entry"/>
     <variant name="MostVisitedEntry" summary="Most Visited entry"/>
+    <variant name="OmniboxMostVisitedEntry"
+        summary="Omnibox Most Visited entry"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
     <variant name="RecentTabsHeader" summary="Recent Tabs header/device"/>
@@ -309,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Mobile.Messages.Confirm.Event"
-    enum="MobileMessagesConfirmInfobarEvents" expires_after="2023-02-26">
+    enum="MobileMessagesConfirmInfobarEvents" expires_after="2023-05-14">
 <!-- Name completed by histogram_suffixes name="Mobile.Messages.Confirm.Type" -->
 
   <owner>sczs@chromium.org</owner>
@@ -435,6 +417,8 @@ chromium-metrics-reviews@google.com.
     <variant name="BookmarkEntry" summary="Bookmark entry"/>
     <variant name="HistoryEntry" summary="History entry"/>
     <variant name="MostVisitedEntry" summary="Most Visited entry"/>
+    <variant name="OmniboxMostVisitedEntry"
+        summary="Omnibox Most Visited entry"/>
     <variant name="QRCodeImage" summary="QR code image"/>
     <variant name="ReadingListEntry" summary="Reading List entry"/>
     <variant name="RecentTabsEntry" summary="Recent Tabs entry"/>
@@ -818,7 +802,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MobileFre.FragmentInflationSpeed" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -932,7 +916,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2023-03-19">
+    expires_after="2023-05-27">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1051,18 +1035,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MobileIntent.FirstPartyToInternalScheme" enum="Boolean"
-    expires_after="2023-01-01">
-  <owner>peconn@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Recorded when Chrome on Android is launched to an internal Chrome scheme
-    (chrome://, chrome-native://, about://) by a first party app (not Chrome).
-    This metric is to be used to determine whether any first party app uses the
-    feature, and whether we can remove it.
-  </summary>
-</histogram>
-
 <histogram name="MobileIntent.PageLoadDueToExternalApp" enum="ClientAppId"
     expires_after="never">
 <!-- expires-never: Navigation (external-apps) heartbeat metric for Android. -->
@@ -1115,7 +1087,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-03-19">
+    units="impressions" expires_after="2023-06-04">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1125,7 +1097,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2023-06-04">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1261,7 +1233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-06-04">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

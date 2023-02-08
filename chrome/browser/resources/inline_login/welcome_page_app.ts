@@ -5,12 +5,13 @@
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
-import './account_manager_shared_css.js';
+import './account_manager_shared.css.js';
 
 import {getAccountAdditionOptionsFromJSON} from 'chrome://chrome-signin/arc_account_picker/arc_util.js';
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {InlineLoginBrowserProxyImpl} from './inline_login_browser_proxy.js';
@@ -129,12 +130,14 @@ export class WelcomePageAppElement extends PolymerElement {
         'accountManagerDialogWelcomeTitle', loadTimeData.getString('userName'));
   }
 
-  private getWelcomeBody_(): string {
+  private getWelcomeBody_(): TrustedHTML {
     const welcomeBodyKey =
         (this.isArcAccountRestrictionsEnabled_ && this.isArcFlow_) ?
         'accountManagerDialogWelcomeBodyArc' :
         'accountManagerDialogWelcomeBody';
-    return loadTimeData.getString(welcomeBodyKey);
+    return sanitizeInnerHtml(loadTimeData.getString(welcomeBodyKey), {
+      attrs: ['id'],
+    });
   }
 
   private openIncognitoLink_() {

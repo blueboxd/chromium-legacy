@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
+#include "third_party/blink/renderer/core/paint/timing/paint_timing.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
@@ -51,6 +52,10 @@ StyleFetchedImage::StyleFetchedImage(ImageResourceContent* image,
       is_ad_related_(is_ad_related) {
   is_image_resource_ = true;
   is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
+
+  const PaintTiming* paint_timing = PaintTiming::From(document);
+  is_loaded_after_mouseover_ =
+      paint_timing && paint_timing->IsLCPMouseoverDispatchedRecently();
 
   image_ = image;
   image_->AddObserver(this);
@@ -124,7 +129,7 @@ gfx::SizeF StyleFetchedImage::ImageSize(
     multiplier /= image_->DevicePixelRatioHeaderValue();
   }
   if (auto* svg_image = DynamicTo<SVGImage>(image)) {
-    return ImageSizeForSVGImage(svg_image, multiplier, default_object_size);
+    return ImageSizeForSVGImage(*svg_image, multiplier, default_object_size);
   }
   respect_orientation = ForceOrientationIfNecessary(respect_orientation);
   gfx::SizeF size(image->Size(respect_orientation));
@@ -132,7 +137,10 @@ gfx::SizeF StyleFetchedImage::ImageSize(
 }
 
 bool StyleFetchedImage::HasIntrinsicSize() const {
-  return image_->GetImage()->HasIntrinsicSize();
+  const Image& image = *image_->GetImage();
+  if (auto* svg_image = DynamicTo<SVGImage>(image))
+    return HasIntrinsicDimensionsForSVGImage(*svg_image);
+  return image.HasIntrinsicSize();
 }
 
 void StyleFetchedImage::AddClient(ImageResourceObserver* observer) {

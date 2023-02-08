@@ -18,6 +18,7 @@
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -29,6 +30,7 @@
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
+#include "content/browser/devtools/protocol/system_info.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -241,25 +243,24 @@ class PrerenderDevToolsProtocolTest : public DevToolsProtocolTest {
   std::unique_ptr<test::PrerenderTestHelper> prerender_helper_;
 };
 
-class MultiplePrerendersDevToolsProtocolTest
+class PrerenderHoldbackDevToolsProtocolTest
     : public PrerenderDevToolsProtocolTest {
  public:
-  MultiplePrerendersDevToolsProtocolTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        {{blink::features::kPrerender2,
-          {{"max_num_of_running_speculation_rules", "4"}}},
-         {blink::features::kPrerender2MemoryControls,
-          // A value 100 allows prerenderings regardless of the current memory
-          // usage.
-          {{"acceptable_percent_of_system_memory", "100"},
-           // Allow prerendering on low-end trybot devices so that prerendering
-           // can run on any bots.
-           {"memory_threshold_in_mb", "0"}}}},
-        {});
+  PrerenderHoldbackDevToolsProtocolTest() {
+    feature_list_.InitAndEnableFeature(features::kPrerender2Holdback);
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
+};
+
+class MultiplePrerendersDevToolsProtocolTest
+    : public PrerenderDevToolsProtocolTest {
+ public:
+  MultiplePrerendersDevToolsProtocolTest() = default;
+
+ private:
+  test::ScopedPrerenderFeatureList prerender_feature_list_;
 };
 
 class SyntheticMouseEventTest : public DevToolsProtocolTest {
@@ -2007,17 +2008,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserGetTargets) {
   ASSERT_TRUE(target_infos);
   EXPECT_EQ(1u, target_infos->size());
   const base::Value& target_info_value = target_infos->front();
-  EXPECT_TRUE(target_info_value.is_dict());
-  const base::DictionaryValue& target_info =
-      base::Value::AsDictionaryValue(target_info_value);
-  std::string target_id, type, title, url;
-  EXPECT_TRUE(target_info.GetString("targetId", &target_id));
-  EXPECT_TRUE(target_info.GetString("type", &type));
-  EXPECT_TRUE(target_info.GetString("title", &title));
-  EXPECT_TRUE(target_info.GetString("url", &url));
-  EXPECT_EQ("page", type);
-  EXPECT_EQ("about:blank", title);
-  EXPECT_EQ("about:blank", url);
+  const base::Value::Dict* target_info = target_info_value.GetIfDict();
+  ASSERT_TRUE(target_info);
+  const std::string* target_id = target_info->FindString("target_id");
+  const std::string* type = target_info->FindString("type");
+  const std::string* title = target_info->FindString("title");
+  const std::string* url = target_info->FindString("url");
+  EXPECT_FALSE(target_id);
+  ASSERT_TRUE(type);
+  ASSERT_TRUE(title);
+  ASSERT_TRUE(url);
+  EXPECT_EQ("page", *type);
+  EXPECT_EQ("about:blank", *title);
+  EXPECT_EQ("about:blank", *url);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VirtualTimeTest) {
@@ -2403,17 +2406,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   ASSERT_TRUE(cookies);
   EXPECT_EQ(1u, cookies->size());
 
-  std::string name;
-  std::string value;
+  const std::string* name = nullptr;
+  const std::string* value = nullptr;
   {
-    const base::Value& cookie_value = cookies->front();
-    EXPECT_TRUE(cookie_value.is_dict());
-    const base::DictionaryValue& cookie =
-        base::Value::AsDictionaryValue(cookie_value);
-    EXPECT_TRUE(cookie.GetString("name", &name));
-    EXPECT_TRUE(cookie.GetString("value", &value));
-    EXPECT_EQ("cookie_for_this_url", name);
-    EXPECT_EQ("mendacious", value);
+    ASSERT_TRUE(cookies->front().is_dict());
+    const base::Value::Dict& cookie = cookies->front().GetDict();
+    name = cookie.FindString("name");
+    value = cookie.FindString("value");
+    ASSERT_TRUE(name);
+    ASSERT_TRUE(value);
+    EXPECT_EQ("cookie_for_this_url", *name);
+    EXPECT_EQ("mendacious", *value);
 
     // Then get all the cookies in the cookie jar.
     SendCommandSync("Network.getAllCookies");
@@ -2426,17 +2429,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SetAndGetCookies) {
   // Note: the cookies will be returned in unspecified order.
   size_t found = 0;
   for (const base::Value& cookie_value : *cookies) {
-    EXPECT_TRUE(cookie_value.is_dict());
-    const base::DictionaryValue& cookie =
-        base::Value::AsDictionaryValue(cookie_value);
-    EXPECT_TRUE(cookie.GetString("name", &name));
-    if (name == "cookie_for_this_url") {
-      EXPECT_TRUE(cookie.GetString("value", &value));
-      EXPECT_EQ("mendacious", value);
+    ASSERT_TRUE(cookie_value.is_dict());
+    const base::Value::Dict& cookie = cookie_value.GetDict();
+    name = cookie.FindString("name");
+    value = cookie.FindString("value");
+    ASSERT_TRUE(name);
+    ASSERT_TRUE(value);
+    if (*name == "cookie_for_this_url") {
+      EXPECT_EQ("mendacious", *value);
       found++;
-    } else if (name == "cookie_for_another_url") {
-      EXPECT_TRUE(cookie.GetString("value", &value));
-      EXPECT_EQ("polyglottal", value);
+    } else if (*name == "cookie_for_another_url") {
+      EXPECT_EQ("polyglottal", *value);
       found++;
     } else {
       FAIL();
@@ -3361,7 +3364,7 @@ class FakeSystemTracingDevToolsProtocolTest
 
   void PreRunTestOnMainThread() override {
     deferred_task_runner_->StartWithTaskRunner(
-        base::SequencedTaskRunnerHandle::Get());
+        base::SequencedTaskRunner::GetCurrentDefault());
 
     PosixSystemTracingDevToolsProtocolTest::PreRunTestOnMainThread();
   }
@@ -3782,6 +3785,26 @@ IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
+                       CheckReportedPrerenderFeatures) {
+  AttachToBrowserTarget();
+  base::Value::Dict params;
+  params.Set("featureState", "PrerenderHoldback");
+  const base::Value::Dict* result =
+      SendCommand("SystemInfo.getFeatureState", std::move(params));
+  EXPECT_THAT(result->FindBool("featureEnabled"), false);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderHoldbackDevToolsProtocolTest,
+                       CheckReportedPrerenderFeatures) {
+  AttachToBrowserTarget();
+  base::Value::Dict params;
+  params.Set("featureState", "PrerenderHoldback");
+  const base::Value::Dict* result =
+      SendCommand("SystemInfo.getFeatureState", std::move(params));
+  EXPECT_THAT(result->FindBool("featureEnabled"), true);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderDevToolsProtocolTest,
                        RemoveStoredPrerenderActivationIfNavigateAway) {
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -3871,6 +3894,29 @@ IN_PROC_BROWSER_TEST_F(MultiplePrerendersDevToolsProtocolTest,
   // properly when crbug/1350676 is ready. kPrerenderingUrl2 should be canceled
   // as navigating to kPrerenderingUrl2.
   result = WaitForNotification("Page.prerenderAttemptCompleted", true);
+  EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderHoldbackDevToolsProtocolTest,
+                       PrerenderActivation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender1");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  Attach();
+  SendCommandSync("Page.enable");
+  SendCommandSync("Runtime.enable");
+
+  AddPrerender(kPrerenderingUrl);
+
+  EXPECT_TRUE(HasHostForUrl(kPrerenderingUrl));
+
+  NavigatePrimaryPage(kPrerenderingUrl);
+  base::Value::Dict result =
+      WaitForNotification("Page.prerenderAttemptCompleted", true);
   EXPECT_THAT(*result.FindString("finalStatus"), Eq("Activated"));
 }
 

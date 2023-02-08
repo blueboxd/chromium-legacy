@@ -18,8 +18,7 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/window/native_frame_view.h"
 
-namespace views {
-namespace test {
+namespace views::test {
 
 class BridgedNativeWidgetUITest : public WidgetTest {
  public:
@@ -41,9 +40,9 @@ class BridgedNativeWidgetUITest : public WidgetTest {
     init_params.delegate = new views::WidgetDelegate;
     init_params.delegate->SetOwnedByWidget(true);
 
-    // Provide a resizable Widget by default. Starting in 10.11, OSX doesn't
-    // correctly restore the window size when coming out of fullscreen if the
-    // window is not user-sizable.
+    // Provide a resizable Widget by default, as macOS doesn't correctly restore
+    // the window size when coming out of fullscreen if the window is not
+    // user-sizable.
     init_params.delegate->SetCanResize(true);
 
     widget_ = std::make_unique<Widget>();
@@ -176,5 +175,4 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenRestore) {
   EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
 }
 
-}  // namespace test
-}  // namespace views
+}  // namespace views::test

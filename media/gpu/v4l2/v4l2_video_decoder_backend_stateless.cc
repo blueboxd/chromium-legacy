@@ -549,19 +549,23 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   DCHECK(surfaces_at_device_.empty());
   DCHECK(output_request_queue_.empty());
 
-  size_t num_output_frames = decoder_->GetRequiredNumOfPictures();
-  gfx::Rect visible_rect = decoder_->GetVisibleRect();
-  gfx::Size pic_size = decoder_->GetPicSize();
+  const size_t num_codec_reference_frames = decoder_->GetNumReferenceFrames();
+  // Verify |num_codec_reference_frames| has a reasonable value. Anecdotally 16
+  // is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_codec_reference_frames, 32u);
+
+  const gfx::Rect visible_rect = decoder_->GetVisibleRect();
+  const gfx::Size pic_size = decoder_->GetPicSize();
   // Set output format with the new resolution.
   DCHECK(!pic_size.IsEmpty());
   DVLOGF(3) << "Change resolution to " << pic_size.ToString();
-  client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
+  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames);
 }
 
 bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
     const gfx::Size& pic_size,
-    const gfx::Rect& visible_rect,
-    const size_t num_output_frames) {
+    const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
 
@@ -648,11 +652,13 @@ bool V4L2StatelessVideoDecoderBackend::StopInputQueueOnResChange() const {
 }
 
 size_t V4L2StatelessVideoDecoderBackend::GetNumOUTPUTQueueBuffers() const {
-  // Some H.264 test vectors (CAPCM*1_Sand_E.h264) need 16 reference frames.
+  // Some H.264 test vectors (CAPCM*1_Sand_E.h264) need 16 reference frames; add
+  // one to calculate the number of OUTPUT buffers, to account for the frame
+  // being decoded.
   // TODO(b/249325255): reduce this number to e.g. 8 or even less when it does
   // not artificially limit the size of the CAPTURE (decoded video frames)
   // queue.
-  constexpr size_t kNumInputBuffers = 16;
+  constexpr size_t kNumInputBuffers = 16 + 1;
   return kNumInputBuffers;
 }
 

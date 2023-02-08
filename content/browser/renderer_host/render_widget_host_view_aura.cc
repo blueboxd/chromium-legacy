@@ -2629,8 +2629,8 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  tsc_config.enable_longpress_drag_selection = base::FeatureList::IsEnabled(
-      chromeos::features::kTouchTextEditingRedesign);
+  tsc_config.enable_longpress_drag_selection =
+      base::FeatureList::IsEnabled(ash::features::kTouchTextEditingRedesign);
 #else
   tsc_config.enable_longpress_drag_selection = false;
 #endif
@@ -2825,7 +2825,7 @@ void RenderWidgetHostViewAura::DidNavigate() {
                                   absl::nullopt);
     }
   }
-    delegated_frame_host_->DidNavigate();
+  delegated_frame_host_->DidNavigate();
   is_first_navigation_ = false;
 }
 
@@ -2845,7 +2845,6 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
   DCHECK(view_aura->delegated_frame_host_);
   delegated_frame_host_->TakeFallbackContentFrom(
       view_aura->delegated_frame_host_.get());
-  host()->GetContentRenderingTimeoutFrom(view_aura->host());
 }
 
 bool RenderWidgetHostViewAura::CanSynchronizeVisualProperties() {

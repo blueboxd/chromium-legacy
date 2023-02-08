@@ -80,6 +80,13 @@ public class JourneyLogger {
     }
 
     /**
+     * Records that an Opt Out experience is being offered to the user in the current UI flow.
+     */
+    public void setOptOutOffered() {
+        JourneyLoggerJni.get().setOptOutOffered(mJourneyLoggerAndroid, JourneyLogger.this);
+    }
+
+    /**
      * Records that a payment app has been invoked without any payment UI being shown before that.
      */
     public void setSkippedShow() {
@@ -197,6 +204,14 @@ public class JourneyLogger {
     }
 
     /**
+     * Records that the No Matching Credentials UX was shown to the user.
+     */
+    public void setNoMatchingCredentialsShown() {
+        JourneyLoggerJni.get().setNoMatchingCredentialsShown(
+                mJourneyLoggerAndroid, JourneyLogger.this);
+    }
+
+    /**
      * Records that the payment request has entered the given checkout step.
      * @param step An int indicating the step to be recorded.
      */
@@ -224,6 +239,7 @@ public class JourneyLogger {
                 long nativeJourneyLoggerAndroid, JourneyLogger caller, boolean value);
         void setHasEnrolledInstrumentValue(
                 long nativeJourneyLoggerAndroid, JourneyLogger caller, boolean value);
+        void setOptOutOffered(long nativeJourneyLoggerAndroid, JourneyLogger caller);
         void setSkippedShow(long nativeJourneyLoggerAndroid, JourneyLogger caller);
         void setShown(long nativeJourneyLoggerAndroid, JourneyLogger caller);
         void setReceivedInstrumentDetails(long nativeJourneyLoggerAndroid, JourneyLogger caller);
@@ -240,6 +256,7 @@ public class JourneyLogger {
         void setCompleted(long nativeJourneyLoggerAndroid, JourneyLogger caller);
         void setAborted(long nativeJourneyLoggerAndroid, JourneyLogger caller, int reason);
         void setNotShown(long nativeJourneyLoggerAndroid, JourneyLogger caller, int reason);
+        void setNoMatchingCredentialsShown(long nativeJourneyLoggerAndroid, JourneyLogger caller);
         void recordCheckoutStep(long nativeJourneyLoggerAndroid, JourneyLogger caller, int step);
         void setPaymentAppUkmSourceId(
                 long nativeJourneyLoggerAndroid, JourneyLogger caller, long sourceId);

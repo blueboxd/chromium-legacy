@@ -7,12 +7,14 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared.css.js';
+import '../site_settings_page/site_review_shared.css.js';
 import '../i18n_setup.js';
 
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -101,6 +103,9 @@ export class SettingsReviewNotificationPermissionsElement extends
       /* The string for the primary header label. */
       headerString_: String,
 
+      /* The string for the subtitle. */
+      subtitleString_: String,
+
       /**
        * The text that will be shown in the toast element upon clicking one of
        * the actions.
@@ -112,22 +117,24 @@ export class SettingsReviewNotificationPermissionsElement extends
   private sites_: NotificationPermission[];
   private notificationPermissionReviewListExpanded_: boolean;
   private shouldShowCompletionInfo_: boolean;
-  private browserProxy_: SiteSettingsPrefsBrowserProxy =
-      SiteSettingsPrefsBrowserProxyImpl.getInstance();
   private lastOrigins_: string[] = [];
   private lastUserAction_: Actions|null;
   private headerString_: string;
+  private subtitleString_: string;
   private sitesLoaded_: boolean = false;
   private modelUpdateDelayMsForTesting_: number|null = null;
   private toastText_: string|null;
+  private eventTracker_: EventTracker = new EventTracker();
+  private shouldRefocusExpandButton_: boolean = false;
+  private browserProxy_: SiteSettingsPrefsBrowserProxy =
+      SiteSettingsPrefsBrowserProxyImpl.getInstance();
   private metricsBrowserProxy_: MetricsBrowserProxy =
       MetricsBrowserProxyImpl.getInstance();
-  private shouldRefocusExpandButton_: boolean = false;
 
   override async connectedCallback() {
     super.connectedCallback();
     // Register for review notification permission list updates.
-    this.addWebUIListener(
+    this.addWebUiListener(
         'notification-permission-review-list-maybe-changed',
         (sites: NotificationPermission[]) =>
             this.onReviewNotificationPermissionListChanged_(sites));
@@ -136,6 +143,15 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.metricsBrowserProxy_.recordSafetyCheckNotificationsListCountHistogram(
       this.sites_.length);
     this.sitesLoaded_ = true;
+
+    this.eventTracker_.add(
+        document, 'keydown', (e: Event) => this.onKeyDown_(e as KeyboardEvent));
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    this.eventTracker_.removeAll();
   }
 
   /* Show action menu when clicked to three dot menu. */
@@ -213,8 +229,7 @@ export class SettingsReviewNotificationPermissionsElement extends
 
     // The already rendered <cr-row>s are reused as the model is updated,
     // so we need to reset their CSS classes.
-    const rows = this.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    const rows = this.shadowRoot!.querySelectorAll('.site-list .site-entry');
     for (const row of rows) {
       row.classList.remove('removed');
     }
@@ -295,6 +310,10 @@ export class SettingsReviewNotificationPermissionsElement extends
 
   private onUndoButtonClick_(e: Event) {
     e.stopPropagation();
+    this.undoLastAction();
+  }
+
+  private undoLastAction() {
     switch (this.lastUserAction_) {
       // As BLOCK and RESET actions just change the notification permission,
       // undoing them only requires allowing notification permissions again.
@@ -330,6 +349,37 @@ export class SettingsReviewNotificationPermissionsElement extends
     this.$.undoToast.hide();
   }
 
+  private onKeyDown_(e: KeyboardEvent) {
+    // Only allow undoing via ctrl+z when the undo toast is opened.
+    if (!this.$.undoToast.open) {
+      return;
+    }
+
+    /**
+     * TODO(crbug.com/1392664): Unify the implementation of ctrl+z that are in
+     * the current codebase.
+     *
+     * Undo should be done when ctrl+z (or meta+z on macOS) is pressed. No other
+     * modifier should be pressed simultaneously (alt, shift, meta on non-mac
+     * and ctrl on mac).
+     */
+    if (e.key !== 'z') {
+      return;
+    }
+    const excludedModifiers = [e.altKey, e.shiftKey];
+    // <if expr="is_macosx">
+    let targetModifier = e.metaKey;
+    excludedModifiers.push(e.ctrlKey);
+    // </if>
+    // <if expr="not is_macosx">
+    let targetModifier = e.ctrlKey;
+    excludedModifiers.push(e.metaKey);
+    // </if>
+    if (!excludedModifiers.some(Boolean) && targetModifier) {
+      this.undoLastAction();
+    }
+  }
+
   private getBlockAriaLabelForOrigin(origin: string): string {
     return this.i18n(
         'safetyCheckNotificationPermissionReviewDontAllowAriaLabel', origin);
@@ -353,8 +403,7 @@ export class SettingsReviewNotificationPermissionsElement extends
   }
 
   private hideItem_(origin?: string) {
-    const rows = this.shadowRoot!.querySelectorAll(
-        '.notification-permissions-list .site-entry');
+    const rows = this.shadowRoot!.querySelectorAll('.site-list .site-entry');
 
     // Remove the row that corresponds to |origin|. If no origin is specified,
     // remove all rows.
@@ -378,14 +427,17 @@ export class SettingsReviewNotificationPermissionsElement extends
         await PluralStringProxyImpl.getInstance().getPluralString(
             'safetyCheckNotificationPermissionReviewPrimaryLabel',
             this.sites_.length);
+    this.subtitleString_ =
+        await PluralStringProxyImpl.getInstance().getPluralString(
+            'safetyCheckNotificationPermissionReviewSecondaryLabel',
+            this.sites_.length);
     /**
      * Focus on the expand button after the undo button is clicked and sites are
      * loaded again.
      */
     if (this.sites_.length !== 0 && this.shouldRefocusExpandButton_) {
       this.shouldRefocusExpandButton_ = false;
-      const expandButton =
-          this.shadowRoot!.querySelector<HTMLElement>('#expandButton');
+      const expandButton = this.shadowRoot!.querySelector('cr-expand-button');
       assert(expandButton);
       expandButton.focus();
     }

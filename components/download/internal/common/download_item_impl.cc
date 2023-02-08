@@ -40,7 +40,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_runner_util.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -562,8 +562,8 @@ void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
 
   if (delete_file_afterward) {
     if (download_file_) {
-      base::PostTaskAndReplyWithResult(
-          GetDownloadTaskRunner().get(), FROM_HERE,
+      GetDownloadTaskRunner()->PostTaskAndReplyWithResult(
+          FROM_HERE,
           base::BindOnce(&DownloadFileDetach, std::move(download_file_)),
           std::move(callback));
     } else {
@@ -573,8 +573,8 @@ void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
     Remove();
     // Download item has now been deleted.
   } else if (download_file_) {
-    base::PostTaskAndReplyWithResult(
-        GetDownloadTaskRunner().get(), FROM_HERE,
+    GetDownloadTaskRunner()->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&MakeCopyOfDownloadFile, download_file_.get()),
         std::move(callback));
   } else {
@@ -768,7 +768,7 @@ void DownloadItemImpl::Rename(const base::FilePath& display_name,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (display_name.IsAbsolute()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   std::move(callback), GetFullPath(),
@@ -776,8 +776,8 @@ void DownloadItemImpl::Rename(const base::FilePath& display_name,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      GetDownloadTaskRunner().get(), FROM_HERE,
+  GetDownloadTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&download::RenameDownloadedFile, GetFullPath(),
                      display_name),
       base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
@@ -988,7 +988,7 @@ void DownloadItemImpl::DeleteFile(base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (GetState() != DownloadItem::COMPLETE) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&DeleteDownloadedFileDone,
                                   base::WeakPtr<DownloadItemImpl>(),
                                   std::move(callback), false));
@@ -996,15 +996,14 @@ void DownloadItemImpl::DeleteFile(base::OnceCallback<void(bool)> callback) {
   }
   if (GetFullPath().empty() || file_externally_removed_) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&DeleteDownloadedFileDone,
                                   base::WeakPtr<DownloadItemImpl>(),
                                   std::move(callback), true));
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      GetDownloadTaskRunner().get(), FROM_HERE,
-      base::BindOnce(&DeleteDownloadedFile, GetFullPath()),
+  GetDownloadTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&DeleteDownloadedFile, GetFullPath()),
       base::BindOnce(&DeleteDownloadedFileDone, weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));
 }
@@ -1614,7 +1613,7 @@ void DownloadItemImpl::Start(
     // We're posting the call to DetermineDownloadTarget() instead of calling it
     // directly to ensure that OnDownloadTargetDetermined() is not called
     // synchronously. See crbug.com/1209856 for more details.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&DownloadItemImpl::DetermineDownloadTarget,
                                   weak_ptr_factory_.GetWeakPtr()));
     return;

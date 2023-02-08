@@ -21,12 +21,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/cpp/buckets/bucket_id.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
-#include "content/browser/file_system_access/features.h"
 #include "content/browser/file_system_access/file_system_access.pb.h"
 #include "content/browser/file_system_access/file_system_access_access_handle_host_impl.h"
 #include "content/browser/file_system_access/file_system_access_data_transfer_token_impl.h"
@@ -95,8 +93,6 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
 
   DCHECK(outermost_rfh->IsInPrimaryMainFrame());
 
-  // TODO(crbug.com/1249865): could check browsing contexts vs a fenced frame
-  // check with MPArch fenced frames.
   if (rfh->IsNestedWithinFencedFrame()) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(
@@ -373,7 +369,7 @@ void FileSystemAccessManagerImpl::GetSandboxedFileSystem(
                 std::move(callback), root, fs_name, result));
       },
       weak_factory_.GetWeakPtr(), binding_context, std::move(callback),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunner::GetCurrentDefault());
 
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&FileSystemContext::OpenFileSystem, context(),
@@ -676,9 +672,7 @@ void FileSystemAccessManagerImpl::ResolveDataTransferTokenWithFileType(
     HandleType file_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!permission_context_ ||
-      !base::FeatureList::IsEnabled(
-          features::kFileSystemAccessDragAndDropCheckBlocklist)) {
+  if (!permission_context_) {
     DidVerifySensitiveDirectoryAccessForDataTransfer(
         binding_context, file_path, url, file_type,
         std::move(token_resolved_callback), SensitiveEntryResult::kAllowed);
@@ -942,11 +936,13 @@ void FileSystemAccessManagerImpl::DeserializeHandle(
         // Use the default storage bucket.
         context_->quota_manager_proxy()->UpdateOrCreateBucket(
             storage::BucketInitParams::ForDefaultBucket(storage_key),
-            base::SequencedTaskRunnerHandle::Get(), std::move(bucket_callback));
+            base::SequencedTaskRunner::GetCurrentDefault(),
+            std::move(bucket_callback));
       } else {
         context_->quota_manager_proxy()->GetBucketById(
             storage::BucketId::FromUnsafeValue(data.sandboxed().bucket_id()),
-            base::SequencedTaskRunnerHandle::Get(), std::move(bucket_callback));
+            base::SequencedTaskRunner::GetCurrentDefault(),
+            std::move(bucket_callback));
       }
       break;
     }
@@ -1377,7 +1373,7 @@ void FileSystemAccessManagerImpl::DidVerifySensitiveDirectoryAccess(
         base::BindOnce(
             &FileSystemAccessManagerImpl::DidCreateAndTruncateSaveFile, this,
             binding_context, entries.front(), fs_url, std::move(callback)),
-        base::SequencedTaskRunnerHandle::Get()));
+        base::SequencedTaskRunner::GetCurrentDefault()));
     return;
   }
 
@@ -1530,7 +1526,7 @@ storage::FileSystemURL FileSystemAccessManagerImpl::CreateFileSystemURLFromPath(
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return context()->CreateCrackedFileSystemURL(
-      blink::StorageKey(),
+      opaque_origin_for_non_sandboxed_filesystemurls_,
       path_type == PathType::kLocal ? storage::kFileSystemTypeLocal
                                     : storage::kFileSystemTypeExternal,
       path);
@@ -1560,14 +1556,19 @@ FileSystemAccessManagerImpl::GetSharedHandleStateForPath(
             ? PermissionStatus::GRANTED
             : PermissionStatus::DENIED,
         path);
-    if (user_action ==
-        FileSystemAccessPermissionContext::UserAction::kLoadFromStorage) {
-      read_grant = write_grant;
-    } else {
-      // Grant read permission even without a permission_context_, as the picker
-      // itself is enough UI to assume user intent.
-      read_grant = base::MakeRefCounted<FixedFileSystemAccessPermissionGrant>(
-          PermissionStatus::GRANTED, path);
+    switch (user_action) {
+      case FileSystemAccessPermissionContext::UserAction::kNone:
+      case FileSystemAccessPermissionContext::UserAction::kLoadFromStorage:
+        read_grant = write_grant;
+        break;
+      case FileSystemAccessPermissionContext::UserAction::kOpen:
+      case FileSystemAccessPermissionContext::UserAction::kSave:
+      case FileSystemAccessPermissionContext::UserAction::kDragAndDrop:
+        // Grant read permission even without a permission_context_, as the
+        // picker itself is enough UI to assume user intent.
+        read_grant = base::MakeRefCounted<FixedFileSystemAccessPermissionGrant>(
+            PermissionStatus::GRANTED, path);
+        break;
     }
   }
   return SharedHandleState(std::move(read_grant), std::move(write_grant));
@@ -1648,9 +1649,9 @@ void FileSystemAccessManagerImpl::CleanupAccessHandleCapacityAllocationImpl(
       << "Capacity allocation is only relevant for sandboxed file systems, "
          "which should have an associated bucket.";
   context_->quota_manager_proxy()->NotifyBucketModified(
-      storage::QuotaClientType::kFileSystem, url.bucket()->id, -overallocation,
+      storage::QuotaClientType::kFileSystem, *url.bucket(), -overallocation,
       base::Time::Now(),
-      /*callback_task_runner=*/base::SequencedTaskRunnerHandle::Get(),
+      /*callback_task_runner=*/base::SequencedTaskRunner::GetCurrentDefault(),
       std::move(callback));
 }
 

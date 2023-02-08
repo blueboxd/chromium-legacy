@@ -6,7 +6,7 @@
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
-#include "base/json/json_reader.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
 #include "base/test/test_future.h"
@@ -23,11 +23,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-namespace {
-static constexpr char kServerUrl[] =
-    "http://localhost:9876/v1/app_provisioning/apps?alt=proto";
-}  // namespace
 
 namespace apps {
 
@@ -73,27 +68,22 @@ TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginRequest) {
       }));
 
   server_connector_.GetAppsForFirstLogin(
-      device_info, test_shared_loader_factory_,
-      base::OnceCallback<void(std::vector<PreloadAppDefinition>)>());
+      device_info, test_shared_loader_factory_, base::DoNothing());
 
   EXPECT_EQ(method, "POST");
   EXPECT_EQ(method_override_header, "GET");
-  EXPECT_EQ(content_type, "application/json");
+  EXPECT_EQ(content_type, "application/x-protobuf");
 
-  absl::optional<base::Value> request = base::JSONReader::Read(body);
-  ASSERT_TRUE(request.has_value() && request->is_dict());
+  proto::AppProvisioningRequest request;
+  ASSERT_TRUE(request.ParseFromString(body));
 
-  base::Value::Dict& request_dict = request->GetDict();
-  EXPECT_EQ(*request_dict.FindString("board"), "brya");
-  EXPECT_EQ(*request_dict.FindString("language"), "en-US");
-  EXPECT_EQ(*request_dict.FindString("model"), "taniks");
-  EXPECT_EQ(*request_dict.FindInt("user_type"),
+  EXPECT_EQ(request.board(), "brya");
+  EXPECT_EQ(request.language(), "en-US");
+  EXPECT_EQ(request.model(), "taniks");
+  EXPECT_EQ(request.user_type(),
             apps::proto::AppProvisioningRequest::USERTYPE_UNMANAGED);
-  EXPECT_EQ(
-      *request_dict.FindDict("chrome_os_version")->FindString("ash_chrome"),
-      "10.10.10");
-  EXPECT_EQ(*request_dict.FindDict("chrome_os_version")->FindString("platform"),
-            "12345.0.0");
+  EXPECT_EQ(request.chrome_os_version().ash_chrome(), "10.10.10");
+  EXPECT_EQ(request.chrome_os_version().platform(), "12345.0.0");
 }
 
 TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginSuccessfulResponse) {
@@ -101,14 +91,43 @@ TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginSuccessfulResponse) {
   auto* app = response.add_apps_to_install();
   app->set_name("Peanut Types");
 
-  url_loader_factory_.AddResponse(kServerUrl, response.SerializeAsString());
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(),
+      response.SerializeAsString());
 
-  base::test::TestFuture<std::vector<PreloadAppDefinition>> test_callback;
+  base::test::TestFuture<absl::optional<std::vector<PreloadAppDefinition>>>
+      test_callback;
   server_connector_.GetAppsForFirstLogin(
       DeviceInfo(), test_shared_loader_factory_, test_callback.GetCallback());
   auto apps = test_callback.Get();
-  EXPECT_EQ(apps.size(), 1u);
-  EXPECT_EQ(apps[0].GetName(), "Peanut Types");
+  EXPECT_TRUE(apps.has_value());
+  EXPECT_EQ(apps->size(), 1u);
+  EXPECT_EQ(apps.value()[0].GetName(), "Peanut Types");
+}
+
+TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginServerError) {
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl().spec(), /*content=*/"",
+      net::HTTP_INTERNAL_SERVER_ERROR);
+
+  base::test::TestFuture<absl::optional<std::vector<PreloadAppDefinition>>>
+      result;
+  server_connector_.GetAppsForFirstLogin(
+      DeviceInfo(), test_shared_loader_factory_, result.GetCallback());
+  EXPECT_FALSE(result.Get().has_value());
+}
+
+TEST_F(AppPreloadServerConnectorTest, GetAppsForFirstLoginNetworkError) {
+  url_loader_factory_.AddResponse(
+      AppPreloadServerConnector::GetServerUrl(),
+      network::mojom::URLResponseHead::New(), /*content=*/"",
+      network::URLLoaderCompletionStatus(net::ERR_TIMED_OUT));
+
+  base::test::TestFuture<absl::optional<std::vector<PreloadAppDefinition>>>
+      result;
+  server_connector_.GetAppsForFirstLogin(
+      DeviceInfo(), test_shared_loader_factory_, result.GetCallback());
+  EXPECT_FALSE(result.Get().has_value());
 }
 
 }  // namespace apps

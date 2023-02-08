@@ -28,6 +28,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -74,6 +75,12 @@ gfx::Rect GetWorkAreaForBubble(aura::Window* root_window) {
   return gfx::ToRoundedRect(work_area);
 }
 
+int GetBubbleWidth(gfx::Rect work_area, aura::Window* root_window) {
+  // As of August 2021 the assistant cards require a minimum width of 640. If
+  // the cards become narrower then this could be reduced.
+  return work_area.width() < 1200 ? 544 : 640;
+}
+
 // Returns the preferred size of the bubble widget in DIPs.
 gfx::Size ComputeBubbleSize(aura::Window* root_window,
                             AppListBubbleView* bubble_view) {
@@ -82,12 +89,7 @@ gfx::Size ComputeBubbleSize(aura::Window* root_window,
   const gfx::Rect work_area = GetWorkAreaForBubble(root_window);
   int height = default_height;
 
-  // As of August 2021 the assistant cards require a minimum width of 640. If
-  // the cards become narrower then this could be reduced.
-  const int width = app_list_features::IsCompactBubbleLauncherEnabled() &&
-                            work_area.width() < 1200
-                        ? 544
-                        : 640;
+  const int width = GetBubbleWidth(work_area, root_window);
   // If the work area height is too small to fit the default size bubble, then
   // calculate a smaller height to fit in the work area. Otherwise, if the work
   // area height is tall enough to fit at least two default sized bubbles, then
@@ -483,6 +485,11 @@ void AppListBubblePresenter::OnHideAnimationEnded() {
   bubble_widget_->Hide();
 
   controller_->MaybeCloseAssistant();
+}
+
+int AppListBubblePresenter::GetPreferredBubbleWidth(
+    aura::Window* root_window) const {
+  return GetBubbleWidth(GetWorkAreaForBubble(root_window), root_window);
 }
 
 }  // namespace ash

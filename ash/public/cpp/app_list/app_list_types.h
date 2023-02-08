@@ -18,7 +18,6 @@
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
-#include "url/gurl.h"
 
 namespace ash {
 
@@ -129,8 +128,7 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   // to contain a single item.
   bool is_system_folder = false;
 
-  gfx::ImageSkia icon;         // The icon of this item.
-  bool is_page_break = false;  // Whether this item is a "page break" item.
+  gfx::ImageSkia icon;                  // The icon of this item.
   SkColor badge_color = SK_ColorWHITE;  // Notification badge color.
 
   // Whether the app was installed this session and has not yet been launched.
@@ -413,16 +411,13 @@ enum class AppListSearchResultCategory {
 
 // Which UI container(s) the result should be displayed in.
 // Do not change the order of these as they are used for metrics.
-//
-// TODO(https://crbug.com/1258415): kChip can be deprecated once
-// ProductivityLauncher is launched.
 enum class SearchResultDisplayType {
   kNone = 0,
   kList = 1,  // Displays in search list
-  kTile = 2,  // Displays in search tiles
+  // kTile = 2,  // No longer used, Displays in search tiles
   // kRecommendation = 3  // No longer used, split between kTile and kChip
   kAnswerCard = 4,  // Displays in answer cards
-  kChip = 5,        // Displays in suggestion chips
+  // kChip = 5,        // No longer used, Displays in suggestion chips
   kContinue = 6,    // Displays in the Continue section
   kRecentApps = 7,  // Displays in recent apps row
   // Add new values here
@@ -431,15 +426,9 @@ enum class SearchResultDisplayType {
 
 // Actions for search results. These map to the buttons beside some search
 // results, and do not include the launching of the result itself.
-// TODO(crbug.com/1263751): Currently these are only relevant to omnibox
-// results, but these are being generalized to other result types.
 enum SearchResultActionType {
   // Removes the search result.
-  kRemove = 0,
-  // Appends the result to search box query.
-  kAppend,
-  // kSearchResultActionMax is always last.
-  kSearchResultActionTypeMax
+  kRemove,
 };
 
 // The shape to mask a search result icon with.
@@ -502,15 +491,12 @@ using SearchResultTags = std::vector<SearchResultTag>;
 struct ASH_PUBLIC_EXPORT SearchResultAction {
   SearchResultAction();
   SearchResultAction(SearchResultActionType type,
-                     const std::u16string& tooltip_text,
-                     bool visible_on_hover);
+                     const std::u16string& tooltip_text);
   SearchResultAction(const SearchResultAction& other);
   ~SearchResultAction();
 
   SearchResultActionType type;
   std::u16string tooltip_text;
-  // Visible when button or its parent row in hover state.
-  bool visible_on_hover;
 };
 using SearchResultActions = std::vector<SearchResultAction>;
 

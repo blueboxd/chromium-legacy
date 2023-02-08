@@ -6,6 +6,7 @@
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerProxy, PasswordEditDialogElement, PasswordListItemElement, PasswordMoveMultiplePasswordsToAccountDialogElement, PasswordsExportDialogElement, PasswordsImportDialogElement, PasswordsSectionElement, PaymentsManagerProxy, PersonalDataChangedListener} from 'chrome://settings/lazy_load.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
@@ -62,7 +63,6 @@ export function createPasswordEntry(params?: PasswordEntryParams):
     isAndroidCredential: params.isAndroidCredential || false,
     note: note,
     password: '',
-    hasStartableScript: false,
   };
 }
 
@@ -189,7 +189,6 @@ export function makeInsecureCredential(
     id: id || 0,
     storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
     changePasswordUrl: `http://${url}/`,
-    hasStartableScript: false,
     urls: {
       signonRealm: `http://${url}/`,
       shown: url,
@@ -380,9 +379,8 @@ export class AutofillManagerExpectations {
 /**
  * Test implementation
  */
-export class TestAutofillManager implements AutofillManagerProxy {
-  private actual_: AutofillManagerExpectations;
-
+export class TestAutofillManager extends TestBrowserProxy implements
+    AutofillManagerProxy {
   data: {
     addresses: chrome.autofillPrivate.AddressEntry[],
   };
@@ -391,7 +389,12 @@ export class TestAutofillManager implements AutofillManagerProxy {
       {setPersonalDataManagerListener: PersonalDataChangedListener|null};
 
   constructor() {
-    this.actual_ = new AutofillManagerExpectations();
+    super([
+      'getAddressList',
+      'removeAddress',
+      'removePersonalDataManagerListener',
+      'setPersonalDataManagerListener',
+    ]);
 
     // Set these to have non-empty data.
     this.data = {
@@ -405,34 +408,36 @@ export class TestAutofillManager implements AutofillManagerProxy {
   }
 
   setPersonalDataManagerListener(listener: PersonalDataChangedListener) {
-    this.actual_.listeningAddresses++;
+    this.methodCalled('setPersonalDataManagerListener');
     this.lastCallback.setPersonalDataManagerListener = listener;
   }
 
   removePersonalDataManagerListener(_listener: PersonalDataChangedListener) {
-    this.actual_.listeningAddresses--;
+    this.methodCalled('removePersonalDataManagerListener');
   }
 
-  getAddressList(
-      callback: (entries: chrome.autofillPrivate.AddressEntry[]) => void) {
-    this.actual_.requestedAddresses++;
-    callback(this.data.addresses);
+  getAddressList() {
+    this.methodCalled('getAddressList');
+    return Promise.resolve(this.data.addresses);
   }
 
   saveAddress(_address: chrome.autofillPrivate.AddressEntry) {}
 
   removeAddress(_guid: string) {
-    this.actual_.removeAddress++;
+    this.methodCalled('removeAddress');
   }
 
   /**
    * Verifies expectations.
    */
   assertExpectations(expected: AutofillManagerExpectations) {
-    const actual = this.actual_;
-    assertEquals(expected.requestedAddresses, actual.requestedAddresses);
-    assertEquals(expected.listeningAddresses, actual.listeningAddresses);
-    assertEquals(expected.removeAddress, actual.removeAddress);
+    assertEquals(
+        expected.requestedAddresses, this.getCallCount('getAddressList'));
+    assertEquals(
+        expected.listeningAddresses,
+        this.getCallCount('setPersonalDataManagerListener') -
+            this.getCallCount('removePersonalDataManagerListener'));
+    assertEquals(expected.removeAddress, this.getCallCount('removeAddress'));
   }
 }
 
@@ -449,8 +454,8 @@ export class PaymentsManagerExpectations {
 /**
  * Test implementation
  */
-export class TestPaymentsManager implements PaymentsManagerProxy {
-  private actual_: PaymentsManagerExpectations;
+export class TestPaymentsManager extends TestBrowserProxy implements
+    PaymentsManagerProxy {
   private isUserVerifyingPlatformAuthenticatorAvailable_: boolean|null = null;
 
   data: {
@@ -462,7 +467,15 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
       {setPersonalDataManagerListener: PersonalDataChangedListener|null};
 
   constructor() {
-    this.actual_ = new PaymentsManagerExpectations();
+    super([
+      'setPersonalDataManagerListener',
+      'removePersonalDataManagerListener',
+      'getCreditCardList',
+      'getUpiIdList',
+      'clearCachedCreditCard',
+      'removeCreditCard',
+      'addVirtualCard',
+    ]);
 
     // Set these to have non-empty data.
     this.data = {
@@ -477,27 +490,26 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
   }
 
   setPersonalDataManagerListener(listener: PersonalDataChangedListener) {
-    this.actual_.listeningCreditCards++;
+    this.methodCalled('setPersonalDataManagerListener');
     this.lastCallback.setPersonalDataManagerListener = listener;
   }
 
   removePersonalDataManagerListener(_listener: PersonalDataChangedListener) {
-    this.actual_.listeningCreditCards--;
+    this.methodCalled('removePersonalDataManagerListener');
   }
 
-  getCreditCardList(
-      callback: (entries: chrome.autofillPrivate.CreditCardEntry[]) => void) {
-    this.actual_.requestedCreditCards++;
-    callback(this.data.creditCards);
+  getCreditCardList() {
+    this.methodCalled('getCreditCardList');
+    return Promise.resolve(this.data.creditCards);
   }
 
-  getUpiIdList(callback: (entries: string[]) => void) {
-    this.actual_.requestedUpiIds++;
-    callback(this.data.upiIds);
+  getUpiIdList() {
+    this.methodCalled('getUpiIdList');
+    return Promise.resolve(this.data.upiIds);
   }
 
   clearCachedCreditCard(_guid: string) {
-    this.actual_.clearedCachedCreditCards++;
+    this.methodCalled('clearCachedCreditCard');
   }
 
   logServerCardLinkClicked() {}
@@ -505,15 +517,15 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
   migrateCreditCards() {}
 
   removeCreditCard(_guid: string) {
-    this.actual_.removedCreditCards++;
+    this.methodCalled('removeCreditCard');
   }
 
   saveCreditCard(_creditCard: chrome.autofillPrivate.CreditCardEntry) {}
 
-  setCreditCardFIDOAuthEnabledState(_enabled: boolean) {}
+  setCreditCardFidoAuthEnabledState(_enabled: boolean) {}
 
   addVirtualCard(_cardId: string) {
-    this.actual_.addedVirtualCards++;
+    this.methodCalled('addVirtualCard');
   }
 
   removeVirtualCard(_cardId: string) {}
@@ -530,12 +542,18 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
    * Verifies expectations.
    */
   assertExpectations(expected: PaymentsManagerExpectations) {
-    const actual = this.actual_;
-    assertEquals(expected.requestedCreditCards, actual.requestedCreditCards);
-    assertEquals(expected.listeningCreditCards, actual.listeningCreditCards);
-    assertEquals(expected.removedCreditCards, actual.removedCreditCards);
     assertEquals(
-        expected.clearedCachedCreditCards, actual.clearedCachedCreditCards);
-    assertEquals(expected.addedVirtualCards, actual.addedVirtualCards);
+        expected.requestedCreditCards, this.getCallCount('getCreditCardList'));
+    assertEquals(
+        expected.listeningCreditCards,
+        this.getCallCount('setPersonalDataManagerListener') -
+            this.getCallCount('removePersonalDataManagerListener'));
+    assertEquals(
+        expected.removedCreditCards, this.getCallCount('removeCreditCard'));
+    assertEquals(
+        expected.clearedCachedCreditCards,
+        this.getCallCount('clearCachedCreditCard'));
+    assertEquals(
+        expected.addedVirtualCards, this.getCallCount('addVirtualCard'));
   }
 }

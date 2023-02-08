@@ -51,7 +51,6 @@ class SubAppInstallCommandTest : public WebAppTest {
       std::unique_ptr<WebAppDataRetriever> data_retriever) {
     return std::make_unique<SubAppInstallCommand>(
         parent_app_id, sub_app_data, std::move(callback), profile(),
-        &provider()->registrar(), &provider()->install_finalizer(),
         std::move(url_loader), std::move(data_retriever));
   }
 
@@ -123,7 +122,7 @@ class SubAppInstallCommandTest : public WebAppTest {
 
   GURL sub_app_url() { return sub_app_url_; }
   WebAppProvider* provider() { return WebAppProvider::GetForTest(profile()); }
-  WebAppRegistrar& registrar() { return provider()->registrar(); }
+  WebAppRegistrar& registrar() { return provider()->registrar_unsafe(); }
   TestWebAppUrlLoader& command_manager_url_loader() const {
     return *command_manager_url_loader_;
   }

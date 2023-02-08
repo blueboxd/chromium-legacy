@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -46,7 +45,6 @@ import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.task.test.ShadowPostTask;
@@ -74,6 +72,7 @@ import org.chromium.ui.base.TestActivity;
 import org.chromium.url.JUnitTestGURLs;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 /**
  * Tests AMP url handling in the CustomTab Toolbar.
@@ -239,17 +238,6 @@ public class CustomTabToolbarUnitTest {
 
     @Test
     public void testToolbarBrandingDelegateImpl_EmptyToBranding() {
-        mLocationBar.setIconTransitionEnabled(true);
-        doTestToolbarBrandingDelegateImpl_EmptyToBranding(true);
-    }
-
-    @Test
-    public void testToolbarBrandingDelegateImpl_EmptyToBranding_DisableTransition() {
-        mLocationBar.setIconTransitionEnabled(false);
-        doTestToolbarBrandingDelegateImpl_EmptyToBranding(false);
-    }
-
-    private void doTestToolbarBrandingDelegateImpl_EmptyToBranding(boolean animateIconTransition) {
         ChromeFeatureList.sCctBrandTransparency.setForTesting(true);
 
         assertUrlAndTitleVisible(/*titleVisible=*/false, /*urlVisible=*/true);
@@ -264,7 +252,6 @@ public class CustomTabToolbarUnitTest {
 
         mLocationBar.showBrandingLocationBar();
         assertUrlAndTitleVisible(/*titleVisible=*/false, /*urlVisible=*/true);
-        verify(mAnimationDelegate).updateSecurityButton(anyInt(), eq(animateIconTransition));
 
         // Attempt to update title and URL to show Title only - should be ignored during branding.
         reset(mLocationBarModel);

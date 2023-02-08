@@ -7,6 +7,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -65,13 +66,12 @@ void TestPersonalDataManager::AddProfile(const AutofillProfile& profile) {
   std::unique_ptr<AutofillProfile> profile_ptr =
       std::make_unique<AutofillProfile>(profile);
   profile_ptr->FinalizeAfterImport();
-  web_profiles_.push_back(std::move(profile_ptr));
+  GetProfileStorage(profile.source()).push_back(std::move(profile_ptr));
   NotifyPersonalDataObserver();
 }
 
 void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
-  AutofillProfile* existing_profile =
-      GetProfileWithGUID(profile.guid().c_str());
+  AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
   if (existing_profile) {
     RemoveByGUID(existing_profile->guid());
     AddProfile(profile);
@@ -79,16 +79,18 @@ void TestPersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
 }
 
 void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
-  CreditCard* credit_card = GetCreditCardWithGUID(guid.c_str());
+  CreditCard* credit_card = GetCreditCardByGUID(guid);
   if (credit_card) {
     local_credit_cards_.erase(base::ranges::find(
         local_credit_cards_, credit_card, &std::unique_ptr<CreditCard>::get));
   }
 
-  AutofillProfile* profile = GetProfileWithGUID(guid.c_str());
+  AutofillProfile* profile = GetProfileByGUID(guid);
   if (profile) {
-    web_profiles_.erase(base::ranges::find(
-        web_profiles_, profile, &std::unique_ptr<AutofillProfile>::get));
+    std::vector<std::unique_ptr<AutofillProfile>>& profiles =
+        GetProfileStorage(profile->source());
+    profiles.erase(base::ranges::find(profiles, profile,
+                                      &std::unique_ptr<AutofillProfile>::get));
   }
 }
 
@@ -115,8 +117,7 @@ void TestPersonalDataManager::DeleteLocalCreditCards(
 }
 
 void TestPersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
-  CreditCard* existing_credit_card =
-      GetCreditCardWithGUID(credit_card.guid().c_str());
+  CreditCard* existing_credit_card = GetCreditCardByGUID(credit_card.guid());
   if (existing_credit_card) {
     RemoveByGUID(existing_credit_card->guid());
     AddCreditCard(credit_card);
@@ -131,14 +132,6 @@ void TestPersonalDataManager::AddFullServerCreditCard(
   AddServerCreditCard(credit_card);
 }
 
-std::vector<AutofillProfile*> TestPersonalDataManager::GetProfiles() const {
-  std::vector<AutofillProfile*> result;
-  result.reserve(web_profiles_.size());
-  for (const auto& profile : web_profiles_)
-    result.push_back(profile.get());
-  return result;
-}
-
 const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())
@@ -147,7 +140,7 @@ const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
   return default_country_code_;
 }
 
-void TestPersonalDataManager::SetProfiles(
+void TestPersonalDataManager::SetProfilesForAllSources(
     std::vector<AutofillProfile>* profiles) {
   // Copy all the profiles. Called by functions like
   // PersonalDataManager::SaveImportedProfile, which impact metrics.
@@ -156,26 +149,47 @@ void TestPersonalDataManager::SetProfiles(
     AddProfile(profile);
 }
 
+bool TestPersonalDataManager::SetProfilesForSource(
+    base::span<const AutofillProfile> new_profiles,
+    AutofillProfile::Source source) {
+  GetProfileStorage(source).clear();
+  for (const AutofillProfile& profile : new_profiles)
+    AddProfile(profile);
+  return true;
+}
+
 void TestPersonalDataManager::LoadProfiles() {
   // Overridden to avoid a trip to the database. This should be a no-op except
   // for the side-effect of logging the profile count.
-  pending_profiles_query_ = 123;
-  pending_server_profiles_query_ = 124;
+  pending_synced_local_profiles_query_ = 123;
+  pending_account_profiles_query_ = 124;
+  pending_creditcard_billing_addresses_query_ = 125;
   {
     std::vector<std::unique_ptr<AutofillProfile>> profiles;
-    web_profiles_.swap(profiles);
-    std::unique_ptr<WDTypedResult> result = std::make_unique<
+    synced_local_profiles_.swap(profiles);
+    auto result = std::make_unique<
         WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
         AUTOFILL_PROFILES_RESULT, std::move(profiles));
-    OnWebDataServiceRequestDone(pending_profiles_query_, std::move(result));
+    OnWebDataServiceRequestDone(pending_synced_local_profiles_query_,
+                                std::move(result));
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAccountProfilesUnionView)) {
+    std::vector<std::unique_ptr<AutofillProfile>> profiles;
+    account_profiles_.swap(profiles);
+    auto result = std::make_unique<
+        WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
+        AUTOFILL_PROFILES_RESULT, std::move(profiles));
+    OnWebDataServiceRequestDone(pending_account_profiles_query_,
+                                std::move(result));
   }
   {
     std::vector<std::unique_ptr<AutofillProfile>> profiles;
-    server_profiles_.swap(profiles);
-    std::unique_ptr<WDTypedResult> result = std::make_unique<
+    credit_card_billing_addresses_.swap(profiles);
+    auto result = std::make_unique<
         WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
         AUTOFILL_PROFILES_RESULT, std::move(profiles));
-    OnWebDataServiceRequestDone(pending_server_profiles_query_,
+    OnWebDataServiceRequestDone(pending_creditcard_billing_addresses_query_,
                                 std::move(result));
   }
 }
@@ -239,10 +253,6 @@ void TestPersonalDataManager::LoadUpiIds() {
   }
 }
 
-bool TestPersonalDataManager::IsAutofillEnabled() const {
-  return IsAutofillProfileEnabled() || IsAutofillCreditCardEnabled();
-}
-
 bool TestPersonalDataManager::IsAutofillProfileEnabled() const {
   // Return the value of autofill_profile_enabled_ if it has been set,
   // otherwise fall back to the normal behavior of checking the pref_service.
@@ -276,7 +286,7 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {
 }
 
 void TestPersonalDataManager::ClearAllLocalData() {
-  web_profiles_.clear();
+  ClearProfiles();
   local_credit_cards_.clear();
 }
 
@@ -316,7 +326,8 @@ TestPersonalDataManager::GetProfileUpdateStrikeDatabase() const {
 }
 
 void TestPersonalDataManager::ClearProfiles() {
-  web_profiles_.clear();
+  synced_local_profiles_.clear();
+  account_profiles_.clear();
 }
 
 void TestPersonalDataManager::ClearCreditCards() {
@@ -330,22 +341,6 @@ void TestPersonalDataManager::ClearCloudTokenData() {
 
 void TestPersonalDataManager::ClearCreditCardOfferData() {
   autofill_offer_data_.clear();
-}
-
-AutofillProfile* TestPersonalDataManager::GetProfileWithGUID(const char* guid) {
-  for (AutofillProfile* profile : GetProfiles()) {
-    if (!profile->guid().compare(guid))
-      return profile;
-  }
-  return nullptr;
-}
-
-CreditCard* TestPersonalDataManager::GetCreditCardWithGUID(const char* guid) {
-  for (CreditCard* card : GetCreditCards()) {
-    if (!card->guid().compare(guid))
-      return card;
-  }
-  return nullptr;
 }
 
 void TestPersonalDataManager::AddServerCreditCard(

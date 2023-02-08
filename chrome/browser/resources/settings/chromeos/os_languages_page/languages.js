@@ -14,7 +14,7 @@ import '../../prefs/prefs.js';
 
 import {assert} from 'chrome://resources/js/assert.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.js';
+import {PromiseResolver} from 'chrome://resources/ash/common/promise_resolver.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CrSettingsPrefs} from '../../prefs/prefs_types.js';
@@ -193,7 +193,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase {
           'prefs.translate_allowlists.value.*, languages)',
       'neverTranslateLanguagesPrefChanged_(' +
           'prefs.translate_blocked_languages.value.*, languages)',
-      'prospectiveUILanguageChanged_(prefs.intl.app_locale.value, languages)',
+      'prospectiveUiLanguageChanged_(prefs.intl.app_locale.value, languages)',
       'preferredLanguagesPrefChanged_(' +
           'prefs.intl.accept_languages.value, languages)',
       'preferredLanguagesPrefChanged_(' +
@@ -310,7 +310,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase {
 
     // Fetch the starting UI language, which affects which actions should be
     // enabled.
-    promises.push(this.browserProxy_.getProspectiveUILanguage().then(
+    promises.push(this.browserProxy_.getProspectiveUiLanguage().then(
         prospectiveUILanguage => {
           this.originalProspectiveUILanguage_ =
               prospectiveUILanguage || window.navigator.language;
@@ -372,7 +372,7 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase {
    * @param {string} prospectiveUILanguage
    * @private
    */
-  prospectiveUILanguageChanged_(prospectiveUILanguage) {
+  prospectiveUiLanguageChanged_(prospectiveUILanguage) {
     this.set(
         'languages.prospectiveUILanguage',
         prospectiveUILanguage || this.originalProspectiveUILanguage_);
@@ -829,8 +829,8 @@ class SettingsLanguagesElement extends SettingsLanguagesElementBase {
    * the actual UI language until a restart.
    * @param {string} languageCode
    */
-  setProspectiveUILanguage(languageCode) {
-    this.browserProxy_.setProspectiveUILanguage(languageCode);
+  setProspectiveUiLanguage(languageCode) {
+    this.browserProxy_.setProspectiveUiLanguage(languageCode);
   }
 
   /**

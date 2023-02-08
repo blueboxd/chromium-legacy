@@ -47,6 +47,7 @@ class ManualFillingComponentBridge {
         PropertyProvider<AccessorySheetData> provider = mProviders.get(tabType);
         if (provider != null) return provider;
         if (getManualFillingComponent() == null) return null;
+        if (mWebContents.isDestroyed()) return null;
         if (mProviders.size() == 0) { // True iff the component is available for the first time.
             getManualFillingComponent().registerSheetUpdateDelegate(
                     mWebContents, this::requestSheet);
@@ -106,9 +107,9 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    void showWhenKeyboardIsVisible() {
+    void show(boolean waitForKeyboard) {
         if (getManualFillingComponent() != null) {
-            getManualFillingComponent().showWhenKeyboardIsVisible();
+            getManualFillingComponent().show(waitForKeyboard);
         }
     }
 

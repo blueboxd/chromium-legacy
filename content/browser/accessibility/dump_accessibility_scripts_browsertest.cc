@@ -26,12 +26,20 @@ using ui::AXTreeFormatter;
 #if BUILDFLAG(IS_MAC)
 
 constexpr const char kMacAction[]{"mac/action"};
+constexpr const char kMacAttributedString[]{"mac/attributed-string"};
 constexpr const char kMacAttributes[]{"mac/attributes"};
 constexpr const char kMacSelection[]{"mac/selection"};
 constexpr const char kMacTextMarker[]{"mac/textmarker"};
 constexpr const char kMacMethods[]{"mac/methods"};
 constexpr const char kMacParameterizedAttributes[]{
     "mac/parameterized-attributes"};
+
+#endif
+
+#if BUILDFLAG(IS_WIN)
+
+constexpr const char kIAccessible[]{"win/ia2/iaccessible"};
+constexpr const char kIAccessible2[]{"win/ia2/iaccessible2"};
 
 #endif
 
@@ -416,6 +424,29 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXVisited) {
   RunTypedTest<kMacAttributes>("ax-visited.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AttributedStringDeletion) {
+  RunTypedTest<kMacAttributedString>("deletion.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AttributedStringInsertion) {
+  RunTypedTest<kMacAttributedString>("insertion.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AttributedStringMark) {
+  RunTypedTest<kMacAttributedString>("mark.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AttributedStringNestedAnnotation) {
+  RunTypedTest<kMacAttributedString>(
+      "nested-suggestion-insertion-deletion.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AttributedStringSuggestion) {
+  RunTypedTest<kMacAttributedString>("suggestion.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, ChromeAXNodeId) {
   RunTypedTest<kMacAttributes>("chrome-ax-node-id.html");
 }
@@ -531,6 +562,27 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXStringForRange) {
   RunTypedTest<kMacParameterizedAttributes>("ax-string-for-range.html");
+}
+
+#endif
+
+#if BUILDFLAG(IS_WIN)
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DumpAccessibilityScriptTest,
+                         ::testing::Values(ui::AXApiType::kWinIA2),
+                         TestPassToString());
+
+// IAccessible
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, IAccessibleRole) {
+  RunTypedTest<kIAccessible>(L"iaccessible-role.html");
+}
+
+// IAccessible2
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, IAccessible2Role) {
+  RunTypedTest<kIAccessible2>(L"iaccessible2-role.html");
 }
 
 #endif

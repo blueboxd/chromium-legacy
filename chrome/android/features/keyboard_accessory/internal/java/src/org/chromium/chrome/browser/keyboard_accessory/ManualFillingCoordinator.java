@@ -131,8 +131,8 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     }
 
     @Override
-    public void showWhenKeyboardIsVisible() {
-        mMediator.showWhenKeyboardIsVisible();
+    public void show(boolean waitForKeyboard) {
+        mMediator.show(waitForKeyboard);
     }
 
     @Override
@@ -183,5 +183,15 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     @VisibleForTesting
     ManualFillingMediator getMediatorForTesting() {
         return mMediator;
+    }
+
+    @Override
+    public int getKeyboardExtensionHeight() {
+        return mMediator != null ? mMediator.getKeyboardExtensionHeight() : 0;
+    }
+
+    @Override
+    public void forceShowForTesting() {
+        mMediator.show(true);
     }
 }

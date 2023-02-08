@@ -634,6 +634,11 @@ void FormStructure::ProcessQueryResponse(
     // TODO(crbug.com/1154080): By calling this with true, autocomplete section
     // attributes will be ignored.
     form->IdentifySections(/*ignore_autocomplete=*/true);
+    // Metrics are intentionally only emitted after the sever response, not when
+    // determining heuristic types. This is done to reduce noise in the metrics,
+    // since generally only this sectioning result is used.
+    LogSectioningMetrics(form->form_signature(), form->fields_,
+                         form_interactions_ukm_logger);
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -963,8 +968,7 @@ void FormStructure::LogQualityMetrics(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     bool did_show_suggestions,
     bool observed_submission,
-    const FormInteractionCounts& form_interaction_counts,
-    const autofill_assistant::AutofillAssistantIntent intent) const {
+    const FormInteractionCounts& form_interaction_counts) const {
   // Use the same timestamp on UKM Metrics generated within this method's scope.
   AutofillMetrics::UkmTimestampPin timestamp_pin(form_interactions_ukm_logger);
 
@@ -1263,7 +1267,7 @@ void FormStructure::LogQualityMetrics(
     AutofillMetrics::LogAutofillFormSubmittedState(
         state, is_for_credit_card, has_upi_vpa_field, GetFormTypes(),
         form_parsed_timestamp_, form_signature(), form_interactions_ukm_logger,
-        form_interaction_counts, intent);
+        form_interaction_counts);
 
     // The perfect filling metric is only recorded if Autofill was used on at
     // least one field. This conditions this metric on Assistance, Readiness and
@@ -1289,13 +1293,6 @@ void FormStructure::LogQualityMetrics(
                                           address_field_stats);
     AutofillMetrics::LogFieldFillingStats(FormType::kCreditCardForm,
                                           cc_field_stats);
-
-    AutofillMetrics::LogNumberOfFramesWithDetectedFields(
-        frames_of_detected_fields.size());
-    AutofillMetrics::LogNumberOfFramesWithDetectedCreditCardFields(
-        frames_of_detected_credit_card_fields.size());
-    AutofillMetrics::LogNumberOfFramesWithAutofilledCreditCardFields(
-        frames_of_autofilled_credit_card_fields.size());
 
     if (card_form) {
       AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(

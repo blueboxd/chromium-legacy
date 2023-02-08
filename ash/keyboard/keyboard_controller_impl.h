@@ -15,6 +15,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "base/containers/flat_set.h"
 
 class PrefChangeRegistrar;
 class PrefRegistrySimple;
@@ -91,7 +92,7 @@ class ASH_EXPORT KeyboardControllerImpl
   bool ShouldOverscroll() override;
   void AddObserver(KeyboardControllerObserver* observer) override;
   void RemoveObserver(KeyboardControllerObserver* observer) override;
-  KeyRepeatSettings GetKeyRepeatSettings() override;
+  absl::optional<KeyRepeatSettings> GetKeyRepeatSettings() override;
   bool AreTopRowKeysFunctionKeys() override;
 
   // keyboard::KeyboardLayoutDelegate:
@@ -129,6 +130,8 @@ class ASH_EXPORT KeyboardControllerImpl
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
   void ObservePrefs(PrefService* prefs);
+  // Sends an update event of key repeat settings to observers.
+  // On calling this, |pref_change_registrar_| must have been initialized.
   void SendKeyRepeatUpdate();
   void SendKeyboardConfigUpdate();
 
@@ -139,6 +142,10 @@ class ASH_EXPORT KeyboardControllerImpl
   std::unique_ptr<keyboard::KeyboardUIController> keyboard_ui_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   base::ObserverList<KeyboardControllerObserver>::Unchecked observers_;
+
+  // This set ensures that a user's keyboard settings are recorded only once per
+  // session.
+  base::flat_set<AccountId> recorded_accounts_;
 
   // This flag controls if the keyboard config is set from the policy settings.
   // Note: the flag value cannot be changed from 'true' to 'false' because

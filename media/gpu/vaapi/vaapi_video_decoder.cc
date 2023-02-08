@@ -16,6 +16,7 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -314,6 +315,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   aspect_ratio_ = config.aspect_ratio();
+  is_rtc_ = config.is_rtc();
 
   output_cb_ = std::move(output_cb);
   waiting_cb_ = std::move(waiting_cb);
@@ -343,7 +345,7 @@ void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   // If we're in the error state, immediately fail the decode task.
   if (state_ == State::kError) {
     // VideoDecoder interface: |decode_cb| can't be called from within Decode().
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(decode_cb), DecoderStatus::Codes::kFailed));
     return;
@@ -805,9 +807,15 @@ void VaapiVideoDecoder::ApplyResolutionChangeWithScreenSizes(
        .modifier = dummy_frame->layout().modifier()}};
 #endif  // BUILDFLAG(IS_LINUX)
 
+  const size_t num_codec_reference_frames = decoder_->GetNumReferenceFrames();
+  // Verify |num_codec_reference_frames| has a reasonable value. Anecdotally 16
+  // is the largest amount of reference frames seen, on an ITU-T H.264 test
+  // vector (CAPCM*1_Sand_E.h264).
+  CHECK_LE(num_codec_reference_frames, 32u);
+
   auto status_or_layout = client_->PickDecoderOutputFormat(
       candidates, decoder_visible_rect, decoder_natural_size,
-      output_visible_rect.size(), decoder_->GetRequiredNumOfPictures(),
+      output_visible_rect.size(), num_codec_reference_frames,
       /*use_protected=*/!!cdm_context_ref_,
       /*need_aux_frame_pool=*/true, std::move(allocator));
 
@@ -1109,8 +1117,22 @@ VaapiStatus VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
         encryption_scheme_);
     decoder_delegate_ = accelerator.get();
 
-    decoder_ = std::make_unique<VP9Decoder>(std::move(accelerator), profile_,
-                                            color_space_);
+    // The VaapiVideoDecoder can generally deal with larger-to-smaller VP9
+    // resolution changes without re-configuring the VA-API context. However, we
+    // exclude two use cases:
+    //
+    // - WebRTC: resolution changes are only expected to occur on key frames.
+    //   Therefore, if we ignore larger-to-smaller changes, we would be
+    //   introducing a memory usage regression on the common case.
+    //
+    // - Protected content: the scaling logic in
+    //   ApplyResolutionChangeWithScreenSizes() assumes that we have a fresh
+    //   picture size so that we can calculate the correct scaling factor.
+    const bool ignore_resolution_changes_to_smaller =
+        !(cdm_context_ref_ && !transcryption_) && !is_rtc_;
+    decoder_ = std::make_unique<VP9Decoder>(
+        std::move(accelerator), profile_, color_space_,
+        ignore_resolution_changes_to_smaller);
   }
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)
   else if (profile_ >= HEVCPROFILE_MIN && profile_ <= HEVCPROFILE_MAX) {

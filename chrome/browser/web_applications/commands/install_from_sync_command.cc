@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
@@ -74,18 +75,16 @@ InstallFromSyncCommand::Params::Params(const Params&) = default;
 InstallFromSyncCommand::InstallFromSyncCommand(
     WebAppUrlLoader* url_loader,
     Profile* profile,
-    WebAppInstallFinalizer* finalizer,
-    WebAppRegistrar* registrar,
     std::unique_ptr<WebAppDataRetriever> data_retriever,
     const Params& params,
     OnceInstallCallback install_callback)
-    : lock_description_(
+    : WebAppCommandTemplate<SharedWebContentsWithAppLock>(
+          "InstallFromSyncCommand"),
+      lock_description_(
           std::make_unique<SharedWebContentsWithAppLockDescription,
                            base::flat_set<AppId>>({params.app_id})),
       url_loader_(url_loader),
       profile_(profile),
-      finalizer_(finalizer),
-      registrar_(registrar),
       data_retriever_(std::move(data_retriever)),
       params_(params),
       install_callback_(std::move(install_callback)),
@@ -102,18 +101,25 @@ InstallFromSyncCommand::InstallFromSyncCommand(
   fallback_install_info_->scope = params_.scope;
   fallback_install_info_->theme_color = params_.theme_color;
   fallback_install_info_->manifest_icons = params_.icons;
+  debug_value_.Set("app_id", params_.app_id);
+  debug_value_.Set("manifest_id", params_.manifest_id.value_or("<unset>"));
+  debug_value_.Set("title", params_.title);
+  debug_value_.Set(
+      "user_display_mode",
+      params_.user_display_mode
+          ? base::StreamableToString(params_.user_display_mode.value())
+          : "<unset>");
+  debug_value_.Set("scope", params_.scope.spec());
+  debug_value_.Set("start_url", params_.start_url.spec());
+  debug_value_.Set("fallback_install", false);
 }
 
 InstallFromSyncCommand::~InstallFromSyncCommand() = default;
 
 base::Value InstallFromSyncCommand::ToDebugValue() const {
-  base::Value::Dict debug_value;
-  debug_value.Set("name", "InstallFromSyncCommand");
-  debug_value.Set("app_id", params_.app_id);
-  debug_value.Set("manifest_id", params_.manifest_id.value_or("<unset>"));
-  debug_value.Set("start_url", params_.start_url.spec());
-  debug_value.Set("error_log", base::Value(error_log_.Clone()));
-  return base::Value(std::move(debug_value));
+  base::Value::Dict value = debug_value_.Clone();
+  value.Set("error_log", base::Value(error_log_.Clone()));
+  return base::Value(std::move(value));
 }
 
 void InstallFromSyncCommand::OnShutdown() {
@@ -133,9 +139,12 @@ LockDescription& InstallFromSyncCommand::lock_description() const {
   return *lock_description_;
 }
 
-void InstallFromSyncCommand::Start() {
+void InstallFromSyncCommand::StartWithLock(
+    std::unique_ptr<SharedWebContentsWithAppLock> lock) {
+  lock_ = std::move(lock);
+
   url_loader_->LoadUrl(
-      params_.start_url, shared_web_contents(),
+      params_.start_url, &lock_->shared_web_contents(),
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(
           &InstallFromSyncCommand::OnWebAppUrlLoadedGetWebAppInstallInfo,
@@ -174,7 +183,7 @@ void InstallFromSyncCommand::OnWebAppUrlLoadedGetWebAppInstallInfo(
   }
 
   data_retriever_->GetWebAppInstallInfo(
-      shared_web_contents(),
+      &lock_->shared_web_contents(),
       base::BindOnce(&InstallFromSyncCommand::OnGetWebAppInstallInfo,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -198,7 +207,7 @@ void InstallFromSyncCommand::OnGetWebAppInstallInfo(
   fallback_install_info_->mobile_capable = install_info_->mobile_capable;
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      shared_web_contents(), /*bypass_service_worker_check=*/true,
+      &lock_->shared_web_contents(), /*bypass_service_worker_check=*/true,
       base::BindOnce(&InstallFromSyncCommand::OnDidPerformInstallableCheck,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -238,7 +247,7 @@ void InstallFromSyncCommand::OnDidPerformInstallableCheck(
 
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*install_info_);
   data_retriever_->GetIcons(
-      shared_web_contents(), std::move(icon_urls),
+      &lock_->shared_web_contents(), std::move(icon_urls),
       /*skip_page_favicons=*/manifest_has_icons,
       base::BindOnce(&InstallFromSyncCommand::OnIconsRetrievedFinalizeInstall,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -264,7 +273,7 @@ void InstallFromSyncCommand::OnIconsRetrievedFinalizeInstall(
   install_error_log_entry_.LogDownloadedIconsErrors(
       *current_info, result, icons_map, icons_http_results);
 
-  finalizer_->FinalizeInstall(
+  lock_->install_finalizer().FinalizeInstall(
       *current_info, GetFinalizerOptionForSyncInstall(),
       base::BindOnce(&InstallFromSyncCommand::OnInstallFinalized,
                      weak_ptr_factory_.GetWeakPtr(), mode));
@@ -285,6 +294,8 @@ void InstallFromSyncCommand::InstallFallback(webapps::InstallResultCode code) {
   DCHECK(!IsSuccess(code));
   DCHECK(code != webapps::InstallResultCode::kWebContentsDestroyed);
   DCHECK(code != webapps::InstallResultCode::kInstallTaskDestroyed);
+  debug_value_.Set("fallback_install", true);
+  debug_value_.Set("fallback_install_reason", base::StreamableToString(code));
 
   base::flat_set<GURL> icon_urls =
       GetValidIconUrlsToDownload(*fallback_install_info_);
@@ -299,7 +310,7 @@ void InstallFromSyncCommand::InstallFallback(webapps::InstallResultCode code) {
   // list.
   // TODO(dmurph): Also use favicons. https://crbug.com/1328977.
   data_retriever_->GetIcons(
-      shared_web_contents(), std::move(icon_urls),
+      &lock_->shared_web_contents(), std::move(icon_urls),
       /*skip_page_favicons=*/true,
       base::BindOnce(&InstallFromSyncCommand::OnIconsRetrievedFinalizeInstall,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -310,6 +321,7 @@ void InstallFromSyncCommand::ReportResultAndDestroy(
     const AppId& app_id,
     webapps::InstallResultCode code) {
   bool success = IsSuccess(code);
+  debug_value_.Set("result_code", base::StreamableToString(code));
   if (success) {
     RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
                                       webapps::WebappInstallSource::SYNC);

@@ -22,6 +22,7 @@
 #include "base/test/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
+#include "base/types/strong_alias.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
@@ -935,9 +936,14 @@ TEST_F(DeskSyncBridgeTest, EnsureAshBrowserWindowsSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddAshBrowserAppWindow(kBrowserWindowId,
-                                  {GURL(base::StringPrintf(kTestUrlFormat, 1)),
-                                   GURL(base::StringPrintf(kTestUrlFormat, 2))})
+          .AddAppWindow(
+              SavedDeskBrowserBuilder()
+                  .SetUrls({GURL(base::StringPrintf(kTestUrlFormat, 1)),
+                            GURL(base::StringPrintf(kTestUrlFormat, 2))})
+                  .SetIsLacros(false)
+                  .SetGenericBuilder(SavedDeskGenericAppBuilder().SetWindowId(
+                      kBrowserWindowId))
+                  .Build())
           .Build();
 
   EXPECT_THAT(
@@ -956,9 +962,14 @@ TEST_F(DeskSyncBridgeTest, EnsureLacrosBrowserWindowsCanBeSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddLacrosBrowserAppWindow(
-              kBrowserWindowId, {GURL(base::StringPrintf(kTestUrlFormat, 1)),
-                                 GURL(base::StringPrintf(kTestUrlFormat, 2))})
+          .AddAppWindow(
+              SavedDeskBrowserBuilder()
+                  .SetUrls({GURL(base::StringPrintf(kTestUrlFormat, 1)),
+                            GURL(base::StringPrintf(kTestUrlFormat, 2))})
+                  .SetIsLacros(true)
+                  .SetGenericBuilder(SavedDeskGenericAppBuilder().SetWindowId(
+                      kBrowserWindowId))
+                  .Build())
           .Build();
 
   EXPECT_THAT(
@@ -974,8 +985,14 @@ TEST_F(DeskSyncBridgeTest, EnsurePwaInAshChromeCanBeSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddAshPwaAppWindow(kPwaWindowId,
-                              base::StringPrintf(kTestUrlFormat, 1))
+          .AddAppWindow(
+              SavedDeskBrowserBuilder()
+                  .SetUrls({GURL(base::StringPrintf(kTestUrlFormat, 1))})
+                  .SetIsLacros(false)
+                  .SetIsApp(true)
+                  .SetGenericBuilder(
+                      SavedDeskGenericAppBuilder().SetWindowId(kPwaWindowId))
+                  .Build())
           .Build();
 
   EXPECT_THAT(
@@ -991,8 +1008,14 @@ TEST_F(DeskSyncBridgeTest, EnsurePwaInLacrosChromeCanBeSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddLacrosPwaAppWindow(kPwaWindowId,
-                                 base::StringPrintf(kTestUrlFormat, 1))
+          .AddAppWindow(
+              SavedDeskBrowserBuilder()
+                  .SetUrls({GURL(base::StringPrintf(kTestUrlFormat, 1))})
+                  .SetIsLacros(true)
+                  .SetIsApp(true)
+                  .SetGenericBuilder(
+                      SavedDeskGenericAppBuilder().SetWindowId(kPwaWindowId))
+                  .Build())
           .Build();
 
   EXPECT_THAT(
@@ -1008,8 +1031,10 @@ TEST_F(DeskSyncBridgeTest, EnsureChromeAppCanBeSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddChromeAppWindow(kChromeAppWindowId,
-                              desk_test_util::kTestChromeAppId)
+          .AddAppWindow(SavedDeskGenericAppBuilder()
+                            .SetAppId(desk_test_util::kTestChromeAppId)
+                            .SetWindowId(kChromeAppWindowId)
+                            .Build())
           .Build();
 
   EXPECT_THAT(
@@ -1026,8 +1051,10 @@ TEST_F(DeskSyncBridgeTest, EnsureLacrosChromeAppCanBeSavedProperly) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddChromeAppWindow(kChromeAppWindowId,
-                              desk_test_util::kTestLacrosChromeAppId)
+          .AddAppWindow(SavedDeskGenericAppBuilder()
+                            .SetAppId(desk_test_util::kTestLacrosChromeAppId)
+                            .SetWindowId(kChromeAppWindowId)
+                            .Build())
           .Build();
 
   EXPECT_THAT(
@@ -1045,10 +1072,14 @@ TEST_F(DeskSyncBridgeTest, EnsureUnsupportedAppCanBeIgnored) {
       SavedDeskBuilder()
           .SetUuid(base::StringPrintf(kUuidFormat, kDefaultTemplateIndex))
           .SetName(base::StringPrintf(kNameFormat, kDefaultTemplateIndex))
-          .AddChromeAppWindow(kChromeAppWindowId,
-                              desk_test_util::kTestChromeAppId)
-          .AddGenericAppWindow(kUnsupportedAppWindowId,
-                               desk_test_util::kTestUnsupportedAppId)
+          .AddAppWindow(SavedDeskGenericAppBuilder()
+                            .SetWindowId(kChromeAppWindowId)
+                            .SetAppId(desk_test_util::kTestChromeAppId)
+                            .Build())
+          .AddAppWindow(SavedDeskGenericAppBuilder()
+                            .SetWindowId(kUnsupportedAppWindowId)
+                            .SetAppId(desk_test_util::kTestUnsupportedAppId)
+                            .Build())
           .Build();
 
   EXPECT_THAT(
@@ -1694,16 +1725,16 @@ TEST_F(DeskSyncBridgeTest, GetTemplateJsonShouldReturnList) {
   bridge()->GetTemplateJson(
       MakeTestUuid(TestUuidId(1)), app_cache(),
       base::BindLambdaForTesting([&](DeskModel::GetTemplateJsonStatus status,
-                                     const std::string& templates_json) {
+                                     const base::Value& templates_json) {
         EXPECT_EQ(DeskModel::GetTemplateJsonStatus::kOk, status);
 
-        EXPECT_TRUE(!templates_json.empty());
+        EXPECT_FALSE(templates_json.is_none());
 
-        auto parsed_json = base::JSONReader::ReadAndReturnValueWithError(
-            base::StringPiece(templates_json));
+        std::string template_json_string;
+        bool parsed_result =
+            base::JSONWriter::Write(templates_json, &template_json_string);
 
-        EXPECT_TRUE(parsed_json.has_value());
-        EXPECT_TRUE(parsed_json->is_list());
+        EXPECT_TRUE(parsed_result);
 
         // Content of the conversion is tested in:
         // components/desks_storage/core/desk_template_conversion_unittests.cc

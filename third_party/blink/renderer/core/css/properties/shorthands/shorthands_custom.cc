@@ -14,15 +14,18 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/font_variant_alternates_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_east_asian_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_ligatures_parser.h"
 #include "third_party/blink/renderer/core/css/parser/font_variant_numeric_parser.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/css/properties/shorthands.h"
 #include "third_party/blink/renderer/core/css/style_property_serializer.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -42,15 +45,26 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                 bool use_legacy_parsing) {
   switch (property) {
     case CSSPropertyID::kAnimationDelay:
+      DCHECK(!RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
       return css_parsing_utils::ConsumeTime(
           range, context, CSSPrimitiveValue::ValueRange::kAll);
+    case CSSPropertyID::kAnimationDelayStart:
+      DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+      return css_parsing_utils::ConsumeAnimationDelay(range, context);
+    case CSSPropertyID::kAnimationDelayEnd:
+      // New animation-* properties are  "reset only":
+      // https://github.com/w3c/csswg-drafts/issues/6946#issuecomment-1233190360
+      //
+      // Returning nullptr here means that AnimationDelayEnd::InitialValue will
+      // be used.
+      DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+      return nullptr;
     case CSSPropertyID::kAnimationDirection:
       return css_parsing_utils::ConsumeIdent<
           CSSValueID::kNormal, CSSValueID::kAlternate, CSSValueID::kReverse,
           CSSValueID::kAlternateReverse>(range);
     case CSSPropertyID::kAnimationDuration:
-      return css_parsing_utils::ConsumeTime(
-          range, context, CSSPrimitiveValue::ValueRange::kNonNegative);
+      return css_parsing_utils::ConsumeAnimationDuration(range, context);
     case CSSPropertyID::kAnimationFillMode:
       return css_parsing_utils::ConsumeIdent<
           CSSValueID::kNone, CSSValueID::kForwards, CSSValueID::kBackwards,
@@ -73,15 +87,12 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
   }
 }
 
-}  // namespace
-
-bool Animation::ParseShorthand(
-    bool important,
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext& local_context,
-    HeapVector<CSSPropertyValue, 64>& properties) const {
-  const StylePropertyShorthand shorthand = animationShorthand();
+bool ParseAnimationShorthand(const StylePropertyShorthand& shorthand,
+                             bool important,
+                             CSSParserTokenRange& range,
+                             const CSSParserContext& context,
+                             const CSSParserLocalContext& local_context,
+                             HeapVector<CSSPropertyValue, 64>& properties) {
   const unsigned longhand_count = shorthand.length();
 
   HeapVector<Member<CSSValueList>, css_parsing_utils::kMaxNumAnimationLonghands>
@@ -101,24 +112,27 @@ bool Animation::ParseShorthand(
   return range.AtEnd();
 }
 
-const CSSValue* Animation::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  const CSSAnimationData* animation_data = style.Animations();
+const CSSValue* CSSValueFromComputedAnimation(
+    const StylePropertyShorthand& shorthand,
+    const CSSAnimationData* animation_data) {
   if (animation_data) {
     CSSValueList* animations_list = CSSValueList::CreateCommaSeparated();
     for (wtf_size_t i = 0; i < animation_data->NameList().size(); ++i) {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      list->Append(*CSSNumericLiteralValue::Create(
-          CSSTimingData::GetRepeated(animation_data->DurationList(), i),
-          CSSPrimitiveValue::UnitType::kSeconds));
-      list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
-          CSSTimingData::GetRepeated(animation_data->TimingFunctionList(), i)
-              .get()));
-      list->Append(*CSSNumericLiteralValue::Create(
-          CSSTimingData::GetRepeated(animation_data->DelayList(), i),
-          CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*ComputedStyleUtils::ValueForAnimationDuration(
+          CSSTimingData::GetRepeated(animation_data->DurationList(), i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationTimingFunction(
+          CSSTimingData::GetRepeated(animation_data->TimingFunctionList(), i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationDelayStart(
+          CSSTimingData::GetRepeated(animation_data->DelayStartList(), i)));
+      if (CSSAnimationData::InitialDelayEnd() !=
+          CSSTimingData::GetRepeated(animation_data->DelayEndList(), i)) {
+        DCHECK_EQ(shorthand.length(), 10u);
+        DCHECK_EQ(shorthand.properties()[3]->PropertyID(),
+                  CSSPropertyID::kAnimationDelayEnd);
+        list->Append(*ComputedStyleUtils::ValueForAnimationDelayEnd(
+            CSSTimingData::GetRepeated(animation_data->DelayEndList(), i)));
+      }
       list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
           CSSTimingData::GetRepeated(animation_data->IterationCountList(), i)));
       list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
@@ -134,7 +148,9 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
       // https://drafts.csswg.org/cssom/#serializing-css-values
       if (CSSAnimationData::InitialTimeline() !=
           animation_data->GetTimeline(i)) {
-        DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+        DCHECK_EQ(shorthand.length(), 10u);
+        DCHECK_EQ(shorthand.properties()[9]->PropertyID(),
+                  CSSPropertyID::kAnimationTimeline);
         list->Append(*ComputedStyleUtils::ValueForAnimationTimeline(
             animation_data->GetTimeline(i)));
       }
@@ -146,23 +162,202 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // animation-name default value.
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
-  list->Append(
-      *CSSNumericLiteralValue::Create(CSSAnimationData::InitialDuration(),
-                                      CSSPrimitiveValue::UnitType::kSeconds));
-  list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
-      CSSAnimationData::InitialTimingFunction().get()));
-  list->Append(*CSSNumericLiteralValue::Create(
-      CSSAnimationData::InitialDelay(), CSSPrimitiveValue::UnitType::kSeconds));
-  list->Append(
-      *CSSNumericLiteralValue::Create(CSSAnimationData::InitialIterationCount(),
-                                      CSSPrimitiveValue::UnitType::kNumber));
+  list->Append(*ComputedStyleUtils::ValueForAnimationDuration(
+      CSSAnimationData::InitialDuration()));
+  list->Append(*ComputedStyleUtils::ValueForAnimationTimingFunction(
+      CSSAnimationData::InitialTimingFunction()));
+  list->Append(*ComputedStyleUtils::ValueForAnimationDelayStart(
+      CSSAnimationData::InitialDelayStart()));
+  list->Append(*ComputedStyleUtils::ValueForAnimationIterationCount(
+      CSSAnimationData::InitialIterationCount()));
   list->Append(*ComputedStyleUtils::ValueForAnimationDirection(
       CSSAnimationData::InitialDirection()));
   list->Append(*ComputedStyleUtils::ValueForAnimationFillMode(
       CSSAnimationData::InitialFillMode()));
-  // Initial animation-play-state.
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kRunning));
+  list->Append(*ComputedStyleUtils::ValueForAnimationPlayState(
+      CSSAnimationData::InitialPlayState()));
   return list;
+}
+
+}  // namespace
+
+bool Animation::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  return ParseAnimationShorthand(animationShorthand(), important, range,
+                                 context, local_context, properties);
+}
+
+const CSSValue* Animation::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSValueFromComputedAnimation(animationShorthand(),
+                                       style.Animations());
+}
+
+bool AlternativeAnimation::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  return ParseAnimationShorthand(alternativeAnimationShorthand(), important,
+                                 range, context, local_context, properties);
+}
+
+const CSSValue* AlternativeAnimation::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSValueFromComputedAnimation(alternativeAnimationShorthand(),
+                                       style.Animations());
+}
+
+namespace {
+
+CSSValue* RangeOffsetValue(const CSSValue* range_name, double percentage) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*range_name);
+  list->Append(*CSSNumericLiteralValue::Create(
+      percentage, CSSPrimitiveValue::UnitType::kPercentage));
+  return list;
+}
+
+// Consume a single <animation-delay-start> and a single
+// <animation-delay-start>, and append the result to `start_list` and
+// `end_list` respectively.
+bool ConsumeAnimationDelayItemInto(CSSParserTokenRange& range,
+                                   const CSSParserContext& context,
+                                   CSSValueList* start_list,
+                                   CSSValueList* end_list) {
+  using css_parsing_utils::ConsumeAnimationDelay;
+  using css_parsing_utils::ConsumeTimelineRangeName;
+
+  CSSParserTokenRange original_range = range;
+
+  const CSSValue* start_delay = ConsumeAnimationDelay(range, context);
+  const CSSValue* end_delay = ConsumeAnimationDelay(range, context);
+
+  // If a <timeline-range-name> alone is specified, animation-delay-start is set
+  // to that name plus 0% and animation-delay-end is set to that name plus 100%.
+  //
+  // https://drafts.csswg.org/scroll-animations-1/#propdef-animation-delay
+  if (!start_delay) {
+    range = original_range;
+    const CSSValue* range_name = ConsumeTimelineRangeName(range);
+    if (!range_name)
+      return false;
+    start_delay = RangeOffsetValue(range_name, 0);
+    end_delay = RangeOffsetValue(range_name, 100);
+  }
+
+  if (!start_delay)
+    return false;
+
+  // If the <animation-delay-end> value is omitted, it is set to zero.
+  //
+  // https://drafts.csswg.org/scroll-animations-1/#propdef-animation-delay
+  if (!end_delay) {
+    end_delay = CSSNumericLiteralValue::Create(
+        0, CSSPrimitiveValue::UnitType::kSeconds);
+  }
+
+  DCHECK(start_delay);
+  DCHECK(end_delay);
+
+  start_list->Append(*start_delay);
+  end_list->Append(*end_delay);
+
+  return true;
+}
+
+}  // namespace
+
+bool AlternativeAnimationDelay::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+
+  using css_parsing_utils::AddProperty;
+  using css_parsing_utils::ConsumeCommaIncludingWhitespace;
+  using css_parsing_utils::IsImplicitProperty;
+
+  const StylePropertyShorthand shorthand = alternativeAnimationDelayShorthand();
+  DCHECK_EQ(2u, shorthand.length());
+  DCHECK_EQ(&GetCSSPropertyAnimationDelayStart(), shorthand.properties()[0]);
+  DCHECK_EQ(&GetCSSPropertyAnimationDelayEnd(), shorthand.properties()[1]);
+
+  CSSValueList* start_list = CSSValueList::CreateCommaSeparated();
+  CSSValueList* end_list = CSSValueList::CreateCommaSeparated();
+
+  do {
+    if (!ConsumeAnimationDelayItemInto(range, context, start_list, end_list))
+      return false;
+  } while (ConsumeCommaIncludingWhitespace(range));
+
+  DCHECK(start_list->length());
+  DCHECK(end_list->length());
+  DCHECK_EQ(start_list->length(), end_list->length());
+
+  AddProperty(CSSPropertyID::kAnimationDelayStart,
+              CSSPropertyID::kAlternativeAnimationDelay, *start_list, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(CSSPropertyID::kAnimationDelayEnd,
+              CSSPropertyID::kAlternativeAnimationDelay, *end_list, important,
+              IsImplicitProperty::kNotImplicit, properties);
+
+  return range.AtEnd();
+}
+
+const CSSValue* AlternativeAnimationDelay::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  const Vector<Timing::Delay>& delay_start_list =
+      style.Animations()
+          ? style.Animations()->DelayStartList()
+          : Vector<Timing::Delay>{CSSAnimationData::InitialDelayStart()};
+  const Vector<Timing::Delay>& delay_end_list =
+      style.Animations()
+          ? style.Animations()->DelayEndList()
+          : Vector<Timing::Delay>{CSSAnimationData::InitialDelayEnd()};
+
+  if (delay_start_list.size() != delay_end_list.size())
+    return nullptr;
+
+  auto* outer_list = CSSValueList::CreateCommaSeparated();
+
+  for (wtf_size_t i = 0; i < delay_start_list.size(); ++i) {
+    const Timing::Delay& start = delay_start_list[i];
+    const Timing::Delay& end = delay_end_list[i];
+
+    // E.g. "enter 0% enter 100%" must be shortened to just "enter".
+    if (start.IsTimelineOffset() && end.IsTimelineOffset() &&
+        start.phase == end.phase && start.relative_offset == 0.0 &&
+        end.relative_offset == 1.0) {
+      outer_list->Append(
+          *MakeGarbageCollected<CSSIdentifierValue>(start.phase));
+      continue;
+    }
+
+    auto* inner_list = CSSValueList::CreateSpaceSeparated();
+    inner_list->Append(
+        *ComputedStyleUtils::ValueForAnimationDelayStart(delay_start_list[i]));
+    if (end != CSSTimingData::InitialDelayEnd()) {
+      inner_list->Append(
+          *ComputedStyleUtils::ValueForAnimationDelayEnd(delay_end_list[i]));
+    }
+    outer_list->Append(*inner_list);
+  }
+
+  return outer_list;
 }
 
 bool Background::ParseShorthand(
@@ -1139,6 +1334,18 @@ bool ConsumeFont(bool important,
       CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
       css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled()) {
+    css_parsing_utils::AddProperty(
+        CSSPropertyID::kFontVariantAlternates, CSSPropertyID::kFont,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  }
+  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
+    css_parsing_utils::AddProperty(
+        CSSPropertyID::kFontVariantPosition, CSSPropertyID::kFont,
+        *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  }
 
   css_parsing_utils::AddProperty(
       CSSPropertyID::kFontWeight, CSSPropertyID::kFont,
@@ -1218,7 +1425,7 @@ const CSSValue* Font::CSSValueFromComputedStyleInternal(
 bool FontVariant::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext&,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 64>& properties) const {
   if (css_parsing_utils::IdentMatches<CSSValueID::kNormal, CSSValueID::kNone>(
@@ -1239,6 +1446,18 @@ bool FontVariant::ParseShorthand(
         CSSPropertyID::kFontVariantEastAsian, CSSPropertyID::kFontVariant,
         *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+    if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled()) {
+      css_parsing_utils::AddProperty(
+          CSSPropertyID::kFontVariantAlternates, CSSPropertyID::kFontVariant,
+          *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+          css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+    }
+    if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
+      css_parsing_utils::AddProperty(
+          CSSPropertyID::kFontVariantPosition, CSSPropertyID::kFontVariant,
+          *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+          css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+    }
     return range.AtEnd();
   }
 
@@ -1246,6 +1465,8 @@ bool FontVariant::ParseShorthand(
   FontVariantLigaturesParser ligatures_parser;
   FontVariantNumericParser numeric_parser;
   FontVariantEastAsianParser east_asian_parser;
+  FontVariantAlternatesParser alternates_parser;
+  CSSIdentifierValue* position_value = nullptr;
   do {
     FontVariantLigaturesParser::ParseResult ligatures_parse_result =
         ligatures_parser.ConsumeLigature(range);
@@ -1253,12 +1474,18 @@ bool FontVariant::ParseShorthand(
         numeric_parser.ConsumeNumeric(range);
     FontVariantEastAsianParser::ParseResult east_asian_parse_result =
         east_asian_parser.ConsumeEastAsian(range);
+    FontVariantAlternatesParser::ParseResult alternates_parse_result =
+        RuntimeEnabledFeatures::FontVariantAlternatesEnabled()
+            ? alternates_parser.ConsumeAlternates(range, context)
+            : FontVariantAlternatesParser::ParseResult::kUnknownValue;
     if (ligatures_parse_result ==
             FontVariantLigaturesParser::ParseResult::kConsumedValue ||
         numeric_parse_result ==
             FontVariantNumericParser::ParseResult::kConsumedValue ||
         east_asian_parse_result ==
-            FontVariantEastAsianParser::ParseResult::kConsumedValue)
+            FontVariantEastAsianParser::ParseResult::kConsumedValue ||
+        alternates_parse_result ==
+            FontVariantAlternatesParser::ParseResult::kConsumedValue)
       continue;
 
     if (ligatures_parse_result ==
@@ -1266,7 +1493,9 @@ bool FontVariant::ParseShorthand(
         numeric_parse_result ==
             FontVariantNumericParser::ParseResult::kDisallowedValue ||
         east_asian_parse_result ==
-            FontVariantEastAsianParser::ParseResult::kDisallowedValue)
+            FontVariantEastAsianParser::ParseResult::kDisallowedValue ||
+        alternates_parse_result ==
+            FontVariantAlternatesParser::ParseResult::kDisallowedValue)
       return false;
 
     CSSValueID id = range.Peek().Id();
@@ -1281,6 +1510,13 @@ bool FontVariant::ParseShorthand(
         if (caps_value)
           return false;
         caps_value = css_parsing_utils::ConsumeIdent(range);
+        break;
+      case CSSValueID::kSub:
+      case CSSValueID::kSuper:
+        // Only one position value permitted in font-variant grammar.
+        if (position_value)
+          return false;
+        position_value = css_parsing_utils::ConsumeIdent(range);
         break;
       default:
         return false;
@@ -1305,6 +1541,20 @@ bool FontVariant::ParseShorthand(
                  : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
       properties);
+  if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled()) {
+    css_parsing_utils::AddProperty(
+        CSSPropertyID::kFontVariantAlternates, CSSPropertyID::kFontVariant,
+        *alternates_parser.FinalizeValue(), important,
+        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  }
+  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
+    css_parsing_utils::AddProperty(
+        CSSPropertyID::kFontVariantPosition, CSSPropertyID::kFontVariant,
+        position_value ? *position_value
+                       : *CSSIdentifierValue::Create(CSSValueID::kNormal),
+        important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
+        properties);
+  }
   return true;
 }
 
@@ -2843,14 +3093,14 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
       list->Append(*ComputedStyleUtils::CreateTransitionPropertyValue(
           transition_data->PropertyList()[i]));
       list->Append(*CSSNumericLiteralValue::Create(
-          CSSTimingData::GetRepeated(transition_data->DurationList(), i),
+          CSSTimingData::GetRepeated(transition_data->DurationList(), i)
+              .value(),
           CSSPrimitiveValue::UnitType::kSeconds));
-      list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
-          CSSTimingData::GetRepeated(transition_data->TimingFunctionList(), i)
-              .get()));
-      list->Append(*CSSNumericLiteralValue::Create(
-          CSSTimingData::GetRepeated(transition_data->DelayList(), i),
-          CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*ComputedStyleUtils::ValueForAnimationTimingFunction(
+          CSSTimingData::GetRepeated(transition_data->TimingFunctionList(),
+                                     i)));
+      list->Append(*ComputedStyleUtils::ValueForAnimationDelayStart(
+          CSSTimingData::GetRepeated(transition_data->DelayStartList(), i)));
       transitions_list->Append(*list);
     }
     return transitions_list;
@@ -2859,14 +3109,13 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // transition-property default value.
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kAll));
-  list->Append(
-      *CSSNumericLiteralValue::Create(CSSTransitionData::InitialDuration(),
-                                      CSSPrimitiveValue::UnitType::kSeconds));
-  list->Append(*ComputedStyleUtils::CreateTimingFunctionValue(
-      CSSTransitionData::InitialTimingFunction().get()));
-  list->Append(
-      *CSSNumericLiteralValue::Create(CSSTransitionData::InitialDelay(),
-                                      CSSPrimitiveValue::UnitType::kSeconds));
+  list->Append(*CSSNumericLiteralValue::Create(
+      CSSTransitionData::InitialDuration().value(),
+      CSSPrimitiveValue::UnitType::kSeconds));
+  list->Append(*ComputedStyleUtils::ValueForAnimationTimingFunction(
+      CSSTransitionData::InitialTimingFunction()));
+  list->Append(*ComputedStyleUtils::ValueForAnimationDelayStart(
+      CSSTransitionData::InitialDelayStart()));
   return list;
 }
 
@@ -2942,7 +3191,9 @@ const CSSValue* ViewTimeline::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  const Vector<AtomicString>& name_vector = style.ViewTimelineName();
+  const HeapVector<Member<const ScopedCSSName>>& name_vector =
+      style.ViewTimelineName() ? style.ViewTimelineName()->GetNames()
+                               : HeapVector<Member<const ScopedCSSName>>{};
   const Vector<TimelineAxis>& axis_vector = style.ViewTimelineAxis();
 
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
@@ -2950,7 +3201,7 @@ const CSSValue* ViewTimeline::CSSValueFromComputedStyleInternal(
   if (name_vector.size() == axis_vector.size()) {
     for (wtf_size_t i = 0; i < name_vector.size(); ++i) {
       list->Append(*ComputedStyleUtils::SingleValueForViewTimelineShorthand(
-          name_vector[i], axis_vector[i]));
+          name_vector[i].Get(), axis_vector[i]));
     }
   }
 

@@ -375,6 +375,10 @@ ci.gpu.linux_builder(
         short_name = "kvn",
     ),
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+    # Kevin is a busy board in OS lab. As this is an FYI builder,
+    # we try to avoid peak hours and run it from 8PM TO 4AM PST.
+    # It is 3 AM to 11 AM UTC.
+    schedule = "0 3,6,9 * * *",
 )
 
 ci.gpu.linux_builder(
@@ -935,10 +939,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Apple",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Mac|Apple",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac arm64 Builder"],
 )
@@ -962,10 +966,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|Intel",
-        short_name = "exp",
-    ),
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Mac|Intel",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac Builder"],
 )
@@ -1319,10 +1323,10 @@ ci.thin_tester(
         run_tests_serially = True,
     ),
     # Uncomment this entry when this experimental tester is actually in use.
-    # console_view_entry = consoles.console_view_entry(
-    #     category = "Windows|10|x64|Intel",
-    #     short_name = "exp",
-    # ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|10|x64|Intel",
+        short_name = "exp",
+    ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Win x64 Builder"],
 )

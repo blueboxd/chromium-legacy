@@ -12,6 +12,7 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/input_overlay/db/data_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
@@ -31,7 +32,7 @@ namespace content {
 class BrowserContext;
 }
 
-namespace arc {
+namespace arc::input_overlay {
 
 class ArcBridgeService;
 
@@ -49,7 +50,7 @@ class ArcInputOverlayManager : public KeyedService,
   static ArcInputOverlayManager* GetForBrowserContext(
       content::BrowserContext* context);
   ArcInputOverlayManager(content::BrowserContext* browser_context,
-                         ArcBridgeService* arc_bridge_service);
+                         ::arc::ArcBridgeService* arc_bridge_service);
   ArcInputOverlayManager(const ArcInputOverlayManager&) = delete;
   ArcInputOverlayManager& operator=(const ArcInputOverlayManager&) = delete;
   ~ArcInputOverlayManager() override;
@@ -91,11 +92,44 @@ class ArcInputOverlayManager : public KeyedService,
 
   class InputMethodObserver;
 
-  // TODO(djacobo|cuicuiruan): Sort this, functions first, members last.
+  // Read default data.
+  static std::unique_ptr<TouchInjector> ReadDefaultData(
+      std::unique_ptr<TouchInjector> touch_injector);
+  // Called when finishing reading default data.
+  void OnFinishReadDefaultData(std::unique_ptr<TouchInjector> touch_injector);
+  // Called when receiving app category from ARC.
+  void OnReceiveAppCategory(std::unique_ptr<TouchInjector> touch_injector,
+                            arc::mojom::AppCategory category);
+  // Read customized data. Customized data will overrides the default data if
+  // there is any.
+  void ReadCustomizedData(const std::string& package_name,
+                          std::unique_ptr<TouchInjector> touch_injector);
+  // Apply the customized proto data.
+  void OnProtoDataAvailable(std::unique_ptr<TouchInjector> touch_injector,
+                            std::unique_ptr<AppDataProto> proto);
+  // Callback function triggered by Save button.
+  void OnSaveProtoFile(std::unique_ptr<AppDataProto> proto,
+                       std::string package_name);
+  void NotifyTextInputState();
+  void AddObserverToInputMethod();
+  void RemoveObserverFromInputMethod();
+  // Only top level window will be registered/unregistered successfully.
+  void RegisterWindow(aura::Window* window);
+  void UnRegisterWindow(aura::Window* window);
+  void RegisterFocusedWindow();
+  // Add display overlay controller related to |touch_injector|. Virtual for
+  // test.
+  virtual void AddDisplayOverlayController(TouchInjector* touch_injector);
+  void RemoveDisplayOverlayController();
+  // Reset for removing pending |touch_injector| because of no GIO data or
+  // window destroying.
+  void ResetForPendingTouchInjector(
+      std::unique_ptr<TouchInjector> touch_injector);
+
   base::ScopedObservation<aura::Env, aura::EnvObserver> env_observation_{this};
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
-  base::flat_map<aura::Window*, std::unique_ptr<input_overlay::TouchInjector>>
+  base::flat_map<aura::Window*, std::unique_ptr<TouchInjector>>
       input_overlay_enabled_windows_;
   // To avoid UAF issue reported in crbug.com/1363030. Save the windows which
   // prepare or start loading the GIO default key mapping data. Once window is
@@ -109,55 +143,20 @@ class ArcInputOverlayManager : public KeyedService,
   // each time.
   raw_ptr<aura::Window> registered_top_level_window_ = nullptr;
   std::unique_ptr<KeyEventSourceRewriter> key_event_source_rewriter_;
-  std::unique_ptr<input_overlay::DisplayOverlayController>
-      display_overlay_controller_;
-  std::unique_ptr<input_overlay::DataController> data_controller_;
+  std::unique_ptr<DisplayOverlayController> display_overlay_controller_;
+  std::unique_ptr<DataController> data_controller_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Point at the ARC mojom connection holder. This manager has the same
+  // lifecycle with ARC session and the |connection_|.
+  arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
+      connection_ = nullptr;
 
-  // Read all the data including both default data and customized data.
-  void ReadData(const std::string& package_name,
-                aura::Window* top_level_window);
-  // Read default data.
-  std::unique_ptr<input_overlay::TouchInjector> ReadDefaultData(
-      const std::string& package_name,
-      std::unique_ptr<input_overlay::TouchInjector> touch_injector);
-  // Read customized data. Customized data will overrides the default data if
-  // there is any.
-  void ReadCustomizedData(
-      const std::string& package_name,
-      std::unique_ptr<input_overlay::TouchInjector> touch_injector);
-  // Get the Proto object from customized data.
-  std::unique_ptr<input_overlay::AppDataProto> GetProto(
-      const std::string& package_name);
-  // Apply the customized proto data.
-  void OnProtoDataAvailable(
-      std::unique_ptr<input_overlay::TouchInjector> touch_injector,
-      std::unique_ptr<input_overlay::AppDataProto> proto);
-  // Callback function triggered by Save button.
-  void OnSaveProtoFile(std::unique_ptr<input_overlay::AppDataProto> proto,
-                       const std::string& package_name);
-  void SaveFile(std::unique_ptr<input_overlay::AppDataProto> proto,
-                const std::string& package_name);
-  void NotifyTextInputState();
-  void AddObserverToInputMethod();
-  void RemoveObserverFromInputMethod();
-  // Only top level window will be registered/unregistered successfully.
-  void RegisterWindow(aura::Window* window);
-  void UnRegisterWindow(aura::Window* window);
-  void RegisterFocusedWindow();
-  // Add display overlay controller related to |touch_injector|. Virtual for
-  // test.
-  virtual void AddDisplayOverlayController(
-      input_overlay::TouchInjector* touch_injector);
-  void RemoveDisplayOverlayController();
-  // Reset for removing pending |touch_injector| because of no GIO data or
-  // window destroying.
-  void ResetForPendingTouchInjector(
-      std::unique_ptr<input_overlay::TouchInjector> touch_injector);
+  // TODO(b/253646354): This can be removed when removing the flag.
+  bool beta_ = ash::features::IsArcInputOverlayBetaEnabled();
 
   base::WeakPtrFactory<ArcInputOverlayManager> weak_ptr_factory_{this};
 };
 
-}  // namespace arc
+}  // namespace arc::input_overlay
 
 #endif  // CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_ARC_INPUT_OVERLAY_MANAGER_H_

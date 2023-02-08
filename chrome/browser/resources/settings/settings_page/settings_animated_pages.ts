@@ -18,19 +18,12 @@ import '//resources/polymer/v3_0/iron-pages/iron-pages.js';
 
 import {assert} from '//resources/js/assert_ts.js';
 import {focusWithoutInk} from '//resources/js/focus_without_ink.js';
-// <if expr="chromeos_ash">
-import {loadTimeData} from '//resources/js/load_time_data.m.js';
-// </if>
 
 import {IronPagesElement} from '//resources/polymer/v3_0/iron-pages/iron-pages.js';
 import {DomIf, FlattenedNodesObserver, microTask, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FocusConfig} from '../focus_config.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
-// <if expr="chromeos_ash">
-import {getSettingIdParameter} from '../setting_id_param_util.js';
-
-// </if>
 
 import {getTemplate} from './settings_animated_pages.html.js';
 import {SettingsSubpageElement} from './settings_subpage.js';
@@ -101,15 +94,6 @@ class SettingsAnimatedPagesElement extends SettingsAnimatedPagesElementBase {
     if (e.target !== this.$.animatedPages) {
       return;
     }
-
-    // <if expr="chromeos_ash">
-    // If the setting ID parameter is present, don't focus anything since
-    // a setting element will be deep linked and focused.
-    if (loadTimeData.valueExists('isOSSettings') &&
-        loadTimeData.getBoolean('isOSSettings') && getSettingIdParameter()) {
-      return;
-    }
-    // </if>
 
     // Call focusBackButton() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and

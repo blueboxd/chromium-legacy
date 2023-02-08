@@ -13,10 +13,9 @@ import {DialogType, isModal} from '../../common/js/dialog_type.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, TrashEntry} from '../../common/js/trash.js';
+import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {xfm} from '../../common/js/xfm.js';
 import {NudgeType} from '../../containers/nudge_container.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
@@ -590,6 +589,11 @@ CommandHandler.MenuCommandsForUMA = {
       'manage-plugin-vm-sharing-toast-startup',
   PIN_TO_HOLDING_SPACE: 'pin-to-holding-space',
   UNPIN_FROM_HOLDING_SPACE: 'unpin-from-holding-space',
+  SHARE_WITH_BRUSCHETTA: 'share-with-bruschetta',
+  MANAGE_BRUSCHETTA_SHARING: 'manage-bruschetta-sharing',
+  MANAGE_BRUSCHETTA_SHARING_TOAST: 'manage-bruschetta-sharing-toast',
+  MANAGE_BRUSCHETTA_SHARING_TOAST_STARTUP:
+      'manage-bruschetta-sharing-toast-startup',
 };
 
 /**
@@ -623,6 +627,10 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP,
   CommandHandler.MenuCommandsForUMA.PIN_TO_HOLDING_SPACE,
   CommandHandler.MenuCommandsForUMA.UNPIN_FROM_HOLDING_SPACE,
+  CommandHandler.MenuCommandsForUMA.SHARE_WITH_BRUSCHETTA,
+  CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING,
+  CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING_TOAST,
+  CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING_TOAST_STARTUP,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -1157,8 +1165,7 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
 
     // Hide 'move-to-trash' if trash will not be used. E.g. drive or removable.
     if (event.command.id === 'move-to-trash' &&
-        (!fileManager.fileOperationManager.willUseTrash(
-             fileManager.volumeManager, entries) ||
+        (!shouldMoveToTrash(entries, fileManager.volumeManager) ||
          !fileManager.trashEnabled)) {
       event.canExecute = false;
       event.command.setHidden(true);
@@ -1184,10 +1191,10 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
       return;
     }
 
-    // We show undo toast rather than dialog for entries which will use trash.
+    // Trashing an item shows an "Undo" visual signal instead of a confirmation
+    // dialog.
     if (!permanentlyDelete &&
-        fileManager.fileOperationManager.willUseTrash(
-            fileManager.volumeManager, entries) &&
+        shouldMoveToTrash(entries, fileManager.volumeManager) &&
         fileManager.trashEnabled) {
       fileManager.ui.nudgeContainer.showNudge(NudgeType['TRASH_NUDGE']);
 
@@ -1843,19 +1850,9 @@ CommandHandler.COMMANDS_['default-task'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['open-with'] = new (class extends FilesCommand {
   execute(event, fileManager) {
-    fileManager.taskController.getFileTasks()
-        .then(tasks => {
-          tasks.showTaskPicker(
-              fileManager.ui.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
-              '', task => {
-                tasks.execute(task);
-              }, TaskPickerType.OpenWith);
-        })
-        .catch(error => {
-          if (error) {
-            console.warn(error.stack || error);
-          }
-        });
+    console.assert(
+        `open-with command doesn't execute, ` +
+        `instead it only opens the sub-menu`);
   }
 
   /** @override */
@@ -2157,11 +2154,8 @@ CommandHandler.COMMANDS_['search'] = new (class extends FilesCommand {
   execute(event, fileManager) {
     // Cancel item selection.
     fileManager.directoryModel.clearSelection();
-
-    // Focus and unhide the search box.
-    const element = fileManager.document.querySelector('#search-box cr-input');
-    element.disabled = false;
-    (/** @type {!CrInputElement} */ (element)).select();
+    // Open the query input via the search container.
+    fileManager.ui.searchContainer.openSearch();
   }
 
   /** @override */
@@ -2280,22 +2274,15 @@ CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
     }
 
     const selectionEntries = fileManager.getSelection().entries;
-    if (util.isExtractArchiveEnabled()) {
-      if (fileManager.directoryModel.isReadOnly()) {
-        dirEntry = fileManager.directoryModel.getMyFiles();
-      }
-      fileManager.taskController.startExtractIOTask(
-          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
+    if (fileManager.directoryModel.isReadOnly()) {
+      dirEntry = fileManager.directoryModel.getMyFiles();
     }
+    fileManager.taskController.startExtractIoTask(
+        selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
   }
 
   /** @override */
   canExecute(event, fileManager) {
-    if (!util.isExtractArchiveEnabled()) {
-      event.command.setHidden(true);
-      event.canExecute = false;
-      return;
-    }
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
 
@@ -2343,13 +2330,11 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
     const selection = fileManager.getSelection();
 
     // Hide ZIP selection for single ZIP file selected.
-    if (util.isExtractArchiveEnabled()) {
-      if (selection.entries.length === 1 &&
-          FileType.getExtension(selection.entries[0]) === '.zip') {
-        event.command.setHidden(true);
-        event.canExecute = false;
-        return;
-      }
+    if (selection.entries.length === 1 &&
+        FileType.getExtension(selection.entries[0]) === '.zip') {
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
     }
 
     if (!selection.entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
@@ -2704,6 +2689,7 @@ class GuestOsManagingSharingCommand extends FilesCommand {
 
 const crostiniSettings = 'crostini/sharedPaths';
 const pluginVmSettings = 'app-management/pluginVm/sharedPaths';
+const bruschettaSettings = 'bruschetta/sharedPaths';
 
 CommandHandler.COMMANDS_['share-with-linux'] = new GuestOsShareCommand(
     constants.DEFAULT_CROSTINI_VM, 'CROSTINI', crostiniSettings,
@@ -2713,6 +2699,10 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = new GuestOsShareCommand(
     constants.PLUGIN_VM, 'PLUGIN_VM', pluginVmSettings,
     CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING_TOAST,
     CommandHandler.MenuCommandsForUMA.SHARE_WITH_PLUGIN_VM);
+CommandHandler.COMMANDS_['share-with-bruschetta'] = new GuestOsShareCommand(
+    constants.DEFAULT_BRUSCHETTA_VM, 'BRUSCHETTA', bruschettaSettings,
+    CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING_TOAST,
+    CommandHandler.MenuCommandsForUMA.SHARE_WITH_BRUSCHETTA);
 
 CommandHandler.COMMANDS_['manage-linux-sharing-gear'] =
     new GuestOsManagingSharingGearCommand(
@@ -2722,6 +2712,10 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing-gear'] =
     new GuestOsManagingSharingGearCommand(
         constants.PLUGIN_VM, pluginVmSettings,
         CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING);
+CommandHandler.COMMANDS_['manage-bruschetta-sharing-gear'] =
+    new GuestOsManagingSharingGearCommand(
+        constants.DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
+        CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING);
 
 CommandHandler.COMMANDS_['manage-linux-sharing'] =
     new GuestOsManagingSharingCommand(
@@ -2731,6 +2725,10 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] =
     new GuestOsManagingSharingCommand(
         constants.PLUGIN_VM, pluginVmSettings,
         CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING);
+CommandHandler.COMMANDS_['manage-bruschetta-sharing'] =
+    new GuestOsManagingSharingCommand(
+        constants.DEFAULT_BRUSCHETTA_VM, bruschettaSettings,
+        CommandHandler.MenuCommandsForUMA.MANAGE_BRUSCHETTA_SHARING);
 
 /**
  * Creates a shortcut of the selected folder (single only).
@@ -2996,10 +2994,8 @@ CommandHandler.COMMANDS_['browser-back'] = new (class extends FilesCommand {
     // TODO(fukino): It should be better to minimize Files app only when there
     // is no back stack, and otherwise use BrowserBack for history navigation.
     // https://crbug.com/624100.
-    const currentWindow = xfm.getCurrentWindow();
-    if (currentWindow) {
-      currentWindow.minimize();
-    }
+    // TODO(https://crbug.com/1097066): Implement minimize for files SWA, then
+    // call its minimize() function here.
   }
 })();
 

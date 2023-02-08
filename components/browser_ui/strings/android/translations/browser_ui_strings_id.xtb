@@ -193,7 +193,6 @@
 <translation id="5048398596102334565">Mengizinkan situs mengakses sensor gerakan (disarankan)</translation>
 <translation id="5050380848339752099">Situs ini akan membagikan informasi ke aplikasi di luar mode Samaran.</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
-<translation id="5082281938627763039">Tindakan ini akan menghapus cookie dan data situs lainnya untuk <ph name="FPS_MEMBER" /> dan situs di grup situs <ph name="FPS_OWNER" /></translation>
 <translation id="5091013926750941408">Situs seluler</translation>
 <translation id="509133520954049755">Minta tampilan desktop</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
@@ -207,7 +206,6 @@
 <translation id="528192093759286357">Tarik dari atas dan ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
-<translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5335288049665977812">Izinkan situs menjalankan JavaScript (disarankan)</translation>
 <translation id="534295439873310000">Perangkat NFC</translation>
@@ -241,6 +239,7 @@
 <translation id="5922853908706496913">Membagikan layar Anda</translation>
 <translation id="5922967540311291836">Blokir cookie pihak ketiga:</translation>
 <translation id="5939518447894949180">Reset</translation>
+<translation id="5968921426641056619">Masukkan alamat web</translation>
 <translation id="5975083100439434680">Perkecil</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Mengontrol akses situs ini ke perangkat Anda</translation>
@@ -307,6 +306,7 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7260727271532453612"><ph name="PERMISSION_1" /> dan <ph name="PERMISSION_2" /> diizinkan</translation>
 <translation id="7302486331832100261">Anda biasanya memblokir notifikasi. Untuk mengizinkan, ketuk Detail.</translation>
+<translation id="7366415735885268578">Tambahkan situs</translation>
 <translation id="7383715096023715447">Setelan untuk <ph name="DOMAIN" /></translation>
 <translation id="7423098979219808738">Tanyakan dulu</translation>
 <translation id="7423538860840206698">Diblokir agar tidak membaca papan klip</translation>
@@ -364,6 +364,7 @@
 <translation id="8380167699614421159">Situs ini menampilkan iklan yang mengganggu atau menyesatkan</translation>
 <translation id="8394832520002899662">Ketuk untuk kembali ke situs</translation>
 <translation id="8409345997656833551">Dapatkan notifikasi saat artikel bisa ditampilkan dalam tampilan sederhana</translation>
+<translation id="8423565414844018592">Penskalaan teks disetel ke <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8441146129660941386">Cari mundur</translation>
 <translation id="8444433999583714703">Untuk mengizinkan <ph name="APP_NAME" /> mengakses lokasi Anda, aktifkan juga lokasi di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -394,7 +395,6 @@
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC dinonaktifkan di perangkat ini. Aktifkan di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
 <translation id="8928445016601307354">Blokir situs agar tidak melihat dan mengubah informasi di perangkat NFC</translation>
-<translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Blokir cookie untuk situs tertentu.</translation>
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
 <translation id="8986362086234534611">Lupakan</translation>

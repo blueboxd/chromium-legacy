@@ -25,6 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -735,10 +735,10 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
 
 void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
   base::Value::Dict extras;
-  extras.Set("autoTimeZone", chromeos::system::TimeZoneResolverManager::
+  extras.Set("autoTimeZone", ash::system::TimeZoneResolverManager::
                                      GetEffectiveUserTimeZoneResolveMethod(
                                          registrar_.prefs(), false) !=
-                                 chromeos::system::TimeZoneResolverManager::
+                                 ash::system::TimeZoneResolverManager::
                                      TimeZoneResolveMethod::DISABLED);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_AUTO_TIME_ZONE",
                         extras);

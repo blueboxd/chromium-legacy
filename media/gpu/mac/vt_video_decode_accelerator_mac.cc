@@ -33,9 +33,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/system/sys_info.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -45,7 +45,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/shared_image/gl_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/limits.h"
@@ -81,7 +80,7 @@ base::AtomicSequenceNumber g_memory_dump_ids;
 // A sequence of shared memory ids for CVPixelBufferRefs.
 base::AtomicSequenceNumber g_cv_pixel_buffer_ids;
 
-// Only H.264 with 4:2:0 chroma sampling is supported.
+// The video codec profiles that are supported.
 constexpr VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE, H264PROFILE_EXTENDED, H264PROFILE_MAIN,
     H264PROFILE_HIGH,
@@ -91,10 +90,10 @@ constexpr VideoCodecProfile kSupportedProfiles[] = {
 
     // These are only supported on macOS 11+.
     HEVCPROFILE_MAIN, HEVCPROFILE_MAIN10, HEVCPROFILE_MAIN_STILL_PICTURE,
-    // This is partially supported on macOS 11+, Apple Silicon Mac only supports
-    // 8 ~ 10 bit 400, 420, 422, 444 HW decoding, and Intel Mac supports 8 ~ 12
-    // bit 400, 420, 422 SW decoding, 444 content is decodable but has a green
-    // stripe issue.
+
+    // This is partially supported on macOS 11+, Apple Silicon Mac supports
+    // 8 ~ 10 bit 400, 420, 422, 444 HW decoding, Intel Mac supports 8 ~ 12
+    // bit 400, 420, 422, 444 SW decoding.
     HEVCPROFILE_REXT,
 
     // TODO(sandersd): Hi10p fails during
@@ -642,7 +641,7 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       workarounds_(workarounds),
       // Non media/ use cases like PPAPI may not provide a MediaLog.
       media_log_(media_log ? media_log->Clone() : nullptr),
-      gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      gpu_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
       decoder_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::USER_VISIBLE})),
       decoder_weak_this_factory_(this),
@@ -1065,17 +1064,21 @@ void VTVideoDecodeAccelerator::DecodeTaskH264(
       }
 
       case H264NALU::kSEIMessage: {
-        H264SEIMessage sei_msg;
-        result = h264_parser_.ParseSEI(&sei_msg);
-        if (result == H264Parser::kOk &&
-            sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
-            sei_msg.recovery_point.recovery_frame_cnt == 0) {
-          // We only support immediate recovery points. Supporting future points
-          // would require dropping |recovery_frame_cnt| frames when needed.
-          frame->has_recovery_point = true;
-        }
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
+        H264SEI sei;
+        result = h264_parser_.ParseSEI(&sei);
+        if (result != H264Parser::kOk)
+          break;
+        for (auto& sei_msg : sei.msgs) {
+          if (sei_msg.type == H264SEIMessage::kSEIRecoveryPoint &&
+              sei_msg.recovery_point.recovery_frame_cnt == 0) {
+            // We only support immediate recovery points. Supporting
+            // future points would require dropping |recovery_frame_cnt|
+            // frames when needed.
+            frame->has_recovery_point = true;
+          }
+        }
         break;
       }
 
@@ -1442,15 +1445,34 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
       }
 
       case H265NALU::PREFIX_SEI_NUT: {
-        H265SEIMessage sei_msg;
-        result = hevc_parser_.ParseSEI(&sei_msg);
-        if (result == H265Parser::kOk &&
-            sei_msg.type == H265SEIMessage::kSEIAlphaChannelInfo &&
-            sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0) {
-          has_alpha_ = true;
-        }
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
+        H265SEI sei;
+        result = hevc_parser_.ParseSEI(&sei);
+        if (result != H265Parser::kOk)
+          break;
+        for (auto& sei_msg : sei.msgs) {
+          switch (sei_msg.type) {
+            case H265SEIMessage::kSEIAlphaChannelInfo:
+              has_alpha_ =
+                  sei_msg.alpha_channel_info.alpha_channel_cancel_flag == 0;
+              break;
+            case H265SEIMessage::kSEIMasteringDisplayInfo:
+              if (!config_.hdr_metadata)
+                config_.hdr_metadata = gfx::HDRMetadata();
+              sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
+                  config_.hdr_metadata->color_volume_metadata);
+              break;
+            case H265SEIMessage::kSEIContentLightLevelInfo:
+              if (!config_.hdr_metadata)
+                config_.hdr_metadata = gfx::HDRMetadata();
+              sei_msg.content_light_level_info.PopulateHDRMetadata(
+                  config_.hdr_metadata.value());
+              break;
+            default:
+              break;
+          }
+        }
         break;
       }
 
@@ -1575,6 +1597,7 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
 
   if (frame->is_idr)
     waiting_for_idr_ = false;
+  frame->hdr_metadata = config_.hdr_metadata;
 
   // If no IDR has been seen yet, skip decoding. Note that Flash sends
   // configuration changes as a bitstream with only SPS/PPS/VPS; we don't print
@@ -1947,8 +1970,7 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
     picture_info->scoped_shared_images.clear();
   } else {
     gl_client_.bind_image.Run(picture_info->client_texture_id,
-                              gpu::GetPlatformSpecificTextureTarget(), nullptr,
-                              false);
+                              gpu::GetPlatformSpecificTextureTarget(), nullptr);
   }
   picture_info->gl_images.clear();
   picture_info->bitstream_id = 0;
@@ -2226,8 +2248,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
       gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
       bool success = shared_image_stub->CreateSharedImage(
           mailbox, /*client_id=*/0, std::move(handle), buffer_format_,
-          planes[plane], gpu::kNullSurfaceHandle, frame_size, color_space,
-          kTopLeft_GrSurfaceOrigin, kOpaque_SkAlphaType, shared_image_usage);
+          planes[plane], frame_size, color_space, kTopLeft_GrSurfaceOrigin,
+          kOpaque_SkAlphaType, shared_image_usage);
       if (!success) {
         DLOG(ERROR) << "Failed to create shared image";
         NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
@@ -2271,7 +2293,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
       if (!gl_client_.bind_image.Run(picture_info->client_texture_id,
                                      gpu::GetPlatformSpecificTextureTarget(),
-                                     gl_image, false)) {
+                                     gl_image)) {
         DLOG(ERROR) << "Failed to bind image";
         NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
         return false;
@@ -2296,6 +2318,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   // we don't need to use them when the image is never bound? Bindings are
   // typically only created when WebGL is in use.
   picture.set_read_lock_fences_enabled(true);
+  if (frame.hdr_metadata)
+    picture.set_hdr_metadata(frame.hdr_metadata);
   if (picture_info->uses_shared_images) {
     for (size_t plane = 0; plane < planes.size(); ++plane) {
       picture.set_scoped_shared_image(picture_info->scoped_shared_images[plane],

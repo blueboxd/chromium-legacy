@@ -19,7 +19,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -63,15 +63,12 @@ base::AtomicSequenceNumber g_next_video_resource_updater_id;
 
 gfx::ProtectedVideoType ProtectedVideoTypeFromMetadata(
     const VideoFrameMetadata& metadata) {
-  gfx::ProtectedVideoType video_type = gfx::ProtectedVideoType::kClear;
-  if (metadata.protected_video) {
-    if (metadata.hw_protected) {
-      video_type = gfx::ProtectedVideoType::kHardwareProtected;
-    } else {
-      video_type = gfx::ProtectedVideoType::kSoftwareProtected;
-    }
+  if (!metadata.protected_video) {
+    return gfx::ProtectedVideoType::kClear;
   }
-  return video_type;
+
+  return metadata.hw_protected ? gfx::ProtectedVideoType::kHardwareProtected
+                               : gfx::ProtectedVideoType::kSoftwareProtected;
 }
 
 VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
@@ -495,7 +492,7 @@ class VideoResourceUpdater::HardwarePlaneResource
             ? raster_context_provider_->ContextCapabilities()
             : context_provider_->ContextCapabilities();
     overlay_candidate_ = use_gpu_memory_buffer_resources &&
-                         caps.texture_storage_image &&
+                         caps.supports_scanout_shared_images &&
                          IsGpuMemoryBufferFormatSupported(format);
     uint32_t shared_image_usage =
         gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
@@ -583,7 +580,8 @@ VideoResourceUpdater::VideoResourceUpdater(
          shared_bitmap_reporter_);
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "media::VideoResourceUpdater", base::ThreadTaskRunnerHandle::Get());
+      this, "media::VideoResourceUpdater",
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 VideoResourceUpdater::~VideoResourceUpdater() {
@@ -988,6 +986,24 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
             SynchronizationType::kGpuCommandsCompleted;
       }
       transfer_resource.ycbcr_info = video_frame->ycbcr_info();
+
+      // Ensure that `ycbcr_info` is provided when necessary.
+      // TODO(crbug.com/1399429): Avoid duplicating this logic.
+      if (IsYuvFormat(transfer_resource.format.resource_format()) &&
+          !transfer_resource.ycbcr_info) {
+        VkSamplerYcbcrModelConversion ycbcr_conversion =
+            (resource_color_space.GetMatrixID() ==
+             gfx::ColorSpace::MatrixID::BT709)
+                ? VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709
+                : VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601;
+
+        transfer_resource.ycbcr_info = gpu::VulkanYCbCrInfo(
+            ToVkFormat(transfer_resource.format.resource_format()),
+            /*external_format=*/0, ycbcr_conversion,
+            VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
+            VK_CHROMA_LOCATION_COSITED_EVEN,
+            /*format_features=*/0);
+      }
 
 #if BUILDFLAG(IS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =

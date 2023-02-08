@@ -5,11 +5,14 @@
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/microphone_mute/microphone_mute_notification_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/privacy_hub/camera_privacy_switch_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_controller.h"
+#include "ash/system/privacy_hub/privacy_hub_metrics.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -42,6 +45,11 @@ void PrivacyHubNotificationController::RemoveSensorDisabledNotification(
   ShowAllActiveNotifications(sensor);
 }
 
+void PrivacyHubNotificationController::OpenPrivacyHubSettingsPage() {
+  privacy_hub_metrics::LogPrivacyHubOpenedFromNotification();
+  Shell::Get()->system_tray_model()->client()->ShowPrivacyHubSettings();
+}
+
 void PrivacyHubNotificationController::ShowCameraDisabledNotification() const {
   if (Shell::Get()->privacy_hub_controller()) {
     Shell::Get()
@@ -71,9 +79,10 @@ void PrivacyHubNotificationController::
   message_center::RichNotificationData notification_data;
   notification_data.buttons.emplace_back(l10n_util::GetStringUTF16(
       IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_BUTTON));
+  notification_data.remove_on_click = true;
 
   message_center::MessageCenter::Get()->AddNotification(
-      CreateSystemNotification(
+      CreateSystemNotificationPtr(
           message_center::NOTIFICATION_TYPE_SIMPLE, kCombinedNotificationId,
           l10n_util::GetStringUTF16(
               IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_TITLE),
@@ -157,14 +166,9 @@ void PrivacyHubNotificationController::ShowAllActiveNotifications(
 
 void PrivacyHubNotificationController::HandleNotificationClicked(
     absl::optional<int> button_index) {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      PrivacyHubNotificationController::kCombinedNotificationId,
-      /*by_user=*/true);
-
   if (!button_index) {
     ignore_new_combinable_notifications_ = true;
-    // TODO(b/253165478) Clicking on any of the sensor notifications outside
-    // the button will open Privacy Hub in a future CL.
+    OpenPrivacyHubSettingsPage();
     return;
   }
 

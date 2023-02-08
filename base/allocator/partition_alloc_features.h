@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace features {
@@ -87,6 +88,11 @@ enum class BackupRefPtrMode {
   // BRP is disabled, but the main partition *and* aligned partition are split
   // out, as if BRP was enabled in the "before allocation" mode.
   kDisabledButSplitPartitions3Way,
+
+  //  BRP is disabled, but add dummy ref count to each allocation. This will
+  // increase allocation size but not change any of the logic. If an issue
+  // reproduce in this mode, it means the increase in size is causing it.
+  kDisabledButAddDummyRefCount,
 };
 
 enum class AlternateBucketDistributionMode : uint8_t {
@@ -116,6 +122,9 @@ BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanImmediateFreeing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocPCScanEagerClearing);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocSortActiveSlotSpans);
 BASE_EXPORT BASE_DECLARE_FEATURE(kPartitionAllocUseAlternateDistribution);
+#if BUILDFLAG(IS_WIN)
+BASE_EXPORT BASE_DECLARE_FEATURE(kPageAllocatorRetryOnCommitFailure);
+#endif
 
 }  // namespace features
 }  // namespace base

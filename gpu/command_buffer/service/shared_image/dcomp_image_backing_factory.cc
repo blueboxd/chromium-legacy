@@ -6,7 +6,6 @@
 
 #include <d3d11_1.h>
 
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/dcomp_surface_image_backing.h"
@@ -92,7 +91,6 @@ std::unique_ptr<SharedImageBacking> DCompImageBackingFactory::CreateSharedImage(
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat format,
     gfx::BufferPlane plane,
-    SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -110,6 +108,11 @@ bool DCompImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
+  if (format.is_multi_plane()) {
+    return false;
+  }
+
+  // TODO(tangm): Allow write-only swap chain usage?
   constexpr uint32_t kDXGISwapChainUsage = SHARED_IMAGE_USAGE_DISPLAY_READ |
                                            SHARED_IMAGE_USAGE_DISPLAY_WRITE |
                                            SHARED_IMAGE_USAGE_SCANOUT;

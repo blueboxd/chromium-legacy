@@ -7,8 +7,7 @@
 
 #include <memory>
 
-#include "base/memory/scoped_refptr.h"
-#include "chrome/updater/app/app_server.h"
+#include "chrome/updater/app/server/posix/app_server_posix.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace updater {
@@ -18,7 +17,7 @@ class UpdateService;
 class UpdateServiceInternal;
 class UpdateServiceStub;
 
-class AppServerLinux : public AppServer {
+class AppServerLinux : public AppServerPosix {
  public:
   AppServerLinux();
 

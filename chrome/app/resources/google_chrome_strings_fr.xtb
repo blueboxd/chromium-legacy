@@ -84,7 +84,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2401189691232800402">Système Chrome OS</translation>
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
-<translation id="2494974097748878569">Assistant Google dans Chrome</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
 <translation id="2559253115192232574">Ensuite, un site que vous consultez pourra demander à Chrome de voir vos centres d'intérêt pour personnaliser les annonces qui vous sont présentées. Chrome peut partager jusqu'à trois centres d'intérêt.</translation>
 <translation id="2563121210305478421">Relancer Chrome ?</translation>
@@ -168,7 +167,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="4106587138345390261">Chrome développe de nouvelles fonctionnalités qui permettent aux sites de proposer la même expérience de navigation en utilisant moins d'infos personnelles</translation>
-<translation id="4110895483821904099">Configurez votre nouveau profil Chrome</translation>
+<translation id="4110895483821904099">Configurer votre nouveau profil Chrome</translation>
 <translation id="4147555960264124640">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE" /></translation>
 <translation id="4148957013307229264">Installation...</translation>
 <translation id="4149882025268051530">Échec de la décompression de l'archive par le programme d'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
@@ -184,7 +183,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="430327780270213103">Autoriser l'extension à afficher les demandes d'accès dans la barre d'outils Chrome</translation>
 <translation id="4328355335528187361">Google Chrome pour les développeurs (mDNS-In)</translation>
 <translation id="4334294535648607276">Le téléchargement a bien été effectué.</translation>
-<translation id="4335235004908507846">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les extensions malveillantes</translation>
+<translation id="4335235004908507846">Chrome peut vous aider à vous protéger entre autres contre les violations de données et les extensions malveillantes</translation>
 <translation id="4343195214584226067">L'extension <ph name="EXTENSION_NAME" /> a été ajoutée à Chrome</translation>
 <translation id="4384570495110188418">Chrome ne peut pas vérifier vos mots de passe, car vous n'êtes pas connecté</translation>
 <translation id="4427306783828095590">La protection renforcée assure une meilleure protection contre l'hameçonnage et les logiciels malveillants</translation>
@@ -219,7 +218,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5037581483200764584">Vous devez disposer de macOS 10.13 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS X 10.11 qui est installée sur cet ordinateur.</translation>
 <translation id="5098668839038261629">Si l'option est activée, vous serez également déconnecté de Chrome</translation>
 <translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Google Chrome.</translation>
-<translation id="5139423532931106058">Personnalisez votre profil Chrome</translation>
+<translation id="5139423532931106058">Personnaliser votre profil Chrome</translation>
 <translation id="5163087008893166964">Bienvenue dans Chrome, une nouvelle fenêtre du navigateur a été ouverte</translation>
 <translation id="5170938038195470297">Votre profil ne peut pas être utilisé parce qu'il vient d'une version plus récente de Google Chrome. 
 
@@ -289,7 +288,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6739177684496155661">Continuer avec un nouveau profil Chrome ?</translation>
 <translation id="6750954913813541382">Pour corriger les fautes d'orthographe, Chrome envoie à Google le texte que vous saisissez dans le navigateur</translation>
 <translation id="677276454032249905">Quitter Chrome quand même ?</translation>
-<translation id="6785872064505734160">L'Assistant Google dans Chrome peut effectuer des actions sur les sites Web à votre place</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
 <translation id="6881299373831449287">Mise à jour de Chrome</translation>
 <translation id="6885412569789873916">Applications pour la version bêta de Chrome</translation>
@@ -314,7 +312,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="7177959540995930968">Vous pouvez en savoir plus sur ces fonctionnalités dans les paramètres Chrome.</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME" />. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE" /></translation>
-<translation id="7295052994004373688">Cette langue est utilisée pour l'interface utilisateur de Google Chrome</translation>
+<translation id="7295052994004373688">Cette langue est utilisée pour l'UI de Google Chrome</translation>
 <translation id="7296210096911315575">Informations importantes concernant l'utilisation et la sécurité</translation>
 <translation id="7308322188646931570">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
@@ -421,7 +419,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="919706545465235479">Mettre à jour Chrome pour lancer la synchronisation</translation>
 <translation id="922152298093051471">Personnaliser Chrome</translation>
 <translation id="93760716455950538">Redémarrer ChromeOS Flex</translation>
-<translation id="940313311831216333">Pour retrouver vos données Chrome sur tous vos appareils, connectez-vous, puis activez la synchronisation.</translation>
+<translation id="940313311831216333">Pour retrouver vos réglages Chrome sur tous vos appareils, connectez-vous, puis activez la synchronisation.</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> permet de passer d'un profil Chrome à un autre</translation>
 </translationbundle>

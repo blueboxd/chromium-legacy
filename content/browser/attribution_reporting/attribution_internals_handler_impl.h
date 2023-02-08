@@ -18,13 +18,13 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
+
 namespace base {
 class Time;
 }  // namespace base
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -81,13 +81,16 @@ class AttributionInternalsHandlerImpl
   void OnReportSent(const AttributionReport& report,
                     bool is_debug_report,
                     const SendResult& info) override;
+  void OnDebugReportSent(const AttributionDebugReport&,
+                         int status,
+                         base::Time) override;
   void OnTriggerHandled(const AttributionTrigger& trigger,
                         absl::optional<uint64_t> cleared_debug_key,
                         const CreateReportResult& result) override;
   void OnFailedSourceRegistration(
       const std::string& header_value,
       base::Time source_time,
-      const url::Origin& reporting_origin,
+      const attribution_reporting::SuitableOrigin& reporting_origin,
       attribution_reporting::mojom::SourceRegistrationError) override;
 
   raw_ptr<WebUI> web_ui_;

@@ -96,14 +96,7 @@ BOOL WaitForKeyboardToAppear() {
 // Tests that the addresses view controller contains the "Manage Addresses..."
 // action.
 // TODO(crbug.com/1116043): Flaky on ios simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
-  DISABLED_testAddressesViewControllerContainsManageAddressesAction
-#else
-#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
-  testAddressesViewControllerContainsManageAddressesAction
-#endif
-- (void)MAYBE_testAddressesViewControllerContainsManageAddressesAction {
+- (void)DISABLED_testAddressesViewControllerContainsManageAddressesAction {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
@@ -231,15 +224,7 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the Address View Controller is dismissed when tapping the outside
 // the popover on iPad.
-// TODO(crbug.com/1116887) Flaky on iOS simulator
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
-  DISABLED_testIPadTappingOutsidePopOverDismissAddressController
-#else
-#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
-  testIPadTappingOutsidePopOverDismissAddressController
-#endif
-- (void)MAYBE_testIPadTappingOutsidePopOverDismissAddressController {
+- (void)testIPadTappingOutsidePopOverDismissAddressController {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test is not applicable for iPhone");
   }

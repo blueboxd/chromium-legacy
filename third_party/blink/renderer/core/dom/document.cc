@@ -301,6 +301,7 @@
 #include "third_party/blink/renderer/core/script/detect_javascript_frameworks.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_script_element.h"
 #include "third_party/blink/renderer/core/svg/svg_title_element.h"
@@ -2156,7 +2157,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     }
   }
 
-  SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
+  SCOPED_UMA_AND_UKM_TIMER(View()->GetUkmAggregator(),
                            LocalFrameUkmAggregator::kStyle);
   FontPerformance::StyleScope font_performance_scope;
   ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), GetFrame(),
@@ -2218,6 +2219,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
 
   GetStyleEngine().UpdateActiveStyle();
   GetStyleEngine().UpdateCounterStyles();
+  GetStyleEngine().InvalidatePositionFallbackStyles();
   GetStyleEngine().InvalidateViewportUnitStylesIfNeeded();
   InvalidateStyleAndLayoutForFontUpdates();
   UpdateStyleInvalidationIfNeeded();
@@ -3725,11 +3727,8 @@ static bool AllDescendantsAreComplete(Document* document) {
   if (!frame)
     return true;
 
-  // TODO(crbug.com/1262022): Remove this Fenced FrameTreeBoundary when Fenced
-  // Frames transition to MPArch completely.
-  for (Frame* child = frame->Tree().FirstChild(FrameTreeBoundary::kFenced);
-       child;
-       child = child->Tree().TraverseNext(frame, FrameTreeBoundary::kFenced)) {
+  for (Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().TraverseNext(frame)) {
     if (child->IsLoading())
       return false;
   }
@@ -4341,6 +4340,10 @@ void Document::UpdateBaseURL() {
     for (HTMLAnchorElement& anchor :
          Traversal<HTMLAnchorElement>::StartsAfter(*this))
       anchor.InvalidateCachedVisitedLinkHash();
+  }
+
+  if (auto* document_rules = DocumentSpeculationRules::FromIfExists(*this)) {
+    document_rules->DocumentBaseURLChanged();
   }
 }
 
@@ -5870,23 +5873,6 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  const String permissions_policy_error =
-      "Setting `document.domain` is disabled by permissions policy.";
-  if (!dom_window_->IsFeatureEnabled(
-          mojom::blink::PermissionsPolicyFeature::kDocumentDomain,
-          ReportOptions::kReportOnFailure, permissions_policy_error)) {
-    exception_state.ThrowSecurityError(permissions_policy_error);
-    return;
-  }
-
-  const String document_policy_error =
-      "Setting `document.domain` is disabled by document policy.";
-  if (!dom_window_->IsFeatureEnabled(
-          mojom::blink::DocumentPolicyFeature::kDocumentDomain,
-          ReportOptions::kReportOnFailure, document_policy_error)) {
-    return;
-  }
-
   if (SchemeRegistry::IsDomainRelaxationForbiddenForURLScheme(
           dom_window_->GetSecurityOrigin()->Protocol())) {
     exception_state.ThrowSecurityError(
@@ -6419,12 +6405,18 @@ FragmentDirective& Document::fragmentDirective() const {
 ScriptPromise Document::hasTrustToken(ScriptState* script_state,
                                       const String& issuer,
                                       ExceptionState& exception_state) {
+  return hasPrivateStateToken(script_state, issuer, exception_state);
+}
+
+ScriptPromise Document::hasPrivateStateToken(ScriptState* script_state,
+                                             const String& issuer,
+                                             ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   ScriptPromise promise = resolver->Promise();
 
-  // Trust Tokens state is keyed by issuer and top-frame origins that
+  // Private State Tokens state is keyed by issuer and top-frame origins that
   // are both (1) HTTP or HTTPS and (2) potentially trustworthy. Consequently,
   // we can return early if either the issuer or the top-frame origin fails to
   // satisfy either of these requirements.
@@ -6433,7 +6425,8 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
   if (!issuer_url.ProtocolIsInHTTPFamily() ||
       !issuer_origin->IsPotentiallyTrustworthy()) {
     exception_state.ThrowTypeError(
-        "hasTrustToken: Trust token issuer origins must be both HTTP(S) and "
+        "hasPrivateStateToken: Trust token issuer origins must be both HTTP(S) "
+        "and "
         "secure (\"potentially trustworthy\").");
     resolver->Reject(exception_state);
     return promise;
@@ -6447,7 +6440,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
     // case there are other situations in which the top frame origin might be
     // absent.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "hasTrustToken: Cannot execute in "
+                                      "hasPrivateStateToken: Cannot execute in "
                                       "documents lacking top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6458,7 +6451,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
       top_frame_origin->Protocol() != url::kHttpScheme) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotAllowedError,
-        "hasTrustToken: Cannot execute in "
+        "hasPrivateStateToken: Cannot execute in "
         "documents without secure, HTTP(S), top-frame origins.");
     resolver->Reject(exception_state);
     return promise;
@@ -6497,7 +6490,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
               ScriptState::Scope scope(state);
               resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
                   state->GetIsolate(), DOMExceptionCode::kOperationError,
-                  "Failed to retrieve hasTrustToken response. (Would "
+                  "Failed to retrieve hasPrivateStateToken response. (Would "
                   "associating the given issuer with this top-level origin "
                   "have exceeded its number-of-issuers limit?)"));
             }
@@ -6518,7 +6511,7 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
 
   ScriptPromise promise = resolver->Promise();
 
-  // Trust Tokens state is keyed by issuer and top-frame origins that
+  // Private State Tokens state is keyed by issuer and top-frame origins that
   // are both (1) HTTP or HTTPS and (2) potentially trustworthy. Consequently,
   // we can return early if either the issuer or the top-frame origin fails to
   // satisfy either of these requirements.
@@ -7673,6 +7666,17 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
 
   DCHECK(!top_layer_elements_.Contains(element));
   DCHECK(!before || top_layer_elements_.Contains(before));
+
+  // The view transition root pseudo-element should always be the last element
+  // in the top layer so it paints on top of all other top layer elements.
+  auto* transition_pseudo =
+      documentElement()->GetPseudoElement(kPseudoIdViewTransition);
+  if (transition_pseudo && element != transition_pseudo) {
+    DCHECK(transition_pseudo->IsInTopLayer());
+    DCHECK(top_layer_elements_.back() == *transition_pseudo);
+    top_layer_elements_.pop_back();
+  }
+
   if (before) {
     DCHECK(element->IsBackdropPseudoElement())
         << "If this invariant changes, we might need to revisit Container "
@@ -7682,6 +7686,10 @@ void Document::AddToTopLayer(Element* element, const Element* before) {
   } else {
     top_layer_elements_.push_back(element);
   }
+
+  if (transition_pseudo && element != transition_pseudo)
+    top_layer_elements_.push_back(transition_pseudo);
+
   element->SetIsInTopLayer(true);
   display_lock_document_state_->ElementAddedToTopLayer(element);
 
@@ -8795,8 +8803,6 @@ const Node* Document::GetFindInPageActiveMatchNode() const {
 
 void Document::ActivateForPrerendering(
     const mojom::blink::PrerenderPageActivationParams& params) {
-  DCHECK(features::IsPrerender2Enabled());
-
   // TODO(bokan): Portals will change this assumption since they mean an active
   // document can be "adopted" into a portal.
   DCHECK(is_prerendering_);

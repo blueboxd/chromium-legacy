@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/file_system_access/file_system_access_error.h"
 #include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -547,6 +548,13 @@ void MockRenderProcessHost::BindIndexedDB(
   idb_factory_receiver_ = std::move(receiver);
 }
 
+void MockRenderProcessHost::GetSandboxedFileSystemForBucket(
+    const storage::BucketLocator& bucket,
+    blink::mojom::FileSystemAccessManager::GetSandboxedFileSystemCallback
+        callback) {
+  std::move(callback).Run(file_system_access_error::Ok(), {});
+}
+
 std::string
 MockRenderProcessHost::GetInfoForBrowserContextDestructionCrashReporting() {
   return std::string();
@@ -563,7 +571,7 @@ void MockRenderProcessHost::ReinitializeLogging(
     base::ScopedFD log_file_descriptor) {
   NOTIMPLEMENTED();
 }
-#endif  // IS_CHROMEOS_ASH
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);

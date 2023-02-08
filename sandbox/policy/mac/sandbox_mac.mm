@@ -116,7 +116,7 @@ std::string GetSandboxProfile(sandbox::mojom::Sandbox sandbox_type) {
 bool CanCacheSandboxPolicy(sandbox::mojom::Sandbox sandbox_type) {
   static const bool feature_enabled =
       base::FeatureList::IsEnabled(features::kCacheMacSandboxProfiles);
-  if (!feature_enabled)
+  if (!feature_enabled || !@available(macOS 10.13,*))
     return false;
 
   switch (sandbox_type) {

@@ -149,7 +149,7 @@ const ClipboardFormatType& ClipboardFormatType::PngType() {
 
 // static
 const ClipboardFormatType& ClipboardFormatType::BitmapType() {
-  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeTIFF);
+  static base::NoDestructor<ClipboardFormatType> type(NSTIFFPboardType);
   return *type;
 }
 

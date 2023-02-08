@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -20,9 +21,11 @@ namespace content {
 struct DropData;
 }  // namespace content
 
-namespace remote_cocoa::mojom {
+namespace remote_cocoa {
+namespace mojom {
 class WebContentsNSViewHost;
-}  // namespace remote_cocoa::mojom
+}  // namespace mojom
+}  // namespace remote_cocoa
 
 // A class that handles tracking and event processing for a drag and drop
 // originating from the content area.
@@ -62,9 +65,8 @@ CONTENT_EXPORT
   // The URL to download from for a drag-out download.
   GURL _downloadURL;
 
-  // The file type associated with the file drag, if any. TODO(macOS 11): Change
-  // to a UTType object.
-  base::scoped_nsobject<NSString> _fileUTType;
+  // The file UTI associated with the file drag, if any.
+  base::ScopedCFTypeRef<CFStringRef> _fileUTI;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

@@ -36,7 +36,6 @@ CONTENT_EXPORT
   // The interface exported to views::Views that embed this as a sub-view.
   raw_ptr<ui::ViewsHostableView> _viewsHostableView;
 
-  base::scoped_nsobject<WebDragSource> _dragSource;
   BOOL _mouseDownCanMoveWindow;
 
   // Utility to copy screenshots to a usable directory for PWAs. This utility

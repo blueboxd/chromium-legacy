@@ -7,13 +7,10 @@
 
 #import <AppKit/AppKit.h>
 
-#include <vector>
-
 #include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
-#include "ui/base/clipboard/file_info.h"
 
 namespace ui {
 

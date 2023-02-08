@@ -95,11 +95,7 @@ ClipboardFormatType ClipboardFormatType::GetType(
 
 // static
 const ClipboardFormatType& ClipboardFormatType::FilenamesType() {
-  // This is an awkward mismatch between macOS which has a "multiple items on a
-  // pasteboard approach" and Chromium which has a "one item containing multiple
-  // items" concept. This works well enough, though, as `NSPasteboard.types` is
-  // a union of all types, and thus will find individual items of this type.
-  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypeFileURL);
+  static base::NoDestructor<ClipboardFormatType> type(NSFilenamesPboardType);
   return *type;
 }
 

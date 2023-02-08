@@ -203,12 +203,7 @@ TEST_F(OSExchangeDataTest, TestFilenames) {
   std::vector<FileInfo> dropped_filenames;
 
   EXPECT_TRUE(copy.GetFilenames(&dropped_filenames));
-  // Only check the paths, not the display names, as those might be synthesized
-  // during the clone while reading from the clipboard.
-  ASSERT_EQ(kTestFilenames.size(), dropped_filenames.size());
-  for (size_t i = 0; i < kTestFilenames.size(); ++i) {
-    EXPECT_EQ(kTestFilenames[i].path, dropped_filenames[i].path);
-  }
+  EXPECT_EQ(kTestFilenames, dropped_filenames);
 }
 
 #if defined(USE_AURA)

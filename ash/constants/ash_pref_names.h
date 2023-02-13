@@ -134,6 +134,8 @@ extern const char kAccessibilityChromeVoxEnableEventStreamLogging[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityChromeVoxEnableSpeechLogging[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kAccessibilityChromeVoxEventStreamFilters[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityChromeVoxLanguageSwitching[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityChromeVoxMenuBrailleCommands[];
@@ -283,6 +285,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kScreenMagnifierAcceleratorDialogHasBeenAccepted[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDictationAcceleratorDialogHasBeenAccepted[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kDictationDlcSuccessNotificationHasBeenShown[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisplayRotationAcceleratorDialogHasBeenAccepted[];
 COMPONENT_EXPORT(ASH_CONSTANTS)

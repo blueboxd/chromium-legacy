@@ -74,22 +74,6 @@ BASE_FEATURE(kSyncTrustedVaultVerifyDeviceRegistration,
              "SyncTrustedVaultVerifyDeviceRegistration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSyncTrustedVaultRedoDeviceRegistration,
-             "SyncTrustedVaultRedoDeviceRegistration",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncTrustedVaultResetKeysAreStale,
-             "SyncTrustedVaultResetKeysAreStale",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncTrustedVaultUseMD5HashedFile,
-             "SyncTrustedVaultUseMD5HashedFile",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncTrustedVaultBypassThrottlingForNetworkErrors,
-             "SyncTrustedVaultBypassThrottlingForNetworkErrors",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUseSyncInvalidations,
              "UseSyncInvalidations",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -141,5 +125,9 @@ BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
 BASE_FEATURE(kSyncEnableLoadModelsTimeout,
              "SyncEnableLoadModelsTimeout",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnforcePreferencesAllowlist,
+             "SyncEnforcePreferencesAllowlist",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

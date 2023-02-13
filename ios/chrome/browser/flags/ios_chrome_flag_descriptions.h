@@ -325,6 +325,10 @@ extern const char kExpandedTabStripDescription[];
 extern const char kFeedBackgroundRefreshName[];
 extern const char kFeedBackgroundRefreshDescription[];
 
+// Title and description for the flag to enable feed foreground refresh.
+extern const char kFeedForegroundRefreshName[];
+extern const char kFeedForegroundRefreshDescription[];
+
 // Title and description for the flag to enable filling across affiliated
 // websites.
 extern const char kFillingAcrossAffiliatedWebsitesName[];
@@ -644,10 +648,6 @@ extern const char kSafeBrowsingAvailableDescription[];
 // Title and description for the flag to enable real-time Safe Browsing lookups.
 extern const char kSafeBrowsingRealTimeLookupName[];
 extern const char kSafeBrowsingRealTimeLookupDescription[];
-
-// Title and description for the flag to enable saving one file per webstate.
-extern const char kSaveSessionTabsToSeparateFilesName[];
-extern const char kSaveSessionTabsToSeparateFilesDescription[];
 
 // Title and description for the flag to enable integration with the ScreenTime
 // system.

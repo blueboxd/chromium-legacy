@@ -184,6 +184,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"noThanks", IDS_NO_THANKS},
     {"ok", IDS_OK},
     {"opensInNewTab", IDS_SETTINGS_OPENS_IN_NEW_TAB},
+    {"sendFeedbackButton", IDS_SETTINGS_SEND_FEEDBACK_ROLE_DESCRIPTION},
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"relaunchConfirmationDialogTitle", IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE},
 #endif
@@ -996,6 +997,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"removeAddressConfirmationDescription",
      IDS_AUTOFILL_DELETE_SYNC_ADDRESS_SOURCE_NOTICE},
     {"addressRemovedMessage", IDS_SETTINGS_ADDRESS_REMOVED_MESSAGE},
+    {"editAddressRequiredFieldError",
+     IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELD_FORM_ERROR},
+    {"editAddressRequiredFieldsError",
+     IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELDS_FORM_ERROR},
     {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
     {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
     {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},

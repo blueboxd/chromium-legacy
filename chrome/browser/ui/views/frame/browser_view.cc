@@ -1166,9 +1166,9 @@ gfx::Size BrowserView::GetWebAppFrameToolbarPreferredSize() const {
 
 #if BUILDFLAG(IS_MAC)
 bool BrowserView::UsesImmersiveFullscreenMode() const {
-  return base::FeatureList::IsEnabled(GetIsWebAppType()
-                                          ? features::kImmersiveFullscreenPWAs
-                                          : features::kImmersiveFullscreen);
+  return base::FeatureList::IsEnabled(features::kImmersiveFullscreen) &&
+         (!GetIsWebAppType() ||
+          base::FeatureList::IsEnabled(features::kImmersiveFullscreenPWAs));
 }
 #endif
 
@@ -2554,8 +2554,7 @@ void BrowserView::ShowIntentPickerBubble(
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  toolbar_->ShowBookmarkBubble(url, already_bookmarked,
-                               bookmark_bar_view_.get());
+  toolbar_->ShowBookmarkBubble(url, already_bookmarked);
 }
 
 qrcode_generator::QRCodeGeneratorBubbleView*

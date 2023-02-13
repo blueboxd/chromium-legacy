@@ -133,6 +133,7 @@
 <translation id="163517899691012366">'ശല്യപ്പെടുത്തരുത്' ഓണായിരിക്കുമ്പോൾ അറിയിപ്പുകൾ മ്യൂട്ട് ചെയ്യുന്നു</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> ഉപകരണങ്ങൾ</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
+<translation id="1647986356840967552">മുമ്പത്തെ പേജ്</translation>
 <translation id="1654477262762802994">ഒരു ശബ്‌ദ ചോദ്യം ആരംഭിക്കുക</translation>
 <translation id="1668469839109562275">ബിൽറ്റ് ഇൻ VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
@@ -555,6 +556,7 @@
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="397726367135689299">ബാറ്ററി ശരിയായി ചാർജ് ആകുന്നുണ്ടാകില്ല.</translation>
 <translation id="3977512764614765090">ബാറ്ററി <ph name="PERCENTAGE" />% ഉണ്ട്, ചാർജ് ചെയ്യുകയുമാണ്.</translation>
+<translation id="3984536049089846927">അടുത്ത പേജ്</translation>
 <translation id="3986082989454912832">കോൾ സ്വീകരിക്കുക</translation>
 <translation id="3995138139523574647">USB-C ഉപകരണം (വലതുവശത്ത് പിന്നിലെ പോർട്ട്)</translation>
 <translation id="40062176907008878">കൈയ്യെഴുത്ത്</translation>
@@ -718,6 +720,7 @@
 <translation id="481455355267255546">അടുത്തത്</translation>
 <translation id="4831034276697007977">സ്വയമേവയുള്ള ക്ലിക്കുകൾ ഓഫാക്കണമെന്ന് നിങ്ങൾക്ക് തീർച്ചയാണോ?</translation>
 <translation id="4849058404725798627">കീബോർഡ് ഫോക്കസ് ഉപയോഗിച്ച് ഒബ്‌ജക്‌റ്റിനെ ഹൈലൈറ്റ് ചെയ്യുക</translation>
+<translation id="4855250849489639581">കൂടുതൽ ലേഔട്ട് ഓപ്ഷനുകൾക്ക് താഴേക്ക് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="485592688953820832">പ്രവർത്തനമൊന്നും വേണ്ട (താൽക്കാലികമായി നിർത്തുക)</translation>
 <translation id="485634149294284819">കീബോർഡ് മെനുവിൽ പ്രവേശിക്കുക</translation>
 <translation id="4860284199500934869"><ph name="FILENAME" /> ഡൗൺലോഡ് ചെയ്യാൻ നിങ്ങളുടെ കണക്ഷൻ പരിശോധിക്കുക</translation>
@@ -913,6 +916,7 @@
 <translation id="5867606971598166637">നിങ്ങളുടെ സിസ്റ്റം അഡ്മിൻ സ്ക്രീനുകൾ നിരീക്ഷിക്കുന്നു</translation>
 <translation id="5876666360658629066">രക്ഷാകർതൃ കോഡ് നൽകുക</translation>
 <translation id="5881540930187678962">ഫോൺ ഹബ് പിന്നീട് സജ്ജീകരിക്കുക</translation>
+<translation id="5881663018261910378">ഓഫാണ്</translation>
 <translation id="5887954372087850114"><ph name="DESK_TITLE" /> എന്നതിലേക്ക് <ph name="WINDOW_TITLE" /> വിൻഡോ അസൈൻ ചെയ്യുകയും മറ്റ് എല്ലാ ഡെസ്ക്കുകളിൽ നിന്നും അസൈൻ ചെയ്തത് മാറ്റുകയും ചെയ്തു</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="589817443623831496">പോയിന്റ് സ്കാൻ ചെയ്യൽ</translation>

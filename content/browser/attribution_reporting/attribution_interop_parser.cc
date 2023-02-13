@@ -7,80 +7,503 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
-#include "base/check.h"
 #include "base/functional/function_ref.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/types/optional_util.h"
+#include "base/values.h"
+#include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/test_utils.h"
+#include "components/attribution_reporting/trigger_registration.h"
+#include "components/attribution_reporting/trigger_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
-#include "content/browser/attribution_reporting/attribution_parser_test_utils.h"
+#include "content/browser/attribution_reporting/attribution_header_utils.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
+#include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/storable_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
-#include "url/origin.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
+
 namespace {
+
+using ::attribution_reporting::SuitableOrigin;
+
+constexpr char kAttributionSrcUrlKey[] = "attribution_src_url";
+constexpr char kRegistrationRequestKey[] = "registration_request";
+constexpr char kResponseKey[] = "response";
+constexpr char kResponsesKey[] = "responses";
+constexpr char kTimestampKey[] = "timestamp";
+
+using Context = absl::variant<base::StringPiece, size_t>;
+using ContextPath = std::vector<Context>;
+
+class ScopedContext {
+ public:
+  ScopedContext(ContextPath& path, Context context) : path_(path) {
+    path_->push_back(context);
+  }
+
+  ~ScopedContext() { path_->pop_back(); }
+
+  ScopedContext(const ScopedContext&) = delete;
+  ScopedContext(ScopedContext&&) = delete;
+
+  ScopedContext& operator=(const ScopedContext&) = delete;
+  ScopedContext& operator=(ScopedContext&&) = delete;
+
+ private:
+  const raw_ref<ContextPath> path_;
+};
+
+// Writes a newline on destruction.
+class ErrorWriter {
+ public:
+  explicit ErrorWriter(std::ostringstream& stream) : stream_(stream) {}
+
+  ~ErrorWriter() { *stream_ << std::endl; }
+
+  ErrorWriter(const ErrorWriter&) = delete;
+  ErrorWriter(ErrorWriter&&) = default;
+
+  ErrorWriter& operator=(const ErrorWriter&) = delete;
+  ErrorWriter& operator=(ErrorWriter&&) = delete;
+
+  std::ostringstream& operator*() { return *stream_; }
+
+  void operator()(base::StringPiece key) { *stream_ << "[\"" << key << "\"]"; }
+
+  void operator()(size_t index) { *stream_ << '[' << index << ']'; }
+
+ private:
+  const raw_ref<std::ostringstream> stream_;
+};
 
 class AttributionInteropParser {
  public:
-  AttributionInteropParser() = default;
+  explicit AttributionInteropParser(base::Time offset_time = base::Time())
+      : offset_time_(offset_time) {}
 
-  // Converts interop test input to simulator input format.
-  base::expected<base::Value::Dict, std::string> SimulatorInputFromInteropInput(
-      base::Value::Dict) &&;
+  ~AttributionInteropParser() = default;
 
-  // Converts simulator output to interop test output format.
-  base::expected<base::Value::Dict, std::string>
-  InteropOutputFromSimulatorOutput(base::Value::Dict) &&;
+  AttributionInteropParser(const AttributionInteropParser&) = delete;
+  AttributionInteropParser(AttributionInteropParser&&) = delete;
 
-  [[nodiscard]] std::string ParseConfig(const base::Value::Dict&,
-                                        AttributionConfig&,
-                                        bool required) &&;
+  AttributionInteropParser& operator=(const AttributionInteropParser&) = delete;
+  AttributionInteropParser& operator=(AttributionInteropParser&&) = delete;
+
+  base::expected<AttributionSimulationEvents, std::string> ParseInput(
+      base::Value::Dict input) && {
+    static constexpr char kKeySources[] = "sources";
+    if (base::Value* sources = input.Find(kKeySources)) {
+      auto context = PushContext(kKeySources);
+      ParseListOfDicts(sources, [&](base::Value::Dict source) {
+        ParseSource(std::move(source));
+      });
+    }
+
+    static constexpr char kKeyTriggers[] = "triggers";
+    if (base::Value* triggers = input.Find(kKeyTriggers)) {
+      auto context = PushContext(kKeyTriggers);
+      ParseListOfDicts(triggers, [&](base::Value::Dict trigger) {
+        ParseTrigger(std::move(trigger));
+      });
+    }
+
+    if (has_error_) {
+      return base::unexpected(error_stream_.str());
+    }
+
+    return std::move(events_);
+  }
+
+  [[nodiscard]] std::string ParseConfig(const base::Value::Dict& dict,
+                                        AttributionConfig& config,
+                                        bool required) && {
+    ParseInt(dict, "max_sources_per_origin", config.max_sources_per_origin,
+             required);
+
+    ParseInt(dict, "max_destinations_per_source_site_reporting_origin",
+             config.max_destinations_per_source_site_reporting_origin,
+             required);
+
+    uint64_t source_event_id_cardinality;
+    if (ParseUint64(dict, "source_event_id_cardinality",
+                    source_event_id_cardinality, required,
+                    /*allow_zero=*/true)) {
+      if (source_event_id_cardinality == 0u) {
+        config.source_event_id_cardinality = absl::nullopt;
+      } else {
+        config.source_event_id_cardinality = source_event_id_cardinality;
+      }
+    }
+
+    int rate_limit_time_window;
+    if (ParseInt(dict, "rate_limit_time_window", rate_limit_time_window,
+                 required)) {
+      config.rate_limit.time_window = base::Days(rate_limit_time_window);
+    }
+
+    ParseInt64(dict, "rate_limit_max_source_registration_reporting_origins",
+               config.rate_limit.max_source_registration_reporting_origins,
+               required);
+    ParseInt64(dict, "rate_limit_max_attribution_reporting_origins",
+               config.rate_limit.max_attribution_reporting_origins, required);
+    ParseInt64(dict, "rate_limit_max_attributions",
+               config.rate_limit.max_attributions, required);
+
+    ParseInt(dict, "max_event_level_reports_per_destination",
+             config.event_level_limit.max_reports_per_destination, required);
+    ParseInt(dict, "max_attributions_per_navigation_source",
+             config.event_level_limit.max_attributions_per_navigation_source,
+             required);
+    ParseInt(dict, "max_attributions_per_event_source",
+             config.event_level_limit.max_attributions_per_event_source,
+             required);
+    ParseUint64(
+        dict, "navigation_source_trigger_data_cardinality",
+        config.event_level_limit.navigation_source_trigger_data_cardinality,
+        required);
+    ParseUint64(dict, "event_source_trigger_data_cardinality",
+                config.event_level_limit.event_source_trigger_data_cardinality,
+                required);
+    ParseRandomizedResponseRate(
+        dict, "navigation_source_randomized_response_rate",
+        config.event_level_limit.navigation_source_randomized_response_rate,
+        required);
+    ParseRandomizedResponseRate(
+        dict, "event_source_randomized_response_rate",
+        config.event_level_limit.event_source_randomized_response_rate,
+        required);
+
+    ParseInt(dict, "max_aggregatable_reports_per_destination",
+             config.aggregate_limit.max_reports_per_destination, required);
+    ParseInt64(dict, "aggregatable_budget_per_source",
+               config.aggregate_limit.aggregatable_budget_per_source, required);
+
+    int aggregatable_report_min_delay;
+    if (ParseInt(dict, "aggregatable_report_min_delay",
+                 aggregatable_report_min_delay, required,
+                 /*allow_zero=*/true)) {
+      config.aggregate_limit.min_delay =
+          base::Minutes(aggregatable_report_min_delay);
+    }
+
+    int aggregatable_report_delay_span;
+    if (ParseInt(dict, "aggregatable_report_delay_span",
+                 aggregatable_report_delay_span, required,
+                 /*allow_zero=*/true)) {
+      config.aggregate_limit.delay_span =
+          base::Minutes(aggregatable_report_delay_span);
+    }
+
+    return error_stream_.str();
+  }
 
  private:
-  bool has_error() const { return error_manager_.has_error(); }
+  const base::Time offset_time_;
 
-  [[nodiscard]] std::unique_ptr<AttributionParserErrorManager::ScopedContext>
-  PushContext(AttributionParserErrorManager::Context context);
+  std::ostringstream error_stream_;
 
-  AttributionParserErrorManager::ErrorWriter Error();
+  ContextPath context_path_;
+  bool has_error_ = false;
 
-  void MoveDictValues(base::Value::Dict& in, base::Value::Dict& out);
+  std::vector<AttributionSimulationEvent> events_;
 
-  void MoveValue(base::Value::Dict& in,
-                 base::StringPiece in_key,
-                 base::Value::Dict& out,
-                 absl::optional<base::StringPiece> out_key_opt = absl::nullopt);
+  [[nodiscard]] ScopedContext PushContext(Context context) {
+    return ScopedContext(context_path_, context);
+  }
 
-  bool EnsureDictionary(const base::Value* value);
+  ErrorWriter Error() {
+    has_error_ = true;
 
-  absl::optional<std::string> ExtractString(base::Value::Dict& dict,
-                                            base::StringPiece key);
+    if (context_path_.empty()) {
+      error_stream_ << "input root";
+    }
 
-  void ParseList(base::Value* values,
-                 base::FunctionRef<void(base::Value)> callback,
-                 size_t expected_size = 0);
+    ErrorWriter writer(error_stream_);
+    for (Context context : context_path_) {
+      absl::visit(writer, context);
+    }
 
-  // Returns `attribution_src_url` in the request if exists.
-  absl::optional<std::string> ParseRequest(base::Value::Dict& in,
-                                           base::Value::Dict& out);
+    error_stream_ << ": ";
+    return writer;
+  }
 
-  void ParseResponse(base::Value::Dict& in,
-                     base::Value::Dict& out,
-                     const std::string& attribution_src_url);
+  void ParseListOfDicts(
+      base::Value* values,
+      base::FunctionRef<void(base::Value::Dict)> parse_element,
+      size_t expected_size = 0) {
+    if (!values) {
+      *Error() << "must be present";
+      return;
+    }
 
-  base::Value::List ParseEvents(base::Value::Dict& dict, base::StringPiece key);
+    base::Value::List* list = values->GetIfList();
+    if (!list) {
+      *Error() << "must be a list";
+      return;
+    }
 
-  base::Value::List ParseEventLevelReports(base::Value::Dict& output);
+    if (expected_size > 0 && list->size() != expected_size) {
+      *Error() << "must have size " << expected_size;
+      return;
+    }
 
-  base::Value::List ParseAggregatableReports(base::Value::Dict& output);
+    size_t index = 0;
+    for (auto& value : *list) {
+      auto index_context = PushContext(index);
+      if (!EnsureDictionary(&value)) {
+        return;
+      }
+      parse_element(std::move(value).TakeDict());
+      index++;
+    }
+  }
 
-  base::Value::List ParseVerboseDebugReports(base::Value::Dict& output);
+  void VerifyReportingOrigin(const base::Value::Dict& dict,
+                             const SuitableOrigin& reporting_origin) {
+    static constexpr char kUrlKey[] = "url";
+    absl::optional<SuitableOrigin> origin = ParseOrigin(dict, kUrlKey);
+    if (has_error_) {
+      return;
+    }
+    if (*origin != reporting_origin) {
+      auto context = PushContext(kUrlKey);
+      *Error() << "must match " << reporting_origin.Serialize();
+    }
+  }
+
+  void ParseSource(base::Value::Dict source_dict) {
+    base::Time source_time = ParseTime(source_dict, kTimestampKey);
+
+    absl::optional<SuitableOrigin> source_origin;
+    absl::optional<SuitableOrigin> reporting_origin;
+    absl::optional<AttributionSourceType> source_type;
+
+    ParseDict(source_dict, kRegistrationRequestKey,
+              [&](base::Value::Dict dict) {
+                source_origin = ParseOrigin(dict, "source_origin");
+                reporting_origin = ParseOrigin(dict, kAttributionSrcUrlKey);
+                source_type = ParseSourceType(dict);
+              });
+
+    if (has_error_) {
+      return;
+    }
+
+    auto context = PushContext(kResponsesKey);
+    ParseListOfDicts(
+        source_dict.Find(kResponsesKey),
+        [&](base::Value::Dict dict) {
+          VerifyReportingOrigin(dict, *reporting_origin);
+
+          bool debug_permission = ParseDebugPermission(dict);
+
+          if (has_error_) {
+            return;
+          }
+
+          ParseDict(dict, kResponseKey, [&](base::Value::Dict response_dict) {
+            ParseDict(
+                response_dict, "Attribution-Reporting-Register-Source",
+                [&](base::Value::Dict registration_dict) {
+                  base::expected<
+                      StorableSource,
+                      attribution_reporting::mojom::SourceRegistrationError>
+                      storable_source = ParseSourceRegistration(
+                          std::move(registration_dict), source_time,
+                          std::move(*reporting_origin),
+                          std::move(*source_origin), *source_type,
+                          /*is_within_fenced_frame=*/false);
+
+                  if (!storable_source.has_value()) {
+                    *Error() << storable_source.error();
+                    return;
+                  }
+
+                  events_.push_back(AttributionSource{
+                      .source = std::move(*storable_source),
+                      .debug_permission = debug_permission,
+                  });
+                });
+          });
+        },
+        /*expected_size=*/1);
+  }
+
+  void ParseTrigger(base::Value::Dict trigger_dict) {
+    base::Time trigger_time = ParseTime(trigger_dict, kTimestampKey);
+
+    absl::optional<SuitableOrigin> destination_origin;
+    absl::optional<SuitableOrigin> reporting_origin;
+
+    ParseDict(trigger_dict, kRegistrationRequestKey,
+              [&](base::Value::Dict dict) {
+                destination_origin = ParseOrigin(dict, "destination_origin");
+                reporting_origin = ParseOrigin(dict, kAttributionSrcUrlKey);
+              });
+
+    if (has_error_) {
+      return;
+    }
+
+    auto context = PushContext(kResponsesKey);
+    ParseListOfDicts(
+        trigger_dict.Find(kResponsesKey),
+        [&](base::Value::Dict dict) {
+          VerifyReportingOrigin(dict, *reporting_origin);
+
+          bool debug_permission = ParseDebugPermission(dict);
+
+          if (has_error_) {
+            return;
+          }
+
+          ParseDict(dict, kResponseKey, [&](base::Value::Dict response_dict) {
+            ParseDict(response_dict, "Attribution-Reporting-Register-Trigger",
+                      [&](base::Value::Dict registration_dict) {
+                        auto trigger_registration =
+                            attribution_reporting::TriggerRegistration::Parse(
+                                std::move(registration_dict));
+                        if (!trigger_registration.has_value()) {
+                          *Error() << trigger_registration.error();
+                          return;
+                        }
+
+                        events_.push_back(AttributionTriggerAndTime{
+                            .trigger = AttributionTrigger(
+                                std::move(*reporting_origin),
+                                std::move(*trigger_registration),
+                                std::move(*destination_origin),
+                                /*attestation=*/absl::nullopt,
+                                /*is_within_fenced_frame=*/false),
+                            .time = trigger_time,
+                            .debug_permission = debug_permission,
+                        });
+                      });
+          });
+        },
+        /*expected_size=*/1);
+  }
+
+  absl::optional<SuitableOrigin> ParseOrigin(const base::Value::Dict& dict,
+                                             base::StringPiece key) {
+    auto context = PushContext(key);
+
+    absl::optional<SuitableOrigin> origin;
+    if (const std::string* s = dict.FindString(key)) {
+      origin = SuitableOrigin::Deserialize(*s);
+    }
+
+    if (!origin.has_value()) {
+      *Error() << "must be a valid, secure origin";
+    }
+
+    return origin;
+  }
+
+  base::Time ParseTime(const base::Value::Dict& dict, base::StringPiece key) {
+    auto context = PushContext(key);
+
+    const std::string* v = dict.FindString(key);
+    int64_t milliseconds;
+
+    if (v && base::StringToInt64(*v, &milliseconds)) {
+      base::Time time = offset_time_ + base::Milliseconds(milliseconds);
+      if (!time.is_null() && !time.is_inf()) {
+        return time;
+      }
+    }
+
+    *Error() << "must be an integer number of milliseconds since the Unix "
+                "epoch formatted as a base-10 string";
+    return base::Time();
+  }
+
+  absl::optional<bool> ParseBool(const base::Value::Dict& dict,
+                                 base::StringPiece key) {
+    auto context = PushContext(key);
+
+    const base::Value* v = dict.Find(key);
+    if (!v) {
+      return absl::nullopt;
+    }
+
+    if (!v->is_bool()) {
+      *Error() << "must be a bool";
+      return absl::nullopt;
+    }
+
+    return v->GetBool();
+  }
+
+  bool ParseDebugPermission(const base::Value::Dict& dict) {
+    return ParseBool(dict, "debug_permission").value_or(false);
+  }
+
+  absl::optional<AttributionSourceType> ParseSourceType(
+      const base::Value::Dict& dict) {
+    static constexpr char kKey[] = "source_type";
+    static constexpr char kNavigation[] = "navigation";
+    static constexpr char kEvent[] = "event";
+
+    auto context = PushContext(kKey);
+
+    absl::optional<AttributionSourceType> source_type;
+
+    if (const std::string* v = dict.FindString(kKey)) {
+      if (*v == kNavigation) {
+        source_type = AttributionSourceType::kNavigation;
+      } else if (*v == kEvent) {
+        source_type = AttributionSourceType::kEvent;
+      }
+    }
+
+    if (!source_type) {
+      *Error() << "must be either \"" << kNavigation << "\" or \"" << kEvent
+               << "\"";
+    }
+
+    return source_type;
+  }
+
+  bool ParseDict(base::Value::Dict& value,
+                 base::StringPiece key,
+                 base::FunctionRef<void(base::Value::Dict)> parse_dict) {
+    auto context = PushContext(key);
+
+    base::Value* dict = value.Find(key);
+    if (!EnsureDictionary(dict)) {
+      return false;
+    }
+
+    parse_dict(std::move(*dict).TakeDict());
+    return true;
+  }
+
+  bool EnsureDictionary(const base::Value* value) {
+    if (!value) {
+      *Error() << "must be present";
+      return false;
+    }
+
+    if (!value->is_dict()) {
+      *Error() << "must be a dictionary";
+      return false;
+    }
+    return true;
+  }
 
   // Returns true if `key` is present in `dict` and the integer is parsed
   // successfully.
@@ -143,512 +566,31 @@ class AttributionInteropParser {
   void ParseRandomizedResponseRate(const base::Value::Dict& dict,
                                    base::StringPiece key,
                                    double& result,
-                                   bool required);
-
-  AttributionParserErrorManager error_manager_;
-};
-
-std::unique_ptr<AttributionParserErrorManager::ScopedContext>
-AttributionInteropParser::PushContext(
-    AttributionParserErrorManager::Context context) {
-  return error_manager_.PushContext(context);
-}
-
-AttributionParserErrorManager::ErrorWriter AttributionInteropParser::Error() {
-  return error_manager_.Error();
-}
-
-void AttributionInteropParser::MoveDictValues(base::Value::Dict& in,
-                                              base::Value::Dict& out) {
-  for (auto [key, value] : in) {
+                                   bool required) {
     auto context = PushContext(key);
-    if (out.contains(key)) {
-      *Error() << "must not be present";
-      return;
-    }
-    out.Set(key, std::move(value));
-  }
-}
 
-void AttributionInteropParser::MoveValue(
-    base::Value::Dict& in,
-    base::StringPiece in_key,
-    base::Value::Dict& out,
-    absl::optional<base::StringPiece> out_key_opt) {
-  auto context = PushContext(in_key);
+    const base::Value* value = dict.Find(key);
 
-  base::Value* value = in.Find(in_key);
-  if (!value) {
-    *Error() << "must be present";
-    return;
-  }
-
-  base::StringPiece out_key = out_key_opt.value_or(in_key);
-  DCHECK(!out.contains(out_key));
-  out.Set(out_key, std::move(*value));
-}
-
-bool AttributionInteropParser::EnsureDictionary(const base::Value* value) {
-  if (!value) {
-    *Error() << "must be present";
-    return false;
-  }
-
-  if (!value->is_dict()) {
-    *Error() << "must be a dictionary";
-    return false;
-  }
-
-  return true;
-}
-
-absl::optional<std::string> AttributionInteropParser::ExtractString(
-    base::Value::Dict& dict,
-    base::StringPiece key) {
-  auto context = PushContext(key);
-
-  absl::optional<base::Value> value = dict.Extract(key);
-  if (!value) {
-    *Error() << "must be present";
-    return absl::nullopt;
-  }
-
-  if (std::string* str = value->GetIfString()) {
-    return std::move(*str);
-  }
-
-  *Error() << "must be a string";
-  return absl::nullopt;
-}
-
-void AttributionInteropParser::ParseList(
-    base::Value* values,
-    base::FunctionRef<void(base::Value)> parse_element,
-    size_t expected_size) {
-  if (!values) {
-    *Error() << "must be present";
-    return;
-  }
-
-  base::Value::List* list = values->GetIfList();
-  if (!list) {
-    *Error() << "must be a list";
-    return;
-  }
-
-  if (expected_size > 0 && list->size() != expected_size) {
-    *Error() << "must have size " << expected_size;
-    return;
-  }
-
-  size_t index = 0;
-  for (auto& value : values->GetList()) {
-    auto context = PushContext(index);
-    parse_element(std::move(value));
-    index++;
-  }
-}
-
-absl::optional<std::string> AttributionInteropParser::ParseRequest(
-    base::Value::Dict& in,
-    base::Value::Dict& out) {
-  static constexpr char kKey[] = "registration_request";
-
-  auto context = PushContext(kKey);
-
-  base::Value* request = in.Find(kKey);
-  if (!EnsureDictionary(request)) {
-    return absl::nullopt;
-  }
-
-  absl::optional<std::string> str =
-      ExtractString(request->GetDict(), "attribution_src_url");
-
-  MoveDictValues(request->GetDict(), out);
-
-  return str;
-}
-
-void AttributionInteropParser::ParseResponse(
-    base::Value::Dict& in,
-    base::Value::Dict& out,
-    const std::string& attribution_src_url) {
-  static constexpr char kKey[] = "responses";
-
-  auto context = PushContext(kKey);
-
-  ParseList(
-      in.Find(kKey),
-      [&](base::Value value) {
-        if (!EnsureDictionary(&value)) {
-          return;
-        }
-
-        static constexpr char kKeyUrl[] = "url";
-        if (absl::optional<std::string> url =
-                ExtractString(value.GetDict(), kKeyUrl);
-            url && *url != attribution_src_url) {
-          auto inner_context = PushContext(kKeyUrl);
-          *Error() << "must match " << attribution_src_url;
-        }
-
-        static constexpr char kKeyDebugPermission[] = "debug_permission";
-        if (value.GetDict().contains(kKeyDebugPermission)) {
-          MoveValue(value.GetDict(), kKeyDebugPermission, out);
-        }
-
-        static constexpr char kKeyResponse[] = "response";
-        auto inner_context = PushContext(kKeyResponse);
-        base::Value* response = value.GetDict().Find(kKeyResponse);
-        if (!EnsureDictionary(response)) {
-          return;
-        }
-
-        MoveDictValues(response->GetDict(), out);
-      },
-      /*expected_size=*/1);
-}
-
-base::Value::List AttributionInteropParser::ParseEvents(base::Value::Dict& dict,
-                                                        base::StringPiece key) {
-  auto context = PushContext(key);
-
-  base::Value::List results;
-
-  ParseList(dict.Find(key),
-            [&](base::Value value) {
-              if (!EnsureDictionary(&value)) {
-                return;
-              }
-
-              static constexpr char kKeyReportingOrigin[] = "reporting_origin";
-
-              base::Value::Dict dict;
-              MoveValue(value.GetDict(), "timestamp", dict);
-
-              // Placeholder so that it errors out if request or response
-              // contains this field.
-              dict.Set(kKeyReportingOrigin, "");
-
-              absl::optional<std::string> attribution_src_url =
-                  ParseRequest(value.GetDict(), dict);
-
-              if (has_error()) {
-                return;
-              }
-
-              DCHECK(attribution_src_url);
-
-              ParseResponse(value.GetDict(), dict, *attribution_src_url);
-
-              if (has_error()) {
-                return;
-              }
-
-              dict.Set(
-                  kKeyReportingOrigin,
-                  url::Origin::Create(GURL(std::move(*attribution_src_url)))
-                      .Serialize());
-
-              results.Append(std::move(dict));
-            });
-
-  return results;
-}
-
-base::expected<base::Value::Dict, std::string>
-AttributionInteropParser::SimulatorInputFromInteropInput(
-    base::Value::Dict input) && {
-  static constexpr char kKey[] = "input";
-
-  auto context = PushContext(kKey);
-
-  base::Value* dict = input.Find(kKey);
-  if (!EnsureDictionary(dict)) {
-    return base::unexpected(std::move(error_manager_).TakeError());
-  }
-
-  base::Value::List sources = ParseEvents(dict->GetDict(), "sources");
-  base::Value::List triggers = ParseEvents(dict->GetDict(), "triggers");
-
-  if (has_error()) {
-    return base::unexpected(std::move(error_manager_).TakeError());
-  }
-
-  base::Value::Dict result;
-  result.Set("sources", std::move(sources));
-  result.Set("triggers", std::move(triggers));
-  return result;
-}
-
-base::Value::List AttributionInteropParser::ParseEventLevelReports(
-    base::Value::Dict& output) {
-  static constexpr char kKey[] = "event_level_reports";
-
-  base::Value::List event_level_results;
-
-  base::Value* value = output.Find(kKey);
-  if (!value) {
-    return event_level_results;
-  }
-
-  auto context = PushContext(kKey);
-  ParseList(output.Find(kKey), [&](base::Value value) {
-    if (!EnsureDictionary(&value)) {
-      return;
-    }
-
-    base::Value::Dict result;
-
-    base::Value::Dict& value_dict = value.GetDict();
-    MoveValue(value_dict, "report", result, "payload");
-    MoveValue(value_dict, "report_url", result);
-    MoveValue(value_dict, "intended_report_time", result, "report_time");
-
-    if (has_error()) {
-      return;
-    }
-
-    event_level_results.Append(std::move(result));
-  });
-
-  return event_level_results;
-}
-
-base::Value::List AttributionInteropParser::ParseAggregatableReports(
-    base::Value::Dict& output) {
-  static constexpr char kKey[] = "aggregatable_reports";
-
-  base::Value::List aggregatable_results;
-
-  base::Value* value = output.Find(kKey);
-  if (!value) {
-    return aggregatable_results;
-  }
-
-  auto context = PushContext(kKey);
-  ParseList(output.Find(kKey), [&](base::Value value) {
-    if (!EnsureDictionary(&value)) {
-      return;
-    }
-
-    base::Value::Dict result;
-
-    base::Value::Dict& value_dict = value.GetDict();
-    MoveValue(value_dict, "report_url", result);
-    MoveValue(value_dict, "intended_report_time", result, "report_time");
-
-    static constexpr char kKeyTestInfo[] = "test_info";
-    base::Value* test_info;
-    {
-      auto test_info_context = PushContext(kKeyTestInfo);
-      test_info = value_dict.Find(kKeyTestInfo);
-      if (!EnsureDictionary(test_info)) {
+    if (value) {
+      absl::optional<double> d = value->GetIfDouble();
+      if (d && *d >= 0 && *d <= 1) {
+        result = *d;
         return;
       }
-    }
-
-    static constexpr char kKeyReport[] = "report";
-    {
-      auto report_context = PushContext(kKeyReport);
-      base::Value* report = value_dict.Find(kKeyReport);
-      if (!EnsureDictionary(report)) {
-        return;
-      }
-
-      MoveDictValues(test_info->GetDict(), report->GetDict());
-    }
-
-    MoveValue(value_dict, "report", result, "payload");
-
-    if (has_error()) {
+    } else if (!required) {
       return;
     }
 
-    aggregatable_results.Append(std::move(result));
-  });
-
-  return aggregatable_results;
-}
-
-base::Value::List AttributionInteropParser::ParseVerboseDebugReports(
-    base::Value::Dict& output) {
-  static constexpr char kKey[] = "verbose_debug_reports";
-
-  base::Value::List reports;
-
-  base::Value* value = output.Find(kKey);
-  if (!value) {
-    return reports;
+    *Error() << "must be a double between 0 and 1 formatted as string";
   }
-
-  auto context = PushContext(kKey);
-  ParseList(output.Find(kKey), [&](base::Value value) {
-    if (!EnsureDictionary(&value)) {
-      return;
-    }
-
-    base::Value::Dict report;
-
-    base::Value::Dict& value_dict = value.GetDict();
-    MoveValue(value_dict, "report", report, "payload");
-    MoveValue(value_dict, "report_url", report);
-    MoveValue(value_dict, "report_time", report);
-
-    if (has_error()) {
-      return;
-    }
-
-    reports.Append(std::move(report));
-  });
-
-  return reports;
-}
-
-base::expected<base::Value::Dict, std::string>
-AttributionInteropParser::InteropOutputFromSimulatorOutput(
-    base::Value::Dict output) && {
-  base::Value::List event_level_results = ParseEventLevelReports(output);
-
-  base::Value::List aggregatable_results = ParseAggregatableReports(output);
-
-  base::Value::List verbose_debug_reports = ParseVerboseDebugReports(output);
-
-  if (has_error()) {
-    return base::unexpected(std::move(error_manager_).TakeError());
-  }
-
-  base::Value::Dict dict;
-  if (!event_level_results.empty()) {
-    dict.Set("event_level_results", std::move(event_level_results));
-  }
-
-  if (!aggregatable_results.empty()) {
-    dict.Set("aggregatable_results", std::move(aggregatable_results));
-  }
-
-  if (!verbose_debug_reports.empty()) {
-    dict.Set("verbose_debug_reports", std::move(verbose_debug_reports));
-  }
-
-  return dict;
-}
-
-void AttributionInteropParser::ParseRandomizedResponseRate(
-    const base::Value::Dict& dict,
-    base::StringPiece key,
-    double& result,
-    bool required) {
-  auto context = PushContext(key);
-
-  const base::Value* value = dict.Find(key);
-
-  if (value) {
-    absl::optional<double> d = value->GetIfDouble();
-    if (d && *d >= 0 && *d <= 1) {
-      result = *d;
-      return;
-    }
-  } else if (!required) {
-    return;
-  }
-
-  *Error() << "must be a double between 0 and 1 formatted as string";
-}
-
-std::string AttributionInteropParser::ParseConfig(const base::Value::Dict& dict,
-                                                  AttributionConfig& config,
-                                                  bool required) && {
-  ParseInt(dict, "max_sources_per_origin", config.max_sources_per_origin,
-           required);
-
-  ParseInt(dict, "max_destinations_per_source_site_reporting_origin",
-           config.max_destinations_per_source_site_reporting_origin, required);
-
-  uint64_t source_event_id_cardinality;
-  if (ParseUint64(dict, "source_event_id_cardinality",
-                  source_event_id_cardinality, required,
-                  /*allow_zero=*/true)) {
-    if (source_event_id_cardinality == 0u) {
-      config.source_event_id_cardinality = absl::nullopt;
-    } else {
-      config.source_event_id_cardinality = source_event_id_cardinality;
-    }
-  }
-
-  int rate_limit_time_window;
-  if (ParseInt(dict, "rate_limit_time_window", rate_limit_time_window,
-               required)) {
-    config.rate_limit.time_window = base::Days(rate_limit_time_window);
-  }
-
-  ParseInt64(dict, "rate_limit_max_source_registration_reporting_origins",
-             config.rate_limit.max_source_registration_reporting_origins,
-             required);
-  ParseInt64(dict, "rate_limit_max_attribution_reporting_origins",
-             config.rate_limit.max_attribution_reporting_origins, required);
-  ParseInt64(dict, "rate_limit_max_attributions",
-             config.rate_limit.max_attributions, required);
-
-  ParseInt(dict, "max_event_level_reports_per_destination",
-           config.event_level_limit.max_reports_per_destination, required);
-  ParseInt(dict, "max_attributions_per_navigation_source",
-           config.event_level_limit.max_attributions_per_navigation_source,
-           required);
-  ParseInt(dict, "max_attributions_per_event_source",
-           config.event_level_limit.max_attributions_per_event_source,
-           required);
-  ParseUint64(
-      dict, "navigation_source_trigger_data_cardinality",
-      config.event_level_limit.navigation_source_trigger_data_cardinality,
-      required);
-  ParseUint64(dict, "event_source_trigger_data_cardinality",
-              config.event_level_limit.event_source_trigger_data_cardinality,
-              required);
-  ParseRandomizedResponseRate(
-      dict, "navigation_source_randomized_response_rate",
-      config.event_level_limit.navigation_source_randomized_response_rate,
-      required);
-  ParseRandomizedResponseRate(
-      dict, "event_source_randomized_response_rate",
-      config.event_level_limit.event_source_randomized_response_rate, required);
-
-  ParseInt(dict, "max_aggregatable_reports_per_destination",
-           config.aggregate_limit.max_reports_per_destination, required);
-  ParseInt64(dict, "aggregatable_budget_per_source",
-             config.aggregate_limit.aggregatable_budget_per_source, required);
-
-  int aggregatable_report_min_delay;
-  if (ParseInt(dict, "aggregatable_report_min_delay",
-               aggregatable_report_min_delay, required,
-               /*allow_zero=*/true)) {
-    config.aggregate_limit.min_delay =
-        base::Minutes(aggregatable_report_min_delay);
-  }
-
-  int aggregatable_report_delay_span;
-  if (ParseInt(dict, "aggregatable_report_delay_span",
-               aggregatable_report_delay_span, required,
-               /*allow_zero=*/true)) {
-    config.aggregate_limit.delay_span =
-        base::Minutes(aggregatable_report_delay_span);
-  }
-
-  return std::move(error_manager_).TakeError();
-}
+};
 
 }  // namespace
 
-base::expected<base::Value::Dict, std::string>
-AttributionSimulatorInputFromInteropInput(base::Value::Dict input) {
-  return AttributionInteropParser().SimulatorInputFromInteropInput(
-      std::move(input));
-}
-
-base::expected<base::Value::Dict, std::string>
-AttributionInteropOutputFromSimulatorOutput(base::Value::Dict output) {
-  return AttributionInteropParser().InteropOutputFromSimulatorOutput(
-      std::move(output));
+base::expected<AttributionSimulationEvents, std::string>
+ParseAttributionInteropInput(base::Value::Dict input,
+                             const base::Time offset_time) {
+  return AttributionInteropParser(offset_time).ParseInput(std::move(input));
 }
 
 base::expected<AttributionConfig, std::string> ParseAttributionConfig(

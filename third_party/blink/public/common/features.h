@@ -749,6 +749,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // value as before.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEarlyExitOnNoopClassOrStyleChange);
 
+// Stylus gestures for editable web content.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusRichGestures);
+
 // Stylus handwriting recognition to text input feature.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusWritingToInput);
 
@@ -772,14 +775,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kTimedHTMLParserBudget);
 // Allows reading/writing unsanitized content from/to the clipboard. Currently,
 // it is only applicable to HTML format. See crbug.com/1268679.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClipboardUnsanitizedContent);
-
-// If set, HTMLTokenizer is run on a background thread.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedHtmlTokenizer);
-
-// The maximum number of tokens the background thread will generate before
-// NextParseResults() is called.
-BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kThreadedHtmlTokenizerTokenMaxCount;
 
 // Make RTCVideoEncoder::Encode() asynchronous.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcEncoderAsyncEncode);
@@ -887,18 +882,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
 // Flag to control whether about:blank and srcdoc iframes use newly proposed
 // base url inheritance behavior from https://crbug.com/1356658.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNewBaseUrlInheritanceBehavior);
-
-// When an application calls getDisplayMedia(), a media-picker is displayed
-// to the user, allowing them to share a tab, a window or a screen.
-// * If this flag is enabled, the order is - tabs, windows, screens.
-// * If this flag is disabled, the order is - screens, windows, tabs.
-//
-// If {preferCurrentTab: true} is specified, the order is unaffected.
-//
-// When the new order is used, the default value of selfBrowserSurface
-// is "exclude", unless {preferCurrentTab: true} is specified, in which
-// case the default value is "include".
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNewGetDisplayMediaPickerOrder);
 
 // This function checks both kNewBaseUrlInheritanceBehavior and
 // kIsolateSandboxedIframes and returns true if either is enabled.

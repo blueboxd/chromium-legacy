@@ -77,7 +77,6 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
-#import "ios/chrome/browser/sessions/session_features.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/text_selection/text_selection_util.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
@@ -337,7 +336,7 @@ const FeatureEntry::FeatureVariation kModuleRefreshVariations[] = {
 };
 
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
-// Feed Background Refresh Feature Params
+// Feed Background Refresh Feature Params.
 const FeatureEntry::FeatureParam kOneHourIntervalOneHourMaxAgeOnce[] = {
     {kEnableServerDrivenBackgroundRefreshSchedule, "false"},
     {kEnableRecurringBackgroundRefreshSchedule, "false"},
@@ -379,7 +378,7 @@ const FeatureEntry::FeatureParam kServerDrivenSixHourMaxAgeRecurring[] = {
     {kMaxCacheAgeInSeconds, /*6*60*60*/ "21600"},
     {kBackgroundRefreshIntervalInSeconds, "0"}};
 
-// Feed Background Refresh Feature Variations
+// Feed Background Refresh Feature Variations.
 const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
     {"1hr Interval 1hr Max Age Once", kOneHourIntervalOneHourMaxAgeOnce,
      std::size(kOneHourIntervalOneHourMaxAgeOnce), nullptr},
@@ -401,6 +400,27 @@ const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
      std::size(kServerDrivenSixHourMaxAgeRecurring), nullptr},
 };
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
+
+// Feed Foreground Refresh Feature Params.
+const FeatureEntry::FeatureParam kFeedRefreshPostFeedSessionOnly[] = {
+    {kEnableFeedRefreshPostFeedSession, "true"},
+    {kEnableFeedRefreshOnAppBackgrounding, "false"}};
+const FeatureEntry::FeatureParam kFeedRefreshOnAppBackgroundingOnly[] = {
+    {kEnableFeedRefreshPostFeedSession, "false"},
+    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
+const FeatureEntry::FeatureParam kFeedForegroundRefreshAll[] = {
+    {kEnableFeedRefreshPostFeedSession, "true"},
+    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
+
+// Feed Foreground Refresh Feature Variations.
+const FeatureEntry::FeatureVariation kFeedForegroundRefreshVariations[] = {
+    {"Post Feed session", kFeedRefreshPostFeedSessionOnly,
+     std::size(kFeedRefreshPostFeedSessionOnly), nullptr},
+    {"On app backgrounding", kFeedRefreshOnAppBackgroundingOnly,
+     std::size(kFeedRefreshOnAppBackgroundingOnly), nullptr},
+    {"All foreground refresh methods", kFeedForegroundRefreshAll,
+     std::size(kFeedForegroundRefreshAll), nullptr},
+};
 
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
     {kTrendingQueriesHideShortcutsParam, "false"}};
@@ -519,6 +539,29 @@ const FeatureEntry::FeatureVariation kTabInactivityThresholdVariations[] = {
      std::size(kTabInactivityThresholdTwoWeeks), nullptr},
     {"Three weeks", kTabInactivityThresholdThreeWeeks,
      std::size(kTabInactivityThresholdThreeWeeks), nullptr},
+};
+
+const FeatureEntry::FeatureParam
+    kCredentialProviderExtensionPromoOnPasswordSaved[] = {
+        {kCredentialProviderExtensionPromoOnPasswordSavedParam, "true"}};
+const FeatureEntry::FeatureParam
+    kCredentialProviderExtensionPromoOnPasswordCopied[] = {
+        {kCredentialProviderExtensionPromoOnPasswordCopiedParam, "true"}};
+const FeatureEntry::FeatureParam
+    kCredentialProviderExtensionPromoOnLoginWithAutofill[] = {
+        {kCredentialProviderExtensionPromoOnLoginWithAutofillParam, "true"}};
+
+const FeatureEntry::FeatureVariation
+    kCredentialProviderExtensionPromoVariations[] = {
+        {"On password saved", kCredentialProviderExtensionPromoOnPasswordSaved,
+         std::size(kCredentialProviderExtensionPromoOnPasswordSaved), nullptr},
+        {"On password copied",
+         kCredentialProviderExtensionPromoOnPasswordCopied,
+         std::size(kCredentialProviderExtensionPromoOnPasswordCopied), nullptr},
+        {"On successful login with autofill",
+         kCredentialProviderExtensionPromoOnLoginWithAutofill,
+         std::size(kCredentialProviderExtensionPromoOnLoginWithAutofill),
+         nullptr},
 };
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
@@ -831,11 +874,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaPermissionsControlName,
      flag_descriptions::kMediaPermissionsControlDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kMediaPermissionsControl)},
-    {"enable-save-session-tabs-in-separate-files",
-     flag_descriptions::kSaveSessionTabsToSeparateFilesName,
-     flag_descriptions::kSaveSessionTabsToSeparateFilesDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(sessions::kSaveSessionTabsToSeparateFiles)},
     {"use-sf-symbols", flag_descriptions::kUseSFSymbolsName,
      flag_descriptions::kUseSFSymbolsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseSFSymbols)},
@@ -1108,11 +1146,18 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedBackgroundRefresh,
                                     kFeedBackgroundRefreshVariations,
                                     "FeedBackgroundRefresh")},
+#endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
+    {"feed-foreground-refresh-ios",
+     flag_descriptions::kFeedForegroundRefreshName,
+     flag_descriptions::kFeedForegroundRefreshDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedForegroundRefresh,
+                                    kFeedForegroundRefreshVariations,
+                                    "FeedForegroundRefresh")},
     {"omnibox-keyboard-paste-button",
      flag_descriptions::kOmniboxKeyboardPasteButtonName,
      flag_descriptions::kOmniboxKeyboardPasteButtonDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxKeyboardPasteButton)},
-#endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
+
     {"enable-open-in-download", flag_descriptions::kEnableOpenInDownloadName,
      flag_descriptions::kEnableOpenInDownloadDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableOpenInDownload,
@@ -1190,7 +1235,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"credential-provider-extension-promo",
      flag_descriptions::kCredentialProviderExtensionPromoName,
      flag_descriptions::kCredentialProviderExtensionPromoDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCredentialProviderExtensionPromo)},
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kCredentialProviderExtensionPromo,
+                                    kCredentialProviderExtensionPromoVariations,
+                                    "CredentialProviderExtensionPromo")},
     {"default-browser-blue-dot-promo",
      flag_descriptions::kDefaultBrowserBlueDotPromoName,
      flag_descriptions::kDefaultBrowserBlueDotPromoDescription,

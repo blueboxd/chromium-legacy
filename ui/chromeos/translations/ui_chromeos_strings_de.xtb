@@ -408,6 +408,7 @@
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4465725236958772856">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, von deinem Administrator verwaltet, Verbinden</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Keine passenden Ergebnisse</translation>
 <translation id="4477002475007461989">Rumänisch</translation>
 <translation id="4477219268485577442">Bulgarisch – phonetisch</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
@@ -479,6 +480,7 @@
 <translation id="4973523518332075481">Der Name darf höchstens <ph name="MAX_LENGTH" /> Zeichen lang sein</translation>
 <translation id="4973970068702235170">Fehler beim Zippen, unerwarteter Fehler: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japanisch</translation>
+<translation id="4987699874727873250">Englisch (Indien)</translation>
 <translation id="4988205478593450158">Soll "<ph name="FILE_NAME" />" wirklich gelöscht werden?</translation>
 <translation id="498902553138568924">Roter Schmetterling</translation>
 <translation id="4992066212339426712">Stummschaltung aufheben</translation>
@@ -788,6 +790,7 @@
 <translation id="7458955835361612701">Keine zuletzt angesehenen Bilder</translation>
 <translation id="7460898608667578234">Ukrainisch</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
+<translation id="7481358317100446445">Bereit</translation>
 <translation id="7486315294984620427">Um Dateien in Parallels Desktop per Drag-and-drop abzulegen, muss die Datei in „Windows-Dateien“ kopiert werden.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (phonetisch)</translation>
@@ -813,6 +816,7 @@
 <translation id="7655441028674523381">Einfacher Zugriff auf Google Fotos</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Versuch es mit einer anderen Suchanfrage</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> Elemente in Papierkorb verschoben</translation>
 <translation id="7693909743393669729">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht und alle vorhandenen Partitionen entfernt. Dies schließt ggf. auch Partitionen ein, die nicht sichtbar sind. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
 <translation id="7695430100978772476">"<ph name="DRIVE_NAME" />" konnte nicht formatiert werden</translation>
@@ -969,6 +973,7 @@
 <translation id="8866284467018526531">Arabisch (Transliteration)</translation>
 <translation id="8873014196523807561">Wenn du diese Elemente wiederherstellen möchtest, ziehe sie in einen neuen Ordner. Die ursprünglichen Ordner für einige dieser Elemente wurden gelöscht.</translation>
 <translation id="8874184842967597500">Nicht verbunden</translation>
+<translation id="8876368061475701452">In der Warteschlange</translation>
 <translation id="8900820606136623064">Ungarisch</translation>
 <translation id="8903931173357132290">Absolvent</translation>
 <translation id="8912078710089354287">Hund, der mit dem Schwanz wedelt</translation>

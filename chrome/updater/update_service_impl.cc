@@ -122,9 +122,6 @@ UpdateService::ErrorCategory ToErrorCategory(
   }
 }
 
-// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
-// done in separate CL.
-#if BUILDFLAG(IS_WIN)
 update_client::UpdateClient::CrxStateChangeCallback
 MakeUpdateClientCrxStateChangeCallbackForUpdateCheck(
     scoped_refptr<update_client::Configurator> config,
@@ -165,7 +162,6 @@ MakeUpdateClientCrxStateChangeCallbackForUpdateCheck(
       },
       config, callback, base::MakeRefCounted<RefCountedState>());
 }
-#endif  // BUILDFLAG(IS_WIN)
 
 update_client::UpdateClient::CrxStateChangeCallback
 MakeUpdateClientCrxStateChangeCallback(
@@ -291,15 +287,6 @@ void UpdateServiceImpl::RegisterApp(const RegistrationRequest& request,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request.app_id != kUpdaterAppId) {
     persisted_data_->SetHadApps();
-  }
-  base::Version current_version =
-      persisted_data_->GetProductVersion(request.app_id);
-  if (current_version.IsValid() &&
-      current_version.CompareTo(request.version) == 1) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), kRegistrationAlreadyRegistered));
-    return;
   }
   persisted_data_->RegisterApp(request);
   std::move(callback).Run(kRegistrationSuccess);
@@ -479,11 +466,7 @@ void UpdateServiceImpl::Update(
     const std::string& install_data_index,
     Priority priority,
     PolicySameVersionUpdate policy_same_version_update,
-// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
-// done in separate CL.
-#if BUILDFLAG(IS_WIN)
     bool do_update_check_only,
-#endif  // BUILDFLAG(IS_WIN)
     StateChangeCallback state_update,
     Callback callback) {
   VLOG(1) << __func__;
@@ -496,9 +479,6 @@ void UpdateServiceImpl::Update(
     return;
   }
 
-// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
-// done in separate CL.
-#if BUILDFLAG(IS_WIN)
   if (do_update_check_only) {
     main_task_runner_->PostTask(
         FROM_HERE,
@@ -517,7 +497,6 @@ void UpdateServiceImpl::Update(
             MakeUpdateClientCallback(std::move(callback))));
     return;
   }
-#endif  // BUILDFLAG(IS_WIN)
 
   ShouldBlockUpdateForMeteredNetwork(
       priority,

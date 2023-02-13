@@ -63,14 +63,10 @@ constexpr int kOpenTabsSectionIndex = 0;
 constexpr int kSuggestedActionsSectionIndex = 1;
 
 NSString* const kCellIdentifier = @"GridCellIdentifier";
-
 NSString* const kPlusSignCellIdentifier = @"PlusSignCellIdentifier";
-
 NSString* const kSuggestedActionsCellIdentifier =
     @"SuggestedActionsCellIdentifier";
-
-NSString* const kSuggestedActionsSectionIdentifier =
-    @"SuggestedActionsSectionIdentifier";
+NSString* const kGridHeaderIdentifier = @"GridHeaderIdentifier";
 
 // Creates an NSIndexPath with `index` in section 0.
 NSIndexPath* CreateIndexPath(NSInteger index) {
@@ -208,7 +204,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       forCellWithReuseIdentifier:kSuggestedActionsCellIdentifier];
   [collectionView registerClass:[GridHeader class]
       forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
-             withReuseIdentifier:UICollectionElementKindSectionHeader];
+             withReuseIdentifier:kGridHeaderIdentifier];
 
   // During deletion (in horizontal layout) the backgroundView can resize,
   // revealing temporarily the collectionView background. This makes sure
@@ -515,31 +511,37 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
           viewForSupplementaryElementOfKind:(NSString*)kind
                                 atIndexPath:(NSIndexPath*)indexPath {
-  GridHeader* headerView =
-      [collectionView dequeueReusableSupplementaryViewOfKind:kind
-                                         withReuseIdentifier:kind
-                                                forIndexPath:indexPath];
-  if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
-    switch (indexPath.section) {
-      case kOpenTabsSectionIndex: {
-        headerView.title = l10n_util::GetNSString(
-            IDS_IOS_TABS_SEARCH_OPEN_TABS_SECTION_HEADER_TITLE);
-        NSString* resultsCount = [NSString
-            stringWithFormat:@"%ld",
-                             base::checked_cast<NSInteger>(self.items.count)];
-        headerView.value =
-            l10n_util::GetNSStringF(IDS_IOS_TABS_SEARCH_OPEN_TABS_COUNT,
-                                    base::SysNSStringToUTF16(resultsCount));
-        break;
+  switch (_mode) {
+    case TabGridModeNormal:
+    case TabGridModeSelection:
+      NOTREACHED();
+      return nil;
+    case TabGridModeSearch: {
+      GridHeader* headerView = [collectionView
+          dequeueReusableSupplementaryViewOfKind:kind
+                             withReuseIdentifier:kGridHeaderIdentifier
+                                    forIndexPath:indexPath];
+      switch (indexPath.section) {
+        case kOpenTabsSectionIndex: {
+          headerView.title = l10n_util::GetNSString(
+              IDS_IOS_TABS_SEARCH_OPEN_TABS_SECTION_HEADER_TITLE);
+          NSString* resultsCount = [NSString
+              stringWithFormat:@"%ld",
+                               base::checked_cast<NSInteger>(self.items.count)];
+          headerView.value =
+              l10n_util::GetNSStringF(IDS_IOS_TABS_SEARCH_OPEN_TABS_COUNT,
+                                      base::SysNSStringToUTF16(resultsCount));
+          break;
+        }
+        case kSuggestedActionsSectionIndex: {
+          headerView.title =
+              l10n_util::GetNSString(IDS_IOS_TABS_SEARCH_SUGGESTED_ACTIONS);
+          break;
+        }
       }
-      case kSuggestedActionsSectionIndex: {
-        headerView.title =
-            l10n_util::GetNSString(IDS_IOS_TABS_SEARCH_SUGGESTED_ACTIONS);
-        break;
-      }
+      return headerView;
     }
   }
-  return headerView;
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -630,15 +632,21 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
-  if (_mode != TabGridModeSearch || !_searchText.length) {
-    return CGSizeZero;
-  }
-  CGFloat height = UIContentSizeCategoryIsAccessibilityCategory(
-                       self.traitCollection.preferredContentSizeCategory)
-                       ? kGridHeaderAccessibilityHeight
-                       : kGridHeaderHeight;
+  switch (_mode) {
+    case TabGridModeNormal:
+    case TabGridModeSelection:
+      return CGSizeZero;
+    case TabGridModeSearch:
+      if (_searchText.length == 0) {
+        return CGSizeZero;
+      }
 
-  return CGSizeMake(collectionView.bounds.size.width, height);
+      CGFloat height = UIContentSizeCategoryIsAccessibilityCategory(
+                           self.traitCollection.preferredContentSizeCategory)
+                           ? kGridHeaderAccessibilityHeight
+                           : kGridHeaderHeight;
+      return CGSizeMake(collectionView.bounds.size.width, height);
+  }
 }
 
 // This prevents the user from dragging a cell past the plus sign cell (the last
@@ -1368,7 +1376,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (CGFloat)offsetPastEndOfScrollView {
-  // Use collectionViewLayout.collectionViwContentSize because it has the
+  // Use collectionViewLayout.collectionViewContentSize because it has the
   // correct size during a batch update.
   return self.collectionView.contentOffset.x +
          self.collectionView.frame.size.width -
@@ -1744,6 +1752,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 #pragma mark - Public Editing Mode Selection
+
 - (void)selectAllItemsForEditing {
   if (_mode != TabGridModeSelection) {
     return;

@@ -20,7 +20,6 @@ namespace {
 
 using ::attribution_reporting::mojom::TriggerRegistrationError;
 
-constexpr char kDeduplicationKey[] = "deduplication_key";
 constexpr char kTriggerData[] = "trigger_data";
 
 }  // namespace
@@ -44,7 +43,7 @@ EventTriggerData::FromJSON(base::Value& value) {
 
   uint64_t data = ParseUint64(*dict, kTriggerData).value_or(0);
   int64_t priority = ParsePriority(*dict);
-  absl::optional<uint64_t> dedup_key = ParseUint64(*dict, kDeduplicationKey);
+  absl::optional<uint64_t> dedup_key = ParseDeduplicationKey(*dict);
 
   return EventTriggerData(data, priority, dedup_key, std::move(*filters),
                           std::move(*not_filters));
@@ -71,10 +70,7 @@ base::Value::Dict EventTriggerData::ToJson() const {
 
   SerializeUint64(dict, kTriggerData, data);
   SerializePriority(dict, priority);
-
-  if (dedup_key) {
-    SerializeUint64(dict, kDeduplicationKey, *dedup_key);
-  }
+  SerializeDeduplicationKey(dict, dedup_key);
 
   return dict;
 }

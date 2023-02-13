@@ -799,26 +799,44 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         touch_handles_hidden_due_to_scroll_ =
             touch_selection_controller_ != nullptr;
         DestroyTouchSelection();
-        drag_start_location_ = event->location();
-        drag_start_display_offset_ =
-            GetRenderText()->GetUpdatedDisplayOffset().x();
+#if BUILDFLAG(IS_CHROMEOS)
+        if (::features::IsTouchTextEditingRedesignEnabled()) {
+          // If the scroll begins in a horizontal direction, use the scroll
+          // sequence for cursor placement.
+          const float abs_delta_x = abs(event->details().scroll_x_hint());
+          const float abs_delta_y = abs(event->details().scroll_y_hint());
+          if (abs_delta_x >= abs_delta_y) {
+            dragging_cursor_ = true;
+          }
+        }
+#endif
+        if (!dragging_cursor_) {
+          drag_start_location_ = event->location();
+          drag_start_display_offset_ =
+              GetRenderText()->GetUpdatedDisplayOffset().x();
+        }
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (HasFocus()) {
-        int new_offset = drag_start_display_offset_ + event->location().x() -
-                         drag_start_location_.x();
-        GetRenderText()->SetDisplayOffset(new_offset);
-        SchedulePaint();
+        if (dragging_cursor_) {
+          MoveCursorTo(event->location(), false);
+        } else {
+          int new_offset = drag_start_display_offset_ + event->location().x() -
+                           drag_start_location_.x();
+          GetRenderText()->SetDisplayOffset(new_offset);
+          SchedulePaint();
+        }
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
       if (HasFocus()) {
-        if (touch_handles_hidden_due_to_scroll_) {
+        if (dragging_cursor_ || touch_handles_hidden_due_to_scroll_) {
           CreateTouchSelectionControllerAndNotifyIt();
+          dragging_cursor_ = false;
           touch_handles_hidden_due_to_scroll_ = false;
         }
         event->SetHandled();
@@ -1740,7 +1758,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
       return !GetText().empty() &&
              GetSelectedRange().length() != GetText().length();
     case ui::TextEditCommand::SELECT_WORD:
-      return !GetText().empty();
+      return readable && !GetText().empty() && !HasSelection();
     case ui::TextEditCommand::TRANSPOSE:
       return editable && !HasSelection() && !model_->HasCompositionText();
     case ui::TextEditCommand::YANK:
@@ -1770,8 +1788,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::INVALID_COMMAND:
       return false;
   }
-  NOTREACHED();
-  return false;
+  NOTREACHED_NORETURN();
 }
 
 void Textfield::SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) {
@@ -2135,8 +2152,7 @@ Textfield::EditCommandResult Textfield::DoExecuteTextEditCommand(
     case ui::TextEditCommand::SET_MARK:
     case ui::TextEditCommand::UNSELECT:
     case ui::TextEditCommand::INVALID_COMMAND:
-      NOTREACHED();
-      break;
+      NOTREACHED_NORETURN();
   }
 
   return {changed, cursor_changed};
@@ -2441,7 +2457,7 @@ void Textfield::UpdateBorder() {
       extra_insets_.right() + provider->GetDistanceMetric(
                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   if (invalid_) {
-    border->SetColorId(ui::kColorAlertHighSeverity);
+    border->SetColorId(ui::kColorTextfieldInvalidOutline);
   }
   border->SetCornerRadius(GetCornerRadius());
   View::SetBorder(std::move(border));
@@ -2509,8 +2525,13 @@ void Textfield::UpdateCursorViewPosition() {
 }
 
 int Textfield::GetTextStyle() const {
-  return (GetReadOnly() || !GetEnabled()) ? style::STYLE_DISABLED
-                                          : style::STYLE_PRIMARY;
+  if (GetReadOnly() || !GetEnabled()) {
+    return style::STYLE_DISABLED;
+  } else if (GetInvalid()) {
+    return style::STYLE_INVALID;
+  } else {
+    return style::STYLE_PRIMARY;
+  }
 }
 
 void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {

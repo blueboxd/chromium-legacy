@@ -18,7 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/subresource_url_authorizations.h"
@@ -30,7 +30,6 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
-#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -41,6 +40,7 @@ struct AuctionConfig;
 
 namespace content {
 
+class AttributionDataHostManager;
 class AuctionWorkletManager;
 class InterestGroupManagerImpl;
 
@@ -121,6 +121,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // All passed in raw pointers, including those in *BidInfo fields must outlive
   // the created InterestGroupAuctionReporter.
   //
+  // `attribution_data_host_manager` is needed to create `FencedFrameReporter`
+  // and could be null in Incognito mode or in test.
+  //
   // `frame_origin` is the origin of the frame that ran the auction.
   //
   // `client_security_state` is the ClientSecurityState of the frame.
@@ -135,6 +138,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   InterestGroupAuctionReporter(
       InterestGroupManagerImpl* interest_group_manager,
       AuctionWorkletManager* auction_worklet_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
       std::unique_ptr<blink::AuctionConfig> auction_config,
       const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
@@ -147,7 +151,9 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
       std::vector<GURL> debug_loss_report_urls,
       base::flat_set<std::string> k_anon_keys_to_join,
       std::map<url::Origin, PrivateAggregationRequests>
-          private_aggregation_requests);
+          private_aggregation_requests_reserved,
+      std::map<std::string, PrivateAggregationRequests>
+          private_aggregation_requests_non_reserved);
 
   ~InterestGroupAuctionReporter();
 
@@ -180,13 +186,27 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // that created it).
   const std::vector<std::string>& errors() const { return errors_; }
   std::map<url::Origin, PrivateAggregationRequests>
-  TakePrivateAggregationRequests() {
-    return std::move(private_aggregation_requests_);
+  TakeReservedPrivateAggregationRequests() {
+    return std::move(private_aggregation_requests_reserved_);
   }
 
-  // Retrieves the ad beacon map. May only be called once, since it takes
-  // ownership of the stored ad beacon map.
-  ReportingMetadata TakeAdBeaconMap() { return std::move(ad_beacon_map_); }
+  std::map<std::string, PrivateAggregationRequests>
+  TakeNonReservedPrivateAggregationRequests() {
+    return std::move(private_aggregation_requests_non_reserved_);
+  }
+
+  // The FencedFrameReporter that `this` will pass event-level ad beacon
+  // information received from reporting worklets to, as they're received.
+  // Created by `this`. The consumer is responsible for wiring this up to a
+  // fenced frame URN mapping, so that any fenced frame the winning ad is loaded
+  // into can find it to send reports.
+  //
+  // This is refcounted, so both the InterestGroupAuctionReporter and fenced
+  // frame URN mapping can continue to access it if the other is destroyed
+  // first.
+  scoped_refptr<FencedFrameReporter> fenced_frame_reporter() {
+    return fenced_frame_reporter_.get();
+  }
 
  private:
   // Starts request for a seller worklet. Invokes OnSellerWorkletReceived() on
@@ -311,15 +331,13 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // been flushed. Keyed by the origin of the script that issued the request
   // (i.e. the reporting origin).
   std::map<url::Origin, PrivateAggregationRequests>
-      private_aggregation_requests_;
-
-  // Ad Beacon URL mapping generated from reportResult() or reportWin() from
-  // this auction and its components. Destination is relative to this auction.
-  // Returned to `callback_` to deal with, so the Auction itself can be
-  // deleted at the end of the auction.
-  ReportingMetadata ad_beacon_map_;
+      private_aggregation_requests_reserved_;
+  std::map<std::string, PrivateAggregationRequests>
+      private_aggregation_requests_non_reserved_;
 
   std::vector<GURL> pending_report_urls_;
+
+  const scoped_refptr<FencedFrameReporter> fenced_frame_reporter_;
 
   bool reporting_complete_ = false;
   bool navigated_to_winning_ad_ = false;

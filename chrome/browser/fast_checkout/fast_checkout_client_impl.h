@@ -7,12 +7,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/fast_checkout/fast_checkout_accessibility_service.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher.h"
 #include "chrome/browser/fast_checkout/fast_checkout_client.h"
 #include "chrome/browser/fast_checkout/fast_checkout_enums.h"
 #include "chrome/browser/fast_checkout/fast_checkout_personal_data_helper.h"
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller_impl.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -27,7 +29,8 @@ class FastCheckoutClientImpl
       public FastCheckoutClient,
       public FastCheckoutControllerImpl::Delegate,
       public autofill::PersonalDataManagerObserver,
-      public autofill::AutofillManager::Observer {
+      public autofill::AutofillManager::Observer,
+      public autofill::payments::FullCardRequest::ResultDelegate {
  public:
   ~FastCheckoutClientImpl() override;
 
@@ -59,6 +62,15 @@ class FastCheckoutClientImpl
   void OnAutofillManagerDestroyed() override;
   // Is called on navigation and resets its internal state.
   void OnAutofillManagerReset() override;
+
+  // autofill::payments::FullCardRequest::ResultDelegate:
+  void OnFullCardRequestSucceeded(
+      const autofill::payments::FullCardRequest& full_card_request,
+      const autofill::CreditCard& card,
+      const std::u16string& cvc) override;
+  void OnFullCardRequestFailed(
+      autofill::CreditCard::RecordType card_type,
+      autofill::payments::FullCardRequest::FailureType failure_type) override;
 
   // Filling state of a form during a run.
   enum class FillingState {
@@ -151,6 +163,10 @@ class FastCheckoutClientImpl
   // notification.
   void UpdateFillingStates();
 
+  // Makes accessibility announcements for when a form was filled.
+  void A11yAnnounce(autofill::FormSignature form_signature,
+                    bool is_credit_card_form);
+
   // Triggers reparse with a delay of `kSleepBetweenTriggerReparseCalls`.
   // Reparsing updates the forms cache `autofill_manager_->form_structures()`
   // with current data from the renderer, eventually calling
@@ -183,6 +199,9 @@ class FastCheckoutClientImpl
   // Checks whether a run should be permitted or not.
   std::unique_ptr<FastCheckoutTriggerValidator> trigger_validator_;
 
+  // Makes a11y announcements.
+  std::unique_ptr<FastCheckoutAccessibilityService> accessibility_service_;
+
   // True if a run is ongoing; used to avoid multiple runs in parallel.
   bool is_running_ = false;
 
@@ -207,6 +226,10 @@ class FastCheckoutClientImpl
   // The current state of the bottomsheet.
   FastCheckoutUIState fast_checkout_ui_state_ =
       FastCheckoutUIState::kNotShownYet;
+
+  // Identifier of the credit card form to be filled once the CVC popup is
+  // fulfilled.
+  absl::optional<autofill::FormGlobalId> credit_card_form_global_id_;
 
   base::ScopedObservation<autofill::PersonalDataManager,
                           autofill::PersonalDataManagerObserver>

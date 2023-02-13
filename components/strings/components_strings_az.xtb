@@ -501,7 +501,6 @@
 <translation id="2148613324460538318">Kart Əlavə Edin</translation>
 <translation id="2149968176347646218">Bağlantı güvənli deyil</translation>
 <translation id="2153609454945889823">Google Play AR Xidmətləri quraşdırılsın?</translation>
-<translation id="2154054054215849342">Sinxronlaşma domeniniz üçün əlçatan deyil</translation>
 <translation id="2154484045852737596">Kartı redaktə edin</translation>
 <translation id="2155260325161282517">5 x 7 düym</translation>
 <translation id="2157640075051554492">Qiymət izləmə bildirişləri</translation>
@@ -524,6 +523,7 @@
 <translation id="2202627062836089804">kartınızın arxa tərəfi</translation>
 <translation id="22081806969704220">Qab 3</translation>
 <translation id="2210794033760923560">Hesabatı yükləyin</translation>
+<translation id="2212579473415663542">Bu ünvan Google Hesabınızda (<ph name="ACCOUNT" />) saxlanılıb. İstənilən cihazda Google məhsullarında ünvandan istifadə edə bilərsiniz.</translation>
 <translation id="2212735316055980242">Siyasət tapılmadı</translation>
 <translation id="2213606439339815911">Daxil etmələr əldə edilir...</translation>
 <translation id="2213612003795704869">Səhifə çap olunub</translation>
@@ -539,6 +539,7 @@
 <translation id="2241693394036365668">Fayl endirilir</translation>
 <translation id="2246264294482514010">10 x 12 düym</translation>
 <translation id="2246480341630108201">Valideyniniz hələ icazə verməyib</translation>
+<translation id="2247789808226901522">Kartın müddəti bitib</translation>
 <translation id="2248949050832152960">WebAuthn işlədin</translation>
 <translation id="2250931979407627383">Soldan kənarını tikin</translation>
 <translation id="225207911366869382">Bu dəyər bu qayda üçün köhnəlib.</translation>
@@ -1073,6 +1074,7 @@
 <translation id="3646643500201740985">Bir reklamın nə qədər yaxşı performans göstərdiyini ölçmək</translation>
 <translation id="3647286794400715637">Hər bir keçid sətri daxiletməsində 1-2 keçid olmalıdır.</translation>
 <translation id="3650584904733503804">Yoxlama uğurludur</translation>
+<translation id="3650594806107685466">Kartınızın təhlükəsizliyini təmin etmək üçün <ph name="SIDE_OF_CARD" /> tərəfdəki CVC-ni daxil edin</translation>
 <translation id="3653033846669030038">Tematik parklar</translation>
 <translation id="3655241534245626312">İcazə ayarlarına keçin</translation>
 <translation id="3655670868607891010">Əgər bunu tez-tez görürsünüzsə, <ph name="HELP_LINK" /> linkini sınayın.</translation>
@@ -1852,6 +1854,7 @@
 <translation id="5552137475244467770">Chrome müntəzəm olaraq onlayn yayımlanan siyahılar əsasında parollarınızı yoxlayır. Bunu edərkən, parollar və istifadəçi adları şifrələnir ki, Google daxil olmaqla, heç kim onları oxuya bilməsin.</translation>
 <translation id="5556459405103347317">Yenidən yükləyin</translation>
 <translation id="5558125320634132440">Bu sayt böyüklər üçün məzmun ehtiva etdiyinə görə bloklanıb.</translation>
+<translation id="5559311991468302423">Ünvanı silin</translation>
 <translation id="5560088892362098740">Bitmə Tarixi</translation>
 <translation id="55635442646131152">Sənəd icmalı</translation>
 <translation id="5565613213060953222">Anonim tab açın</translation>
@@ -1968,6 +1971,7 @@
 <translation id="5866898949289125849">Developer alətlər səhifəsinə baxırsınız</translation>
 <translation id="5869405914158311789">Bu sayta qoşulmaq olmur</translation>
 <translation id="5869522115854928033">Saxlanılmış parollar</translation>
+<translation id="5872692522325383488">IBAN yadda saxlanıldı</translation>
 <translation id="5873013647450402046">Bankınız bunun siz olduğunuzu təsdiq etmək istəyir.</translation>
 <translation id="5877831137320480913">Gözəllik və fitnes</translation>
 <translation id="5884465125445718607">Zərf Çin #6</translation>
@@ -2137,6 +2141,7 @@
 <translation id="6300452962057769623">{0,plural, =0{Cihazınız indi yenidən başladılacaq}=1{Cihazınız 1 saniyə ərzində yenidən başladılacaq}other{Cihazınız # saniyə ərzində yenidən başladılacaq}}</translation>
 <translation id="6301104306974789820">Qiymət izləmə bildirişləri alın</translation>
 <translation id="6305205051461490394"><ph name="URL" /> əlçatmazdır.</translation>
+<translation id="6306713302480826305">Bu ünvan bu və digər daxil olduğunuz cihazlardan silinəcək</translation>
 <translation id="6311165245110979290">Virtual kart əlçatandır</translation>
 <translation id="6312113039770857350">Veb səhifə əlçatan deyil</translation>
 <translation id="6316226860534107313">Skuter və mopedlər</translation>
@@ -2451,6 +2456,7 @@
 <translation id="7112327784801341716">Cari məlumatlarınızı görmürsünüz? Yeniləmək üçün bankınızla əlaqə saxlayın.</translation>
 <translation id="7118618213916969306">Mübadilə buferindən link axtarın, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Digər tab və ya proqramları bağlayın</translation>
+<translation id="7124354851782353862">CVC-ni daxil edin</translation>
 <translation id="7129355289156517987">Bütün Chromium Anonim tablarını bağladığınız zaman həmin tablardakı fəaliyyətiniz bu cihazdan silinir:
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />Axtarış fəaliyyəti<ph name="END_LIST_ITEM" />
@@ -2777,6 +2783,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Heç bir tətbiq}=1{1 tətbiq (<ph name="EXAMPLE_APP_1" />)}=2{2 tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">Daha sonra ziyarət etdiyiniz sayt gördüyünüz reklamları fərdiləşdirmək üçün Chrome'dan mövzularınızı istəyə bilər. Baxış tarixçənizi və kimliyinizi qoruyarkən Chrome 3-ə qədər mövzu paylaşır.</translation>
+<translation id="7860345425589240791">Yeni bitmə tarixini və <ph name="SIDE_OF_CARD" /> tərəfdəki CVC-ni daxil edin</translation>
 <translation id="7862185352068345852">Saytdan çıxılsın?</translation>
 <translation id="7865448901209910068">Ən yüksək sürət</translation>
 <translation id="7871445724586827387">Google Hesabı parolunuzu dəyişin</translation>
@@ -3028,6 +3035,7 @@
 <translation id="8473863474539038330">Ünvanlar və s.</translation>
 <translation id="8474910779563686872">Tərtibatçı detallarını göstərin</translation>
 <translation id="8479754468255770962">Aşağı soldan ştapel vurun</translation>
+<translation id="8483229036294884935">Bu ünvan Google Hesabınızdan (<ph name="ACCOUNT" />) silinəcək</translation>
 <translation id="8483780878231876732">Google Hesabınızdan kartları istifadə etmək üçün, Chrome'a daxil olun</translation>
 <translation id="8488350697529856933">Tətbiq olunur</translation>
 <translation id="8490137692873530638">Yığıcı 10</translation>

@@ -705,6 +705,7 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_12_emulator_gtests',
+          'isolated_scripts': 'private_code_failure_test_isolated_scripts',
         }
       },
       'android-12l-x64-dbg-tests': {
@@ -1736,6 +1737,7 @@
         'mixins': [
           'arm64',
           'docker',
+          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2183,8 +2185,6 @@
         },
       },
       'mac-code-coverage': {
-        'os_type': 'mac',
-        'browser_config': 'release',
         'mixins': [
           'isolate_profile_data',
           'mac_12_x64',
@@ -2192,7 +2192,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts_code_coverage',
-          'gpu_telemetry_tests': 'gpu_dawn_webgpu_cts',
+          # TODO(crbug.com/1399354): Enable gpu_dawn_webgpu_cts
         },
       },
       'win10-code-coverage': {
@@ -2200,6 +2200,7 @@
         'browser_config': 'release_x64',
         'mixins': [
           'isolate_profile_data',
+          'win10'
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -2627,6 +2628,7 @@
         'mixins': [
           'arm64',
           'docker',
+          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2641,6 +2643,7 @@
         'mixins': [
           'arm64',
           'docker',
+          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2709,6 +2712,7 @@
         'mixins': [
           'arm64',
           'docker',
+          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2723,6 +2727,7 @@
         'mixins': [
           'arm64',
           'docker',
+          'lifo-test-pool',
           'linux-focal',
         ],
       },
@@ -2952,14 +2957,6 @@
         'additional_compile_targets': [
           'all'
         ],
-      },
-      'Linux CFI (reclient shadow)': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_and_gl_gtests',
-        },
       },
       'Linux Viz': {
         'mixins': [
@@ -5704,6 +5701,24 @@
     'name': 'chromium.updater',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
+      'linux-updater-tester-dbg': {
+        'mixins': [
+          'linux-bionic',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_linux',
+        },
+      },
+      'linux-updater-tester-rel': {
+        'mixins': [
+          'linux-bionic',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_linux',
+        },
+      },
       'mac-updater-builder-arm64-dbg': {
         'additional_compile_targets': ['chrome/updater:all'],
       },
@@ -5720,185 +5735,115 @@
         'additional_compile_targets': ['chrome/updater:all'],
       },
       'mac10.13-updater-tester-dbg': {
+        'mixins': [
+          'mac_10.13',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.13',
-            }
-          ]
         },
       },
       'mac10.13-updater-tester-rel': {
+        'mixins': [
+          'mac_10.13',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.13',
-            }
-          ]
         },
       },
       'mac10.14-updater-tester-dbg': {
+        'mixins': [
+          'mac_10.14',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.14',
-            }
-          ]
         },
       },
       'mac10.14-updater-tester-rel': {
+        'mixins': [
+          'mac_10.14',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.14',
-            }
-          ]
         },
       },
       'mac10.15-updater-tester-dbg': {
+        'mixins': [
+          'mac_10.15',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.15',
-            }
-          ]
         },
       },
       'mac10.15-updater-tester-rel': {
+        'mixins': [
+          'mac_10.15',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-10.15',
-            }
-          ]
-        },
       },
       'mac11-arm64-updater-tester-dbg': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'arm-64',
-              'os': 'Mac-11',
-            }
-          ]
-        },
+        'mixins': [
+          'mac_11_arm64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
       },
       'mac11-arm64-updater-tester-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'arm-64',
-              'os': 'Mac-11',
-            }
-          ]
-        },
+        'mixins': [
+          'mac_11_arm64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
       },
       'mac11-x64-updater-tester-dbg': {
+        'mixins': [
+          'mac_11_x64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-11',
-            }
-          ]
         },
       },
       'mac11-x64-updater-tester-rel': {
+        'mixins': [
+          'mac_11_x64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-11',
-            }
-          ]
-        },
       },
       'mac12-arm64-updater-tester-rel': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'arm-64',
-              'os': 'Mac-12',
-            }
-          ]
-        },
+        'mixins': [
+          'mac_12_arm64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
         },
       },
       'mac12-x64-updater-tester-asan-dbg': {
+        'mixins': [
+          'mac_12_x64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-12',
-            }
-          ]
         },
       },
       'mac13-arm64-updater-tester-dbg': {
+        'mixins': [
+          'mac_13_arm64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'arm-64',
-              'os': 'Mac-13',
-            }
-          ]
         },
       },
       'mac13-x64-updater-tester-rel': {
+        'mixins': [
+          'mac_13_x64',
+        ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_mac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cpu': 'x86-64',
-              'os': 'Mac-13',
-            }
-          ]
         },
       },
       'win-updater-builder-dbg': {
@@ -5915,14 +5860,6 @@
         'test_suites': {
           'gtest_tests': 'updater_gtests_win',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-              'pool': 'chromium.tests',
-            }
-          ]
-        },
       },
       'win10-32-on-64-updater-tester-rel': {
         'mixins': [
@@ -5931,14 +5868,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-              'pool': 'chromium.tests',
-            }
-          ]
         },
       },
       'win10-updater-tester-dbg': {
@@ -5949,14 +5878,6 @@
         'test_suites': {
           'gtest_tests': 'updater_gtests_win',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-              'pool': 'chromium.tests',
-            }
-          ]
-        },
       },
       'win10-updater-tester-dbg-uac': {
         'mixins': [
@@ -5965,13 +5886,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_win_uac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.win.uac',
-            }
-          ]
         },
       },
       'win10-updater-tester-rel': {
@@ -5982,14 +5896,6 @@
         'test_suites': {
           'gtest_tests': 'updater_gtests_win',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-              'pool': 'chromium.tests',
-            }
-          ]
-        },
       },
       'win10-updater-tester-rel-uac': {
         'mixins': [
@@ -5998,13 +5904,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_win_uac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.win.uac',
-            }
-          ]
         },
       },
       'win11-updater-tester-dbg-uac': {
@@ -6015,13 +5914,6 @@
         'test_suites': {
           'gtest_tests': 'updater_gtests_win_uac',
         },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.win.uac',
-            }
-          ]
-        },
       },
       'win11-updater-tester-rel': {
         'mixins': [
@@ -6030,14 +5922,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-              'pool': 'chromium.tests',
-            }
-          ]
         },
       },
       'win32-updater-builder-dbg': {

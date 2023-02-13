@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/anchor_specifier_value.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -47,7 +48,7 @@ using animation_test_helpers::CreateSimpleKeyframeEffectForTest;
 
 class StyleResolverTest : public PageTestBase {
  protected:
-  scoped_refptr<ComputedStyle> StyleForId(AtomicString id) {
+  scoped_refptr<const ComputedStyle> StyleForId(AtomicString id) {
     Element* element = GetDocument().getElementById(id);
     auto style = GetStyleEngine().GetStyleResolver().ResolveStyle(
         element, StyleRecalcContext());
@@ -576,7 +577,7 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   StyleRequest target_text_style_request = pseudo_style_request;
   target_text_style_request.pseudo_id = kPseudoIdTargetText;
 
-  scoped_refptr<ComputedStyle> target_text_style =
+  scoped_refptr<const ComputedStyle> target_text_style =
       GetDocument().GetStyleResolver().ResolveStyle(GetDocument().body(),
                                                     StyleRecalcContext(),
                                                     target_text_style_request);
@@ -585,7 +586,7 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   StyleRequest selection_style_style_request = pseudo_style_request;
   selection_style_style_request.pseudo_id = kPseudoIdSelection;
 
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           GetDocument().body(), StyleRecalcContext(),
           selection_style_style_request);
@@ -1222,7 +1223,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotCounted1) {
   pseudo_style_request.layout_parent_override = element_style;
   pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           target, StyleRecalcContext(), pseudo_style_request);
   ASSERT_FALSE(selection_style);
@@ -1263,7 +1264,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotCounted2) {
   pseudo_style_request.layout_parent_override = element_style;
   pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           target, StyleRecalcContext(), pseudo_style_request);
   ASSERT_TRUE(selection_style);
@@ -1303,7 +1304,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudotNone) {
   pseudo_style_request.layout_parent_override = element_style;
   pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           target, StyleRecalcContext(), pseudo_style_request);
   ASSERT_TRUE(selection_style);
@@ -1340,7 +1341,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotNone1) {
   pseudo_style_request.layout_parent_override = element_style;
   pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           target, StyleRecalcContext(), pseudo_style_request);
   ASSERT_TRUE(selection_style);
@@ -1380,7 +1381,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotNone2) {
   pseudo_style_request.layout_parent_override = element_style;
   pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
-  scoped_refptr<ComputedStyle> selection_style =
+  scoped_refptr<const ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
           target, StyleRecalcContext(), pseudo_style_request);
   ASSERT_TRUE(selection_style);
@@ -3051,7 +3052,9 @@ static const TreeScope* GetAnchorQueryTreeScope(const Length& length) {
   DCHECK(length.GetCalculationValue().IsExpression());
   const auto& query = To<CalculationExpressionAnchorQueryNode>(
       *length.GetCalculationValue().GetOrCreateExpression());
-  return query.AnchorName() ? query.AnchorName()->GetTreeScope() : nullptr;
+  return query.AnchorSpecifier().IsNamed()
+             ? query.AnchorSpecifier().GetName().GetTreeScope()
+             : nullptr;
 }
 
 TEST_F(StyleResolverTest, ScopedAnchorFunction) {

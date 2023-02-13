@@ -946,6 +946,8 @@ if (is_android) {
       "../browser/password_manager/passwords_navigation_observer.cc",
       "../browser/password_manager/passwords_navigation_observer.h",
       "../browser/policy/policy_prefs_browsertest.cc",
+      "../browser/preloading/prefetch/search_prefetch/search_preload_test_response_utils.cc",
+      "../browser/preloading/prefetch/search_prefetch/search_preload_test_response_utils.h",
       "../browser/preloading/prefetch/search_prefetch/search_preload_unified_browsertest.cc",
       "../browser/profiles/profile_browsertest_android.cc",
       "../browser/safe_browsing/client_side_detection_service_browsertest.cc",
@@ -1246,10 +1248,7 @@ if (!is_android) {
     use_xvfb = use_xvfb_in_this_config
 
     configs += [ "//build/config:precompiled_headers" ]
-    configs += [
-      ":disable_thinlto_cache_flags",
-      ":pdb_larger_than_4gb",
-    ]
+    configs += [ ":disable_thinlto_cache_flags" ]
     defines = [
       "HAS_OUT_OF_PROC_TEST_RUNNER",
       "CHROME_VERSION_MAJOR=" + chrome_version_major,
@@ -2052,6 +2051,8 @@ if (!is_android) {
       "../browser/preloading/prefetch/search_prefetch/search_prefetch_browser_test_base.cc",
       "../browser/preloading/prefetch/search_prefetch/search_prefetch_browser_test_base.h",
       "../browser/preloading/prefetch/search_prefetch/search_prefetch_service_browsertest.cc",
+      "../browser/preloading/prefetch/search_prefetch/search_preload_test_response_utils.cc",
+      "../browser/preloading/prefetch/search_prefetch/search_preload_test_response_utils.h",
       "../browser/preloading/prefetch/search_prefetch/search_preload_unified_browsertest.cc",
       "../browser/preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper_browsertest.cc",
       "../browser/privacy_sandbox/privacy_sandbox_settings_browsertest.cc",
@@ -2515,7 +2516,11 @@ if (!is_android) {
 
     if (enable_pdf) {
       sources += [
+        "../browser/pdf/pdf_extension_accessibility_test.cc",
+        "../browser/pdf/pdf_extension_js_test.cc",
         "../browser/pdf/pdf_extension_test.cc",
+        "../browser/pdf/pdf_extension_test_base.cc",
+        "../browser/pdf/pdf_extension_test_base.h",
         "../browser/pdf/pdf_find_request_manager_browsertest.cc",
         "../browser/plugins/pdf_iframe_navigation_throttle_browsertest.cc",
       ]
@@ -2527,18 +2532,21 @@ if (!is_android) {
         "//pdf:features",
         "//pdf/loader",
       ]
+
+      if (enable_printing) {
+        sources += [ "../browser/pdf/pdf_extension_printing_test.cc" ]
+
+        # TODO(crbug.com/1414651): All printToPdf tests consistenly fail on ChromeOS
+        if (!is_chromeos) {
+          sources += [
+            "../browser/devtools/protocol/devtools_printtopdf_browsertest.cc",
+          ]
+        }
+      }
     }
 
     if (safe_browsing_mode != 0) {
       deps += [ "//components/safe_browsing/content/common/proto:download_file_types_proto" ]
-    }
-
-    # TODO(crbug.com/1240796): Page.printToPdf is currently available only when
-    # Chrome is running in headless mode and native headless mode is currently
-    # available only on Linux, Windows and Mac platforms.
-    if (enable_printing && enable_pdf && (is_linux || is_win || is_mac)) {
-      sources +=
-          [ "../browser/devtools/protocol/devtools_printtopdf_browsertest.cc" ]
     }
 
     if (is_linux) {
@@ -4302,6 +4310,7 @@ if (!is_android) {
         "//chrome/browser/metrics/structured",
         "//chrome/browser/nearby_sharing/common",
         "//chrome/browser/policy:onc",
+        "//chrome/browser/policy/messaging_layer/proto:log_upload_event_proto",
         "//chrome/browser/resources/chromeos/accessibility:browser_tests",
         "//chrome/browser/ui:ash_test_support",
         "//chrome/browser/ui/ash/holding_space:browser_tests",
@@ -4874,6 +4883,7 @@ if (is_chromeos_lacros) {
       "../browser/extensions/api/preference/preference_api_lacros_browsertest.cc",
       "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
       "../browser/extensions/extension_keeplist_lacros_browsertest.cc",
+      "../browser/feedback/show_feedback_page_lacros_browsertest.cc",
       "../browser/lacros/browser_launcher_browsertest.cc",
       "../browser/lacros/browser_service_lacros_browsertest.cc",
       "../browser/lacros/cert/cert_db_initializer_browsertest.cc",
@@ -4881,6 +4891,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/clipboard_lacros_browsertest.cc",
       "../browser/lacros/component_policy_lacros_browsertest.cc",
       "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
+      "../browser/lacros/geolocation/system_geolocation_source_lacros_browsertest.cc",
       "../browser/lacros/holding_space_service_lacros_browsertest.cc",
       "../browser/lacros/input_method_lacros_browsertest.cc",
       "../browser/lacros/keystore_service_lacros_browsertest.cc",
@@ -4920,6 +4931,7 @@ if (is_chromeos_lacros) {
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
+      "../browser/ui/views/profiles/profile_picker_window_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
       "../browser/ui/views/web_apps/web_app_integration_browsertest_win_linux_cros.cc",
@@ -4952,6 +4964,7 @@ if (is_chromeos_lacros) {
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/startup",
       "//chromeos/ui/base",
+      "//chromeos/ui/frame",
       "//components/account_manager_core:test_support",
       "//components/captive_portal/content:content",
       "//components/captive_portal/core:buildflags",
@@ -5149,7 +5162,7 @@ template("performance_test_suite_template_base") {
     script = "//testing/scripts/run_performance_tests.py"
     if (is_chromeos_device) {
       if (defined(override_board)) {
-        args = [ "bin/cros_update_wrapper --board=${override_board} --flash ../../tools/perf/run_benchmark" ]
+        args = [ "bin/cros_update_wrapper --board=${override_board} ../../tools/perf/run_benchmark" ]
       } else {
         args = [ "bin/cros_update_wrapper ../../tools/perf/run_benchmark" ]
       }
@@ -5282,15 +5295,6 @@ config("disable_thinlto_cache_flags") {
     # cache.
     # TODO (crbug.com/1183211): Re-enable once the linker has been fixed.
     ldflags = [ "-Wl,--thinlto-cache-dir=" ]
-  }
-}
-
-config("pdb_larger_than_4gb") {
-  if (is_win && symbol_level == 2 && use_thin_lto) {
-    # These binaries create PDBs larger than 4 GiB. Increasing the PDB page
-    # size allows larger PDBs, but not all tools can handle such large PDBs
-    # yet.
-    ldflags = [ "/pdbpagesize:8192" ]
   }
 }
 
@@ -5723,6 +5727,10 @@ test("unit_tests") {
     ]
   }
 
+  if (is_linux) {
+    sources += [ "../browser/metrics/pressure/pressure_metrics_unittest.cc" ]
+  }
+
   if (enable_feed_v2) {
     sources += [
       "../browser/feed/feed_service_factory_unittest.cc",
@@ -5781,10 +5789,7 @@ test("unit_tests") {
   }
 
   configs += [ "//build/config:precompiled_headers" ]
-  configs += [
-    ":disable_thinlto_cache_flags",
-    ":pdb_larger_than_4gb",
-  ]
+  configs += [ ":disable_thinlto_cache_flags" ]
 
   data_deps = [
     "//chrome/test/data/media/engagement/preload:generate_preload_list",

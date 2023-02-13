@@ -408,6 +408,7 @@
 <translation id="4462159676511157176">Kohandatud nimeserverid</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />. võrk <ph name="NETWORK_COUNT" />-st, <ph name="NETWORK_NAME" />, võrku haldab teie administraator, ühenda</translation>
 <translation id="4470564870223067757">Hanguli 2. seade</translation>
+<translation id="4474142134969976028">Sobivaid tulemusi pole</translation>
 <translation id="4477002475007461989">rumeenia</translation>
 <translation id="4477219268485577442">Bulgaaria foneetiline</translation>
 <translation id="4508265954913339219">Aktiveerimine nurjus</translation>
@@ -479,6 +480,7 @@
 <translation id="4973523518332075481">Kasutage nime, milles on kuni <ph name="MAX_LENGTH" /> tähemärki</translation>
 <translation id="4973970068702235170">Pakkumine nurjus, ootamatu viga: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">jaapani</translation>
+<translation id="4987699874727873250">inglise (India)</translation>
 <translation id="4988205478593450158">Kas soovite kindlasti faili <ph name="FILE_NAME" /> kustutada?</translation>
 <translation id="498902553138568924">Punane liblikas</translation>
 <translation id="4992066212339426712">Tühista vaigistus</translation>
@@ -788,6 +790,7 @@
 <translation id="7458955835361612701">Hiljutisi pilte pole</translation>
 <translation id="7460898608667578234">ukraina keel</translation>
 <translation id="7469894403370665791">Võta automaatselt selle võrguga ühendust</translation>
+<translation id="7481358317100446445">Valmis</translation>
 <translation id="7486315294984620427">Failide pukseerimiseks Parallels Desktopile peab fail olema kopeeritud Windowsi failide hulka.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajalami, foneetiline</translation>
@@ -813,6 +816,7 @@
 <translation id="7655441028674523381">Lihtne juurdepääs rakendusele Google Photos</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7663224033570512922">hindi</translation>
+<translation id="7665680517722058469">Proovige muud otsingut</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> üksust teisaldati prügikasti</translation>
 <translation id="7693909743393669729">Ketta vormindamisel kustutatakse kõik sellel olevad andmed ja eemaldatakse kõik olemasolevad partitsioonid (sh nähtamatud partitsioonid). Seda toimingut ei saa tagasi võtta.</translation>
 <translation id="7695430100978772476">Ei saanud ketast <ph name="DRIVE_NAME" /> vormindada</translation>

@@ -17,7 +17,12 @@
   margin-inline-end: auto;
   margin-inline-start: auto;
   margin-top: 14px;
+  transition: all 250ms;
   width: 64px;
+}
+
+.icon-container:active {
+  transform: scale(0.94);
 }
 
 .text-container {
@@ -52,9 +57,9 @@ cr-checkbox::part(label-container) {
 
 </style>
 
-<div class="icon-container">
+<div class="icon-container" id="iconContainer">
   <img src="[[getIconUrl_(appInfo)]]" class="icon-image"
-  alt="[[appInfo.name]]" aria-hidden="true"></img>
+  alt="[[appInfo.name]]" aria-hidden="true" draggable="false"></img>
 </div>
 <div class="text-container" aria-hidden="true">[[appInfo.name]]</div>
 

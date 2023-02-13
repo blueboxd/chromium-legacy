@@ -42,6 +42,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/media_log.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
@@ -61,7 +62,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
@@ -70,7 +70,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/p2p/base/port_allocator.h"
 
@@ -262,9 +261,6 @@ void Platform::InitializeMainThreadCommon(
       CanvasMemoryDumpProvider::Instance(), "Canvas",
       base::SingleThreadTaskRunner::GetCurrentDefault());
 
-  SkGraphics::SetVariableColrV1EnabledFunc(
-      RuntimeEnabledFeatures::VariableCOLRV1Enabled);
-
   // Use a delayed idle task as this is low priority work that should stop when
   // the main thread is not doing any work.
   WTF::Partitions::StartPeriodicReclaim(
@@ -301,8 +297,19 @@ Platform* Platform::Current() {
 }
 
 std::unique_ptr<WebURLLoaderFactory> Platform::WrapURLLoaderFactory(
-    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>) {
-  return nullptr;
+    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        url_loader_factory) {
+  return WrapURLLoaderFactory(
+      base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
+              std::move(url_loader_factory))));
+}
+
+std::unique_ptr<WebURLLoaderFactory> Platform::WrapURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  return std::make_unique<blink::WebURLLoaderFactory>(
+      std::move(url_loader_factory), blink::WebVector<blink::WebString>(),
+      /*terminate_sync_load_event=*/nullptr);
 }
 
 std::unique_ptr<WebDedicatedWorkerHostFactoryClient>

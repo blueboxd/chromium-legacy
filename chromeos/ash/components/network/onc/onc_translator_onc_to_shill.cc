@@ -414,6 +414,20 @@ void LocalTranslator::TranslateEAP() {
   }
 
   CopyFieldsAccordingToSignature();
+
+  // Set value or an empty list for ServerCAPEMs if it is not provided by onc.
+  // It will override the previous known list during properties merge.
+  if (onc_object_->contains(::onc::eap::kServerCAPEMs)) {
+    CopyFieldFromONCToShill(::onc::eap::kServerCAPEMs,
+                            shill::kEapCaCertPemProperty);
+  } else {
+    bool is_supported_ca_pem_protocols =
+        (outer == ::onc::eap::kEAP_TLS || outer == ::onc::eap::kEAP_TTLS ||
+         outer == ::onc::eap::kPEAP);
+    if (is_supported_ca_pem_protocols) {
+      shill_dictionary_->Set(shill::kEapCaCertPemProperty, base::Value::List());
+    }
+  }
 }
 
 void LocalTranslator::TranslateStaticIPConfig() {
@@ -662,13 +676,13 @@ void TranslateONCHierarchy(const chromeos::onc::OncValueSignature& signature,
 
 }  // namespace
 
-base::Value TranslateONCObjectToShill(
+base::Value::Dict TranslateONCObjectToShill(
     const chromeos::onc::OncValueSignature* onc_signature,
-    const base::Value& onc_object) {
-  CHECK(onc_signature != NULL);
+    const base::Value::Dict& onc_object) {
+  CHECK(onc_signature != nullptr);
   base::Value::Dict shill_dictionary;
-  TranslateONCHierarchy(*onc_signature, onc_object.GetDict(), shill_dictionary);
-  return base::Value(std::move(shill_dictionary));
+  TranslateONCHierarchy(*onc_signature, onc_object, shill_dictionary);
+  return shill_dictionary;
 }
 
 }  // namespace ash::onc

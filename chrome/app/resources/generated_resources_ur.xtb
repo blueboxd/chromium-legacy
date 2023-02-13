@@ -219,6 +219,7 @@
 <translation id="1192706927100816598">{0,plural, =1{آپ خودکار طور پر # سیکنڈ میں سائن آؤٹ ہو جائیں گے۔
 <ph name="DOMAIN" /> آپ سے اپنا سمارٹ کارڈ داخل کئے رکھنے کا تقاضا کرتا ہے۔}other{آپ خودکار طور پر # سیکنڈ میں سائن آؤٹ ہو جائیں گے۔
 <ph name="DOMAIN" /> آپ سے اپنا سمارٹ کارڈ داخل کئے رکھنے کا تقاضا کرتا ہے۔}}</translation>
+<translation id="119330003005586565">آپ کے پڑھے ہوئے صفحات</translation>
 <translation id="1193927020065025187">ممکن ہے یہ سائٹ آپ کو دھوکہ سے دخل انداز اطلاعات کی اجازت دینے کی کوشش کر رہی ہو</translation>
 <translation id="1195210374336998651">ایپ کی ترتیبات پر جائیں</translation>
 <translation id="1195447618553298278">نامعلوم خرابی۔</translation>
@@ -281,6 +282,7 @@
 <translation id="1244303850296295656">ایکسٹینشن میں خرابی</translation>
 <translation id="1245628370644070008">مقامی ڈیٹا کی بازیابی</translation>
 <translation id="1246863218384630739">‏<ph name="VM_NAME" /> کو انسٹال نہیں کیا جا سکا: تصویری URL نے <ph name="HTTP_ERROR" /> خرابی کا کوڈ واپس کر دیا۔ براہ کرم اپنے منتظم سے رابطہ کریں۔</translation>
+<translation id="1247372569136754018">مائیکروفون (داخلی)</translation>
 <translation id="1249818027270187058">{NUM_SITES,plural, =1{1 سائٹ کے لیے اطلاعات کی اجازت نہیں ہے}other{{NUM_SITES} سائٹس کے لیے اطلاعات کی اجازت نہیں ہے}}</translation>
 <translation id="1251366534849411931">ابتدائی خمیدہ قوسین کی توقع ہے: <ph name="ERROR_LINE" /></translation>
 <translation id="1251480783646955802">اس سے سائٹس اور انسٹال کردہ ایپس کا <ph name="TOTAL_USAGE" /> اسٹور کردہ ڈیٹا صاف ہو جائے گا</translation>
@@ -538,6 +540,7 @@
 <translation id="1482626744466814421">اس ٹیب کو بُک مارک کریں...</translation>
 <translation id="1482772681918035149">پاس ورڈز میں ترمیم کریں</translation>
 <translation id="1483493594462132177">بھیجیں</translation>
+<translation id="1484102317210609525">‎<ph name="DEVICE_NAME" /> (HDMI/DP)‎</translation>
 <translation id="1484979925941077974">سائٹ بلوٹوتھ کا استعمال کر رہی ہے</translation>
 <translation id="1485015260175968628">اب ممکن ہے:</translation>
 <translation id="1485141095922496924">ورژن <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -626,6 +629,7 @@
 <translation id="1567387640189251553">آپ کے پچھلی مرتبہ اپنا پاس ورڈ درج کرنے کے بعد سے ایک مختلف کی بورڈ منسلک کیا گیا ہے۔ یہ آپ کی کلید کے اسٹروکس کو چوری کرنے کی کوشش کر سکتا ہے۔</translation>
 <translation id="156793199942386351">'<ph name="CURRENTKEY" />' پہلے سے ہی '<ph name="ACTION" />' کارروائی کو تفویض کردہ ہے۔ <ph name="RESPONSE" /> کے لیے کوئی بھی کلید دبائیں۔</translation>
 <translation id="1567993339577891801">‏JavaScript کونسول</translation>
+<translation id="1569466257325986920">‏اگلی بار جب آپ کے Google اکاؤنٹ کا پاس ورڈ تبدیل ہوتا ہے تو آپ کے Google اکاؤنٹ میں سائن ان کرنے کے بعد آپ کا مقامی ڈیٹا خودکار طور پر بازیافت ہو جائے گا</translation>
 <translation id="1570604804919108255">اطلاعات کو غیر خاموش کریں</translation>
 <translation id="1571304935088121812">صارف نام کاپی کریں</translation>
 <translation id="1571738973904005196">ٹیب ملاحظہ کریں: <ph name="TAB_ORIGIN" /></translation>
@@ -884,6 +888,7 @@
 <translation id="1781979858217752599">ونڈو آڈیو کا اشتراک کریں</translation>
 <translation id="1782101999402987960">آپ کے منتظم کی جانب سے اپ ڈیٹس کو مسدود کر دیا گیا</translation>
 <translation id="1782196717298160133">آپ کا فون تلاش کرنا</translation>
+<translation id="1782541958479207225">{NUM_NOTES,plural, =1{1 نوٹ}other{# نوٹس}}</translation>
 <translation id="1784707308176068866">تعاون کرنے والی اصل ایپلیکیشن کی درخواست پر پس منظر میں چلائیں</translation>
 <translation id="1784849162047402014">آلہ میں ڈسک کی جگہ کم ہے</translation>
 <translation id="1787350673646245458">صارف تصویر</translation>
@@ -1094,6 +1099,7 @@
 <translation id="1965624977906726414">کوئی خصوصی اجازتیں نہیں ہیں۔</translation>
 <translation id="1966649499058910679">بولے جانے پر ہر لفظ کو نمایاں کریں</translation>
 <translation id="1967970931040389207">ہاٹ سپاٹ آن کریں</translation>
+<translation id="1969011864782743497">‎<ph name="DEVICE_NAME" /> (USB)‎</translation>
 <translation id="1969654639948595766">‏WebRTC ٹیکسٹ لاگز (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1972325230031091483">آپ تیزی سے براؤز کریں گے کیونکہ مواد آپ کے موجودہ ویب صفحہ کے ملاحظہ کی بنیاد پر فعال طور پر لوڈ ہوتا ہے</translation>
 <translation id="197288927597451399">رکھیں</translation>
@@ -1677,6 +1683,7 @@
 <translation id="2467755475704469005">کسی آلے کا پتہ نہیں چلا۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="2468178265280335214">ٹچ پیڈ کے اسکرول کا ایکسیلریشن</translation>
 <translation id="2468205691404969808">چاہے آپ وہ صفحات ملاحظہ نہ کریں، تب بھی آپ کی ترجیحات یاد رکھنے کے لیے کوکیز استعمال کرتا ہے</translation>
+<translation id="2468247643665097563">ترتیب</translation>
 <translation id="2468402215065996499">تاما گوچی</translation>
 <translation id="2468470085922875120">آپ ایسے پاس ورڈ استعمال کر رہے ہیں جن کا اندازہ لگانا مشکل ہے</translation>
 <translation id="2468845464436879514">{NUM_TABS,plural, =1{<ph name="GROUP_TITLE" /> - 1 ٹیب}other{<ph name="GROUP_TITLE" /> - # ٹیبز}}</translation>
@@ -1818,7 +1825,6 @@
 <translation id="25899519884572181">ریڈر وضع سے باہر نکلیں</translation>
 <translation id="2593499352046705383">‏شروع کرنے سے پہلے ، یقینی بنائیں کہ آپ کے پاس اپنے ڈیٹا کا بیک اپ ہے۔ <ph name="DEVICE_OS" /> کو انسٹال کرنے سے آپ کی ہارڈ ڈرائیو اوور رائٹ ہو جائے گی۔ g.co/flex/InstallGuide پر مزید جانیں۔</translation>
 <translation id="2594999711683503743">‏Google پر تلاش کریں یا URL ٹائپ کریں</translation>
-<translation id="25957578727513093">‏یہاں تیزی سے پہنچنے کے لئے، Google پاس ورڈ مینیجر میں ایک شارٹ کٹ شامل کریں</translation>
 <translation id="2599048253926156421">صارف کا نام کلپ بورڈ پر کاپی ہو گیا</translation>
 <translation id="2602501489742255173">شروع کرنے کیلئے اوپر سوائپ کریں</translation>
 <translation id="2603115962224169880">کمپیوٹر صاف کریں</translation>
@@ -2396,6 +2402,7 @@
 <translation id="3103451787721578293">براہ کرم اس ڈیٹا کو اپ لوڈ کرنے کی وجہ درج کریں:</translation>
 <translation id="3105339775057145050">آخری ناکام اپ ڈیٹ</translation>
 <translation id="3105796011181310544">‏Google پر واپس جائیں؟</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (بلوٹوتھ)</translation>
 <translation id="310671807099593501">سائٹ بلوٹوتھ استعمال کر رہی ہے</translation>
 <translation id="3108931485517391283">موصول نہیں کر سکتے</translation>
 <translation id="3108957152224931571">ہائی لائٹ کا رنگ</translation>
@@ -3037,6 +3044,7 @@
 <translation id="371300529209814631">آگے/پیچھے</translation>
 <translation id="3713047097299026954">اس سیکیورٹی کلید میں کوئی بھی سائن ان ڈیٹا نہیں ہے</translation>
 <translation id="3713091615825314967">خود کار اپ ڈیٹس آن ہیں۔</translation>
+<translation id="371370241367527062">سامنے کا مائیکروفون</translation>
 <translation id="3714195043138862580">اس ڈیمو آلہ کو "غیر فراہم کردہ" کی حالت میں رکھ دیا گیا ہے۔</translation>
 <translation id="3719826155360621982">ہوم صفحہ</translation>
 <translation id="372062398998492895">CUPS</translation>
@@ -3132,6 +3140,7 @@
 <translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" کو <ph name="SEARCH_ENGINE" /> میں تلاش کریں</translation>
 <translation id="3798449238516105146">ورژن</translation>
 <translation id="3798632811625902122">بلوٹوتھ آلہ <ph name="DEVICE" /> کو جوڑا بنانے کی اجازت درکار ہے۔</translation>
+<translation id="3798670284305777884">اسپیکر (داخلی)</translation>
 <translation id="3799128412641261490">سوئچ رسائی کی ترتیبات</translation>
 <translation id="3800030395703848668">فہرست دیکھنے کے اختیارات</translation>
 <translation id="3800806661949714323">سبھی دکھائیں (تجویز کردہ)</translation>
@@ -5132,6 +5141,7 @@
 <translation id="5643620609347735571">صاف کریں اور جاری رکھیں</translation>
 <translation id="5646376287012673985">مقام</translation>
 <translation id="5646558797914161501">تاجر</translation>
+<translation id="5648021990716966815">مائیک جیک</translation>
 <translation id="5648166631817621825">آخری 7 دن</translation>
 <translation id="5651308944918885595">قریبی آلات کے ساتھ اشتراک کی قابل دریافتگی</translation>
 <translation id="5653154844073528838">آپ کے پاس <ph name="PRINTER_COUNT" /> محفوظ کردہ پرنٹرز ہیں۔</translation>
@@ -5521,6 +5531,7 @@
 <translation id="6007240208646052708">آپ کی زبان میں صوتی تلاش دستیاب نہیں ہے۔</translation>
 <translation id="6010651352520077187">‏آن ہونے پر، Google ترجمہ سائٹس کو آپ کی ترجیحی زبان میں ترجمہ کرنے کی پیشکش کرے گا۔ یہ سائٹس کا خودکار طور پر ترجمہ بھی کر سکتا ہے۔</translation>
 <translation id="6011193465932186973">فنگر پرنٹ</translation>
+<translation id="6011308810877101166">تلاش کی تجاویز کو بہتر بنائیں</translation>
 <translation id="6011908034087870826"><ph name="DEVICE_NAME" /> پر لنک بھیجا جا رہا ہے</translation>
 <translation id="6013027779243312217">اپنی آڈیو اور ویڈیو کیلئے کیپشنز حاصل کریں</translation>
 <translation id="6014293228235665243">بغیر پڑھے ہوئے</translation>
@@ -5838,6 +5849,7 @@
 <translation id="630292539633944562">ذاتی معلومات کی تجاویز</translation>
 <translation id="6305607932814307878">عالمی پالیسی:</translation>
 <translation id="6305909198255586420">براہ کرم اپنی بنیادی پروفائل استعمال کر کے انسٹال کریں</translation>
+<translation id="630750887748244481">‏آپ کے والدین نے Chrome کے لیے "سائٹس، ایپس اور ایکسٹینشنز کی اجازتیں" کو آف کر دیا ہے۔ اس ایکسٹینشن کو شامل کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="6307990684951724544">سسٹم مصروف ہے</translation>
 <translation id="6308493641021088955"><ph name="EXTENSION_NAME" /> کی طرف سے فراہم کردہ سائن ان</translation>
 <translation id="6308937455967653460">&amp;لنک محفوظ کریں بطور…</translation>
@@ -5945,6 +5957,7 @@
 <translation id="6410668567036790476">سرچ انجن شامل کریں</translation>
 <translation id="641469293210305670">اپ ڈیٹس اور ایپس انسٹال کریں</translation>
 <translation id="6414878884710400018">سسٹم کی ترجیحات کھولیں</translation>
+<translation id="6415816101512323589">اپنے ڈیٹا کے تحفظ کے لیے مقامی ڈیٹا کی بازیابی کو آن کریں؟</translation>
 <translation id="6415900369006735853">اپنے فون کے ذریعے انٹرنیٹ سے منسلک ہوں</translation>
 <translation id="6416743254476733475">اپنے کمپیوٹر پر کارروائی کرنے کی اجازت دیں یا مسدود کريں۔</translation>
 <translation id="6417265370957905582">‏Google اسسٹنٹ</translation>
@@ -6238,6 +6251,7 @@
 <translation id="6678717876183468697">‏استفسار کا URL</translation>
 <translation id="6680442031740878064">دستیاب ہے: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">درجہ بندی کریں</translation>
+<translation id="6683022854667115063">ہیڈ فونز</translation>
 <translation id="6683087162435654533">تمام ٹیبز کو بحال کریں</translation>
 <translation id="6684827949542560880">تازہ ترین اپ ڈیٹ ڈاؤن لوڈ کیا جارہا ہے</translation>
 <translation id="668599234725812620">‏Google Play کھولیں</translation>
@@ -6736,7 +6750,6 @@
 <translation id="711840821796638741">منظم کردہ بُک مارکس دکھائیں</translation>
 <translation id="711985611146095797">‏یہ صفحہ آپ کو اپنے سائن ان کردہ Google اکاؤنٹس کا نظم کرنے کی اجازت دیتا ہے۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="7120762240626567834">‏Chrome براؤزر اور Android ٹریفک VPN کے منسلک ہونے تک مسدود رہے گا</translation>
-<translation id="7120865473764644444">مطابقت پذیری سرور سے منسلک نہیں کیا جا سکا۔ دوبارہ کوشش کی جا رہی ہے…</translation>
 <translation id="7121438501124788993">ڈویلپر وضع</translation>
 <translation id="7121728544325372695">اسمارٹ ڈیشز</translation>
 <translation id="7123030151043029868">خودکار طور پر متعدد فائلز ڈاؤن لوڈ کرنے کی اجازت ہے</translation>
@@ -6866,6 +6879,7 @@
 <translation id="7255002516883565667">ابھی، آپ کے پاس ایک ایسا کارڈ ہے جسے صرف اس آلہ پر استعمال کیا جا سکتا ہے</translation>
 <translation id="7255935316994522020">لاگو کریں</translation>
 <translation id="7256069762010468647">سائٹ آپ کا کیمرا استعمال کر رہی ہے</translation>
+<translation id="7256634071279256947">پیچھے کا مائیکروفون</translation>
 <translation id="7256710573727326513">ٹیب میں کھولیں</translation>
 <translation id="7257173066616499747">‏Wi-Fi نیٹ ورکس</translation>
 <translation id="725758059478686223">پرنٹنگ سروس</translation>
@@ -7979,6 +7993,7 @@
 <translation id="8251509999076836464"><ph name="DEVICE_NAME" /> سے جوڑا بنایا جا رہا ہے</translation>
 <translation id="8251578425305135684">تھمب نیل کو ہٹا دیا گیا۔</translation>
 <translation id="825238165904109940">‏ہمیشہ مکمل URLs دکھائیں</translation>
+<translation id="8252538334423261825">ایکسٹینشن شامل نہیں کر سکتے</translation>
 <translation id="8252569384384439529">اپ لوڈ ہو رہی ہے...</translation>
 <translation id="8253198102038551905">نیٹ ورک کی خصوصیات حاصل کرنے کیلئے '+' پر کلک کریں</translation>
 <translation id="8255212965098517578">حالیہ تصاویر، اطلاعات اور ایپس</translation>

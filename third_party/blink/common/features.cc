@@ -1504,14 +1504,18 @@ BASE_FEATURE(kEarlyExitOnNoopClassOrStyleChange,
              "EarlyExitOnNoopClassOrStyleChange",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kStylusRichGestures,
+             "StylusRichGestures",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 BASE_FEATURE(kStylusWritingToInput,
              "StylusWritingToInput",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAndroidExtendedEditingCommands,
              "AndroidExtendedEditingCommands",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",
@@ -1528,13 +1532,6 @@ BASE_FEATURE(kTimedHTMLParserBudget,
 BASE_FEATURE(kClipboardUnsanitizedContent,
              "ClipboardUnsanitizedContent",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kThreadedHtmlTokenizer,
-             "ThreadedHtmlTokenizer",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-const base::FeatureParam<int> kThreadedHtmlTokenizerTokenMaxCount{
-    &kThreadedHtmlTokenizer, "max-count", 2048};
 
 BASE_FEATURE(kWebRtcEncoderAsyncEncode,
              "WebRtcEncoderAsyncEncode",
@@ -1582,10 +1579,6 @@ BASE_FEATURE(kThreadedBodyLoader,
 
 BASE_FEATURE(kNewBaseUrlInheritanceBehavior,
              "NewBaseUrlInheritanceBehavior",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kNewGetDisplayMediaPickerOrder,
-             "NewGetDisplayMediaPickerOrder",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsNewBaseUrlInheritanceBehaviorEnabled() {

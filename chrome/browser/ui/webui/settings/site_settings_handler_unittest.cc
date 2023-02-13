@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/callback_helpers.h"
@@ -384,14 +385,14 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
     const base::Value* event_data = data.arg2();
     ASSERT_TRUE(event_data->is_dict());
 
-    absl::optional<bool> enabled = event_data->FindBoolKey("enabled");
+    absl::optional<bool> enabled = event_data->GetDict().FindBool("enabled");
     ASSERT_TRUE(enabled.has_value());
     EXPECT_EQ(expected_enabled, *enabled);
 
-    const base::Value* pref_data = event_data->FindDictPath("pref");
-    ASSERT_TRUE(pref_data && pref_data->is_dict());
+    const base::Value::Dict* pref_data = event_data->GetDict().FindDict("pref");
+    ASSERT_TRUE(pref_data);
 
-    absl::optional<bool> value = pref_data->FindBoolKey("value");
+    absl::optional<bool> value = pref_data->FindBool("value");
     ASSERT_TRUE(value.has_value());
     EXPECT_EQ(expected_value, *value);
   }
@@ -512,11 +513,11 @@ class SiteSettingsHandlerBaseTest : public testing::Test {
     const base::Value* result = data.arg3();
     ASSERT_TRUE(result->is_dict());
 
-    absl::optional<bool> valid = result->FindBoolKey("isValid");
+    absl::optional<bool> valid = result->GetDict().FindBool("isValid");
     ASSERT_TRUE(valid.has_value());
     EXPECT_EQ(expected_validity, *valid);
 
-    const std::string* reason = result->FindStringKey("reason");
+    const std::string* reason = result->GetDict().FindString("reason");
     ASSERT_TRUE(reason);
     EXPECT_EQ(expected_reason, *reason);
   }
@@ -903,17 +904,20 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
 
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(1UL, site_groups.size());
-    for (const base::Value& site_group : site_groups) {
+    for (const base::Value& site_group_val : site_groups) {
+      const base::Value::Dict& site_group = site_group_val.GetDict();
       const std::string& etld_plus1_string =
-          site_group.FindKey("etldPlus1")->GetString();
+          CHECK_DEREF(site_group.FindString("etldPlus1"));
       const base::Value::List& origin_list =
-          site_group.FindKey("origins")->GetList();
+          CHECK_DEREF(site_group.FindList("origins"));
       EXPECT_EQ("example.com", etld_plus1_string);
       EXPECT_EQ(2UL, origin_list.size());
-      EXPECT_EQ(url1.spec(), origin_list[0].FindKey("origin")->GetString());
-      EXPECT_EQ(0, origin_list[0].FindKey("engagement")->GetDouble());
-      EXPECT_EQ(url2.spec(), origin_list[1].FindKey("origin")->GetString());
-      EXPECT_EQ(0, origin_list[1].FindKey("engagement")->GetDouble());
+      const base::Value::Dict& first_origin = origin_list[0].GetDict();
+      const base::Value::Dict& second_origin = origin_list[1].GetDict();
+      EXPECT_EQ(url1.spec(), CHECK_DEREF(first_origin.FindString("origin")));
+      EXPECT_EQ(0, first_origin.FindDouble("engagement"));
+      EXPECT_EQ(url2.spec(), CHECK_DEREF(second_origin.FindString("origin")));
+      EXPECT_EQ(0, second_origin.FindDouble("engagement"));
     }
   }
 
@@ -932,14 +936,16 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
 
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
-    for (const base::Value& site_group : site_groups) {
+    for (const base::Value& site_group_val : site_groups) {
+      const base::Value::Dict& site_group = site_group_val.GetDict();
       const std::string& etld_plus1_string =
-          site_group.FindKey("etldPlus1")->GetString();
+          CHECK_DEREF(site_group.FindString("etldPlus1"));
       const base::Value::List& origin_list =
-          site_group.FindKey("origins")->GetList();
+          CHECK_DEREF(site_group.FindList("origins"));
       if (etld_plus1_string == "example2.net") {
         EXPECT_EQ(1UL, origin_list.size());
-        EXPECT_EQ(url3.spec(), origin_list[0].FindKey("origin")->GetString());
+        const base::Value::Dict& first_origin = origin_list[0].GetDict();
+        EXPECT_EQ(url3.spec(), CHECK_DEREF(first_origin.FindString("origin")));
       } else {
         EXPECT_EQ("example.com", etld_plus1_string);
       }
@@ -984,8 +990,10 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
 
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
-    EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
-    EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
+    EXPECT_EQ("example.com",
+              CHECK_DEREF(site_groups[0].GetDict().FindString("etldPlus1")));
+    EXPECT_EQ("example2.net",
+              CHECK_DEREF(site_groups[1].GetDict().FindString("etldPlus1")));
   }
 
   // Add an expired embargo setting to an existing eTLD+1 group and make sure it
@@ -1012,8 +1020,10 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
 
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
-    EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
-    EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
+    EXPECT_EQ("example.com",
+              CHECK_DEREF(site_groups[0].GetDict().FindString("etldPlus1")));
+    EXPECT_EQ("example2.net",
+              CHECK_DEREF(site_groups[1].GetDict().FindString("etldPlus1")));
   }
 
   // Add an expired embargo to a new eTLD+1 and make sure it doesn't appear.
@@ -1040,8 +1050,10 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
 
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(2UL, site_groups.size());
-    EXPECT_EQ("example.com", site_groups[0].FindKey("etldPlus1")->GetString());
-    EXPECT_EQ("example2.net", site_groups[1].FindKey("etldPlus1")->GetString());
+    EXPECT_EQ("example.com",
+              CHECK_DEREF(site_groups[0].GetDict().FindString("etldPlus1")));
+    EXPECT_EQ("example2.net",
+              CHECK_DEREF(site_groups[1].GetDict().FindString("etldPlus1")));
   }
 
   // Same extension url from different content setting types shows only one
@@ -1066,9 +1078,11 @@ TEST_F(SiteSettingsHandlerTest, GetAllSites) {
     // "chrome-extension://<extension_id>" so it is before other site groups in
     // the list.
     EXPECT_EQ(extension->url().spec(),
-              site_groups[0].FindKey("etldPlus1")->GetString());
-    EXPECT_EQ("example.com", site_groups[1].FindKey("etldPlus1")->GetString());
-    EXPECT_EQ("example2.net", site_groups[2].FindKey("etldPlus1")->GetString());
+              CHECK_DEREF(site_groups[0].GetDict().FindString("etldPlus1")));
+    EXPECT_EQ("example.com",
+              CHECK_DEREF(site_groups[1].GetDict().FindString("etldPlus1")));
+    EXPECT_EQ("example2.net",
+              CHECK_DEREF(site_groups[2].GetDict().FindString("etldPlus1")));
   }
 
   // Each call to HandleGetAllSites() above added a callback to the profile's
@@ -1150,31 +1164,39 @@ TEST_F(SiteSettingsHandlerTest, GetRecentSitePermissions) {
 
     const base::Value::List& recent_permissions = data.arg3()->GetList();
     EXPECT_EQ(2UL, recent_permissions.size());
-    EXPECT_EQ(url1.spec(),
-              recent_permissions[1].FindKey("origin")->GetString());
-    EXPECT_EQ(url1.spec(),
-              recent_permissions[0].FindKey("origin")->GetString());
+    const base::Value::Dict& first_permission = recent_permissions[0].GetDict();
+    const base::Value::Dict& second_permission =
+        recent_permissions[1].GetDict();
 
-    EXPECT_TRUE(recent_permissions[0].FindKey("incognito")->GetBool());
-    EXPECT_FALSE(recent_permissions[1].FindKey("incognito")->GetBool());
+    EXPECT_EQ(url1.spec(), CHECK_DEREF(second_permission.FindString("origin")));
+    EXPECT_EQ(url1.spec(), CHECK_DEREF(first_permission.FindString("origin")));
+
+    EXPECT_TRUE(first_permission.FindBool("incognito").value_or(false));
+    EXPECT_FALSE(second_permission.FindBool("incognito").value_or(true));
 
     const base::Value::List& incognito_url1_permissions =
-        recent_permissions[0].FindKey("recentPermissions")->GetList();
+        CHECK_DEREF(first_permission.FindList("recentPermissions"));
     const base::Value::List& url1_permissions =
-        recent_permissions[1].FindKey("recentPermissions")->GetList();
+        CHECK_DEREF(second_permission.FindList("recentPermissions"));
 
     EXPECT_EQ(1UL, incognito_url1_permissions.size());
+    const base::Value::Dict& first_incognito_permission =
+        incognito_url1_permissions[0].GetDict();
 
     EXPECT_EQ(kNotifications,
-              incognito_url1_permissions[0].FindKey("type")->GetString());
+              CHECK_DEREF(first_incognito_permission.FindString("type")));
     EXPECT_EQ(kBlocked,
-              incognito_url1_permissions[0].FindKey("setting")->GetString());
+              CHECK_DEREF(first_incognito_permission.FindString("setting")));
     EXPECT_EQ(kEmbargo,
-              incognito_url1_permissions[0].FindKey("source")->GetString());
+              CHECK_DEREF(first_incognito_permission.FindString("source")));
 
-    EXPECT_EQ(kNotifications, url1_permissions[0].FindKey("type")->GetString());
-    EXPECT_EQ(kBlocked, url1_permissions[0].FindKey("setting")->GetString());
-    EXPECT_EQ(kEmbargo, url1_permissions[0].FindKey("source")->GetString());
+    const base::Value::Dict& first_url_permission =
+        url1_permissions[0].GetDict();
+    EXPECT_EQ(kNotifications,
+              CHECK_DEREF(first_url_permission.FindString("type")));
+    EXPECT_EQ(kBlocked,
+              CHECK_DEREF(first_url_permission.FindString("setting")));
+    EXPECT_EQ(kEmbargo, CHECK_DEREF(first_url_permission.FindString("source")));
   }
 }
 
@@ -1195,157 +1217,151 @@ TEST_F(SiteSettingsHandlerTest, OnStorageFetched) {
   EXPECT_EQ(4U, storage_and_cookie_list.size());
 
   {
-    const base::Value& site_group = storage_and_cookie_list[0];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value& site_group_val = storage_and_cookie_list[0];
+    ASSERT_TRUE(site_group_val.is_dict());
+    const base::Value::Dict& site_group = site_group_val.GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("example.com", *site_group.FindStringKey("etldPlus1"));
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("example.com", *site_group.FindString("etldPlus1"));
 
-    EXPECT_EQ(3, site_group.FindKey("numCookies")->GetDouble());
+    EXPECT_EQ(3, site_group.FindDouble("numCookies"));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
-    ASSERT_TRUE(origin_list && origin_list->is_list());
+    const base::Value::List* origin_list = site_group.FindList("origins");
+    ASSERT_TRUE(origin_list);
     // There will be 2 origins in this case. Cookie node with url
     // http://www.example.com/ will be treat as https://www.example.com/ because
     // this url existed in the storage nodes.
-    EXPECT_EQ(2U, origin_list->GetList().size());
+    EXPECT_EQ(2U, origin_list->size());
 
-    const base::Value& origin_info_0 = origin_list->GetList()[0];
-    ASSERT_TRUE(origin_info_0.is_dict());
+    const base::Value::Dict& origin_info_0 = (*origin_list)[0].GetDict();
 
     EXPECT_EQ("http://abc.example.com/",
-              origin_info_0.FindKey("origin")->GetString());
-    EXPECT_EQ(0, origin_info_0.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, origin_info_0.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1, origin_info_0.FindKey("numCookies")->GetDouble());
+              CHECK_DEREF(origin_info_0.FindString("origin")));
+    EXPECT_EQ(0, origin_info_0.FindDouble("engagement"));
+    EXPECT_EQ(0, origin_info_0.FindDouble("usage"));
+    EXPECT_EQ(1, origin_info_0.FindDouble("numCookies"));
 
-    const base::Value& origin_info_1 = origin_list->GetList()[1];
-    ASSERT_TRUE(origin_info_1.is_dict());
+    const base::Value::Dict& origin_info_1 = (*origin_list)[1].GetDict();
 
     // Even though in the cookies the scheme is http, it still stored as https
     // because there is https data stored.
     EXPECT_EQ("https://www.example.com/",
-              origin_info_1.FindKey("origin")->GetString());
-    EXPECT_EQ(0, origin_info_1.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(2, origin_info_1.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1, origin_info_1.FindKey("numCookies")->GetDouble());
+              CHECK_DEREF(origin_info_1.FindString("origin")));
+    EXPECT_EQ(0, origin_info_1.FindDouble("engagement"));
+    EXPECT_EQ(2, origin_info_1.FindDouble("usage"));
+    EXPECT_EQ(1, origin_info_1.FindDouble("numCookies"));
   }
 
   {
-    const base::Value& site_group = storage_and_cookie_list[1];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value::Dict& site_group = storage_and_cookie_list[1].GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("google.com", *site_group.FindStringKey("etldPlus1"));
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("google.com", *site_group.FindString("etldPlus1"));
 
-    EXPECT_EQ(3, site_group.FindKey("numCookies")->GetDouble());
+    EXPECT_EQ(3, site_group.FindDouble("numCookies"));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
-    ASSERT_TRUE(origin_list && origin_list->is_list());
+    const base::Value::List* origin_list = site_group.FindList("origins");
+    ASSERT_TRUE(origin_list);
 
-    EXPECT_EQ(2U, origin_list->GetList().size());
+    EXPECT_EQ(2U, origin_list->size());
 
-    const base::Value& partitioned_origin_info = origin_list->GetList()[0];
-    ASSERT_TRUE(partitioned_origin_info.is_dict());
+    const base::Value::Dict& partitioned_origin_info =
+        (*origin_list)[0].GetDict();
 
     EXPECT_EQ("https://www.example.com/",
-              partitioned_origin_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0, partitioned_origin_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, partitioned_origin_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1, partitioned_origin_info.FindKey("numCookies")->GetDouble());
-    EXPECT_TRUE(partitioned_origin_info.FindKey("isPartitioned")->GetBool());
+              CHECK_DEREF(partitioned_origin_info.FindString("origin")));
+    EXPECT_EQ(0, partitioned_origin_info.FindDouble("engagement"));
+    EXPECT_EQ(0, partitioned_origin_info.FindDouble("usage"));
+    EXPECT_EQ(1, partitioned_origin_info.FindDouble("numCookies"));
+    EXPECT_TRUE(
+        partitioned_origin_info.FindBool("isPartitioned").value_or(false));
 
-    const base::Value& unpartitioned_origin_info = origin_list->GetList()[1];
-    ASSERT_TRUE(unpartitioned_origin_info.is_dict());
+    const base::Value::Dict& unpartitioned_origin_info =
+        (*origin_list)[1].GetDict();
 
     EXPECT_EQ("https://www.google.com/",
-              unpartitioned_origin_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0, unpartitioned_origin_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(50000000000,
-              unpartitioned_origin_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(0, unpartitioned_origin_info.FindKey("numCookies")->GetDouble());
-    EXPECT_FALSE(unpartitioned_origin_info.FindKey("isPartitioned")->GetBool());
+              CHECK_DEREF(unpartitioned_origin_info.FindString("origin")));
+    EXPECT_EQ(0, unpartitioned_origin_info.FindDouble("engagement"));
+    EXPECT_EQ(50000000000, unpartitioned_origin_info.FindDouble("usage"));
+    EXPECT_EQ(0, unpartitioned_origin_info.FindDouble("numCookies"));
+    EXPECT_FALSE(
+        unpartitioned_origin_info.FindBool("isPartitioned").value_or(true));
   }
 
   {
-    const base::Value& site_group = storage_and_cookie_list[2];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value& site_group_val = storage_and_cookie_list[2];
+    ASSERT_TRUE(site_group_val.is_dict());
+    const base::Value::Dict& site_group = site_group_val.GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("google.com.au", *site_group.FindStringKey("etldPlus1"));
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("google.com.au", *site_group.FindString("etldPlus1"));
 
-    EXPECT_EQ(4, site_group.FindKey("numCookies")->GetDouble());
+    EXPECT_EQ(4, site_group.FindDouble("numCookies"));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
-    ASSERT_TRUE(origin_list && origin_list->is_list());
+    const base::Value::List* origin_list = site_group.FindList("origins");
+    ASSERT_TRUE(origin_list);
 
     // The unpartitioned cookie set for google.com.au should be associated with
     // the eTLD+1, and thus won't have an origin entry as other origin entries
     // exist for the unpartitioned storage. The partitioned cookie for
     // google.com.au, partitioned by google.com.au should have also created an
     // entry.
-    EXPECT_EQ(3U, origin_list->GetList().size());
+    EXPECT_EQ(3U, origin_list->size());
 
-    const base::Value& partitioned_origin_one_info = origin_list->GetList()[0];
-    ASSERT_TRUE(partitioned_origin_one_info.is_dict());
+    const base::Value::Dict& partitioned_origin_one_info =
+        (*origin_list)[0].GetDict();
 
     EXPECT_EQ("https://google.com.au/",
-              partitioned_origin_one_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0,
-              partitioned_origin_one_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, partitioned_origin_one_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1,
-              partitioned_origin_one_info.FindKey("numCookies")->GetDouble());
+              CHECK_DEREF(partitioned_origin_one_info.FindString("origin")));
+    EXPECT_EQ(0, partitioned_origin_one_info.FindDouble("engagement"));
+    EXPECT_EQ(0, partitioned_origin_one_info.FindDouble("usage"));
+    EXPECT_EQ(1, partitioned_origin_one_info.FindDouble("numCookies"));
     EXPECT_TRUE(
-        partitioned_origin_one_info.FindKey("isPartitioned")->GetBool());
+        partitioned_origin_one_info.FindBool("isPartitioned").value_or(false));
 
-    const base::Value& partitioned_origin_two_info = origin_list->GetList()[1];
+    const base::Value::Dict& partitioned_origin_two_info =
+        (*origin_list)[1].GetDict();
     EXPECT_EQ("https://www.another-example.com/",
-              partitioned_origin_two_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0,
-              partitioned_origin_two_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, partitioned_origin_two_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1,
-              partitioned_origin_two_info.FindKey("numCookies")->GetDouble());
+              CHECK_DEREF(partitioned_origin_two_info.FindString("origin")));
+    EXPECT_EQ(0, partitioned_origin_two_info.FindDouble("engagement"));
+    EXPECT_EQ(0, partitioned_origin_two_info.FindDouble("usage"));
+    EXPECT_EQ(1, partitioned_origin_two_info.FindDouble("numCookies"));
     EXPECT_TRUE(
-        partitioned_origin_two_info.FindKey("isPartitioned")->GetBool());
+        partitioned_origin_two_info.FindBool("isPartitioned").value_or(false));
 
-    const base::Value& partitioned_origin_three_info =
-        origin_list->GetList()[2];
-    ASSERT_TRUE(partitioned_origin_three_info.is_dict());
+    const base::Value::Dict& partitioned_origin_three_info =
+        (*origin_list)[2].GetDict();
 
     EXPECT_EQ("https://www.example.com/",
-              partitioned_origin_three_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0,
-              partitioned_origin_three_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, partitioned_origin_three_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1,
-              partitioned_origin_three_info.FindKey("numCookies")->GetDouble());
-    EXPECT_TRUE(
-        partitioned_origin_three_info.FindKey("isPartitioned")->GetBool());
+              CHECK_DEREF(partitioned_origin_three_info.FindString("origin")));
+    EXPECT_EQ(0, partitioned_origin_three_info.FindDouble("engagement"));
+    EXPECT_EQ(0, partitioned_origin_three_info.FindDouble("usage"));
+    EXPECT_EQ(1, partitioned_origin_three_info.FindDouble("numCookies"));
+    EXPECT_TRUE(partitioned_origin_three_info.FindBool("isPartitioned")
+                    .value_or(false));
   }
 
   {
-    const base::Value& site_group = storage_and_cookie_list[3];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value& site_group_val = storage_and_cookie_list[3];
+    ASSERT_TRUE(site_group_val.is_dict());
+    const base::Value::Dict& site_group = site_group_val.GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("ungrouped.com", *site_group.FindStringKey("etldPlus1"));
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("ungrouped.com", *site_group.FindString("etldPlus1"));
 
-    EXPECT_EQ(1, site_group.FindKey("numCookies")->GetDouble());
+    EXPECT_EQ(1, site_group.FindDouble("numCookies"));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
-    ASSERT_TRUE(origin_list && origin_list->is_list());
-    EXPECT_EQ(1U, origin_list->GetList().size());
+    const base::Value::List* origin_list = site_group.FindList("origins");
+    ASSERT_TRUE(origin_list);
+    EXPECT_EQ(1U, origin_list->size());
 
-    const base::Value& origin_info = origin_list->GetList()[0];
-    ASSERT_TRUE(origin_info.is_dict());
+    const base::Value::Dict& origin_info = (*origin_list)[0].GetDict();
 
     EXPECT_EQ("http://ungrouped.com/",
-              origin_info.FindKey("origin")->GetString());
-    EXPECT_EQ(0, origin_info.FindKey("engagement")->GetDouble());
-    EXPECT_EQ(0, origin_info.FindKey("usage")->GetDouble());
-    EXPECT_EQ(1, origin_info.FindKey("numCookies")->GetDouble());
+              CHECK_DEREF(origin_info.FindString("origin")));
+    EXPECT_EQ(0, origin_info.FindDouble("engagement"));
+    EXPECT_EQ(0, origin_info.FindDouble("usage"));
+    EXPECT_EQ(1, origin_info.FindDouble("numCookies"));
   }
 }
 
@@ -1358,40 +1374,42 @@ TEST_F(SiteSettingsHandlerTest, InstalledApps) {
   EXPECT_EQ(4U, storage_and_cookie_list.size());
 
   {
-    const base::Value& site_group = storage_and_cookie_list[0];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value& site_group_val = storage_and_cookie_list[0];
+    ASSERT_TRUE(site_group_val.is_dict());
+    const base::Value::Dict& site_group = site_group_val.GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("example.com", *site_group.FindStringKey("etldPlus1"));
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("example.com", *site_group.FindString("etldPlus1"));
 
-    ASSERT_TRUE(site_group.FindKey("hasInstalledPWA")->GetBool());
+    ASSERT_TRUE(site_group.FindBool("hasInstalledPWA").value_or(false));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
+    const base::Value::List* origin_list = site_group.FindList("origins");
     ASSERT_TRUE(origin_list);
 
-    const base::Value& origin_info = origin_list->GetList()[0];
-    ASSERT_TRUE(origin_info.is_dict());
+    const base::Value::Dict& origin_info = (*origin_list)[0].GetDict();
 
     EXPECT_EQ("http://abc.example.com/",
-              origin_info.FindKey("origin")->GetString());
-    EXPECT_TRUE(origin_info.FindKey("isInstalled")->GetBool());
+              CHECK_DEREF(origin_info.FindString("origin")));
+    EXPECT_TRUE(origin_info.FindBool("isInstalled").value_or(false));
   }
 
   // Verify that installed booleans are false for other siteGroups/origins
   {
-    const base::Value& site_group = storage_and_cookie_list[1];
-    ASSERT_TRUE(site_group.is_dict());
+    const base::Value& site_group_val = storage_and_cookie_list[1];
+    ASSERT_TRUE(site_group_val.is_dict());
+    const base::Value::Dict& site_group = site_group_val.GetDict();
 
-    ASSERT_TRUE(site_group.FindStringKey("etldPlus1"));
-    ASSERT_EQ("google.com", *site_group.FindStringKey("etldPlus1"));
-    EXPECT_FALSE(site_group.FindKey("hasInstalledPWA")->GetBool());
+    ASSERT_TRUE(site_group.FindString("etldPlus1"));
+    ASSERT_EQ("google.com", *site_group.FindString("etldPlus1"));
+    EXPECT_FALSE(site_group.FindBool("hasInstalledPWA").value_or(true));
 
-    const base::Value* origin_list = site_group.FindListKey("origins");
+    const base::Value::List* origin_list = site_group.FindList("origins");
     ASSERT_TRUE(origin_list);
 
-    for (const auto& origin_info : origin_list->GetList()) {
+    for (const auto& origin_info : *origin_list) {
       ASSERT_TRUE(origin_info.is_dict());
-      EXPECT_FALSE(origin_info.FindKey("isInstalled")->GetBool());
+      EXPECT_FALSE(
+          origin_info.GetDict().FindBool("isInstalled").value_or(true));
     }
   }
 }
@@ -1883,13 +1901,14 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
   site_settings::AddExceptionForHostedApp("[*.]google.com", *extension.get(),
                                           &exceptions);
 
-  const base::Value& dictionary = exceptions[0];
-  CHECK(dictionary.is_dict());
-  CHECK(dictionary.FindStringKey(site_settings::kOrigin));
-  CHECK(dictionary.FindStringKey(site_settings::kDisplayName));
-  CHECK(dictionary.FindStringKey(site_settings::kEmbeddingOrigin));
-  CHECK(dictionary.FindStringKey(site_settings::kSetting));
-  CHECK(dictionary.FindBoolKey(site_settings::kIncognito).has_value());
+  const base::Value& dictionary_value = exceptions[0];
+  CHECK(dictionary_value.is_dict());
+  const base::Value::Dict& dictionary = dictionary_value.GetDict();
+  CHECK(dictionary.FindString(site_settings::kOrigin));
+  CHECK(dictionary.FindString(site_settings::kDisplayName));
+  CHECK(dictionary.FindString(site_settings::kEmbeddingOrigin));
+  CHECK(dictionary.FindString(site_settings::kSetting));
+  CHECK(dictionary.FindBool(site_settings::kIncognito).has_value());
 
   // Again, don't need to check the results.
   handler()->HandleSetCategoryPermissionForPattern(args);
@@ -2417,14 +2436,16 @@ TEST_F(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     const base::Value::List& site_groups = data.arg3()->GetList();
     EXPECT_EQ(1UL, site_groups.size());
+    const base::Value::Dict& first_site_group = site_groups[0].GetDict();
 
     const std::string etld_plus1_string =
-        site_groups[0].FindKey("etldPlus1")->GetString();
+        CHECK_DEREF(first_site_group.FindString("etldPlus1"));
     EXPECT_EQ("example.com", etld_plus1_string);
     const base::Value::List& origin_list =
-        site_groups[0].FindKey("origins")->GetList();
+        CHECK_DEREF(first_site_group.FindList("origins"));
     EXPECT_EQ(1UL, origin_list.size());
-    EXPECT_EQ(kWebUrl.spec(), origin_list[0].FindKey("origin")->GetString());
+    EXPECT_EQ(kWebUrl.spec(),
+              CHECK_DEREF(origin_list[0].GetDict().FindString("origin")));
   }
 
   // GetExceptionList() only returns website exceptions.
@@ -2439,7 +2460,7 @@ TEST_F(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists) {
     const base::Value::List& exception_list = data.arg3()->GetList();
     EXPECT_EQ(1UL, exception_list.size());
     EXPECT_EQ("https://example.com:443",
-              exception_list[0].FindKey("origin")->GetString());
+              CHECK_DEREF(exception_list[0].GetDict().FindString("origin")));
   }
 
   // GetRecentSitePermissions() only returns website exceptions.
@@ -2453,8 +2474,9 @@ TEST_F(SiteSettingsHandlerTest, ExcludeWebUISchemesInLists) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     const base::Value::List& recent_permission_list = data.arg3()->GetList();
     EXPECT_EQ(1UL, recent_permission_list.size());
-    EXPECT_EQ(kWebUrl.spec(),
-              recent_permission_list[0].FindKey("origin")->GetString());
+    EXPECT_EQ(
+        kWebUrl.spec(),
+        CHECK_DEREF(recent_permission_list[0].GetDict().FindString("origin")));
   }
 }
 
@@ -2488,10 +2510,11 @@ TEST_F(SiteSettingsHandlerTest, IncludeWebUISchemesInGetOriginPermissions) {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     const base::Value::List& exception_list = data.arg3()->GetList();
     EXPECT_EQ(1UL, exception_list.size());
+    const base::Value::Dict& first_exception = exception_list[0].GetDict();
 
     EXPECT_EQ(origin.GetURL().spec(),
-              exception_list[0].FindKey("origin")->GetString());
-    EXPECT_EQ("allowlist", exception_list[0].FindKey("source")->GetString());
+              CHECK_DEREF(first_exception.FindString("origin")));
+    EXPECT_EQ("allowlist", CHECK_DEREF(first_exception.FindString("source")));
   }
 }
 
@@ -2579,51 +2602,64 @@ TEST_F(PersistentPermissionsSiteSettingsHandlerTest,
       1UL);
 
   url::Origin originToTest = kTestOrigin1;
-  base::Value::List get_file_system_origin_permissions_args;
-  get_file_system_origin_permissions_args.Append(kCallbackId);
-  get_file_system_origin_permissions_args.Append(originToTest.GetURL().spec());
+  base::Value::List get_file_system_permissions_args;
+  get_file_system_permissions_args.Append(kCallbackId);
 
-  handler_->HandleGetFileSystemGrants(get_file_system_origin_permissions_args);
+  handler_->HandleGetFileSystemGrants(get_file_system_permissions_args);
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   const base::Value::List& grants = data.arg3()->GetList();
 
   EXPECT_EQ(grants.size(), 2UL);
+  EXPECT_EQ(grants[0].FindKey(site_settings::kOrigin)->GetString(),
+            "https://www.a.com/");
+  EXPECT_EQ(grants[1].FindKey(site_settings::kOrigin)->GetString(),
+            "https://www.b.com/");
 
-  EXPECT_FALSE(grants[0].FindKey(site_settings::kIsDirectory)->GetBool());
-  EXPECT_TRUE(grants[1].FindKey(site_settings::kIsDirectory)->GetBool());
+  auto* kTestOrigin1FileReadGrants =
+      grants[0].FindKey(site_settings::kFileReadGrants);
+  auto* kTestOrigin1FileWriteGrants =
+      grants[0].FindKey(site_settings::kFileWriteGrants);
+  auto* kTestOrigin1DirectoryReadGrants =
+      grants[0].FindKey(site_settings::kDirectoryReadGrants);
+  auto* kTestOrigin1DirectoryWriteGrants =
+      grants[0].FindKey(site_settings::kDirectoryWriteGrants);
 
-  EXPECT_EQ(grants[0].FindKey(site_settings::kDisplayName)->GetString(),
-            FilePathToValue(file_read_grant->GetPath()).GetString());
-  EXPECT_EQ(grants[1].FindKey(site_settings::kDisplayName)->GetString(),
-            FilePathToValue(directory_read_grant->GetPath()).GetString());
+  auto* kTestOrigin2FileReadGrants =
+      grants[1].FindKey(site_settings::kFileReadGrants);
+  auto* kTestOrigin2FileWriteGrants =
+      grants[1].FindKey(site_settings::kFileWriteGrants);
+  auto* kTestOrigin2DirectoryReadGrants =
+      grants[1].FindKey(site_settings::kDirectoryReadGrants);
+  auto* kTestOrigin2DirectoryWriteGrants =
+      grants[1].FindKey(site_settings::kDirectoryWriteGrants);
 
-  EXPECT_FALSE(grants[0].FindKey(site_settings::kIsWritable)->GetBool());
-  EXPECT_FALSE(grants[1].FindKey(site_settings::kIsWritable)->GetBool());
+  // Checks that the grants for test origins are populated as expected.
+  EXPECT_FALSE(kTestOrigin1FileReadGrants->GetList()[0]
+                   .GetDict()
+                   .Find(site_settings::kIsDirectory)
+                   ->GetBool());
+  EXPECT_EQ(kTestOrigin1FileWriteGrants->GetList().size(), 0UL);
+  EXPECT_EQ(kTestOrigin1DirectoryReadGrants->GetList()[0]
+                .GetDict()
+                .Find(site_settings::kFilePath)
+                ->GetString(),
+            "/e/");
+  EXPECT_EQ(kTestOrigin1DirectoryWriteGrants->GetList().size(), 0UL);
 
-  originToTest = kTestOrigin2;
-  base::Value::List get_file_system_origin2_permissions_args;
-  get_file_system_origin2_permissions_args.Append(kCallbackId);
-  get_file_system_origin2_permissions_args.Append(originToTest.GetURL().spec());
-
-  handler_->HandleGetFileSystemGrants(get_file_system_origin2_permissions_args);
-  const content::TestWebUI::CallData& origin2_data =
-      *web_ui()->call_data().back();
-  const base::Value::List& origin2_grants = origin2_data.arg3()->GetList();
-
-  EXPECT_EQ(origin2_grants.size(), 2UL);
-
-  EXPECT_FALSE(
-      origin2_grants[0].FindKey(site_settings::kIsDirectory)->GetBool());
-  EXPECT_TRUE(
-      origin2_grants[1].FindKey(site_settings::kIsDirectory)->GetBool());
-
-  EXPECT_EQ(origin2_grants[0].FindKey(site_settings::kDisplayName)->GetString(),
-            FilePathToValue(file_write_grant->GetPath()).GetString());
-  EXPECT_EQ(origin2_grants[1].FindKey(site_settings::kDisplayName)->GetString(),
-            FilePathToValue(directory_write_grant->GetPath()).GetString());
-
-  EXPECT_TRUE(origin2_grants[0].FindKey(site_settings::kIsWritable)->GetBool());
-  EXPECT_TRUE(origin2_grants[1].FindKey(site_settings::kIsWritable)->GetBool());
+  // In the case of kTestOrigin2, check that when an origin has an
+  // associated 'write' grant, that the grant is only recorded in the
+  // respective write grants list, and is not recorded in the origin's
+  // read grants list.
+  EXPECT_EQ(kTestOrigin2FileReadGrants->GetList().size(), 0UL);
+  EXPECT_TRUE(kTestOrigin2FileWriteGrants->GetList()[0]
+                  .GetDict()
+                  .Find(site_settings::kIsWritable)
+                  ->GetBool());
+  EXPECT_EQ(kTestOrigin2DirectoryReadGrants->GetList().size(), 0UL);
+  EXPECT_TRUE(kTestOrigin2DirectoryWriteGrants->GetList()[0]
+                  .GetDict()
+                  .Find(site_settings::kIsDirectory)
+                  ->GetBool());
 }
 
 namespace {

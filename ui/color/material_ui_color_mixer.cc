@@ -47,6 +47,15 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};
   mixer[kColorSliderTrackMinimal] = {kColorSysOnSecondary};
+  mixer[kColorTextfieldBackground] = {kColorSysSurface};
+  mixer[kColorTextfieldBackgroundDisabled] = {GetResultingPaintColor(
+      {kColorSysStateDisabledContainer}, {kColorTextfieldBackground})};
+  mixer[kColorTextfieldForeground] = {kColorSysOnSurface};
+  mixer[kColorTextfieldForegroundInvalid] = {
+      BlendForMinContrast(kColorSysError, kColorTextfieldBackground)};
+  mixer[kColorTextfieldForegroundDisabled] = {kColorSysStateDisabled};
+  mixer[kColorTextfieldForegroundPlaceholder] = {kColorSysOnSurface};
+  mixer[kColorTextfieldInvalidOutline] = {kColorTextfieldForegroundInvalid};
   mixer[kColorToggleButtonShadow] = {kColorSysOutline};
   mixer[kColorToggleButtonThumbOff] = {kColorSysOutline};
   mixer[kColorToggleButtonThumbOn] = {kColorSysOnPrimary};

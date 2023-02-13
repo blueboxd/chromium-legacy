@@ -501,7 +501,6 @@
 <translation id="2148613324460538318">新增付款卡</translation>
 <translation id="2149968176347646218">連線不安全</translation>
 <translation id="2153609454945889823">要安裝「Google Play 服務 (AR)」嗎？</translation>
-<translation id="2154054054215849342">您的網域無法使用同步處理功能</translation>
 <translation id="2154484045852737596">編輯付款信用卡</translation>
 <translation id="2155260325161282517">5 x 7 吋</translation>
 <translation id="2157640075051554492">價格追蹤通知</translation>
@@ -524,6 +523,7 @@
 <translation id="2202627062836089804">信用卡背面</translation>
 <translation id="22081806969704220">紙匣 3</translation>
 <translation id="2210794033760923560">上載報告</translation>
+<translation id="2212579473415663542">此地址會儲存在 Google 帳戶 (<ph name="ACCOUNT" />) 中。您可在任何裝置上的 Google 產品中使用地址。</translation>
 <translation id="2212735316055980242">找不到政策</translation>
 <translation id="2213606439339815911">正在擷取項目…</translation>
 <translation id="2213612003795704869">已列印頁面</translation>
@@ -539,6 +539,7 @@
 <translation id="2241693394036365668">已下載檔案</translation>
 <translation id="2246264294482514010">10 x 12 吋</translation>
 <translation id="2246480341630108201">家長尚未核准</translation>
+<translation id="2247789808226901522">信用卡過期</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
 <translation id="2250931979407627383">邊緣釘裝 (左側)</translation>
 <translation id="225207911366869382">這個政策值已不適用。</translation>
@@ -1076,6 +1077,7 @@
 <translation id="3646643500201740985">評估廣告成效</translation>
 <translation id="3647286794400715637">每個網址字串都必須包含 1 至 2 個網址。</translation>
 <translation id="3650584904733503804">驗證成功</translation>
+<translation id="3650594806107685466">為保護信用卡安全，請輸入<ph name="SIDE_OF_CARD" />的 CVC</translation>
 <translation id="3653033846669030038">主題公園</translation>
 <translation id="3655241534245626312">前往權限設定</translation>
 <translation id="3655670868607891010">如果您經常看到這個頁面，請嘗試這些 <ph name="HELP_LINK" />。</translation>
@@ -1855,6 +1857,7 @@
 <translation id="5552137475244467770">Chrome 會定期將您的密碼與網上發佈的清單互相核對。核對時，您的密碼和使用者名稱將會加密，任何人 (包括 Google) 均無法讀取。</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5558125320634132440">由於此網站含有兒童不宜內容，因此已被封鎖</translation>
+<translation id="5559311991468302423">刪除地址</translation>
 <translation id="5560088892362098740">到期日</translation>
 <translation id="55635442646131152">文件大綱</translation>
 <translation id="5565613213060953222">開啟無痕式分頁</translation>
@@ -1971,6 +1974,7 @@
 <translation id="5866898949289125849">您正在查看 Developer Tools 頁面</translation>
 <translation id="5869405914158311789">無法連線至此網站</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
+<translation id="5872692522325383488">已儲存 IBAN</translation>
 <translation id="5873013647450402046">銀行要確認您的身分。</translation>
 <translation id="5877831137320480913">美容和健身</translation>
 <translation id="5884465125445718607">Chinese #6 信封</translation>
@@ -2140,6 +2144,7 @@
 <translation id="6300452962057769623">{0,plural, =0{裝置會立即重新啟動}=1{裝置將於 1 秒後重新啟動}other{裝置將於 # 秒後重新啟動}}</translation>
 <translation id="6301104306974789820">接收價格追蹤通知</translation>
 <translation id="6305205051461490394">無法存取 <ph name="URL" />。</translation>
+<translation id="6306713302480826305">此地址將從此裝置和其他已登入的裝置中刪除</translation>
 <translation id="6311165245110979290">可使用虛擬片</translation>
 <translation id="6312113039770857350">網頁無法使用</translation>
 <translation id="6316226860534107313">綿羊仔和電動單車</translation>
@@ -2454,6 +2459,7 @@
 <translation id="7112327784801341716">目前的資料不正確嗎？請通知銀行更新。</translation>
 <translation id="7118618213916969306">搵剪貼簿網址 <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">關閉其他分頁或程式</translation>
+<translation id="7124354851782353862">輸入 CVC</translation>
 <translation id="7129355289156517987">關閉所有 Chromium 無痕式分頁後，系統會從此裝置上清除您在這些分頁上的活動記錄：
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />瀏覽活動<ph name="END_LIST_ITEM" />
@@ -2569,6 +2575,7 @@
 <translation id="7388594495505979117">{0,plural, =1{裝置將於 1 分鐘後重新啟動}other{裝置將於 # 分鐘後重新啟動}}</translation>
 <translation id="7390545607259442187">驗證信用卡</translation>
 <translation id="7392089738299859607">更新地址</translation>
+<translation id="739728382607845710">付款處理常式圖示</translation>
 <translation id="7399802613464275309">安全檢查</translation>
 <translation id="7400418766976504921">網址</translation>
 <translation id="7403392780200267761">透過分享連結、建立 QR 碼、投放及其他功能來分享這個分頁</translation>
@@ -2780,6 +2787,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{無}=1{1 個應用程式 (<ph name="EXAMPLE_APP_1" />)}=2{2 個應用程式 (<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />)}other{# 個應用程式 (<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">您日後瀏覽的網站可向 Chrome 要求取得主題資料，以便向您顯示個人化廣告。Chrome 最多可分享 3 個主題，同時亦會保護您的瀏覽記錄和身分。</translation>
+<translation id="7860345425589240791">輸入<ph name="SIDE_OF_CARD" />的新到期日和 CVC</translation>
 <translation id="7862185352068345852">要離開網站嗎？</translation>
 <translation id="7865448901209910068">最佳速度</translation>
 <translation id="7871445724586827387">變更 Google 帳戶密碼</translation>
@@ -3031,6 +3039,7 @@
 <translation id="8473863474539038330">地址及其他資料</translation>
 <translation id="8474910779563686872">顯示開發人員詳情</translation>
 <translation id="8479754468255770962">釘裝 (左下方)</translation>
+<translation id="8483229036294884935">此地址將從您的 Google 帳戶 (<ph name="ACCOUNT" />) 中刪除</translation>
 <translation id="8483780878231876732">如要使用您 Google 帳戶中的信用卡，請登入 Chrome</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8490137692873530638">堆疊器 10</translation>

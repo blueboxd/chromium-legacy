@@ -459,6 +459,13 @@ class COMPONENT_EXPORT(AX_PLATFORM) AXPlatformNodeDelegate {
   // Get whether this node is marked as read-only or is disabled.
   virtual bool IsReadOnlyOrDisabled() const;
 
+  // Returns true if the IA2 node is selected.
+  bool IsIA2NodeSelected() const;
+
+  // Returns true if the UIA node is selected.
+  // For radio buttons, returns true if the node's 'checked' state is true.
+  bool IsUIANodeSelected() const;
+
   // See `AXNode::HasVisibleCaretOrSelection`.
   virtual bool HasVisibleCaretOrSelection() const;
 
@@ -534,7 +541,6 @@ class COMPONENT_EXPORT(AX_PLATFORM) AXPlatformNodeDelegate {
   virtual absl::optional<int> GetTableAriaColCount() const;
   virtual absl::optional<int> GetTableAriaRowCount() const;
   virtual absl::optional<int> GetTableCellCount() const;
-  virtual absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const;
   virtual std::vector<int32_t> GetColHeaderNodeIds() const;
   virtual std::vector<int32_t> GetColHeaderNodeIds(int col_index) const;
   virtual std::vector<int32_t> GetRowHeaderNodeIds() const;

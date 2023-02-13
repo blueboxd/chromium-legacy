@@ -21,11 +21,11 @@ class SyncSetupInProgressHandle;
 // to allow the complex sync setup flow on iOS.
 class SyncSetupService : public KeyedService {
  public:
+  // TODO(crbug.com/1412320): Remove this API and migrate callers to
+  // SyncService.
   using SyncServiceState = enum {
     kNoSyncServiceError,
     kSyncServiceSignInNeedsUpdate,
-    kSyncServiceCouldNotConnect,
-    kSyncServiceServiceUnavailable,
     kSyncServiceNeedsPassphrase,
     kSyncServiceNeedsTrustedVaultKey,
     kSyncServiceTrustedVaultRecoverabilityDegraded,

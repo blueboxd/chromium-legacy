@@ -8,16 +8,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/path_service.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -27,20 +24,14 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "base/version.h"
-#include "chrome/updater/app/server/posix/mojom/updater_service.mojom.h"
 #include "chrome/updater/app/server/posix/update_service_internal_stub.h"
 #include "chrome/updater/app/server/posix/update_service_stub.h"
 #include "chrome/updater/ipc/ipc_support.h"
-#include "chrome/updater/ipc/update_service_internal_proxy_posix.h"
-#include "chrome/updater/ipc/update_service_proxy_posix.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
-#include "mojo/core/embedder/configuration.h"
-#include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -197,6 +188,7 @@ class UpdaterIPCTestCase : public testing::Test {
                  const std::string& install_data_index,
                  Priority priority,
                  PolicySameVersionUpdate policy_same_version_update,
+                 bool do_update_check_only,
                  StateChangeCallback state_update,
                  Callback callback),
                 (override));
@@ -271,6 +263,7 @@ TEST_F(UpdaterIPCTestCase, AllRpcsComplete) {
           [](const std::string& app_id, const std::string& install_data_index,
              UpdateService::Priority priority,
              UpdateService::PolicySameVersionUpdate policy_same_version_update,
+             bool do_update_check_only,
              UpdateService::StateChangeCallback state_change_callback,
              UpdateService::Callback callback) {
             EXPECT_EQ(app_id, "ex1");
@@ -411,6 +404,7 @@ MULTIPROCESS_TEST_MAIN(UpdateServiceClient) {
     client_proxy->Update("ex1", "install_data_index",
                          UpdateService::Priority::kBackground,
                          UpdateService::PolicySameVersionUpdate::kAllowed,
+                         /*do_update_check_only=*/false,
                          UpdaterIPCTestCase::ExpectUpdateStatesCallback(),
                          UpdaterIPCTestCase::ExpectResultCallback(run_loop));
     run_loop.Run();

@@ -390,6 +390,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Command handler for load query commands
 @property(nonatomic, weak) id<LoadQueryCommands> loadQueryCommandsHandler;
 
+// Command handler for omnibox commands
+@property(nonatomic, weak) id<OmniboxCommands> omniboxCommandsHandler;
+
 // Command handler for text zoom commands
 @property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
 
@@ -514,6 +517,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     self.findInPageCommandsHandler = dependencies.findInPageCommandsHandler;
     self.toolbarCommandsHandler = dependencies.toolbarCommandsHandler;
     self.loadQueryCommandsHandler = dependencies.loadQueryCommandsHandler;
+    self.omniboxCommandsHandler = dependencies.omniboxCommandsHandler;
 
     dependencies.lensCoordinator.delegate = self;
 
@@ -1756,9 +1760,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [_sideSwipeController addHorizontalGesturesToView:self.view];
 
-  // TODO(crbug.com/1329089): Inject this handler.
-  self.omniboxHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
+  self.omniboxHandler = self.omniboxCommandsHandler;
 }
 
 // Sets up the frame for the fake status bar. View must be loaded.
@@ -2641,19 +2643,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     new_tab_page_uma::RecordActionFromOmnibox(
         self.browserState, current_web_state, URL, transitionType,
         isExpectingVoiceSearch);
-  }
-}
-
-- (void)tabDidLoadURL:(GURL)URL
-       transitionType:(ui::PageTransition)transitionType {
-  // Deactivate the NTP immediately on a load to hide the NTP quickly, but
-  // after calling UrlLoadingService::Load.  Otherwise, if the
-  // webState has never been visible (such as during startup with an NTP), it's
-  // possible the webView can trigger a unnecessary load for chrome://newtab.
-  if (self.currentWebState->GetVisibleURL() != kChromeUINewTabURL) {
-    if (self.isNTPActiveForCurrentWebState) {
-      NewTabPageTabHelper::FromWebState(self.currentWebState)->Deactivate();
-    }
   }
 }
 

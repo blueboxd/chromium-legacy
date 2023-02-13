@@ -56,6 +56,7 @@
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
+#include "components/drive/file_errors.h"
 #include "components/drive/resource_metadata_storage.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -610,12 +611,14 @@ class DriveIntegrationService::DriveFsHolder
         prefs::kDriveFsEnableVerboseLogging);
   }
 
-  drivefs::mojom::ExtensionConnectionStatus ConnectToExtension(
+  void ConnectToExtension(
       drivefs::mojom::ExtensionConnectionParamsPtr params,
       mojo::PendingReceiver<drivefs::mojom::NativeMessagingPort> port,
-      mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host) override {
-    return ConnectToDriveFsNativeMessageExtension(
-        profile_, params->extension_id, std::move(port), std::move(host));
+      mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host,
+      drivefs::mojom::DriveFsDelegate::ConnectToExtensionCallback callback)
+      override {
+    std::move(callback).Run(ConnectToDriveFsNativeMessageExtension(
+        profile_, params->extension_id, std::move(port), std::move(host)));
   }
 
   const std::string GetMachineRootID() override {
@@ -1208,8 +1211,7 @@ void DriveIntegrationService::GetTotalPinnedSize(
   }
 
   auto query_params = drivefs::mojom::QueryParameters::New();
-  query_params->query_source =
-      drivefs::mojom::QueryParameters::QuerySource::kLocalOnly;
+  query_params->page_size = 1000;
   query_params->available_offline = true;
 
   int64_t total_size = 0;
@@ -1232,13 +1234,25 @@ void DriveIntegrationService::OnGetOfflineItemsPage(
     drive::FileError error,
     absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> results) {
   if (!ash::features::IsDriveFsBulkPinningEnabled() ||
-      error != drive::FILE_ERROR_OK || results->empty()) {
+      error != drive::FILE_ERROR_OK || results->empty() ||
+      callback.IsCancelled()) {
+    LOG_IF(ERROR, error != drive::FILE_ERROR_OK)
+        << "Failed to get offline size: " << drive::FileErrorToString(error);
     std::move(callback).Run(total_size);
     return;
   }
 
   for (auto& result : *results) {
-    total_size += result->metadata->size;
+    if (!result->metadata) {
+      continue;
+    }
+    // We only want to show storage used by Drive that a user can action (i.e.
+    // files that can be unpinned). This should exclude files that DriveFS
+    // implicitly caches as users can't remove these files.
+    const drivefs::mojom::FileMetadata& metadata = *result->metadata;
+    if (metadata.available_offline && metadata.pinned) {
+      total_size += result->metadata->size;
+    }
   }
 
   auto* raw_search_query = search_query.get();

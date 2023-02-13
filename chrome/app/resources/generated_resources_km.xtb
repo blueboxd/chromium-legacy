@@ -52,6 +52,7 @@
 <translation id="104710386808485638">ចាប់ផ្ដើម Linux ឡើងវិញឬ?</translation>
 <translation id="1047431265488717055">ចម្លងអត្ថបទតំណ</translation>
 <translation id="1048286738600630630">ការបង្ហាញ</translation>
+<translation id="1048770690598418849">អ្នក​អាច​រំលង​នៅ​ពេល​នេះ ហើយ​យើង​នឹង​ព្យាយាម​ម្ដ​ងទៀត​ដោយ​ស្វ័យប្រវត្តិ​ បន្ទាប់​ពី​អ្នក​បញ្ចប់ការ​រៀបចំ</translation>
 <translation id="1048986595386481879">បែងចែក​ជានិច្ច</translation>
 <translation id="1049324577536766607">{COUNT,plural, =1{កំពុងទទួល <ph name="ATTACHMENTS" /> ពី <ph name="DEVICE_NAME" />}other{កំពុងទទួល <ph name="ATTACHMENTS" /> ពី <ph name="DEVICE_NAME" />}}</translation>
 <translation id="1049743911850919806">អនាមិក</translation>
@@ -284,6 +285,7 @@
 <translation id="1244303850296295656">កំហុសឆ្គងកម្មវិធីបន្ថែម</translation>
 <translation id="1245628370644070008">ការស្ដារ​ទិន្នន័យ​មូលដ្ឋាន​ឡើង​វិញ</translation>
 <translation id="1246863218384630739">មិនអាច​ដំឡើង <ph name="VM_NAME" />៖ URL រូបភាព​បានបង្ហាញ​លេខកូដបញ្ហា <ph name="HTTP_ERROR" />។ សូមទាក់ទង​អ្នកគ្រប់គ្រង​របស់អ្នក។</translation>
+<translation id="1247372569136754018">មីក្រូហ្វូន (ខាងក្នុង)</translation>
 <translation id="1249818027270187058">{NUM_SITES,plural, =1{មិនអនុញ្ញាត​ការជូនដំណឹង​សម្រាប់​គេហទំព័រ 1}other{មិនអនុញ្ញាត​ការជូនដំណឹង​សម្រាប់​គេហទំព័រ {NUM_SITES}}}</translation>
 <translation id="1251366534849411931">ត្រូវមានឃ្នាបបើក៖ <ph name="ERROR_LINE" /></translation>
 <translation id="1251480783646955802">សកម្មភាពនេះ​នឹងសម្អាតទិន្នន័យទំហំ <ph name="TOTAL_USAGE" /> ដែលបានរក្សាទុកដោយគេហទំព័រ និងកម្មវិធីដែលបានដំឡើង</translation>
@@ -542,6 +544,7 @@
 <translation id="1482626744466814421">ចំណាំ​ផ្ទាំងនេះ...</translation>
 <translation id="1482772681918035149">កែ​ពាក្យសម្ងាត់</translation>
 <translation id="1483493594462132177">ផ្ញើ</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1484979925941077974">គេហទំព័រ​កំពុងប្រើ​ប៊្លូធូស</translation>
 <translation id="1485015260175968628">ឥឡូវនេះវាអាច៖</translation>
 <translation id="1485141095922496924">កំណែ <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -630,6 +633,7 @@
 <translation id="1567387640189251553">ចាប់​តាំងពីអ្នក​បាន​បញ្ចូល​ពាក្យសម្ងាត់​ចុងក្រោយ​របស់អ្នក ក្ដារចុចមួយ​​ផ្សេងទៀត​​ត្រូវបាន​ភ្ជាប់។ វាអាច​នឹង​ព្យាយាម​លួច​ការចុចរបស់អ្នក។</translation>
 <translation id="156793199942386351">បានកំណត់ '<ph name="CURRENTKEY" />' ទៅសកម្មភាព '<ph name="ACTION" />' រួចហើយ។ ចុច​គ្រាប់ចុច​ណាមួយ ដើម្បី<ph name="RESPONSE" />។</translation>
 <translation id="1567993339577891801">ខនសូល JavaScript</translation>
+<translation id="1569466257325986920">នៅ​ពេល​ដែល​ពាក្យសម្ងាត់​គណនី Google របស់​អ្នក​ផ្លាស់ប្ដូរលើកក្រោយ ទិន្នន័យ​ក្នុង​ឧបករណ៍​របស់​អ្នក​នឹង​ត្រូវ​បាន​ស្ដារឡើងវិញ​ដោយ​ស្វ័យប្រវត្តិ បន្ទាប់​ពី​អ្នក​ចូល​គណនី Google របស់​អ្នក</translation>
 <translation id="1570604804919108255">បើកសំឡេង​ការ​ជូនដំណឹង</translation>
 <translation id="1571304935088121812">ចម្លងឈ្មោះអ្នកប្រើ</translation>
 <translation id="1571738973904005196">មើលផ្ទាំង៖ <ph name="TAB_ORIGIN" /></translation>
@@ -896,6 +900,7 @@
 <translation id="1781979858217752599">ចែករំលែក​សំឡេង​វិនដូ</translation>
 <translation id="1782101999402987960">ការដំឡើងកំណែ​ត្រូវបាន​ទប់ស្កាត់​ដោយអ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="1782196717298160133">ការស្វែងរកទូរស័ព្ទរបស់អ្នក</translation>
+<translation id="1782541958479207225">{NUM_NOTES,plural, =1{កំណត់ចំណាំ 1}other{កំណត់ចំណាំ #}}</translation>
 <translation id="1784707308176068866">ដំណើរការ​នៅផ្ទៃខាងក្រោយ នៅពេល​ស្នើដោយកម្មវិធី​ដើមដែលសហប្រតិបត្តិការ</translation>
 <translation id="1784849162047402014">ឧបករណ៍មានកម្រិតទំហំផ្ទុកទាប</translation>
 <translation id="1787350673646245458">រូបភាព​អ្នកប្រើប្រាស់</translation>
@@ -1107,6 +1112,7 @@
 <translation id="1965624977906726414">គ្មានការអនុញ្ញាតពិសេសទេ។</translation>
 <translation id="1966649499058910679">រំលេចពាក្យនីមួយៗនៅពេលដែលពាក្យនោះត្រូវបាននិយាយ</translation>
 <translation id="1967970931040389207">បើក​ហតស្ប៉ត</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1969654639948595766">កំណត់ហេតុ​អត្ថបទ WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1972325230031091483">អ្នកនឹងរុករក​កាន់តែរហ័ស ដោយសារខ្លឹមសារ​ត្រូវបានផ្ទុក​យ៉ាងសកម្មជាមុន ដោយផ្អែកលើ​ការចូលមើលទំព័រ​បណ្ដាញបច្ចុប្បន្នរបស់អ្នក</translation>
 <translation id="197288927597451399">រក្សា</translation>
@@ -1633,6 +1639,7 @@
 <translation id="2410754283952462441">ជ្រើសរើស​គណនី</translation>
 <translation id="241082044617551207">កម្មវិធីជំនួយដែលមិនស្គាល់</translation>
 <translation id="2410940059315936967">គេហទំព័រ​ដែលអ្នកចូលមើល​អាច​បង្កប់ខ្លឹមសារ​ពីគេហទំព័រ​ផ្សេងទៀត ដូចជា​រូបភាព ការផ្សាយពាណិជ្ជកម្ម និង​អក្សរ​ជាដើម។ ខូគី​ដែលបានកំណត់ដោយ​គេហទំព័រផ្សេងទៀត​ទាំង​នេះត្រូវបាន​ហៅ​ថា​ខូគី​ភាគីទីបី។</translation>
+<translation id="2411666601450687801">មិនមាន​ម៉ាស៊ីននិម្មិត​ត្រូ​វបាន​អនុញ្ញាត​នៅលើ​ឧបករណ៍​នេះ​ទេ</translation>
 <translation id="2412753904894530585">Kerberos</translation>
 <translation id="2416435988630956212">គ្រាប់ចុច​មុខងារ​នៅលើក្ដារចុច</translation>
 <translation id="2418307627282545839">រក្សាអ្វីៗ​ឱ្យ​ភ្លឺ និង​មានខ្យល់ចេញចូល</translation>
@@ -1691,6 +1698,7 @@
 <translation id="2467755475704469005">រកមិនឃើញ​ឧបករណ៍​ណាមួយទេ។ <ph name="BEGIN_LINK" />ស្វែងយល់​បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="2468178265280335214">ការបង្កើនល្បឿន​រំកិល​នៅលើ​ផ្ទាំងប៉ះ</translation>
 <translation id="2468205691404969808">ប្រើ​ខូគី​ដើម្បី​ចងចាំ​ចំណូលចិត្ត​របស់អ្នក បើ​ទោះ​បី​ជា​អ្នក​​មិន​ចូលទៅកាន់​ទំព័រ​ទាំងនោះ​ក៏ដោយ</translation>
+<translation id="2468247643665097563">លំដាប់</translation>
 <translation id="2468402215065996499">ថាម៉ាហ្គោឈី</translation>
 <translation id="2468470085922875120">អ្នកកំពុងប្រើពាក្យសម្ងាត់ដែលមើលទៅពិបាកនឹងទាយដឹង</translation>
 <translation id="2468845464436879514">{NUM_TABS,plural, =1{<ph name="GROUP_TITLE" /> - 1 ផ្ទាំង}other{<ph name="GROUP_TITLE" /> - # ផ្ទាំង}}</translation>
@@ -1832,7 +1840,6 @@
 <translation id="25899519884572181">ចាកចេញពីមុខងារអាន</translation>
 <translation id="2593499352046705383">មុនពេលចាប់ផ្ដើម សូមប្រាកដថា អ្នកមានការបម្រុងទុកទិន្នន័យរបស់អ្នក។ ការដំឡើង <ph name="DEVICE_OS" /> នឹងលុបពីលើថាស​រឹងរបស់អ្នក។ ស្វែងយល់បន្ថែមតាមរយៈ g.co/flex/InstallGuide។</translation>
 <translation id="2594999711683503743">ស្វែងរក​តាម Google ឬ​វាយបញ្ចូល URL</translation>
-<translation id="25957578727513093">ដើម្បី​ចូល​មក​ទីនេះ​បានរហ័ស​ជា​ងមុន សូម​បញ្ចូល​ផ្លូវកាត់​ទៅ​កាន់​កម្មវិធីគ្រប់គ្រងពាក្យសម្ងាត់</translation>
 <translation id="2599048253926156421">បាន​ចម្លង​ឈ្មោះអ្នកប្រើប្រាស់ទៅ​ក្នុង​ឃ្លីបបត</translation>
 <translation id="2602501489742255173">អូស​ឡើងលើ ដើម្បី​ចាប់ផ្ដើម</translation>
 <translation id="2603115962224169880">សម្អាត​កុំព្យូទ័រ</translation>
@@ -1894,6 +1901,7 @@
 <translation id="2653659639078652383">ដាក់ស្នើ</translation>
 <translation id="265390580714150011">តម្លៃប្រអប់</translation>
 <translation id="2654553774144920065">សំណើសុំ​បោះពុម្ព</translation>
+<translation id="265748523151262387">បន្ត​ភ្ជាប់​ជា​មួយ​ទូរសព្ទ​របស់​អ្នក</translation>
 <translation id="2657612187216250073">ការកំណត់​ភាពងាយស្រួល​ប្រើប្រាស់​​ព្រួញ</translation>
 <translation id="2658941648214598230">បង្ហាញខ្លឹមសារ​ដើមដែរទេ?</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />មុខងារ​ផ្សេង​ៗ​អាចខុសគ្នា​ទៅតាម​ឧបករណ៍</translation>
@@ -2410,6 +2418,7 @@
 <translation id="3103451787721578293">សូមបញ្ចូល​មូលហេតុ​ដែលបង្ហោះ​ទិន្នន័យនេះ៖</translation>
 <translation id="3105339775057145050">ការធ្វើ​បច្ចុប្បន្នភាព​មិនជោគជ័យ​ចុង​ក្រោយ</translation>
 <translation id="3105796011181310544">ប្ដូរទៅ Google វិញឬ?</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ប៊្លូធូស)</translation>
 <translation id="310671807099593501">ទំព័រ​កំពុងប្រើ​ប៊្លូធូស</translation>
 <translation id="3108931485517391283">មិនអាចទទួលបានទេ</translation>
 <translation id="3108957152224931571">ពណ៌រំលេច</translation>
@@ -3051,6 +3060,7 @@
 <translation id="371300529209814631">ថយក្រោយ/ទៅមុខ</translation>
 <translation id="3713047097299026954">សោសុវត្ថិភាពនេះ​មិនមានទិន្នន័យ​សម្រាប់ចូលគណនីទេ</translation>
 <translation id="3713091615825314967">ការ​ធ្វើបច្ចុប្បន្នភាព​ស្វ័យប្រវត្តិ​បើក​ហើយ។</translation>
+<translation id="371370241367527062">មីក្រូហ្វូន​ខាងមុខ</translation>
 <translation id="3714195043138862580">ឧបករណ៍​សាកល្បង​នេះត្រូវបាន​កំណត់ឱ្យដកសិទ្ធិចូលប្រើ។</translation>
 <translation id="3719826155360621982">ទំព័រដើម</translation>
 <translation id="372062398998492895">CUPS</translation>
@@ -3146,6 +3156,7 @@
 <translation id="3797900183766075808">&amp;ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់ “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798449238516105146">កំណែ</translation>
 <translation id="3798632811625902122">ឧបករណ៍​ប៊្លូធូស <ph name="DEVICE" /> ចង់បាន​ការអនុញ្ញាតក្នុង​ការផ្គូផ្គង។</translation>
+<translation id="3798670284305777884">ឧបករណ៍បំពងសំឡេង (ខាងក្នុង)</translation>
 <translation id="3799128412641261490">ការកំណត់​ការប្រើប៊ូតុងចុច</translation>
 <translation id="3800030395703848668">មើល​ជម្រើស​បញ្ជី</translation>
 <translation id="3800806661949714323">បង្ហាញទាំងអស់ (បានណែនាំ)</translation>
@@ -4126,7 +4137,7 @@
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (លំនាំដើម)</translation>
 <translation id="4684427112815847243">ធ្វើសមកម្មគ្រប់យ៉ាង</translation>
 <translation id="4687613760714619596">ឧបករណ៍​ដែលមិន​ស្គាល់ (<ph name="DEVICE_ID" />)</translation>
-<translation id="4687718960473379118">ការផ្សាយពាណិជ្ជកម្មដែលបាន​ណែនាំ​ដោយ​គេហទំព័រ</translation>
+<translation id="4687718960473379118">ការផ្សាយពាណិជ្ជកម្មដែលណែនាំ​ដោយ​គេហទំព័រ</translation>
 <translation id="4688036121858134881">លេខសម្គាល់​កំណត់ហេតុ​មូលដ្ឋាន៖ <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />។</translation>
 <translation id="4688176403504673761"><ph name="MANAGER" /> កំពុង​បន្ទាបកំណែ​ឧបករណ៍នេះ​ទៅកំណែមុន (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="4689235506267737042">ជ្រើសរើស​ចំណូល​ចិត្ត​ការសាកល្បង​របស់អ្នក</translation>
@@ -5149,6 +5160,7 @@
 <translation id="5643620609347735571">សម្អាត ហើយបន្ត</translation>
 <translation id="5646376287012673985">ទីតាំង</translation>
 <translation id="5646558797914161501">អ្នកជំនួញ</translation>
+<translation id="5648021990716966815">ឌុយ​មីក្រូហ្វូន</translation>
 <translation id="5648166631817621825">7 ថ្ងៃមុន</translation>
 <translation id="5651308944918885595">លទ្ធភាពរកឃើញការចែករំលែកនៅ​ជិត</translation>
 <translation id="5653154844073528838">អ្នក​មាន​ម៉ាស៊ីន​បោះពុម្ព​ដែលបាន​រក្សាទុក <ph name="PRINTER_COUNT" />។</translation>
@@ -5307,6 +5319,7 @@
 <translation id="5801051031414037185">រៀបចំទូរសព្ទ</translation>
 <translation id="5801568494490449797">ចំណូលចិត្ត</translation>
 <translation id="5804241973901381774">ការអនុញ្ញាត</translation>
+<translation id="5804259315582798390">មិន​អាច​បើក​ការ​ស្ដារទិន្នន័យ​ក្នុង​ឧបករណ៍​​ឡើងវិញបាន​ទេ</translation>
 <translation id="5805268472388605531">ចុច​គ្រាប់ចុច​លើក្ដារចុច​ឱ្យជាប់ ដើម្បីមើល​សញ្ញាសម្គាល់​សំឡេង និង​តួអក្សរ​ពិសេស</translation>
 <translation id="5805697420284793859">កម្មវិធី​គ្រប់គ្រង​វិនដូ</translation>
 <translation id="5806447147478173900">ទំហំផ្ទុក​សរុប​ដែល​បានប្រើ​ដោយ​គេហទំព័រ​ដែល​បង្ហាញ៖ <ph name="TOTAL_USAGE" /></translation>
@@ -5964,6 +5977,7 @@
 <translation id="6410668567036790476">បន្ថែមម៉ាស៊ីនស្វែងរក</translation>
 <translation id="641469293210305670">ដំឡើង​កំណែថ្មី និងកម្មវិធី</translation>
 <translation id="6414878884710400018">បើក​ចំណូល​ចិត្ត​ប្រព័ន្ធ</translation>
+<translation id="6415816101512323589">បើក​ការស្ដារទិន្នន័យ​ក្នុង​ឧបករណ៍​ឡើងវិញ ដើម្បីការពារ​ទិន្នន័យ​របស់​អ្នក​ឬ?</translation>
 <translation id="6415900369006735853">ភ្ជាប់​​អ៊ីនធឺណិតតាមរយៈទូរសព្ទរបស់អ្នក</translation>
 <translation id="6416743254476733475">អនុញ្ញាត ឬ​ទប់ស្កាត់​នៅលើ​កុំព្យូទ័រ​របស់អ្នក។</translation>
 <translation id="6417265370957905582">Google ជំនួយការ</translation>
@@ -6257,6 +6271,7 @@
 <translation id="6678717876183468697">URL សំណួរ</translation>
 <translation id="6680442031740878064">ទំនេរ៖ <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">អត្រា</translation>
+<translation id="6683022854667115063">កាស</translation>
 <translation id="6683087162435654533">ស្ដារផ្ទាំងទាំងអស់</translation>
 <translation id="6684827949542560880">កំពុងទាញយកកំណែថ្មីបំផុត</translation>
 <translation id="668599234725812620">បើក Google Play</translation>
@@ -6688,6 +6703,7 @@
 <translation id="7047059339731138197">ជ្រើសរើស​ផ្ទៃខាងក្រោយ</translation>
 <translation id="7049293980323620022">រក្សាឯកសារឬ?</translation>
 <translation id="7050037487872780845">ការកំណត់រចនាសម្ព័ន្ធ​ហតស្ប៉តមិន​ត្រឹមត្រូវ</translation>
+<translation id="7051551856857948729">លាក់តម្លៃ IBAN</translation>
 <translation id="7052237160939977163">ផ្ញើទិន្នន័យតាមដានប្រតិបត្តិការ</translation>
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
 <translation id="7055152154916055070">​បាន​ទប់ស្កាត់​ការបញ្ជូន​បន្ត៖</translation>
@@ -6755,7 +6771,6 @@
 <translation id="711840821796638741">បង្ហាញចំណាំដែលបានគ្រប់គ្រង</translation>
 <translation id="711985611146095797">ទំព័រនេះ​អនុញ្ញាតឱ្យ​អ្នកគ្រប់គ្រង​គណនី Google ដែលអ្នកចូល។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="7120762240626567834">ចរាចរណ៍ Android និង​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត Chrome នឹងត្រូវបាន​ទប់ស្កាត់ លុះត្រាតែ VPN ត្រូវបានភ្ជាប់</translation>
-<translation id="7120865473764644444">មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេសមកាលកម្មបានទេ។ ព្យាយាមម្តងទៀត...</translation>
 <translation id="7121438501124788993">មុខងារ​អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="7121728544325372695">ផ្ទាំងព័ត៌មានឆ្លាតវៃ</translation>
 <translation id="7123030151043029868">អនុញ្ញាតឱ្យទាញយកឯកសារច្រើនដោយស្វ័យប្រវត្តិ</translation>
@@ -6885,6 +6900,7 @@
 <translation id="7255002516883565667">ឥឡូវនេះ អ្នកមានបណ្ណមួយ​ដែលអាចប្រើបានតែ​នៅលើឧបករណ៍នេះ​ប៉ុណ្ណោះ</translation>
 <translation id="7255935316994522020">អនុវត្ត</translation>
 <translation id="7256069762010468647">ទំព័រ​កំពុងប្រើ​កាមេរ៉ា​របស់អ្នក</translation>
+<translation id="7256634071279256947">មីក្រូហ្វូន​ខាងក្រោយ</translation>
 <translation id="7256710573727326513">បើកនៅក្នុងផ្ទាំង</translation>
 <translation id="7257173066616499747">បណ្តាញ Wi-Fi</translation>
 <translation id="725758059478686223">សេវាកម្ម​បោះពុម្ព</translation>
@@ -8117,6 +8133,7 @@
 <translation id="8358912028636606457">មិនអាចប្រើ​ការបញ្ជូន​សំឡេងរបស់ផ្ទាំង​នៅលើឧបករណ៍​នេះបានទេ។</translation>
 <translation id="835951711479681002">រក្សាទុកនៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="8360140320636871023">កំណត់​រចនាប័ទ្ម​នៃ​ការបង្ហាញ​ឱ្យស្រប​នឹង​អ្នក</translation>
+<translation id="8360267485906769442">ប៊ូតុង "ផ្ញើ​មតិកែលម្អ"</translation>
 <translation id="8363095875018065315">ថេរ</translation>
 <translation id="8363142353806532503">បាន​ទប់ស្កាត់​មីក្រូហ្វូន</translation>
 <translation id="8366396658833131068">ការភ្ជាប់បណ្តាញរបសអ្នកត្រូវបានស្តារ។ សូមជ្រើសរើសបណ្តាញផ្សេងទៀត ឬចុចប៊ូតុង 'បន្ត' ខាងក្រោមដើម្បីបើកដំណើរការកម្មវិធីបញ្ជរបស់អ្នក។</translation>
@@ -8554,6 +8571,7 @@
 <translation id="8767621466733104912">ធ្វើ​បច្ចុប្បន្នភាព Chrome ដោយ​ស្វ័យប្រវត្តិ​សម្រាប់​អ្នកប្រើប្រាស់​ទាំងអស់</translation>
 <translation id="8770406935328356739">ថត root ផ្នែកបន្ថែម</translation>
 <translation id="8771300903067484968">ផ្ទៃខាងក្រោយ​នៃទំព័រចាប់​ផ្ដើមត្រូវបាន​កំណត់ទៅផ្ទៃខាងក្រោយ​លំនាំដើមឡើងវិញ។</translation>
+<translation id="8773280816776735812">បង្ហាញ​តម្លៃ IBAN</translation>
 <translation id="8773302562181397928">រក្សាទុក <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">បញ្ជាក់ការស្ដារ</translation>
 <translation id="8774934320277480003">ចន្លោះគែមខាងលើ</translation>

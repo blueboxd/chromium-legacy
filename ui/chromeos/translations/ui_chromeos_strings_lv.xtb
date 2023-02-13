@@ -408,6 +408,7 @@
 <translation id="4462159676511157176">Pielāgoti nosaukumu serveri</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />. tīkls no <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, pārvalda jūsu administrators, savienojums</translation>
 <translation id="4470564870223067757">Hangils (2 Set)</translation>
+<translation id="4474142134969976028">Nav atbilstošu rezultātu</translation>
 <translation id="4477002475007461989">Rumāņu</translation>
 <translation id="4477219268485577442">Bulgāru fonētiskā</translation>
 <translation id="4508265954913339219">Aktivizācija neizdevās</translation>
@@ -479,6 +480,7 @@
 <translation id="4973523518332075481">Izmantojiet nosaukumu, kas nepārsniedz <ph name="MAX_LENGTH" /> rakstzīmes.</translation>
 <translation id="4973970068702235170">Pārvietošana neizdevās; radās neparedzēta kļūda: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japāņu</translation>
+<translation id="4987699874727873250">Angļu (Indija)</translation>
 <translation id="4988205478593450158">Vai tiesām vēlaties dzēst failu <ph name="FILE_NAME" />?</translation>
 <translation id="498902553138568924">Sarkans tauriņš</translation>
 <translation id="4992066212339426712">Ieslēgt skaņu</translation>
@@ -788,6 +790,7 @@
 <translation id="7458955835361612701">Nav nesenu attēlu</translation>
 <translation id="7460898608667578234">Ukraiņu valoda</translation>
 <translation id="7469894403370665791">Automātiski pievienoties šim tīklam</translation>
+<translation id="7481358317100446445">Gatavs</translation>
 <translation id="7486315294984620427">Lai nomestu failus darbvirsmā Parallels Desktop, attiecīgajam failam ir jābūt kopētam Windows failos.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malajalu, fonētiskā</translation>
@@ -813,6 +816,7 @@
 <translation id="7655441028674523381">Ērta piekļuve Google fotoattēliem</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Izmēģiniet citu meklēšanas vaicājumu</translation>
 <translation id="7689532716264131859">Vienumi (<ph name="NUMBER_OF_ITEMS" />) ir pārvietoti uz atkritni.</translation>
 <translation id="7693909743393669729">Formatējot disku, tiks dzēsti visi tajā glabātie dati un tiks noņemti visi esošie nodalījumi, tostarp tie, kas nav redzami. Šo darbību nevar atsaukt.</translation>
 <translation id="7695430100978772476">Nevarēja formatēt disku “<ph name="DRIVE_NAME" />”.</translation>
@@ -969,6 +973,7 @@
 <translation id="8866284467018526531">Arābu, transliterācija</translation>
 <translation id="8873014196523807561">Lai atjaunotu šos vienumus, velciet tos uz jaunu mapi. Dažiem no šiem vienumiem ir izdzēstas sākotnējās mapes.</translation>
 <translation id="8874184842967597500">Savienojums nav izveidots</translation>
+<translation id="8876368061475701452">Ievietots rindā</translation>
 <translation id="8900820606136623064">Ungāru</translation>
 <translation id="8903931173357132290">Absolvents</translation>
 <translation id="8912078710089354287">Suns luncina asti</translation>

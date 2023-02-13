@@ -27,6 +27,7 @@
 #include "extensions/browser/user_script_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/content_script_injection_url_getter.h"
+#include "extensions/common/context_data.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -137,19 +138,18 @@ class RenderProcessHostUserData : public base::SupportsUserData::Data {
 const char* RenderProcessHostUserData::kUserDataKey =
     "ContentScriptTracker's data";
 
-class RenderFrameHostAdapter
-    : public ContentScriptInjectionUrlGetter::FrameAdapter {
+class BrowserContextData : public ContextData {
  public:
-  explicit RenderFrameHostAdapter(content::RenderFrameHost* frame)
+  explicit BrowserContextData(content::RenderFrameHost* frame)
       : frame_(frame) {}
 
-  ~RenderFrameHostAdapter() override = default;
+  ~BrowserContextData() override = default;
 
-  std::unique_ptr<FrameAdapter> Clone() const override {
-    return std::make_unique<RenderFrameHostAdapter>(frame_);
+  std::unique_ptr<ContextData> Clone() const override {
+    return std::make_unique<BrowserContextData>(frame_);
   }
 
-  std::unique_ptr<FrameAdapter> GetLocalParentOrOpener() const override {
+  std::unique_ptr<ContextData> GetLocalParentOrOpener() const override {
     content::RenderFrameHost* parent_or_opener = frame_->GetParent();
     // Non primary pages(e.g. fenced frame, prerendered page, bfcache, and
     // portals) can't look at the opener, and WebContents::GetOpener returns the
@@ -171,7 +171,7 @@ class RenderFrameHostAdapter
     if (parent_or_opener->GetProcess() != frame_->GetProcess())
       return nullptr;
 
-    return std::make_unique<RenderFrameHostAdapter>(parent_or_opener);
+    return std::make_unique<BrowserContextData>(parent_or_opener);
   }
 
   GURL GetUrl() const override {
@@ -195,7 +195,7 @@ class RenderFrameHostAdapter
     return true;
   }
 
-  bool CanAccess(const FrameAdapter& target) const override {
+  bool CanAccess(const ContextData& target) const override {
     // CanAccess should not be called - see the comment for
     // kAllowInaccessibleParents in GetEffectiveDocumentURL below.
     NOTREACHED();
@@ -222,7 +222,7 @@ GURL GetEffectiveDocumentURL(
   constexpr bool kAllowInaccessibleParents = true;
 
   return ContentScriptInjectionUrlGetter::Get(
-      RenderFrameHostAdapter(frame), document_url, match_origin_as_fallback,
+      BrowserContextData(frame), document_url, match_origin_as_fallback,
       kAllowInaccessibleParents);
 }
 

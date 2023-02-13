@@ -331,8 +331,7 @@ void PaintLayer::UpdateTransform() {
     DCHECK(box);
     transform->MakeIdentity();
     box->StyleRef().ApplyTransform(
-        *transform, box, box->Size(),
-        ComputedStyle::kIncludeTransformOperations,
+        *transform, box->Size(), ComputedStyle::kIncludeTransformOperations,
         ComputedStyle::kIncludeTransformOrigin,
         ComputedStyle::kIncludeMotionPath,
         ComputedStyle::kIncludeIndependentTransformProperties);
@@ -1207,7 +1206,6 @@ const LayoutBox* PaintLayer::GetLayoutBoxWithBlockFragments() const {
   if (!layout_box->CanTraversePhysicalFragments())
     return nullptr;
   if (!layout_box->PhysicalFragmentCount()) {
-    NOTREACHED();
     // TODO(crbug.com/1273068): The box has no fragments. This is
     // unexpected, and we must have failed a bunch of DCHECKs (if enabled)
     // on our way here. If the LayoutBox has never been laid out, it will
@@ -2105,8 +2103,17 @@ void PaintLayer::UpdateFilterReferenceBox() {
   PhysicalRect result = LocalBoundingBox();
   ExpandRectForSelfPaintingDescendants(result);
   gfx::RectF reference_box(result);
-  if (!ResourceInfo() || ResourceInfo()->FilterReferenceBox() != reference_box)
-    GetLayoutObject().SetNeedsPaintPropertyUpdate();
+  if (!ResourceInfo() ||
+      ResourceInfo()->FilterReferenceBox() != reference_box) {
+    if (GetLayoutObject().GetDocument().Lifecycle().GetState() ==
+        DocumentLifecycle::kInPrePaint) {
+      GetLayoutObject()
+          .GetMutableForPainting()
+          .SetOnlyThisNeedsPaintPropertyUpdate();
+    } else {
+      GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    }
+  }
   EnsureResourceInfo().SetFilterReferenceBox(reference_box);
 }
 

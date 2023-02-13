@@ -13,16 +13,11 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
-#include "base/test/test_timeouts.h"
-#include "base/time/time.h"
-#include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
@@ -31,13 +26,11 @@
 #include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/unittest_util_win.h"
 #include "chrome/updater/util/util.h"
-#include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/test/test_executables.h"
 #include "chrome/updater/win/test/test_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 namespace {
@@ -185,8 +178,9 @@ TEST_F(LegacyAppCommandWebImplTest, FailedToLaunchStatus) {
 }
 
 TEST_F(LegacyAppCommandWebImplTest, CommandRunningStatus) {
-  if (IsSystemInstall(GetTestScope()))
+  if (IsSystemInstall(GetTestScope())) {
     return;
+  }
 
   Microsoft::WRL::ComPtr<LegacyAppCommandWebImpl> app_command_web;
   base::CommandLine command_line =
@@ -259,6 +253,8 @@ TEST(LegacyCOMClassesTest, CheckLegacyInterfaceIDs) {
             L"{521FDB42-7130-4806-822A-FC5163FAD983}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(ProcessLauncherClass)),
             L"{ABC01078-F197-4B0B-ADBC-CFE684B39C82}");
+  EXPECT_EQ(base::win::WStringFromGUID(__uuidof(IAppVersionWeb)),
+            L"{0CD01D1E-4A1C-489D-93B9-9B6672877C57}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(ICurrentState)),
             L"{247954F9-9EDC-4E68-8CC3-150C2B89EADF}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(IGoogleUpdate3Web)),
@@ -294,6 +290,8 @@ TEST(LegacyCOMClassesTest, CheckLegacyInterfaceIDs) {
             L"{83FE19AC-72A6-4A72-B136-724444121586}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(ProcessLauncherClass)),
             L"{811A664F-703E-407C-A323-E6E31D1EFFA0}");
+  EXPECT_EQ(base::win::WStringFromGUID(__uuidof(IAppVersionWeb)),
+            L"{3057E1F8-2498-4C19-99B5-F7F207DA4DC7}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(ICurrentState)),
             L"{BE5D3E90-A66C-4A0A-9B7B-1A6B9BF3971E}");
   EXPECT_EQ(base::win::WStringFromGUID(__uuidof(IGoogleUpdate3Web)),

@@ -11,7 +11,6 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as
@@ -77,9 +76,7 @@ bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
   switch (this->GetSyncServiceState()) {
     // No error.
     case SyncSetupService::kNoSyncServiceError:
-    // These errors are transient and don't mean that sync is off.
-    case SyncSetupService::kSyncServiceCouldNotConnect:
-    case SyncSetupService::kSyncServiceServiceUnavailable:
+    // This error doesn't actually stop sync.
     case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
       return false;
     // These errors effectively amount to disabled sync and require a signin.
@@ -127,50 +124,28 @@ void SyncSetupService::SetSyncEnabled(bool sync_enabled) {
 }
 
 SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
-  switch (sync_service_->GetAuthError().state()) {
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-      return kSyncServiceCouldNotConnect;
-    // TODO(crbug.com/1194007): This will support the SyncDisabled policy that
-    // can force the Sync service to become unavailable.
-    // Based on GetSyncStatusLabelsForAuthError, SERVICE_UNAVAILABLE
-    // corresponds to sync having been disabled for the user's domain.
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return kSyncServiceServiceUnavailable;
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+  switch (sync_service_->GetUserActionableError()) {
+    case syncer::SyncService::UserActionableError::kNone:
+      return kNoSyncServiceError;
+    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
       return kSyncServiceSignInNeedsUpdate;
-    // The following errors are not shown to the user.
-    case GoogleServiceAuthError::NONE:
-    // Connection failed is not shown to the user, as this will happen if the
-    // service retuned a 500 error. A more detail error can always be checked
-    // on chrome://sync-internals.
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
-      break;
-    // The following errors are unexpected on iOS.
-    case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
-    // Conventional value for counting the states, never used.
-    case GoogleServiceAuthError::NUM_STATES:
-      NOTREACHED() << "Unexpected Auth error ("
-                   << sync_service_->GetAuthError().state()
-                   << "): " << sync_service_->GetAuthError().error_message();
-      break;
+    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
+      return kSyncServiceNeedsPassphrase;
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForEverything:
+      return kSyncServiceNeedsTrustedVaultKey;
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForEverything:
+      return kSyncServiceTrustedVaultRecoverabilityDegraded;
+    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
+      return kSyncServiceUnrecoverableError;
   }
-  if (sync_service_->HasUnrecoverableError())
-    return kSyncServiceUnrecoverableError;
-  if (sync_service_->GetUserSettings()
-          ->IsPassphraseRequiredForPreferredDataTypes()) {
-    return kSyncServiceNeedsPassphrase;
-  }
-  if (sync_service_->GetUserSettings()
-          ->IsTrustedVaultKeyRequiredForPreferredDataTypes()) {
-    return kSyncServiceNeedsTrustedVaultKey;
-  }
-  if (sync_service_->GetUserSettings()
-          ->IsTrustedVaultRecoverabilityDegraded()) {
-    return kSyncServiceTrustedVaultRecoverabilityDegraded;
-  }
+
+  NOTREACHED();
   return kNoSyncServiceError;
 }
 

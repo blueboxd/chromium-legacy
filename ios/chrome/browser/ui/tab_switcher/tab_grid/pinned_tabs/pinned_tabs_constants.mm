@@ -43,7 +43,7 @@ const CGFloat kPinnedCellFaviconWidth = 16.0f;
 const CGFloat kPinnedCellFaviconContainerWidth = 24.0f;
 const CGFloat kPinnedCellFaviconBorderWidth = 1.5f;
 const CGFloat kPinnedCellFaviconContainerCornerRadius = 9.0f;
-const CGFloat kPinnedCellFaviconCornerRadius = 7.0f;
+const CGFloat kPinnedCellFaviconCornerRadius = 3.0f;
 const CGFloat kPinnedCellSelectionRingGapWidth = 2.0f;
 const CGFloat kPinnedCellSelectionRingTintWidth = 3.0f;
 const CGFloat kPinnedCellSelectionRingPadding =
@@ -52,3 +52,6 @@ const CGFloat kPinnedCellSelectionRingPadding =
 // Pinned cell collection view layout constraints.
 const CGFloat kPinnedCellVerticalLayoutInsets = 16.0f;
 const CGFloat kPinnedCellHorizontalLayoutInsets = 16.0f;
+
+// Pinned cell title label fader dimensions.
+const CGFloat kPinnedCellFaderGradientWidth = 16.0f;

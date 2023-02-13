@@ -501,7 +501,6 @@
 <translation id="2148613324460538318">कार्ड थप्नुहोस्</translation>
 <translation id="2149968176347646218">इन्टरनेट सुरक्षित छैन</translation>
 <translation id="2153609454945889823">Google Play Services for AR इन्स्टल गर्ने हो?</translation>
-<translation id="2154054054215849342">तपाईंको डोमेनको लागि सिंंक उपलब्ध छैन</translation>
 <translation id="2154484045852737596">कार्ड सम्पादन गर्नुहोस्</translation>
 <translation id="2155260325161282517">५ x ७ इन्च</translation>
 <translation id="2157640075051554492">मूल्य ट्र्याक गर्ने सुविधासम्बन्धी सूचनाहरू</translation>
@@ -540,6 +539,7 @@
 <translation id="2241693394036365668">फाइल डाउनलोड गरिँदा</translation>
 <translation id="2246264294482514010">१० x १२ इन्च</translation>
 <translation id="2246480341630108201">तपाईंका अभिभावकले अहिलेसम्म पनि "ठिक छ" भन्नुभएको छैन</translation>
+<translation id="2247789808226901522">कार्डको म्याद सकियो</translation>
 <translation id="2248949050832152960">WebAuthn प्रयोग गर्नुहोस्</translation>
 <translation id="2250931979407627383">बायाँ किनारमा स्टिच</translation>
 <translation id="225207911366869382">यस नीतिको लागि मूल्य बेमन्जुरी गरिएको छ।</translation>
@@ -1075,6 +1075,7 @@
 <translation id="3646643500201740985">विज्ञापनको पर्फर्मेन्स कत्तिको राम्रो छ भन्ने कुरा मापन गर्ने तरिका</translation>
 <translation id="3647286794400715637">प्रत्येक URL स्ट्रिङ प्रविष्टिमा १ देखि २ वटा URL हुनु पर्छ।</translation>
 <translation id="3650584904733503804">प्रमाणीकरण सफल भयो</translation>
+<translation id="3650594806107685466">आफ्नो कार्ड सुरक्षित राख्न <ph name="SIDE_OF_CARD" /> रहेको CVC हाल्नुहोस्</translation>
 <translation id="3653033846669030038">थिम पार्कहरू</translation>
 <translation id="3655241534245626312">अनुमतिसम्बन्धी सेटिङमा जानुहोस्</translation>
 <translation id="3655670868607891010">यदि तपाईं यो बारम्बार रूपमा देखिरहनुभएको छ भने, यिनीहरू गर्ने प्रयास गर्नुहोस् <ph name="HELP_LINK" />।</translation>
@@ -1854,6 +1855,7 @@
 <translation id="5552137475244467770">Chrome ले तपाईंका पासवर्डहरू अनलाइनमा प्रकाशित सूचीमा परेका छन् कि छैनन् भनी आवधिक रूपमा जाँच गर्छ। यसो गर्दा, Google लगायत कसैले पनि तपाईंका पासवर्ड र प्रयोगकर्ता नामहरू पढ्न नसकून् भन्नाका लागि तिनलाई इन्क्रिप्ट गरिन्छ।</translation>
 <translation id="5556459405103347317">पुन: लोड गर्नुहोस्</translation>
 <translation id="5558125320634132440">यस साइटमा वयस्क सामग्री समावेश हुन सक्ने भएकाले यसलाई रोक लगाइएको छ</translation>
+<translation id="5559311991468302423">ठेगाना मेटाउनुहोस्</translation>
 <translation id="5560088892362098740">म्याद सकिने मिति</translation>
 <translation id="55635442646131152">कागजातको रूपरेखा</translation>
 <translation id="5565613213060953222">इन्कोग्निटो ट्याब खोल्नुहोस्</translation>
@@ -2455,6 +2457,7 @@
 <translation id="7112327784801341716">आफ्नो हालको जानकारी देखिरहनुभएको छैन? बैंकमा सम्पर्क गरी आफ्नो अद्यावधिक जानकारी प्रदान गर्नुहोस्।</translation>
 <translation id="7118618213916969306">क्लिपबोर्डको URL <ph name="SHORT_URL" /> खोज्नुहोस्</translation>
 <translation id="7119414471315195487">अन्य ट्याब वा कार्यक्रमहरू बन्द गर्नुहोस्</translation>
+<translation id="7124354851782353862">आफ्नो CVC हाल्नुहोस्</translation>
 <translation id="7129355289156517987">तपाईंले Chromium का सबै इन्कोग्निटो ट्याबहरू बन्द गर्नुभयो भने तपाईंले ती ट्याबमा गरेका निम्न क्रियाकलाप यो डिभाइसबाट मेटाइन्छ:
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />ब्राउजर प्रयोग गरी गरिएको क्रियाकलाप<ph name="END_LIST_ITEM" />
@@ -2570,6 +2573,7 @@
 <translation id="7388594495505979117">{0,plural, =1{तपाईंको डिभाइस १ मिनेटमा रिस्टार्ट हुने छ}other{तपाईंको डिभाइस # मिनेटमा रिस्टार्ट हुने छ}}</translation>
 <translation id="7390545607259442187">कार्डको पुष्टि गर्नुहोस्</translation>
 <translation id="7392089738299859607">ठेगाना परिवर्तन गर्नुहोस्</translation>
+<translation id="739728382607845710">भुक्तानी ह्यान्ड्लर जनाउने आइकन</translation>
 <translation id="7399802613464275309">सुरक्षा जाँच</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403392780200267761">लिंक सेयर गरेर, QR कोड बनाएर, कास्ट गरेर वा अन्य तरिकाले यो ट्याब सेयर गर्नुहोस्</translation>
@@ -2781,6 +2785,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{कुनै पनि होइन}=1{१ एप (<ph name="EXAMPLE_APP_1" />)}=2{२ एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">तपाईंले यसपछि खोल्ने कुनै साइटले तपाईंलाई देखाइने विज्ञापनहरू पर्सनलाइज गर्ने प्रयोजनका लागि Chrome सँग तपाईंका विषयसम्बन्धी जानकारी माग्न सक्छ। Chrome ले तपाईंको ब्राउजिङ हिस्ट्री र पहिचान गोप्य राख्दै बढीमा ३ वटा विषय सेयर गर्छ।</translation>
+<translation id="7860345425589240791"><ph name="SIDE_OF_CARD" /> रहेको म्याद सकिने नयाँ मिति र CVC हाल्नुहोस्</translation>
 <translation id="7862185352068345852">साइट छाड्ने हो?</translation>
 <translation id="7865448901209910068">उत्कृष्ट गति</translation>
 <translation id="7871445724586827387">आफ्नो Google खाताको पासवर्ड बदल्नुहोस्</translation>

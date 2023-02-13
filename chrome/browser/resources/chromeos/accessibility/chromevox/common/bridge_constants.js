@@ -39,14 +39,8 @@ BridgeConstants.Braille = {
   TARGET: 'Braille',
   Action: {
     BACK_TRANSLATE: 'backTranslate',
-  },
-};
-
-/** @public {!BridgeEntry} */
-BridgeConstants.BrailleBackground = {
-  TARGET: 'BrailleBackground',
-  Action: {
-    REFRESH_BRAILLE_TABLE: 'refreshBrailleTable',
+    PAN_LEFT: 'panLeft',
+    PAN_RIGHT: 'panRight',
     WRITE: 'write',
   },
 };

@@ -352,7 +352,6 @@ public abstract class ChromeFeatureList {
     public static final String LEAK_DETECTION_UNAUTHENTICATED = "LeakDetectionUnauthenticated";
     public static final String LENS_CAMERA_ASSISTED_SEARCH = "LensCameraAssistedSearch";
     public static final String LENS_ON_QUICK_ACTION_SEARCH_WIDGET = "LensOnQuickActionSearchWidget";
-    public static final String LIGHTWEIGHT_REACTIONS = "LightweightReactions";
     public static final String LOCAL_WEB_APPROVALS = "LocalWebApprovals";
     public static final String LOOKALIKE_NAVIGATION_URL_SUGGESTIONS_UI =
             "LookalikeUrlNavigationSuggestionsUI";
@@ -404,6 +403,8 @@ public abstract class ChromeFeatureList {
             "PageInfoAboutThisSiteImprovedBottomSheet";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
+    public static final String PARTNER_HOMEPAGE_INITIAL_LOAD_IMPROVEMENT =
+            "PartnerHomepageInitialLoadImprovement";
     public static final String PASSWORD_DOMAIN_CAPABILITIES_FETCHING =
             "PasswordDomainCapabilitiesFetching";
     public static final String PASSWORD_EDIT_DIALOG_WITH_DETAILS = "PasswordEditDialogWithDetails";
@@ -463,6 +464,7 @@ public abstract class ChromeFeatureList {
     public static final String SEARCH_RESUMPTION_MODULE_ANDROID = "SearchResumptionModuleAndroid";
     public static final String SHOULD_IGNORE_INTENT_SKIP_INTERNAL_CHECK =
             "ShouldIgnoreIntentSkipInternalCheck";
+    public static final String SHARE_SHEET_MIGRATION_ANDROID = "ShareSheetMigrationAndroid";
     public static final String SEND_TAB_TO_SELF_SIGNIN_PROMO = "SendTabToSelfSigninPromo";
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
@@ -481,6 +483,7 @@ public abstract class ChromeFeatureList {
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String START_SURFACE_DISABLED_FEED_IMPROVEMENT =
             "StartSurfaceDisabledFeedImprovement";
+    public static final String START_SURFACE_ON_TABLET = "StartSurfaceOnTablet";
     public static final String START_SURFACE_REFACTOR = "StartSurfaceRefactor";
     public static final String START_SURFACE_RETURN_TIME = "StartSurfaceReturnTime";
     public static final String STORE_HOURS = "StoreHoursAndroid";
@@ -506,6 +509,7 @@ public abstract class ChromeFeatureList {
     public static final String TANGIBLE_SYNC = "TangibleSync";
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
+    public static final String THUMBNAIL_CACHE_REFACTOR = "ThumbnailCacheRefactor";
     public static final String TOOLBAR_MIC_IPH_ANDROID = "ToolbarMicIphAndroid";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
@@ -627,6 +631,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sOptimizationGuidePushNotifications =
             new CachedFlag(OPTIMIZATION_GUIDE_PUSH_NOTIFICATIONS, false);
     public static final CachedFlag sPaintPreviewDemo = new CachedFlag(PAINT_PREVIEW_DEMO, false);
+    public static final CachedFlag sPartnerHomepageInitialLoadImprovement =
+            new CachedFlag(PARTNER_HOMEPAGE_INITIAL_LOAD_IMPROVEMENT, true);
     public static final CachedFlag sPrefetchNotificationSchedulingIntegration =
             new CachedFlag(PREFETCH_NOTIFICATION_SCHEDULING_INTEGRATION, false);
     public static final CachedFlag sQueryTiles = new CachedFlag(QUERY_TILES, false);
@@ -638,6 +644,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(START_SURFACE_ANDROID, true);
     public static final CachedFlag sStartSurfaceDisabledFeedImprovement =
             new CachedFlag(START_SURFACE_DISABLED_FEED_IMPROVEMENT, false);
+    public static final CachedFlag sStartSurfaceOnTablet =
+            new CachedFlag(START_SURFACE_ON_TABLET, false);
     public static final CachedFlag sStartSurfaceRefactor =
             new CachedFlag(START_SURFACE_REFACTOR, false);
     public static final CachedFlag sStartSurfaceReturnTime =

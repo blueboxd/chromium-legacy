@@ -13,6 +13,12 @@ import sys
 
 USE_PYTHON3 = True
 
+# Deprecations in this list have no `WebFeature`s to generate code from as they
+# are not dispatched within the renderer. If this list starts to grow we should
+# add more formal support.
+EXEMPTED_FROM_RENDERER_GENERATION = {
+    "PrivacySandboxExtensionsAPI": True,
+}
 
 # pyright: reportMissingImports=false
 def _LoadDeprecation(input_api, filename):
@@ -57,11 +63,24 @@ def _CheckDeprecation(input_api, output_api):
                     'deprecation.json5 items must all contain a non-empty "message" value.'
                 )
             ]
+        if len(deprecation['message']) != len(deprecation['message'].encode()):
+            return [
+                output_api.PresubmitError(
+                    'deprecation.json5 items must all contain fully ascii "message" values.'
+                )
+            ]
         if 'translation_note' not in deprecation or not deprecation[
                 'translation_note']:
             return [
                 output_api.PresubmitError(
                     'deprecation.json5 items must all contain a non-empty "translation_note" value.'
+                )
+            ]
+        if len(deprecation['translation_note']) != len(
+                deprecation['translation_note'].encode()):
+            return [
+                output_api.PresubmitError(
+                    'deprecation.json5 items must all contain fully ascii "translation_note" values.'
                 )
             ]
         if 'web_features' in deprecation and deprecation['web_features']:
@@ -78,11 +97,12 @@ def _CheckDeprecation(input_api, output_api):
                         long_text='\n'.join(diff))
                 ]
         else:
-            return [
-                output_api.PresubmitError(
-                    'deprecation.json5 items must all contain a non-empty list of "web_features".'
-                )
-            ]
+            if deprecation['name'] not in EXEMPTED_FROM_RENDERER_GENERATION:
+                return [
+                    output_api.PresubmitError(
+                        'deprecation.json5 items must all contain a non-empty list of "web_features".'
+                    )
+                ]
         if 'chrome_status_feature' in deprecation:
             if not deprecation['chrome_status_feature']:
                 return [

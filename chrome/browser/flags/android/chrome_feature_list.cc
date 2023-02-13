@@ -103,6 +103,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &blink::features::kForceWebContentsDarkMode,
     &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
+    &blink::features::kStylusRichGestures,
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
     &commerce::kShoppingList,
@@ -246,6 +247,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxModernizeVisualUpdate,
     &kOpaqueOriginForIncomingIntents,
     &kOptimizeGeolocationHeaderGeneration,
+    &kPartnerHomepageInitialLoadImprovement,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
     &kQuickDeleteForAndroid,
@@ -276,6 +278,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
+    &kShareSheetMigrationAndroid,
     &kShouldIgnoreIntentSkipInternalCheck,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
@@ -297,6 +300,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
+    &kThumbnailCacheRefactor,
     &kToolbarMicIphAndroid,
     &kToolbarScrollAblationAndroid,
     &kTrustedWebActivityPostMessage,
@@ -304,6 +308,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTrustedWebActivityQualityEnforcementForced,
     &kTrustedWebActivityQualityEnforcementWarning,
     &kStartSurfaceAndroid,
+    &kStartSurfaceOnTablet,
     &kStartSurfaceReturnTime,
     &kStartSurfaceRefactor,
     &kStartSurfaceDisabledFeedImprovement,
@@ -375,8 +380,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &share::kCrowLaunchTab,
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
-    &supervised_users::kLocalWebApprovals,
-    &supervised_users::kWebFilterInterstitialRefresh,
+    &supervised_user::kLocalWebApprovals,
+    &supervised_user::kWebFilterInterstitialRefresh,
     &switches::kForceStartupSigninPromo,
     &switches::kIdentityStatusConsistency,
     &switches::kForceDisableExtendedSyncPromos,
@@ -777,6 +782,10 @@ BASE_FEATURE(kOptimizeGeolocationHeaderGeneration,
              "OptimizeGeolocationHeaderGeneration",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPartnerHomepageInitialLoadImprovement,
+             "PartnerHomepageInitialLoadImprovement",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPostTaskFocusTab,
              "PostTaskFocusTab",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -889,6 +898,10 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
              "ShowScrollableMVTOnNTPAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kShareSheetMigrationAndroid,
+             "ShareSheetMigrationAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSpecialLocaleWrapper,
              "SpecialLocaleWrapper",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -969,6 +982,10 @@ BASE_FEATURE(kTestDefaultEnabled,
              "TestDefaultEnabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kThumbnailCacheRefactor,
+             "ThumbnailCacheRefactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kToolbarMicIphAndroid,
              "ToolbarMicIphAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1008,6 +1025,10 @@ BASE_FEATURE(kSearchResumptionModuleAndroid,
 BASE_FEATURE(kShouldIgnoreIntentSkipInternalCheck,
              "ShouldIgnoreIntentSkipInternalCheck",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStartSurfaceOnTablet,
+             "StartSurfaceOnTablet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceReturnTime,
              "StartSurfaceReturnTime",

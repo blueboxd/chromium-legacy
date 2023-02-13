@@ -115,29 +115,29 @@ export class CommandHandler extends CommandHandlerInterface {
         LogManager.logTreeDump();
         break;
       case Command.DECREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.RATE, false);
         return false;
       case Command.INCREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.RATE, true);
         return false;
       case Command.DECREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.PITCH, false);
         return false;
       case Command.INCREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.PITCH, true);
         return false;
       case Command.DECREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.VOLUME, false);
         return false;
       case Command.INCREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.VOLUME, true);
         return false;
       case Command.STOP_SPEECH:
         ChromeVox.tts.stop();
         ChromeVoxState.instance.isReadingContinuously = false;
         return false;
       case Command.TOGGLE_EARCONS:
-        this.toggleEarcons_();
+        ChromeVox.earcons.toggle();
         return false;
       case Command.CYCLE_TYPING_ECHO:
         this.cycleTypingEcho_();
@@ -799,17 +799,6 @@ export class CommandHandler extends CommandHandlerInterface {
    */
   onFinishCommand() {
     SmartStickyMode.instance.stopIgnoringRangeChanges();
-  }
-
-  /**
-   * Increase or decrease a speech property and make an announcement.
-   * @param {string} propertyName The name of the property to change.
-   * @param {boolean} increase If true, increases the property value by one
-   *     step size, otherwise decreases.
-   * @private
-   */
-  increaseOrDecreaseSpeechProperty_(propertyName, increase) {
-    ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
   }
 
   /**
@@ -1684,14 +1673,6 @@ export class CommandHandler extends CommandHandlerInterface {
     BrailleBackground.instance.getTranslatorManager().refresh(
         SettingsManager.getString(brailleTableType));
     new Output().format(output).go();
-  }
-
-  /** @private */
-  toggleEarcons_() {
-    ChromeVox.earcons.enabled = !ChromeVox.earcons.enabled;
-    const announce = ChromeVox.earcons.enabled ? Msgs.getMsg('earcons_on') :
-                                                 Msgs.getMsg('earcons_off');
-    ChromeVox.tts.speak(announce, QueueMode.FLUSH, Personality.ANNOTATION);
   }
 
   /** @private */

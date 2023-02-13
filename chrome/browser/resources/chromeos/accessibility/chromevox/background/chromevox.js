@@ -35,6 +35,22 @@ BridgeHelper.registerHandler(
     });
 
 BridgeHelper.registerHandler(
+    BridgeConstants.Braille.TARGET, BridgeConstants.Braille.Action.PAN_LEFT,
+    () => {
+      if (ChromeVox.braille) {
+        ChromeVox.braille.panLeft();
+      }
+    });
+
+BridgeHelper.registerHandler(
+    BridgeConstants.Braille.TARGET, BridgeConstants.Braille.Action.PAN_RIGHT,
+    () => {
+      if (ChromeVox.braille) {
+        ChromeVox.braille.panRight();
+      }
+    });
+
+BridgeHelper.registerHandler(
     BridgeConstants.TtsBackground.TARGET,
     BridgeConstants.TtsBackground.Action.SPEAK,
     (text, queueMode, properties) => {
@@ -42,7 +58,6 @@ BridgeHelper.registerHandler(
     });
 
 BridgeHelper.registerHandler(
-    BridgeConstants.BrailleBackground.TARGET,
-    BridgeConstants.BrailleBackground.Action.WRITE,
+    BridgeConstants.Braille.TARGET, BridgeConstants.Braille.Action.WRITE,
     text =>
         ChromeVox.braille.write(new NavBraille({text: new Spannable(text)})));

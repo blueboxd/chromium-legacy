@@ -22,6 +22,8 @@
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -130,6 +132,23 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
     kMaxValue = kDeviceActivityClientOnGetLastPingDatesStatusFetched,
   };
 
+  // Records UMA histogram for different failed cases before set the last
+  // ping time to local_state_ after checking membership has response.
+  enum class CheckMembershipResponseCases {
+    kUnknown = 0,
+    kCreateOprfRequestFailed = 1,
+    kOprfResponseBodyFailed = 2,
+    kNotHasRlweOprfResponse = 3,
+    kCreateQueryRequestFailed = 4,
+    kQueryResponseBodyFailed = 5,
+    kNotHasRlweQueryResponse = 6,
+    kProcessQueryResponseFailed = 7,
+    kMembershipResponsesSizeIsNotOne = 8,
+    kIsNotPsmIdMember = 9,
+    kSuccessfullySetLocalState = 10,
+    kMaxValue = kSuccessfullySetLocalState,
+  };
+
   // Records UMA histogram for number of times various methods are called in
   // device_activity/.
   static void RecordDeviceActivityMethodCalled(
@@ -137,13 +156,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
 
   // Fires device active pings while the device network is connected.
   DeviceActivityClient(
+      PrefService* local_state,
       NetworkStateHandler* handler,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<base::RepeatingTimer> report_timer,
       const std::string& fresnel_server_url,
       const std::string& api_key,
-      std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases,
-      base::Time chrome_first_run_time);
+      base::Time chrome_first_run_time,
+      std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases);
   DeviceActivityClient(const DeviceActivityClient&) = delete;
   DeviceActivityClient& operator=(const DeviceActivityClient&) = delete;
   ~DeviceActivityClient() override;
@@ -268,6 +288,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   // Tracks the current state of the DeviceActivityClient.
   State state_ = State::kIdle;
 
+  // Used by client to store and retrieve the |churn_active_status_| object.
+  // |local_state_| outlives the lifetime of this class.
+  PrefService* const local_state_;
+
   // Keep track of whether the device is connected to the network.
   bool network_connected_ = false;
 
@@ -278,9 +302,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   // This field is only used to determine total state duration, which is
   // reported to UMA via. histograms.
   base::ElapsedTimer state_timer_;
-
-  // The chrome first run sentinel creation time.
-  base::Time chrome_first_run_time_;
 
   // Tracks the visible networks and their properties.
   // |network_state_handler_| outlives the lifetime of this class.
@@ -308,13 +329,16 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   // the chrome-internal repository and is not publicly exposed in Chromium.
   const std::string api_key_;
 
-  // ChurnActiveStatus object stores the active history for the device.
-  // This bit value will be persisted in local state and preserved files.
-  std::unique_ptr<ChurnActiveStatus> churn_active_status_;
+  // The chrome first run sentinel creation time.
+  base::Time chrome_first_run_time_;
 
   // Vector of supported use cases containing the methods and metadata required
   // to counting device actives.
   const std::vector<std::unique_ptr<DeviceActiveUseCase>> use_cases_;
+
+  // ChurnActiveStatus object stores the active history for the device.
+  // This bit value will be persisted in local state and preserved files.
+  std::unique_ptr<ChurnActiveStatus> churn_active_status_;
 
   // Contains the use cases to report active for.
   // The front of the queue represents the use case trying to be reported.

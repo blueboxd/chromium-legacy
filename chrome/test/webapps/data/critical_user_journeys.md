@@ -126,6 +126,7 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | M | install_or_shortcut_windowed | set_open_in_tab | launch_from_chrome_apps | check_tab_created |
 | WMLC | install_or_shortcut_tabbed(NotPromotable) | launch_from_shortcut_or_list(NotPromotable) | check_tab_created |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | launch(MinimalUi) | check_window_display_minimal |
+| WMLC | install_or_shortcut_windowed(Tabbed) | maybe_close_pwa | launch(Tabbed) | check_window_display_tabbed |
 | WMLC | install_or_shortcut_windowed(NotPromotable) | launch_not_from_platform_shortcut(NotPromotable) | check_window_created |
 | WLC | install_or_shortcut_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_created |
 | M | install_or_shortcut_by_user_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_not_created |
@@ -317,8 +318,8 @@ These mac specializations are required due to launching from platform shortcut a
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
-| #WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) |
-| #WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
 | # Dialog options |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_pwa_window_created(FileHandler, One) |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |

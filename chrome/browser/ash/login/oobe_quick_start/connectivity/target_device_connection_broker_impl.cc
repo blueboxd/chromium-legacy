@@ -34,26 +34,20 @@ constexpr uint8_t kEndpointInfoVersion = 1;
 // http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=876;rcl=458110957
 constexpr uint8_t kEndpointInfoVerificationStyle = 0;
 
-// Device Type for Smart Setup, e.g. phone, tablet.
-// 0 = "Unknown", since there isn't yet a Chromebook option.
-// Values come from this enum:
-// http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=961;rcl=458110957
-constexpr uint8_t kEndpointInfoDeviceType = 0;
+// Device Type for Smart Setup, e.g. phone, tablet.  8 = "Chrome"
+// Values come from the DiscoveryEvent DeviceType enum:
+// http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=985;rcl=507029311
+constexpr uint8_t kEndpointInfoDeviceType = 8;
 
 // Boolean field indicating to Smart Setup whether the client is Quick Start.
 constexpr uint8_t kEndpointInfoIsQuickStart = 1;
 
 constexpr size_t kMaxEndpointInfoDisplayNameLength = 18;
 
-// Derive three decimal digits from the RandomSessionId.
-std::string GetDisplayNameSessionIdDigits(const RandomSessionId& session_id) {
-  base::span<const uint8_t, RandomSessionId::kLength> session_id_bytes =
-      session_id.AsBytes();
-  uint32_t high = session_id_bytes[0];
-  uint32_t low = session_id_bytes[1];
-  uint32_t x = (high << 8) + low;
-  return base::NumberToString(x % 1000);
-}
+// The Advertising Id field has a fixed width of 10 bytes, but contains a
+// base64-encoded UTF-8 string that will be null-terminated if less than 10
+// characters.
+constexpr size_t kEndpointInfoAdvertisingIdLength = 10;
 
 // The display name must:
 // - Be a variable-length string of utf-8 bytes
@@ -62,7 +56,7 @@ std::string GetDisplayNameSessionIdDigits(const RandomSessionId& session_id) {
 std::vector<uint8_t> GetEndpointInfoDisplayNameBytes(
     const RandomSessionId& session_id) {
   std::string display_name = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
-  std::string suffix = " (" + GetDisplayNameSessionIdDigits(session_id) + ")";
+  std::string suffix = " (" + session_id.GetDisplayCode() + ")";
 
   base::TruncateUTF8ToByteSize(
       display_name, kMaxEndpointInfoDisplayNameLength - suffix.size(),
@@ -187,7 +181,7 @@ void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
     ResultCallback callback) {
   QS_LOG(INFO) << "Starting Fast Pair advertising with session id "
                << random_session_id_ << " ("
-               << GetDisplayNameSessionIdDigits(random_session_id_) << ")";
+               << random_session_id_.GetDisplayCode() << ")";
 
   fast_pair_advertiser_ =
       FastPairAdvertiser::Factory::Create(bluetooth_adapter_);
@@ -247,11 +241,10 @@ void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
 // - Advertisement data, 13 bytes:
 //   - Verification Style, byte[0]
 //   - Device Type, byte[1]
-//   - Advertising Id, byte[2-11], 10 bytes. (See RandomSessionId)
+//   - Advertising Id, byte[2-11], 10 UTF-8 bytes. (See RandomSessionId)
 //   - isQuickStart, byte[12], =1 for Quick Start.
 std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
-  base::span<const uint8_t, RandomSessionId::kLength> session_id_bytes =
-      random_session_id_.AsBytes();
+  std::string session_id = random_session_id_.ToString();
   std::vector<uint8_t> display_name_bytes =
       GetEndpointInfoDisplayNameBytes(random_session_id_);
 
@@ -263,8 +256,14 @@ std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
                        display_name_bytes.end());
   endpoint_info.push_back(kEndpointInfoVerificationStyle);
   endpoint_info.push_back(kEndpointInfoDeviceType);
-  endpoint_info.insert(endpoint_info.end(), session_id_bytes.begin(),
-                       session_id_bytes.end());
+  endpoint_info.insert(endpoint_info.end(), session_id.begin(),
+                       session_id.end());
+  for (size_t i = 0; i < kEndpointInfoAdvertisingIdLength - session_id.size();
+       i++) {
+    // Pad out the advertising id to the correct field length using null
+    // terminators.
+    endpoint_info.push_back(0);
+  }
   endpoint_info.push_back(kEndpointInfoIsQuickStart);
 
   return endpoint_info;

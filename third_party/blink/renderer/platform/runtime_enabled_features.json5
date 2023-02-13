@@ -622,7 +622,7 @@
     },
     {
       name: "CSSAnimationComposition",
-      status: "experimental"
+      status: "stable"
     },
     {
       // Whether <image> values are allowed as counter style <symbol>
@@ -2377,6 +2377,10 @@
       name: "RenderPriorityAttribute"
     },
     {
+      name: "ResourceHintsLeastRestrictiveCSP",
+      status: "experimental",
+    },
+    {
       name: "ResourceTimingContentType",
       status: "experimental",
     },
@@ -2454,6 +2458,11 @@
       name: "SanitizerAPI",
       status: "experimental",
       base_feature: "SanitizerAPI",
+    },
+    {
+      name: "SaveAsWithDeclarativeShadowDOM",
+      base_feature: "SaveAsWithDeclarativeShadowDOM",
+      status: "stable",
     },
     {
       // https://wicg.github.io/webcomponents/proposals/Scoped-Custom-Element-Registries
@@ -2986,11 +2995,6 @@
     {
       name: "V8IdleTasks",
       public: true,
-    },
-    {
-      name: "VariableCOLRV1",
-      status: "stable",
-      base_feature: "VariableCOLRV1",
     },
     {
       // Whether a video element should automatically play fullscreen unless

@@ -913,6 +913,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="5867606971598166637">L'administrador del sistema està supervisant les teves pantalles</translation>
 <translation id="5876666360658629066">Introdueix el codi parental</translation>
 <translation id="5881540930187678962">Configura El meu telèfon més tard</translation>
+<translation id="5881663018261910378">Desactivat</translation>
 <translation id="5887954372087850114">La finestra <ph name="WINDOW_TITLE" /> s'ha assignat a l'escriptori <ph name="DESK_TITLE" /> i s'ha deixat d'assignar a tota la resta d'escriptoris</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="589817443623831496">Cerca per punt</translation>
@@ -1022,7 +1023,7 @@ Connecta el dispositiu a l'alimentació.</translation>
 <translation id="6490471652906364588">Dispositiu USB-C (port dret)</translation>
 <translation id="6491071886865974820"><ph name="MANAGER" /> requereix que actualitzis el dispositiu <ph name="DEVICE_TYPE" /> abans del termini establert</translation>
 <translation id="649452524636452238">PIN de la targeta intel·ligent</translation>
-<translation id="6495400115277918834">S'ha iniciat la pantalla en pantalla; prem Alt+Maj+V per posar-hi el focus</translation>
+<translation id="6495400115277918834">S'ha iniciat la imatge sobre imatge; prem Alt+Maj+V per posar-hi el focus</translation>
 <translation id="6497418457565568043">El mode No molestis està activat</translation>
 <translation id="6500896621837555595">Actualitza</translation>
 <translation id="6501401484702599040">S'està emetent la pantalla a <ph name="RECEIVER_NAME" /></translation>

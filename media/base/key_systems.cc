@@ -87,6 +87,8 @@ EmeCodec ToAudioEmeCodec(AudioCodec codec) {
       return EME_CODEC_DTS;
     case AudioCodec::kDTSXP2:
       return EME_CODEC_DTSXP2;
+    case AudioCodec::kDTSE:
+      return EME_CODEC_DTSE;
     default:
       DVLOG(1) << "Unsupported AudioCodec " << codec;
       return EME_CODEC_NONE;
@@ -233,7 +235,8 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
     return true;
   }
 
-  // External Clear Key is known and supports suffixes for testing.
+  // External or MediaFoundation Clear Key is known and supports suffixes for
+  // testing.
   if (IsExternalClearKey(key_system))
     return true;
 
@@ -264,6 +267,7 @@ static bool CanBlock(const KeySystemInfo& properties) {
       IsExternalClearKey(properties.GetBaseKeySystemName())) {
     return true;
   }
+
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // When library CDMs are enabled, we are either using AesDecryptor, or using
   // the library CDM hosted in a sandboxed process. In both cases distinctive

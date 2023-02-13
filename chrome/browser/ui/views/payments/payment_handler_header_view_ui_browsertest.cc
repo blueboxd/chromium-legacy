@@ -93,10 +93,6 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerHeaderViewUITest,
 }
 
 IN_PROC_BROWSER_TEST_P(PaymentHandlerHeaderViewUITest, HeaderWithoutIcon) {
-  // TODO(crbug.com/1385136): Handle missing/empty icons in minimal header UX.
-  if (minimal_header_ux_enabled_)
-    return;
-
   std::string method_name;
   InstallPaymentAppWithoutIcon("a.com", "/payment_handler_sw.js", &method_name);
 
@@ -185,6 +181,66 @@ IN_PROC_BROWSER_TEST_P(PaymentHandlerHeaderViewUITest, CloseButtonPressed) {
     ResetEventWaiter(DialogEvent::BACK_NAVIGATION);
     ClickOnDialogViewAndWait(DialogViewID::BACK_BUTTON);
   }
+}
+
+// Test that the header and dialog heights are consistent with when there is no
+// title.
+IN_PROC_BROWSER_TEST_P(PaymentHandlerHeaderViewUITest, ConsistentHeaderHeight) {
+  // Install a payment app that will open a window.
+  std::string method_name;
+  InstallPaymentApp("a.com", "/payment_handler_sw.js", &method_name);
+
+  // Trigger PaymentRequest.
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::DIALOG_OPENED,
+                               DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED,
+                               DialogEvent::PAYMENT_HANDLER_TITLE_SET});
+  ASSERT_EQ(
+      "success",
+      content::EvalJs(
+          GetActiveWebContents(),
+          content::JsReplace("launchWithoutWaitForResponse($1)", method_name)));
+  WaitForObservedEvent();
+
+  ViewStack* view_stack = dialog_view()->view_stack_for_testing();
+  int header_height_with_title =
+      view_stack->top()
+          ->GetViewByID(static_cast<int>(DialogViewID::PAYMENT_APP_HEADER))
+          ->height();
+  int dialog_height_with_title = view_stack->top()->height();
+
+  // Close the dialog.
+  ClickOnCancel();
+
+  // Now trigger PaymentRequest for a PaymentHandler with a window that has no
+  // title.
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::DIALOG_OPENED,
+                               DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::PAYMENT_HANDLER_WINDOW_OPENED});
+  ASSERT_EQ("success",
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace("launchWithoutWaitForResponse($1, "
+                                   "'payment_handler_window_no_title.html')",
+                                   method_name)));
+  WaitForObservedEvent();
+
+  // Expect the dialog and header height with a title to be the same as before.
+  view_stack = dialog_view()->view_stack_for_testing();
+  EXPECT_EQ(dialog_height_with_title, view_stack->top()->height());
+  EXPECT_EQ(
+      header_height_with_title,
+      view_stack->top()
+          ->GetViewByID(static_cast<int>(DialogViewID::PAYMENT_APP_HEADER))
+          ->height());
+
+  ClickOnCancel();
 }
 
 INSTANTIATE_TEST_SUITE_P(All, PaymentHandlerHeaderViewUITest, testing::Bool());

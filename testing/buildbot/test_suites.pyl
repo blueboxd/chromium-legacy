@@ -123,10 +123,6 @@
       },
     },
 
-    'android_modern_smoke_tests': {
-      'chrome_modern_public_bundle_smoke_test': {},
-    },
-
     'android_monochrome_smoke_tests': {
       'monochrome_public_bundle_smoke_test': {},
       'monochrome_public_smoke_test': {},
@@ -170,6 +166,7 @@
         },
       },
       'viz_unittests': {},
+      'webengine_support_instrumentation_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -1086,6 +1083,13 @@
           'nougat-x86-emulator',
         ],
       },
+      'weblayer_junit_tests': {
+        'remove_mixins': [
+          'nougat-x86-emulator',
+        ],
+        # Experimental until we're sure these are stable.
+        'experiment_percentage': 100
+      },
     },
 
     'chromium_junit_tests_scripts': {
@@ -1396,7 +1400,6 @@
 
     'chromium_swarm_android_gtests': {
       'base_unittests': {},
-      'chrome_modern_public_bundle_smoke_test': {},
     },
 
     'chromium_swarm_desktop_gtests': {
@@ -2334,6 +2337,9 @@
           '--disable-field-trial-config',
         ],
         'test': 'android_browsertests',
+        'swarming': {
+          'shards': 2,
+        },
       },
       'webview_cts_tests_no_field_trial': {
         'args': [
@@ -3986,7 +3992,11 @@
           'shards': 12,
         },
       },
-      'ios_chrome_web_eg2tests_module': {},
+      'ios_chrome_web_eg2tests_module': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
       'ios_showcase_eg2tests_module': {},
     },
 
@@ -4677,6 +4687,10 @@
       },
     },
 
+    'private_code_failure_test_isolated_scripts': {
+      'private_code_failure_test': {}
+    },
+
     # TODO(dpranke): These are run on the p/chromium waterfall; they should
     # probably be run on other builders, and we should get rid of the p/chromium
     # waterfall.
@@ -5037,44 +5051,55 @@
       },
     },
 
+    'updater_gtests_linux': {
+      'updater_tests': {
+        'mixins': [
+          'updater-default-pool',
+        ],
+      },
+      # 'updater_tests_system' is not yet supported on Linux.
+    },
+
     'updater_gtests_mac': {
-      'updater_tests': {},
+      'updater_tests': {
+        'mixins': [
+          'updater-default-pool',
+        ],
+      },
       'updater_tests_system': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              # These tests require passwordless sudo on mac.
-              'pool': 'chromium.updater.mac',
-            }
-          ]
-        },
+        'mixins': [
+          'updater-mac-pool',
+        ],
       },
     },
 
     'updater_gtests_win': {
-      'updater_tests': {},
+      'updater_tests': {
+        'mixins': [
+          'integrity_high',
+          'updater-default-pool',
+        ],
+      },
       'updater_tests_system': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        }
+        'mixins': [
+          'integrity_high',
+          'updater-default-pool',
+        ],
       },
     },
 
     'updater_gtests_win_uac': {
       'updater_tests_system': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        }
+        'mixins': [
+          'integrity_high',
+          'updater-win-uac-pool',
+        ],
       },
-      'updater_tests_win_uac': {},
+      'updater_tests_win_uac': {
+        'mixins': [
+          'updater-win-uac-pool',
+        ],
+      },
     },
 
     'upload_perfetto': {
@@ -5161,6 +5186,10 @@
       },
       'web_engine_unittests': {},
       'web_runner_integration_tests': {},
+    },
+
+    'webengine_android_gtests': {
+      'webengine_support_instrumentation_test_apk': {},
     },
 
     'webrtc_chromium_baremetal_gtests': {
@@ -5644,7 +5673,6 @@
     ],
 
     'android_marshmallow_gtests': [
-      'android_modern_smoke_tests',
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'chromium_gtests',
@@ -5653,6 +5681,7 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
       'vr_platform_specific_chromium_gtests',
+      'webengine_android_gtests',
     ],
 
     'android_nougat_emulator_gtests': [
@@ -5665,6 +5694,7 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
       'system_webview_shell_instrumentation_tests', # Not an experimental test
+      'webengine_android_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
@@ -5685,12 +5715,12 @@
     ],
 
     'android_pie_coverage_instrumentation_tests': [
-      'android_modern_smoke_tests',
       'android_smoke_tests',
       'android_specific_coverage_java_tests',
       'chrome_public_tests',
       'vr_android_specific_chromium_tests',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'android_pie_gtests': [
@@ -5719,6 +5749,7 @@
       'system_webview_shell_instrumentation_tests', # Not an experimental test
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'android_pie_rel_gtests': [
@@ -5739,6 +5770,7 @@
     #   'vr_platform_specific_chromium_gtests',
       'webview_64_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+      'webengine_android_gtests',
     ],
 
     'backuprefptr_gtests': [
@@ -5971,7 +6003,7 @@
     ],
 
     'chromium_mac_rel_isolated_scripts_code_coverage': [
-      'gpu_dawn_webgpu_blink_web_tests',
+      # TODO(crbug.com/1399354): Enable gpu_dawn_webgpu_blink_web_tests
     ],
 
     # Pixel tests only enabled on Win 10. So this is
@@ -6567,13 +6599,14 @@
 
     'android_11_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
-      'android_monochrome_smoke_tests': {},
+      'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_trichrome_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6589,13 +6622,14 @@
 
     'android_12_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
-      'android_monochrome_smoke_tests': {},
+      'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_trichrome_64_cts_tests': {
         'variants': [
           'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
@@ -6607,19 +6641,20 @@
 
     'android_12l_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
-      'android_monochrome_smoke_tests': {},
+      'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
       'chromium_gtests': {},
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webengine_android_gtests': {},
       'webview_ui_instrumentation_tests': {},
     },
 
     'android_13_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
-      'android_monochrome_smoke_tests': {},
+      'android_trichrome_smoke_tests': {},
       'android_smoke_tests': {},
       'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
       'chromium_gtests': {},

@@ -98,10 +98,14 @@ void IOTaskController::Cancel(IOTaskId task_id) {
 void IOTaskController::ProgressPausedTasks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(b/255264604): TaskId order is potentially racey when mutliple files
+  // app windows open. Fix this: develop a concept of the current PAUSED task
+  // in this code, and always progress that task.
   for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
     IOTask* task = it->second.get();
     if (task->progress().IsPaused()) {
       NotifyIOTaskObservers(task->progress());
+      break;
     }
   }
 }
@@ -121,10 +125,13 @@ device::mojom::WakeLock* IOTaskController::GetWakeLock() {
 
 IOTask* IOTaskController::PutIOTask(const IOTaskId task_id,
                                     std::unique_ptr<IOTask> task) {
+  // TODO(b/255264604): fix me: PAUSED tasks can hold the wake lock and
+  // prevent the device from sleeping.
   if (tasks_.empty()) {
     GetWakeLock()->RequestWakeLock();
     ++wake_lock_counter_for_tests_;
   }
+
   IOTask* task_ptr = task.get();
   tasks_[task_id] = std::move(task);
   return task_ptr;
@@ -132,6 +139,9 @@ IOTask* IOTaskController::PutIOTask(const IOTaskId task_id,
 
 void IOTaskController::RemoveIOTask(const IOTaskId task_id) {
   tasks_.erase(task_id);
+
+  // TODO(b/255264604): fix me: PAUSED tasks can hold the wake lock and
+  // prevent the device from sleeping.
   if (tasks_.empty()) {
     GetWakeLock()->CancelWakeLock();
     --wake_lock_counter_for_tests_;

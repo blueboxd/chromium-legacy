@@ -114,9 +114,7 @@ class ObserveViewDeletion : public ViewObserver {
 
  private:
   base::ScopedObservation<View, ViewObserver> observer_{this};
-  // TODO(crbug.com/1298696): views_unittests breaks with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<View, DegradeToNoOpWhenMTE> deleted_view_ = nullptr;
+  raw_ptr<View> deleted_view_ = nullptr;
 };
 
 }  // namespace test
@@ -497,8 +495,7 @@ std::string UiConfigToString(const testing::TestParamInfo<UiConfig>& info) {
     case UiConfig::kRtlWithLayers:
       return "RTL_LAYERS";
   }
-  NOTREACHED();
-  return std::string();
+  NOTREACHED_NORETURN();
 }
 
 // Verifies the viewport is sized to fit the available space.

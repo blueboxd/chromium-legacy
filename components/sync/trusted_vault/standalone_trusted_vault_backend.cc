@@ -104,24 +104,6 @@ sync_pb::LocalTrustedVault ReadMD5HashedFile(const base::FilePath& file_path) {
   return data_proto;
 }
 
-void WriteEncryptedFileToDisk(const sync_pb::LocalTrustedVault& data,
-                              const base::FilePath& file_path) {
-  std::string encrypted_data;
-  const bool encryption_success =
-      OSCrypt::EncryptString(data.SerializeAsString(), &encrypted_data);
-  base::UmaHistogramBoolean("Sync.TrustedVaultLocalDataEncryptionIsSuccessful",
-                            encryption_success);
-  if (!encryption_success) {
-    DLOG(ERROR) << "Failed to encrypt trusted vault file.";
-    return;
-  }
-
-  if (!base::ImportantFileWriter::WriteFileAtomically(file_path,
-                                                      encrypted_data)) {
-    DLOG(ERROR) << "Failed to write trusted vault file.";
-  }
-}
-
 void WriteMD5HashedFileToDisk(const sync_pb::LocalTrustedVault& data,
                               const base::FilePath& file_path) {
   sync_pb::LocalTrustedVaultFileContent file_proto;
@@ -330,13 +312,10 @@ void StandaloneTrustedVaultBackend::OnDegradedRecoverabilityChanged() {
 }
 
 void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
-  if (base::FeatureList::IsEnabled(kSyncTrustedVaultUseMD5HashedFile)) {
-    MaybeMigrateDataFile(deprecated_encrypted_file_path_,
-                         md5_hashed_file_path_);
-    data_ = ReadMD5HashedFile(md5_hashed_file_path_);
-  } else {
-    data_ = ReadEncryptedFile(deprecated_encrypted_file_path_);
-  }
+  // TODO(crbug.com/1374650): Migration from legacy file was enabled in M108,
+  // clean it up once at least one year passed.
+  MaybeMigrateDataFile(deprecated_encrypted_file_path_, md5_hashed_file_path_);
+  data_ = ReadMD5HashedFile(md5_hashed_file_path_);
 
   if (data_.user_size() == 0) {
     // No data, set the current version and omit writing the file.
@@ -348,16 +327,12 @@ void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
     WriteDataToDisk();
   }
 
-  if (base::FeatureList::IsEnabled(kSyncTrustedVaultResetKeysAreStale) &&
-      data_.data_version() == 1) {
+  if (data_.data_version() == 1) {
     UpgradeToVersion2(&data_);
     WriteDataToDisk();
   }
 
-  // TODO(crbug.com/1362513): DCHECK against kCurrentLocalTrustedVaultVersion
-  // once kSyncTrustedVaultResetKeysAreStale is removed and version 2 is
-  // guaranteed.
-  DCHECK_GE(data_.data_version(), 1);
+  DCHECK_EQ(data_.data_version(), kCurrentLocalTrustedVaultVersion);
 }
 
 void StandaloneTrustedVaultBackend::FetchKeys(
@@ -560,10 +535,8 @@ void StandaloneTrustedVaultBackend::SetPrimaryAccount(
     // there is no ongoing re-registration attempt, and behind a feature toggle,
     // trigger a procedure to verify that the server has a consistent state
     // (i.e. downloading of new keys should succeed but return no new keys).
-    if ((*registration_state ==
-             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0 ||
-         *registration_state ==
-             TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1) &&
+    if (*registration_state ==
+            TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1 &&
         base::FeatureList::IsEnabled(
             kSyncTrustedVaultVerifyDeviceRegistration)) {
       base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
@@ -816,11 +789,6 @@ StandaloneTrustedVaultBackend::MaybeRegisterDevice() {
     return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV1;
   }
 
-  if (per_user_vault->local_device_registration_info().device_registered() &&
-      !base::FeatureList::IsEnabled(kSyncTrustedVaultRedoDeviceRegistration)) {
-    return TrustedVaultDeviceRegistrationStateForUMA::kAlreadyRegisteredV0;
-  }
-
   if (per_user_vault->local_device_registration_info()
           .last_registration_returned_local_data_obsolete()) {
     // Client already knows that existing vault keys (or their absence) isn't
@@ -947,16 +915,9 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
       WriteDataToDisk();
       return;
     case TrustedVaultRegistrationStatus::kAccessTokenFetchingFailure:
+    case TrustedVaultRegistrationStatus::kNetworkError:
       // Request wasn't sent to the server, so there is no need for throttling.
       return;
-    case TrustedVaultRegistrationStatus::kNetworkError:
-      if (base::FeatureList::IsEnabled(
-              kSyncTrustedVaultBypassThrottlingForNetworkErrors)) {
-        // Request wasn't sent to the server, so there is no need for
-        // throttling.
-        return;
-      }
-      [[fallthrough]];
     case TrustedVaultRegistrationStatus::kOtherError:
       RecordFailedConnectionRequestForThrottling();
       return;
@@ -1065,16 +1026,9 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
       RecordFailedConnectionRequestForThrottling();
       break;
     case TrustedVaultDownloadKeysStatus::kAccessTokenFetchingFailure:
+    case TrustedVaultDownloadKeysStatus::kNetworkError:
       // Request wasn't sent to the server, so there is no need for throttling.
       break;
-    case TrustedVaultDownloadKeysStatus::kNetworkError:
-      if (base::FeatureList::IsEnabled(
-              kSyncTrustedVaultBypassThrottlingForNetworkErrors)) {
-        // Request wasn't sent to the server, so there is no need for
-        // throttling.
-        break;
-      }
-      [[fallthrough]];
     case TrustedVaultDownloadKeysStatus::kOtherError:
       RecordFailedConnectionRequestForThrottling();
       break;
@@ -1254,11 +1208,7 @@ void StandaloneTrustedVaultBackend::VerifyDeviceRegistrationForUMA(
 }
 
 void StandaloneTrustedVaultBackend::WriteDataToDisk() {
-  if (base::FeatureList::IsEnabled(kSyncTrustedVaultUseMD5HashedFile)) {
-    WriteMD5HashedFileToDisk(data_, md5_hashed_file_path_);
-  } else {
-    WriteEncryptedFileToDisk(data_, deprecated_encrypted_file_path_);
-  }
+  WriteMD5HashedFileToDisk(data_, md5_hashed_file_path_);
 }
 
 }  // namespace syncer

@@ -510,11 +510,15 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_BOOKMARK_NEW_ZERO_ITEM_LABEL" desc="Text that indicates that a user has selected zero bookmarks for editing. [Length: 30em.]">
         0 selected
       </message>
-      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED" desc="Presented in an infobar when a bookmark is created. [Length: 30em.]">
-        Bookmarked
+      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED" desc="Presented in an infobar when bookmarks are created. [Length: 30em.]">
+        {count, plural,
+        =1 {Bookmarked}
+        other {Bookmarked}}
       </message>
-      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Presented in an infobar when a bookmark is created. Specifies in which folder the bookmark was added. [Length: 30em.]">
-        Bookmarked to <ph name="FOLDER_TITLE">$1<ex>My Folder</ex></ph>
+      <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER" desc="Presented in an infobar when  bookmark are created. Specifies in which folder the bookmark was added. [Length: 30em.]">
+          {count, plural,
+          =1 {Bookmarked to {title}}
+          other {Bookmarked to {title}}}
       </message>
       <message name="IDS_IOS_BOOKMARK_URL_FIELD_HEADER" desc="Title shown above URL field on Edit Bookmark screen. [Length: 20em]">
         URL
@@ -1770,6 +1774,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_DESCRIPTION" desc="A table header element that describes the effect of a user choosing to price-track an item.">
         Get an alert if the price drops on any site.
       </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_DESCRIPTION_FOR_TRACKED_ITEM" desc="A table header element that describes that this price-tracked item can be managed in bookmarks.">
+        You'll get an alert if the price drops on any site. This page is saved in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Bookmarks<ph name="END_LINK">END_LINK</ph>.
+      </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TRACK_BUTTON" desc="The title for a button that adds the price-trackable item to the user's stored price tracking list.">
         Track
       </message>
@@ -1897,13 +1904,13 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Webpage loaded
       </message>
       <message name="IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_TITLE" desc="Title of the sheet that notifies the user they are saving passwords to their Google Account. [Length: unlimited] [iOS only]">
-        Passwords on all your devices
+        Passwords on All Your Devices
       </message>
       <message name="IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_SUBTITLE" desc="Subtitle of the sheet that notifies the user they are saving passwords to their Google Account. [Length: unlimited] [iOS only]">
-        Passwords are now saved to your Google Account (<ph name="ACCOUNT">$1<ex>foo@gmail.com</ex></ph>). You can use them wherever you're signed in. To turn this off, go to <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>.
+        Passwords are now saved in your Google Account (<ph name="ACCOUNT">$1<ex>foo@gmail.com</ex></ph>). You can use them wherever you're signed in. To turn this off, go to <ph name="BEGIN_LINK">BEGIN_LINK</ph>settings<ph name="END_LINK">END_LINK</ph>.
       </message>
       <message name="IDS_IOS_PASSWORDS_ACCOUNT_STORAGE_NOTICE_BUTTON_TEXT" desc="Button text for the sheet that notifies the user they are saving passwords to their Google Account. [Length: unlimited] [iOS only]">
-        Got it
+        Got It
       </message>
       <message name="IDS_IOS_PASSWORD_LEAK_CHANGE_CREDENTIALS" desc="The text of the OK button in the dialog for credentials leaked on the current site.">
         Got It
@@ -2240,6 +2247,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE" desc="Title and accessibility label of the badge displayed on a tools menu item when it represents a new feature [Length: 20em]" meaning="A badge with this title is displayed informing the user that this feature that is new to them.">
         New
       </message>
+      <message name="IDS_IOS_NEW_LABEL_FEATURE_BADGE" desc="Character representing the word new displayed inside the badge to represent a new features [iOS only]">
+        N
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_DOWNLOADS" desc="The iOS menu item for opening the downloads folder [iOS only]" meaning="[Length: unlimited]">
         Downloads
       </message>
@@ -2373,10 +2383,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Offer to Save Passwords
       </message>
       <message name="IDS_IOS_ACCOUNT_STORAGE_OPT_IN_LABEL" desc="Title for the switch item in Settings that controls whether signed-in users can save/autofill passwords to/from their account. [Length: 25em] [iOS only]">
-        Use and Save Passwords from Your Google Account
+        Use and Save Passwords in Your Google Account
       </message>
       <message name="IDS_IOS_ACCOUNT_STORAGE_OPT_IN_SUBLABEL" desc="Title for the switch item in Settings that controls whether signed-in users can save/autofill passwords to/from their account. [Length: unlimited] [iOS only]">
-        When on, passwords are saved to <ph name="ACCOUNT">$1<ex>foo@gmail.com</ex></ph>. When off, passwords are saved only on this device.
+        When on, passwords are saved in <ph name="ACCOUNT">$1<ex>foo@gmail.com</ex></ph>. When off, passwords are saved only on this device.
       </message>
       <message name="IDS_IOS_PASSWORD_SETTINGS_ADD_PASSWORD_MANUALLY_TITLE" desc="Title of the view that allow user to enter the details for a new password credential to add it to the list the passwords. [iOS only]">
         Add Password
@@ -3254,9 +3264,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
         Enter Passphrase
-      </message>
-      <message name="IDS_IOS_SYNC_ERROR_COULD_NOT_CONNECT" desc="The error message to display when the sync server is unavailable. [Length: 100em, can be multiple lines] [iOS only]">
-        Could not connect to the server.
       </message>
       <message name="IDS_IOS_SYNC_ERROR_DESCRIPTION" desc="The error message to display when a generic error prevents sync from starting.">
         Sync Isn't Working.

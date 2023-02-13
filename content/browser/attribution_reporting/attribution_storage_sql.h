@@ -50,10 +50,24 @@ enum class RateLimitResult : int;
 // destroyed on the same sequence. The sequence must outlive |this|.
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
-  // Exposed for testing.
-  static const int kCurrentVersionNumber;
-  static const int kCompatibleVersionNumber;
-  static const int kDeprecatedVersionNumber;
+  // Version number of the database.
+  // TODO: remove the active_unattributed_sources_by_site_reporting_origin index
+  // during the next DB migration.
+  static constexpr int kCurrentVersionNumber = 46;
+
+  // Earliest version which can use a `kCurrentVersionNumber` database
+  // without failing.
+  static constexpr int kCompatibleVersionNumber = 46;
+
+  // Latest version of the database that cannot be upgraded to
+  // `kCurrentVersionNumber` without razing the database.
+  //
+  // Note that all versions >=15 were introduced during the transitional state
+  // of the Attribution Reporting API and can be removed when done.
+  static constexpr int kDeprecatedVersionNumber = 34;
+
+  static_assert(kCompatibleVersionNumber <= kCurrentVersionNumber);
+  static_assert(kDeprecatedVersionNumber < kCompatibleVersionNumber);
 
   [[nodiscard]] static bool DeleteStorageForTesting(
       const base::FilePath& user_data_directory);
@@ -358,6 +372,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionInfo& attribution_info,
       const AttributionTrigger& trigger,
       absl::optional<AttributionReport>& report,
+      absl::optional<uint64_t>& dedup_key,
       absl::optional<int>& max_aggregatable_reports_per_destination)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 

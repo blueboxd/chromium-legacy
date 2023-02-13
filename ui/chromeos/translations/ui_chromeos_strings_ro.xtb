@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">Engleză (S.U.A.) cu tastatură Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – gazdă</translation>
 <translation id="1521655867290435174">Foi de calcul Google</translation>
-<translation id="1521795806314479294">Se pregătesc <ph name="FILE_NAME" />...</translation>
 <translation id="1538729222189715449">Se deschid fișierele Linux...</translation>
 <translation id="1547964879613821194">Engleză canadiană</translation>
 <translation id="1556189134700913550">Aplicați tuturor</translation>
@@ -84,7 +83,6 @@
 <translation id="1722487484194605434">Se arhivează <ph name="NUMBER_OF_ITEMS" /> elemente...</translation>
 <translation id="1722687688096767818">Se adaugă profilul...</translation>
 <translation id="1726100011689679555">Servere de nume</translation>
-<translation id="1727562178154619254">Gata de sincronizare</translation>
 <translation id="1729953886957086472">Germană (Germania)</translation>
 <translation id="1730235522912993863">Chineză Cangjie</translation>
 <translation id="1731889557567069540">Elemente copiate: <ph name="NUMBER_OF_ITEMS" />.</translation>
@@ -410,6 +408,7 @@
 <translation id="4462159676511157176">Servere de nume personalizate</translation>
 <translation id="4465725236958772856">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gestionată de administratorul tău, conectează-te</translation>
 <translation id="4470564870223067757">Hangul setul 2</translation>
+<translation id="4474142134969976028">Niciun rezultat</translation>
 <translation id="4477002475007461989">Română</translation>
 <translation id="4477219268485577442">Bulgară fonetică</translation>
 <translation id="4508265954913339219">Activarea nu a reușit</translation>
@@ -512,7 +511,6 @@
    Dacă scoateți dispozitivul în timp ce este folosit, puteți pierde date. Așteptați finalizarea operației, apoi scoateți dispozitivul folosind aplicația Fișiere.</translation>
 <translation id="5163869187418756376">Trimiterea nu a reușit. Verificați conexiunea la internet și încercați din nou mai târziu.</translation>
 <translation id="516592729076796170">Programator S.U.A. Dvorak</translation>
-<translation id="5167102019886320507">Se pregătesc <ph name="NUMBER_OF_ITEMS" /> elemente...</translation>
 <translation id="5177526793333269655">Vizualizare cu miniaturi</translation>
 <translation id="5181896909298187506">Niciun fișier recent</translation>
 <translation id="5194713942430106590">Dă clic pentru a sorta coloana în ordine crescătoare.</translation>
@@ -792,6 +790,7 @@
 <translation id="7458955835361612701">Nicio imagine recentă</translation>
 <translation id="7460898608667578234">Ucraineană</translation>
 <translation id="7469894403370665791">Conectează-te automat la această rețea</translation>
+<translation id="7481358317100446445">Gata</translation>
 <translation id="7486315294984620427">Pentru a plasa fișiere în Parallels Desktop, trebuie să le copiezi în dosarul cu fișiere Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam fonetică</translation>
@@ -817,6 +816,7 @@
 <translation id="7655441028674523381">Accesează simplu Google Foto</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Încearcă altă căutare</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> articole au fost mutate în coșul de gunoi</translation>
 <translation id="7693909743393669729">Formatarea unității va șterge toate datele stocate pe unitate și va elimina toate partițiile existente, inclusiv partițiile care nu sunt vizibile. Această acțiune nu poate fi anulată.</translation>
 <translation id="7695430100978772476">Nu s-a putut formata <ph name="DRIVE_NAME" /></translation>

@@ -44,6 +44,8 @@ NSString* const kIncognitoCircleFilliOS14Symbol =
 NSString* const kGoogleShieldSymbol = @"google_shield";
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 NSString* const kShieldSymbol = @"shield";
+NSString* const kCloudSlashSymbol = @"cloud_slash";
+NSString* const kCloudAndArrowUpSymbol = @"cloud_and_arrow_up";
 
 // Custom symbol names which can be configured with a color palette.
 NSString* const kIncognitoCircleFillSymbol = @"incognito_circle_fill";
@@ -119,6 +121,7 @@ NSString* const kPhoneFillSymbol = @"phone.fill";
 NSString* const kDownloadPromptFillSymbol = @"arrow.down.to.line.circle.fill";
 NSString* const kDownloadPromptFilliOS14Symbol = @"arrow.down.circle.fill";
 NSString* const kDownloadDocFillSymbol = @"doc.fill";
+NSString* const kDocSymbol = @"doc";
 NSString* const kOpenInDownloadsSymbol = @"arrow.down.to.line.compact";
 NSString* const kOpenInDownloadsiOS14Symbol = @"arrow.down.to.line.alt";
 NSString* const kExternalLinkSymbol = @"arrow.up.forward.square";
@@ -126,6 +129,10 @@ NSString* const kChevronForwardSymbol = @"chevron.forward";
 NSString* const kGlobeAmericasSymbol = @"globe.americas.fill";
 NSString* const kGlobeSymbol = @"globe";
 NSString* const kPersonCropCircleSymbol = @"person.crop.circle";
+NSString* const kEqualSymbol = @"equal";
+NSString* const kBookClosedSymbol = @"book.closed";
+NSString* const kSunFillSymbol = @"sun.max.fill";
+NSString* const kCalendarSymbol = @"calendar";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

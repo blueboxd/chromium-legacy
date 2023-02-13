@@ -19,6 +19,8 @@ mojom("mojom") {
 
 component("attribution_reporting") {
   sources = [
+    "aggregatable_dedup_key.cc",
+    "aggregatable_dedup_key.h",
     "aggregatable_trigger_data.cc",
     "aggregatable_trigger_data.h",
     "aggregatable_values.cc",
@@ -43,8 +45,6 @@ component("attribution_reporting") {
     "source_type.h",
     "suitable_origin.cc",
     "suitable_origin.h",
-    "trigger_attestation.cc",
-    "trigger_attestation.h",
     "trigger_registration.cc",
     "trigger_registration.h",
   ]
@@ -68,6 +68,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "aggregatable_dedup_key_unittest.cc",
     "aggregatable_trigger_data_unittest.cc",
     "aggregatable_values_unittest.cc",
     "aggregation_keys_unittest.cc",
@@ -79,7 +80,6 @@ source_set("unit_tests") {
     "parsing_utils_unittest.cc",
     "source_registration_unittest.cc",
     "suitable_origin_unittest.cc",
-    "trigger_attestation_unittest.cc",
     "trigger_registration_unittest.cc",
   ]
 
@@ -100,7 +100,10 @@ source_set("test_support") {
     "test_utils.h",
   ]
 
-  public_deps = [ ":attribution_reporting" ]
+  public_deps = [
+    ":attribution_reporting",
+    "//services/network/public/cpp",
+  ]
 
   deps = [ "//base" ]
 }
@@ -235,11 +238,10 @@ mojom("registration_mojom") {
           forward_declaration = "namespace attribution_reporting { struct AggregatableTriggerData; }"
         },
         {
-          mojom = "attribution_reporting.mojom.TriggerAttestation"
-          cpp = "::attribution_reporting::TriggerAttestation"
+          mojom = "attribution_reporting.mojom.AggregatableDedupKey"
+          cpp = "::attribution_reporting::AggregatableDedupKey"
           forward_declaration =
-              "namespace attribution_reporting { class TriggerAttestation; }"
-          move_only = true
+              "namespace attribution_reporting { struct AggregatableDedupKey; }"
         },
         {
           mojom = "attribution_reporting.mojom.TriggerRegistration"

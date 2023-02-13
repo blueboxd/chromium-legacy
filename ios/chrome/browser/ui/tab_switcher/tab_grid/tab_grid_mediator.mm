@@ -367,6 +367,9 @@ void RecordTabGridCloseTabsCount(int count) {
     didChangePinnedStateForWebState:(web::WebState*)webState
                             atIndex:(int)index {
   DCHECK_EQ(_webStateList, webStateList);
+  if (webStateList->IsBatchInProgress()) {
+    return;
+  }
 
   if (IsPinnedTabsEnabled() && webStateList->IsWebStatePinnedAt(index)) {
     [self.consumer removeItemWithID:webState->GetStableIdentifier()
@@ -620,8 +623,7 @@ void RecordTabGridCloseTabsCount(int count) {
     return;
   }
 
-  self.closedSessionWindow =
-      SerializeWebStateList(self.webStateList, [self nonPinnedWebStates]);
+  self.closedSessionWindow = SerializeWebStateList(self.webStateList);
   int oldSize =
       self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
 
@@ -641,7 +643,7 @@ void RecordTabGridCloseTabsCount(int count) {
 
   if (self.webStateList->empty())
     return;
-  self.closedSessionWindow = SerializeWebStateList(self.webStateList, nil);
+  self.closedSessionWindow = SerializeWebStateList(self.webStateList);
   int old_size =
       self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
   self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);

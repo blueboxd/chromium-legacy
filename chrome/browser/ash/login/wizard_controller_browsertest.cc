@@ -23,7 +23,6 @@
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_setup_test_utils.h"
-#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/ash/login/enrollment/mock_auto_enrollment_check_screen.h"
@@ -65,6 +64,7 @@
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ash/policy/enrollment/fake_auto_enrollment_client.h"
@@ -183,7 +183,7 @@ class PrefStoreStub : public TestingPrefStore {
 class ScopedFakeAutoEnrollmentClientFactory {
  public:
   explicit ScopedFakeAutoEnrollmentClientFactory(
-      AutoEnrollmentController* controller)
+      policy::AutoEnrollmentController* controller)
       : controller_(controller),
         fake_auto_enrollment_client_factory_(
             base::BindRepeating(&ScopedFakeAutoEnrollmentClientFactory::
@@ -202,13 +202,15 @@ class ScopedFakeAutoEnrollmentClientFactory {
     controller_->SetAutoEnrollmentClientFactoryForTesting(nullptr);
   }
 
-  // Waits until the `AutoEnrollmentController` has requested the creation of an
-  // `AutoEnrollmentClient`. Returns the created `AutoEnrollmentClient`. If an
-  // `AutoEnrollmentClient` has already been created, returns immediately.
-  // Note: The returned instance is owned by `AutoEnrollmentController`.
+  // Waits until the `policy::AutoEnrollmentController` has requested the
+  // creation of an `AutoEnrollmentClient`. Returns the created
+  // `AutoEnrollmentClient`. If an `AutoEnrollmentClient` has already been
+  // created, returns immediately. Note: The returned instance is owned by
+  // `policy::AutoEnrollmentController`.
   policy::FakeAutoEnrollmentClient* WaitAutoEnrollmentClientCreated() {
-    if (created_auto_enrollment_client_)
+    if (created_auto_enrollment_client_) {
       return created_auto_enrollment_client_;
+    }
 
     base::RunLoop run_loop;
     run_on_auto_enrollment_client_created_ = run_loop.QuitClosure();
@@ -232,13 +234,14 @@ class ScopedFakeAutoEnrollmentClientFactory {
     EXPECT_FALSE(created_auto_enrollment_client_);
     created_auto_enrollment_client_ = auto_enrollment_client;
 
-    if (run_on_auto_enrollment_client_created_)
+    if (run_on_auto_enrollment_client_created_) {
       std::move(run_on_auto_enrollment_client_created_).Run();
+    }
   }
 
-  // The `AutoEnrollmentController` which is using
+  // The `policy::AutoEnrollmentController` which is using
   // `fake_auto_enrollment_client_factory_`.
-  AutoEnrollmentController* controller_;
+  policy::AutoEnrollmentController* controller_;
   policy::FakeAutoEnrollmentClient::FactoryImpl
       fake_auto_enrollment_client_factory_;
 
@@ -296,8 +299,9 @@ void QuitLoopOnAutoEnrollmentProgress(
     policy::AutoEnrollmentState expected_state,
     base::RunLoop* loop,
     policy::AutoEnrollmentState actual_state) {
-  if (expected_state == actual_state)
+  if (expected_state == actual_state) {
     loop->Quit();
+  }
 }
 
 // Returns a string which can be put into the VPD variable
@@ -378,8 +382,9 @@ class WizardControllerTest : public OobeBaseTest {
 
   content::WebContents* GetWebContents() {
     LoginDisplayHost* host = LoginDisplayHost::default_host();
-    if (!host)
+    if (!host) {
       return nullptr;
+    }
     return host->GetOobeWebContents();
   }
 
@@ -528,6 +533,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     wizard_controller->SetSharedURLLoaderFactoryForTesting(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
+
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
 
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
@@ -744,6 +752,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     EXPECT_CALL(*mock_auto_enrollment_check_screen_, HideImpl()).Times(0);
 
     EXPECT_FALSE(ExistingUserController::current_controller() == nullptr);
+    EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
+                                            ->network_state_handler()
+                                            ->GetCheckPortalListForTest());
 
     WaitUntilTimezoneResolved();
     EXPECT_EQ(
@@ -897,6 +908,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   EXPECT_CALL(*mock_auto_enrollment_check_screen_, HideImpl()).Times(0);
   EXPECT_CALL(*mock_enrollment_screen_, HideImpl()).Times(0);
   content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ("ethernet,wifi,cellular", NetworkHandler::Get()
+                                          ->network_state_handler()
+                                          ->GetCheckPortalListForTest());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
@@ -1039,7 +1054,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
         system::StatisticsProvider::VpdStatus::kValid);
   }
 
-  static AutoEnrollmentController* auto_enrollment_controller() {
+  static policy::AutoEnrollmentController* auto_enrollment_controller() {
     return WizardController::default_controller()
         ->GetAutoEnrollmentController();
   }
@@ -2522,6 +2537,9 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
         WizardController::default_controller();
     wizard_controller->SetCurrentScreen(nullptr);
 
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
+
     // Set up the mocks for all screens.
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
     mock_welcome_screen_ =
@@ -2645,6 +2663,13 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
+
+  // WizardControllerTest:
+  void SetUpOnMainThread() override {
+    WizardControllerTest::SetUpOnMainThread();
+    // Clear portal list (as it is by default in OOBE).
+    NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
@@ -2696,24 +2721,15 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
   FakeRollbackNetworkConfig* network_config_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS)
+// Disabled due to crbug.com/1414116.
+#define MAYBE_AdvanceToEnrollmentAfterRollback \
+  DISABLED_AdvanceToEnrollmentAfterRollback
+#else
+#define MAYBE_AdvanceToEnrollmentAfterRollback AdvanceToEnrollmentAfterRollback
+#endif
 IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
-                       RestartChromeAfterRollbackEnrollment) {
-  base::RunLoop run_loop;
-  auto subscription =
-      browser_shutdown::AddAppTerminatingCallback(run_loop.QuitClosure());
-
-  CheckCurrentScreen(WelcomeView::kScreenId);
-  EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);
-  EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
-  WizardController::default_controller()->AdvanceToScreen(
-      EnrollmentScreenView::kScreenId);
-  CheckCurrentScreen(EnrollmentScreenView::kScreenId);
-  mock_enrollment_screen_->ExitScreen(EnrollmentScreen::Result::COMPLETED);
-  run_loop.Run();
-}
-
-IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,
-                       AdvanceToEnrollmentAfterRollback) {
+                       MAYBE_AdvanceToEnrollmentAfterRollback) {
   CheckCurrentScreen(WelcomeView::kScreenId);
 
   EXPECT_CALL(*mock_enrollment_screen_, ShowImpl()).Times(1);

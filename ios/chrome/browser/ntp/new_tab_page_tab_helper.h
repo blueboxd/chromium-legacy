@@ -45,11 +45,6 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // controllers have been created.
   bool IsActive() const;
 
-  // Disables this tab helper.  This is useful when navigating away from an NTP,
-  // so the tab helper can be disabled immediately, and before any potential
-  // WebStateObserver callback.
-  void Deactivate();
-
   // Returns true if an `url` is either chrome://newtab or about://newtab.
   bool IsNTPURL(const GURL& url);
 
@@ -83,8 +78,9 @@ class NewTabPageTabHelper : public web::WebStateObserver,
                           web::NavigationContext* navigation_context) override;
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
-  void DidStopLoading(web::WebState* web_state) override;
-  void DidStartLoading(web::WebState* web_state) override;
+  void PageLoaded(
+      web::WebState* web_state,
+      web::PageLoadCompletionStatus load_completion_status) override;
 
   // Enable or disable the tab helper.
   void SetActive(bool active);
@@ -95,8 +91,8 @@ class NewTabPageTabHelper : public web::WebStateObserver,
   // The WebState with which this object is associated.
   web::WebState* web_state_ = nullptr;
 
-  // `YES` if the current tab helper is active.
-  BOOL active_ = NO;
+  // `true` if the current tab helper is active.
+  bool active_ = false;
 
   // `YES` if the NTP for this WebState should be configured to show the Start
   // Surface.

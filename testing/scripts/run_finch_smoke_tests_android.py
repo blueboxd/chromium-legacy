@@ -498,7 +498,6 @@ class FinchTestCase(common.BaseIsolatedScriptArgsAdapter):
                         help='Number of emulator to run.')
     # Add arguments used by Skia Gold.
     FinchSkiaGoldProperties.AddCommandLineArguments(parser)
-    add_emulator_args(parser)
 
   def add_extra_arguments(self, parser):
     super(FinchTestCase, self).add_extra_arguments(parser)
@@ -740,12 +739,20 @@ class FinchTestCase(common.BaseIsolatedScriptArgsAdapter):
 
         # Crop away the Android status bar and the WebView shell's support
         # action bar. We will do this by removing one fifth of the image
-        # from the top. We can do this by setting the new top point of the
-        # image to height / height_factor. height_factor is set to 5.
-        height_factor = 5
+        # from the top.
+        top_bar_height_factor = 0.2
+
+        # Crop away the bottom navigation bar from the screenshot. We can
+        # do this by cropping away one tenth of the image from the bottom.
+        navigation_bar_height_factor = 0.1
+
         image = Image.open(screenshot_artifact_abspath)
         width, height = image.size
-        cropped_image = image.crop((0, height // height_factor, width, height))
+        cropped_image = image.crop(
+            (0,
+             int(height * top_bar_height_factor),
+             width,
+             int(height * (1 - navigation_bar_height_factor))))
         image.close()
         cropped_image.save(screenshot_artifact_abspath)
 
@@ -1181,6 +1188,8 @@ def main(args):
         '--isolated-script-test-output', type=str,
         required=False,
         help='path to write test results JSON object to')
+
+  add_emulator_args(parser)
   script_common.AddDeviceArguments(parser)
   script_common.AddEnvironmentArguments(parser)
   logging_common.AddLoggingArguments(parser)

@@ -856,7 +856,11 @@ int ServiceWorkerCacheWriter::WriteDataToResponseWriter(
   scoped_refptr<AsyncOnlyCompletionCallbackAdaptor> adaptor(
       new AsyncOnlyCompletionCallbackAdaptor(std::move(run_callback)));
 
-  checksum_->Update(data->data(), length);
+  // If |checksum_update_timing_| is kAlways, the checksum update should be
+  // handled in MaybeWriteData().
+  if (checksum_update_timing_ == ChecksumUpdateTiming::kCacheMismatch) {
+    checksum_->Update(data->data(), length);
+  }
 
   mojo_base::BigBuffer big_buffer(
       base::as_bytes(base::make_span(data->data(), length)));
@@ -939,8 +943,7 @@ void ServiceWorkerCacheWriter::AsyncDoLoop(int result) {
 }
 
 std::string ServiceWorkerCacheWriter::GetSha256Checksum() {
-  DCHECK(STATE_DONE == state_ ||
-         checksum_update_timing_ == ChecksumUpdateTiming::kAlways);
+  DCHECK_EQ(STATE_DONE, state_);
   DCHECK(checksum_);
   uint8_t result[crypto::kSHA256Length];
   checksum_->Finish(result, crypto::kSHA256Length);

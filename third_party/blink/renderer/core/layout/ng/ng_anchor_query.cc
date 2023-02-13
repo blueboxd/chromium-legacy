@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_anchor_query_map.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_logical_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/style/anchor_specifier_value.h"
 
 namespace blink {
 
@@ -352,57 +353,68 @@ absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::Evaluate(
   const auto& anchor_query = To<CalculationExpressionAnchorQueryNode>(node);
   switch (anchor_query.Type()) {
     case AnchorQueryType::kAnchor:
-      return EvaluateAnchor(anchor_query.AnchorName(),
+      return EvaluateAnchor(anchor_query.AnchorSpecifier(),
                             anchor_query.AnchorSide(),
                             anchor_query.AnchorSidePercentageOrZero());
     case AnchorQueryType::kAnchorSize:
-      return EvaluateAnchorSize(anchor_query.AnchorName(),
+      return EvaluateAnchorSize(anchor_query.AnchorSpecifier(),
                                 anchor_query.AnchorSize());
   }
 }
 
+const NGLogicalAnchorReference* NGAnchorEvaluatorImpl::ResolveAnchorReference(
+    const AnchorSpecifierValue& anchor_specifier) const {
+  if (!anchor_specifier.IsNamed() && !default_anchor_specifier_ &&
+      !implicit_anchor_) {
+    return nullptr;
+  }
+  const NGLogicalAnchorQuery* anchor_query = AnchorQuery();
+  if (!anchor_query) {
+    return nullptr;
+  }
+  if (anchor_specifier.IsNamed()) {
+    return anchor_query->AnchorReference(&anchor_specifier.GetName(),
+                                         is_in_top_layer_);
+  }
+  if (anchor_specifier.IsDefault() && default_anchor_specifier_) {
+    return anchor_query->AnchorReference(default_anchor_specifier_,
+                                         is_in_top_layer_);
+  }
+  return anchor_query->AnchorReference(implicit_anchor_, is_in_top_layer_);
+}
+
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchor(
-    const ScopedCSSName* anchor_name,
+    const AnchorSpecifierValue& anchor_specifier,
     AnchorValue anchor_value,
     float percentage) const {
   has_anchor_functions_ = true;
-  if (!anchor_name && !implicit_anchor_)
-    return absl::nullopt;
-  const NGLogicalAnchorQuery* anchor_query = AnchorQuery();
-  if (!anchor_query)
-    return absl::nullopt;
   const NGLogicalAnchorReference* anchor_reference =
-      anchor_name
-          ? anchor_query->AnchorReference(anchor_name, is_in_top_layer_)
-          : anchor_query->AnchorReference(implicit_anchor_, is_in_top_layer_);
-  if (!anchor_reference)
+      ResolveAnchorReference(anchor_specifier);
+  if (!anchor_reference) {
     return absl::nullopt;
+  }
 
-  return anchor_query->EvaluateAnchor(
+  DCHECK(AnchorQuery());
+  return AnchorQuery()->EvaluateAnchor(
       *anchor_reference, anchor_value, percentage, available_size_,
       container_converter_, self_writing_direction_, offset_to_padding_box_,
       is_y_axis_, is_right_or_bottom_);
 }
 
 absl::optional<LayoutUnit> NGAnchorEvaluatorImpl::EvaluateAnchorSize(
-    const ScopedCSSName* anchor_name,
+    const AnchorSpecifierValue& anchor_specifier,
     AnchorSizeValue anchor_size_value) const {
   has_anchor_functions_ = true;
-  if (!anchor_name && !implicit_anchor_)
-    return absl::nullopt;
-  const NGLogicalAnchorQuery* anchor_query = AnchorQuery();
-  if (!anchor_query)
-    return absl::nullopt;
   const NGLogicalAnchorReference* anchor_reference =
-      anchor_name
-          ? anchor_query->AnchorReference(anchor_name, is_in_top_layer_)
-          : anchor_query->AnchorReference(implicit_anchor_, is_in_top_layer_);
-  if (!anchor_reference)
+      ResolveAnchorReference(anchor_specifier);
+  if (!anchor_reference) {
     return absl::nullopt;
+  }
 
-  return anchor_query->EvaluateSize(*anchor_reference, anchor_size_value,
-                                    container_converter_.GetWritingMode(),
-                                    self_writing_direction_.GetWritingMode());
+  DCHECK(AnchorQuery());
+  return AnchorQuery()->EvaluateSize(*anchor_reference, anchor_size_value,
+                                     container_converter_.GetWritingMode(),
+                                     self_writing_direction_.GetWritingMode());
 }
 
 void NGLogicalAnchorReference::Trace(Visitor* visitor) const {

@@ -29,7 +29,8 @@ ui::ColorTransform AdjustHighlightColorForContrast(ui::ColorTransform fg,
   // kToolbarInkDropHighlightVisibleOpacity. This means that our target contrast
   // is between the text (the highlight color) and a blend of the highlight
   // color and the toolbar color.
-  auto candidate_bg = ui::AlphaBlend(candidate_fg, bg, SkAlpha{0x14});
+  auto candidate_bg =
+      ui::AlphaBlend(candidate_fg, bg, kToolbarInkDropHighlightVisibleAlpha);
   // Add a fudge factor to the minimum contrast ratio since we'll actually be
   // blending with the adjusted color.
   return ui::PickGoogleColor(
@@ -191,6 +192,11 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadToolbarButtonActive] =
       ui::PickGoogleColor(ui::kColorThrobber, kColorToolbar,
                           color_utils::kMinimumVisibleContrastRatio);
+  mixer[kColorDownloadToolbarButtonAnimationBackground] =
+      ui::AlphaBlend(kColorDownloadToolbarButtonAnimationForeground,
+                     kColorToolbar, kToolbarInkDropHighlightVisibleAlpha);
+  mixer[kColorDownloadToolbarButtonAnimationForeground] =
+      AdjustHighlightColorForContrast(ui::kColorAccent, kColorToolbar);
   mixer[kColorDownloadToolbarButtonInactive] = {kColorToolbarButtonIcon};
   mixer[kColorDownloadToolbarButtonRingBackground] = {
       SkColorSetA(kColorDownloadToolbarButtonInactive, 0x33)};

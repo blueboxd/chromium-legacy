@@ -222,6 +222,7 @@
 برای اینکه از سیستم <ph name="DOMAIN" /> خارج نشوید، باید کارت هوشمندتان را در دستگاه نگه دارید.}one{# ثانیه دیگر به‌طور خودکار از سیستم خارج خواهید شد.
 برای اینکه از سیستم <ph name="DOMAIN" /> خارج نشوید، باید کارت هوشمندتان را در دستگاه نگه دارید.}other{# ثانیه دیگر به‌طور خودکار از سیستم خارج خواهید شد.
 برای اینکه از سیستم <ph name="DOMAIN" /> خارج نشوید، باید کارت هوشمندتان را در دستگاه نگه دارید.}}</translation>
+<translation id="119330003005586565">صفحه‌هایی که خوانده‌اید</translation>
 <translation id="1193927020065025187">شاید این سایت تلاش می‌کند شما را برای مجاز کردن اعلان‌های مزاحم فریب دهد.</translation>
 <translation id="1195210374336998651">رفتن به تنظیمات برنامه</translation>
 <translation id="1195447618553298278">خطای ناشناس.</translation>
@@ -284,6 +285,7 @@
 <translation id="1244303850296295656">خطای افزونه</translation>
 <translation id="1245628370644070008">بازیابی داده‌های محلی</translation>
 <translation id="1246863218384630739"><ph name="VM_NAME" /> نصب نشد: نشانی وب تصویر کد خطای <ph name="HTTP_ERROR" /> را برگرداند. لطفاً با سرپرست تماس بگیرید.</translation>
+<translation id="1247372569136754018">میکروفون (داخلی)</translation>
 <translation id="1249818027270187058">{NUM_SITES,plural, =1{اعلان‌های یک سایت مجاز نیستند}one{اعلان‌های {NUM_SITES} سایت مجاز نیستند}other{اعلان‌های {NUM_SITES} سایت مجاز نیستند}}</translation>
 <translation id="1251366534849411931">اینجا باید آکولاد باز باشد: <ph name="ERROR_LINE" /></translation>
 <translation id="1251480783646955802">با این کار <ph name="TOTAL_USAGE" /> از داده‌هایی که سایت‌ها و برنامه‌های نصب‌شده ذخیره کرده‌اند پاک می‌شود</translation>
@@ -412,6 +414,7 @@
 <translation id="1378848228640136848">{NUM_COMPROMISED,plural, =0{گذرواژه لورفته‌ای وجود ندارد}=1{۱ گذرواژه لورفته}one{{NUM_COMPROMISED} گذرواژه لورفته}other{{NUM_COMPROMISED} گذرواژه لورفته}}</translation>
 <translation id="1380028686461971526">اتصال خودکار به شبکه</translation>
 <translation id="1381567580865186407">‏گفتار <ph name="LANGUAGE" /> برای پردازش به Google ارسال می‌شود</translation>
+<translation id="1383381142702995121">مدیریت این افزونه</translation>
 <translation id="1383597849754832576">نمی‌توان فایل‌های گفتاری را بارگیری کرد. بعداً دوباره امتحان کنید.</translation>
 <translation id="1383861834909034572">باز کردن پس از بارگیری</translation>
 <translation id="1383876407941801731">جستجو</translation>
@@ -541,6 +544,7 @@
 <translation id="1482626744466814421">نشانک‌گذاری این برگه…</translation>
 <translation id="1482772681918035149">ویرایش گذرواژه‌ها</translation>
 <translation id="1483493594462132177">ارسال</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1484979925941077974">سایت درحال استفاده از بلوتوث است</translation>
 <translation id="1485015260175968628">هم‌اکنون این می‌تواند:</translation>
 <translation id="1485141095922496924">نسخه <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -626,6 +630,7 @@
 <translation id="1567387640189251553">بعد از آخرین باری که گذرواژه‌تان را وارد کردید، صفحه‌کلید دیگری متصل شده است. ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد.</translation>
 <translation id="156793199942386351">«<ph name="CURRENTKEY" />» قبلاً به کنش «<ph name="ACTION" />» اختصاص یافته است. برای <ph name="RESPONSE" />، یکی از کلیدها را فشار دهید.</translation>
 <translation id="1567993339577891801">کنسول جاوا اسکریپت</translation>
+<translation id="1569466257325986920">‏دفعه بعد که گذرواژه «حساب Google» شما تغییر می‌کند، داده‌های محلی شما پس‌از ورود به «حساب Google» به‌طور خودکار بازیابی می‌شود</translation>
 <translation id="1570604804919108255">باصدا کردن اعلان‌ها</translation>
 <translation id="1571304935088121812">کپی کردن نام کاربری</translation>
 <translation id="1571738973904005196">مشاهده برگه: <ph name="TAB_ORIGIN" /></translation>
@@ -892,6 +897,7 @@
 <translation id="1781979858217752599">هم‌رسانی صدای پنجره</translation>
 <translation id="1782101999402987960">سرپرست شما به‌روزرسانی‌ها را مسدود کرده است</translation>
 <translation id="1782196717298160133">در حال پیدا کردن تلفن خودتان</translation>
+<translation id="1782541958479207225">{NUM_NOTES,plural, =1{یک یادداشت}one{# یادداشت}other{# یادداشت}}</translation>
 <translation id="1784707308176068866">درصورت درخواست یک برنامه بومی همکار، در پس‌زمینه اجرا شود</translation>
 <translation id="1784849162047402014">فضای ذخیره‌سازی دستگاه رو به اتمام است</translation>
 <translation id="1787350673646245458">تصویر کاربر</translation>
@@ -1102,6 +1108,7 @@
 <translation id="1965624977906726414">مجوز خاصی ندارد.</translation>
 <translation id="1966649499058910679">وقتی کلمه‌ای گفته می‌شود، برجسته شود</translation>
 <translation id="1967970931040389207">روشن کردن نقطه اتصال</translation>
+<translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="1969654639948595766">‏گزارش‌های نوشتاری WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1972325230031091483">سریع‌تر مرور خواهید کرد چون محتوا به‌صورت پیش‌نگرانه براساس بازدید صفحه وب فعلی‌تان بار می‌شود</translation>
 <translation id="197288927597451399">ادامه دادن</translation>
@@ -1686,6 +1693,7 @@
 <translation id="2467755475704469005">دستگاهی شناسایی نشد. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2468178265280335214">شتاب پیمایش صفحه لمسی</translation>
 <translation id="2468205691404969808">از کوکی‌ها برای به خاطر سپردن اولویت‌های شما استفاده می‌کند؛ حتی اگر از آن صفحه‌ها بازدید نکنید</translation>
+<translation id="2468247643665097563">سفارش</translation>
 <translation id="2468402215065996499">تاماگوچی</translation>
 <translation id="2468470085922875120">از گذرواژه‌هایی استفاده می‌کنید که حدس زدن آن‌ها ظاهراً دشوار است</translation>
 <translation id="2468845464436879514">{NUM_TABS,plural, =1{<ph name="GROUP_TITLE" /> - ۱ برگه}one{<ph name="GROUP_TITLE" /> - # برگه}other{<ph name="GROUP_TITLE" /> - # برگه}}</translation>
@@ -1827,7 +1835,6 @@
 <translation id="25899519884572181">خروج از «حالت خواننده»</translation>
 <translation id="2593499352046705383">‏پیش‌از شروع، حتماً از داده‌هایتان پشتیبان‌گیری کنید. نصب <ph name="DEVICE_OS" /> داده‌های دیسک سخت را بازنویسی خواهد کرد. در g.co/flex/InstallGuide، اطلاعات بیشتری دریافت کنید.</translation>
 <translation id="2594999711683503743">‏در Google جستجو کنید یا نشانی وب را تایپ کنید</translation>
-<translation id="25957578727513093">‏برای اینکه سریع‌تر به اینجا دسترسی پیدا کنید، میان‌بری به «مدیر گذرواژه Google» اضافه کنید</translation>
 <translation id="2599048253926156421">نام کاربری در بریده‌دان کپی شد</translation>
 <translation id="2602501489742255173">برای شروع‌به‌کار تند بکشید</translation>
 <translation id="2603115962224169880">پاک کردن رایانه</translation>
@@ -2405,6 +2412,7 @@
 <translation id="3103451787721578293">لطفاً دلیلی برای بارگذاری این داده وارد کنید:</translation>
 <translation id="3105339775057145050">آخرین به‌روزرسانی ناموفق</translation>
 <translation id="3105796011181310544">‏به Google تغییر می‌دهید؟</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (بلوتوث)</translation>
 <translation id="310671807099593501">سایت درحال استفاده از بلوتوث شما است</translation>
 <translation id="3108931485517391283">دریافت نمی‌شود</translation>
 <translation id="3108957152224931571">رنگ برجسته‌سازی</translation>
@@ -3046,6 +3054,7 @@
 <translation id="371300529209814631">عقب/جلو</translation>
 <translation id="3713047097299026954">این کلید امنیتی هیچ داده ورود به سیستمی ندارد</translation>
 <translation id="3713091615825314967">به‌روزرسانی‌های خودکار روشن هستند.</translation>
+<translation id="371370241367527062">میکروفون جلو</translation>
 <translation id="3714195043138862580">این دستگاه نمایشی در وضعیت لغو مجوز دسترسی قرار داده شده است.</translation>
 <translation id="3719826155360621982">صفحه اصلی</translation>
 <translation id="372062398998492895">CUPS</translation>
@@ -3141,6 +3150,7 @@
 <translation id="3797900183766075808">‏(&amp;S) جستجوی <ph name="SEARCH_ENGINE" /> برای «<ph name="SEARCH_TERMS" />»</translation>
 <translation id="3798449238516105146">نسخه</translation>
 <translation id="3798632811625902122">دستگاه بلوتوث <ph name="DEVICE" /> برای مرتبط‌سازی به اجازه نیاز دارد.</translation>
+<translation id="3798670284305777884">بلندگو (داخلی)</translation>
 <translation id="3799128412641261490">تنظیمات دسترسی کلیدی</translation>
 <translation id="3800030395703848668">مشاهده گزینه‌های فهرست</translation>
 <translation id="3800806661949714323">نمایش همه موارد (توصیه می‌شود)</translation>
@@ -3568,7 +3578,7 @@
 <translation id="4175737294868205930">محل ذخیره‌سازی دائمی</translation>
 <translation id="4176463684765177261">غیرفعال شد</translation>
 <translation id="4176864026061939326">این دستگاه مدیریت می‌شود. سرپرست دستگاه برای حساب <ph name="USER_EMAIL_ADDRESS" /> به نمایه جدیدی نیاز دارد</translation>
-<translation id="4177501066905053472">موضوعات آگهی</translation>
+<translation id="4177501066905053472">موضوع‌های آگهی</translation>
 <translation id="4180788401304023883">‏مجوز CA "<ph name="CERTIFICATE_NAME" />" حذف شود؟</translation>
 <translation id="4181602000363099176">۲۰ برابر</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
@@ -4239,6 +4249,7 @@
 <translation id="4807098396393229769">نام روی کارت</translation>
 <translation id="4808667324955055115">پنجره‌های بازشو مسدود هستند:</translation>
 <translation id="4809079943450490359">دستورالعمل‌ها از سرپرست دستگاهتان:</translation>
+<translation id="4809447465126035330">حذف</translation>
 <translation id="480990236307250886">باز کردن صفحه اصلی</translation>
 <translation id="4809927044794281115">زمینه روشن</translation>
 <translation id="4811212958317149293">اسکن خودکار صفحه‌کلید دسترسی کلیدی</translation>
@@ -4440,7 +4451,7 @@
 <translation id="4992458225095111526">‏تأیید Powerwash</translation>
 <translation id="4992473555164495036">سرپرست سیستم روش‌های ورودی دردسترس را محدود کرده است.</translation>
 <translation id="4994754230098574403">درحال راه‌اندازی</translation>
-<translation id="4995293419989417004">درباره موضوعات آگهی بیشتر بدانید</translation>
+<translation id="4995293419989417004">درباره موضوع‌های آگهی بیشتر بدانید</translation>
 <translation id="4996851818599058005">{NUM_VMS,plural, =0{هیچ ماشین مجازی <ph name="VM_TYPE" /> پیدا نشد}=1{‏۱ ماشین مجازی <ph name="VM_TYPE" /> پیدا شد: <ph name="VM_NAME_LIST" />}one{‏{NUM_VMS} ماشین مجازی <ph name="VM_TYPE" /> پیدا شد: <ph name="VM_NAME_LIST" />}other{‏{NUM_VMS} ماشین مجازی <ph name="VM_TYPE" /> پیدا شد: <ph name="VM_NAME_LIST" />}}</translation>
 <translation id="4997086284911172121">اتصال اینترنت ندارید.</translation>
 <translation id="4998430619171209993">روشن</translation>
@@ -5041,6 +5052,7 @@
 <translation id="5556459405103347317">بار کردن مجدد</translation>
 <translation id="5558129378926964177">&amp;بزرگنمایی</translation>
 <translation id="5558247502209241936">فعال کردن باز شدن برنامه در پنجره</translation>
+<translation id="5559311991468302423">حذف نشانی</translation>
 <translation id="55601339223879446">تنظیم محدوه دسک‌تاپ شما در صفحه نمایشگر</translation>
 <translation id="5561162485081632007">رویدادهای خطرناک را درصورت وقوع شناسایی می‌کند و به شما هشدار می‌دهد</translation>
 <translation id="5562781907504170924">این برگه به دستگاه بلوتوث متصل است.</translation>
@@ -5141,6 +5153,7 @@
 <translation id="5643620609347735571">پاک کردن و ادامه دادن</translation>
 <translation id="5646376287012673985">مکان</translation>
 <translation id="5646558797914161501">تاجر</translation>
+<translation id="5648021990716966815">فیش میکروفون</translation>
 <translation id="5648166631817621825">۷ روز گذشته</translation>
 <translation id="5651308944918885595">قابلیت شناسایی «هم‌رسانی با اطراف»</translation>
 <translation id="5653154844073528838"><ph name="PRINTER_COUNT" /> چاپگر ذخیره‌شده دارید.</translation>
@@ -5530,6 +5543,7 @@
 <translation id="6007240208646052708">جستجوی گفتاری به زبان شما در دسترس نیست.</translation>
 <translation id="6010651352520077187">‏وقتی روشن باشد، «ترجمه Google» پیشنهاد می‌کند که سایت‌ها را به زبان برگزیده‌تان ترجمه کند. «ترجمه Google» می‌تواند سایت‌ها را به‌طور خودکار ترجمه کند.</translation>
 <translation id="6011193465932186973">اثر انگشت</translation>
+<translation id="6011308810877101166">بهبود پیشنهادهای جستجو</translation>
 <translation id="6011908034087870826">درحال ارسال پیوند به <ph name="DEVICE_NAME" /></translation>
 <translation id="6013027779243312217">دریافت زیرنویس ناشنوایان برای صدا و ویدیو</translation>
 <translation id="6014293228235665243">خوانده‌نشده</translation>
@@ -5847,6 +5861,7 @@
 <translation id="630292539633944562">پیشنهادهای اطلاعات شخصی</translation>
 <translation id="6305607932814307878">خط‌مشی کلی:</translation>
 <translation id="6305909198255586420">لطفاً نصب را بااستفاده از نمایه اصلی انجام دهید</translation>
+<translation id="630750887748244481">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chrome خاموش کرده است. اضافه کردن این افزونه مجاز نیست.</translation>
 <translation id="6307990684951724544">سیستم مشغول است</translation>
 <translation id="6308493641021088955">ورود به سیستم ارائه‌شده توسط <ph name="EXTENSION_NAME" /></translation>
 <translation id="6308937455967653460">ذخیره پی&amp;وند به‌عنوان...</translation>
@@ -5954,6 +5969,7 @@
 <translation id="6410668567036790476">افزودن موتور جستجو</translation>
 <translation id="641469293210305670">نصب به‌روزرسانی‌ها و برنامه‌ها</translation>
 <translation id="6414878884710400018">باز کردن اولویت‌های سیستم</translation>
+<translation id="6415816101512323589">بازیابی داده‌های محلی برای محافظت از داده‌هایتان روشن شود؟</translation>
 <translation id="6415900369006735853">اتصال به اینترنت ازطریق تلفن</translation>
 <translation id="6416743254476733475">در رایانه مجاز یا مسدود کنید.</translation>
 <translation id="6417265370957905582">‏دستیار Google</translation>
@@ -6249,6 +6265,7 @@
 <translation id="6678717876183468697">نشانی وب عبارت</translation>
 <translation id="6680442031740878064">در دسترس: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">رده‌بندی</translation>
+<translation id="6683022854667115063">هدفون</translation>
 <translation id="6683087162435654533">بازیابی همه برگه‌ها</translation>
 <translation id="6684827949542560880">درحال بارگیری آخرین به‌روزرسانی</translation>
 <translation id="668599234725812620">‏باز کردن Google Play</translation>
@@ -6432,6 +6449,7 @@
 <translation id="6839916869147598086">ورود به سیستم تغییر کرده است</translation>
 <translation id="6840155290835956714">پیش از ارسال سؤال شود</translation>
 <translation id="6840184929775541289">یک ارائه دهنده مجوز نیست</translation>
+<translation id="6840214587087739194">نشانی حذف شد</translation>
 <translation id="6841143363521180029">رمزگذاری‌شده</translation>
 <translation id="6841186874966388268">خطاها</translation>
 <translation id="6842136130964845393">برای اینکه مطمئن شوید همیشه می‌توانید به گذرواژه‌های ذخیره‌شده دسترسی داشته باشید، هویتتان را به‌تأیید برسانید</translation>
@@ -6746,7 +6764,6 @@
 <translation id="711840821796638741">نمایش نشانک‌های مدیریت شده</translation>
 <translation id="711985611146095797">‏در این صفحه می‌توانید «حساب‌های Google» خودتان را که به سیستم آن‌ها وارد شده‌اید مدیریت کنید. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="7120762240626567834">‏مرورگر Chrome و ترافیک Android مسدود خواهند شد، مگراینکه VPN متصل باشد</translation>
-<translation id="7120865473764644444">اتصال به سرور همگام‌سازی امکان‌پذیر نیست. درحال امتحان مجدد…</translation>
 <translation id="7121438501124788993">حالت تولیدکننده</translation>
 <translation id="7121728544325372695">خط تیره‌های هوشمند</translation>
 <translation id="7123030151043029868">اجازه دارد چند فایل را به‌طور خودکار بارگیری کند</translation>
@@ -6876,6 +6893,7 @@
 <translation id="7255002516883565667">درحال‌حاضر، یک کارت دارید که فقط در این دستگاه قابل استفاده است</translation>
 <translation id="7255935316994522020">اعمال</translation>
 <translation id="7256069762010468647">سایت درحال استفاده از دوربین شما است</translation>
+<translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="7256710573727326513">باز کردن در برگه</translation>
 <translation id="7257173066616499747">‏شبکه‌های Wi-Fi</translation>
 <translation id="725758059478686223">سرویس چاپ</translation>
@@ -7278,7 +7296,7 @@
 <translation id="7634280112532283638">کاهش هرزنامه و تقلب</translation>
 <translation id="7634566076839829401">مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="7635048370253485243">سرپرستتان آن را پین کرده است</translation>
-<translation id="7635711411613274199">درحین مرور، شخصی شدن یا نشدن آگهی‌هایی که می‌بینید به این تنظیم، <ph name="BEGIN_LINK1" />موضوعات آگهی<ph name="LINK_END1" />، <ph name="BEGIN_LINK2" />تنظیمات کوکی<ph name="LINK_END2" /> شما، و اینکه آیا سایتی که مشاهده می‌کنید آگهی‌ها را شخصی‌سازی می‌کند یا نه بستگی دارد</translation>
+<translation id="7635711411613274199">درحین مرور، شخصی شدن یا نشدن آگهی‌هایی که می‌بینید به این تنظیم، <ph name="BEGIN_LINK1" />موضوع‌های آگهی<ph name="LINK_END1" />، <ph name="BEGIN_LINK2" />تنظیمات کوکی<ph name="LINK_END2" /> شما، و اینکه آیا سایتی که مشاهده می‌کنید آگهی‌ها را شخصی‌سازی می‌کند یا نه بستگی دارد</translation>
 <translation id="7636919061354591437">نصب در این دستگاه</translation>
 <translation id="7637253234491814483">حسگر اثر انگشت را در بالا گوشه راست صفحه‌کلید، کنار دکمه روشن/ خاموش لمس کنید. داده‌های اثر انگشتتان به‌صورت ایمن ذخیره می‌شود و هرگز از <ph name="DEVICE_TYPE" /> شما خارج نمی‌شود.</translation>
 <translation id="7637272932128132922">وقتی این برگه غیرفعال بود، «بهینه‌سازی حافظ» حافظه را برای کارهای دیگر آزاد کرد. هرزمان بخواهید می‌توانید آن را در <ph name="SETTINGS_LINK" /> تغییر دهید.</translation>
@@ -7989,6 +8007,7 @@
 <translation id="8251509999076836464">درحال مرتبط‌سازی <ph name="DEVICE_NAME" /></translation>
 <translation id="8251578425305135684">تصویر کوچک حذف شد.</translation>
 <translation id="825238165904109940">همیشه نشانی‌های وب کامل نشان داده شود</translation>
+<translation id="8252538334423261825">نمی‌توان افزونه اضافه کرد</translation>
 <translation id="8252569384384439529">درحال بارگذاری…</translation>
 <translation id="8253198102038551905">روی «+» کلیک کنید تا مشخصات شبکه را دریافت کنید</translation>
 <translation id="8255212965098517578">عکس‌ها، اعلان‌ها، و برنامه‌های اخیر</translation>
@@ -8274,6 +8293,7 @@
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="8526813720153458066">SSH</translation>
 <translation id="8528074251912154910">افزودن زبان</translation>
+<translation id="8528479410903501741">‏ذخیره IBAN</translation>
 <translation id="8528962588711550376">ورود به برنامه.</translation>
 <translation id="8529925957403338845">اشتراک‌گذاری اینترنت فوری برقرار نشد</translation>
 <translation id="8531701051932785007">«مرور ایمن پیشرفته» خاموش است</translation>

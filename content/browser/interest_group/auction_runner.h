@@ -32,6 +32,7 @@ struct AuctionConfig;
 
 namespace content {
 
+class AttributionDataHostManager;
 class InterestGroupAuctionReporter;
 class InterestGroupManagerImpl;
 
@@ -63,8 +64,14 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // `report_urls` Reporting URLs returned by seller worklet reportResult()
   //  methods and the winning bidder's reportWin() methods, if any.
   //
-  // `private_aggregation_requests` Requests made to the Private Aggregation
-  //  API. Keyed by reporting origin of the associated requests.
+  // `private_aggregation_requests_reserved` Requests made to the Private
+  //  Aggregation API, either sendHistogram(), or reportContributionForEvent()
+  //  with reserved event type. Keyed by reporting origin of the associated
+  //  requests.
+  //
+  // `private_aggregation_requests_non_reserved` Requests made to the Private
+  //  Aggregation API reportContributionForEvent() with non-reserved event type
+  //  like "click". Keyed by event type of the associated requests.
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see.
@@ -85,7 +92,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       absl::optional<GURL> render_url,
       std::vector<GURL> ad_component_urls,
       std::map<url::Origin, PrivateAggregationRequests>
-          private_aggregation_requests,
+          private_aggregation_requests_reserved,
       std::vector<std::string> errors,
       std::unique_ptr<InterestGroupAuctionReporter>
           interest_group_auction_reporter)>;
@@ -99,8 +106,10 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // Creates an entire FLEDGE auction. Single-use object.
   //
   // Arguments:
-  // `auction_worklet_manager` and `interest_group_manager` must remain valid
-  //  until the  AuctionRunner is destroyed.
+  // `auction_worklet_manager`, `interest_group_manager` and
+  // `attribution_data_host_manager` must remain valid
+  //  until the  AuctionRunner is destroyed. `attribution_data_host_manager`
+  //  could be null in Incognito mode or in test.
   //
   // `auction_config` is the configuration provided by client JavaScript in
   //  the renderer in order to initiate the auction.
@@ -128,6 +137,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   static std::unique_ptr<AuctionRunner> CreateAndStart(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
       const blink::AuctionConfig& auction_config,
       const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
@@ -177,6 +187,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   AuctionRunner(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
       auction_worklet::mojom::KAnonymityBidMode kanon_mode,
       const blink::AuctionConfig& auction_config,
       const url::Origin& frame_origin,
@@ -220,6 +231,10 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       blink::AuctionConfig* config);
 
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
+
+  // Needed to create `FencedFrameReporter`. Bound to the life time of the
+  // browser context. Could be null in Incognito mode or in test.
+  const raw_ptr<AttributionDataHostManager> attribution_data_host_manager_;
 
   const url::Origin frame_origin_;
 

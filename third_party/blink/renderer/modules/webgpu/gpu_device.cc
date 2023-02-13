@@ -307,7 +307,10 @@ void GPUDevice::OnDeviceLostError(WGPUDeviceLostReason reason,
                                   const char* message) {
   if (!GetExecutionContext())
     return;
-  AddConsoleWarning(message);
+
+  if (reason != WGPUDeviceLostReason_Destroyed) {
+    AddConsoleWarning(message);
+  }
 
   // Invalidate the adapter given that a device was lost.
   adapter_->invalidate();
@@ -331,6 +334,8 @@ void GPUDevice::OnCreateRenderPipelineAsyncCallback(
     }
 
     case WGPUCreatePipelineAsyncStatus_Error:
+    case WGPUCreatePipelineAsyncStatus_ValidationError:
+    case WGPUCreatePipelineAsyncStatus_InternalError:
     case WGPUCreatePipelineAsyncStatus_DeviceLost:
     case WGPUCreatePipelineAsyncStatus_DeviceDestroyed:
     case WGPUCreatePipelineAsyncStatus_Unknown: {
@@ -358,6 +363,8 @@ void GPUDevice::OnCreateComputePipelineAsyncCallback(
     }
 
     case WGPUCreatePipelineAsyncStatus_Error:
+    case WGPUCreatePipelineAsyncStatus_ValidationError:
+    case WGPUCreatePipelineAsyncStatus_InternalError:
     case WGPUCreatePipelineAsyncStatus_DeviceLost:
     case WGPUCreatePipelineAsyncStatus_DeviceDestroyed:
     case WGPUCreatePipelineAsyncStatus_Unknown: {

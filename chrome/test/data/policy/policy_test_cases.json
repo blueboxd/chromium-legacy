@@ -7344,7 +7344,8 @@
       "win",
       "linux",
       "mac",
-      "fuchsia"
+      "fuchsia",
+      "android"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -13327,6 +13328,12 @@
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "LogUploadEnabled": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
+  "DeviceActivityHeartbeatEnabled": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
+  "DeviceActivityHeartbeatCollectionRateMs": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
   "EnableDeviceGranularReporting": {

@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom-shared.h"
+#include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -20,7 +21,6 @@
 #include "components/attribution_reporting/registration.mojom-shared.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "mojo/public/cpp/base/int128_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -154,31 +154,6 @@ bool StructTraits<attribution_reporting::mojom::FiltersDataView,
 }
 
 // static
-bool StructTraits<attribution_reporting::mojom::TriggerAttestationDataView,
-                  attribution_reporting::TriggerAttestation>::
-    Read(attribution_reporting::mojom::TriggerAttestationDataView data,
-         attribution_reporting::TriggerAttestation* out) {
-  std::string token;
-  if (!data.ReadToken(&token)) {
-    return false;
-  }
-
-  std::string aggregatable_report_id;
-  if (!data.ReadAggregatableReportId(&aggregatable_report_id)) {
-    return false;
-  }
-
-  auto trigger_attesation = attribution_reporting::TriggerAttestation::Create(
-      std::move(token), aggregatable_report_id);
-  if (!trigger_attesation) {
-    return false;
-  }
-
-  *out = std::move(*trigger_attesation);
-  return true;
-}
-
-// static
 bool StructTraits<attribution_reporting::mojom::EventTriggerDataDataView,
                   attribution_reporting::EventTriggerData>::
     Read(attribution_reporting::mojom::EventTriggerDataDataView data,
@@ -238,6 +213,26 @@ bool StructTraits<attribution_reporting::mojom::AggregatableTriggerDataDataView,
 }
 
 // static
+bool StructTraits<attribution_reporting::mojom::AggregatableDedupKeyDataView,
+                  attribution_reporting::AggregatableDedupKey>::
+    Read(attribution_reporting::mojom::AggregatableDedupKeyDataView data,
+         attribution_reporting::AggregatableDedupKey* out) {
+  if (!data.ReadDedupKey(&out->dedup_key)) {
+    return false;
+  }
+
+  if (!data.ReadFilters(&out->filters)) {
+    return false;
+  }
+
+  if (!data.ReadNotFilters(&out->not_filters)) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
 bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
                   attribution_reporting::TriggerRegistration>::
     Read(attribution_reporting::mojom::TriggerRegistrationDataView data,
@@ -292,11 +287,22 @@ bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
 
   out->aggregatable_values = std::move(*aggregatable_values);
 
-  if (!data.ReadDebugKey(&out->debug_key)) {
+  std::vector<attribution_reporting::AggregatableDedupKey>
+      aggregatable_dedup_keys;
+  if (!data.ReadAggregatableDedupKeys(&aggregatable_dedup_keys)) {
     return false;
   }
 
-  if (!data.ReadAggregatableDedupKey(&out->aggregatable_dedup_key)) {
+  auto aggregatable_dedup_key_list =
+      attribution_reporting::AggregatableDedupKeyList::Create(
+          std::move(aggregatable_dedup_keys));
+  if (!aggregatable_dedup_key_list) {
+    return false;
+  }
+
+  out->aggregatable_dedup_keys = std::move(*aggregatable_dedup_key_list);
+
+  if (!data.ReadDebugKey(&out->debug_key)) {
     return false;
   }
 

@@ -213,9 +213,7 @@ void CheckInstallation(UpdaterScope scope,
       std::wstring pv;
       EXPECT_EQ(ERROR_SUCCESS,
                 base::win::RegKey(
-                    root,
-                    GetAppClientsKey(L"{430FD4D0-B729-4F61-AA34-91526481799D}")
-                        .c_str(),
+                    root, GetAppClientsKey(kLegacyGoogleUpdateAppID).c_str(),
                     Wow6432(KEY_READ))
                     .ReadValue(kRegValuePV, &pv));
       EXPECT_STREQ(kUpdaterVersionUtf16, pv.c_str());
@@ -264,6 +262,12 @@ void CheckInstallation(UpdaterScope scope,
     if (IsSystemInstall(scope)) {
       EXPECT_EQ(is_installed,
                 RegKeyExistsCOM(root, GetComServerAppidRegistryPath(clsid)));
+    }
+
+    const std::wstring progid(GetProgIdForClsid(clsid));
+    if (!progid.empty()) {
+      EXPECT_EQ(is_installed,
+                RegKeyExistsCOM(root, GetComProgIdRegistryPath(progid)));
     }
   }
 
@@ -515,6 +519,17 @@ base::win::ScopedVariant GetDispatchProperty(
   return result;
 }
 
+std::wstring GetAppVersionWebString(
+    Microsoft::WRL::ComPtr<IDispatch> version_web_dispatch) {
+  Microsoft::WRL::ComPtr<IAppVersionWeb> version_web;
+  EXPECT_HRESULT_SUCCEEDED(version_web_dispatch.As(&version_web));
+
+  base::win::ScopedBstr version;
+  EXPECT_HRESULT_SUCCEEDED(version_web->get_version(version.Receive()));
+
+  return version.Get();
+}
+
 }  // namespace
 
 base::FilePath GetSetupExecutablePath() {
@@ -547,6 +562,11 @@ void Clean(UpdaterScope scope) {
     EXPECT_TRUE(DeleteRegKeyCOM(root, GetComServerClsidRegistryPath(clsid)));
     if (IsSystemInstall(scope))
       EXPECT_TRUE(DeleteRegKeyCOM(root, GetComServerAppidRegistryPath(clsid)));
+
+    const std::wstring progid(GetProgIdForClsid(clsid));
+    if (!progid.empty()) {
+      EXPECT_TRUE(DeleteRegKeyCOM(root, GetComProgIdRegistryPath(progid)));
+    }
   }
 
   for (const IID& iid : JoinVectors(GetSideBySideInterfaces(scope),
@@ -758,6 +778,16 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
                                                      : __uuidof(IUpdaterUser),
                               IID_PPV_ARGS_Helper(&updater)));
 
+    // Verifies that the progid for the legacy clsid is registered.
+    CLSID expected_clsid = {};
+    EXPECT_HRESULT_SUCCEEDED(::CLSIDFromProgID(
+        IsSystemInstall(scope) ? kGoogleUpdate3WebSystemClassProgId
+                               : kGoogleUpdate3WebUserClassProgId,
+        &expected_clsid));
+    EXPECT_EQ(expected_clsid, IsSystemInstall(scope)
+                                  ? __uuidof(GoogleUpdate3WebSystemClass)
+                                  : __uuidof(GoogleUpdate3WebUserClass));
+
     for (const CLSID& clsid : [&scope]() -> std::vector<CLSID> {
            if (IsSystemInstall(scope)) {
              return {__uuidof(GoogleUpdate3WebSystemClass),
@@ -897,8 +927,8 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
     Microsoft::WRL::ComPtr<ICurrentState> state;
     EXPECT_HRESULT_SUCCEEDED(state_dispatch.As(&state));
 
-    std::wstring stateDescription;
-    std::wstring extraData;
+    std::wstring state_description;
+    std::wstring extra_data;
 
     EXPECT_HRESULT_SUCCEEDED(state->get_stateValue(&state_value));
 
@@ -906,17 +936,33 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
 
     switch (state_value) {
       case STATE_INIT:
-        stateDescription = L"Initializating...";
+        state_description = L"Initializating...";
         break;
 
       case STATE_WAITING_TO_CHECK_FOR_UPDATE:
       case STATE_CHECKING_FOR_UPDATE: {
-        stateDescription = L"Checking for update...";
+        state_description = L"Checking for update...";
+
+        Microsoft::WRL::ComPtr<IDispatch> current_version_web_dispatch;
+        EXPECT_HRESULT_SUCCEEDED(
+            app->get_currentVersionWeb(&current_version_web_dispatch));
+
+        extra_data = base::StrCat(
+            {L"[Current Version: ",
+             GetAppVersionWebString(current_version_web_dispatch), L"]"});
         break;
       }
 
       case STATE_UPDATE_AVAILABLE: {
-        stateDescription = L"Update available!";
+        state_description = L"Update available!";
+        Microsoft::WRL::ComPtr<IDispatch> next_version_web_dispatch;
+        EXPECT_HRESULT_SUCCEEDED(
+            app->get_nextVersionWeb(&next_version_web_dispatch));
+
+        extra_data = base::StrCat(
+            {L"[Next Version: ",
+             GetAppVersionWebString(next_version_web_dispatch), L"]"});
+
         if (!done) {
           EXPECT_HRESULT_SUCCEEDED(bundle->install());
         }
@@ -925,11 +971,11 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
 
       case STATE_WAITING_TO_DOWNLOAD:
       case STATE_RETRYING_DOWNLOAD:
-        stateDescription = L"Contacting server...";
+        state_description = L"Contacting server...";
         break;
 
       case STATE_DOWNLOADING: {
-        stateDescription = L"Downloading...";
+        state_description = L"Downloading...";
 
         ULONG bytes_downloaded = 0;
         state->get_bytesDownloaded(&bytes_downloaded);
@@ -940,7 +986,7 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
         LONG download_time_remaining_ms = 0;
         state->get_downloadTimeRemainingMs(&download_time_remaining_ms);
 
-        extraData = base::StringPrintf(
+        extra_data = base::StringPrintf(
             L"[Bytes downloaded: %d][Bytes total: %d][Time remaining: %d]",
             bytes_downloaded, total_bytes_to_download,
             download_time_remaining_ms);
@@ -951,14 +997,14 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
       case STATE_EXTRACTING:
       case STATE_APPLYING_DIFFERENTIAL_PATCH:
       case STATE_READY_TO_INSTALL: {
-        stateDescription = L"Download completed!";
+        state_description = L"Download completed!";
         ULONG bytes_downloaded = 0;
         state->get_bytesDownloaded(&bytes_downloaded);
 
         ULONG total_bytes_to_download = 0;
         state->get_totalBytesToDownload(&total_bytes_to_download);
 
-        extraData =
+        extra_data =
             base::StringPrintf(L"[Bytes downloaded: %d][Bytes total: %d]",
                                bytes_downloaded, total_bytes_to_download);
 
@@ -969,33 +1015,33 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
 
       case STATE_WAITING_TO_INSTALL:
       case STATE_INSTALLING: {
-        stateDescription = L"Installing...";
+        state_description = L"Installing...";
 
         LONG install_progress = 0;
         state->get_installProgress(&install_progress);
         LONG install_time_remaining_ms = 0;
         state->get_installTimeRemainingMs(&install_time_remaining_ms);
 
-        extraData =
+        extra_data =
             base::StringPrintf(L"[Install Progress: %d][Time remaining: %d]",
                                install_progress, install_time_remaining_ms);
         break;
       }
 
       case STATE_INSTALL_COMPLETE:
-        stateDescription = L"Done!";
+        state_description = L"Done!";
         break;
 
       case STATE_PAUSED:
-        stateDescription = L"Paused...";
+        state_description = L"Paused...";
         break;
 
       case STATE_NO_UPDATE:
-        stateDescription = L"No update available!";
+        state_description = L"No update available!";
         break;
 
       case STATE_ERROR: {
-        stateDescription = L"Error!";
+        state_description = L"Error!";
 
         EXPECT_HRESULT_SUCCEEDED(state->get_errorCode(&error_code));
 
@@ -1007,22 +1053,22 @@ HRESULT DoLoopUntilDone(Microsoft::WRL::ComPtr<IAppBundleWeb> bundle,
         EXPECT_HRESULT_SUCCEEDED(
             state->get_installerResultCode(&installer_result_code));
 
-        extraData = base::StringPrintf(
+        extra_data = base::StringPrintf(
             L"[errorCode: %d][completionMessage: %ls][installerResultCode: %d]",
             error_code, completion_message.Get(), installer_result_code);
         break;
       }
 
       default:
-        stateDescription = L"Unhandled state...";
+        state_description = L"Unhandled state...";
         break;
     }
 
     // TODO(crbug.com/1245992): Remove this logging once the code is test
     // flakiness is eliminated and no further debugging is needed.
     LOG(ERROR) << base::StringPrintf(L"[State: %d][%ls]%ls", state_value,
-                                     stateDescription.c_str(),
-                                     extraData.c_str());
+                                     state_description.c_str(),
+                                     extra_data.c_str());
     base::PlatformThread::Sleep(base::Seconds(1));
   }
 
@@ -1398,10 +1444,9 @@ void SetupFakeLegacyUpdaterData(UpdaterScope scope) {
   const HKEY root = UpdaterScopeToHKeyRoot(scope);
 
   base::win::RegKey key;
-  ASSERT_EQ(
-      key.Create(root, GetAppClientsKey(kLegacyGoogleUpdaterAppID).c_str(),
-                 Wow6432(KEY_WRITE)),
-      ERROR_SUCCESS);
+  ASSERT_EQ(key.Create(root, GetAppClientsKey(kLegacyGoogleUpdateAppID).c_str(),
+                       Wow6432(KEY_WRITE)),
+            ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValuePV, L"1.1.1.1"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GOOG"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
@@ -1436,7 +1481,7 @@ void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope) {
 
   // Legacy updater itself should not be migrated.
   const std::string kLegacyUpdaterAppId =
-      base::SysWideToUTF8(kLegacyGoogleUpdaterAppID);
+      base::SysWideToUTF8(kLegacyGoogleUpdateAppID);
   EXPECT_FALSE(
       persisted_data->GetProductVersion(kLegacyUpdaterAppId).IsValid());
   EXPECT_TRUE(persisted_data->GetAP(kLegacyUpdaterAppId).empty());

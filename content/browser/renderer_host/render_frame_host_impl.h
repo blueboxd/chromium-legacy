@@ -278,8 +278,6 @@ class SubresourceWebBundleNavigationInfo;
 class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
-class WebBundleHandle;
-class WebBundleHandleTracker;
 class WebUIImpl;
 struct PendingNavigation;
 struct ResourceTimingInfo;
@@ -1387,8 +1385,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       const absl::optional<blink::DocumentToken>& document_token,
-      const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebBundleHandle> web_bundle_handle);
+      const base::UnguessableToken& devtools_navigation_token);
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
@@ -1788,10 +1785,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Clears the entries in the PrefetchedSignedExchangeCache if exists.
   void ClearPrefetchedSignedExchangeCache();
 
-  // Creates a WebBundleHandleTracker from WebBundleHandles which is attached
-  // to `this`, if one exists.
-  std::unique_ptr<WebBundleHandleTracker> MaybeCreateWebBundleHandleTracker();
-
   void set_did_stop_loading_callback_for_testing(base::OnceClosure callback) {
     did_stop_loading_callback_ = std::move(callback);
   }
@@ -2106,6 +2099,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return has_committed_any_navigation_;
   }
 
+  // Whether the document in this frame currently has a navigate event handler
+  // registered.
+  bool has_navigate_event_handler() const {
+    return has_navigate_event_handler_;
+  }
+
   // Return true if the process this RenderFrameHost is using has crashed and we
   // are replacing RenderFrameHosts for crashed frames rather than reusing them.
   //
@@ -2229,6 +2228,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& key,
       bool has_user_gesture,
       absl::optional<blink::scheduler::TaskAttributionId> task_id) override;
+  void NavigateEventHandlerPresenceChanged(bool present) override;
   void UpdateTitle(const absl::optional<::std::u16string>& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
@@ -3788,8 +3788,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstance::GetProcess()/GetOrCreateAgentSchedulingGroupHost() has the
   // side effect of creating the process again if it is gone.
   //
-  // TODO(https://crbug.com/1382971): Change back to `raw_ref` after the ad-hoc
-  // debugging is no longer needed to investigate the bug.
+  // It is a `SafeRef` so that the browser process crashes cleanly if `this`
+  // unintentionally outlives its associated `RenderFrameProcessHost` but tries
+  // to access it or its associated `AgentSchedulingGroupHost` (see
+  // crbug.com/1297030).
   const base::SafeRef<AgentSchedulingGroupHost> agent_scheduling_group_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
@@ -4227,6 +4229,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_pagehide_handler_ = false;
   bool has_visibilitychange_handler_ = false;
 
+  // Tracks whether any navigate event handlers for the Navigation API are
+  // registered in the current document. This is useful for tracking whether
+  // the document might be allowed to cancel certain history navigations.
+  bool has_navigate_event_handler_ = false;
+
   absl::optional<RenderFrameAudioOutputStreamFactory>
       audio_service_audio_output_stream_factory_;
   absl::optional<RenderFrameAudioInputStreamFactory>
@@ -4435,9 +4442,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //    will be used.  This will match the opaque origin of such a frame.
   net::IsolationInfo isolation_info_ = net::IsolationInfo::CreateTransient();
 
-  // The factory to load resources from the WebBundle source bound to
-  // this file.
-  std::unique_ptr<WebBundleHandle> web_bundle_handle_;
   // Subresource Web Bundle information that are kept around across
   // same-document navigations.
   std::unique_ptr<SubresourceWebBundleNavigationInfo>

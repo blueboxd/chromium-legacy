@@ -64,7 +64,7 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
 
       for (size_t plane = 0; plane < pixmap->GetNumberOfPlanes(); ++plane) {
         void* data = client_pixmap->GetMemoryAddress(plane);
-        GLImageTestSupport::SetBufferDataToColor(
+        GLTestSupport::SetBufferDataToColor(
             size.width(), size.height(), pixmap->GetDmaBufPitch(plane), plane,
             pixmap->GetBufferFormat(), color, static_cast<uint8_t*>(data));
       }
@@ -75,11 +75,6 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
         gl::GLImageNativePixmap::Create(size, format, std::move(pixmap));
     EXPECT_TRUE(image);
     return image;
-  }
-
-  bool BindImageToTarget(GLImage* image, unsigned target) {
-    static_cast<gl::GLImageNativePixmap*>(image)->BindTexImage(target);
-    return true;
   }
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }

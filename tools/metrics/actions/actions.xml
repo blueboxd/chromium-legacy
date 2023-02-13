@@ -18070,15 +18070,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="MobileBookmarkManagerMultipleEntriesOpened">
-  <owner>wylieb@chromium.org</owner>
-  <owner>chrome-collections@google.com</owner>
-  <description>
-    Recorded when multi-selection is opened from the bookmark manager. Possible
-    that the selection is only 1 bookmark.
-  </description>
-</action>
-
 <action name="MobileBookmarkManagerOpen">
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -25502,7 +25493,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Overscroll_Cancelled.Reload">
-  <owner>mohsen@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <description>
     When vertical overscroll corresponding to the RELOAD navigation is cancelled
     - either because the user performed an interfering action such as pressing a
@@ -25526,7 +25517,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Overscroll_Navigated.Reload">
-  <owner>mohsen@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <description>
     When vertical overscroll initiates a RELOAD navigation in the browser.
   </description>
@@ -33813,14 +33804,26 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SystemBack">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back **after** Native is initialized. This action
+    is mutually exclusive with SystemBackBeforeNativeInitialized. Android only.
+  </description>
+</action>
+
+<action name="SystemBackBeforeNativeInitialized">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back **before** Native is initialized. This action
+    is mutually exclusive with SystemBack. Android only.
+  </description>
 </action>
 
 <action name="SystemBackBeforeUINativeInitialized">
   <owner>lazzzis@google.com</owner>
   <description>
-    The user triggered system back before UI with Native is initialized.
+    The user triggered system back **before UI** with Native is initialized.
+    Recorded on Android only.
   </description>
 </action>
 
@@ -33833,6 +33836,14 @@ should be able to be added at any place in this file.
   <description>
     The user navigated backward in the tab's history using the system back
     button.
+  </description>
+</action>
+
+<action name="SystemBackOnActivityFinishingOrDestroyed">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back when activity is finishing or has been
+    destroyed. Android only.
   </description>
 </action>
 

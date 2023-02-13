@@ -21,7 +21,6 @@ import './account_manager.js';
 import './fingerprint_list.js';
 import './lock_screen.js';
 import './lock_screen_password_prompt_dialog.js';
-import './users_page.js';
 import './os_sync_controls.js';
 import './os_signout_dialog.js';
 import './os_sync_page.js';
@@ -40,7 +39,7 @@ import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '../../people_page/profil
 import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
-import {OSPageVisibility} from '../os_page_visibility.js';
+import {OsPageVisibility} from '../os_page_visibility.js';
 import {routes} from '../os_route.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
@@ -164,11 +163,11 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kSetUpParentalControls,
 
           // Perform Sync page deep links here since it's a shared page.
@@ -183,7 +182,7 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
   }
 
   syncStatus: SyncStatus;
-  pageVisibility: OSPageVisibility;
+  pageVisibility: OsPageVisibility;
   private authToken_: chrome.quickUnlockPrivate.TokenInfo|undefined;
   private profileIconUrl_: string;
   private profileName_: string;

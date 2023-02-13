@@ -341,7 +341,6 @@
     },
 
     'chromium.fyi': {
-      'CFI Linux CF (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_recover_release_static_reclient',
       'Comparison Android (reclient)': {
         'goma': 'android_webview_google_debug_static_bot_arm64',
         'reclient': 'android_webview_google_debug_static_bot_arm64_reclient',
@@ -380,7 +379,6 @@
       },
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux Builder (reclient compare)': 'gpu_tests_release_bot_reclient',
-      'Linux CFI (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
       'Linux Viz': 'release_trybot_minimal_symbols_reclient',
       # TODO(crbug.com/1260232): remove this after the migration.
       'Mac Builder (reclient compare)': 'gpu_tests_release_bot_minimal_symbols_reclient',
@@ -455,8 +453,9 @@
       'mac-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'mac10.15-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
       'mac11-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
-      'mac12-arm64-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac12-arm64-wpt-content-shell-fyi-rel': 'mac_arm64_release_bot_reclient',
       'mac12-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'mac13-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
       'win-annotator-rel': 'release_bot_reclient',
       'win-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
       'win-backuprefptr-x86-fyi-rel': 'release_trybot_backuprefptr_x86_reclient',
@@ -709,6 +708,10 @@
       'Win x64 Builder reclient test': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder reclient test untrusted': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Cross Builder (reclient compare)': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      'Windows Cross deterministic': {
+        'local': 'release_bot_x86_minimal_symbols_local_build',
+        'reclient': 'release_bot_x86_minimal_symbols_reclient',
+      },
       'ios-simulator reclient scandeps test': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator reclient scandeps test untrusted': 'ios_simulator_debug_static_bot_xctest_reclient',
       'ios-simulator reclient staging': 'ios_simulator_debug_static_bot_xctest_reclient',
@@ -743,6 +746,8 @@
     },
 
     'chromium.updater': {
+      'linux-updater-builder-dbg': 'updater_debug_bot_reclient',
+      'linux-updater-builder-rel': 'updater_release_bot_reclient',
       'mac-updater-builder-arm64-dbg': 'updater_debug_bot_arm64_reclient',
       'mac-updater-builder-arm64-rel': 'updater_release_bot_arm64_reclient',
       'mac-updater-builder-asan-dbg': 'updater_debug_bot_asan_reclient',
@@ -763,24 +768,24 @@
     },
 
     'chromium.webrtc': {
-      'WebRTC Chromium Android Builder': 'android_debug_static_bot_arm64',
-      'WebRTC Chromium Linux Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium Mac Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium Win Builder': 'release_bot_minimal_symbols_no_com_init_hooks_with_codecs',
+      'WebRTC Chromium Android Builder': 'android_debug_static_bot_arm64_reclient',
+      'WebRTC Chromium Linux Builder': 'gpu_tests_release_bot_reclient',
+      'WebRTC Chromium Mac Builder': 'gpu_tests_release_bot_reclient',
+      'WebRTC Chromium Win Builder': 'release_bot_minimal_symbols_no_com_init_hooks_with_codecs_reclient',
     },
 
     'chromium.webrtc.fyi': {
-      'WebRTC Chromium FYI Android Builder': 'android_release_bot_minimal_symbols',
-      'WebRTC Chromium FYI Android Builder (dbg)': 'android_debug_static_bot',
-      'WebRTC Chromium FYI Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64',
-      'WebRTC Chromium FYI Linux Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium FYI Linux Builder (dbg)': 'debug_bot',
-      'WebRTC Chromium FYI Mac Builder': 'gpu_tests_release_bot',
-      'WebRTC Chromium FYI Mac Builder (dbg)': 'debug_bot',
-      'WebRTC Chromium FYI Win Builder': 'release_bot_minimal_symbols_no_com_init_hooks_with_codecs',
-      'WebRTC Chromium FYI Win Builder (dbg)': 'debug_bot_no_com_init_hooks_with_codecs',
-      'WebRTC Chromium FYI ios-device': 'ios_device_release_compile_only',
-      'WebRTC Chromium FYI ios-simulator': 'ios_simulator_debug_static_bot_xctest',
+      'WebRTC Chromium FYI Android Builder': 'android_release_bot_minimal_symbols_reclient',
+      'WebRTC Chromium FYI Android Builder (dbg)': 'android_debug_static_bot_reclient',
+      'WebRTC Chromium FYI Android Builder ARM64 (dbg)': 'android_debug_static_bot_arm64_reclient',
+      'WebRTC Chromium FYI Linux Builder': 'gpu_tests_release_bot_reclient',
+      'WebRTC Chromium FYI Linux Builder (dbg)': 'debug_bot_reclient',
+      'WebRTC Chromium FYI Mac Builder': 'gpu_tests_release_bot_reclient',
+      'WebRTC Chromium FYI Mac Builder (dbg)': 'debug_bot_reclient',
+      'WebRTC Chromium FYI Win Builder': 'release_bot_minimal_symbols_no_com_init_hooks_with_codecs_reclient',
+      'WebRTC Chromium FYI Win Builder (dbg)': 'debug_bot_no_com_init_hooks_with_codecs_reclient',
+      'WebRTC Chromium FYI ios-device': 'ios_device_release_compile_only_reclient',
+      'WebRTC Chromium FYI ios-simulator': 'ios_simulator_debug_static_bot_xctest_reclient',
     },
 
     'chromium.win': {
@@ -1354,6 +1359,8 @@
     },
 
     'tryserver.chromium.updater': {
+       'linux-updater-try-builder-dbg': 'updater_debug_bot_reclient',
+       'linux-updater-try-builder-rel': 'updater_release_trybot_reclient',
        'mac-updater-try-builder-dbg': 'updater_debug_bot_reclient',
        'mac-updater-try-builder-rel': 'updater_release_trybot_reclient',
        'win-updater-try-builder-dbg': 'updater_debug_bot_reclient',
@@ -1554,12 +1561,12 @@
       'android', 'debug_bot_reclient', 'android_external', 'android_fastbuild',
     ],
 
-    'android_debug_static_bot': [
-      'android', 'debug_static_bot',
+    'android_debug_static_bot_arm64_reclient': [
+      'android', 'debug_static_bot_reclient', 'arm64',
     ],
 
-    'android_debug_static_bot_arm64': [
-      'android', 'debug_static_bot', 'arm64',
+    'android_debug_static_bot_reclient': [
+      'android', 'debug_static_bot_reclient',
     ],
 
     'android_debug_static_bot_x64_reclient_webview_trichrome_webview_shell': [
@@ -1637,6 +1644,10 @@
     'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient': [
       'android', 'release_bot_reclient', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_monochrome',
+    ],
+
+    'android_release_bot_minimal_symbols_reclient': [
+      'android', 'release_bot_reclient', 'minimal_symbols', 'strip_debug_info',
     ],
 
     'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient': [
@@ -2527,8 +2538,8 @@
       'debug_bot_local_build',
     ],
 
-    'debug_bot_no_com_init_hooks_with_codecs': [
-      'debug_bot', 'no_com_init_hooks', 'chrome_with_codecs'
+    'debug_bot_no_com_init_hooks_with_codecs_reclient': [
+      'debug_bot_reclient', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
     'debug_bot_reclient': [
@@ -3531,8 +3542,8 @@
       'release_bot', 'minimal_symbols', 'no_clang', 'no_goma',
     ],
 
-    'release_bot_minimal_symbols_no_com_init_hooks_with_codecs': [
-      'release_bot', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
+    'release_bot_minimal_symbols_no_com_init_hooks_with_codecs_reclient': [
+      'release_bot_reclient', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
     'release_bot_minimal_symbols_reclient': [
@@ -3549,6 +3560,10 @@
 
     'release_bot_x86_minimal_symbols': [
       'release_bot', 'x86', 'minimal_symbols',
+    ],
+
+    'release_bot_x86_minimal_symbols_local_build': [
+      'release_bot_local_build', 'x86', 'minimal_symbols',
     ],
 
     'release_bot_x86_minimal_symbols_reclient': [
@@ -3692,35 +3707,35 @@
     ],
 
     'updater_debug_bot_arm64_reclient': [
-      'arm64', 'updater_on_win_mac', 'debug_static_bot_reclient',
+      'arm64', 'updater', 'debug_static_bot_reclient',
     ],
 
     'updater_debug_bot_asan_reclient': [
-      'updater_on_win_mac', 'asan', 'debug_static_bot_reclient',
+      'updater', 'asan', 'debug_static_bot_reclient',
     ],
 
     'updater_debug_bot_reclient': [
-      'updater_on_win_mac', 'debug_static_bot_reclient',
+      'updater', 'debug_static_bot_reclient',
     ],
 
     'updater_debug_bot_x86_reclient': [
-      'updater_on_win_mac', 'debug_static_bot_reclient', 'x86', 'no_symbols',
+      'updater', 'debug_static_bot_reclient', 'x86', 'no_symbols',
     ],
 
     'updater_release_bot_arm64_reclient': [
-      'arm64', 'updater_on_win_mac', 'release_bot_reclient',
+      'arm64', 'updater', 'release_bot_reclient',
     ],
 
     'updater_release_bot_reclient': [
-      'updater_on_win_mac', 'release_bot_reclient',
+      'updater', 'release_bot_reclient',
     ],
 
     'updater_release_bot_x86_reclient': [
-      'updater_on_win_mac', 'release_bot_reclient', 'x86',
+      'updater', 'release_bot_reclient', 'x86',
     ],
 
     'updater_release_trybot_reclient': [
-      'updater_on_win_mac', 'release_trybot_reclient',
+      'updater', 'release_trybot_reclient',
     ],
 
     'v8_future_debug_bot_reclient': [
@@ -4591,6 +4606,10 @@
       'mixins': ['release', 'static', 'reclient', 'chrome_with_codecs'],
     },
 
+    'release_bot_local_build': {
+      'mixins': ['release', 'static'],
+    },
+
     'release_bot_reclient': {
       'mixins': ['release', 'static', 'reclient'],
     },
@@ -4722,7 +4741,7 @@
       'gn_args': 'is_ubsan_vptr=true',
     },
 
-    'updater_on_win_mac': {
+    'updater': {
       'gn_args': 'enable_updater=true',
     },
 

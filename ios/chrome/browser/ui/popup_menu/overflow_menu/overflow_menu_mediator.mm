@@ -213,6 +213,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 @property(nonatomic, strong) OverflowMenuDestination* downloadsDestination;
 @property(nonatomic, strong) OverflowMenuDestination* historyDestination;
 @property(nonatomic, strong) OverflowMenuDestination* passwordsDestination;
+@property(nonatomic, strong)
+    OverflowMenuDestination* priceNotificationsDestination;
 @property(nonatomic, strong) OverflowMenuDestination* readingListDestination;
 @property(nonatomic, strong) OverflowMenuDestination* recentTabsDestination;
 @property(nonatomic, strong) OverflowMenuDestination* settingsDestination;
@@ -239,7 +241,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 @property(nonatomic, strong) OverflowMenuAction* addBookmarkAction;
 @property(nonatomic, strong) OverflowMenuAction* editBookmarkAction;
 @property(nonatomic, strong) OverflowMenuAction* readLaterAction;
-@property(nonatomic, strong) OverflowMenuAction* openPriceNotificationsAction;
 @property(nonatomic, strong) OverflowMenuAction* translateAction;
 @property(nonatomic, strong) OverflowMenuAction* requestDesktopAction;
 @property(nonatomic, strong) OverflowMenuAction* requestMobileAction;
@@ -293,7 +294,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
   self.followBrowserAgent = nullptr;
 
-  [self.destinationUsageHistory disconnect];
+  [self.destinationUsageHistory stop];
   self.destinationUsageHistory = nil;
 
   self.webState = nullptr;
@@ -394,8 +395,11 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   _localStatePrefs = localStatePrefs;
 
   if (!self.isIncognito) {
-    _destinationUsageHistory =
+    self.destinationUsageHistory =
         [[DestinationUsageHistory alloc] initWithPrefService:localStatePrefs];
+    self.destinationUsageHistory.visibleDestinationsCount =
+        self.visibleDestinationsCount;
+    [self.destinationUsageHistory start];
   }
 }
 
@@ -528,6 +532,33 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                       accessibilityID:kToolsMenuPasswordsId
                               handler:^{
                                 [weakSelf openPasswords];
+                              }];
+  }
+
+  if (UseSymbols()) {
+    // Price Tracking destination.
+    self.priceNotificationsDestination =
+        [self createOverflowMenuDestination:
+                  IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE
+                                destination:overflow_menu::Destination::
+                                                PriceNotifications
+                                 symbolName:kDownTrendSymbol
+                               systemSymbol:NO
+                            accessibilityID:kToolsMenuPriceNotifications
+                                    handler:^{
+                                      [weakSelf openPriceNotifications];
+                                    }];
+  } else {
+    self.priceNotificationsDestination = [self
+        createOverflowMenuDestination:
+            IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TITLE
+                          destination:overflow_menu::Destination::
+                                          PriceNotifications
+                            imageName:
+                                @"overflow_menu_destination_price_notifications"
+                      accessibilityID:kToolsMenuPriceNotifications
+                              handler:^{
+                                [weakSelf openPriceNotifications];
                               }];
   }
 
@@ -734,13 +765,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
           [weakSelf addToReadingList];
         });
 
-    self.openPriceNotificationsAction = CreateOverflowMenuAction(
-        IDS_IOS_PRICE_NOTIFICATIONS_OVERFLOW_MENU_TITLE, kDownTrendSymbol,
-        /*systemSymbol=*/YES, /*monochromeSymbol=*/NO,
-        kToolsMenuPriceNotifications, ^{
-          [weakSelf openPriceNotifications];
-        });
-
     self.translateAction = CreateOverflowMenuAction(
         IDS_IOS_TOOLS_MENU_TRANSLATE, kTranslateSymbol,
         /*systemSymbol=*/NO, /*monochromeSymbol=*/NO, kToolsMenuTranslateId, ^{
@@ -861,13 +885,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
           [weakSelf addToReadingList];
         });
 
-    self.openPriceNotificationsAction = CreateOverflowMenuAction(
-        IDS_IOS_PRICE_NOTIFICATIONS_OVERFLOW_MENU_TITLE,
-        @"overflow_menu_action_price_notifications",
-        kToolsMenuPriceNotifications, ^{
-          [weakSelf openPriceNotifications];
-        });
-
     self.translateAction = CreateOverflowMenuAction(
         IDS_IOS_TOOLS_MENU_TRANSLATE, @"overflow_menu_action_translate",
         kToolsMenuTranslateId, ^{
@@ -967,9 +984,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     overflow_menu::RecordUmaActionForDestination(destination);
 
     if (IsSmartSortingNewOverflowMenuEnabled()) {
-      [weakSelf.destinationUsageHistory
-             trackDestinationClick:destination
-          numAboveFoldDestinations:weakSelf.numAboveFoldDestinations];
+      [weakSelf.destinationUsageHistory recordClickForDestination:destination];
     }
 
     handler();
@@ -983,8 +998,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                             accessibilityIdentifier:accessibilityID
                                  enterpriseDisabled:NO
                                             handler:handlerWithMetrics];
-  result.destinationName = base::SysUTF8ToNSString(
-      overflow_menu::StringNameForDestination(destination));
+
+  result.destination = static_cast<NSInteger>(destination);
+
   return result;
 }
 // Creates an OverflowMenuDestination to be displayed in the destinations
@@ -1004,9 +1020,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     overflow_menu::RecordUmaActionForDestination(destination);
 
     if (IsSmartSortingNewOverflowMenuEnabled()) {
-      [weakSelf.destinationUsageHistory
-             trackDestinationClick:destination
-          numAboveFoldDestinations:weakSelf.numAboveFoldDestinations];
+      [weakSelf.destinationUsageHistory recordClickForDestination:destination];
     }
 
     handler();
@@ -1018,8 +1032,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
       accessibilityIdentifier:accessibilityID
            enterpriseDisabled:NO
                       handler:handlerWithMetrics];
-  result.destinationName = base::SysUTF8ToNSString(
-      overflow_menu::StringNameForDestination(destination));
+
+  result.destination = static_cast<NSInteger>(destination);
+
   return result;
 }
 
@@ -1033,7 +1048,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
       accessibilityIdentifier:@"Spotlight Debugger"
            enterpriseDisabled:NO
                       handler:handler];
-  result.destinationName = @"Spotlight Debugger";
+  result.destination =
+      static_cast<NSInteger>(overflow_menu::Destination::SpotlightDebugger);
   return result;
 }
 
@@ -1120,14 +1136,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   return newDestinations;
 }
 
-// Make sure the model to match the current page state.
-- (void)updateModel {
-  // If the model hasn't been created, there's no need to update.
-  if (!_overflowMenuModel) {
-    return;
-  }
-
-  NSArray<OverflowMenuDestination*>* baseDestinations = @[
+// Creates an NSArray containing the destinations contained in the overflow menu
+// carousel.
+- (NSArray<OverflowMenuDestination*>*)baseDestinations {
+  NSMutableArray* baseDestinations = [[NSMutableArray alloc] initWithArray:@[
     self.bookmarksDestination,
     self.historyDestination,
     self.readingListDestination,
@@ -1136,11 +1148,30 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     self.recentTabsDestination,
     self.siteInfoDestination,
     self.settingsDestination,
-  ];
+  ]];
+
+  if (self.webState &&
+      IsPriceTrackingEnabled(ChromeBrowserState::FromBrowserState(
+          self.webState->GetBrowserState())) &&
+      IsSmartSortingPriceTrackingDestinationEnabled()) {
+    [baseDestinations addObject:self.priceNotificationsDestination];
+  }
+
+  return baseDestinations;
+}
+
+// Make sure the model to match the current page state.
+- (void)updateModel {
+  // If the model hasn't been created, there's no need to update.
+  if (!_overflowMenuModel) {
+    return;
+  }
+
+  NSArray<OverflowMenuDestination*>* baseDestinations = [self baseDestinations];
 
   if (self.destinationUsageHistory && IsSmartSortingNewOverflowMenuEnabled()) {
     baseDestinations = [self.destinationUsageHistory
-        generateDestinationsList:baseDestinations];
+        sortedDestinationsFromCarouselDestinations:baseDestinations];
   }
 
   // What's New defies the smart sorting rules of the overflow menu to appear
@@ -1229,12 +1260,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     (pageIsBookmarked) ? self.editBookmarkAction : self.addBookmarkAction,
     self.readLaterAction
   ]];
-
-  if (self.webState &&
-      IsPriceTrackingEnabled(ChromeBrowserState::FromBrowserState(
-          self.webState->GetBrowserState()))) {
-    [pageActions addObject:self.openPriceNotificationsAction];
-  }
 
   // Clear Browsing Data Action is not relevant in incognito, so don't show it.
   // History is also hidden for similar reasons.

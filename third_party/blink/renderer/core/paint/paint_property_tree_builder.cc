@@ -250,7 +250,7 @@ class FragmentPaintPropertyTreeBuilder {
 
   void UpdateIndividualTransform(
       bool (*needs_property)(const LayoutObject&, CompositingReasons),
-      void (*compute_matrix)(const LayoutBox* box,
+      void (*compute_matrix)(const ComputedStyle& style,
                              const PhysicalSize& size,
                              gfx::Transform& matrix),
       CompositingReasons compositing_reasons_for_property,
@@ -535,7 +535,9 @@ static bool NeedsPaintOffsetTranslation(
     // their containing blocks. TODO(crbug.com/780242): This can be avoided if
     // we have fully correct paint property tree states for floating objects
     // and column spans.
-    if (box_model.IsLayoutBlock() || object.IsLayoutReplaced()) {
+    if (box_model.IsLayoutBlock() || object.IsLayoutReplaced() ||
+        (direct_compositing_reasons &
+         CompositingReason::kViewTransitionElement)) {
       const PaintLayer* layer =
           base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)
               ? painting_layer
@@ -1082,11 +1084,11 @@ static bool UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
 static TransformPaintPropertyNode::TransformAndOrigin TransformAndOriginState(
     const LayoutBox& box,
     const PhysicalSize& size,
-    void (*compute_matrix)(const LayoutBox* box,
+    void (*compute_matrix)(const ComputedStyle& style,
                            const PhysicalSize& size,
                            gfx::Transform& matrix)) {
   gfx::Transform matrix;
-  compute_matrix(&box, size, matrix);
+  compute_matrix(box.StyleRef(), size, matrix);
   return {matrix, GetTransformOrigin(box, size)};
 }
 
@@ -1099,7 +1101,7 @@ static bool IsLayoutShiftRootTransform(
 
 void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
     bool (*needs_property)(const LayoutObject&, CompositingReasons),
-    void (*compute_matrix)(const LayoutBox* box,
+    void (*compute_matrix)(const ComputedStyle& style,
                            const PhysicalSize& size,
                            gfx::Transform& matrix),
     CompositingReasons compositing_reasons_for_property,
@@ -1222,9 +1224,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
 void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
   UpdateIndividualTransform(
       &NeedsTranslate,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         if (style.Translate())
           style.Translate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1239,9 +1240,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
 void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
   UpdateIndividualTransform(
       &NeedsRotate,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         if (style.Rotate())
           style.Rotate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1255,9 +1255,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
 void FragmentPaintPropertyTreeBuilder::UpdateScale() {
   UpdateIndividualTransform(
       &NeedsScale,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         if (style.Scale())
           style.Scale()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1271,11 +1270,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateScale() {
 void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
   UpdateIndividualTransform(
       &NeedsOffset,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, box, size.ToLayoutSize(),
+            matrix, size.ToLayoutSize(),
             ComputedStyle::kExcludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kIncludeMotionPath,
@@ -1293,11 +1291,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   UpdateIndividualTransform(
       &NeedsTransform,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, box, size.ToLayoutSize(),
+            matrix, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,
@@ -4235,11 +4232,10 @@ void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
   auto* transform = properties->Transform();
   auto transform_and_origin = TransformAndOriginState(
       box, size,
-      [](const LayoutBox* box, const PhysicalSize& size,
+      [](const ComputedStyle& style, const PhysicalSize& size,
          gfx::Transform& matrix) {
-        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, box, size.ToLayoutSize(),
+            matrix, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,

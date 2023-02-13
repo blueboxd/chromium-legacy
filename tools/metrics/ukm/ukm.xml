@@ -7519,8 +7519,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Graphics.Smoothness.EventLatency">
-  <owner>mohsen@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Tracks the duration of stages in the rendering pipeline when processing a
     single frame in response to an input event. To meet UKM goals for data
@@ -8347,7 +8346,7 @@ be describing additional metrics about the same event.
 
 <event name="Graphics.Smoothness.Latency">
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>schenney@chromium.org</owner>
   <summary>
     Tracks the duration of stages in the rendering pipeline while processing a
@@ -8871,7 +8870,7 @@ be describing additional metrics about the same event.
 <event name="Graphics.Smoothness.NormalizedPercentDroppedFrames"
     singular="True">
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Measures various normalizations for the smoothness metric. The metric is
     measured by counting dropped frames, and various normalization strategies
@@ -9326,8 +9325,11 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Graphics.Smoothness.PercentDroppedFrames">
+  <obsolete>
+    Deprecated 02/2023.
+  </obsolete>
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Tracks the percent of dropped frames for a particular sequence of frames
     such as during scroll or animation. PercentDroppedFrames is measured by
@@ -9656,7 +9658,7 @@ be describing additional metrics about the same event.
     Deprecated 02/2020.
   </obsolete>
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     As of 2020-02-12, this is deprecated in favor of
     Graphics.Smoothness.PercentDroppedFrames.
@@ -17001,6 +17003,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PerformanceManager.PageResourceUsage">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Metrics detailing the estimated resources used by pages. The resources of a
+    renderer process are allocated to all pages hosted in that process using the
+    algorithm in performance_manager::ProcessMetricsDecorator. An event is
+    collected for each open page every 5 minutes.
+  </summary>
+  <metric name="PrivateFootprintEstimate">
+    <summary>
+      The estimated private footprint of the page, in kilobytes.
+    </summary>
+  </metric>
+  <metric name="ResidentSetSizeEstimate">
+    <summary>
+      The estimated resident set size of the page, in kilobytes.
+    </summary>
+  </metric>
+</event>
+
 <event name="PerformanceManager.PageTimelineState">
   <owner>anthonyvd@chromium.org</owner>
   <owner>spvw@chromium.org</owner>
@@ -20051,6 +20074,20 @@ be describing additional metrics about the same event.
       Whether the user selected a device, an app or nothing (i.e. dismissal) in
       the user interface. For some entry points this might always be the same
       value (e.g. right clicks always select devices).
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.AddToCartDetection">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Metrics related to DOM-based AddToCart button detection in ChromeCart.
+  </summary>
+  <metric name="HeuristicsExecutionTime">
+    <summary>
+      Logged when DOM-based AddToCart button detection heuristic is executed and
+      records the execution time. This is expressed in microseconds.
     </summary>
   </metric>
 </event>

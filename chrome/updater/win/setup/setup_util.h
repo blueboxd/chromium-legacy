@@ -13,15 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/check.h"
-#include "base/check_op.h"
-#include "base/functional/callback_helpers.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_types.h"
 
 class WorkItemList;
@@ -38,6 +29,8 @@ enum class UpdaterScope;
 bool RegisterWakeTask(const base::CommandLine& run_command, UpdaterScope scope);
 void UnregisterWakeTask(UpdaterScope scope);
 
+std::wstring GetProgIdForClsid(REFCLSID clsid);
+std::wstring GetComProgIdRegistryPath(const std::wstring& progid);
 std::wstring GetComServerClsidRegistryPath(REFCLSID clsid);
 std::wstring GetComServerAppidRegistryPath(REFGUID appid);
 std::wstring GetComIidRegistryPath(REFIID iid);
@@ -87,19 +80,6 @@ std::vector<T> JoinVectors(const std::vector<T>& vector1,
   joined_vector.insert(joined_vector.end(), vector2.begin(), vector2.end());
   return joined_vector;
 }
-
-// Adds work items to `list` to install the interface `iid`.
-void AddInstallComInterfaceWorkItems(HKEY root,
-                                     const base::FilePath& typelib_path,
-                                     GUID iid,
-                                     WorkItemList* list);
-
-// Adds work items to `list` to install the server `iid`.
-void AddInstallServerWorkItems(HKEY root,
-                               CLSID iid,
-                               const base::FilePath& executable_path,
-                               bool internal_service,
-                               WorkItemList* list);
 
 // Adds work items to register the per-user COM server.
 void AddComServerWorkItems(const base::FilePath& com_server_path,

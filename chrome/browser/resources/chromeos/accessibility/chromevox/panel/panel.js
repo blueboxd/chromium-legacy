@@ -320,13 +320,14 @@ export class Panel extends PanelInterface {
 
       // Build the top-level menus.
       const searchMenu = this.addSearchMenu_('panel_search_menu');
-      const jumpMenu = this.addMenu_('panel_menu_jump');
-      const speechMenu = this.addMenu_('panel_menu_speech');
-      const touchMenu =
-          touchScreen ? this.addMenu_('panel_menu_touchgestures') : null;
-      const tabsMenu = this.addMenu_('panel_menu_tabs');
-      const chromevoxMenu = this.addMenu_('panel_menu_chromevox');
-      const actionsMenu = this.addMenu_('panel_menu_actions');
+      const jumpMenu = this.menuManager_.addMenu('panel_menu_jump');
+      const speechMenu = this.menuManager_.addMenu('panel_menu_speech');
+      const touchMenu = touchScreen ?
+          this.menuManager_.addMenu('panel_menu_touchgestures') :
+          null;
+      const tabsMenu = this.menuManager_.addMenu('panel_menu_tabs');
+      const chromevoxMenu = this.menuManager_.addMenu('panel_menu_chromevox');
+      const actionsMenu = this.menuManager_.addMenu('panel_menu_actions');
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
@@ -543,27 +544,6 @@ export class Panel extends PanelInterface {
   }
 
   /**
-   * Create a new menu with the given name and add it to the menu bar.
-   * @param {string} menuMsg The msg id of the new menu to add.
-   * @return {!PanelMenu} The menu just created.
-   * @private
-   */
-  addMenu_(menuMsg) {
-    const menu = new PanelMenu(menuMsg);
-    $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener(
-        'mouseover',
-        () =>
-            this.menuManager_.activateMenu(menu, true /* activateFirstItem */),
-        false);
-    menu.menuBarItemElement.addEventListener(
-        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event), false);
-    $('menus_background').appendChild(menu.menuContainerElement);
-    this.menuManager_.menus.push(menu);
-    return menu;
-  }
-
-  /**
    * Updates the content shown on the virtual braille display.
    * @param {*=} data The data sent through the PanelCommand.
    * @private
@@ -717,7 +697,8 @@ export class Panel extends PanelInterface {
         () =>
             this.menuManager_.activateMenu(menu, true /* activateFirstItem */));
     menu.menuBarItemElement.addEventListener(
-        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event));
+        'mouseup',
+        event => this.menuManager_.onMouseUpOnMenuTitle(menu, event));
     $('menus_background').appendChild(menu.menuContainerElement);
     this.menuManager_.menus.push(menu);
     this.nodeMenuDictionary_[menuData.menuId] = menu;
@@ -759,8 +740,8 @@ export class Panel extends PanelInterface {
         false);
     this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
         'mouseup',
-        event =>
-            this.onMouseUpOnMenuTitle_(this.menuManager_.searchMenu, event),
+        event => this.menuManager_.onMouseUpOnMenuTitle(
+            this.menuManager_.searchMenu, event),
         false);
     $('menus_background')
         .appendChild(this.menuManager_.searchMenu.menuContainerElement);
@@ -877,19 +858,6 @@ export class Panel extends PanelInterface {
           this.menuManager_.activeMenu.getCallbackForElement(target);
     }
     this.closeMenusAndRestoreFocus();
-  }
-
-  /**
-   * Activate a menu whose title has been clicked. Stop event propagation at
-   * this point so we don't close the ChromeVox menus and restore focus.
-   * @param {PanelMenu} menu The menu we would like to activate.
-   * @param {Event} mouseUpEvent The mouseup event.
-   * @private
-   */
-  onMouseUpOnMenuTitle_(menu, mouseUpEvent) {
-    this.menuManager_.activateMenu(menu, true /* activateFirstItem */);
-    mouseUpEvent.preventDefault();
-    mouseUpEvent.stopPropagation();
   }
 
   /**
@@ -1256,13 +1224,13 @@ export class Panel extends PanelInterface {
   }
 
   /** @private */
-  onPanLeft_() {
-    chrome.extension.getBackgroundPage()['ChromeVox'].braille.panLeft();
+  async onPanLeft_() {
+    await BackgroundBridge.Braille.panLeft();
   }
 
   /** @private */
-  onPanRight_() {
-    chrome.extension.getBackgroundPage()['ChromeVox'].braille.panRight();
+  async onPanRight_() {
+    await BackgroundBridge.Braille.panRight();
   }
 
   /** @private */

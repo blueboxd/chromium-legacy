@@ -2344,6 +2344,9 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE" desc="Accessibility label used for an unactivated cellular network in quick settings network list that opens the activation flow when clicked.">
         Click to activate <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_ACTIVATE_AFTER_SETUP" desc="Accessibility label used for an unactivated cellular network in quick settings network list that informs the user a network can only be activated after device setup.">
+        Activate after device setup <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_LABEL_SUBTEXT" desc="Accessibility label used for a network in quick settings network list that has a subtext message (e.g. when offline signin is required).">
         <ph name="NETWORK_NAME">$1<ex>CaptivePortalNetwork</ex></ph>, <ph name="SUBTEXT">$2<ex>Sign in to network</ex></ph>
       </message>
@@ -2400,6 +2403,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=29]">
         Click to activate
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_ACTIVATE_AFTER_DEVICE_SETUP" desc="The label used in quick settings to indicate an unactivated cellular network that can only be activated after the device is fully setup. [CHAR_LIMIT=29]">
+        Activate after device setup
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_UNAVAILABLE_SIM_NETWORK" desc="Label used in quick settings to indicate a SIM network that is not available to be setup. [CHAR_LIMIT=29]">
         Not activated. Contact your carrier.
@@ -3315,9 +3321,6 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_ROTATE_SCREEN" translateable="false" desc="Label for accelerator action - Rotate window 90 degrees clockwise.">
         Rotate window 90 degrees clockwise
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_ROTATE_WINDOW" translateable="false" desc="Label for accelerator action - Rotate window.">
-        Rotate window
-      </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_SCALE_UI_DOWN" translateable="false" desc="Label for accelerator action - Zoom in on screen.">
         Zoom in on screen
       </message>
@@ -3411,17 +3414,11 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MAXIMIZED" translateable="false" desc="Label for accelerator action - Maximize window.">
         Maximize window
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MESSAGE_CENTER_BUBBLE" translateable="false" desc="Label for accelerator action - See notifications.">
-        See notifications
-      </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MIRROR_MODE" translateable="false" desc="Label for accelerator action - Mirror monitors.">
         Mirror monitors
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_OVERVIEW" translateable="false" desc="Label for accelerator action - Overview mode.">
         Overview mode
-      </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_PROJECTOR_MARKER" translateable="false" desc="Label for accelerator action - Toggle projector marker.">
-        Toggle projector marker
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_RESIZE_LOCK_MENU" translateable="false" desc="Label for accelerator action - Toggle menu to resize lock mode.">
         Toggle menu to resize lock mode
@@ -3429,17 +3426,8 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_SPOKEN_FEEDBACK" translateable="false" desc="Label for accelerator action - Turn ChromeVox (spoken feedback) on or off.">
         Turn ChromeVox (spoken feedback) on or off
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_SYSTEM_TRAY_BUBBLE" translateable="false" desc="Label for accelerator action - Open system settings.">
-        Open system settings
-      </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_WIFI" translateable="false" desc="Label for accelerator action - Turn wifi on or off.">
         Turn wifi on or off
-      </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOUCH_HUD_CLEAR" translateable="false" desc="Label for accelerator action - Touch hud clear.">
-        Touch Hud clear
-      </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOUCH_HUD_MODE_CHANGE" translateable="false" desc="Label for accelerator action - Touch hud mode change.">
-        Touch hud mode change
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_UNPIN" translateable="false" desc="Label for accelerator action - Unpin an app.">
         Unpin an app
@@ -3447,8 +3435,8 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_VOLUME_DOWN" translateable="false" desc="Label for accelerator action - Turn volume down.">
         Turn volume down
       </message>
-      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_VOLUME_MUTE" translateable="false" desc="Label for accelerator action - Turn volume down.">
-        Turn volume up
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_VOLUME_MUTE" translateable="false" desc="Label for accelerator action - Mute sound.">
+        Mute sound
       </message>
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_VOLUME_UP" translateable="false" desc="Label for accelerator action - Turn volume up.">
         Turn volume up
@@ -3546,6 +3534,39 @@ Connect your device to power.
       <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS" translateable="false" desc="Label for accelerator action - Assign active window to all desks.">
         Assign active window to all desks
       </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_PRIVACY_SCREEN" translateable="false" desc="Label for accelerator action - Toggle privacy screen.">
+        Toggle privacy screen
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_KEYBOARD_BACKLIGHT" translateable="false" desc="Label for accelerator action - Toggle keyboard backlight.">
+        Toggle keyboard backlight
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MICROPHONE_MUTE" translateable="false" desc="Label for accelerator action - Mute or unmute microphone.">
+        Mute or unmute microphone
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_PLAY_MEDIA" translateable="false" desc="Label for accelerator action - Play media.">
+        Play media
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_PAUSE_MEDIA" translateable="false" desc="Label for accelerator action - Pause media.">
+        Pause media
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_PLAY_PAUSE_MEDIA" translateable="false" desc="Label for accelerator action - Play or pause media.">
+        Play or pause media
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_NEXT_TRACK" translateable="false" desc="Label for accelerator action - Go to next track.">
+        Go to next track
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_PREVIOUS_TRACK" translateable="false" desc="Label for accelerator action - Go to previous track.">
+        Go to previous track
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_FAST_FORWARD_MEDIA" translateable="false" desc="Label for accelerator action - Fast forward media.">
+        Fast forward media
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_SYSTEM_TRAY_BUBBLE" translateable="false" desc="Label for accelerator action - Open Quick Settings.">
+        Open Quick Settings
+      </message>
+      <message name="IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_MESSAGE_CENTER_BUBBLE" translateable="false" desc="Label for accelerator action - See notifications.">
+        See notifications
+      </message>
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLOSE_TAB" translateable="false" desc="Label for accelerator action - Close the current tab.">
         Close the current tab
       </message>
@@ -3575,9 +3596,6 @@ Connect your device to power.
       </message>
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLEAR_BROWSING_DATA" translateable="false" desc="Label for accelerator action - Clear browsing data.">
         Clear browsing data
-      </message>
-       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLOSE_FIND_OR_STOP" translateable="false" desc="Label for accelerator action - Close any open find window or stop the loading of your current page.">
-        Close any open find window or stop the loading of your current page
       </message>
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_BOOKMARKS" translateable="false" desc="Label for accelerator action - Focus on or Highlight the bookmarks bar (if shown).">
         Focus on or Highlight the bookmarks bar (if shown)
@@ -6215,6 +6233,14 @@ New install
       <message name="IDS_ASH_CURTAIN_DESCRIPTION" desc="Detailed description displayed to inform the user a remote admin has taken control of the ChromeOs device.">
         Your administrator has logged in to look into an issue. You can continue to use the device after the administrator gives the control back to you.
       </message>
-    </messages>
-  </release>
+
+      <!-- pagination view -->
+      <message name="IDS_ASH_PAGINATION_LEFT_ARROW_TOOLTIP" desc="The tooltip text used for pagination left arrow button." >
+        Previous page
+      </message>
+      <message name="IDS_ASH_PAGINATION_RIGHT_ARROW_TOOLTIP" desc="The tooltip text used for pagination right arrow button." >
+        Next page
+      </message>
+     </messages>
+    </release>
 </grit>

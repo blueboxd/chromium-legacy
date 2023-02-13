@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction.h"
@@ -37,6 +38,7 @@
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -73,6 +75,7 @@ InterestGroupAuctionReporter::WinningBidInfo::~WinningBidInfo() = default;
 InterestGroupAuctionReporter::InterestGroupAuctionReporter(
     InterestGroupManagerImpl* interest_group_manager,
     AuctionWorkletManager* auction_worklet_manager,
+    AttributionDataHostManager* attribution_data_host_manager,
     std::unique_ptr<blink::AuctionConfig> auction_config,
     const url::Origin& frame_origin,
     network::mojom::ClientSecurityStatePtr client_security_state,
@@ -85,7 +88,9 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
     std::vector<GURL> debug_loss_report_urls,
     base::flat_set<std::string> k_anon_keys_to_join,
     std::map<url::Origin, PrivateAggregationRequests>
-        private_aggregation_requests)
+        private_aggregation_requests_reserved,
+    std::map<std::string, PrivateAggregationRequests>
+        private_aggregation_requests_non_reserved)
     : interest_group_manager_(interest_group_manager),
       auction_worklet_manager_(auction_worklet_manager),
       auction_config_(std::move(auction_config)),
@@ -101,7 +106,13 @@ InterestGroupAuctionReporter::InterestGroupAuctionReporter(
       debug_win_report_urls_(std::move(debug_win_report_urls)),
       debug_loss_report_urls_(std::move(debug_loss_report_urls)),
       k_anon_keys_to_join_(std::move(k_anon_keys_to_join)),
-      private_aggregation_requests_(std::move(private_aggregation_requests)) {
+      private_aggregation_requests_reserved_(
+          std::move(private_aggregation_requests_reserved)),
+      private_aggregation_requests_non_reserved_(
+          std::move(private_aggregation_requests_non_reserved)),
+      fenced_frame_reporter_(
+          FencedFrameReporter::CreateForFledge(url_loader_factory_,
+                                               attribution_data_host_manager)) {
   DCHECK(interest_group_manager_);
   DCHECK(auction_worklet_manager_);
   DCHECK(url_loader_factory_);
@@ -117,7 +128,15 @@ void InterestGroupAuctionReporter::Start(base::OnceClosure callback) {
 
   DCHECK(!callback_);
 
+  // If there's no component seller, set the component seller mapping as empty,
+  // so it's available as soon as possible.
+  if (!component_seller_winning_bid_info_) {
+    fenced_frame_reporter_->OnUrlMappingReady(
+        blink::FencedFrame::ReportingDestination::kComponentSeller,
+        /*reporting_url_map=*/{});
+  }
   callback_ = std::move(callback);
+
   RequestSellerWorklet(&top_level_seller_winning_bid_info_,
                        /*top_seller_signals=*/absl::nullopt);
 }
@@ -242,41 +261,44 @@ void InterestGroupAuctionReporter::OnSellerReportResultComplete(
     // "reserved.loss" reports not being reported. Bid reject reason is not
     // meaningful thus not supported in reportResult(), so it is set to
     // absl::nullopt.
-    auction_worklet::mojom::PrivateAggregationRequestPtr converted_request =
+    absl::optional<PrivateAggregationRequestWithEventType> converted_request =
         FillInPrivateAggregationRequest(std::move(request), seller_info->bid,
                                         seller_info->highest_scoring_other_bid,
                                         /*reject_reason=*/absl::nullopt,
                                         /*is_winner=*/true);
-    if (converted_request) {
-      private_aggregation_requests_[seller].emplace_back(
-          std::move(converted_request));
+
+    // Only private aggregation requests with reserved event types are kept for
+    // seller.
+    if (converted_request.has_value() &&
+        !converted_request.value().event_type.has_value()) {
+      private_aggregation_requests_reserved_[seller].emplace_back(
+          std::move(converted_request.value().request));
     }
   }
 
-  if (!seller_ad_beacon_map.empty()) {
-    bool has_bad_beacon_map = false;
-    for (const auto& element : seller_ad_beacon_map) {
-      if (!IsEventLevelReportingUrlValid(element.second)) {
-        mojo::ReportBadMessage(base::StrCat(
-            {"Invalid seller beacon URL for '", element.first, "'"}));
-        // No need to skip rest of work on failure - all fields are validated
-        // and consumed independently, and it's not worth the complexity to make
-        // sure everything is dropped when a field is invalid.
-        has_bad_beacon_map = true;
-        break;
-      }
+  // This will be cleared if any beacons are invalid.
+  base::flat_map<std::string, GURL> validated_seller_ad_beacon_map =
+      seller_ad_beacon_map;
+  for (const auto& element : seller_ad_beacon_map) {
+    if (!IsEventLevelReportingUrlValid(element.second)) {
+      mojo::ReportBadMessage(base::StrCat(
+          {"Invalid seller beacon URL for '", element.first, "'"}));
+      // Drop the entire beacon map if part of it is invalid. No need to treat
+      // the rest of the data received from the worklet as invalid - all fields
+      // are validated and consumed independently, and it's not worth the
+      // complexity to make sure everything is dropped when a field is invalid.
+      validated_seller_ad_beacon_map.clear();
+      break;
     }
-    if (!has_bad_beacon_map) {
-      if (seller_info == &top_level_seller_winning_bid_info_) {
-        ad_beacon_map_
-            .metadata[blink::FencedFrame::ReportingDestination::kSeller] =
-            seller_ad_beacon_map;
-      } else {
-        ad_beacon_map_.metadata
-            [blink::FencedFrame::ReportingDestination::kComponentSeller] =
-            seller_ad_beacon_map;
-      }
-    }
+  }
+  if (seller_info == &top_level_seller_winning_bid_info_) {
+    fenced_frame_reporter_->OnUrlMappingReady(
+        blink::FencedFrame::ReportingDestination::kSeller,
+        std::move(validated_seller_ad_beacon_map));
+  } else {
+    fenced_frame_reporter_->OnUrlMappingReady(
+        blink::FencedFrame::ReportingDestination::kComponentSeller,
+        std::move(validated_seller_ad_beacon_map));
   }
 
   if (seller_report_url) {
@@ -448,36 +470,46 @@ void InterestGroupAuctionReporter::OnBidderReportWinComplete(
     // results in "reserved.loss" reports not being reported. Bid reject reason
     // is not meaningful thus not supported in reportWin(), so it is set to
     // absl::nullopt.
-    auction_worklet::mojom::PrivateAggregationRequestPtr converted_request =
+    absl::optional<PrivateAggregationRequestWithEventType> converted_request =
         FillInPrivateAggregationRequest(
             std::move(request), winning_bid_info_.bid,
             /*highest_scoring_other_bid=*/seller_info.highest_scoring_other_bid,
             /*reject_reason=*/absl::nullopt, /*is_winner=*/true);
-    if (converted_request) {
-      private_aggregation_requests_[bidder].emplace_back(
-          std::move(converted_request));
+
+    if (converted_request.has_value()) {
+      PrivateAggregationRequestWithEventType converted_request_value =
+          std::move(converted_request.value());
+      const absl::optional<std::string>& event_type =
+          converted_request_value.event_type;
+      if (event_type.has_value()) {
+        // The request has a non-reserved event type.
+        private_aggregation_requests_non_reserved_[event_type.value()]
+            .emplace_back(std::move(converted_request_value.request));
+      } else {
+        private_aggregation_requests_reserved_[bidder].emplace_back(
+            std::move(converted_request_value.request));
+      }
     }
   }
 
-  if (!bidder_ad_beacon_map.empty()) {
-    bool has_bad_beacon_map = false;
-    for (const auto& element : bidder_ad_beacon_map) {
-      if (!IsEventLevelReportingUrlValid(element.second)) {
-        mojo::ReportBadMessage(base::StrCat(
-            {"Invalid bidder beacon URL for '", element.first, "'"}));
-        has_bad_beacon_map = true;
-        break;
-        // No need to skip rest of work on failure - all fields are validated
-        // and consumed independently, and it's not worth the complexity to make
-        // sure everything is dropped when a field is invalid.
-      }
-    }
-    if (!has_bad_beacon_map) {
-      ad_beacon_map_
-          .metadata[blink::FencedFrame::ReportingDestination::kBuyer] =
-          bidder_ad_beacon_map;
+  // This will be cleared if any beacons are invalid.
+  base::flat_map<std::string, GURL> validated_bidder_ad_beacon_map =
+      bidder_ad_beacon_map;
+  for (const auto& element : bidder_ad_beacon_map) {
+    if (!IsEventLevelReportingUrlValid(element.second)) {
+      mojo::ReportBadMessage(base::StrCat(
+          {"Invalid bidder beacon URL for '", element.first, "'"}));
+      // Drop the entire beacon map if part of it is invalid. No need to treat
+      // the rest of the data received from the worklet as invalid - all fields
+      // are validated and consumed independently, and it's not worth the
+      // complexity to make sure everything is dropped when a field is invalid.
+      validated_bidder_ad_beacon_map.clear();
+      break;
     }
   }
+  fenced_frame_reporter_->OnUrlMappingReady(
+      blink::FencedFrame::ReportingDestination::kBuyer,
+      std::move(validated_bidder_ad_beacon_map));
 
   if (bidder_report_url) {
     if (!IsEventLevelReportingUrlValid(*bidder_report_url)) {

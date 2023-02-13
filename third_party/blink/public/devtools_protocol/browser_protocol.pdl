@@ -761,73 +761,14 @@ experimental domain Audits
       optional Page.FrameId frameId
       optional DOM.BackendNodeId violatingNodeId
 
-  type DeprecationIssueType extends string
-    enum
-      AuthorizationCoveredByWildcard
-      CanRequestURLHTTPContainingNewline
-      ChromeLoadTimesConnectionInfo
-      ChromeLoadTimesFirstPaintAfterLoadTime
-      ChromeLoadTimesWasAlternateProtocolAvailable
-      CookieWithTruncatingChar
-      CrossOriginAccessBasedOnDocumentDomain
-      CrossOriginWindowAlert
-      CrossOriginWindowConfirm
-      CSSSelectorInternalMediaControlsOverlayCastButton
-      DeprecationExample
-      DocumentDomainSettingWithoutOriginAgentClusterHeader
-      EventPath
-      ExpectCTHeader
-      GeolocationInsecureOrigin
-      GeolocationInsecureOriginDeprecatedNotRemoved
-      GetUserMediaInsecureOrigin
-      HostCandidateAttributeGetter
-      IdentityInCanMakePaymentEvent
-      InsecurePrivateNetworkSubresourceRequest
-      LocalCSSFileExtensionRejected
-      MediaSourceAbortRemove
-      MediaSourceDurationTruncatingBuffered
-      NoSysexWebMIDIWithoutPermission
-      NotificationInsecureOrigin
-      NotificationPermissionRequestedIframe
-      ObsoleteCreateImageBitmapImageOrientationNone
-      ObsoleteWebRtcCipherSuite
-      OpenWebDatabaseInsecureContext
-      OverflowVisibleOnReplacedElement
-      PaymentInstruments
-      PaymentRequestCSPViolation
-      PersistentQuotaType
-      PictureSourceSrc
-      PrefixedCancelAnimationFrame
-      PrefixedRequestAnimationFrame
-      PrefixedStorageInfo
-      PrefixedVideoDisplayingFullscreen
-      PrefixedVideoEnterFullscreen
-      PrefixedVideoEnterFullScreen
-      PrefixedVideoExitFullscreen
-      PrefixedVideoExitFullScreen
-      PrefixedVideoSupportsFullscreen
-      PrivacySandboxExtensionsAPI
-      RangeExpand
-      RequestedSubresourceWithEmbeddedCredentials
-      RTCConstraintEnableDtlsSrtpFalse
-      RTCConstraintEnableDtlsSrtpTrue
-      RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics
-      RTCPeerConnectionSdpSemanticsPlanB
-      RtcpMuxPolicyNegotiate
-      SharedArrayBufferConstructedWithoutIsolation
-      TextToSpeech_DisallowedByAutoplay
-      V8SharedArrayBufferConstructedInExtensionWithoutIsolation
-      XHRJSONEncodingDetection
-      XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload
-      XRSupportsSession
-
   # This issue tracks information needed to print a deprecation message.
   # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/third_party/blink/renderer/core/frame/deprecation/README.md
   type DeprecationIssueDetails extends object
     properties
       optional AffectedFrame affectedFrame
       SourceCodeLocation sourceCodeLocation
-      DeprecationIssueType type
+      # One of the deprecation names from third_party/blink/renderer/core/frame/deprecation/deprecation.json5
+      string type
 
   type ClientHintIssueReason extends string
     enum
@@ -8614,6 +8555,25 @@ domain Page
       # that is incompatible with prerender and has caused the cancellation of the attempt
       optional string disallowedApiMethod
 
+  # List of Prefetch status, which refers to PreloadingTriggeringOutcome.
+  type PrefetchStatus extends string
+    enum
+      Running
+      Ready
+      Success
+      Failure
+      # PreloadingTriggeringOutcome which not used by prefetch.
+      NotSupported
+
+  # TODO(crbug/1384419): Create a dedicated domain for preloading.
+  # Fired when a prefetch attempt is updated.
+  experimental event prefetchStatusUpdated
+    parameters
+      # The frame id of the frame initiating prefetch.
+      FrameId initiatingFrameId
+      string prefetchUrl
+      PrefetchStatus status
+
   event loadEventFired
     parameters
       Network.MonotonicTime timestamp
@@ -9372,6 +9332,15 @@ experimental domain Storage
   experimental command getTrustTokens
     returns
       array of TrustTokens tokens
+
+  # Removes all Trust Tokens issued by the provided issuerOrigin.
+  # Leaves other stored data, including the issuer's Redemption Records, intact.
+  experimental command clearTrustTokens
+    parameters
+      string issuerOrigin
+    returns
+      # True if any tokens were deleted, false otherwise.
+      boolean didDeleteTokens
 
   # Gets details for a named interest group.
   experimental command getInterestGroupDetails
@@ -10807,3 +10776,41 @@ experimental domain Media
 
   # Disables the Media domain.
   command disable
+
+experimental domain DeviceAccess
+  # Device request id.
+  type RequestId extends string
+
+  # A device id.
+  type DeviceId extends string
+
+  # Device information displayed in a user prompt to select a device.
+  type PromptDevice extends object
+    properties
+      DeviceId id
+      # Display name as it appears in a device request user prompt.
+      string name
+
+  # Enable events in this domain.
+  command enable
+
+  # Disable events in this domain.
+  command disable
+
+  # Select a device in response to a DeviceAccess.deviceRequestPrompted event.
+  command selectPrompt
+    parameters
+      RequestId id
+      DeviceId deviceId
+
+  # Cancel a prompt in response to a DeviceAccess.deviceRequestPrompted event.
+  command cancelPrompt
+    parameters
+      RequestId id
+
+  # A device request opened a user prompt to select a device. Respond with the
+  # selectPrompt or cancelPrompt command.
+  event deviceRequestPrompted
+    parameters
+      RequestId id
+      array of PromptDevice devices

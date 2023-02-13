@@ -40,6 +40,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
@@ -138,7 +139,7 @@ void SupervisedUserService::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kDefaultSupervisedUserFilteringBehavior,
                                 SupervisedUserURLFilter::ALLOW);
   registry->RegisterBooleanPref(prefs::kSupervisedUserSafeSites, true);
-  for (const char* pref : supervised_users::kCustodianInfoPrefs) {
+  for (const char* pref : supervised_user::kCustodianInfoPrefs) {
     registry->RegisterStringPref(pref, std::string());
   }
 }
@@ -236,6 +237,19 @@ bool SupervisedUserService::IsChild() const {
   return profile_->IsChild();
 }
 
+bool SupervisedUserService::IsURLFilteringEnabled() const {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+  return profile_->IsChild();
+#else
+  AccountInfo account_info = identity_manager_->FindExtendedAccountInfo(
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+  return account_info.capabilities.is_subject_to_parental_controls() ==
+             signin::Tribool::kTrue &&
+         base::FeatureList::IsEnabled(
+             supervised_users::kFilterWebsitesForSupervisedUsersOnThirdParty);
+#endif
+}
+
 bool SupervisedUserService::HasACustodian() const {
   return !GetCustodianEmailAddress().empty() ||
          !GetSecondCustodianEmailAddress().empty();
@@ -251,8 +265,11 @@ void SupervisedUserService::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-SupervisedUserService::SupervisedUserService(Profile* profile)
+SupervisedUserService::SupervisedUserService(
+    Profile* profile,
+    signin::IdentityManager* identity_manager)
     : profile_(profile),
+      identity_manager_(identity_manager),
       active_(false),
       delegate_(nullptr),
       is_profile_active_(false),
@@ -314,7 +331,7 @@ void SupervisedUserService::
   // currently set indirectly by setting geolocation requests. Update Kids
   // Management server to set a new bit for extension permissions and update
   // this setter function.
-  GetSettingsService()->SetLocalSetting(supervised_users::kGeolocationDisabled,
+  GetSettingsService()->SetLocalSetting(supervised_user::kGeolocationDisabled,
                                         base::Value(!enabled));
   profile_->GetPrefs()->SetBoolean(
       prefs::kSupervisedUserExtensionsMayRequestPermissions, enabled);
@@ -410,7 +427,7 @@ void SupervisedUserService::SetActive(bool active) {
         prefs::kSupervisedUserManualURLs,
         base::BindRepeating(&SupervisedUserService::UpdateManualURLs,
                             base::Unretained(this)));
-    for (const char* pref : supervised_users::kCustodianInfoPrefs) {
+    for (const char* pref : supervised_user::kCustodianInfoPrefs) {
       pref_change_registrar_.Add(
           pref,
           base::BindRepeating(&SupervisedUserService::OnCustodianInfoChanged,
@@ -445,7 +462,7 @@ void SupervisedUserService::SetActive(bool active) {
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualHosts);
     pref_change_registrar_.Remove(prefs::kSupervisedUserManualURLs);
-    for (const char* pref : supervised_users::kCustodianInfoPrefs) {
+    for (const char* pref : supervised_user::kCustodianInfoPrefs) {
       pref_change_registrar_.Remove(pref);
     }
 
@@ -466,7 +483,7 @@ void SupervisedUserService::OnCustodianInfoChanged() {
     observer.OnCustodianInfoChanged();
 }
 
-supervised_users::SupervisedUserSettingsService*
+supervised_user::SupervisedUserSettingsService*
 SupervisedUserService::GetSettingsService() {
   return SupervisedUserSettingsServiceFactory::GetForKey(
       profile_->GetProfileKey());

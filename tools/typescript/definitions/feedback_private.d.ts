@@ -40,12 +40,15 @@ declare namespace chrome {
       attachedFileBlobUuid?: string;
       screenshotBlobUuid?: string;
       useSystemWindowFrame?: boolean;
+      sendAutofillMetadata?: boolean;
       sendBluetoothLogs?: boolean;
       sendTabTitles?: boolean;
       assistantDebugInfoAllowed?: boolean;
       fromAssistant?: boolean;
       includeBluetoothLogs?: boolean;
       showQuestionnaire?: boolean;
+      fromAutofill?: boolean;
+      autofillMetadata?: string;
     }
 
     enum Status {

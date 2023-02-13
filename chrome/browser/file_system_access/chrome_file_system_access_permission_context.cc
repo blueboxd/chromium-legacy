@@ -32,8 +32,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/ui/file_system_access_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pdf_util.h"
@@ -60,6 +59,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
 namespace features {
@@ -1648,6 +1652,31 @@ void ChromeFileSystemAccessPermissionContext::RevokeGrants(
     grant.second->SetStatus(PermissionStatus::ASK, persisted_status);
   for (auto& grant : origin_state.write_grants)
     grant.second->SetStatus(PermissionStatus::ASK, persisted_status);
+  ScheduleUsageIconUpdate();
+}
+
+void ChromeFileSystemAccessPermissionContext::RevokeGrant(
+    const url::Origin& origin,
+    const base::FilePath& file_path,
+    PersistedPermissionOptions persisted_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto origin_it = origins_.find(origin);
+  if (origin_it == origins_.end()) {
+    return;
+  }
+
+  OriginState& origin_state = origin_it->second;
+  for (auto& grant : origin_state.read_grants) {
+    if (grant.first == file_path) {
+      grant.second->SetStatus(PermissionStatus::ASK, persisted_status);
+    }
+  }
+
+  for (auto& grant : origin_state.write_grants) {
+    if (grant.first == file_path) {
+      grant.second->SetStatus(PermissionStatus::ASK, persisted_status);
+    }
+  }
   ScheduleUsageIconUpdate();
 }
 

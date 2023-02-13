@@ -139,10 +139,6 @@
 #include "content/browser/web_exposed_isolation_info.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
-#include "content/browser/web_package/web_bundle_handle.h"
-#include "content/browser/web_package/web_bundle_handle_tracker.h"
-#include "content/browser/web_package/web_bundle_navigation_info.h"
-#include "content/browser/web_package/web_bundle_source.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/browser/webid/federated_auth_request_impl.h"
@@ -3195,7 +3191,6 @@ void RenderFrameHostImpl::RenderProcessGone(
   SetLastCommittedUrl(GURL());
   SetInheritedBaseUrl(GURL());
   renderer_url_info_ = RendererURLInfo();
-  web_bundle_handle_.reset();
 
   must_be_replaced_ = true;
   has_committed_any_navigation_ = false;
@@ -3221,6 +3216,8 @@ void RenderFrameHostImpl::RenderProcessGone(
   has_unload_handler_ = false;
   has_pagehide_handler_ = false;
   has_visibilitychange_handler_ = false;
+
+  has_navigate_event_handler_ = false;
 
   if (IsPendingDeletion()) {
     // If the process has died, we don't need to wait for the ACK. Complete the
@@ -4102,12 +4099,12 @@ blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
     const url::Origin& new_rfh_origin,
     const base::UnguessableToken* nonce) {
   // If the nonce is set the `top_level_site` must be the same as
-  // `new_rfh_origin` and the `ancestor_chain_bit` must be kSameSite.
+  // `new_rfh_origin` and the `ancestor_chain_bit` must be kCrossSite.
   // TODO(https://crbug.com/1410254): Cleanup this logic.
   if (nonce) {
     return blink::StorageKey::CreateWithOptionalNonce(
         new_rfh_origin, net::SchemefulSite(new_rfh_origin), nonce,
-        blink::mojom::AncestorChainBit::kSameSite);
+        blink::mojom::AncestorChainBit::kCrossSite);
   }
 
   std::vector<RenderFrameHostImpl*> ancestor_chain;
@@ -4150,7 +4147,7 @@ blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
 
   // Compute the AncestorChainBit. It represents whether every ancestors are
   // all same-site or not. If `top_level_site` is opaque the bit must be
-  // kSameSite as this is the default value (which won't be serialized).
+  // kCrossSite as this is the default value (which won't be serialized).
   blink::mojom::AncestorChainBit ancestor_chain_bit =
       blink::mojom::AncestorChainBit::kSameSite;
   if (!top_level_site.opaque()) {
@@ -4160,6 +4157,8 @@ blink::StorageKey RenderFrameHostImpl::CalculateStorageKey(
         break;
       }
     }
+  } else {
+    ancestor_chain_bit = blink::mojom::AncestorChainBit::kCrossSite;
   }
 
   // TODO(https://crbug.com/1410254): Cleanup this logic.
@@ -5082,8 +5081,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
           frame->navigator().BeforeUnloadCompleted(frame, proceed,
                                                    before_unload_end_time);
         } else {
-          frame->render_manager()->BeforeUnloadCompleted(
-              proceed, before_unload_end_time);
+          frame->render_manager()->BeforeUnloadCompleted(proceed);
         }
       },
       // The overhead of the browser->renderer IPC may be non trivial. Account
@@ -6440,6 +6438,11 @@ void RenderFrameHostImpl::NavigateToNavigationApiKey(
   frame_tree_->controller().NavigateToNavigationApiKey(this, task_id, key);
 }
 
+void RenderFrameHostImpl::NavigateEventHandlerPresenceChanged(bool present) {
+  DCHECK_NE(has_navigate_event_handler_, present);
+  has_navigate_event_handler_ = present;
+}
+
 void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
     blink::mojom::FindInPageResultAXParamsPtr params) {
   // Only update FindInPageResult on active RenderFrameHost. Note that, it is
@@ -7792,7 +7795,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
   std::string error_message;
   if (!fenced_frame_properties->fenced_frame_reporter_->SendReport(
           event_type, event_data, destination,
-          /*request_initiator=*/GetLastCommittedOrigin(), error_message)) {
+          /*request_initiator_frame=*/this, error_message)) {
     AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                         error_message);
   }
@@ -8675,7 +8678,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
         FROM_HERE,
         base::BindOnce(&RenderFrameHostManager::BeforeUnloadCompleted,
                        owner_->GetRenderFrameHostManager().GetWeakPtr(),
-                       /*proceed=*/true, base::TimeTicks::Now()));
+                       /*proceed=*/true));
     return;
   }
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
@@ -9103,8 +9106,7 @@ void RenderFrameHostImpl::CommitNavigation(
         subresource_overrides,
     blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
     const absl::optional<blink::DocumentToken>& document_token,
-    const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<WebBundleHandle> web_bundle_handle) {
+    const base::UnguessableToken& devtools_navigation_token) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "navigation_request", navigation_request, "url",
                common_params->url);
@@ -9194,13 +9196,7 @@ void RenderFrameHostImpl::CommitNavigation(
   has_committed_any_navigation_ = true;
 
   if (!is_same_document) {
-    // If this is NOT for same-document navigation, existing
-    // |web_bundle_handle_| should be reset to the new one. Otherwise the
-    // existing one should be kept around so that the subresource requests keep
-    // being served from the WebBundleURLLoaderFactory held by the handle.
-    web_bundle_handle_ = std::move(web_bundle_handle);
-
-    // Similarly, reset |subresource_web_bundle_navigation_info_| to the new one
+    // Reset |subresource_web_bundle_navigation_info_| to the new one
     // if this is NOT for same-document navigation. For same-document
     // navigation, |navigation_request| doesn't have bundle information so
     // existing one should be kept around.
@@ -9321,24 +9317,6 @@ void RenderFrameHostImpl::CommitNavigation(
           bypass_redirect_checks);
     }
 
-    bool navigation_to_web_bundle = false;
-
-    if (web_bundle_handle_ && web_bundle_handle_->IsReadyForLoading()) {
-      navigation_to_web_bundle = true;
-      mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory(
-          std::move(pending_default_factory));
-      web_bundle_handle_->CreateURLLoaderFactory(
-          pending_default_factory.InitWithNewPipeAndPassReceiver(),
-          std::move(fallback_factory));
-      DCHECK(web_bundle_handle_->navigation_info());
-      commit_params->web_bundle_physical_url =
-          web_bundle_handle_->navigation_info()->source().url();
-      if (web_bundle_handle_->claimed_url().is_valid()) {
-        commit_params->web_bundle_claimed_url =
-            web_bundle_handle_->claimed_url();
-      }
-    }
-
     DCHECK(pending_default_factory);
     subresource_loader_factories->pending_default_factory() =
         std::move(pending_default_factory);
@@ -9347,7 +9325,7 @@ void RenderFrameHostImpl::CommitNavigation(
     //
     // For loading Web Bundle files, we don't set FileURLLoaderFactory.
     // Because loading local files from a Web Bundle file is prohibited.
-    if (effective_scheme == url::kFileScheme && !navigation_to_web_bundle) {
+    if (effective_scheme == url::kFileScheme) {
       // USER_BLOCKING because this scenario is exactly one of the examples
       // given by the doc comment for USER_BLOCKING: Loading and rendering a web
       // page after the user clicks a link.
@@ -9888,7 +9866,7 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
       GetRemoteAssociatedInterfaces()->GetInterface(&render_accessibility_);
       DCHECK(render_accessibility_);
     }
-    render_accessibility_->SetMode(ax_mode.flags());
+    render_accessibility_->SetMode(ax_mode);
   } else {
     // Resetting the Remote signals the renderer to shutdown accessibility
     // in the renderer.
@@ -11258,14 +11236,6 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
         cross_origin_embedder_policy().report_only_reporting_endpoint,
         GetReportingSource(), isolation_info.network_anonymization_key());
   }
-  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info;
-  if (is_same_document && web_bundle_handle_ &&
-      web_bundle_handle_->navigation_info()) {
-    // Need to set |web_bundle_navigation_info| of NavigationRequest. This
-    // will be passed to FrameNavigationEntry, and will be used for subsequent
-    // history navigations.
-    web_bundle_navigation_info = web_bundle_handle_->navigation_info()->Clone();
-  }
 
   std::unique_ptr<SubresourceWebBundleNavigationInfo>
       subresource_web_bundle_navigation_info;
@@ -11302,7 +11272,6 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
       std::move(referrer), transition, should_replace_current_entry, method,
       has_user_gesture, is_overriding_user_agent, redirects,
       original_request_url, std::move(coep_reporter),
-      std::move(web_bundle_navigation_info),
       std::move(subresource_web_bundle_navigation_info), http_status_code);
 }
 
@@ -12219,6 +12188,8 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   has_pagehide_handler_ = false;
   has_visibilitychange_handler_ = false;
 
+  has_navigate_event_handler_ = false;
+
   DCHECK(params.embedding_token.has_value());
   SetEmbeddingToken(params.embedding_token.value());
 
@@ -12545,7 +12516,11 @@ void RenderFrameHostImpl::SendCommitNavigation(
                   GetSiteInstance()->GetStoragePartitionConfig())
               ->id();
       partition->BindSessionStorageAreaForProcess(
-          process_id, commit_params->storage_key, namespace_id,
+          process_id,
+          navigation_request->frame_tree_node()
+              ->frame_tree()
+              .GetSessionStorageKey(commit_params->storage_key),
+          namespace_id,
           storage_info->session_storage_area.InitWithNewPipeAndPassReceiver());
     }
   }
@@ -12878,13 +12853,6 @@ RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
 void RenderFrameHostImpl::ClearPrefetchedSignedExchangeCache() {
   if (prefetched_signed_exchange_cache_)
     prefetched_signed_exchange_cache_->Clear();
-}
-
-std::unique_ptr<WebBundleHandleTracker>
-RenderFrameHostImpl::MaybeCreateWebBundleHandleTracker() {
-  if (web_bundle_handle_)
-    return web_bundle_handle_->MaybeCreateTracker();
-  return nullptr;
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {
@@ -14448,12 +14416,6 @@ void RenderFrameHostImpl::OnDidRunInsecureContent(const GURL& security_origin,
                         "security_origin", security_origin, "target_url",
                         target_url);
 
-  // TODO(nick, estark): Should we call FilterURL using this frame's process on
-  // these parameters? |target_url| seems unused, except for a log message. And
-  // |security_origin| might be replaceable with the origin of the main frame.
-
-  LOG(WARNING) << security_origin << " ran insecure content from "
-               << target_url.possibly_invalid_spec();
   RecordAction(base::UserMetricsAction("SSL.RanInsecureContent"));
   if (base::EndsWith(security_origin.spec(), kDotGoogleDotCom,
                      base::CompareCase::INSENSITIVE_ASCII)) {

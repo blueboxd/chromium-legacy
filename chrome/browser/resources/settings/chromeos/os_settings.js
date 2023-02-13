@@ -123,10 +123,10 @@ import './settings_scheduler_slider/settings_scheduler_slider.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {startColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 
-import * as crosAudioConfigMojomWebui from '../mojom-webui/audio/cros_audio_config.mojom-webui.js';
-import * as appNotificationHandlerMojomWebui from '../mojom-webui/os_apps_page/app_notification_handler.mojom-webui.js';
-import * as personalizationSearchMojomWebui from '../mojom-webui/personalization/search.mojom-webui.js';
+import * as appNotificationHandlerMojom from '../mojom-webui/app_notification_handler.mojom-webui.js';
+import * as crosAudioConfigMojom from '../mojom-webui/cros_audio_config.mojom-webui.js';
 import * as routesMojomWebui from '../mojom-webui/routes.mojom-webui.js';
+import * as personalizationSearchMojom from '../mojom-webui/search/personalization_search.mojom-webui.js';
 import * as searchMojomWebui from '../mojom-webui/search/search.mojom-webui.js';
 import * as searchResultIconMojomWebui from '../mojom-webui/search/search_result_icon.mojom-webui.js';
 import * as userActionRecorderMojomWebui from '../mojom-webui/search/user_action_recorder.mojom-webui.js';
@@ -213,10 +213,10 @@ export {Route, Router} from './router.js';
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
 export {
-  appNotificationHandlerMojomWebui,
-  crosAudioConfigMojomWebui,
+  appNotificationHandlerMojom,
+  crosAudioConfigMojom,
   fakeCrosAudioConfig,
-  personalizationSearchMojomWebui,
+  personalizationSearchMojom,
   routesMojomWebui,
   searchMojomWebui,
   searchResultIconMojomWebui,

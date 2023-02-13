@@ -138,23 +138,23 @@ class FabButton : public views::MdTextButton {
   FabButton& operator=(const FabButton&) = delete;
   ~FabButton() override = default;
 
-  void UpdateBackground() {
+  void UpdateBackgroundColor() override {
     SkColor bg_color = GetColorProvider()->GetColor(
         ExamplesColorIds::kColorButtonBackgroundFab);
     SetBackground(CreateBackgroundFromPainter(
         std::make_unique<SolidRoundRectPainterWithShadow>(
-            bg_color, SK_ColorTRANSPARENT, 2, gfx::Insets(),
+            bg_color, SK_ColorTRANSPARENT, GetCornerRadius(), gfx::Insets(),
             SkBlendMode::kSrcOver, true, use_shadow_)));
   }
 
   void OnHoverChanged() {
     use_shadow_ = !use_shadow_;
-    UpdateBackground();
+    UpdateBackgroundColor();
   }
 
   void OnThemeChanged() override {
     MdTextButton::OnThemeChanged();
-    UpdateBackground();
+    UpdateBackgroundColor();
   }
 
  private:
@@ -199,9 +199,6 @@ void ButtonExample::CreateExampleView(View* container) {
   container->SetUseDefaultFillLayout(true);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  auto start_throbber_cb = [](MdTextButton* button) {
-    button->StartThrobbing(5);
-  };
   auto view = Builder<BoxLayoutView>()
                   .SetOrientation(BoxLayout::Orientation::kVertical)
                   .SetInsideBorderInsets(gfx::Insets(10))
@@ -216,26 +213,18 @@ void ButtonExample::CreateExampleView(View* container) {
                                        base::Unretained(this), label_button_)),
                                Builder<MdTextButton>()
                                    .CopyAddressTo(&md_button_)
-                                   .SetText(u"Material Design")
-                                   .SetCallback(base::BindRepeating(
-                                       start_throbber_cb, md_button_)),
+                                   .SetText(u"Material Design"),
                                Builder<MdTextButton>()
                                    .CopyAddressTo(&md_disabled_button_)
                                    .SetText(u"Material Design Disabled Button")
-                                   .SetState(Button::STATE_DISABLED)
-                                   .SetCallback(base::BindRepeating(
-                                       start_throbber_cb, md_disabled_button_)),
+                                   .SetState(Button::STATE_DISABLED),
                                Builder<MdTextButton>()
                                    .CopyAddressTo(&md_default_button_)
                                    .SetText(u"Default")
-                                   .SetIsDefault(true)
-                                   .SetCallback(base::BindRepeating(
-                                       start_throbber_cb, md_default_button_)),
+                                   .SetIsDefault(true),
                                Builder<MdTextButton>()
                                    .CopyAddressTo(&md_tonal_button_)
-                                   .SetText(u"Tonal")
-                                   .SetCallback(base::BindRepeating(
-                                       start_throbber_cb, md_tonal_button_)),
+                                   .SetText(u"Tonal"),
                                Builder<ImageButton>()
                                    .CopyAddressTo(&image_button_)
                                    .SetAccessibleName(l10n_util::GetStringUTF16(

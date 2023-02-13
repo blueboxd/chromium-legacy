@@ -7,7 +7,9 @@ package org.chromium.webengine.shell;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -21,6 +23,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -76,7 +79,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable thrown) {}
-        }, mContext.getMainExecutor());
+        }, ContextCompat.getMainExecutor(mContext));
 
         ListenableFuture<WebSandbox> webSandboxFuture = WebSandbox.create(mContext);
         Futures.addCallback(webSandboxFuture, new FutureCallback<WebSandbox>() {
@@ -87,7 +90,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable thrown) {}
-        }, mContext.getMainExecutor());
+        }, ContextCompat.getMainExecutor(mContext));
     }
 
     @Override
@@ -121,7 +124,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Throwable thrown) {}
-        }, mContext.getMainExecutor());
+        }, ContextCompat.getMainExecutor(mContext));
     }
 
     private void onWebEngineReady(WebEngine webEngine) {
@@ -151,7 +154,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
                             public void onFailure(Throwable thrown) {
                                 Log.w(TAG, "executeScript failed: " + thrown);
                             }
-                        }, mContext.getMainExecutor());
+                        }, ContextCompat.getMainExecutor(mContext));
                     }
                 });
 
@@ -194,20 +197,29 @@ public class WebEngineShellActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Throwable thrown) {}
-                }, mContext.getMainExecutor());
+                }, ContextCompat.getMainExecutor(mContext));
             }
 
             @Override
             public void onFailure(Throwable thrown) {
                 Log.w(TAG, "setCookie failed: " + thrown);
             }
-        }, mContext.getMainExecutor());
+        }, ContextCompat.getMainExecutor(mContext));
 
         urlBar.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                String query = v.getText().toString();
-                mTabManager.getActiveTab().getNavigationController().navigate(query);
+                Uri query = Uri.parse(v.getText().toString());
+                if (query.isAbsolute()) {
+                    mTabManager.getActiveTab().getNavigationController().navigate(
+                            query.normalizeScheme().toString());
+                } else if (Patterns.DOMAIN_NAME.matcher(query.toString()).matches()) {
+                    mTabManager.getActiveTab().getNavigationController().navigate(
+                            "https://" + query);
+                } else {
+                    activeTab.getNavigationController().navigate("https://www.google.com/search?q="
+                            + Uri.encode(v.getText().toString()));
+                }
                 // Hides keyboard on Enter key pressed
                 InputMethodManager imm =
                         (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -246,7 +258,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
                 }
                 WebEngineShellActivity.super.onBackPressed();
             }
-        }, mContext.getMainExecutor());
+        }, ContextCompat.getMainExecutor(mContext));
     }
 
     // TODO(swestphal): Move this to a helper class.

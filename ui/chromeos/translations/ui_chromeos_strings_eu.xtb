@@ -205,7 +205,7 @@
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />). Xehetasunak.</translation>
 <translation id="2724954091494693138">Turkiarra (F teklatua)</translation>
 <translation id="2732839045120506979">Vietnamdarra (VNI)</translation>
-<translation id="2735623501230989521">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak atzitzeko baimena Parallels Desktop-i</translation>
+<translation id="2735623501230989521">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak erabiltzeko baimena Parallels Desktop-i</translation>
 <translation id="2764206540577097904">Google Workspace-ko banako biltegi osoa erabili duzu.</translation>
 <translation id="2771816809568414714">Gazta</translation>
 <translation id="2781645665747935084">Belgikarra</translation>
@@ -284,7 +284,7 @@
 <translation id="3408072735282270043">Aktibatu, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Alemana (Alemania), Neo 2 teklatuarekin</translation>
 <translation id="3414856743105198592">Gailu aldagarria formateatzen baduzu, datu guztiak ezabatuko dira. Jarraitu nahi duzu?</translation>
-<translation id="3435143625481187092">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak atzitzeko baimena Bruschetta-ri</translation>
+<translation id="3435143625481187092">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak erabiltzeko baimena Bruschetta-ri</translation>
 <translation id="3437801641691368414">Sortze-ordua</translation>
 <translation id="343907260260897561">Istanteko kamera</translation>
 <translation id="3455931012307786678">Estoniarra</translation>
@@ -408,6 +408,7 @@
 <translation id="4462159676511157176">Izen-zerbitzari pertsonalizatuak</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" />. Administratzaileak kudeatua. Konektatu.</translation>
 <translation id="4470564870223067757">2. hangul-karaktere sorta</translation>
+<translation id="4474142134969976028">Ez dago emaitzarik</translation>
 <translation id="4477002475007461989">Errumaniarra</translation>
 <translation id="4477219268485577442">Bulgariar fonetikoa</translation>
 <translation id="4508265954913339219">Ezin izan da aktibatu</translation>
@@ -428,7 +429,7 @@
 <translation id="4646813851450205600">Txekiarra, QWERTY teklatuarekin</translation>
 <translation id="4656777537938206294">Jarri fitxategiak konexiorik gabe erabilgarri</translation>
 <translation id="4658782175094886150">Gainazal elurtu batean dagoen pertsona</translation>
-<translation id="466782788172479199">Eman Google Drive-ko fitxategiak atzitzeko baimena Bruschetta-ri. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
+<translation id="466782788172479199">Eman Google Drive-ko fitxategiak erabiltzeko baimena Bruschetta-ri. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
 <translation id="4669606053856530811">Haiekin partekatu ezean, fitxategietarako sarbidea galduko dute "<ph name="SOURCE_NAME" />" unitateko kideek.</translation>
 <translation id="467809019005607715">Google Aurkezpenak</translation>
 <translation id="4690246192099372265">Suediarra</translation>
@@ -450,7 +451,7 @@
 <translation id="4779136857077979611">Onigiria</translation>
 <translation id="4784330909746505604">PowerPoint aurkezpena</translation>
 <translation id="4788401404269709922"><ph name="NUMBER_OF_KB" /> kB</translation>
-<translation id="4789067489790477934">Eman Google Drive-ko fitxategiak atzitzeko baimena Parallels Desktop-i. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
+<translation id="4789067489790477934">Eman Google Drive-ko fitxategiak erabiltzeko baimena Parallels Desktop-i. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
 <translation id="4790766916287588578">Hindia, InScript teklatuarekin</translation>
 <translation id="4801956050125744859">Mantendu biak</translation>
 <translation id="4804827417948292437">Ahuakatea</translation>
@@ -479,6 +480,7 @@
 <translation id="4973523518332075481">Erabili <ph name="MAX_LENGTH" /> karaktere edo gutxiago dituen izen bat</translation>
 <translation id="4973970068702235170">Ezin izan da konprimatu ustekabeko errore hau gertatu delako: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japoniarra</translation>
+<translation id="4987699874727873250">Ingelesa (India)</translation>
 <translation id="4988205478593450158">Ziur "<ph name="FILE_NAME" />" ezabatu nahi duzula?</translation>
 <translation id="498902553138568924">Tximeleta gorria</translation>
 <translation id="4992066212339426712">Aktibatu audioa</translation>
@@ -787,6 +789,7 @@
 <translation id="7458955835361612701">Ez dago azkenaldiko irudirik</translation>
 <translation id="7460898608667578234">Ukrainarra</translation>
 <translation id="7469894403370665791">Konektatu automatikoki sare honetara</translation>
+<translation id="7481358317100446445">Prest</translation>
 <translation id="7486315294984620427">Fitxategiak Parallels Desktop-en jaregin ahal izateko, Windows-eko fitxategien karpetan kopiatu behar dira lehendabizi.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malabartar fonetikoa</translation>
@@ -795,12 +798,12 @@
 <translation id="751507702149411736">Bielorrusiarra</translation>
 <translation id="7521790570754130607">PIN bat behar da datu-konexioa erabiltzeko</translation>
 <translation id="7532029025027028521">Persieraren transliterazioa</translation>
-<translation id="7544830582642184299">Eman Google Drive-ko fitxategiak atzitzeko baimena Linux-eko aplikazioei. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
+<translation id="7544830582642184299">Eman Google Drive-ko fitxategiak erabiltzeko baimena Linux-eko aplikazioei. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
 <translation id="7547009467130558110">Kirol-oinetakoa</translation>
 <translation id="7547780573915868306">Lituaniarra</translation>
 <translation id="7547811415869834682">Nederlandarra</translation>
 <translation id="7551643184018910560">Ainguratu apalean</translation>
-<translation id="7553492409867692754">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak atzitzeko baimena Linux-eko aplikazioei</translation>
+<translation id="7553492409867692754">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak erabiltzeko baimena Linux-eko aplikazioei</translation>
 <translation id="7589661784326793847">Itxaron unetxo batean</translation>
 <translation id="7592775719802218421"><ph name="FILE_NAME" /> fitxategia konexiorik gabe erabiltzeko deskargatzen</translation>
 <translation id="7600126690270271294">Serbiarra</translation>
@@ -812,6 +815,7 @@
 <translation id="7655441028674523381">Atzitu erraz Google Argazkiak</translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7663224033570512922">Hindia</translation>
+<translation id="7665680517722058469">Egin beste bilaketa bat</translation>
 <translation id="7689532716264131859">Eraman dira zaborrontzira <ph name="NUMBER_OF_ITEMS" /> elementu</translation>
 <translation id="7693909743393669729">Unitatea formateatuz gero, bertan gordetako datu guztiak ezabatuko dira, eta partizio guztiak kendu, ikusgai ez daudenak barne. Ezin da desegin ekintza.</translation>
 <translation id="7695430100978772476">Ezin izan da formateatu <ph name="DRIVE_NAME" /></translation>

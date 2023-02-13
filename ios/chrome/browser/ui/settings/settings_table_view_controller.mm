@@ -195,7 +195,7 @@ SyncState GetSyncStateFromBrowserState(ChromeBrowserState* browserState) {
     // With pre-MICE, the sync status should be kSyncEnabled to show the same
     // value than the sync toggle.
     return kSyncEnabledWithNoSelectedTypes;
-  } else if (!IsTransientSyncError(errorState)) {
+  } else if (errorState != SyncSetupService::kNoSyncServiceError) {
     // Sync error.
     return kSyncEnabledWithError;
   }
@@ -1593,8 +1593,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       break;
     case SettingsItemTypeAutofillProfile:
       base::RecordAction(base::UserMetricsAction("AutofillAddressesViewed"));
-      controller = [[AutofillProfileTableViewController alloc]
-          initWithBrowserState:_browserState];
+      controller =
+          [[AutofillProfileTableViewController alloc] initWithBrowser:_browser];
       break;
     case SettingsItemTypePriceNotifications:
       DCHECK(IsPriceNotificationsEnabled());

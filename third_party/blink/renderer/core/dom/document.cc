@@ -868,11 +868,6 @@ Document::Document(const DocumentInit& initializer,
     UpdateBaseURL();
   }
 
-  if (initializer.GetWebBundleClaimedUrl().IsValid()) {
-    web_bundle_claimed_url_ = initializer.GetWebBundleClaimedUrl();
-    SetBaseURLOverride(initializer.GetWebBundleClaimedUrl());
-  }
-
   is_vertical_scroll_enforced_ =
       GetFrame() && !GetFrame()->IsOutermostMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalPoliciesEnabled() &&
@@ -1999,12 +1994,13 @@ bool Document::HasPendingForcedStyleRecalc() const {
 void Document::UpdateStyleInvalidationIfNeeded() {
   DCHECK(IsActive());
   ScriptForbiddenScope forbid_script;
-
-  if (!GetStyleEngine().NeedsStyleInvalidation())
+  StyleEngine& style_engine = GetStyleEngine();
+  if (!style_engine.NeedsStyleInvalidation()) {
     return;
+  }
   TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.InvalidationTime");
-  GetStyleEngine().InvalidateStyle();
+  style_engine.InvalidateStyle();
 }
 
 #if DCHECK_IS_ON()
@@ -2134,13 +2130,14 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
 #endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
   auto advance_to_style_clean = [this]() {
-    if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {
+    DocumentLifecycle& lifecycle = Lifecycle();
+    if (lifecycle.GetState() < DocumentLifecycle::kStyleClean) {
       // NeedsLayoutTreeUpdateForThisDocument may change to false without any
       // actual layout tree update.  For example, NeedsAnimationTimingUpdate
       // may change to false when time elapses.  Advance lifecycle to
       // StyleClean because style is actually clean now.
-      Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-      Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+      lifecycle.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+      lifecycle.AdvanceTo(DocumentLifecycle::kStyleClean);
     }
     // If we insert <object> elements into display:none subtrees, we might not
     // need a layout tree update, but need to make sure they are not blocking
@@ -2213,7 +2210,8 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
                            std::move(context), GetFrame());
                      });
 
-  unsigned start_element_count = GetStyleEngine().StyleForElementCount();
+  StyleEngine& style_engine = GetStyleEngine();
+  unsigned start_element_count = style_engine.StyleForElementCount();
 
   probe::RecalculateStyle recalculate_style_scope(this);
 
@@ -2221,15 +2219,16 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   EvaluateMediaQueryListIfNeeded();
   UpdateUseShadowTreesIfNeeded();
 
-  GetStyleEngine().UpdateActiveStyle();
-  GetStyleEngine().UpdateCounterStyles();
-  GetStyleEngine().InvalidatePositionFallbackStyles();
-  GetStyleEngine().InvalidateViewportUnitStylesIfNeeded();
+  style_engine.UpdateActiveStyle();
+  style_engine.UpdateCounterStyles();
+  style_engine.InvalidatePositionFallbackStyles();
+  style_engine.InvalidateViewportUnitStylesIfNeeded();
   InvalidateStyleAndLayoutForFontUpdates();
   UpdateStyleInvalidationIfNeeded();
   UpdateStyle();
-  if (GetStyleResolver().WasViewportResized()) {
-    GetStyleResolver().ClearResizedForViewportUnits();
+  StyleResolver& style_resolver = GetStyleResolver();
+  if (style_resolver.WasViewportResized()) {
+    style_resolver.ClearResizedForViewportUnits();
     View()->MarkOrthogonalWritingModeRootsForLayout();
   }
 
@@ -2271,7 +2270,8 @@ void Document::UpdateStyle() {
   RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
                            RuntimeCallStats::CounterId::kUpdateStyle);
 
-  unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
+  StyleEngine& style_engine = GetStyleEngine();
+  unsigned initial_element_count = style_engine.StyleForElementCount();
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
@@ -2280,12 +2280,13 @@ void Document::UpdateStyle() {
 
   bool should_record_stats;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink,blink_style", &should_record_stats);
-  GetStyleEngine().SetStatsEnabled(should_record_stats);
 
-  GetStyleEngine().UpdateStyleAndLayoutTree();
+  style_engine.SetStatsEnabled(should_record_stats);
+  style_engine.UpdateStyleAndLayoutTree();
 
-  GetLayoutView()->UpdateMarkersAndCountersAfterStyleChange();
-  GetLayoutView()->RecalcLayoutOverflow();
+  LayoutView* layout_view = GetLayoutView();
+  layout_view->UpdateMarkersAndCountersAfterStyleChange();
+  layout_view->RecalcLayoutOverflow();
 
 #if DCHECK_IS_ON()
   AssertNodeClean(*this);
@@ -2295,12 +2296,12 @@ void Document::UpdateStyle() {
   if (should_record_stats) {
     TRACE_EVENT_END2(
         "blink,blink_style", "Document::updateStyle", "resolverAccessCount",
-        GetStyleEngine().StyleForElementCount() - initial_element_count,
-        "counters", GetStyleEngine().Stats()->ToTracedValue());
+        style_engine.StyleForElementCount() - initial_element_count, "counters",
+        GetStyleEngine().Stats()->ToTracedValue());
   } else {
     TRACE_EVENT_END1(
         "blink,blink_style", "Document::updateStyle", "resolverAccessCount",
-        GetStyleEngine().StyleForElementCount() - initial_element_count);
+        style_engine.StyleForElementCount() - initial_element_count);
   }
 }
 
@@ -2331,8 +2332,8 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
   if (!analyze)
     analyze = !DisplayLockUtilities::IsUnlockedQuickCheck(node);
 
-  bool maybe_affected_by_layout =
-      GetStyleEngine().StyleMaybeAffectedByLayout(node);
+  StyleEngine& style_engine = GetStyleEngine();
+  bool maybe_affected_by_layout = style_engine.StyleMaybeAffectedByLayout(node);
   // Even if we don't need layout *now*, any dirty style may invalidate layout.
   bool maybe_needs_layout =
       (update != StyleAndLayoutTreeUpdate::kNone) || View()->NeedsLayout();
@@ -2347,7 +2348,7 @@ bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
     return false;
   }
 
-  switch (GetStyleEngine().AnalyzeAncestors(node)) {
+  switch (style_engine.AnalyzeAncestors(node)) {
     case StyleEngine::AncestorAnalysis::kNone:
       return false;
     case StyleEngine::AncestorAnalysis::kInterleavingRoot:
@@ -2456,14 +2457,15 @@ void Document::ApplyScrollRestorationLogic() {
   // If we're restoring a scroll position from history, that takes precedence
   // over scrolling to the anchor in the URL.
   View()->InvokeFragmentAnchor();
-
-  auto& frame_loader = GetFrame()->Loader();
+  LocalFrame* frame = GetFrame();
+  auto& frame_loader = frame->Loader();
   auto* document_loader = frame_loader.GetDocumentLoader();
   if (!document_loader)
     return;
-  if (GetFrame()->IsLoading() &&
-      !FrameLoader::NeedsHistoryItemRestore(document_loader->LoadType()))
+  if (frame->IsLoading() &&
+      !FrameLoader::NeedsHistoryItemRestore(document_loader->LoadType())) {
     return;
+  }
 
   HistoryItem* history_item = document_loader->GetHistoryItem();
 
@@ -2793,7 +2795,8 @@ void Document::Initialize() {
   DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
   UpdateForcedColors();
-  scoped_refptr<ComputedStyle> style = GetStyleResolver().StyleForViewport();
+  scoped_refptr<const ComputedStyle> style =
+      GetStyleResolver().StyleForViewport();
   layout_view_ = LayoutObjectFactory::CreateView(*this, *style);
   SetLayoutObject(layout_view_);
 
@@ -4226,9 +4229,6 @@ void Document::writeln(v8::Isolate* isolate,
 }
 
 KURL Document::urlForBinding() const {
-  if (WebBundleClaimedUrl().IsValid()) {
-    return WebBundleClaimedUrl();
-  }
   if (!Url().IsNull()) {
     return Url();
   }
@@ -6060,6 +6060,19 @@ void Document::PermissionServiceConnectionError() {
   data_->permission_service_.reset();
 }
 
+// TODO(crbug.com/1401089): This method currently always returns false since
+// nothing sets the HasStorageAccess member in `dom_window_`. It's not tied
+// to an end point yet thus not affecting current behavior.
+bool Document::HasStorageAccess() const {
+  DCHECK(GetExecutionContext());
+  DCHECK(dom_window_);
+  return TopFrameOrigin() &&
+         !GetExecutionContext()->GetSecurityOrigin()->IsOpaque() &&
+         dom_window_->isSecureContext() && dom_window_->HasStorageAccess();
+}
+
+// TODO(crbug.com/1401089): Update the method to return the result from
+// `HasStorageAccess()`;
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
   const bool has_access =
       TopFrameOrigin() && GetExecutionContext() &&
@@ -8652,8 +8665,9 @@ bool Document::IsSlotAssignmentDirty() const {
 }
 
 bool Document::IsFocusAllowed() const {
-  if (!GetFrame() || GetFrame()->IsMainFrame() ||
-      LocalFrame::HasTransientUserActivation(GetFrame())) {
+  LocalFrame* frame = GetFrame();
+  if (!frame || frame->IsMainFrame() ||
+      LocalFrame::HasTransientUserActivation(frame)) {
     // 'autofocus' runs Element::focus asynchronously at which point the
     // document might not have a frame (see https://crbug.com/960224).
     return true;
@@ -8662,7 +8676,7 @@ bool Document::IsFocusAllowed() const {
   WebFeature uma_type;
   bool sandboxed = dom_window_->IsSandboxed(
       network::mojom::blink::WebSandboxFlags::kNavigation);
-  bool ad = GetFrame()->IsAdFrame();
+  bool ad = frame->IsAdFrame();
   if (sandboxed) {
     uma_type = ad ? WebFeature::kFocusWithoutUserActivationSandboxedAdFrame
                   : WebFeature::kFocusWithoutUserActivationSandboxedNotAdFrame;

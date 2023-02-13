@@ -25,15 +25,15 @@ class ONCTranslatorOncToShillTest
     : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 
 // Test the translation from ONC to Shill json.
-TEST_P(ONCTranslatorOncToShillTest, Translate) {
+TEST_P(ONCTranslatorOncToShillTest, TranslateOncToShill) {
   std::string source_onc_filename = GetParam().first;
-  base::Value onc_network =
-      test_utils::ReadTestDictionaryValue(source_onc_filename);
+  base::Value::Dict onc_network =
+      test_utils::ReadTestDictionary(source_onc_filename);
   std::string result_shill_filename = GetParam().second;
-  base::Value expected_shill_network =
-      test_utils::ReadTestDictionaryValue(result_shill_filename);
+  base::Value::Dict expected_shill_network =
+      test_utils::ReadTestDictionary(result_shill_filename);
 
-  base::Value translation = TranslateONCObjectToShill(
+  base::Value::Dict translation = TranslateONCObjectToShill(
       &chromeos::onc::kNetworkConfigurationSignature, onc_network);
 
   EXPECT_TRUE(test_utils::Equals(&expected_shill_network, &translation));
@@ -48,6 +48,8 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_pair("ethernet.onc", "shill_ethernet.json"),
         std::make_pair("ethernet_with_eap_and_cert_pems.onc",
                        "shill_ethernet_with_eap.json"),
+        std::make_pair("ethernet_with_eap_and_cert_pems_ServerCAPEMs.onc",
+                       "shill_ethernet_with_eap_ServerCAPEMs.json"),
         std::make_pair("valid_wifi_psk.onc", "shill_wifi_psk.json"),
         std::make_pair("wifi_clientcert_with_cert_pems.onc",
                        "shill_wifi_clientcert.json"),
@@ -59,6 +61,8 @@ INSTANTIATE_TEST_SUITE_P(
                        "shill_l2tpipsec_with_password_variable.json"),
         std::make_pair("wifi_dhcp.onc", "shill_wifi_dhcp.json"),
         std::make_pair("wifi_eap_tls.onc", "shill_wifi_eap_tls.json"),
+        std::make_pair("wifi_eap_tls_ServerCAPEMs.onc",
+                       "shill_wifi_eap_tls_ServerCAPEMs.json"),
         std::make_pair("wifi_eap_ttls.onc", "shill_wifi_eap_ttls.json"),
         std::make_pair("wifi_proxy.onc", "shill_wifi_proxy.json"),
         std::make_pair("wifi_proxy_pac.onc", "shill_wifi_proxy_pac.json"),
@@ -96,12 +100,12 @@ TEST_F(ONCTranslatorOncToShillTest, TranslateCellularApnRevamp) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(ash::features::kApnRevamp);
 
-  base::Value onc_network =
-      test_utils::ReadTestDictionaryValue("cellular_apn_revamp.onc");
-  base::Value expected_shill_network =
-      test_utils::ReadTestDictionaryValue("shill_cellular_apn_revamp.json");
+  base::Value::Dict onc_network =
+      test_utils::ReadTestDictionary("cellular_apn_revamp.onc");
+  base::Value::Dict expected_shill_network =
+      test_utils::ReadTestDictionary("shill_cellular_apn_revamp.json");
 
-  base::Value translation = TranslateONCObjectToShill(
+  base::Value::Dict translation = TranslateONCObjectToShill(
       &chromeos::onc::kNetworkConfigurationSignature, onc_network);
 
   EXPECT_TRUE(test_utils::Equals(&expected_shill_network, &translation));
@@ -117,14 +121,14 @@ class ONCTranslatorShillToOncTest
 
 TEST_P(ONCTranslatorShillToOncTest, Translate) {
   std::string source_shill_filename = GetParam().first;
-  base::Value shill_network =
-      test_utils::ReadTestDictionaryValue(source_shill_filename);
+  base::Value::Dict shill_network =
+      test_utils::ReadTestDictionary(source_shill_filename);
 
   std::string result_onc_filename = GetParam().second;
-  base::Value expected_onc_network =
-      test_utils::ReadTestDictionaryValue(result_onc_filename);
+  base::Value::Dict expected_onc_network =
+      test_utils::ReadTestDictionary(result_onc_filename);
 
-  base::Value translation = TranslateShillServiceToONCPart(
+  base::Value::Dict translation = TranslateShillServiceToONCPart(
       shill_network, ::onc::ONC_SOURCE_NONE,
       &chromeos::onc::kNetworkWithStateSignature, /*network_state=*/nullptr);
 
@@ -139,6 +143,9 @@ INSTANTIATE_TEST_SUITE_P(
                        "translation_of_shill_ethernet.onc"),
         std::make_pair("shill_ethernet_with_eap.json",
                        "translation_of_shill_ethernet_with_eap.onc"),
+        std::make_pair(
+            "shill_ethernet_with_eap_ServerCAPEMs.json",
+            "translation_of_shill_ethernet_with_eap_ServerCAPEMs.onc"),
         std::make_pair("shill_ethernet_with_ipconfig.json",
                        "translation_of_shill_ethernet_with_ipconfig.onc"),
         std::make_pair("shill_wifi_clientcert.json",
@@ -176,6 +183,8 @@ INSTANTIATE_TEST_SUITE_P(
                        "translation_of_shill_wifi_with_state.onc"),
         std::make_pair("shill_wifi_eap_tls.json",
                        "translation_of_shill_wifi_eap_tls.onc"),
+        std::make_pair("shill_wifi_eap_tls_ServerCAPEMs.json",
+                       "translation_of_shill_wifi_eap_tls_ServerCAPEMs.onc"),
         std::make_pair("shill_wifi_eap_ttls.json",
                        "translation_of_shill_wifi_eap_ttls.onc"),
         std::make_pair("shill_wifi_eap_peap_md5.json",
@@ -207,12 +216,12 @@ TEST_F(ONCTranslatorShillToOncTest, TranslateCellularApnRevamp) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(ash::features::kApnRevamp);
 
-  base::Value shill_network = test_utils::ReadTestDictionaryValue(
+  base::Value::Dict shill_network = test_utils::ReadTestDictionary(
       "shill_cellular_with_state_apn_revamp.json");
-  base::Value expected_onc_network = test_utils::ReadTestDictionaryValue(
+  base::Value::Dict expected_onc_network = test_utils::ReadTestDictionary(
       "translation_of_shill_cellular_with_state_apn_revamp.onc");
 
-  base::Value translation = TranslateShillServiceToONCPart(
+  base::Value::Dict translation = TranslateShillServiceToONCPart(
       shill_network, ::onc::ONC_SOURCE_NONE,
       &chromeos::onc::kNetworkWithStateSignature, /*network_state=*/nullptr);
 

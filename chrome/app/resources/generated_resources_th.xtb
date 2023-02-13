@@ -52,6 +52,7 @@
 <translation id="104710386808485638">รีสตาร์ท Linux ไหม</translation>
 <translation id="1047431265488717055">คัดลอก&amp;ข้อความของลิงก์</translation>
 <translation id="1048286738600630630">การแสดงผล</translation>
+<translation id="1048770690598418849">คุณข้ามไปก่อนได้ และเราจะลองอีกครั้งโดยอัตโนมัติหลังจากที่คุณตั้งค่าเสร็จแล้ว</translation>
 <translation id="1048986595386481879">จัดสรรแบบไดนามิก</translation>
 <translation id="1049324577536766607">{COUNT,plural, =1{กำลังรับ <ph name="ATTACHMENTS" />จาก <ph name="DEVICE_NAME" />}other{กำลังรับ <ph name="ATTACHMENTS" />จาก <ph name="DEVICE_NAME" />}}</translation>
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
@@ -282,6 +283,7 @@
 <translation id="1244303850296295656">ข้อผิดพลาดของส่วนขยาย</translation>
 <translation id="1245628370644070008">การกู้คืนข้อมูลในเครื่อง</translation>
 <translation id="1246863218384630739">ไม่สามารถติดตั้ง <ph name="VM_NAME" />: URL ของรูปภาพแสดงรหัสข้อผิดพลาด <ph name="HTTP_ERROR" /> โปรดติดต่อผู้ดูแลระบบ</translation>
+<translation id="1247372569136754018">ไมโครโฟน (ภายใน)</translation>
 <translation id="1249818027270187058">{NUM_SITES,plural, =1{ไม่อนุญาตให้มีการแจ้งเตือนสำหรับ 1 เว็บไซต์}other{ไม่อนุญาตให้มีการแจ้งเตือนสำหรับ {NUM_SITES} เว็บไซต์}}</translation>
 <translation id="1251366534849411931">เครื่องหมายวงเล็บปีกกาเปิดที่ต้องมี: <ph name="ERROR_LINE" /></translation>
 <translation id="1251480783646955802">การดำเนินการนี้จะล้างข้อมูลที่เว็บไซต์และแอปต่างๆ จัดเก็บไว้รวมทั้งสิ้น <ph name="TOTAL_USAGE" /></translation>
@@ -539,6 +541,7 @@
 <translation id="1482626744466814421">บุ๊กมาร์กแท็บนี้...</translation>
 <translation id="1482772681918035149">แก้ไขรหัสผ่าน</translation>
 <translation id="1483493594462132177">ส่ง</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1484979925941077974">เว็บไซต์กำลังใช้บลูทูธ</translation>
 <translation id="1485015260175968628">ส่วนขยายตอนนี้สามารถ:</translation>
 <translation id="1485141095922496924">เวอร์ชัน <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -627,6 +630,7 @@
 <translation id="1567387640189251553">มีการเชื่อมต่อกับแป้นพิมพ์อื่นหลังจากที่คุณป้อนรหัสผ่านครั้งล่าสุด แป้นพิมพ์นี้อาจพยายามขโมยการกดแป้นพิมพ์ของคุณ</translation>
 <translation id="156793199942386351">กำหนด "<ph name="CURRENTKEY" />" ให้กับการดำเนินการ "<ph name="ACTION" />" แล้ว กดแป้นใดก็ได้เพื่อ<ph name="RESPONSE" /></translation>
 <translation id="1567993339577891801">คอนโซล JavaScript</translation>
+<translation id="1569466257325986920">ในครั้งต่อไปที่มีการเปลี่ยนแปลงรหัสผ่านของบัญชี Google ระบบจะกู้คืนข้อมูลในเครื่องโดยอัตโนมัติหลังจากลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="1570604804919108255">เปิดเสียงการแจ้งเตือน</translation>
 <translation id="1571304935088121812">คัดลอกชื่อผู้ใช้</translation>
 <translation id="1571738973904005196">ดูแท็บ <ph name="TAB_ORIGIN" /></translation>
@@ -885,6 +889,7 @@
 <translation id="1781979858217752599">แชร์เสียงของหน้าต่าง</translation>
 <translation id="1782101999402987960">ผู้ดูแลระบบได้บล็อกการอัปเดต</translation>
 <translation id="1782196717298160133">กำลังค้นหาโทรศัพท์ของคุณ</translation>
+<translation id="1782541958479207225">{NUM_NOTES,plural, =1{โน้ต 1 รายการ}other{โน้ต # รายการ}}</translation>
 <translation id="1784707308176068866">ทำงานในเบื้องหลังเมื่อมีการขอจากแอปพลิเคชันที่มาพร้อมเครื่องที่ประสานงานกัน</translation>
 <translation id="1784849162047402014">อุปกรณ์เครื่องนี้เหลือพื้นที่ว่างในดิสก์ต่ำ</translation>
 <translation id="1787350673646245458">รูปภาพของผู้ใช้</translation>
@@ -1095,6 +1100,7 @@
 <translation id="1965624977906726414">ไม่มีสิทธิ์พิเศษใดๆ</translation>
 <translation id="1966649499058910679">ไฮไลต์แต่ละคำในขณะที่พูด</translation>
 <translation id="1967970931040389207">เปิดฮอตสปอต</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1969654639948595766">บันทึกข้อความ WebRTC (<ph name="WEBRTC_TEXT_LOG_COUNT" />)</translation>
 <translation id="1972325230031091483">คุณจะท่องเว็บได้เร็วขึ้นเนื่องจากมีการโหลดเนื้อหาโดยอิงจากหน้าเว็บที่กำลังเข้าชมโดยที่คุณไม่ต้องขอ</translation>
 <translation id="197288927597451399">เก็บไว้</translation>
@@ -1618,6 +1624,7 @@
 <translation id="2410754283952462441">เลือกบัญชี</translation>
 <translation id="241082044617551207">ปลั๊กอินที่ไม่รู้จัก</translation>
 <translation id="2410940059315936967">เว็บไซต์ที่คุณเข้าชมสามารถฝังเนื้อหาจากเว็บไซต์อื่นๆ เช่น รูปภาพ โฆษณา และข้อความ เราเรียกคุกกี้ที่เว็บไซต์อื่นๆ ตั้งค่าไว้ว่าคุกกี้ของบุคคลที่สาม</translation>
+<translation id="2411666601450687801">ไม่อนุญาตให้ใช้เครื่องเสมือนในอุปกรณ์นี้</translation>
 <translation id="2412753904894530585">Kerberos</translation>
 <translation id="2416435988630956212">แป้นฟังก์ชันของแป้นพิมพ์</translation>
 <translation id="2418307627282545839">ให้ความรู้สึกสว่างและปลอดโปร่ง</translation>
@@ -1676,6 +1683,7 @@
 <translation id="2467755475704469005">ไม่พบอุปกรณ์ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2468178265280335214">การเร่งความเร็วในการเลื่อนทัชแพด</translation>
 <translation id="2468205691404969808">ใช้คุกกี้เพื่อให้จดจำค่ากำหนดของคุณ แม้ว่าคุณไม่ได้เข้าชมหน้าเว็บเหล่านั้น</translation>
+<translation id="2468247643665097563">เรียงลำดับ</translation>
 <translation id="2468402215065996499">ทามาก็อตจิ</translation>
 <translation id="2468470085922875120">คุณใช้รหัสผ่านที่คาดเดาได้ยาก</translation>
 <translation id="2468845464436879514">{NUM_TABS,plural, =1{<ph name="GROUP_TITLE" /> - 1 แท็บ}other{<ph name="GROUP_TITLE" /> - # แท็บ}}</translation>
@@ -1817,7 +1825,6 @@
 <translation id="25899519884572181">ออกจากโหมดผู้อ่าน</translation>
 <translation id="2593499352046705383">ตรวจสอบว่าคุณได้สำรองข้อมูลไว้แล้วก่อนที่จะเริ่ม การติดตั้ง <ph name="DEVICE_OS" /> จะเขียนทับข้อมูลในฮาร์ดไดรฟ์ ดูข้อมูลเพิ่มเติมที่ g.co/flex/InstallGuide</translation>
 <translation id="2594999711683503743">ค้นหาด้วย Google หรือพิมพ์ URL</translation>
-<translation id="25957578727513093">เพิ่มแป้นพิมพ์ลัดไปยังเครื่องมือจัดการรหัสผ่านบน Google เพื่อให้เข้าถึงบริการได้เร็วขึ้น</translation>
 <translation id="2599048253926156421">คัดลอกชื่อผู้ใช้ไปยังคลิปบอร์ดแล้ว</translation>
 <translation id="2602501489742255173">เลื่อนขึ้นเพื่อเริ่มต้นใช้งาน</translation>
 <translation id="2603115962224169880">ล้างข้อมูลในคอมพิวเตอร์</translation>
@@ -1879,6 +1886,7 @@
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="265390580714150011">ค่าฟิลด์ </translation>
 <translation id="2654553774144920065">คำขอการพิมพ์</translation>
+<translation id="265748523151262387">เชื่อมต่อกับโทรศัพท์ของคุณอยู่เสมอ</translation>
 <translation id="2657612187216250073">การตั้งค่าการช่วยเหลือพิเศษสำหรับตัวชี้</translation>
 <translation id="2658941648214598230">แสดงเนื้อหาต้นฉบับไหม</translation>
 <translation id="2659381484350128933"><ph name="FOOTNOTE_POINTER" />ฟีเจอร์แตกต่างกันไปตามอุปกรณ์</translation>
@@ -2395,6 +2403,7 @@
 <translation id="3103451787721578293">โปรดป้อนเหตุผลของการอัปโหลดข้อมูลนี้</translation>
 <translation id="3105339775057145050">การอัปเดตที่ไม่สำเร็จครั้งล่าสุด</translation>
 <translation id="3105796011181310544">ต้องการเปลี่ยนกลับไปใช้ Google ไหม</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (บลูทูธ)</translation>
 <translation id="310671807099593501">เว็บไซต์กำลังใช้บลูทูธ</translation>
 <translation id="3108931485517391283">รับไม่ได้</translation>
 <translation id="3108957152224931571">สีไฮไลต์</translation>
@@ -3036,6 +3045,7 @@
 <translation id="371300529209814631">กลับ/ไปข้างหน้า</translation>
 <translation id="3713047097299026954">คีย์ความปลอดภัยนี้ไม่มีข้อมูลการลงชื่อเข้าใช้ใดๆ</translation>
 <translation id="3713091615825314967">การอัปเดตอัตโนมัติเปิดอยู่</translation>
+<translation id="371370241367527062">ไมโครโฟนด้านหน้า</translation>
 <translation id="3714195043138862580">อุปกรณ์สาธิตนี้ได้รับการกำหนดไว้ให้อยู่ในสถานะยกเลิกการจัดสรร</translation>
 <translation id="3719826155360621982">หน้าแรก</translation>
 <translation id="372062398998492895">CUPS</translation>
@@ -3131,6 +3141,7 @@
 <translation id="3797900183766075808">&amp;ค้นหา “<ph name="SEARCH_TERMS" />” ด้วย <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3798449238516105146">รุ่น</translation>
 <translation id="3798632811625902122">อุปกรณ์บลูทูธ <ph name="DEVICE" /> ต้องการสิทธิ์ในการจับคู่</translation>
+<translation id="3798670284305777884">ลำโพง (ภายใน)</translation>
 <translation id="3799128412641261490">การตั้งค่าการเข้าถึงด้วยสวิตช์</translation>
 <translation id="3800030395703848668">ดูตัวเลือกรายการ</translation>
 <translation id="3800806661949714323">แสดงทั้งหมด (แนะนำ)</translation>
@@ -5130,6 +5141,7 @@
 <translation id="5643620609347735571">ล้างและดำเนินการต่อ</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="5646558797914161501">นักธุรกิจ</translation>
+<translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5648166631817621825">7 วันที่แล้ว</translation>
 <translation id="5651308944918885595">การค้นพบได้ของการแชร์ใกล้เคียง</translation>
 <translation id="5653154844073528838">คุณมีเครื่องพิมพ์ที่บันทึกไว้ <ph name="PRINTER_COUNT" /> เครื่อง</translation>
@@ -5288,6 +5300,7 @@
 <translation id="5801051031414037185">ตั้งค่าโทรศัพท์</translation>
 <translation id="5801568494490449797">ค่ากำหนด</translation>
 <translation id="5804241973901381774">การอนุญาต</translation>
+<translation id="5804259315582798390">เปิดใช้การกู้คืนข้อมูลในเครื่องไม่สำเร็จ</translation>
 <translation id="5805268472388605531">กดแป้นบนแป้นพิมพ์ค้างไว้เพื่อดูเครื่องหมายการเน้นเสียงและสัญลักษณ์พิเศษ</translation>
 <translation id="5805697420284793859">ตัวจัดการหน้าต่าง</translation>
 <translation id="5806447147478173900">พื้นที่เก็บข้อมูลทั้งหมดที่เว็บไซต์ต่างๆ ที่แสดงอยู่ใช้: <ph name="TOTAL_USAGE" /></translation>
@@ -5944,6 +5957,7 @@
 <translation id="6410668567036790476">เพิ่มเครื่องมือค้นหา</translation>
 <translation id="641469293210305670">ติดตั้งอัปเดตและแอป</translation>
 <translation id="6414878884710400018">เปิดค่ากำหนดของระบบ</translation>
+<translation id="6415816101512323589">เปิดการกู้คืนข้อมูลในเครื่องเพื่อปกป้องข้อมูลของคุณไหม</translation>
 <translation id="6415900369006735853">เชื่อมต่ออินเทอร์เน็ตผ่านโทรศัพท์</translation>
 <translation id="6416743254476733475">อนุญาตหรือบล็อกในคอมพิวเตอร์</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
@@ -6237,6 +6251,7 @@
 <translation id="6678717876183468697">URL ของคำค้นหา</translation>
 <translation id="6680442031740878064">พร้อมใช้งาน: <ph name="AVAILABLE_SPACE" /></translation>
 <translation id="6680650203439190394">ความเร็ว</translation>
+<translation id="6683022854667115063">หูฟัง</translation>
 <translation id="6683087162435654533">คืนค่าแท็บทั้งหมด</translation>
 <translation id="6684827949542560880">กำลังดาวน์โหลดอัปเดตล่าสุด</translation>
 <translation id="668599234725812620">เปิด Google Play</translation>
@@ -6668,6 +6683,7 @@
 <translation id="7047059339731138197">เลือกพื้นหลัง</translation>
 <translation id="7049293980323620022">เก็บไฟล์ไว้ไหม</translation>
 <translation id="7050037487872780845">การกำหนดค่าฮอตสปอตไม่ถูกต้อง</translation>
+<translation id="7051551856857948729">ซ่อนค่า IBAN</translation>
 <translation id="7052237160939977163">ส่งข้อมูลการติดตามผลการปฏิบัติงาน</translation>
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7055152154916055070">การเปลี่ยนเส้นทางถูกบล็อก</translation>
@@ -6735,7 +6751,6 @@
 <translation id="711840821796638741">แสดงบุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="711985611146095797">หน้านี้ช่วยให้คุณจัดการบัญชี Google ที่ลงชื่อเข้าใช้ได้ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="7120762240626567834">การเข้าชมจากเบราว์เซอร์ Chrome และ Android จะถูกบล็อกหากไม่ได้เชื่อมต่อ VPN</translation>
-<translation id="7120865473764644444">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์ได้ กำลังลองใหม่...</translation>
 <translation id="7121438501124788993">โหมดของนักพัฒนาซอฟต์แวร์</translation>
 <translation id="7121728544325372695">เครื่องหมายขีดกลางอัจฉริยะ</translation>
 <translation id="7123030151043029868">ได้รับอนุญาตให้ดาวน์โหลดไฟล์หลายไฟล์โดยอัตโนมัติ</translation>
@@ -6865,6 +6880,7 @@
 <translation id="7255002516883565667">ขณะนี้คุณมีบัตรใบเดียวที่ใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
 <translation id="7255935316994522020">นำไปใช้</translation>
 <translation id="7256069762010468647">เว็บไซต์กำลังใช้กล้องของคุณ</translation>
+<translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="7256710573727326513">เปิดในแท็บ</translation>
 <translation id="7257173066616499747">เครือข่าย Wi-Fi</translation>
 <translation id="725758059478686223">บริการการพิมพ์</translation>
@@ -8375,6 +8391,7 @@
 <translation id="8634348081024879304">คุณจะใช้บัตรเสมือนกับ Google Pay ไม่ได้อีกต่อไป <ph name="BEGIN_LINK" />ดูข้อมูลเกี่ยวกับบัตรเสมือน<ph name="END_LINK" /></translation>
 <translation id="8635628933471165173">กำลังโหลดซ้ำ...</translation>
 <translation id="8636284842992792762">กำลังเริ่มการทำงานของส่วนขยาย...</translation>
+<translation id="8636323803535540285">เพิ่มทางลัดไปยัง <ph name="BRAND" /> เพื่อให้มาที่นี่ได้เร็วขึ้น</translation>
 <translation id="8636500887554457830">ไม่อนุญาตให้เว็บไซต์ส่งป๊อปอัปหรือใช้การเปลี่ยนเส้นทาง</translation>
 <translation id="8637688295594795546">มีอัปเดตระบบพร้อมใช้งาน กำลังเตรียมการดาวน์โหลด…</translation>
 <translation id="8639047128869322042">กำลังตรวจหาซอฟต์แวร์ที่เป็นอันตราย...</translation>
@@ -8534,6 +8551,7 @@
 <translation id="8767621466733104912">อัปเดต Chrome สำหรับผู้ใช้ทุกคนโดยอัตโนมัติ</translation>
 <translation id="8770406935328356739">ไดเรกทอรีหลักของส่วนขยาย</translation>
 <translation id="8771300903067484968">มีการรีเซ็ตพื้นหลังของหน้าเริ่มต้นเป็นพื้นหลังเริ่มต้น</translation>
+<translation id="8773280816776735812">แสดงค่า IBAN</translation>
 <translation id="8773302562181397928">บันทึก <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">ยืนยันการคืนค่า</translation>
 <translation id="8774934320277480003">ขอบบน</translation>

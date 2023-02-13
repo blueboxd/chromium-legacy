@@ -1673,31 +1673,6 @@ ci.builder(
     },
 )
 
-# Start - Reclient migration, phase 2, block 1 shadow builders
-ci.builder(
-    name = "Linux CFI (reclient shadow)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(config = "chromium"),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    cores = 32,
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "cfi",
-        short_name = "lnx",
-    ),
-    # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
-    execution_timeout = 5 * time.hour,
-    reclient_jobs = 400,
-)
-# End - Reclient migration, phase 2, block 1 shadow builders
-
 ci.builder(
     name = "Win x64 Builder (reclient)",
     builder_spec = builder_config.builder_spec(
@@ -1906,6 +1881,31 @@ fyi_mac_builder(
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
+    schedule = "with 5h interval",
+)
+
+fyi_mac_builder(
+    name = "mac13-wpt-content-shell-fyi-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = [],
+    builderless = False,
+    os = os.MAC_ANY,
+    cores = None,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    # TODO(crbug.com/1385202): Enable scheduler when machine has been allocated.
     schedule = "with 5h interval",
 )
 
@@ -2303,7 +2303,7 @@ fyi_mac_builder(
         chromium_config = builder_config.chromium_config(
             config = "chromium",
             apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
+            build_config = builder_config.build_config.DEBUG,
             target_arch = builder_config.target_arch.ARM,
             target_bits = 64,
         ),

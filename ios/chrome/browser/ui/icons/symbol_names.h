@@ -22,6 +22,7 @@ extern NSString* const kSafetyCheckSymbol;
 extern NSString* const kGoogleIconSymbol;
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kArrowClockWiseSymbol;
+extern NSString* const kIncognitoSymbol;
 extern NSString* const kSquareNumberSymbol;
 extern NSString* const kTranslateSymbol;
 extern NSString* const kCameraSymbol;
@@ -46,7 +47,8 @@ extern NSString* const kDownTrendSymbol;
 extern NSString* const kGoogleShieldSymbol;
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kShieldSymbol;
-extern NSString* const kIncognitoSymbol;
+extern NSString* const kCloudSlashSymbol;
+extern NSString* const kCloudAndArrowUpSymbol;
 
 // Custom symbol names which can be configured with a color palette. iOS 15+
 // only.
@@ -126,6 +128,7 @@ extern NSString* const kPhoneFillSymbol;
 extern NSString* const kDownloadPromptFillSymbol;
 extern NSString* const kDownloadPromptFilliOS14Symbol;
 extern NSString* const kDownloadDocFillSymbol;
+extern NSString* const kDocSymbol;
 extern NSString* const kOpenInDownloadsSymbol;
 extern NSString* const kOpenInDownloadsiOS14Symbol;
 extern NSString* const kExternalLinkSymbol;
@@ -133,6 +136,10 @@ extern NSString* const kChevronForwardSymbol;
 extern NSString* const kGlobeAmericasSymbol;
 extern NSString* const kGlobeSymbol;
 extern NSString* const kPersonCropCircleSymbol;
+extern NSString* const kEqualSymbol;
+extern NSString* const kBookClosedSymbol;
+extern NSString* const kSunFillSymbol;
+extern NSString* const kCalendarSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

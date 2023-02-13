@@ -22,25 +22,13 @@ class TreeUi {
     /** @type {string} Insert zero-width space after capture group. */
     this._ZERO_WIDTH_SPACE = '$&\u200b';
 
-    /** @type {HTMLTemplateElement} Template for groups in the tree. */
-    this._templateGroup = /** @type {HTMLTemplateElement} */ (
-        document.getElementById('template-symboltree-group'));
-
-    /** @type {HTMLTemplateElement} Template for leaves in the tree. */
-    this.templateLeaf = /** @type {HTMLTemplateElement} */ (
-        document.getElementById('template-symboltree-leaf'));
-
-    /** @type {HTMLUListElement} Symbol tree element. */
-    this._symbolTree =
-        /** @type {HTMLUListElement} */ (document.getElementById('symboltree'));
-
     /**
      * @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>}
      * HTMLCollection of all tree node elements. Updates itself automatically.
      */
     this._liveNodeList =
         /** @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>} */ (
-            this._symbolTree.getElementsByClassName('node'));
+            g_el.ulSymbolTree.getElementsByClassName('node'));
 
     /**
      * @type {WeakMap<HTMLElement, Readonly<TreeNode>>}
@@ -48,6 +36,31 @@ class TreeUi {
      * listeners and other methods can query the original data.
      */
     this._uiNodeData = new WeakMap();
+
+    // Event listeners need to be bound to this, but each fresh .bind creates a
+    // function, which wastes memory and not usable for removeEventListener().
+    // The |_bound*()| functions aim to solve the abolve.
+
+    /** @private @const {function(!MouseEvent): *} */
+    this._boundToggleTreeElement = this._toggleTreeElement.bind(this);
+
+    /** @private @const {function(!KeyboardEvent): *} */
+    this._boundHandleKeyNavigation = this._handleKeyNavigation.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this._boundHandleMouseOver = this._handleMouseOver.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this._boundHandleRefocus = this._handleRefocus.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this._boundHandleFocusIn = this._handleFocusIn.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this._boundHandleFocusOut = this._handleFocusOut.bind(this);
+
+    /** @private @const {function(!!TreeNode): DocumentFragment} */
+    this._boundMakeTreeElement = this.makeTreeElement.bind(this);
   }
 
   /**
@@ -92,13 +105,13 @@ class TreeUi {
 
   /**
    * Click event handler to expand or close the child group of a tree.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   async _toggleTreeElement(event) {
     event.preventDefault();
 
-    // See `#template-symboltree-group` for the relation of these elements.
+    // See `#tmpl-symbol-tree-group` for the relation of these elements.
     const link = /** @type {HTMLAnchorElement} */ (event.currentTarget);
     const treeitem = /** @type {HTMLLIElement} */ (link.parentElement);
     const group = /** @type {HTMLUListElement} */ (link.nextElementSibling);
@@ -127,7 +140,7 @@ class TreeUi {
         this._uiNodeData.set(link, data);
       }
 
-      const newElements = data.children.map(this.makeTreeElement.bind(this));
+      const newElements = data.children.map(this._boundMakeTreeElement);
       if (newElements.length === 1) {
         // Open the inner element if it only has a single child.
         // Ensures nodes like "java"->"com"->"google" are opened all at once.
@@ -157,7 +170,7 @@ class TreeUi {
 
   /**
    * Tree view keydown event handler to move focus for the given element.
-   * @param {KeyboardEvent} event Event passed from keydown event listener.
+   * @param {!KeyboardEvent} event Event passed from keydown event listener.
    * @private
    */
   _handleKeyNavigation(event) {
@@ -168,7 +181,7 @@ class TreeUi {
     /**
      * @type {HTMLAnchorElement | HTMLSpanElement} Tree node element, either a
      * tree or leaf. Trees use `<a>` tags, leaves use `<span>` tags.
-     * See `#template-symboltree-group` and `#template-symboltree-leaf`.
+     * See `#tmpl-symbol-tree-group` and `#tmpl-symbol-tree-leaf`.
      */
     const link = /** @type {HTMLAnchorElement | HTMLSpanElement} */ (
         event.target);
@@ -299,34 +312,9 @@ class TreeUi {
   }
 
   /**
-   * Returns an event handler for elements with the `data-dynamic` attribute.
-   * The handler updates the state manually, then iterates all nodes and applies
-   * `callback` to certain child elements of each node.
-   * The elements are expected to be direct children of `.node` elements.
-   * @param {string} selector
-   * @param {(el: HTMLElement, data: TreeNode) => void} callback
-   * @returns {(event: Event) => void}
-   * @private
-   */
-  _getDynamicInputChangeHandler(selector, callback) {
-    return event => {
-      // Update state early.
-      // This way, the state will be correct if `callback` looks at it.
-      state.set(/** @type {HTMLInputElement} */ (event.target).name,
-                /** @type {HTMLInputElement} */ (event.target).value);
-
-      for (const link of this._liveNodeList) {
-        /** @type {HTMLElement} */
-        const element = link.querySelector(selector);
-        callback(element, this._uiNodeData.get(link));
-      }
-    };
-  }
-
-  /**
    * Displays the infocard when a node is hovered over, unless a node is
    * currently focused.
-   * @param {MouseEvent} event Event from mouseover listener.
+   * @param {!MouseEvent} event Event from mouseover listener.
    * @private
    */
   _handleMouseOver(event) {
@@ -339,7 +327,7 @@ class TreeUi {
 
   /**
    * Mousedown handler for an already-focused leaf node, to toggle it off.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    * @private
    */
   _handleRefocus(event) {
@@ -351,12 +339,13 @@ class TreeUi {
 
   /**
    * Focusin handler for a node.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
+   * @private
    */
   _handleFocusIn(event) {
     const node = /** @type {!HTMLElement} */ (event.target);
     if (this._isLeafNode(node)) {
-      node.addEventListener('mousedown', this._handleRefocus.bind(this));
+      node.addEventListener('mousedown', this._boundHandleRefocus);
     }
     displayInfocard(/** @type {!TreeNode} */ (this._uiNodeData.get(node)));
     /** @type {HTMLElement} */ (event.currentTarget)
@@ -365,13 +354,13 @@ class TreeUi {
 
   /**
    * Focusout handler for a node.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
    * @private
    */
   _handleFocusOut(event) {
     const node = /** @type {!HTMLElement} */ (event.target);
     if (this._isLeafNode(node)) {
-      node.removeEventListener('mousedown', this._handleRefocus.bind(this));
+      node.removeEventListener('mousedown', this._boundHandleRefocus);
     }
     /** @type {HTMLElement} */ (event.currentTarget)
         .parentElement.classList.remove('focused');
@@ -382,13 +371,14 @@ class TreeUi {
    * The element will represent a tree or a leaf, depending on if the tree node
    * object has any children. Trees use a slightly different template and have
    * click event listeners attached.
-   * @param {TreeNode} node Data to use for the UI.
+   * @param {!TreeNode} node Data to use for the UI.
    * @public
    * @returns {DocumentFragment}
    */
   makeTreeElement(node) {
     const isLeaf = node.children && node.children.length === 0;
-    const template = isLeaf ? this.templateLeaf : this._templateGroup;
+    const template =
+        isLeaf ? g_el.tmplSymbolTreeLeaf : g_el.tmplSymbolTreeGroup;
     const element = document.importNode(template.content, true);
     const listItemEl = element.firstElementChild;
     const link = /** @type {HTMLElement} */ (listItemEl.firstElementChild);
@@ -423,9 +413,9 @@ class TreeUi {
     // Set the byte size and hover text.
     this._setSize(element.querySelector('.size'), node);
 
-    link.addEventListener('mouseover', this._handleMouseOver.bind(this));
+    link.addEventListener('mouseover', this._boundHandleMouseOver);
     if (!isLeaf) {
-      link.addEventListener('click', this._toggleTreeElement.bind(this));
+      link.addEventListener('click', this._boundToggleTreeElement);
     }
 
     return element;
@@ -434,24 +424,24 @@ class TreeUi {
   /** @public */
   init() {
     // When the `byteunit` state changes, update all .size elements.
-    /** @type {HTMLElement} */ (form.elements.namedItem('byteunit'))
-        .addEventListener(
-            'change',
-            this._getDynamicInputChangeHandler(
-                '.size', this._setSize.bind(this)));
+    state.stByteUnit.addObserver(() => {
+      for (const link of this._liveNodeList) {
+        /** @type {HTMLElement} */
+        const element = link.querySelector('.size');
+        this._setSize(element, this._uiNodeData.get(link));
+      }
+    });
 
-    this._symbolTree.addEventListener(
-        'keydown', this._handleKeyNavigation.bind(this));
-    this._symbolTree.addEventListener(
-        'focusin', this._handleFocusIn.bind(this));
-    this._symbolTree.addEventListener(
-        'focusout', this._handleFocusOut.bind(this));
+    g_el.ulSymbolTree.addEventListener(
+        'keydown', this._boundHandleKeyNavigation);
+    g_el.ulSymbolTree.addEventListener('focusin', this._boundHandleFocusIn);
+    g_el.ulSymbolTree.addEventListener('focusout', this._boundHandleFocusOut);
 
     window.addEventListener('keydown', event => {
       if (event.key === '?' &&
           /** @type {HTMLElement} */ (event.target).tagName !== 'INPUT') {
         // Open help when "?" is pressed.
-        document.getElementById('faq').click();
+        g_el.linkFaq.click();
       }
     });
   }
@@ -459,21 +449,20 @@ class TreeUi {
 
 {
   class ProgressBar {
-    /** @param {string} id */
-    constructor(id) {
-      /** @type {HTMLProgressElement} */
-      this._element = /** @type {HTMLProgressElement} */ (
-          document.getElementById(id));
+    /** @param {!HTMLProgressElement} elt */
+    constructor(elt) {
+      /** @private {HTMLProgressElement} */
+      this.elt = elt;
 
-      /** @type {number} */
-      this._lastValue = this._element.value;
+      /** @private {number} */
+      this.prevVal = this.elt.value;
     }
 
     /** @param {number} val */
     setValue(val) {
-      if (val === 0 || val >= this._lastValue) {
-        this._element.value = val;
-        this._lastValue = val;
+      if (val === 0 || val >= this.prevVal) {
+        this.elt.value = val;
+        this.prevVal = val;
       } else {
         // Reset to 0 so the progress bar doesn't animate backwards.
         this.setValue(0);
@@ -482,26 +471,8 @@ class TreeUi {
     }
   }
 
-  /** @type {HTMLUListElement} */
-  const _symbolTree = /** @type {HTMLUListElement} */ (
-      document.getElementById('symboltree'));
-
-  /** @type {HTMLInputElement} */
-  const _fileUpload = /** @type {HTMLInputElement} */ (
-      document.getElementById('upload'));
-
-  /** @type {HTMLInputElement} */
-  const _dataUrlInput = /** @type {HTMLInputElement} */ (
-      form.elements.namedItem('load_url'));
-
-  /** @type {HTMLInputElement} */
-  const _metadataView = document.querySelector('#metadata-view');
-
-  /** @type {HTMLInputElement} */
-  const _metadataContent = document.querySelector('#metadata-content');
-
   /** @type {ProgressBar} */
-  const _progress = new ProgressBar('progress');
+  const _progress = new ProgressBar(g_el.progAppbar);
 
   /** @type {!TreeUi} */
   const _treeUi = new TreeUi();
@@ -531,11 +502,9 @@ class TreeUi {
     state.setDiffMode(diffMode);
     document.body.classList.toggle('diff', Boolean(diffMode));
 
-    const groupByEl = /** @type {HTMLInputElement} */ (
-        document.getElementById('group-by-container'));
     processBuildTreeResponse(message);
     setMetadataContent(metadata);
-    _metadataView.classList.toggle('active', true);
+    g_el.divMetadataView.classList.toggle('active', true);
     setReviewInfo(metadata);
   }
 
@@ -545,16 +514,13 @@ class TreeUi {
    */
   function setReviewInfo(metadata) {
     const processReviewInfo = (field) => {
-      const reviewTextElement = /** @type {HTMLAnchorElement} */ (
-          document.getElementById('review-text'));
-      const reviewInfoElement = document.getElementById('review-info');
       const urlExists = Boolean(
           field?.hasOwnProperty('url') && field?.hasOwnProperty('title'));
       if (urlExists) {
-        reviewTextElement.href = field['url'];
-        reviewTextElement.textContent = field['title'];
+        g_el.linkReviewText.href = field['url'];
+        g_el.linkReviewText.textContent = field['title'];
       }
-      reviewInfoElement.style.display = urlExists ? '' : 'none';
+      g_el.divReviewInfo.style.display = urlExists ? '' : 'none';
     };
     const sizeFile = metadata['size_file'];
     if (sizeFile?.hasOwnProperty('build_config')) {
@@ -588,7 +554,7 @@ class TreeUi {
     // different frame than the above tree element creation.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        dom.replace(_symbolTree, rootElement);
+        dom.replace(g_el.ulSymbolTree, rootElement);
       });
     });
   }
@@ -598,12 +564,7 @@ class TreeUi {
    * @param {?string=} beforeUrl
    * @param {?string=} loadUrl
    */
-  function displayOrHideDownloadButton(beforeUrl=null, loadUrl=null) {
-    const beforeAnchor = /** @type {HTMLAnchorElement} */ (
-        document.getElementById('before-anchor'));
-    const loadAnchor =  /** @type {HTMLAnchorElement} */ (
-        document.getElementById('load-anchor'));
-
+  function displayOrHideDownloadButton(beforeUrl = null, loadUrl = null) {
     const updateAnchor = (anchor, url) => {
       anchor.style.display = url ? '' : 'none';
       if (anchor.href && anchor.href.startsWith('blob:')) {
@@ -611,12 +572,12 @@ class TreeUi {
       }
       anchor.href = url;
     };
-    updateAnchor(beforeAnchor, beforeUrl);
-    updateAnchor(loadAnchor, loadUrl);
+    updateAnchor(g_el.linkDownloadBefore, beforeUrl);
+    updateAnchor(g_el.linkDownloadLoad, loadUrl);
 
-    if (_dataUrlInput.value.includes('.sizediff')) {
-      loadAnchor.title = 'Download .sizediff file';
-      loadAnchor.download = 'load_size.sizediff';
+    if (/** @type {string} */ (state.stLoadUrl.get()).includes('.sizediff')) {
+      g_el.linkDownloadLoad.title = 'Download .sizediff file';
+      g_el.linkDownloadLoad.download = 'load_size.sizediff';
     }
   }
 
@@ -625,8 +586,7 @@ class TreeUi {
    * @param {boolean} show
    */
   function toggleNoSymbolsMessage(show) {
-    const errorModal = document.getElementById('no-symbols-msg');
-    errorModal.style.display = show ? '' : 'none';
+    g_el.divNoSymbolsMsg.style.display = show ? '' : 'none';
   }
 
   /**
@@ -683,7 +643,7 @@ class TreeUi {
       }
       metadataStr += 'Metadata for Load Size File:\n' + sizeMetadataStr;
     }
-    _metadataContent.textContent = metadataStr;
+    g_el.preMetadataContent.textContent = metadataStr;
   }
 
   /** @param {!Array<!URL>} urlsToLoad */
@@ -706,14 +666,13 @@ class TreeUi {
     processBuildTreeResponse(message);
   }
 
-  _fileUpload.addEventListener('change', async (event) => {
+  g_el.fileUpload.addEventListener('change', async (event) => {
     _progress.setValue(0.1);
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
     const file = input.files.item(0);
     const fileUrl = URL.createObjectURL(file);
 
-    _dataUrlInput.value = '';
-    _dataUrlInput.dispatchEvent(new Event('change'));
+    state.stLoadUrl.set(fileUrl);
 
     const worker = restartWorker(onProgressMessage);
     _progress.setValue(0.3);
@@ -724,7 +683,7 @@ class TreeUi {
     input.value = '';
   });
 
-  form.addEventListener('change', event => {
+  g_el.frmOptions.addEventListener('change', event => {
     // Update the tree when options change.
     // Some options update the tree themselves, don't regenerate when those
     // options (marked by `data-dynamic`) are changed.
@@ -733,23 +692,21 @@ class TreeUi {
       rebuildTree();
     }
   });
-  form.addEventListener('submit', event => {
+  g_el.frmOptions.addEventListener('submit', event => {
     event.preventDefault();
     rebuildTree();
   });
 
   // Toggles the metadata HTML element on click.
-  _metadataView.addEventListener('click', () => {
-    _metadataContent.classList.toggle('active');
+  g_el.divMetadataView.addEventListener('click', () => {
+    g_el.preMetadataContent.classList.toggle('active');
   });
 
-  const searchParams = new URLSearchParams(location.search);
   const urlsToLoad = [];
-  for (const key of ['before_url', 'load_url']) {
-    if (searchParams.has(key))
-      urlsToLoad.push(new URL(searchParams.get(key), document.baseURI));
+  for (const url of [state.stBeforeUrl.get(), state.stLoadUrl.get()]) {
+    if (url)
+      urlsToLoad.push(new URL(/** @type {string} */ (url), document.baseURI));
   }
-  if (urlsToLoad.length > 0) {
+  if (urlsToLoad.length > 0)
     performInitialLoad(urlsToLoad);
-  }
 }

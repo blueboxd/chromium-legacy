@@ -843,7 +843,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
 
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
+// TODO(https://crbug.com/1413090): test is flaky.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_UpdateMultiAppKioskRemoveOneApp) {
   TestAppInfo primary_app(kTestPrimaryKioskApp, "2.0.0",
                           std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
                           extensions::Manifest::TYPE_PLATFORM_APP);
@@ -935,7 +937,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
 // This simulates the stand-alone ARC kiosk app case. The primary app has a
 // shared ARC runtime but no secondary apps.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithSharedModuleNoSecondary) {
+// TODO(https://crbug.com/1413090): Fix flake and re-enable test.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_LaunchAppWithSharedModuleNoSecondary) {
   LaunchAppWithSharedModule();
 }
 
@@ -947,7 +951,8 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchAppWithUpdatedModule) {
 
 // This simulates the case the shared module is updated to a newer version.
 // See crbug.com/555083.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithUpdatedModule) {
+// TODO(https://crbug.com/1413090): Fix flake and re-enable test.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_LaunchAppWithUpdatedModule) {
   // No update for primary app, while the shared module is set up to a new
   // version on cws.
   set_test_app_id(kTestSharedModulePrimaryApp);

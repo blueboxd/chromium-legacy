@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_for_testing.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -590,10 +590,10 @@ class PartitionAllocTest
   bool UsePkeyPool() const { return GetParam().use_pkey_pool; }
   bool UseBRPPool() const { return allocator.root()->brp_enabled(); }
 
-  PartitionAllocator<internal::ThreadSafe> allocator;
-  PartitionAllocator<internal::ThreadSafe> aligned_allocator;
+  partition_alloc::PartitionAllocatorForTesting allocator;
+  partition_alloc::PartitionAllocatorForTesting aligned_allocator;
 #if BUILDFLAG(ENABLE_PKEYS)
-  PartitionAllocator<internal::ThreadSafe> pkey_allocator;
+  partition_alloc::PartitionAllocatorForTesting pkey_allocator;
 #endif
   size_t test_bucket_index_;
 
@@ -1301,6 +1301,7 @@ TEST_P(PartitionAllocTest, AllocGetSizeAndStart) {
     }
   }
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+  allocator.root()->Free(ptr);
 
   // Allocate the maximum allowed bucketed size.
   requested_size = kMaxBucketed - ExtraAllocSize(allocator);
@@ -2607,6 +2608,8 @@ TEST_P(PartitionAllocDeathTest, FreelistCorruption) {
   // Restore the freelist entry value, otherwise freelist corruption is detected
   // in TearDown(), crashing this process.
   uaf_data[0] = previous_uaf_data;
+
+  allocator.root()->Free(fake_freelist_entry);
 }
 
 // With BUILDFLAG(PA_DCHECK_IS_ON), cookie already handles off-by-one detection.
@@ -3780,6 +3783,8 @@ TEST_P(PartitionAllocTest, GetUsableSizeWithMac11MallocSizeHack) {
       PartitionRoot<ThreadSafe>::GetUsableSizeWithMac11MallocSizeHack(ptr);
   EXPECT_EQ(usable_size, internal::kMac11MallocSizeHackUsableSize);
   EXPECT_EQ(usable_size_with_hack, size);
+
+  allocator.root()->Free(ptr);
 }
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 
@@ -4126,6 +4131,7 @@ void PartitionAllocTest::RunRefCountReallocSubtest(size_t orig_size,
     EXPECT_TRUE(ref_count2->IsAliveWithNoKnownRefs());
 
     EXPECT_TRUE(ref_count1->Release());
+    PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr1));
   }
 
   allocator.root()->Free(ptr2);
@@ -4218,6 +4224,8 @@ TEST_P(UnretainedDanglingRawPtrTest, UnretainedDanglingPtrShouldReport) {
   ref_count->ReportIfDangling();
   EXPECT_EQ(g_unretained_dangling_raw_ptr_detected_count, 1);
   EXPECT_TRUE(ref_count->Release());
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 #if !BUILDFLAG(HAS_64_BIT_POINTERS)
@@ -4306,6 +4314,8 @@ TEST_P(PartitionAllocTest, DanglingPtr) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 2);
 #endif
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // Allocate memory, and reference it from 3
@@ -4350,6 +4360,8 @@ TEST_P(PartitionAllocTest, DanglingDanglingPtr) {
   EXPECT_TRUE(ref_count->ReleaseFromUnprotectedPtr());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // When 'free' is called, it remain one raw_ptr<> and one
@@ -4402,6 +4414,8 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseRawPtrFirst) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 1);
 #endif
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // When 'free' is called, it remain one raw_ptr<> and one
@@ -4456,6 +4470,8 @@ TEST_P(PartitionAllocTest, DanglingMixedReleaseDanglingPtrFirst) {
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 1);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 1);
 #endif
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // When 'free' is called, it remains one
@@ -4496,6 +4512,8 @@ TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtr) {
   EXPECT_TRUE(ref_count->ReleaseFromUnprotectedPtr());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // Same as 'DanglingPtrUsedToAcquireNewRawPtr', but release the
@@ -4535,6 +4553,8 @@ TEST_P(PartitionAllocTest, DanglingPtrUsedToAcquireNewRawPtrVariant) {
   EXPECT_TRUE(ref_count->Release());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 // Acquire a raw_ptr<T>, and release it before freeing memory. In the
@@ -4571,6 +4591,8 @@ TEST_P(PartitionAllocTest, RawPtrReleasedBeforeFree) {
   EXPECT_TRUE(ref_count->ReleaseFromUnprotectedPtr());
   EXPECT_EQ(g_dangling_raw_ptr_detected_count, 0);
   EXPECT_EQ(g_dangling_raw_ptr_released_count, 0);
+
+  PartitionAllocFreeForRefCounting(allocator.root()->ObjectToSlotStart(ptr));
 }
 
 #if defined(PA_HAS_DEATH_TESTS)
@@ -5500,6 +5522,8 @@ TEST_P(PartitionAllocTest, FreeSlotBitmapMarkedAsUsedAfterAlloc) {
   void* ptr = allocator.root()->Alloc(kTestAllocSize, type_name);
   uintptr_t slot_start = allocator.root()->ObjectToSlotStart(ptr);
   EXPECT_TRUE(FreeSlotBitmapSlotIsUsed(slot_start));
+
+  allocator.root()->Free(ptr);
 }
 
 TEST_P(PartitionAllocTest, FreeSlotBitmapMarkedAsFreeAfterFree) {

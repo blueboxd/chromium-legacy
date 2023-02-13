@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rohitrao@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -191,33 +191,6 @@ chromium-metrics-reviews@google.com.
   <owner>bling-team@google.com</owner>
   <summary>
     When the user taps on a Content Suggestions Module on the Start Surface.
-  </summary>
-</histogram>
-
-<histogram name="IOS.Cookies.GetCookiesForURLCallResult"
-    enum="IOSGetCookiesForURLCallResult" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    Recorded to indicate whether the GetCookiesForURL call found cookies or not
-    when called on a specific system cookie store implementation. Most of the
-    cookies fetching on iOS Chromium is done by the WKWebView and doesn't
-    involve calling GetCookiesForURL. The method is only called when a request
-    is made by the UrlRequestFetcher for cases that are not handled by WKWebView
-    (eg. Downloads, Auto Suggestions and NTP tiles).
-  </summary>
-</histogram>
-
-<histogram name="IOS.Cookies.GetCookiesForURLCallStoreType"
-    enum="IOSGetCookiesForURLCallCookieStoreType" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    The system cookie store type used when GetCookiesForURL method is called.
-    Most of the cookies fetching on iOS Chromium is done by the WKWebView and
-    doesn't involve calling GetCookiesForURL. The method is only called when a
-    request is made by the UrlRequestFetcher for cases that are not handled by
-    WKWebView (eg. Downloads, Auto Suggestions and NTP tiles).
   </summary>
 </histogram>
 
@@ -599,7 +572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ExperienceKitCalendar.TextClassifierModelAvailable"
-    enum="BooleanAvailable" expires_after="2023-06-04">
+    enum="BooleanAvailable" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1233,6 +1206,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.NavigationStateNotFinishedInLoadCancelled" enum="Boolean"
+    expires_after="2023-09-24">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The method -[CRWWKNavigationHandler loadCancelled] updates the navigation
+    state to finished if it is any other state. Additionally, if
+    `beingDestroyed` is false, the webstate's loading state is set to false.
+    There is a long standing TODO in this method with the comment: &quot;Check
+    if this function should be removed.&quot; This metric is logged when the
+    logic in this method is triggered. The results will be reviewed to see if
+    this logic is still ever called or if it can now be removed.
+  </summary>
+</histogram>
+
 <histogram name="IOS.NSString.stringByReplacingCharactersInRange.NilArgument"
     enum="Boolean" expires_after="2022-12-11">
   <owner>rohitrao@chromium.org</owner>
@@ -1289,14 +1277,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.OverflowMenu.ActionType" enum="IOSOverflowMenuActionType"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The type of action the user took in the overflow/tools menu</summary>
 </histogram>
 
 <histogram name="IOS.OverflowMenu.TimeOpen" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The amount of time the overflow/tools menu is open.</summary>
@@ -1628,16 +1616,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.RepeatedExternalAppPromptResponse"
-    enum="IOSRepeatedExternalAppPromptResponse" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    The user reaction to the prompt that appears when a website tries to open an
-    external application repeatedly.
-  </summary>
-</histogram>
-
 <histogram name="IOS.RestoreNavigationItemCount" units="rank"
     expires_after="2023-09-12">
   <owner>gambard@chromium.org</owner>
@@ -1864,15 +1842,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.StoreKitLoadedSuccessfully" enum="BooleanSuccess"
-    expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    Whether the StoreKit loaded the required iTunes product successfully or not.
-  </summary>
-</histogram>
-
 <histogram name="IOS.TabGrid.CloseTabs" units="Tabs" expires_after="2023-11-01">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -1999,7 +1968,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TextSelection.EntityDetection.DetectedEntityType"
-    enum="TextSelectionDetectedEntityType" expires_after="2023-06-04">
+    enum="TextSelectionDetectedEntityType" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -2023,7 +1992,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.TextSelection.EntityDetection.TFLiteModelEvaluationDuration"
-    units="ms" expires_after="2023-06-04">
+    units="ms" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>

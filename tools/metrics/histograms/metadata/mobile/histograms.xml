@@ -93,9 +93,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2023-06-04">
-  <owner>seblalancette@chromium.org</owner>
+    expires_after="2023-08-08">
   <owner>gambard@chromium.org</owner>
+  <owner>bling-team@chromium.org</owner>
   <summary>
     Tracks which context menu was shown. To drill down into a specific context
     menu's usage, take a look at its actions' histogram (the format for actions
@@ -158,8 +158,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Mobile.ContextMenu.{EntryPoint}.Actions" enum="IOSMenuAction"
     expires_after="2023-04-01">
-  <owner>seblalancette@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
+  <owner>bling-team@chromium.org</owner>
   <summary>
     Tracks which action was selected in the context menu shown for a
     {EntryPoint}. To view how often this context menu was shown, take a look at
@@ -394,6 +394,7 @@ chromium-metrics-reviews@google.com.
   <owner>ellyjones@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <owner>chrome-with-friends-robots@google.com</owner>
+  <improvement direction="HIGHER_IS_BETTER"/>
   <summary>
     Tracks which sharing entry point was triggered. To view the outcome of these
     sharing scenarios, take a look at their actions' histogram (the format is
@@ -1231,7 +1232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

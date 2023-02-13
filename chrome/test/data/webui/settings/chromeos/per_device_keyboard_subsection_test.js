@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {fakeKeyboards, SettingsPerDeviceKeyboardSubsectionElement} from 'chrome://os-settings/chromeos/os_settings.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
@@ -42,6 +43,67 @@ suite('PerDeviceKeyboardSubsection', function() {
     return flushTasks();
   }
 
+  function changeKeyboardState(keyboard) {
+    subsection.keyboard = keyboard;
+    return flushTasks();
+  }
+
+  /**Test that keyboard settings data are from the keyboard provider.*/
+  test('Verify keyboard settings data', async () => {
+    await initializePerDeviceKeyboardSubsection();
+    let externalTopRowAreFunctionKeysButton =
+        subsection.shadowRoot.querySelector(
+            '#externalTopRowAreFunctionKeysButton');
+    assertEquals(
+        fakeKeyboards[0].settings.topRowAreFKeys,
+        externalTopRowAreFunctionKeysButton.pref.value);
+    let blockMetaFunctionKeyRewritesButton =
+        subsection.shadowRoot.querySelector(
+            '#blockMetaFunctionKeyRewritesButton');
+    assertEquals(
+        fakeKeyboards[0].settings.suppressMetaFKeyRewrites,
+        blockMetaFunctionKeyRewritesButton.pref.value);
+    let enableAutoRepeatButton =
+        subsection.shadowRoot.querySelector('#enableAutoRepeatButton');
+    assertEquals(
+        fakeKeyboards[0].settings.autoRepeatEnabled,
+        enableAutoRepeatButton.pref.value);
+    let delaySlider =
+        assert(subsection.shadowRoot.querySelector('#delaySlider'));
+    assertEquals(
+        fakeKeyboards[0].settings.autoRepeatDelay, delaySlider.pref.value);
+    let repeatRateSlider =
+        assert(subsection.shadowRoot.querySelector('#repeatRateSlider'));
+    assertEquals(
+        fakeKeyboards[0].settings.autoRepeatInterval,
+        repeatRateSlider.pref.value);
+
+    changeKeyboardState(fakeKeyboards[1]);
+    externalTopRowAreFunctionKeysButton = subsection.shadowRoot.querySelector(
+        '#externalTopRowAreFunctionKeysButton');
+    assertEquals(
+        fakeKeyboards[1].settings.topRowAreFKeys,
+        externalTopRowAreFunctionKeysButton.pref.value);
+    blockMetaFunctionKeyRewritesButton = subsection.shadowRoot.querySelector(
+        '#blockMetaFunctionKeyRewritesButton');
+    assertEquals(
+        fakeKeyboards[1].settings.suppressMetaFKeyRewrites,
+        blockMetaFunctionKeyRewritesButton.pref.value);
+    enableAutoRepeatButton =
+        subsection.shadowRoot.querySelector('#enableAutoRepeatButton');
+    assertEquals(
+        fakeKeyboards[1].settings.autoRepeatEnabled,
+        enableAutoRepeatButton.pref.value);
+    delaySlider = assert(subsection.shadowRoot.querySelector('#delaySlider'));
+    assertEquals(
+        fakeKeyboards[1].settings.autoRepeatDelay, delaySlider.pref.value);
+    repeatRateSlider =
+        assert(subsection.shadowRoot.querySelector('#repeatRateSlider'));
+    assertEquals(
+        fakeKeyboards[1].settings.autoRepeatInterval,
+        repeatRateSlider.pref.value);
+  });
+
   /**
    * Test that keyboard settings are correctly show or hidden based on internal
    * vs external.
@@ -71,7 +133,7 @@ suite('PerDeviceKeyboardSubsection', function() {
             '#internalTopRowAreFunctionKeysButton');
     assertFalse(isVisible(internalTopRowAreFunctionKeysButton));
 
-    // Change the isExternal state to true.
+    // Change the isExternal state to false.
     await changeIsExternalState(false);
     // Verify external top-row are function keys toggle button is not visible in
     // the page.
@@ -123,13 +185,33 @@ suite('PerDeviceKeyboardSubsection', function() {
     assertTrue(!!repeatRateLabel);
     assertEquals('Repeat rate', repeatRateLabel.textContent.trim());
     assertTrue(!!subsection.shadowRoot.querySelector('#repeatRateSlider'));
+  });
 
-    // Verify the keyboard remap keys row item is in the page.
+  /**
+   * Verify the Keyboard remap keys row label is loaded, and sub-label is
+   * correctly displayed when the keyboard has 2, 1 or 0 remapped keys.
+   */
+  test('remap keys sub-label displayed correctly', async () => {
+    await initializePerDeviceKeyboardSubsection();
     const remapKeysRow =
         subsection.shadowRoot.querySelector('#remapKeyboardKeys');
     assertTrue(!!remapKeysRow);
     assertEquals(
         'Remap keyboard keys',
         remapKeysRow.shadowRoot.querySelector('#label').textContent.trim());
+
+    const remapKeysSubLabel =
+        remapKeysRow.shadowRoot.querySelector('#subLabel');
+    assertTrue(!!remapKeysSubLabel);
+    assertEquals(2, subsection.keyboard.settings.modifierRemappings.size);
+    assertEquals('2 remapped keys', remapKeysSubLabel.textContent.trim());
+
+    await changeKeyboardState(fakeKeyboards[2]);
+    assertEquals(1, subsection.keyboard.settings.modifierRemappings.size);
+    assertEquals('1 remapped key', remapKeysSubLabel.textContent.trim());
+
+    await changeKeyboardState(fakeKeyboards[1]);
+    assertEquals(0, subsection.keyboard.settings.modifierRemappings.size);
+    assertEquals('', remapKeysSubLabel.textContent.trim());
   });
 });

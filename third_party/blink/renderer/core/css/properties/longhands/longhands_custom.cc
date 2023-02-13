@@ -147,6 +147,27 @@ const CSSValue* AlignmentBaseline::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.AlignmentBaseline());
 }
 
+const CSSValue* AnchorDefault::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (CSSValue* value =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kImplicit>(range)) {
+    return value;
+  }
+  return css_parsing_utils::ConsumeDashedIdent(range, context);
+}
+const CSSValue* AnchorDefault::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (!style.AnchorDefault()) {
+    return CSSIdentifierValue::Create(CSSValueID::kImplicit);
+  }
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorDefault()->GetName());
+}
+
 const CSSValue* AnchorName::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -172,9 +193,9 @@ const CSSValue* AnchorScroll::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (CSSValue* value =
-          css_parsing_utils::ConsumeIdent<CSSValueID::kNone,
-                                          CSSValueID::kImplicit>(range)) {
+  if (CSSValue* value = css_parsing_utils::ConsumeIdent<
+          CSSValueID::kNone, CSSValueID::kDefault, CSSValueID::kImplicit>(
+          range)) {
     return value;
   }
   return css_parsing_utils::ConsumeDashedIdent(range, context);
@@ -185,6 +206,9 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.AnchorScroll()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
+  }
+  if (style.AnchorScroll()->IsDefault()) {
+    return CSSIdentifierValue::Create(CSSValueID::kDefault);
   }
   if (style.AnchorScroll()->IsImplicit()) {
     return CSSIdentifierValue::Create(CSSValueID::kImplicit);

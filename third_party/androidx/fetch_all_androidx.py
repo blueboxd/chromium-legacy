@@ -275,11 +275,13 @@ def main():
     dependency_version_map = _parse_dir_list(dir_list)
     _process_build_gradle(dependency_version_map,
                           androidx_snapshot_repository_url)
+    shutil.copyfile(os.path.join(_ANDROIDX_PATH, 'BUILD.gn.template'),
+                    os.path.join(_ANDROIDX_PATH, 'BUILD.gn'))
 
     fetch_all_cmd = [
         _FETCH_ALL_PATH, '--android-deps-dir', _ANDROIDX_PATH,
         '--ignore-vulnerabilities'
-    ]
+    ] + ['-v'] * args.verbose_count
     # Overrides do not work with local snapshots since the repository_url is
     # different.
     if not args.local_repo:

@@ -285,7 +285,7 @@ void ShillToONCTranslator::TranslateOpenVPN() {
 
   for (const chromeos::onc::OncFieldSignature* field_signature =
            onc_signature_->fields;
-       field_signature->onc_field_name != NULL; ++field_signature) {
+       field_signature->onc_field_name != nullptr; ++field_signature) {
     const std::string& onc_field_name = field_signature->onc_field_name;
     if (onc_field_name == ::onc::openvpn::kRemoteCertKU ||
         onc_field_name == ::onc::openvpn::kServerCAPEMs) {
@@ -849,6 +849,12 @@ void ShillToONCTranslator::TranslateEap() {
     }
   }
 
+  const base::Value::List* shill_ca_cert_pem =
+      shill_dictionary_->FindList(shill::kEapCaCertPemProperty);
+  if (shill_ca_cert_pem && !shill_ca_cert_pem->empty()) {
+    onc_object_.Set(::onc::eap::kServerCAPEMs, shill_ca_cert_pem->Clone());
+  }
+
   const std::string* shill_cert_id =
       shill_dictionary_->FindString(shill::kEapCertIdProperty);
   if (shill_cert_id && !shill_cert_id->empty()) {
@@ -989,7 +995,7 @@ void ShillToONCTranslator::CopyPropertiesAccordingToSignature(
     return;
   for (const chromeos::onc::OncFieldSignature* field_signature =
            value_signature->fields;
-       field_signature->onc_field_name != NULL; ++field_signature) {
+       field_signature->onc_field_name != nullptr; ++field_signature) {
     CopyProperty(field_signature);
   }
 }
@@ -1072,16 +1078,16 @@ std::string ShillToONCTranslator::GetName() {
 
 }  // namespace
 
-base::Value TranslateShillServiceToONCPart(
-    const base::Value& shill_dictionary,
+base::Value::Dict TranslateShillServiceToONCPart(
+    const base::Value::Dict& shill_dictionary,
     ::onc::ONCSource onc_source,
     const chromeos::onc::OncValueSignature* onc_signature,
     const NetworkState* network_state) {
-  CHECK(onc_signature != NULL);
+  CHECK(onc_signature != nullptr);
 
-  ShillToONCTranslator translator(shill_dictionary.GetDict(), onc_source,
-                                  *onc_signature, network_state);
-  return base::Value(translator.CreateTranslatedONCObject());
+  ShillToONCTranslator translator(shill_dictionary, onc_source, *onc_signature,
+                                  network_state);
+  return translator.CreateTranslatedONCObject();
 }
 
 }  // namespace ash::onc

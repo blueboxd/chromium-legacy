@@ -858,8 +858,9 @@ std::vector<ax::mojom::Action> AXPlatformNodeDelegate::GetSupportedActions()
   std::vector<ax::mojom::Action> supported_actions;
 
   // The default action must be listed at index 0.
-  // TODO(crbug.com/1370076): Find out why some nodes do not expose a
-  // default action (HasDefaultActionVerb() is false).
+  // TODO(crbug.com/1370076): Do this only if (HasDefaultActionVerb()), After
+  // some time tracking the DCHECK at
+  // BrowserAccessibilityManager::DoDefaultAction()
   supported_actions.push_back(ax::mojom::Action::kDoDefault);
 
   // Users expect to be able to bring a context menu on any object via e.g.
@@ -958,13 +959,6 @@ absl::optional<int> AXPlatformNodeDelegate::GetTableAriaRowCount() const {
     return absl::nullopt;
   }
   return aria_row_count;
-}
-
-absl::optional<bool> AXPlatformNodeDelegate::GetTableHasColumnOrRowHeaderNode()
-    const {
-  if (node_)
-    return node_->GetTableHasColumnOrRowHeaderNode();
-  return absl::nullopt;
 }
 
 std::vector<int32_t> AXPlatformNodeDelegate::GetColHeaderNodeIds() const {
@@ -1181,6 +1175,28 @@ bool AXPlatformNodeDelegate::IsReadOnlySupported() const {
 bool AXPlatformNodeDelegate::IsReadOnlyOrDisabled() const {
   if (node_)
     return node_->IsReadOnlyOrDisabled();
+  return false;
+}
+
+bool AXPlatformNodeDelegate::IsIA2NodeSelected() const {
+  if (node_) {
+    return node_->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  }
+  return false;
+}
+
+bool AXPlatformNodeDelegate::IsUIANodeSelected() const {
+  if (node_) {
+    // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+    // SelectionItem.IsSelected is set according to the True or False value of
+    // aria-checked for 'radio' and 'menuitemradio' roles.
+    if (ui::IsRadio(node_->GetRole())) {
+      return GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue;
+    }
+
+    return GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  }
+
   return false;
 }
 

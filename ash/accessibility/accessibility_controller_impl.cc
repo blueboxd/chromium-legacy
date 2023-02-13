@@ -185,6 +185,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityChromeVoxEnableEarconLogging,
     prefs::kAccessibilityChromeVoxEnableEventStreamLogging,
     prefs::kAccessibilityChromeVoxEnableSpeechLogging,
+    prefs::kAccessibilityChromeVoxEventStreamFilters,
     prefs::kAccessibilityChromeVoxLanguageSwitching,
     prefs::kAccessibilityChromeVoxMenuBrailleCommands,
     prefs::kAccessibilityChromeVoxNumberReadingStyle,
@@ -224,6 +225,7 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted,
     prefs::kDictationAcceleratorDialogHasBeenAccepted,
+    prefs::kDictationDlcSuccessNotificationHasBeenShown,
     prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2,
 };
 
@@ -979,6 +981,8 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kDictationAcceleratorDialogHasBeenAccepted, false);
   registry->RegisterBooleanPref(
+      prefs::kDictationDlcSuccessNotificationHasBeenShown, false);
+  registry->RegisterBooleanPref(
       prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, false);
   registry->RegisterBooleanPref(prefs::kShouldAlwaysShowAccessibilityMenu,
                                 false);
@@ -1017,6 +1021,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       prefs::kAccessibilityChromeVoxEnableEventStreamLogging, false);
   registry->RegisterBooleanPref(
       prefs::kAccessibilityChromeVoxEnableSpeechLogging, false);
+  registry->RegisterDictionaryPref(
+      prefs::kAccessibilityChromeVoxEventStreamFilters,
+      base::Value(base::Value::Type::DICT));
   registry->RegisterBooleanPref(prefs::kAccessibilityChromeVoxLanguageSwitching,
                                 false);
   registry->RegisterBooleanPref(

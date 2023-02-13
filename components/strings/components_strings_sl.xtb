@@ -316,7 +316,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="168693727862418163">Preverjanje vrednosti tega pravilnika v skladu z njegovo shemo ni uspelo in bo prezrta.</translation>
 <translation id="168841957122794586">Potrdilo strežnika vsebuje šibek šifrirni ključ.</translation>
 <translation id="1689333818294560261">Vzdevek</translation>
-<translation id="1697430960030447570"><ph name="BEGIN_BOLD" />Kako lahko upravljate podatke:<ph name="END_BOLD" /> Chrome samodejno izbriše teme, starejše od štirih tednov. Ko nadaljujete brskanje, se lahko na seznamu znova prikaže tema. V Chromovih nastavitvah lahko prav tako kadar koli blokirate teme, za katere ne želite, da jih Chrome deli s spletnimi mesti, in izklopite teme oglasov.</translation>
+<translation id="1697430960030447570"><ph name="BEGIN_BOLD" />Kako lahko upravljate podatke:<ph name="END_BOLD" /> Chrome samodejno izbriše teme, starejše od štirih tednov. Ko nadaljujete brskanje, se tema lahko znova prikaže na seznamu. V Chromovih nastavitvah lahko prav tako kadar koli blokirate teme, za katere ne želite, da jih Chrome deli s spletnimi mesti, in izklopite teme oglasov.</translation>
 <translation id="1697532407822776718">Pripravljeni ste.</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -501,7 +501,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2148613324460538318">Dodaj kartico</translation>
 <translation id="2149968176347646218">Povezava ni varna</translation>
 <translation id="2153609454945889823">Želite namestiti aplikacijo Storitve Google Play za RR?</translation>
-<translation id="2154054054215849342">Sinhronizacija ni na voljo za vašo domeno</translation>
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2155260325161282517">5 x 7 palcev</translation>
 <translation id="2157640075051554492">Obvestila o spremljanju cen</translation>
@@ -540,6 +539,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2241693394036365668">Datoteka je prenesena</translation>
 <translation id="2246264294482514010">10 x 12 palcev</translation>
 <translation id="2246480341630108201">Starš še ni potrdil, da se strinja</translation>
+<translation id="2247789808226901522">Kartica je potekla</translation>
 <translation id="2248949050832152960">Uporabi WebAuthn</translation>
 <translation id="2250931979407627383">Robni šiv na levi</translation>
 <translation id="225207911366869382">Vrednost za ta pravilnik je zastarela.</translation>
@@ -1078,6 +1078,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="3646643500201740985">Merjenje uspešnosti oglasa</translation>
 <translation id="3647286794400715637">Vsak vnos z nizom URL-jev mora vsebovati od 1 do 2 URL-ja.</translation>
 <translation id="3650584904733503804">Preverjanje veljavnosti uspešno</translation>
+<translation id="3650594806107685466">Zaradi zaščite kartice vnesite kodo CVC, ki je na <ph name="SIDE_OF_CARD" /></translation>
 <translation id="3653033846669030038">Tematski parki</translation>
 <translation id="3655241534245626312">V nastavitve dovoljenj</translation>
 <translation id="3655670868607891010">Če se to pogosto zgodi, poskusite <ph name="HELP_LINK" />.</translation>
@@ -1857,6 +1858,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5552137475244467770">Chrome občasno preveri vaša gesla, tako da jih primerja s seznami gesel, objavljenimi v spletu. Pri tem so vaša gesla in uporabniška imena šifrirana, da jih ne more prebrati nihče, vključno z Googlom.</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5558125320634132440">To spletno mesto je blokirano, ker morda vsebuje neprimerno vsebino za otroke</translation>
+<translation id="5559311991468302423">Izbris naslova</translation>
 <translation id="5560088892362098740">Datum poteka</translation>
 <translation id="55635442646131152">Oris dokumenta</translation>
 <translation id="5565613213060953222">Odpri anonimni zavihek</translation>
@@ -1878,7 +1880,8 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5598944008576757369">Izbira plačilnega sredstva</translation>
 <translation id="560412284261940334">Upravljanje ni podprto</translation>
 <translation id="5605670050355397069">Ledger</translation>
-<translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Kako lahko upravljate podatke:<ph name="END_BOLD" /> Chrome samodejno izbriše podatke o spletnih mestih, starejše od štirih tednov. Spletno mesto, ki ga znova obiščete, se morda znova prikaže na seznamu. Če ne želite, da vam spletno mesto predlaga oglase, lahko to možnost kadar koli izklopite v nastavitvah Chroma.</translation>
+<translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Kako lahko upravljate podatke:<ph name="END_BOLD" /> Chrome samodejno izbriše podatke o spletnih mestih, starejše od štirih tednov. Spletno mesto, ki ga znova obiščete, se morda znova prikaže na seznamu. 
+Poleg tega lahko v nastavitvah Chroma kadar koli blokirate, da bi spletno mesto predlagalo oglase za vas, ali izklopite oglase, ki jih predlagajo spletna mesta.</translation>
 <translation id="5610142619324316209">preveriti povezavo</translation>
 <translation id="5610807607761827392">Kartice in naslove je mogoče upravljati v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="561165882404867731">Prevajanje te strani z Google Prevajalnikom</translation>
@@ -2055,7 +2058,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="6051221802930200923">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, ker uporablja pripenjanje potrdil. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="6051898664905071243">Število strani:</translation>
 <translation id="6052284303005792909">•</translation>
-<translation id="6053735090575989697">Več o tem, kako Google varuje vaše podatke, lahko preberete v pravilniku o zasebnosti.</translation>
+<translation id="6053735090575989697">Več informacij o tem, kako Google varuje vaše podatke, najdete v našem pravilniku o zasebnosti.</translation>
 <translation id="6055888660316801977">Preglednica za neujemanje poverilnic poverilnice za varno plačilo</translation>
 <translation id="6058977677006700226">Želite kartice uporabljati v vseh svojih napravah?</translation>
 <translation id="6059925163896151826">Naprave USB</translation>
@@ -2458,6 +2461,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="7112327784801341716">Niso prikazani najnovejši podatki? Obrnite se na banko in jih posodobite.</translation>
 <translation id="7118618213916969306">Iskanje URL-ja v odložišču, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Zaprite druge zavihke ali programe</translation>
+<translation id="7124354851782353862">Vnesite kodo CVC</translation>
 <translation id="7129355289156517987">Ko v Chromiumu zaprete vse anonimne zavihke, se dejavnost na teh zavihkih izbriše iz te naprave:
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />dejavnost brskanja;<ph name="END_LIST_ITEM" />
@@ -2630,7 +2634,7 @@ Dodatne podrobnosti:
 <translation id="7507075214339298899">Kuverta št. 9</translation>
 <translation id="7508255263130623398">Vrnjen ID naprave pravilnika je prazen ali se ne ujema s trenutnim ID-jem naprave</translation>
 <translation id="7508870219247277067">Avokadovo zelena</translation>
-<translation id="7510225383966760306"><ph name="BEGIN_BOLD" />Kako spletna mesta uporabljajo te podatke:<ph name="END_BOLD" /> Spletna mesta lahko v Chromu shranjujejo podatke o stvareh, ki so vam všeč. Če na primer obiščete spletno mesto o pripravah na maraton, bo spletno mesto morda ugotovilo, da vas zanima tekaška obutev. Če pozneje obiščete drugo spletno mesto, lahko to spletno mesto prikaže oglas za tekaško obutev, ki ga je predlagalo prvo spletno mesto.</translation>
+<translation id="7510225383966760306"><ph name="BEGIN_BOLD" />Kako spletna mesta uporabljajo te podatke:<ph name="END_BOLD" /> Spletna mesta lahko v Chromu shranjujejo informacije o tem, kaj vam je všeč. Če na primer obiščete spletno mesto o pripravah na maraton, bo spletno mesto morda ugotovilo, da vas zanima tekaška obutev. Če pozneje obiščete drugo spletno mesto, lahko to spletno mesto prikaže oglas za tekaško obutev, ki ga je predlagalo prvo spletno mesto.</translation>
 <translation id="7510269639068718544">Mačke</translation>
 <translation id="7511955381719512146">Omrežje Wi-Fi, ki ga uporabljate, morda zahteva, da obiščete <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="7512685745044087310">Tega pravilnika ni mogoče nastaviti na »True« in nastaviti, da je obenem obvezen, zato je spremenjen v priporočljivega.</translation>
@@ -2784,6 +2788,7 @@ Dodatne podrobnosti:
 <translation id="7844689747373518809">{COUNT,plural, =0{Brez}=1{1 aplikacija (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikaciji (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# aplikacija (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}two{# aplikaciji (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}few{# aplikacije (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# aplikacij (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7857116075376571629">Pozneje lahko spletno mesto, ki ga obiščete, od Chroma zahteva teme zaradi osebnega prilagajanja oglasov, ki so vam prikazani. Chrome deli do 3 teme ter hkrati varuje zgodovino brskanja in identiteto.</translation>
+<translation id="7860345425589240791">Vnesite novi datum poteka veljavnosti in kodo CVC, ki je na <ph name="SIDE_OF_CARD" />.</translation>
 <translation id="7862185352068345852">Želite zapustiti spletno mesto?</translation>
 <translation id="7865448901209910068">Najboljša hitrost</translation>
 <translation id="7871445724586827387">Sprememba gesla za račun Google</translation>

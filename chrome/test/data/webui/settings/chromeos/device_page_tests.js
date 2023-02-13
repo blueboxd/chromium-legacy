@@ -4,13 +4,14 @@
 
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {crosAudioConfigMojomWebui, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
+import {crosAudioConfigMojom, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assert} from 'chrome://resources/ash/common/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
 import {flush, microTask} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {MockController} from 'chrome://webui-test/mock_controller.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
@@ -696,7 +697,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 100,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -713,7 +714,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 0,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -730,7 +731,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 75,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedByUser,
+      outputMuteState: crosAudioConfigMojom.MuteState.kMutedByUser,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -747,7 +748,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 75,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedByPolicy,
+      outputMuteState: crosAudioConfigMojom.MuteState.kMutedByPolicy,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -764,7 +765,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 75,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [],
@@ -780,7 +781,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 75,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -797,7 +798,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 75,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [
@@ -814,7 +815,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 0,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [],
@@ -830,7 +831,7 @@ suite('SettingsDevicePage', function() {
       outputVolumePercent: 0,
 
       /** @type {!MuteState} */
-      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+      outputMuteState: crosAudioConfigMojom.MuteState.kNotMuted,
 
       /** @type {!Array<!AudioDevice>} */
       outputDevices: [],
@@ -840,7 +841,7 @@ suite('SettingsDevicePage', function() {
         fakeCrosAudioConfig.fakeInternalMicActive,
       ],
 
-      inputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedExternally,
+      inputMuteState: crosAudioConfigMojom.MuteState.kMutedExternally,
     };
 
     /**
@@ -1166,7 +1167,7 @@ suite('SettingsDevicePage', function() {
 
     test('simulate mute output', async function() {
       assertEquals(
-          crosAudioConfigMojomWebui.MuteState.kNotMuted,
+          crosAudioConfigMojom.MuteState.kNotMuted,
           audioPage.audioSystemProperties_.outputMuteState);
       assertFalse(audioPage.isOutputMuted_);
 
@@ -1177,7 +1178,7 @@ suite('SettingsDevicePage', function() {
       await flushTasks();
 
       assertEquals(
-          crosAudioConfigMojomWebui.MuteState.kMutedByUser,
+          crosAudioConfigMojom.MuteState.kMutedByUser,
           audioPage.audioSystemProperties_.outputMuteState);
       assertTrue(audioPage.isOutputMuted_);
       assertEquals('settings20:volume-up-off', outputMuteButton.ironIcon);
@@ -1186,7 +1187,7 @@ suite('SettingsDevicePage', function() {
       await flushTasks();
 
       assertEquals(
-          crosAudioConfigMojomWebui.MuteState.kNotMuted,
+          crosAudioConfigMojom.MuteState.kNotMuted,
           audioPage.audioSystemProperties_.outputMuteState);
       assertFalse(audioPage.isOutputMuted_);
     });
@@ -1311,6 +1312,32 @@ suite('SettingsDevicePage', function() {
           audioPage.shadowRoot.querySelector(enterpriseIconSelector)));
       assertTrue(outputMuteButton.disabled);
       assertTrue(outputSlider.disabled);
+    });
+
+    test('noise cancellation called twice with same value', async function() {
+      const mockController = new MockController();
+      const setNoiseCancellationEnabled = mockController.createFunctionMock(
+          crosAudioConfig, 'setNoiseCancellationEnabled');
+
+      assertEquals(
+          /* expected_call_count */ 0,
+          setNoiseCancellationEnabled.calls_.length);
+
+      crosAudioConfig.setAudioSystemProperties(
+          {...fakeCrosAudioConfig.defaultFakeAudioSystemProperties});
+      await flushTasks();
+
+      assertEquals(
+          /* expected_call_count */ 0,
+          setNoiseCancellationEnabled.calls_.length);
+
+      crosAudioConfig.setAudioSystemProperties(
+          noiseCancellationNotSupportedAudioSystemProperties);
+      await flushTasks();
+
+      assertEquals(
+          /* expected_call_count */ 1,
+          setNoiseCancellationEnabled.calls_.length);
     });
   });
 

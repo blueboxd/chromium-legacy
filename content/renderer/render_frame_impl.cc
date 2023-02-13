@@ -506,10 +506,6 @@ void FillNavigationParamsRequest(
 
   navigation_params->had_transient_user_activation =
       common_params.has_user_gesture;
-  navigation_params->web_bundle_physical_url =
-      commit_params.web_bundle_physical_url;
-  navigation_params->web_bundle_claimed_url =
-      commit_params.web_bundle_claimed_url;
 
   WebVector<WebString> web_origin_trials;
   web_origin_trials.reserve(commit_params.force_enabled_origin_trials.size());
@@ -1298,52 +1294,6 @@ class RenderFrameImpl::MHTMLBodyLoaderClient
   std::unique_ptr<blink::WebNavigationBodyLoader> body_loader_;
   base::OnceCallback<void(std::unique_ptr<blink::WebNavigationParams>)>
       done_callback_;
-};
-
-class RenderFrameImpl::FrameURLLoaderFactory
-    : public blink::WebURLLoaderFactory {
- public:
-  explicit FrameURLLoaderFactory(base::WeakPtr<RenderFrameImpl> frame)
-      : frame_(std::move(frame)) {}
-
-  FrameURLLoaderFactory(const FrameURLLoaderFactory&) = delete;
-  FrameURLLoaderFactory& operator=(const FrameURLLoaderFactory&) = delete;
-
-  ~FrameURLLoaderFactory() override = default;
-
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const WebURLRequest& request,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          freezable_task_runner_handle,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          unfreezable_task_runner_handle,
-      blink::CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>
-          keep_alive_handle,
-      blink::WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
-      override {
-    // This should not be called if the frame is detached.
-    DCHECK(frame_);
-
-    std::vector<std::string> cors_exempt_header_list =
-        RenderThreadImpl::current()->cors_exempt_header_list();
-    blink::WebVector<blink::WebString> web_cors_exempt_header_list(
-        cors_exempt_header_list.size());
-    std::transform(
-        cors_exempt_header_list.begin(), cors_exempt_header_list.end(),
-        web_cors_exempt_header_list.begin(),
-        [](const std::string& h) { return blink::WebString::FromLatin1(h); });
-
-    return std::make_unique<blink::WebURLLoader>(
-        web_cors_exempt_header_list,
-        /*terminate_sync_load_event=*/nullptr,
-        std::move(freezable_task_runner_handle),
-        std::move(unfreezable_task_runner_handle),
-        frame_->GetLoaderFactoryBundle(), std::move(keep_alive_handle),
-        back_forward_cache_loader_helper);
-  }
-
- private:
-  base::WeakPtr<RenderFrameImpl> frame_;
 };
 
 RenderFrameImpl::UniqueNameFrameAdapter::UniqueNameFrameAdapter(
@@ -5978,13 +5928,14 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
                .device_status());
 }
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-RenderFrameImpl::CreateURLLoaderFactory() {
+scoped_refptr<network::SharedURLLoaderFactory>
+RenderFrameImpl::GetURLLoaderFactory() {
   if (!RenderThreadImpl::current()) {
     // Some tests (e.g. RenderViewTests) do not have RenderThreadImpl,
     // and must create a factory override instead.
-    if (web_url_loader_factory_override_for_test_)
-      return web_url_loader_factory_override_for_test_->Clone();
+    if (url_loader_factory_override_for_test_) {
+      return url_loader_factory_override_for_test_;
+    }
 
     // If the override does not exist, try looking in the ancestor chain since
     // we might have created child frames and asked them to create a URL loader
@@ -5993,9 +5944,8 @@ RenderFrameImpl::CreateURLLoaderFactory() {
          ancestor = ancestor->Parent()) {
       RenderFrameImpl* ancestor_frame = RenderFrameImpl::FromWebFrame(ancestor);
       if (ancestor_frame &&
-          ancestor_frame->web_url_loader_factory_override_for_test_) {
-        return ancestor_frame->web_url_loader_factory_override_for_test_
-            ->Clone();
+          ancestor_frame->url_loader_factory_override_for_test_) {
+        return ancestor_frame->url_loader_factory_override_for_test_;
       }
     }
     // At this point we can't create anything. We use CHECK(false) instead of
@@ -6003,7 +5953,7 @@ RenderFrameImpl::CreateURLLoaderFactory() {
     CHECK(false);
     return nullptr;
   }
-  return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());
+  return GetLoaderFactoryBundle();
 }
 
 void RenderFrameImpl::OnStopLoading() {
@@ -6060,11 +6010,6 @@ int RenderFrameImpl::GetEnabledBindings() {
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   render_accessibility_manager_->SetMode(new_mode);
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-RenderFrameImpl::GetURLLoaderFactory() {
-  return GetLoaderFactoryBundle();
 }
 
 const RenderFrameMediaPlaybackOptions&
@@ -6174,9 +6119,9 @@ void RenderFrameImpl::AddMessageToConsoleImpl(
   frame_->AddMessageToConsole(wcm, discard_duplicates);
 }
 
-void RenderFrameImpl::SetWebURLLoaderFactoryOverrideForTest(
-    std::unique_ptr<blink::WebURLLoaderFactoryForTest> factory) {
-  web_url_loader_factory_override_for_test_ = std::move(factory);
+void RenderFrameImpl::SetURLLoaderFactoryOverrideForTest(
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  url_loader_factory_override_for_test_ = std::move(factory);
 }
 
 scoped_refptr<blink::ChildURLLoaderFactoryBundle>

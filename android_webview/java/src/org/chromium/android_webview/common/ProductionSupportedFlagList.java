@@ -12,6 +12,7 @@ import org.chromium.cc.base.CcFeatures;
 import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.metrics.AndroidMetricsFeatures;
 import org.chromium.components.metrics.MetricsFeatures;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
@@ -108,6 +109,8 @@ public final class ProductionSupportedFlagList {
                     "Disables WebView from checking for app recovery mitigations."),
             Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_APP_RECOVERY,
                     "Enables WebView to check for app recovery mitigations."),
+            Flag.baseFeature("DefaultPassthroughCommandDecoder",
+                    "Use the passthrough GLES2 command decoder."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
                     "Use Vulkan for composite. Requires Android device and OS support. May crash "
                             + "if enabled on unsupported device."),
@@ -211,6 +214,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
+            Flag.baseFeature(AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING,
+                    "Initiate metric uploading on a background thread."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
@@ -350,6 +355,12 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_COLLECTION,
                     "Controls whether the metrics service creates periodic logs"
                             + " in a background thread or on the main thread."),
+            Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
+                    "Controls whether UMA logs are cleared when a cloned "
+                            + "install is detected."),
+            Flag.baseFeature(MetricsFeatures.REPORTING_SERVICE_FLUSH_PREFS_ON_UPLOAD_IN_BACKGROUND,
+                    "Controls whether we immediately flush Local State after "
+                            + "uploading a UMA log while in background."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
             Flag.baseFeature(AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT,
@@ -363,6 +374,13 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("WebViewEnableDnsPrefetchAndPreconnect"),
             Flag.baseFeature(BlinkFeatures.KEYBOARD_FOCUSABLE_SCROLLERS,
                     "When enabled, can focus on a scroller element using the keyboard."),
+            Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_TRUST_TOKENS_COMPONENT,
+                    "Enables downloading TrustTokenKeyCommitmentsComponent by the component"
+                            + " updater downloading service in nonembedded WebView."
+                            + " See https://crbug.com/1170468."),
+            Flag.baseFeature(BlinkFeatures.STYLUS_RICH_GESTURES,
+                    "When enabled, stylus input can be used to draw rich gestures which "
+                            + "affect text in editable web content."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -13,12 +13,13 @@
 #include "components/attribution_reporting/registration_type.mojom-shared.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "net/http/structured_headers.h"
+#include "services/network/public/cpp/trigger_attestation.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
@@ -36,12 +37,13 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/testing/mock_resource.h"
-#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -55,9 +57,8 @@ class AttributionSrcLocalFrameClient : public EmptyLocalFrameClient {
  public:
   AttributionSrcLocalFrameClient() = default;
 
-  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return std::make_unique<WebURLLoaderFactoryWithMock>(
-        WebURLLoaderMockFactory::GetSingletonInstance());
+  std::unique_ptr<WebURLLoader> CreateURLLoaderForTesting() override {
+    return WebURLLoaderMockFactory::GetSingletonInstance()->CreateURLLoader();
   }
 
   void DispatchWillSendRequest(ResourceRequest& request) override {
@@ -93,6 +94,11 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
     return trigger_data_;
   }
 
+  const Vector<absl::optional<network::TriggerAttestation>>&
+  trigger_attestation() const {
+    return trigger_attestation_;
+  }
+
   size_t disconnects() const { return disconnects_; }
 
   void Flush() { receiver_.FlushForTesting(); }
@@ -110,14 +116,16 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::TriggerRegistration data,
-      absl::optional<attribution_reporting::TriggerAttestation> attestation)
-      override {
+      absl::optional<network::TriggerAttestation> attestation) override {
     trigger_data_.push_back(std::move(data));
+    trigger_attestation_.push_back(std::move(attestation));
   }
 
   Vector<attribution_reporting::SourceRegistration> source_data_;
 
   Vector<attribution_reporting::TriggerRegistration> trigger_data_;
+
+  Vector<absl::optional<network::TriggerAttestation>> trigger_attestation_;
 
   size_t disconnects_ = 0;
   mojo::Receiver<mojom::blink::AttributionDataHost> receiver_{this};
@@ -227,8 +235,12 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithoutEligibleHeader) {
 
   mock_data_host->Flush();
   EXPECT_EQ(mock_data_host->trigger_data().size(), 1u);
+  ASSERT_EQ(mock_data_host->trigger_attestation().size(), 1u);
+  ASSERT_FALSE(mock_data_host->trigger_attestation().at(0).has_value());
 }
 
+// TODO(https://crbug.com/1412566): Improve tests to properly cover the
+// different `kAttributionReportingEligible` header values.
 TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithTriggerHeader) {
   KURL test_url = ToKURL("https://example1.com/foo.html");
 
@@ -279,6 +291,45 @@ TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithSourceTriggerHeader) {
 
   mock_data_host->Flush();
   EXPECT_EQ(mock_data_host->trigger_data().size(), 1u);
+}
+
+TEST_F(AttributionSrcLoaderTest, RegisterTriggerWithAttestation) {
+  KURL test_url = ToKURL("https://example1.com/foo.html");
+
+  ResourceRequest request(test_url);
+  auto* resource = MakeGarbageCollected<MockResource>(test_url);
+  ResourceResponse response(test_url);
+  response.SetHttpStatusCode(200);
+  response.SetHttpHeaderField(
+      http_names::kAttributionReportingRegisterTrigger,
+      R"({"event_trigger_data":[{"trigger_data": "7"}]})");
+
+  absl::optional<network::TriggerAttestation> trigger_attestation =
+      network::TriggerAttestation::Create(
+          "token", "08fa6760-8e5c-4ccb-821d-b5d82bef2b37");
+  response.SetTriggerAttestation(trigger_attestation);
+
+  MockAttributionHost host(
+      GetFrame().GetRemoteNavigationAssociatedInterfaces());
+  EXPECT_TRUE(attribution_src_loader_->MaybeRegisterAttributionHeaders(
+      request, response, resource));
+
+  host.WaitUntilBoundAndFlush();
+
+  auto* mock_data_host = host.mock_data_host();
+  ASSERT_TRUE(mock_data_host);
+  mock_data_host->Flush();
+
+  ASSERT_EQ(mock_data_host->trigger_attestation().size(), 1u);
+  ASSERT_TRUE(mock_data_host->trigger_attestation().at(0).has_value());
+  EXPECT_EQ(mock_data_host->trigger_attestation().at(0).value().token(),
+            "token");
+  EXPECT_EQ(mock_data_host->trigger_attestation()
+                .at(0)
+                .value()
+                .aggregatable_report_id()
+                .AsLowercaseString(),
+            "08fa6760-8e5c-4ccb-821d-b5d82bef2b37");
 }
 
 TEST_F(AttributionSrcLoaderTest, AttributionSrcRequestsIgnored) {

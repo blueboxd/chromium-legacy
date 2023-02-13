@@ -15,6 +15,7 @@
 #include "content/browser/devtools/protocol/audits.h"
 #include "content/browser/devtools/protocol/audits_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/device_access_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
@@ -59,6 +60,8 @@ namespace content {
 namespace devtools_instrumentation {
 
 namespace {
+
+const char kPrivacySandboxExtensionsAPI[] = "PrivacySandboxExtensionsAPI";
 
 template <typename Handler, typename... MethodArgs, typename... Args>
 void DispatchToAgents(DevToolsAgentHostImpl* host,
@@ -283,12 +286,11 @@ BuildFederatedAuthRequestIssue(
   return issue;
 }
 
-protocol::Audits::DeprecationIssueType DeprecationIssueTypeToProtocol(
+const char* DeprecationIssueTypeToProtocol(
     blink::mojom::DeprecationIssueType error_type) {
   switch (error_type) {
     case blink::mojom::DeprecationIssueType::kPrivacySandboxExtensionsAPI:
-      return protocol::Audits::DeprecationIssueTypeEnum::
-          PrivacySandboxExtensionsAPI;
+      return kPrivacySandboxExtensionsAPI;
   }
 }
 
@@ -431,6 +433,15 @@ void DidCancelPrerender(const GURL& prerendering_url,
   DispatchToAgents(ftn, &protocol::PageHandler::DidCancelPrerender,
                    prerendering_url, initiating_frame_id, status,
                    disallowed_api_method);
+}
+
+void DidUpdatePrefetchStatus(FrameTreeNode* ftn,
+                             const GURL& prefetch_url,
+                             PreloadingTriggeringOutcome status) {
+  std::string initiating_frame_id =
+      ftn->current_frame_host()->devtools_frame_token().ToString();
+  DispatchToAgents(ftn, &protocol::PageHandler::DidUpdatePrefetchStatus,
+                   initiating_frame_id, prefetch_url, status);
 }
 
 namespace {
@@ -1795,6 +1806,26 @@ void DidRejectCrossOriginPortalMessage(
       render_frame_host_impl->GetDevToolsFrameToken().ToString();
 
   BuildAndReportGenericIssue(render_frame_host_impl, issue_info);
+}
+
+void UpdateDeviceRequestPrompt(RenderFrameHost* render_frame_host,
+                               DevtoolsDeviceRequestPromptInfo* prompt_info) {
+  FrameTreeNode* ftn = FrameTreeNode::From(render_frame_host);
+  if (!ftn)
+    return;
+  DispatchToAgents(ftn,
+                   &protocol::DeviceAccessHandler::UpdateDeviceRequestPrompt,
+                   prompt_info);
+}
+
+void CleanUpDeviceRequestPrompt(RenderFrameHost* render_frame_host,
+                                DevtoolsDeviceRequestPromptInfo* prompt_info) {
+  FrameTreeNode* ftn = FrameTreeNode::From(render_frame_host);
+  if (!ftn)
+    return;
+  DispatchToAgents(ftn,
+                   &protocol::DeviceAccessHandler::CleanUpDeviceRequestPrompt,
+                   prompt_info);
 }
 
 }  // namespace devtools_instrumentation

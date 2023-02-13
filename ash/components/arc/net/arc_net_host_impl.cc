@@ -304,6 +304,8 @@ void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
   }
 }
 
+// TODO(b/263310512) Move translator functions to another file and add unit
+// tests for them.
 arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     const ash::NetworkState* network_state,
     const base::Value* shill_dict) {
@@ -325,6 +327,14 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
   mojo->is_metered =
       shill_dict &&
       shill_dict->FindBoolPath(shill::kMeteredProperty).value_or(false);
+  if (network_state->max_uplink_speed_kbps().has_value() &&
+      network_state->max_downlink_speed_kbps().has_value()) {
+    mojo->link_speed = arc::mojom::LinkSpeed::New();
+    mojo->link_speed->uplink_speed_kbps =
+        network_state->max_uplink_speed_kbps().value();
+    mojo->link_speed->downlink_speed_kbps =
+        network_state->max_downlink_speed_kbps().value();
+  }
 
   // IP configuration data is added from the properties of the underlying shill
   // Device and shill Service attached to the Device. Device properties are
@@ -792,6 +802,10 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
     }
   }
   wifi_dict.Set(onc::wifi::kBSSID, cfg->bssid);
+  if (cfg->bssid_allowlist.has_value()) {
+    wifi_dict.Set(onc::wifi::kBSSIDAllowlist,
+                  TranslateStringListToValue(cfg->bssid_allowlist.value()));
+  }
   properties.Set(onc::network_config::kWiFi, std::move(wifi_dict));
 
   // Set up static IPv4 config.
@@ -1538,6 +1552,11 @@ void ArcNetHostImpl::OnShuttingDown() {
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
   GetNetworkConnectionHandler()->RemoveObserver(this);
   observing_network_state_ = false;
+}
+
+// static
+void ArcNetHostImpl::EnsureFactoryBuilt() {
+  ArcNetHostImplFactory::GetInstance();
 }
 
 }  // namespace arc

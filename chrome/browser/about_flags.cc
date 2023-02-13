@@ -642,35 +642,28 @@ const FeatureEntry::FeatureVariation
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
-const FeatureEntry::FeatureParam
-    kAutofillSaveCardUiExperimentEnableCurrentWithUserAvatarAndEmail[] = {
-        {"autofill_save_card_ui_experiment_selector_in_number", "3"},
-};
+#if !BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kEsbIphBubbleAndCollapseSettingsEnableIph[] = {
+    {"EnableEsbIphBubble", "true"}};
 
 const FeatureEntry::FeatureParam
-    kAutofillSaveCardUiExperimentEnableEncryptedAndSecure[] = {
-        {"autofill_save_card_ui_experiment_selector_in_number", "2"},
-};
+    kEsbIphBubbleAndCollapseSettingsEnableCollapse[] = {
+        {"EnableEsbSettingCollapse", "true"}};
 
-const FeatureEntry::FeatureParam
-    kAutofillSaveCardUiExperimentEnableFasterAndProtected[] = {
-        {"autofill_save_card_ui_experiment_selector_in_number", "1"},
-};
+const FeatureEntry::FeatureParam kEsbIphBubbleAndCollapseSettingsBothEnabled[] =
+    {{"EnableEsbIphBubble", "true"}, {"EnableEsbSettingCollapse", "true"}};
 
-const FeatureEntry::FeatureVariation kAutofillSaveCardUiExperimentOptions[] = {
-    {flag_descriptions::kAutofillSaveCardUiExperimentFasterAndProtected,
-     kAutofillSaveCardUiExperimentEnableFasterAndProtected,
-     std::size(kAutofillSaveCardUiExperimentEnableFasterAndProtected), nullptr},
-    {flag_descriptions::kAutofillSaveCardUiExperimentEncryptedAndSecure,
-     kAutofillSaveCardUiExperimentEnableEncryptedAndSecure,
-     std::size(kAutofillSaveCardUiExperimentEnableEncryptedAndSecure), nullptr},
-    {flag_descriptions::
-         kAutofillSaveCardUiExperimentCurrentWithUserAvatarAndEmail,
-     kAutofillSaveCardUiExperimentEnableCurrentWithUserAvatarAndEmail,
-     std::size(
-         kAutofillSaveCardUiExperimentEnableCurrentWithUserAvatarAndEmail),
-     nullptr},
-};
+const FeatureEntry::FeatureVariation
+    kEsbIphBubbleAndCollapseSettingsVariations[] = {
+        {"IPH and Settings Collapse",
+         kEsbIphBubbleAndCollapseSettingsBothEnabled,
+         std::size(kEsbIphBubbleAndCollapseSettingsBothEnabled), nullptr},
+        {"IPH Only", kEsbIphBubbleAndCollapseSettingsEnableIph,
+         std::size(kEsbIphBubbleAndCollapseSettingsEnableIph), nullptr},
+        {"Settings Collapse Only",
+         kEsbIphBubbleAndCollapseSettingsEnableCollapse,
+         std::size(kEsbIphBubbleAndCollapseSettingsEnableCollapse), nullptr}};
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
@@ -3412,9 +3405,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"top-chrome-touch-ui", flag_descriptions::kTopChromeTouchUiName,
      flag_descriptions::kTopChromeTouchUiDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTopChromeTouchUiChoices)},
-    {"variable-colrv1", flag_descriptions::kVariableCOLRV1Name,
-     flag_descriptions::kVariableCOLRV1Description, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kVariableCOLRV1)},
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {flag_descriptions::kWebUITabStripFlagId,
      flag_descriptions::kWebUITabStripName,
@@ -4330,6 +4320,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCastStreamingVp9Description, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kCastStreamingVp9)},
 
+    {"enable-cast-streaming-with-hidpi",
+     flag_descriptions::kCastEnableStreamingWithHiDPIName,
+     flag_descriptions::kCastEnableStreamingWithHiDPIDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(mirroring::features::kCastEnableStreamingWithHiDPI)},
+
     {"enable-os-integration-sub-managers",
      flag_descriptions::kEnableOsIntegrationSubManagersName,
      flag_descriptions::kEnableOsIntegrationSubManagersDescription, kOsDesktop,
@@ -4496,6 +4491,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kInfobarScrollOptimizationName,
      flag_descriptions::kInfobarScrollOptimizationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kInfobarScrollOptimization)},
+    {"share-sheet-migration-android",
+     flag_descriptions::kShareSheetMigrationAndroidName,
+     flag_descriptions::kShareSheetMigrationAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kShareSheetMigrationAndroid)},
+
 #endif  // BUILDFLAG(IS_ANDROID)
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -5039,6 +5039,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAudioPeripheralVolumeGranularityName,
      flag_descriptions::kAudioPeripheralVolumeGranularityDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAudioPeripheralVolumeGranularity)},
+    {"enable-cras-split-alsa-usb-internal",
+     flag_descriptions::kCrasSplitAlsaUsbInternalName,
+     flag_descriptions::kCrasSplitAlsaUsbInternalDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ash::features::kCrasSplitAlsaUsbInternal)},
     {"eche-swa", flag_descriptions::kEcheSWAName,
      flag_descriptions::kEcheSWADescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEcheSWA)},
@@ -5999,6 +6003,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStartSurfaceRefactorDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kStartSurfaceRefactor)},
 
+    {"enable-start-surface-on-tablet",
+     flag_descriptions::kStartSurfaceOnTabletName,
+     flag_descriptions::kStartSurfaceOnTabletDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kStartSurfaceOnTablet)},
+
     {"enable-show-scrollable-mvt-on-ntp",
      flag_descriptions::kShowScrollableMVTOnNTPAndroidName,
      flag_descriptions::kShowScrollableMVTOnNTPAndroidDescription, kOsAndroid,
@@ -6635,6 +6644,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomization)},
 
+    {"enable-search-in-shortcuts-app",
+     flag_descriptions::kEnableSearchInShortcutsAppName,
+     flag_descriptions::kEnableSearchInShortcutsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSearchInShortcutsApp)},
+
     {"enable-input-device-settings-split",
      flag_descriptions::kEnableInputDeviceSettingsSplitName,
      flag_descriptions::kEnableInputDeviceSettingsSplitDescription, kOsCrOS,
@@ -6677,6 +6691,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAccessibilitySelectToSpeakPageMigrationDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAccessibilitySelectToSpeakPageMigration)},
+
+    {"enable-accessibility-chromevox-page-migration",
+     flag_descriptions::kAccessibilityChromeVoxPageMigrationName,
+     flag_descriptions::kAccessibilityChromeVoxPageMigrationDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAccessibilityChromeVoxPageMigration)},
 
     {"enable-view-ppd", flag_descriptions::kEnableViewPpdName,
      flag_descriptions::kEnableViewPpdDescription, kOsCrOS,
@@ -6816,7 +6836,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
     {"enable-local-web-approvals", flag_descriptions::kLocalWebApprovalsName,
      flag_descriptions::kLocalWebApprovalsDescription, kOsCrOS | kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(supervised_users::kLocalWebApprovals,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(supervised_user::kLocalWebApprovals,
                                     kLocalWebApprovalsVariations,
                                     "LocalWebApprovals")},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
@@ -6826,7 +6846,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebFilterInterstitialRefreshName,
      flag_descriptions::kWebFilterInterstitialRefreshDescription,
      kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(supervised_users::kWebFilterInterstitialRefresh)},
+     FEATURE_VALUE_TYPE(supervised_user::kWebFilterInterstitialRefresh)},
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
     {"notification-scheduler", flag_descriptions::kNotificationSchedulerName,
@@ -6872,10 +6892,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseDnsHttpsSvcbAlpnDescription,
      kOsLinux | kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kUseDnsHttpsSvcbAlpn)},
-
-    {"web-bundles", flag_descriptions::kWebBundlesName,
-     flag_descriptions::kWebBundlesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebBundles)},
 
 #if !BUILDFLAG(IS_ANDROID)
     {"hidpi-capture", flag_descriptions::kWebContentsCaptureHiDpiName,
@@ -7570,7 +7586,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kEnableEnhancedSafeBrowsingSettingsImprovementsDescription,
      kOsDesktop,
-     FEATURE_VALUE_TYPE(safe_browsing::kEsbIphBubbleAndCollapseSettings)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         safe_browsing::kEsbIphBubbleAndCollapseSettings,
+         kEsbIphBubbleAndCollapseSettingsVariations,
+         "EsbIphBubbleAndCollapseSettingsVariations")},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -7960,6 +7979,10 @@ const FeatureEntry kFeatureEntries[] = {
          lens::features::kLensImageFormatOptimizations,
          kLensImageFormatVariations,
          "LensImageFormatOptimizations")},
+
+    {"enable-lens-image-translate", flag_descriptions::kLensImageTranslateName,
+     flag_descriptions::kLensImageTranslateDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(lens::features::kEnableImageTranslate)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-log-controller-for-diagnostics-app",
@@ -8747,14 +8770,6 @@ const FeatureEntry kFeatureEntries[] = {
          permissions::features::kRecordPermissionExpirationTimestamps)},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-    {"autofill-enable-upstream-save-card-offer-ui-experiment",
-     flag_descriptions::kAutofillSaveCardUiExperimentName,
-     flag_descriptions::kAutofillSaveCardUiExperimentDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         autofill::features::kAutofillSaveCardUiExperiment,
-         kAutofillSaveCardUiExperimentOptions,
-         "AutofillSaveCardUiExperiment")},
-
 #if BUILDFLAG(IS_ANDROID)
     {"network-service-in-process",
      flag_descriptions::kNetworkServiceInProcessName,
@@ -9308,6 +9323,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebViewTagMPArchBehaviorDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(extensions_features::kWebviewTagMPArchBehavior)},
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+        //
+#if BUILDFLAG(IS_ANDROID)
+    {"thumbnail-cache-refactor", flag_descriptions::kThumbnailCacheRefactorName,
+     flag_descriptions::kThumbnailCacheRefactorDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kThumbnailCacheRefactor)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-enable-page-load-metadata-integration",
      flag_descriptions::kAutofillEnablePageLoadMetadataIntegrationName,
@@ -9321,6 +9342,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSystemLiveCaptionDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemLiveCaption)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_ANDROID)
+    {"stylus-rich-gestures", flag_descriptions::kStylusRichGesturesName,
+     flag_descriptions::kStylusRichGesturesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kStylusRichGestures)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

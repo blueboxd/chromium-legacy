@@ -408,6 +408,7 @@
 <translation id="4462159676511157176">ເຊີບເວີຊື່ກໍານົດເອງ</translation>
 <translation id="4465725236958772856">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ເຊື່ອມຕໍ່</translation>
 <translation id="4470564870223067757">ຮາງກຸລ 2 ຊຸດ</translation>
+<translation id="4474142134969976028">ບໍ່ພົບຜົນການຊອກຫາທີ່ກົງກັນ</translation>
 <translation id="4477002475007461989">ໂຣມານຽນ</translation>
 <translation id="4477219268485577442">ການອອກສຽງພາສາບຸນ​ກາ​ຣີ</translation>
 <translation id="4508265954913339219">ການເປີດໃຊ້ງານບໍ່ສໍາເລັດ</translation>
@@ -479,6 +480,7 @@
 <translation id="4973523518332075481">ໃຊ້ຊື່ທີ່ມີຕົວອັກສອນ <ph name="MAX_LENGTH" /> ຕົວລົງມາ</translation>
 <translation id="4973970068702235170">ການຊິບບໍ່ສຳເລັດ, ເກີດຄວາມຜິດພາດທີ່ບໍ່ຄາດຄິດ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ພາສາຍີ່ປຸ່ນ</translation>
+<translation id="4987699874727873250">ອັງກິດ (ອິນເດຍ)</translation>
 <translation id="4988205478593450158">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການລຶບ "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">ແມງກະເບື້ອສີແດງ</translation>
 <translation id="4992066212339426712">ເປີດສຽງ</translation>
@@ -787,6 +789,7 @@
 <translation id="7458955835361612701">ບໍ່ມີຮູບຫຼ້າສຸດ</translation>
 <translation id="7460898608667578234">ພາສາຢູ​ເຄຣນ</translation>
 <translation id="7469894403370665791">ເຊື່ອມຕໍ່ກັບເຄືອຂ່າຍນີ້ອັດຕະໂນມັດ</translation>
+<translation id="7481358317100446445">ພ້ອມແລ້ວ</translation>
 <translation id="7486315294984620427">ເພື່ອວາງໄຟລ໌ໃນ Parallels Desktop, ໄຟລ໌ນັ້ນຈະຕ້ອງຖືກສຳເນົາໄປໃສ່ໄຟລ໌ Windows ກ່ອນ.</translation>
 <translation id="749452993132003881">ຮິຣະງະນະ</translation>
 <translation id="7495372004724182530">ການອອກສຽງພາສາມາລາຢາລຳ</translation>
@@ -812,6 +815,7 @@
 <translation id="7655441028674523381">ເຂົ້າເຖິງ Google ຮູບພາບໄດ້ຢ່າງງ່າຍດາຍ</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7663224033570512922">ພາສາຮິນດິ</translation>
+<translation id="7665680517722058469">ລອງຊອກຫາອັນໃໝ່</translation>
 <translation id="7689532716264131859">ຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການໄປໃສ່ຖັງຂີ້ເຫຍື້ອແລ້ວ</translation>
 <translation id="7693909743393669729">ການຟໍແມັດໄດຣຈະລຶບຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໃນມັນ ແລະ ລຶບຫ້ອງຂໍ້ມູນທີ່ມີຢູ່ທັງໝົດ, ຮວມທັງຫ້ອງຂໍ້ມູນທີ່ອາດຈະເບິ່ງບໍ່ເຫັນ. ຄຳສັ່ງນີ້ບໍ່ສາມາດຍົກເລີກໄດ້.</translation>
 <translation id="7695430100978772476">ບໍ່ສາມາດຟໍແມັດ <ph name="DRIVE_NAME" /> ໄດ້</translation>

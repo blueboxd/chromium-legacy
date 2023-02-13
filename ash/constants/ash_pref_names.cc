@@ -287,6 +287,10 @@ const char kAccessibilityChromeVoxEnableEventStreamLogging[] =
 // enabled.
 const char kAccessibilityChromeVoxEnableSpeechLogging[] =
     "settings.a11y.chromevox.enable_speech_logging";
+// A dictionary pref that defines which event stream filters in ChromeVox are
+// enabled. (e.g. {clicked: true, focus: false, hover: true})
+const char kAccessibilityChromeVoxEventStreamFilters[] =
+    "settings.a11y.chromevox.event_stream_filters";
 // A boolean pref which determines whether language switching for ChromeVox is
 // enabled.
 const char kAccessibilityChromeVoxLanguageSwitching[] =
@@ -588,6 +592,10 @@ const char kScreenMagnifierAcceleratorDialogHasBeenAccepted[] =
 // ever been shown.
 const char kDictationAcceleratorDialogHasBeenAccepted[] =
     "settings.a11y.dictation_accelerator_dialog_has_been_accepted";
+// A boolean pref which indicates whether the Dictation DLC success notification
+// has ever been shown.
+const char kDictationDlcSuccessNotificationHasBeenShown[] =
+    "settings.a11y.dictation_dlc_success_notification_has_been_shown";
 // A boolean pref which indicates whether the display rotation confirmation
 // dialog has ever been shown.
 // Renamed 10/2019 to force reset the pref to false.

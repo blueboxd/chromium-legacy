@@ -480,6 +480,7 @@
 <translation id="4973523518332075481">Слишком длинное название. Максимальное количество символов: <ph name="MAX_LENGTH" />.</translation>
 <translation id="4973970068702235170">Возникла непредвиденная ошибка. <ph name="ERROR_MESSAGE" />.</translation>
 <translation id="4984616446166309645">Японский</translation>
+<translation id="4987699874727873250">Английский (Индия)</translation>
 <translation id="4988205478593450158">Вы действительно хотите удалить файл "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Красная бабочка</translation>
 <translation id="4992066212339426712">Включить звук</translation>
@@ -789,6 +790,7 @@
 <translation id="7458955835361612701">Нет недавних изображений.</translation>
 <translation id="7460898608667578234">Украинский</translation>
 <translation id="7469894403370665791">Автоматически подключаться к этой сети</translation>
+<translation id="7481358317100446445">Готово</translation>
 <translation id="7486315294984620427">Чтобы загрузить файлы в Parallels Desktop, скопируйте их в папку "Файлы Windows".</translation>
 <translation id="749452993132003881">Хирагана</translation>
 <translation id="7495372004724182530">Малаялам, фонетический</translation>

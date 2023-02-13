@@ -11,6 +11,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "printing/backend/print_backend.h"
+#include "printing/buildflags/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#error "Only used by Print Preview"
+#endif
 
 namespace printing {
 
@@ -34,6 +39,7 @@ base::Value::Dict AssemblePrinterSettings(
     bool has_secure_protocol,
     PrinterSemanticCapsAndDefaults* caps);
 
+#if !BUILDFLAG(IS_CHROMEOS) || defined(UNIT_TEST)
 // Returns the value from `AssemblePrinterSettings()` using the required
 // `print_backend` to obtain settings as necessary.  The returned value is
 // suitable for passage to the WebUI in JSON.
@@ -41,8 +47,8 @@ base::Value::Dict GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     PrinterSemanticCapsAndDefaults::Papers user_defined_papers,
-    bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend);
+#endif  // !BUILDFLAG(IS_CHROMEOS) || defined(UNIT_TEST)
 
 }  // namespace printing
 

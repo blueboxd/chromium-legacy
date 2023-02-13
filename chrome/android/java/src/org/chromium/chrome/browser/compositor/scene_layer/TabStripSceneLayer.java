@@ -11,7 +11,6 @@ import androidx.annotation.ColorInt;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
@@ -101,9 +100,10 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
     public void updateStripScrim(StripScrim scrim) {
         if (mNativePtr == 0) return;
 
+        final int width = Math.round(scrim.getWidth() * mDpToPx);
+        final int height = Math.round(scrim.getHeight() * mDpToPx);
         TabStripSceneLayerJni.get().updateStripScrim(mNativePtr, TabStripSceneLayer.this,
-                scrim.getX(), scrim.getY(), scrim.getWidth() * mDpToPx, scrim.getHeight() * mDpToPx,
-                scrim.getColor(), scrim.getAlpha());
+                scrim.getX(), scrim.getY(), width, height, scrim.getColor(), scrim.getAlpha());
     }
 
     private boolean shouldReaddBackground(int orientation) {
@@ -122,8 +122,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
 
     private void pushButtonsAndBackground(StripLayoutHelperManager layoutHelper,
             ResourceManager resourceManager, float yOffset) {
-        final float width = layoutHelper.getWidth() * mDpToPx;
-        final float height = layoutHelper.getHeight() * mDpToPx;
+        final int width = Math.round(layoutHelper.getWidth() * mDpToPx);
+        final int height = Math.round(layoutHelper.getHeight() * mDpToPx);
         TabStripSceneLayerJni.get().updateTabStripLayer(mNativePtr, TabStripSceneLayer.this, width,
                 height, yOffset * mDpToPx, shouldReaddBackground(layoutHelper.getOrientation()),
                 layoutHelper.getBackgroundColor());
@@ -161,31 +161,20 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                     modelSelectorButton.getOpacity(), resourceManager);
         }
 
-        boolean tabStripImprovementsEnabled = ChromeFeatureList.sTabStripImprovements.isEnabled();
-        boolean showLeftTabStripFade = ChromeFeatureList.sTabStripRedesign.isEnabled()
-                || !tabStripImprovementsEnabled || LocalizationUtils.isLayoutRtl();
-        boolean showRightTabStripFade = ChromeFeatureList.sTabStripRedesign.isEnabled()
-                || !tabStripImprovementsEnabled || !LocalizationUtils.isLayoutRtl();
-
-        int tab_strip_fade_short = tabStripImprovementsEnabled ? R.drawable.tab_strip_fade_short
-                                                               : R.drawable.tab_strip_fade;
-        int tab_strip_fade_long = tabStripImprovementsEnabled
-                ? R.drawable.tab_strip_fade_long
-                : R.drawable.tab_strip_fade_for_model_selector;
+        boolean tabStripRedesignEnabled = ChromeFeatureList.sTabStripRedesign.isEnabled();
+        boolean isLayoutRtl = LocalizationUtils.isLayoutRtl();
+        boolean showLeftTabStripFade = tabStripRedesignEnabled || isLayoutRtl;
+        boolean showRightTabStripFade = tabStripRedesignEnabled || !isLayoutRtl;
 
         if (showLeftTabStripFade) {
-            int leftFadeDrawable = modelSelectorButtonVisible && LocalizationUtils.isLayoutRtl()
-                    ? tab_strip_fade_long
-                    : tab_strip_fade_short;
+            int leftFadeDrawable = layoutHelper.getLeftFadeDrawable();
             TabStripSceneLayerJni.get().updateTabStripLeftFade(mNativePtr, TabStripSceneLayer.this,
                     leftFadeDrawable, layoutHelper.getLeftFadeOpacity(), resourceManager,
                     layoutHelper.getBackgroundColor());
         }
 
         if (showRightTabStripFade) {
-            int rightFadeDrawable = modelSelectorButtonVisible && !LocalizationUtils.isLayoutRtl()
-                    ? tab_strip_fade_long
-                    : tab_strip_fade_short;
+            int rightFadeDrawable = layoutHelper.getRightFadeDrawable();
             TabStripSceneLayerJni.get().updateTabStripRightFade(mNativePtr, TabStripSceneLayer.this,
                     rightFadeDrawable, layoutHelper.getRightFadeOpacity(), resourceManager,
                     layoutHelper.getBackgroundColor());
@@ -228,10 +217,10 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
                 long nativeTabStripSceneLayer, TabStripSceneLayer caller, boolean visible);
         void finishBuildingFrame(long nativeTabStripSceneLayer, TabStripSceneLayer caller);
         void updateTabStripLayer(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
-                float width, float height, float yOffset, boolean shouldReadBackground,
+                int width, int height, float yOffset, boolean shouldReadBackground,
                 @ColorInt int backgroundColor);
         void updateStripScrim(long nativeTabStripSceneLayer, TabStripSceneLayer caller, float x,
-                float y, float width, float height, int color, float alpha);
+                float y, int width, int height, int color, float alpha);
         void updateNewTabButton(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
                 int resourceId, int backgroundResourceId, float x, float y, float touchTargetOffset,
                 boolean visible, int tint, int backgroundTint, float buttonAlpha,

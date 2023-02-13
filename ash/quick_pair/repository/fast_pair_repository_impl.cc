@@ -769,12 +769,12 @@ void FastPairRepositoryImpl::OnDeleteAssociatedDeviceByAccountKey(
 void FastPairRepositoryImpl::FetchDeviceImages(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Fetching device images for model ID "
                << device->metadata_id();
-  // Save a record of the device ID -> model ID for this device so that we can
+  // Save a record of the mac address -> model ID for this device so that we can
   // display images for device objects that lack a model ID, such as
   // device::BluetoothDevice.
   if (!device_address_map_->SaveModelIdForDevice(device)) {
     QP_LOG(WARNING) << __func__
-                    << ": Unable to save device ID -> model ID"
+                    << ": Unable to save mac address -> model ID"
                        " mapping for model ID "
                     << device->metadata_id();
   }
@@ -841,12 +841,10 @@ bool FastPairRepositoryImpl::PersistDeviceImages(scoped_refptr<Device> device) {
   return device_image_store_->PersistDeviceImages(device->metadata_id());
 }
 
-bool FastPairRepositoryImpl::EvictDeviceImages(
-    const device::BluetoothDevice* device) {
-  const std::string mac_address = device->GetAddress();
+bool FastPairRepositoryImpl::EvictDeviceImages(const std::string& mac_address) {
   QP_LOG(VERBOSE) << __func__
                   << ": Evicting mac address to model ID record for: "
-                  << device->GetAddress();
+                  << mac_address;
 
   // TODO(235117226): Remove the records associated with the BLE address.
   absl::optional<const std::string> hex_model_id =
@@ -866,9 +864,9 @@ bool FastPairRepositoryImpl::EvictDeviceImages(
 }
 
 absl::optional<bluetooth_config::DeviceImageInfo>
-FastPairRepositoryImpl::GetImagesForDevice(const std::string& device_id) {
+FastPairRepositoryImpl::GetImagesForDevice(const std::string& mac_address) {
   absl::optional<const std::string> hex_model_id =
-      device_address_map_->GetModelIdForMacAddress(device_id);
+      device_address_map_->GetModelIdForMacAddress(mac_address);
   if (!hex_model_id) {
     return absl::nullopt;
   }

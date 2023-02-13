@@ -5,7 +5,6 @@
 #include "ash/constants/ash_features.h"
 
 #include "ash/constants/ash_switches.h"
-#include "ash_features.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -178,6 +177,10 @@ BASE_FEATURE(kAssistantNativeIcons,
 // Enables Peripheral volume change by hardware reported steps
 BASE_FEATURE(kAudioPeripheralVolumeGranularity,
              "AudioPeripheralVolumeGranularity",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCrasSplitAlsaUsbInternal,
+             "CrasSplitAlsaUsbInternal",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the AudioSourceFetcher resamples the audio for speech
@@ -820,6 +823,12 @@ BASE_FEATURE(kFamilyLinkOnSchoolDevice,
 // Enables the Fast Pair feature.
 BASE_FEATURE(kFastPair, "FastPair", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables logic for handling BLE address rotations during retroactive pair
+// scenarios.
+BASE_FEATURE(kFastPairBleRotation,
+             "FastPairBleRotation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables using new Handshake retry logic for Fast Pair.
 BASE_FEATURE(kFastPairHandshakeRefactor,
              "FastPairHandshakeRefactor",
@@ -1018,6 +1027,9 @@ BASE_FEATURE(kGesturePropertiesDBusService,
 // Enables the ability to record the screen into an animated GIF image from the
 // native screen capture tool.
 BASE_FEATURE(kGifRecording, "GifRecording", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the displaying of animated gifs in ash.
+BASE_FEATURE(kGifRendering, "GifRendering", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a Files banner about Google One offer.
 BASE_FEATURE(kGoogleOneOfferFilesBanner,
@@ -1472,6 +1484,10 @@ BASE_FEATURE(kOnlyShowNewShortcutsApp,
              "OnlyShowNewShortcutsApp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSearchInShortcutsApp,
+             "SearchInShortcutsApp",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the feedback tool new UX on ChromeOS.
 // This tool under development will be rolled out via Finch.
 // Enabling this flag will use the new feedback tool instead of the current
@@ -1577,7 +1593,8 @@ const base::FeatureParam<PrintingPpdChannel>::Option
     printing_ppd_channel_options[] = {
         {PrintingPpdChannel::kProduction, "production"},
         {PrintingPpdChannel::kStaging, "staging"},
-        {PrintingPpdChannel::kDev, "dev"}};
+        {PrintingPpdChannel::kDev, "dev"},
+        {PrintingPpdChannel::kLocalhost, "localhost"}};
 const base::FeatureParam<PrintingPpdChannel> kPrintingPpdChannelParam{
     &kPrintingPpdChannel, "channel", PrintingPpdChannel::kProduction,
     &printing_ppd_channel_options};
@@ -2487,6 +2504,10 @@ bool IsFastPairEnabled() {
   return base::FeatureList::IsEnabled(kFastPair);
 }
 
+bool IsFastPairBleRotationEnabled() {
+  return base::FeatureList::IsEnabled(kFastPairBleRotation);
+}
+
 bool IsFastPairHandshakeRefactorEnabled() {
   return base::FeatureList::IsEnabled(kFastPairHandshakeRefactor);
 }
@@ -2572,6 +2593,10 @@ bool IsGalleryAppPdfEditNotificationEnabled() {
 
 bool IsGifRecordingEnabled() {
   return base::FeatureList::IsEnabled(kGifRecording);
+}
+
+bool IsGifRenderingEnabled() {
+  return base::FeatureList::IsEnabled(kGifRendering);
 }
 
 bool AreGlanceablesEnabled() {
@@ -3162,6 +3187,10 @@ bool ShouldGuestOsFileTasksUseAppService() {
 
 bool ShouldOnlyShowNewShortcutApp() {
   return base::FeatureList::IsEnabled(kOnlyShowNewShortcutsApp);
+}
+
+bool IsSearchInShortcutsAppEnabled() {
+  return base::FeatureList::IsEnabled(kSearchInShortcutsApp);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

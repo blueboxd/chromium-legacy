@@ -534,18 +534,6 @@ const char kAutofillSaveAndFillVPADescription[] =
     "it will offer to save it. If saved, it will be offered for filling in "
     "fields which expect a VPA.";
 
-const char kAutofillSaveCardUiExperimentName[] =
-    "Enable different UI variants for the upload credit card save bubble";
-const char kAutofillSaveCardUiExperimentDescription[] =
-    "When enabled, it will trigger slightly different UI variants along with "
-    "notification texts, when the upload credit card save bubble is shown.";
-const char kAutofillSaveCardUiExperimentCurrentWithUserAvatarAndEmail[] =
-    "Current with Avatar and Email";
-const char kAutofillSaveCardUiExperimentEncryptedAndSecure[] =
-    "Encrypted and Secure";
-const char kAutofillSaveCardUiExperimentFasterAndProtected[] =
-    "Faster and Protected";
-
 const char kAutofillShowManualFallbackInContextMenuName[] =
     "Show Autofill options in Context Menu";
 const char kAutofillShowManualFallbackInContextMenuDescription[] =
@@ -1020,6 +1008,12 @@ const char kAccessibilitySelectToSpeakPageMigrationDescription[] =
     "This option enables Select-to-Speak page migration from extension options "
     "page to a Chrome OS settings page.";
 
+const char kAccessibilityChromeVoxPageMigrationName[] =
+    "ChromeVox Page Migration";
+const char kAccessibilityChromeVoxPageMigrationDescription[] =
+    "This option enables ChromeVox page migration from extension options page"
+    "to a Chrome OS settings page.";
+
 const char kAccessibilitySelectToSpeakContextMenuOptionName[] =
     "Select-To-Speak Context menu option";
 const char kAccessibilitySelectToSpeakContextMenuOptionDescription[] =
@@ -1109,6 +1103,11 @@ extern const char kEnableShortcutCustomizationName[] =
     "Enable customization in new shortcuts app";
 extern const char kEnableShortcutCustomizationDescription[] =
     "Enable customization of shortcuts in the new shortcuts app.";
+
+extern const char kEnableSearchInShortcutsAppName[] =
+    "Enable search in new shortcuts app";
+extern const char kEnableSearchInShortcutsAppDescription[] =
+    "Enable searching for shortcuts in the new shortcuts app.";
 
 const char kEnableInputDeviceSettingsSplitName[] =
     "Enable input device settings split";
@@ -1623,6 +1622,13 @@ const char kCastStreamingVp9Description[] =
     "Offers the VP9 video codec when negotiating Cast Streaming, and uses VP9 "
     "if selected for the session.";
 
+const char kCastEnableStreamingWithHiDPIName[] =
+    "HiDPI tab capture support for Cast Streaming";
+const char kCastEnableStreamingWithHiDPIDescription[] =
+    "Enables HiDPI tab capture during Cast Streaming mirroring sessions. May "
+    "reduce performance on some platforms and also improve quality of video "
+    "frames.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
@@ -1709,6 +1715,12 @@ const char kTabAudioMutingName[] = "Tab audio muting UI control";
 const char kTabAudioMutingDescription[] =
     "When enabled, the audio indicators in the tab strip double as tab audio "
     "mute controls.";
+
+const char kCrasSplitAlsaUsbInternalName[] =
+    "CRAS Split USB/Internal refactor control";
+const char kCrasSplitAlsaUsbInternalDescription[] =
+    "When enable, CRAS will create different iodev with USB and internal "
+    "device.";
 
 const char kTabSelectionEditorV2Name[] = "Tab selection editor V2";
 const char kTabSelectionEditorV2Description[] =
@@ -1890,6 +1902,13 @@ const char kLensImageFormatOptimizationsName[] = "Lens Optimized Image Formats";
 const char kLensImageFormatOptimizationsDescription[] =
     "Enables the use of either WebP or JPEG on all Lens quries to reduce "
     "network load and improve latency";
+
+const char kLensImageTranslateName[] =
+    "Translate text in images with Google Lens";
+const char kLensImageTranslateDescription[] =
+    "Enables a context menu item to translate text in images using Google "
+    "Lens. The context menu item appears when the current page is being "
+    "translated.";
 
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
@@ -3004,6 +3023,11 @@ const char
         "the frame has zero viewport intersection, a non-zero area, and is "
         "not display:none.";
 
+const char kThumbnailCacheRefactorName[] = "Thumbnail Cache Refactor";
+const char kThumbnailCacheRefactorDescription[] =
+    "When enabled the thumbnail cache for Android is updated to improve "
+    "memory usage and performance.";
+
 const char kNewBaseUrlInheritanceBehaviorName[] =
     "Enable new base url inheritance behaviors for srcdoc and about:blank";
 const char kNewBaseUrlInheritanceBehaviorDescription[] =
@@ -3138,11 +3162,6 @@ const char kV8VmFutureDescription[] =
     "This enables upcoming and experimental V8 VM features. "
     "This flag does not enable experimental JavaScript features.";
 
-const char kVariableCOLRV1Name[] = "Variable COLRv1 Fonts";
-const char kVariableCOLRV1Description[] =
-    "Enable rendering of COLRv1 glyphs with font variations applied. When this "
-    "flag is off, variations to COLRv1 tables are ignored.";
-
 const char kGlobalVaapiLockName[] = "Global lock on the VA-API wrapper.";
 const char kGlobalVaapiLockDescription[] =
     "Enable or disable the global VA-API lock for platforms and paths that "
@@ -3185,11 +3204,6 @@ const char kWebBluetoothNewPermissionsBackendDescription[] =
     "Enables the new permissions backend for Web Bluetooth. This will enable "
     "persistent storage of device permissions and Web Bluetooth features such "
     "as BluetoothDevice.watchAdvertisements() and Bluetooth.getDevices()";
-
-const char kWebBundlesName[] = "Web Bundles";
-const char kWebBundlesDescription[] =
-    "Enables experimental supports for Web Bundles (Bundled HTTP Exchanges) "
-    "navigation.";
 
 const char kWebContentsCaptureHiDpiName[] = "HiDPI Tab Capture";
 const char kWebContentsCaptureHiDpiDescription[] =
@@ -3986,6 +4000,10 @@ const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
     "item.";
 
+const char kShareSheetMigrationAndroidName[] = "Share sheet refactor Android";
+const char kShareSheetMigrationAndroidDescription[] =
+    "When enabled, use the Android OS share sheet.";
+
 const char kSiteIsolationForPasswordSitesName[] =
     "Site Isolation For Password Sites";
 const char kSiteIsolationForPasswordSitesDescription[] =
@@ -4019,6 +4037,10 @@ const char kStartSurfaceDisabledFeedImprovementName[] =
 const char kStartSurfaceDisabledFeedImprovementDescription[] =
     "Enable improving Start surface when Feed is disabled";
 
+const char kStartSurfaceOnTabletName[] = "Start Surface On Tablet";
+const char kStartSurfaceOnTabletDescription[] =
+    "Enable Start Surface On Tablet.";
+
 const char kStartSurfaceRefactorName[] = "Start Surface Refactor";
 const char kStartSurfaceRefactorDescription[] =
     "Enable splitting Tab switcher from Start surface";
@@ -4035,6 +4057,11 @@ const char kStrictSiteIsolationDescription[] =
     "platform, enterprise policy, or field trial. See also "
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
+
+const char kStylusRichGesturesName[] = "Stylus rich gestures";
+const char kStylusRichGesturesDescription[] =
+    "Enable rich gestures for stylus which can be used to modify text in "
+    "editable web content.";
 
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";

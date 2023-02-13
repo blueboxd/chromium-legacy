@@ -9,7 +9,7 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, CrosAudioConfigInterface, MuteState} from '../../mojom-webui/audio/cros_audio_config.mojom-webui.js';
+import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, CrosAudioConfigInterface, MuteState} from '../../mojom-webui/cros_audio_config.mojom-webui.js';
 
 export const defaultFakeMicJack: AudioDevice = {
   id: BigInt(1),
@@ -150,7 +150,7 @@ export class FakeCrosAudioConfig implements FakeCrosAudioConfigInterface {
     }
     const nextState: AudioEffectState =
         enabled ? AudioEffectState.kEnabled : AudioEffectState.kNotEnabled;
-    this.audioSystemProperties.inputDevices[activeIndex]!
+    this.audioSystemProperties.inputDevices[activeIndex]
         .noiseCancellationState = nextState;
     this.notifyAudioSystemPropertiesUpdated();
   }

@@ -380,8 +380,7 @@ BASE_FEATURE(kEnumerateDevicesHideDeviceIDs,
 
 // Content counterpart of ExperimentalContentSecurityPolicyFeatures in
 // third_party/blink/renderer/platform/runtime_enabled_features.json5. Enables
-// experimental Content Security Policy features ('navigate-to' and
-// 'prefetch-src').
+// experimental Content Security Policy features ('navigate-to').
 BASE_FEATURE(kExperimentalContentSecurityPolicyFeatures,
              "ExperimentalContentSecurityPolicyFeatures",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -971,6 +970,14 @@ BASE_FEATURE(kRenderAccessibilityHostDeserializationOffMainThread,
 BASE_FEATURE(kRenderDocument,
              "RenderDocument",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables retrying to obtain list of available cameras after restarting the
+// video capture service if a previous attempt failed, which could be caused
+// by a service crash.
+BASE_FEATURE(kRetryGetVideoCaptureDeviceInfos,
+             "RetryGetVideoCaptureDeviceInfos",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables skipping the early call to CommitPending when navigating away from a
 // crashed frame.
 BASE_FEATURE(kSkipEarlyCommitPendingForCrashedFrame,
@@ -1373,19 +1380,6 @@ BASE_FEATURE(kWebBluetoothNewPermissionsBackend,
              "WebBluetoothNewPermissionsBackend",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether Web Bundles (Bundled HTTP Exchanges) is enabled.
-// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
-// When this feature is enabled, Chromium can load unsigned Web Bundles local
-// file under file:// URL (and content:// URI on Android).
-BASE_FEATURE(kWebBundles, "WebBundles", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When this feature is enabled, Chromium will be able to load unsigned Web
-// Bundles file under https: URL and localhost http: URL.
-// TODO(crbug.com/1018640): Implement this feature.
-BASE_FEATURE(kWebBundlesFromNetwork,
-             "WebBundlesFromNetwork",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 BASE_FEATURE(kWebGLImageChromium,
@@ -1530,13 +1524,6 @@ BASE_FEATURE(kMacSyscallSandbox,
 // occlusion notifications.
 BASE_FEATURE(kMacWebContentsOcclusion,
              "MacWebContentsOcclusion",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables retrying to obtain list of available cameras on Macbooks after
-// restarting the video capture service if a previous attempt delivered zero
-// cameras.
-BASE_FEATURE(kRetryGetVideoCaptureDeviceInfos,
-             "RetryGetVideoCaptureDeviceInfos",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_MAC)

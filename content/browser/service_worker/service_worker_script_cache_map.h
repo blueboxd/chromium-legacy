@@ -37,6 +37,7 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
       delete;
 
   int64_t LookupResourceId(const GURL& url);
+  absl::optional<std::string> LookupSha256Checksum(const GURL& url);
 
   // Used during the initial run of a new version to build the map
   // of resources ids.
@@ -55,6 +56,11 @@ class CONTENT_EXPORT ServiceWorkerScriptCacheMap {
   void SetResources(
       const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
           resources);
+
+  // Updates sha256_checksum to the resource. sha256_checksum can be updated
+  // after the update check process.
+  void UpdateSha256Checksum(const GURL& url,
+                            const std::string& sha256_checksum);
 
   // Writes the metadata of the existing script.
   void WriteMetadata(const GURL& url,

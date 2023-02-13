@@ -30,9 +30,6 @@
           # https://crbug.com/1289764
           '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
         ],
-        'swarming': {
-          'shards': 2,
-        },
       },
       'android-12-x64-rel': {
         # TODO(crbug.com/1225851): Remove experiment and ci_only
@@ -43,9 +40,18 @@
           # https://crbug.com/1289764
           '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
         ],
-        'swarming': {
-          'shards': 2,
-        },
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          # https://crbug.com/1289764
+          '--gtest_filter=-All/ChromeBrowsingDataLifetimeManagerScheduledRemovalTest.History/*',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          # https://crbug.com/1414886
+          '--gtest_filter=-OfferNotificationControllerAndroidBrowserTestForMessagesUi.MessageShown',
+        ],
       },
       'android-nougat-x86-rel': {
         'swarming': {
@@ -73,7 +79,6 @@
           '--gtest_filter=-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode', # https://crbug.com/1034001
         ],
         'swarming': {
-          'shards': 2,
           'dimension_sets': [
             {
               'cores': '8', # crbug.com/1292221
@@ -150,7 +155,17 @@
       },
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.base_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.base_unittests.filter',
         ],
       },
       'fuchsia-code-coverage': {
@@ -1766,6 +1781,22 @@
           'shards': 25,
         },
       },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 25,
+        },
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 25,
+        },
+      },
       'android-arm64-proguard-rel': {
         'swarming': {
           'shards': 16,
@@ -2012,7 +2043,6 @@
       'ToTLinuxTSan',
       # https://crbug.com/crashpad/306
       'Linux CFI',
-      'Linux CFI (reclient shadow)',
       'CFI Linux ToT',
     ],
     'modifications': {
@@ -2029,12 +2059,22 @@
       },
       'android-11-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11.crashpad_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
         ],
       },
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.crashpad_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.crashpad_tests.filter',
         ],
       },
       # TODO(crbug.com/1254975): dyld was rebuilt for macOS 12, which breaks
@@ -2081,7 +2121,17 @@
     'modifications': {
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.device_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.device_unittests.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.device_unittests.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.device_unittests.filter',
         ],
       },
     },
@@ -2238,21 +2288,6 @@
           ],
         },
       },
-      'Linux CFI (reclient shadow)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:2184',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-      },
       'Linux TSan Tests': {
         'args': [
           '--use-gpu-in-tests',
@@ -2297,7 +2332,17 @@
       },
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12.gl_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12_12l_13.gl_tests.filter',
         ],
       },
       'android-arm64-proguard-rel': {
@@ -2742,12 +2787,22 @@
     'modifications': {
       'android-11-x86-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.media_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
         ],
       },
       'android-12-x64-rel': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_11_12.media_unittests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
+        ],
+      },
+      'android-13-x64-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
         ],
       },
       'android-pie-arm64-rel': {
@@ -3054,6 +3109,18 @@
   'perfetto_unittests': {
     'modifications': {
       'android-12-x64-rel': {
+        'args': [
+          # TODO(crbug.com/1260440): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
+      'android-12l-x64-dbg-tests': {
+        'args': [
+          # TODO(crbug.com/1260440): Fix the failed test
+          '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
+        ],
+      },
+      'android-13-x64-rel': {
         'args': [
           # TODO(crbug.com/1260440): Fix the failed test
           '--gtest_filter=-ScopedDirTest.CloseOutOfScope',
@@ -3810,6 +3877,19 @@
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
       'linux-rel-cft',
     ],
+  },
+  'webengine_support_instrumentation_test_apk': {
+    'modifications': {
+      'android-12-x64-rel': {
+        'ci_only': True,
+      },
+      'android-nougat-x86-rel': {
+        'ci_only': True,
+      },
+      'android-pie-arm64-rel': {
+        'ci_only': True,
+      },
+    },
   },
   'webgl2_conformance_d3d11_passthrough_tests': {
     'remove_from': [

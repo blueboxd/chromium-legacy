@@ -29,7 +29,6 @@
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
@@ -42,6 +41,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/base/schemeful_site.h"
+#include "services/network/public/cpp/trigger_attestation.h"
+#include "services/network/public/cpp/trigger_attestation_test_utils.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -123,7 +124,7 @@ void MockDataHost::SourceDataAvailable(
 void MockDataHost::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data,
-    absl::optional<attribution_reporting::TriggerAttestation> attestation) {
+    absl::optional<network::TriggerAttestation> attestation) {
   trigger_data_.push_back(std::move(data));
   if (trigger_data_.size() < min_trigger_data_count_) {
     return;
@@ -395,11 +396,13 @@ void MockAttributionManager::NotifySourceRegistrationFailure(
     const std::string& header_value,
     const SuitableOrigin& source_origin,
     const SuitableOrigin& reporting_origin,
+    AttributionSourceType source_type,
     attribution_reporting::mojom::SourceRegistrationError error) {
   base::Time source_time = base::Time::Now();
   for (auto& observer : observers_) {
     observer.OnFailedSourceRegistration(header_value, source_time,
-                                        source_origin, reporting_origin, error);
+                                        source_origin, reporting_origin,
+                                        source_type, error);
   }
 }
 
@@ -725,7 +728,7 @@ TriggerBuilder& TriggerBuilder::SetAggregationCoordinator(
 }
 
 TriggerBuilder& TriggerBuilder::SetAttestation(
-    absl::optional<attribution_reporting::TriggerAttestation> attestation) {
+    absl::optional<network::TriggerAttestation> attestation) {
   attestation_ = std::move(attestation);
   return *this;
 }
@@ -755,7 +758,11 @@ AttributionTrigger TriggerBuilder::Build(
       attribution_reporting::TriggerRegistration(
           /*filters=*/attribution_reporting::Filters(),
           /*not_filters=*/attribution_reporting::Filters(), debug_key_,
-          aggregatable_dedup_key_,
+          *attribution_reporting::AggregatableDedupKeyList::Create(
+              {attribution_reporting::AggregatableDedupKey(
+                  /*dedup_key=*/aggregatable_dedup_key_,
+                  /*filters=*/attribution_reporting::Filters(),
+                  /*not_filters=*/attribution_reporting::Filters())}),
           *attribution_reporting::EventTriggerDataList::Create(
               std::move(event_triggers)),
           *attribution_reporting::AggregatableTriggerDataList::Create(
@@ -1328,7 +1335,8 @@ TriggerRegistrationMatcherConfig::TriggerRegistrationMatcherConfig(
     ::testing::Matcher<absl::optional<uint64_t>> debug_key,
     ::testing::Matcher<const attribution_reporting::EventTriggerDataList&>
         event_triggers,
-    ::testing::Matcher<absl::optional<uint64_t>> aggregatable_dedup_key,
+    ::testing::Matcher<const attribution_reporting::AggregatableDedupKeyList&>
+        aggregatable_dedup_keys,
     ::testing::Matcher<bool> debug_reporting,
     ::testing::Matcher<
         const attribution_reporting::AggregatableTriggerDataList&>
@@ -1341,7 +1349,7 @@ TriggerRegistrationMatcherConfig::TriggerRegistrationMatcherConfig(
       not_filters(std::move(not_filters)),
       debug_key(std::move(debug_key)),
       event_triggers(std::move(event_triggers)),
-      aggregatable_dedup_key(std::move(aggregatable_dedup_key)),
+      aggregatable_dedup_keys(std::move(aggregatable_dedup_keys)),
       debug_reporting(std::move(debug_reporting)),
       aggregatable_trigger_data(std::move(aggregatable_trigger_data)),
       aggregatable_values(std::move(aggregatable_values)),
@@ -1362,9 +1370,10 @@ TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig& cfg) {
       Field("event_triggers",
             &attribution_reporting::TriggerRegistration::event_triggers,
             cfg.event_triggers),
-      Field("aggregatable_dedup_key",
-            &attribution_reporting::TriggerRegistration::aggregatable_dedup_key,
-            cfg.aggregatable_dedup_key),
+      Field(
+          "aggregatable_dedup_keys",
+          &attribution_reporting::TriggerRegistration::aggregatable_dedup_keys,
+          cfg.aggregatable_dedup_keys),
       Field("debug_reporting",
             &attribution_reporting::TriggerRegistration::debug_reporting,
             cfg.debug_reporting),

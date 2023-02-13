@@ -63,7 +63,6 @@
 #include "third_party/blink/renderer/platform/geometry/length_point.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -578,40 +577,25 @@ class ComputedStyle : public ComputedStyleBase,
     return BorderImage().Outset();
   }
 
+  static LayoutUnit BorderWidth(EBorderStyle style, LayoutUnit width) {
+    if (style == EBorderStyle::kNone || style == EBorderStyle::kHidden) {
+      return LayoutUnit();
+    }
+    return width;
+  }
+
   // Border width properties.
   LayoutUnit BorderTopWidth() const {
-    if (BorderTopStyle() == EBorderStyle::kNone ||
-        BorderTopStyle() == EBorderStyle::kHidden) {
-      return LayoutUnit(0);
-    }
-    return BorderTopWidthInternal();
+    return BorderWidth(BorderTopStyle(), BorderTopWidthInternal());
   }
-
-  // border-bottom-width
   LayoutUnit BorderBottomWidth() const {
-    if (BorderBottomStyle() == EBorderStyle::kNone ||
-        BorderBottomStyle() == EBorderStyle::kHidden) {
-      return LayoutUnit(0);
-    }
-    return BorderBottomWidthInternal();
+    return BorderWidth(BorderBottomStyle(), BorderBottomWidthInternal());
   }
-
-  // border-left-width
   LayoutUnit BorderLeftWidth() const {
-    if (BorderLeftStyle() == EBorderStyle::kNone ||
-        BorderLeftStyle() == EBorderStyle::kHidden) {
-      return LayoutUnit(0);
-    }
-    return BorderLeftWidthInternal();
+    return BorderWidth(BorderLeftStyle(), BorderLeftWidthInternal());
   }
-
-  // border-right-width
   LayoutUnit BorderRightWidth() const {
-    if (BorderRightStyle() == EBorderStyle::kNone ||
-        BorderRightStyle() == EBorderStyle::kHidden) {
-      return LayoutUnit(0);
-    }
-    return BorderRightWidthInternal();
+    return BorderWidth(BorderRightStyle(), BorderRightWidthInternal());
   }
 
   // box-shadow (aka -webkit-box-shadow)
@@ -942,7 +926,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool InheritedDataShared(const ComputedStyle&) const;
 
   bool HasChildDependentFlags() const { return ChildHasExplicitInheritance(); }
-  void CopyChildDependentFlagsFrom(const ComputedStyle&);
+  void CopyChildDependentFlagsFrom(const ComputedStyle&) const;
 
   // Counters.
   const CounterDirectiveMap* GetCounterDirectives() const;
@@ -2050,14 +2034,12 @@ class ComputedStyle : public ComputedStyleBase,
     kExcludeTransformOperations
   };
   void ApplyTransform(gfx::Transform&,
-                      const LayoutBox* box,
                       const LayoutSize& border_box_data_size,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
   void ApplyTransform(gfx::Transform&,
-                      const LayoutBox* box,
                       const gfx::RectF& bounding_box,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
@@ -2543,14 +2525,8 @@ class ComputedStyle : public ComputedStyleBase,
 
   void ApplyMotionPathTransform(float origin_x,
                                 float origin_y,
-                                const LayoutBox* box,
                                 const gfx::RectF& bounding_box,
                                 gfx::Transform&) const;
-  PointAndTangent CalculatePointAndTangentOnRay(
-      const LayoutBox* box,
-      const gfx::RectF& bounding_box,
-      const gfx::PointF& anchor_point) const;
-  PointAndTangent CalculatePointAndTangentOnPath() const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
                                             const StyleDifference&) const;
@@ -2775,10 +2751,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   ComputedStyleBuilder& operator=(const ComputedStyleBuilder&) = delete;
   ComputedStyleBuilder& operator=(ComputedStyleBuilder&&) = default;
 
-  // TODO(crbug.com/1377295): Eventually remove these functions.
-  const ComputedStyle* InternalStyle() const { return style_.get(); }
-
-  scoped_refptr<ComputedStyle> TakeStyle() { return std::move(style_); }
+  scoped_refptr<const ComputedStyle> TakeStyle() { return std::move(style_); }
 
   // NOTE: Prefer `TakeStyle()` if possible.
   scoped_refptr<const ComputedStyle> CloneStyle() const {
@@ -2863,6 +2836,24 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     return BackgroundInternal().AnyLayerHasUrlImage();
   }
   void ClearBackgroundImage();
+
+  // border-*-width
+  LayoutUnit BorderTopWidth() const {
+    return ComputedStyle::BorderWidth(BorderTopStyle(),
+                                      BorderTopWidthInternal());
+  }
+  LayoutUnit BorderBottomWidth() const {
+    return ComputedStyle::BorderWidth(BorderBottomStyle(),
+                                      BorderBottomWidthInternal());
+  }
+  LayoutUnit BorderLeftWidth() const {
+    return ComputedStyle::BorderWidth(BorderLeftStyle(),
+                                      BorderLeftWidthInternal());
+  }
+  LayoutUnit BorderRightWidth() const {
+    return ComputedStyle::BorderWidth(BorderRightStyle(),
+                                      BorderRightWidthInternal());
+  }
 
   // border-image-*
   void SetBorderImageOutset(const BorderImageLengthBox& outset) {
@@ -3413,7 +3404,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     }
   }
   CORE_EXPORT void SetInitialData(scoped_refptr<StyleInitialData> data) {
-    ClearVariableNamesCache();
     MutableInitialDataInternal() = std::move(data);
   }
 
@@ -3440,10 +3430,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
  private:
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
   void OverrideTextDecorationColors(blink::Color propagated_color);
-
-  ComputedStyleBuilder() = default;
-
-  CORE_EXPORT void ClearVariableNamesCache();
 
   scoped_refptr<ComputedStyle> style_;
 };

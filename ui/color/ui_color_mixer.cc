@@ -40,10 +40,7 @@ void AddUiColorMixer(ColorProvider* provider,
       kColorSubtleEmphasisBackground};
   mixer[kColorButtonBackgroundProminentFocused] = {
       kColorButtonBackgroundProminent};
-  // TODO(crbug.com/1406633): Finalize button colors.
-  mixer[kColorButtonBackgroundTonal] = {dark_mode
-                                            ? SkColorSetRGB(0x00, 0x4A, 0x77)
-                                            : SkColorSetRGB(0xC2, 0xE7, 0xFF)};
+  mixer[kColorButtonBackgroundTonal] = {kColorSysPrimaryContainer};
   mixer[kColorButtonBackgroundTonalDisabled] = {kColorSubtleEmphasisBackground};
   mixer[kColorButtonBackgroundTonalFocused] = {kColorButtonBackgroundTonal};
   mixer[kColorButtonBorder] = {kColorMidground};
@@ -55,10 +52,7 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorButtonForegroundProminent] =
       GetColorWithMaxContrast(kColorButtonBackgroundProminent);
-  // TODO(crbug.com/1406633): Finalize button colors.
-  mixer[kColorButtonForegroundTonal] = {dark_mode
-                                            ? SkColorSetRGB(0xC2, 0xE7, 0xFF)
-                                            : SkColorSetRGB(0x00, 0x1D, 0x35)};
+  mixer[kColorButtonForegroundTonal] = {kColorSysOnPrimaryContainer};
   mixer[kColorButtonForegroundUnchecked] = {kColorSecondaryForeground};
   mixer[kColorCustomFrameCaptionForeground] = {SK_ColorWHITE};
   mixer[kColorDebugBoundsOutline] = SetAlpha(SK_ColorRED, 0x30);
@@ -252,11 +246,13 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorTextfieldBackground] = {kColorEndpointBackground};
   mixer[kColorTextfieldBackgroundDisabled] = {kColorPrimaryBackground};
   mixer[kColorTextfieldForeground] = {kColorPrimaryForeground};
+  mixer[kColorTextfieldForegroundInvalid] = {kColorTextfieldForeground};
   mixer[kColorTextfieldForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorTextfieldForegroundPlaceholder] = {
       kColorTextfieldForegroundDisabled};
   mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorTextfieldSelectionForeground] = {kColorTextSelectionForeground};
+  mixer[kColorTextfieldInvalidOutline] = {kColorAlertHighSeverity};
   mixer[kColorThrobber] = {kColorAccent};
   mixer[kColorThrobberPreconnect] = {kColorSubtleAccent};
   mixer[kColorToggleButtonShadow] = {kColorMidground};

@@ -4773,9 +4773,11 @@ class URLLoaderCookieSettingOverridesTest
   net::CookieSettingOverrides GetCookieSettingOverrides() const {
     if (IsCors() && IsOuterMostFrame()) {
       return net::CookieSettingOverrides(
+          net::CookieSettingOverride::kStorageAccessGrantEligible,
           net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
     }
-    return net::CookieSettingOverrides();
+    return net::CookieSettingOverrides(
+        net::CookieSettingOverride::kStorageAccessGrantEligible);
   }
 
  private:
@@ -5968,7 +5970,7 @@ class ExpectCookieSettingOverridesURLRequestInterceptor
 
  private:
   const net::CookieSettingOverrides cookie_setting_overrides_;
-  bool* const was_intercepted_;
+  const raw_ptr<bool> was_intercepted_;
 };
 
 }  // namespace

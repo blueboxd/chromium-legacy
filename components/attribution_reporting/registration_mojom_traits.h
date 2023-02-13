@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom-shared.h"
+#include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
@@ -21,7 +22,6 @@
 #include "components/attribution_reporting/registration.mojom-shared.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "mojo/public/cpp/base/int128_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -44,25 +44,6 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
     *out = data.value();
     return true;
   }
-};
-
-template <>
-struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
-    StructTraits<attribution_reporting::mojom::TriggerAttestationDataView,
-                 attribution_reporting::TriggerAttestation> {
-  static const std::string& token(
-      const attribution_reporting::TriggerAttestation& attestation) {
-    return attestation.token();
-  }
-
-  static std::string aggregatable_report_id(
-      const attribution_reporting::TriggerAttestation& attestation) {
-    return attestation.aggregatable_report_id().AsLowercaseString();
-  }
-
-  static bool Read(
-      attribution_reporting::mojom::TriggerAttestationDataView data,
-      attribution_reporting::TriggerAttestation* out);
 };
 
 template <>
@@ -285,9 +266,10 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
     return trigger.debug_key;
   }
 
-  static absl::optional<uint64_t> aggregatable_dedup_key(
+  static const std::vector<attribution_reporting::AggregatableDedupKey>&
+  aggregatable_dedup_keys(
       const attribution_reporting::TriggerRegistration& trigger) {
-    return trigger.aggregatable_dedup_key;
+    return trigger.aggregatable_dedup_keys.vec();
   }
 
   static bool debug_reporting(
@@ -304,6 +286,30 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
   static bool Read(
       attribution_reporting::mojom::TriggerRegistrationDataView data,
       attribution_reporting::TriggerRegistration* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
+    StructTraits<attribution_reporting::mojom::AggregatableDedupKeyDataView,
+                 attribution_reporting::AggregatableDedupKey> {
+  static absl::optional<uint64_t> dedup_key(
+      const attribution_reporting::AggregatableDedupKey& data) {
+    return data.dedup_key;
+  }
+
+  static const attribution_reporting::Filters& filters(
+      const attribution_reporting::AggregatableDedupKey& data) {
+    return data.filters;
+  }
+
+  static const attribution_reporting::Filters& not_filters(
+      const attribution_reporting::AggregatableDedupKey& data) {
+    return data.not_filters;
+  }
+
+  static bool Read(
+      attribution_reporting::mojom::AggregatableDedupKeyDataView data,
+      attribution_reporting::AggregatableDedupKey* out);
 };
 
 }  // namespace mojo

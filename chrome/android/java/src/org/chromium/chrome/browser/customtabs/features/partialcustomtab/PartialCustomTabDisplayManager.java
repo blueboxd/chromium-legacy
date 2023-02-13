@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
@@ -17,6 +18,7 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 
 /**
  * Class responsible for how the Partial Chrome Custom Tabs are displayed on the screen.
@@ -37,11 +39,13 @@ public class PartialCustomTabDisplayManager
     private final FullscreenManager mFullscreenManager;
     private final boolean mIsTablet;
     private final boolean mInteractWithBackground;
+    private final boolean mShowMaximizeButton;
     private final PartialCustomTabVersionCompat mVersionCompat;
 
     // Simple factory interface creating a new SizeStrategy. Facilitates testing.
     interface SizeStrategyCreator {
-        PartialCustomTabBaseStrategy createForType(@PartialCustomTabType int type);
+        PartialCustomTabBaseStrategy createForType(
+                @PartialCustomTabType int type, boolean startMaximized);
     }
 
     private PartialCustomTabBaseStrategy mStrategy;
@@ -56,7 +60,8 @@ public class PartialCustomTabDisplayManager
     public PartialCustomTabDisplayManager(Activity activity, @Px int initialHeight,
             @Px int initialWidth, int breakPointDp, boolean isFixedHeight,
             OnResizedCallback onResizedCallback, ActivityLifecycleDispatcher lifecycleDispatcher,
-            FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground) {
+            FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground,
+            boolean showMaximizeButton) {
         mActivity = activity;
         mUnclampedInitialHeight = initialHeight;
         mUnclampedInitialWidth = initialWidth;
@@ -66,6 +71,7 @@ public class PartialCustomTabDisplayManager
         mFullscreenManager = fullscreenManager;
         mIsTablet = isTablet;
         mInteractWithBackground = interactWithBackground;
+        mShowMaximizeButton = showMaximizeButton;
 
         mActivityLifecycleDispatcher = lifecycleDispatcher;
         lifecycleDispatcher.register(this);
@@ -73,7 +79,7 @@ public class PartialCustomTabDisplayManager
         mVersionCompat = PartialCustomTabVersionCompat.create(mActivity, this::updatePosition);
         mHandleStrategyFactory = new PartialCustomTabHandleStrategyFactory();
         mCurrentPartialCustomTabType = calculatePartialCustomTabType();
-        mStrategy = mSizeStrategyCreator.createForType(mCurrentPartialCustomTabType);
+        mStrategy = mSizeStrategyCreator.createForType(mCurrentPartialCustomTabType, false);
     }
 
     @PartialCustomTabType
@@ -89,13 +95,19 @@ public class PartialCustomTabDisplayManager
     public void onConfigurationChanged(Configuration newConfig) {
         int type = calculatePartialCustomTabType();
         if (type != mCurrentPartialCustomTabType) {
+            boolean startMaximized = false;
+            if (mStrategy != null) {
+                startMaximized = mStrategy.isMaximized();
+                mStrategy.destroy();
+            }
+            mStrategy = mSizeStrategyCreator.createForType(type, startMaximized);
+            mCurrentPartialCustomTabType = type;
             new Handler().postDelayed(() -> {
-                if (mStrategy != null) mStrategy.destroy();
-                mStrategy = mSizeStrategyCreator.createForType(type);
-                mCurrentPartialCustomTabType = type;
                 mStrategy.onToolbarInitialized(
                         mToolbarCoordinatorView, mCustomTabToolbar, mToolbarCornerRadius);
                 mStrategy.onPostInflationStartup();
+                // TODO(http://crbug.com/1406107): Creating a new strategy type is basically a
+                // resize so we need to make sure to call #onActivityResized here as well
             }, CREATE_STRATEGY_DELAY_CONFIG_CHANGE_MS);
         } else {
             // If the type of PCCT strategy did not change we can just call into the equivalent
@@ -176,8 +188,13 @@ public class PartialCustomTabDisplayManager
     }
 
     private @PartialCustomTabType int calculatePartialCustomTabType() {
-        int displayWidthDp = mVersionCompat.getDisplayWidthDp();
+        // TODO(crbug.com/1407227) Until we are able to handle multi-window case for both
+        // bottom-sheet and side-sheet we will display a full-size PCCT.
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)) {
+            return PartialCustomTabType.FULL_SIZE;
+        }
 
+        int displayWidthDp = mVersionCompat.getDisplayWidthDp();
         if (mUnclampedInitialWidth == 0 && mUnclampedInitialHeight == 0) {
             return PartialCustomTabType.FULL_SIZE;
         }
@@ -199,17 +216,23 @@ public class PartialCustomTabDisplayManager
         return PartialCustomTabType.FULL_SIZE; // unreachable
     }
 
-    private PartialCustomTabBaseStrategy createSizeStrategy(@PartialCustomTabType int type) {
+    private PartialCustomTabBaseStrategy createSizeStrategy(
+            @PartialCustomTabType int type, boolean maximized) {
         switch (type) {
             case PartialCustomTabType.BOTTOM_SHEET: {
-                return new PartialCustomTabHeightStrategy(mActivity, mUnclampedInitialHeight,
+                return new PartialCustomTabBottomSheetStrategy(mActivity, mUnclampedInitialHeight,
                         mIsFixedHeight, mOnResizedCallback, mActivityLifecycleDispatcher,
-                        mFullscreenManager, mIsTablet, mInteractWithBackground,
+                        mFullscreenManager, mIsTablet, mInteractWithBackground, maximized,
                         mHandleStrategyFactory);
             }
             case PartialCustomTabType.SIDE_SHEET: {
                 return new PartialCustomTabSideSheetStrategy(mActivity, mUnclampedInitialWidth,
                         mOnResizedCallback, mFullscreenManager, mIsTablet, mInteractWithBackground,
+                        mShowMaximizeButton, maximized, mHandleStrategyFactory);
+            }
+            case PartialCustomTabType.FULL_SIZE: {
+                return new PartialCustomTabFullSizeStrategy(mActivity, mOnResizedCallback,
+                        mFullscreenManager, mIsTablet, mInteractWithBackground,
                         mHandleStrategyFactory);
             }
             default: {
@@ -233,13 +256,13 @@ public class PartialCustomTabDisplayManager
     }
 
     @VisibleForTesting
-    void setMocksForTesting(View toolbar, CustomTabToolbar customTabToolbar,
-            PartialCustomTabHandleStrategyFactory handleStrategyFactory,
+    void setMocksForTesting(ViewGroup coordinatorLayout, CustomTabToolbar toolbar,
+            View toolbarCoordinator, PartialCustomTabHandleStrategyFactory handleStrategyFactory,
             SizeStrategyCreator sizeStrategyCreator) {
-        mToolbarCoordinatorView = toolbar;
-        mCustomTabToolbar = customTabToolbar;
+        mToolbarCoordinatorView = toolbarCoordinator;
+        mCustomTabToolbar = toolbar;
         mHandleStrategyFactory = handleStrategyFactory;
         mSizeStrategyCreator = sizeStrategyCreator;
-        mStrategy.setMockViewForTesting(toolbar, customTabToolbar);
+        mStrategy.setMockViewForTesting(coordinatorLayout, toolbar, toolbarCoordinator);
     }
 }

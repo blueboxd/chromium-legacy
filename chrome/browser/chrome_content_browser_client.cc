@@ -21,6 +21,7 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -249,6 +250,7 @@
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_commit_deferring_condition.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_throttle.h"
+#include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.h"
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
@@ -268,6 +270,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_context.h"
@@ -716,6 +719,13 @@ using plugins::ChromeContentBrowserClientPluginsPart;
 #endif
 
 namespace {
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+// Provides the same functionality as kAllowlistedExtensionID.
+// TODO(b/204179234): Remove at the end of the deprecation period. Deprecated on
+// 10/2021.
+const char kDEPRECATED_AllowlistedExtensionID[] = "whitelisted-extension-id";
+#endif
 
 #if BUILDFLAG(IS_WIN) && !defined(COMPONENT_BUILD) && \
     !defined(ADDRESS_SANITIZER)
@@ -2837,7 +2847,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kExtensionsOnChromeURLs,
       extensions::switches::kSetExtensionThrottleTestParams,  // For tests only.
       extensions::switches::kAllowlistedExtensionID,
-      extensions::switches::kDEPRECATED_AllowlistedExtensionID,
 #endif
       switches::kAllowInsecureLocalhost,
       switches::kAppsGalleryURL,
@@ -2868,6 +2877,16 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       translate::switches::kTranslateSecurityOrigin,
     };
 
+    // TODO(b/204179234): Remove after M114 (after ~Apr'23).
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    if (browser_command_line.HasSwitch(kDEPRECATED_AllowlistedExtensionID)) {
+      LOG(FATAL) << "\"" << kDEPRECATED_AllowlistedExtensionID
+                 << "\" switch is deprecated, please use \""
+                 << extensions::switches::kAllowlistedExtensionID
+                 << "\" instead";
+    }
+#endif
+
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    std::size(kSwitchNames));
   } else if (process_type == switches::kUtilityProcess) {
@@ -2877,8 +2896,15 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         extensions::switches::kEnableExperimentalExtensionApis,
         extensions::switches::kExtensionsOnChromeURLs,
         extensions::switches::kAllowlistedExtensionID,
-        extensions::switches::kDEPRECATED_AllowlistedExtensionID,
     };
+
+    // TODO(b/204179234): Remove after M114 (after ~Apr'23).
+    if (browser_command_line.HasSwitch(kDEPRECATED_AllowlistedExtensionID)) {
+      LOG(FATAL) << "\"" << kDEPRECATED_AllowlistedExtensionID
+                 << "\" switch is deprecated, please use \""
+                 << extensions::switches::kAllowlistedExtensionID
+                 << "\" instead";
+    }
 
     command_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                    std::size(kSwitchNames));
@@ -3285,6 +3311,7 @@ bool ChromeContentBrowserClient::IsInterestGroupAPIAllowed(
 bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
     content::BrowserContext* browser_context,
     AttributionReportingOperation operation,
+    content::RenderFrameHost* rfh,
     const url::Origin* source_origin,
     const url::Origin* destination_origin,
     const url::Origin* reporting_origin) {
@@ -3296,13 +3323,37 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
     return false;
 
   switch (operation) {
-    case AttributionReportingOperation::kSource:
+    case AttributionReportingOperation::kSource: {
+      DCHECK(source_origin);
+      DCHECK(reporting_origin);
+      bool allowed = privacy_sandbox_settings->IsAttributionReportingAllowed(
+          *source_origin, *reporting_origin);
+      if (rfh) {
+        content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+            rfh, content::AttributionDataModel::DataKey(*reporting_origin),
+            BrowsingDataModel::StorageType::kAttributionReporting,
+            /*blocked=*/!allowed);
+      }
+      return allowed;
+    }
     case AttributionReportingOperation::kSourceVerboseDebugReport:
       DCHECK(source_origin);
       DCHECK(reporting_origin);
       return privacy_sandbox_settings->IsAttributionReportingAllowed(
           *source_origin, *reporting_origin);
-    case AttributionReportingOperation::kTrigger:
+    case AttributionReportingOperation::kTrigger: {
+      DCHECK(destination_origin);
+      DCHECK(reporting_origin);
+      bool allowed = privacy_sandbox_settings->IsAttributionReportingAllowed(
+          *destination_origin, *reporting_origin);
+      if (rfh) {
+        content_settings::PageSpecificContentSettings::BrowsingDataAccessed(
+            rfh, content::AttributionDataModel::DataKey(*reporting_origin),
+            BrowsingDataModel::StorageType::kAttributionReporting,
+            /*blocked=*/!allowed);
+      }
+      return allowed;
+    }
     case AttributionReportingOperation::kTriggerVerboseDebugReport:
       DCHECK(destination_origin);
       DCHECK(reporting_origin);
@@ -3315,7 +3366,7 @@ bool ChromeContentBrowserClient::IsAttributionReportingOperationAllowed(
       return privacy_sandbox_settings->MaySendAttributionReport(
           *source_origin, *destination_origin, *reporting_origin);
     case AttributionReportingOperation::kAny:
-      return privacy_sandbox_settings->IsPrivacySandboxEnabled();
+      return privacy_sandbox_settings->IsAttributionReportingEverAllowed();
   }
 }
 
@@ -4567,6 +4618,7 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case sandbox::mojom::Sandbox::kIconReader:
     case sandbox::mojom::Sandbox::kMediaFoundationCdm:
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
+    case sandbox::mojom::Sandbox::kFileUtil:
       // Should never reach here.
       CHECK(0);
       return std::wstring();
@@ -4655,6 +4707,7 @@ bool ChromeContentBrowserClient::PreSpawnChild(
     case sandbox::mojom::Sandbox::kIconReader:
     case sandbox::mojom::Sandbox::kMediaFoundationCdm:
     case sandbox::mojom::Sandbox::kWindowsSystemProxyResolver:
+    case sandbox::mojom::Sandbox::kFileUtil:
       break;
   }
 
@@ -6835,12 +6888,12 @@ bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin) {
   // Persistent MediaDevice IDs are allowed if cookies are allowed.
-  return CookieSettingsFactory::GetForProfile(
-             Profile::FromBrowserContext(browser_context))
-      ->IsFullCookieAccessAllowed(
-          url, site_for_cookies, top_frame_origin,
-          net::CookieSettingOverrides(),
-          content_settings::CookieSettings::QueryReason::kSiteStorage);
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+  return cookie_settings->IsFullCookieAccessAllowed(
+      url, site_for_cookies, top_frame_origin,
+      cookie_settings->SettingOverridesForStorage());
 }
 
 #if !BUILDFLAG(IS_ANDROID)

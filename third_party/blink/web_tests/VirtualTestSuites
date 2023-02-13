@@ -211,7 +211,9 @@
               "inspector-protocol/dom-snapshot",
               "media/stable",
               "webexposed",
-              "compositing/filters"],
+              "compositing/filters",
+              "external/wpt/performance-timeline/tentative/with-filter-options-originA.html"
+            ],
     "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
              "--disable-auto-wpt-origin-isolation",
@@ -425,8 +427,7 @@
     "bases": ["fast/scrolling/scrollbars"],
     "args": ["--enable-features=WindowsScrollingPersonality",
              "--enable-threaded-compositing",
-             "--enable-prefer-compositing-to-lcd-text",
-             "--disable-features=CompositorThreadedScrollbarScrolling"],
+             "--enable-prefer-compositing-to-lcd-text"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -501,14 +502,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/feature-policy"],
     "args": ["--autoplay-policy=document-user-activation-required"],
-    "expires": "Jul 1, 2023"
-  },
-  {
-    "prefix": "wbn-from-network",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/web-bundle"],
-    "exclusive_tests": ["external/wpt/web-bundle/wbn-from-network"],
-    "args": ["--enable-features=WebBundlesFromNetwork"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -894,13 +887,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "top-level-storage-access-api",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "external/wpt/top-level-storage-access-api" ],
-    "args": [ "--enable-features=StorageAccessAPI,StorageAccessAPIForOriginExtension" ],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "web-bluetooth-new-permissions-backend",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/bluetooth", "external/wpt/bluetooth"],
@@ -979,10 +965,16 @@
       "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
+      "wpt_internal/webstorage/storage-cross-origin-redirect-local.sub.https.html",
+      "wpt_internal/webstorage/storage-cross-origin-redirect-session.sub.https.html",
       "wpt_internal/webstorage/storage-deprecation-trial-disabled-local.sub.https.html",
       "wpt_internal/webstorage/storage-deprecation-trial-disabled-session.sub.https.html",
       "wpt_internal/webstorage/storage-deprecation-trial-enabled-local.sub.https.html",
       "wpt_internal/webstorage/storage-deprecation-trial-enabled-session.sub.https.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-redirect-local.sub.https.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-redirect-session.sub.https.html",
+      "wpt_internal/webstorage/storage-same-origin-redirect-local.sub.https.html",
+      "wpt_internal/webstorage/storage-same-origin-redirect-session.sub.https.html",
       "external/wpt/FileAPI/BlobURL/cross-partition.tentative.https.html",
       "external/wpt/storage/partitioned-estimate-usage-details-caches.tentative.https.sub.html",
       "external/wpt/storage/partitioned-estimate-usage-details-indexeddb.tentative.https.sub.html",
@@ -1327,6 +1319,18 @@
     ],
     "args": ["--enable-blink-features=HighlightInheritance"],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "browsing-topics",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/browsing-topics"
+    ],
+    "exclusive_tests": [
+      "external/wpt/browsing-topics"
+    ],
+    "args": ["--enable-features=BrowsingTopics,BrowsingTopicsXHR,PrivacySandboxAdsAPIsOverride"],
+    "expires": "Aug 10, 2023"
   },
   {
     "prefix": "shared-storage-fenced-frame-mparch",

@@ -5,10 +5,12 @@
 #include "content/browser/attribution_reporting/attribution_storage_sql_migrations.h"
 
 #include "base/check.h"
+#include "base/functional/function_ref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_storage_sql.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/rate_limit_table.h"
 #include "sql/database.h"
@@ -22,10 +24,10 @@ namespace {
 
 // Ensure that both version numbers are updated together to prevent crashes on
 // downgrades as in crbug.com/1413728.
-void SetVersionNumbers(sql::MetaTable* meta_table, int version) {
+[[nodiscard]] bool SetVersionNumbers(sql::MetaTable* meta_table, int version) {
   DCHECK(meta_table);
-  meta_table->SetVersionNumber(version);
-  meta_table->SetCompatibleVersionNumber(version);
+  return meta_table->SetVersionNumber(version) &&
+         meta_table->SetCompatibleVersionNumber(version);
 }
 
 // Wrap each migration in its own transaction. This results in smaller
@@ -35,12 +37,27 @@ void SetVersionNumbers(sql::MetaTable* meta_table, int version) {
 // transactions make it more likely that we'll make forward progress each time
 // Chrome stops.
 
-bool MigrateToVersion36(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
+[[nodiscard]] bool MaybeMigrate(
+    sql::Database* db,
+    sql::MetaTable* meta_table,
+    int old_version,
+    base::FunctionRef<bool(sql::Database*)> migrate) {
+  DCHECK(db);
+  DCHECK(meta_table);
+
+  if (meta_table->GetVersionNumber() != old_version) {
+    return true;
   }
 
+  sql::Transaction transaction(db);
+
+  return transaction.Begin() &&                             //
+         migrate(db) &&                                     //
+         SetVersionNumbers(meta_table, old_version + 1) &&  //
+         transaction.Commit();
+}
+
+bool To36(sql::Database* db) {
   static constexpr char kDropOldIndexSql[] = "DROP INDEX sources_by_origin";
   if (!db->Execute(kDropOldIndexSql)) {
     return false;
@@ -54,16 +71,10 @@ bool MigrateToVersion36(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 36);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion37(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To37(sql::Database* db) {
   static constexpr char kNewDedupKeyTableSql[] =
       "CREATE TABLE new_dedup_keys("
       "source_id INTEGER NOT NULL,"
@@ -99,16 +110,10 @@ bool MigrateToVersion37(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 37);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion38(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To38(sql::Database* db) {
   static constexpr char kNewSourceTableSql[] =
       "CREATE TABLE new_sources("
       "source_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
@@ -197,16 +202,10 @@ bool MigrateToVersion38(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 38);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion39(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To39(sql::Database* db) {
   // Create the new aggregatable_report_metadata table with
   // aggregation_coordinator. This follows the steps documented at
   // https://sqlite.org/lang_altertable.html#otheralter. Other approaches, like
@@ -282,16 +281,10 @@ bool MigrateToVersion39(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 39);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion40(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To40(sql::Database* db) {
   // Create the new aggregatable_contributions table with desired primary-key
   // structure.
   static constexpr char kCreateNewTableSql[] =
@@ -329,16 +322,10 @@ bool MigrateToVersion40(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 40);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion41(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To41(sql::Database* db) {
   static constexpr char kAddAttestationHeaderColumnSql[] =
       "ALTER TABLE aggregatable_report_metadata "
       "ADD COLUMN attestation_token TEXT";
@@ -346,16 +333,10 @@ bool MigrateToVersion41(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 41);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion42(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To42(sql::Database* db) {
   static constexpr char kRenameDestinationOriginSql[] =
       "ALTER TABLE rate_limits "
       "RENAME COLUMN destination_origin TO context_origin";
@@ -377,16 +358,10 @@ bool MigrateToVersion42(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 42);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion43(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To43(sql::Database* db) {
   static constexpr char kRenameExpiryTimeSql[] =
       "ALTER TABLE rate_limits "
       "RENAME COLUMN expiry_time TO source_expiry_or_attribution_time";
@@ -403,16 +378,10 @@ bool MigrateToVersion43(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 43);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion44(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To44(sql::Database* db) {
   {
     static constexpr char kConversionTableSql[] =
         "CREATE TABLE new_event_level_reports("
@@ -534,16 +503,10 @@ bool MigrateToVersion44(sql::Database* db, sql::MetaTable* meta_table) {
     }
   }
 
-  SetVersionNumbers(meta_table, 44);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion45(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To45(sql::Database* db) {
   static constexpr char kRenameSql[] =
       "ALTER TABLE event_level_reports "
       "RENAME COLUMN destination_origin TO context_origin";
@@ -551,22 +514,15 @@ bool MigrateToVersion45(sql::Database* db, sql::MetaTable* meta_table) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 45);
-  return transaction.Commit();
+  return true;
 }
 
-bool MigrateToVersion46(sql::Database* db, sql::MetaTable* meta_table) {
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    return false;
-  }
-
+bool To46(sql::Database* db) {
   if (!db->Execute("ALTER TABLE sources DROP COLUMN destination_origin")) {
     return false;
   }
 
-  SetVersionNumbers(meta_table, 46);
-  return transaction.Commit();
+  return true;
 }
 
 }  // namespace
@@ -581,62 +537,26 @@ bool UpgradeAttributionStorageSqlSchema(sql::Database* db,
     start_timestamp = base::ThreadTicks::Now();
   }
 
-  if (meta_table->GetVersionNumber() == 35) {
-    if (!MigrateToVersion36(db, meta_table)) {
-      return false;
-    }
+  static_assert(AttributionStorageSql::kDeprecatedVersionNumber + 1 == 35,
+                "Remove migration(s) below.");
+
+  bool ok = MaybeMigrate(db, meta_table, 35, &To36) &&
+            MaybeMigrate(db, meta_table, 36, &To37) &&
+            MaybeMigrate(db, meta_table, 37, &To38) &&
+            MaybeMigrate(db, meta_table, 38, &To39) &&
+            MaybeMigrate(db, meta_table, 39, &To40) &&
+            MaybeMigrate(db, meta_table, 40, &To41) &&
+            MaybeMigrate(db, meta_table, 41, &To42) &&
+            MaybeMigrate(db, meta_table, 42, &To43) &&
+            MaybeMigrate(db, meta_table, 43, &To44) &&
+            MaybeMigrate(db, meta_table, 44, &To45) &&
+            MaybeMigrate(db, meta_table, 45, &To46);
+  if (!ok) {
+    return false;
   }
-  if (meta_table->GetVersionNumber() == 36) {
-    if (!MigrateToVersion37(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 37) {
-    if (!MigrateToVersion38(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 38) {
-    if (!MigrateToVersion39(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 39) {
-    if (!MigrateToVersion40(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 40) {
-    if (!MigrateToVersion41(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 41) {
-    if (!MigrateToVersion42(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 42) {
-    if (!MigrateToVersion43(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 43) {
-    if (!MigrateToVersion44(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 44) {
-    if (!MigrateToVersion45(db, meta_table)) {
-      return false;
-    }
-  }
-  if (meta_table->GetVersionNumber() == 45) {
-    if (!MigrateToVersion46(db, meta_table)) {
-      return false;
-    }
-  }
-  // Add similar if () blocks for new versions here.
+
+  static_assert(AttributionStorageSql::kCurrentVersionNumber == 46,
+                "Add migration(s) above.");
 
   if (base::ThreadTicks::IsSupported()) {
     base::UmaHistogramMediumTimes("Conversions.Storage.MigrationTime",

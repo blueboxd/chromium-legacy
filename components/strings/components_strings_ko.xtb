@@ -501,7 +501,6 @@
 <translation id="2148613324460538318">카드 추가</translation>
 <translation id="2149968176347646218">연결이 안전하지 않음</translation>
 <translation id="2153609454945889823">Google Play AR 서비스를 설치하시겠습니까?</translation>
-<translation id="2154054054215849342">도메인에 대해 동기화를 사용할 수 없습니다.</translation>
 <translation id="2154484045852737596">카드 수정</translation>
 <translation id="2155260325161282517">5x7인치</translation>
 <translation id="2157640075051554492">가격 추적 알림</translation>
@@ -524,6 +523,7 @@
 <translation id="2202627062836089804">카드 뒷면</translation>
 <translation id="22081806969704220">트레이 3</translation>
 <translation id="2210794033760923560">보고서 업로드</translation>
+<translation id="2212579473415663542">Google 계정(<ph name="ACCOUNT" />)에 저장된 주소입니다. 어느 기기에서나 모든 Google 제품에서 주소를 사용할 수 있습니다.</translation>
 <translation id="2212735316055980242">정책을 찾을 수 없음</translation>
 <translation id="2213606439339815911">항목을 가져오는 중...</translation>
 <translation id="2213612003795704869">페이지가 인쇄됨</translation>
@@ -539,6 +539,7 @@
 <translation id="2241693394036365668">파일 다운로드됨</translation>
 <translation id="2246264294482514010">10x12인치</translation>
 <translation id="2246480341630108201">아직 부모님이 허락하지 않았습니다.</translation>
+<translation id="2247789808226901522">카드가 만료됨</translation>
 <translation id="2248949050832152960">WebAuthn 사용</translation>
 <translation id="2250931979407627383">왼쪽 에지 스티치</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
@@ -1077,6 +1078,7 @@
 <translation id="3646643500201740985">광고 실적 측정</translation>
 <translation id="3647286794400715637">모든 URL 문자열 항목에는 1~2개의 URL이 포함되어야 합니다.</translation>
 <translation id="3650584904733503804">유효성 검사 성공</translation>
+<translation id="3650594806107685466">카드의 안전성을 유지하려면 <ph name="SIDE_OF_CARD" />의 CVC를 입력하세요.</translation>
 <translation id="3653033846669030038">테마파크</translation>
 <translation id="3655241534245626312">권한 설정으로 이동</translation>
 <translation id="3655670868607891010">이 메시지가 자주 표시된다면 다음을 시도해 보세요. <ph name="HELP_LINK" /></translation>
@@ -1856,6 +1858,7 @@
 <translation id="5552137475244467770">Chrome에서는 온라인에 게시된 비밀번호 목록에 사용자의 비밀번호가 포함되어 있는지를 주기적으로 확인합니다. 이렇게 하면 비밀번호 및 사용자 이름이 암호화되어 Google을 포함해 누구도 읽을 수 없습니다.</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5558125320634132440">이 사이트는 미성년자 부적합 콘텐츠가 포함되어 있을 수 있어 차단되었습니다</translation>
+<translation id="5559311991468302423">주소 삭제</translation>
 <translation id="5560088892362098740">만료일</translation>
 <translation id="55635442646131152">문서 개요</translation>
 <translation id="5565613213060953222">시크릿 탭 열기</translation>
@@ -1972,6 +1975,7 @@
 <translation id="5866898949289125849">개발자 도구 페이지를 보는 중입니다.</translation>
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
+<translation id="5872692522325383488">IBAN이 저장됨</translation>
 <translation id="5873013647450402046">은행에서 본인 확인을 요청합니다.</translation>
 <translation id="5877831137320480913">미용 및 피트니스</translation>
 <translation id="5884465125445718607">봉투 Chinese #6</translation>
@@ -2141,6 +2145,7 @@
 <translation id="6300452962057769623">{0,plural, =0{지금 기기가 다시 시작됩니다}=1{1초 후에 기기가 다시 시작됩니다}other{#초 후에 기기가 다시 시작됩니다}}</translation>
 <translation id="6301104306974789820">가격 추적 알림 받기</translation>
 <translation id="6305205051461490394"><ph name="URL" />에 연결할 수 없습니다.</translation>
+<translation id="6306713302480826305">이 기기와 다른 로그인된 기기에서 주소가 삭제됩니다.</translation>
 <translation id="6311165245110979290">가상 카드 사용 가능</translation>
 <translation id="6312113039770857350">웹페이지를 사용할 수 없음</translation>
 <translation id="6316226860534107313">스쿠터 및 모페드</translation>
@@ -2455,6 +2460,7 @@
 <translation id="7112327784801341716">최신 정보가 표시되지 않나요? 은행에 문의하여 업데이트하세요.</translation>
 <translation id="7118618213916969306">클립보드 URL <ph name="SHORT_URL" /> 검색</translation>
 <translation id="7119414471315195487">다른 탭 또는 프로그램 닫기</translation>
+<translation id="7124354851782353862">CVC 입력</translation>
 <translation id="7129355289156517987">Chromium 시크릿 탭을 모두 닫으면 기기에서 다음 탭의 활동이 삭제됩니다.
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />탐색 활동<ph name="END_LIST_ITEM" />
@@ -2780,6 +2786,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{없음}=1{앱 1개(<ph name="EXAMPLE_APP_1" />)}=2{앱 2개(<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{앱 #개(<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">나중에 사이트를 방문하면 사이트에서 광고 개인 최적화를 위해 내 주제를 Chrome에 요청할 수 있습니다. Chrome은 최대 3개의 주제를 공유하는 동시에 방문 기록과 ID를 보호합니다.</translation>
+<translation id="7860345425589240791"><ph name="SIDE_OF_CARD" />의 새 만료일과 CVC를 입력하세요.</translation>
 <translation id="7862185352068345852">사이트에서 나가시겠습니까?</translation>
 <translation id="7865448901209910068">최고 속도</translation>
 <translation id="7871445724586827387">Google 계정 비밀번호 변경</translation>
@@ -3031,6 +3038,7 @@
 <translation id="8473863474539038330">주소 및 기타</translation>
 <translation id="8474910779563686872">개발자 세부정보 표시</translation>
 <translation id="8479754468255770962">왼쪽 하단 스테이플</translation>
+<translation id="8483229036294884935">이 주소가 Google 계정(<ph name="ACCOUNT" />)에서 삭제됩니다.</translation>
 <translation id="8483780878231876732">Google 계정에서 카드를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="8488350697529856933">적용 대상</translation>
 <translation id="8490137692873530638">스태커 10</translation>

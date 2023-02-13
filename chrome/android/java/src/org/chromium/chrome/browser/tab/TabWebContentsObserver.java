@@ -196,13 +196,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didFinishLoadNoop(GlobalRenderFrameHostId frameId, GURL url,
-                boolean isKnownValid, boolean isInPrimaryMainFrame,
-                @LifecycleState int frameLifecycleState) {
-            if (!isInPrimaryMainFrame) return;
-        }
-
-        @Override
         public void didFailLoad(boolean isInPrimaryMainFrame, int errorCode, GURL failingGurl,
                 @LifecycleState int frameLifecycleState) {
             if (isInPrimaryMainFrame) {
@@ -241,14 +234,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
                 observers.next().onDidStartNavigationInPrimaryMainFrame(mTab, navigation);
-            }
-        }
-
-        @Override
-        public void didStartNavigationNoop(NavigationHandle navigation) {
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidStartNavigationNoop(mTab, navigation);
             }
         }
 

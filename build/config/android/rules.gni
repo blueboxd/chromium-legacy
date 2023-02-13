@@ -2848,8 +2848,9 @@ if (enable_java_templates && is_android) {
       _strip_resource_names =
           defined(invoker.strip_resource_names) &&
           invoker.strip_resource_names && enable_arsc_obfuscation
-      _strip_unused_resources = defined(invoker.strip_unused_resources) &&
-                                invoker.strip_unused_resources
+      _strip_unused_resources =
+          defined(invoker.strip_unused_resources) &&
+          invoker.strip_unused_resources && enable_unused_resource_stripping
       _optimize_resources = _strip_resource_names || _short_resource_paths ||
                             _strip_unused_resources
     }
@@ -4697,6 +4698,9 @@ if (enable_java_templates && is_android) {
     java_group(target_name) {
       forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
       public_deps = [ ":$_unpack_target_name" ]
+      if (defined(invoker.public_deps)) {
+        public_deps += invoker.public_deps
+      }
       deps = []
       if (defined(_jar_target_name)) {
         deps += [ ":$_jar_target_name" ]
@@ -5075,11 +5079,11 @@ if (enable_java_templates && is_android) {
     _all_module_unused_resources_deps = []
     foreach(_module, _modules) {
       _module_target = _module.module_target
-      _module_target_name = get_label_info(_module_target, "name")
       _module_build_config = _module.build_config
       _module_build_config_target = _module.build_config_target
 
       if (!_proguard_enabled) {
+        _module_target_name = get_label_info(_module_target, "name")
         _dex_target = "${_module_target_name}__final_dex"
         _rebased_module_build_config =
             rebase_path(_module_build_config, root_build_dir)

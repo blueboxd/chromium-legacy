@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/process/process_handle.h"
 #include "base/ranges/algorithm.h"
 #include "base/sequence_checker.h"
 #include "base/version.h"
@@ -23,7 +22,6 @@
 #include "chrome/updater/ipc/ipc_names.h"
 #include "chrome/updater/ipc/ipc_security.h"
 #include "chrome/updater/registration_data.h"
-#include "chrome/updater/updater_version.h"
 #include "components/named_mojo_ipc_server/connection_info.h"
 #include "components/named_mojo_ipc_server/endpoint_options.h"
 #include "components/named_mojo_ipc_server/named_mojo_ipc_server.h"
@@ -130,10 +128,12 @@ class UpdateServiceStubUntrusted : public mojom::UpdateService {
               const std::string& install_data_index,
               UpdateService::Priority priority,
               UpdateService::PolicySameVersionUpdate policy_same_version_update,
+              bool do_update_check_only,
               UpdateCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     impl_->Update(app_id, install_data_index, priority,
-                  policy_same_version_update, std::move(callback));
+                  policy_same_version_update, do_update_check_only,
+                  std::move(callback));
   }
 
   // The rest of updater::mojom::UpdateService is rejected.
@@ -296,6 +296,7 @@ void UpdateServiceStub::Update(
     const std::string& install_data_index,
     UpdateService::Priority priority,
     UpdateService::PolicySameVersionUpdate policy_same_version_update,
+    bool do_update_check_only,
     UpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_start_listener_.Run();
@@ -308,7 +309,7 @@ void UpdateServiceStub::Update(
                 static_cast<updater::UpdateService::Priority>(priority),
                 static_cast<updater::UpdateService::PolicySameVersionUpdate>(
                     policy_same_version_update),
-                state_change_callback,
+                do_update_check_only, state_change_callback,
                 std::move(on_complete_callback).Then(task_end_listener_));
 }
 

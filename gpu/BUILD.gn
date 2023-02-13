@@ -331,7 +331,6 @@ test("gl_tests") {
     "command_buffer/tests/gl_manager.h",
     "command_buffer/tests/gl_map_buffer_range_unittest.cc",
     "command_buffer/tests/gl_object_bindings_unittest.cc",
-    "command_buffer/tests/gl_oes_egl_image_unittest.cc",
     "command_buffer/tests/gl_offscreen_surface_unittest.cc",
     "command_buffer/tests/gl_oob_attrib_unittest.cc",
     "command_buffer/tests/gl_pointcoord_unittest.cc",
@@ -613,7 +612,7 @@ test("gpu_unittests") {
     sources += [ "ipc/service/image_decode_accelerator_stub_unittest.cc" ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_io_surface_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_io_surface_unittest.cc",

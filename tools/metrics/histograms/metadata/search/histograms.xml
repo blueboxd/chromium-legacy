@@ -120,6 +120,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearch.NetError" enum="NetErrorCodes"
+    expires_after="M117">
+  <owner>donnd@chromium.org</owner>
+  <owner>basiaz@google.com</owner>
+  <summary>
+    Network status codes recorded for each Contextual Search request after the
+    url loader calls the completion callback. Recorded value is the absolute
+    value of the received net::Error value.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearch.OutcomesDuration" units="days"
     expires_after="M104">
   <obsolete>
@@ -1550,7 +1561,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionAspectRatio"
-    enum="LensRegionSearchAspectRatio" expires_after="2023-06-04">
+    enum="LensRegionSearchAspectRatio" expires_after="2023-08-08">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1562,7 +1573,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.RegionViewportProportion" units="pct"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1574,7 +1585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RegionSearch.Lens.Result"
-    enum="LensRegionSearchCaptureResult" expires_after="2023-06-04">
+    enum="LensRegionSearchCaptureResult" expires_after="2023-08-08">
   <owner>juanmojica@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>stanfield@google.com</owner>
@@ -1614,7 +1625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.RelatedSearches.CarouselScrollAndClick"
-    enum="ScrollAndClickStatus" expires_after="2023-06-04">
+    enum="ScrollAndClickStatus" expires_after="2023-08-08">
   <owner>donnd@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
   <owner>related-searches-vteam@google.com</owner>

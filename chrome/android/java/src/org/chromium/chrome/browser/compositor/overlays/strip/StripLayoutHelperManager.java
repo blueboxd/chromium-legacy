@@ -107,6 +107,8 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final StripScrim mStripScrim;
     private boolean mBrowserScrimShowing;
     private ValueAnimator mScrimFadeAnimation;
+    private int mTabStripFadeShort;
+    private int mTabStripFadeLong;
 
     private TabStripSceneLayer mTabStripTreeProvider;
 
@@ -297,10 +299,15 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                     context.getResources().getColor(R.color.model_selector_button_bg_color);
 
             // Incognito bg color is surface 1 baseline for folio, surface 2 baseline for detached.
+            int defaultBgColorDarkElev1 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
+                    ? R.color.default_bg_color_dark_elev_1_gm3_baseline
+                    : R.color.default_bg_color_dark_elev_1_baseline;
+            int defaultBgColorDarkElev2 = ChromeFeatureList.sBaselineGm3SurfaceColors.isEnabled()
+                    ? R.color.default_bg_color_dark_elev_2_gm3_baseline
+                    : R.color.default_bg_color_dark_elev_2_baseline;
             int backgroundIncognitoColor = TabManagementFieldTrial.isTabStripFolioEnabled()
-                    ? context.getResources().getColor(R.color.default_bg_color_dark_elev_1_baseline)
-                    : context.getResources().getColor(
-                            R.color.default_bg_color_dark_elev_2_baseline);
+                    ? context.getResources().getColor(defaultBgColorDarkElev1)
+                    : context.getResources().getColor(defaultBgColorDarkElev2);
 
             ((TintedCompositorButton) mModelSelectorButton)
                     .setTint(iconDefaultColor, iconDefaultColor, iconIncognitoColor,
@@ -309,6 +316,8 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                     .setBackgroundTint(backgroundDefaultColor, backgroundDefaultColor,
                             backgroundIncognitoColor, backgroundIncognitoColor);
             mModelSelectorButton.setY(MODEL_SELECTOR_BUTTON_BACKGROUND_Y_OFFSET_DP);
+            mTabStripFadeShort = R.drawable.tab_strip_fade_short_tsr;
+            mTabStripFadeLong = R.drawable.tab_strip_fade_long_tsr;
         } else {
             mModelSelectorButton = new CompositorButton(context, MODEL_SELECTOR_BUTTON_WIDTH_DP,
                     MODEL_SELECTOR_BUTTON_HEIGHT_DP, selectorClickHandler);
@@ -317,6 +326,8 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
                     R.drawable.location_bar_incognito_badge);
             mModelSelectorButton.setY(MODEL_SELECTOR_BUTTON_Y_OFFSET_DP);
             mModelSelectorWidth = MODEL_SELECTOR_BUTTON_WIDTH_DP;
+            mTabStripFadeShort = R.drawable.tab_strip_fade_short;
+            mTabStripFadeLong = R.drawable.tab_strip_fade_long;
         }
         mModelSelectorButton.setIncognito(false);
         mModelSelectorButton.setVisible(false);
@@ -547,6 +558,40 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
      */
     public float getRightFadeOpacity() {
         return getActiveStripLayoutHelper().getRightFadeOpacity();
+    }
+
+    public int getLeftFadeDrawable() {
+        int leftFadeDrawable;
+        if (mModelSelectorButton.isVisible() && LocalizationUtils.isLayoutRtl()) {
+            leftFadeDrawable = mTabStripFadeLong;
+        } else if (ChromeFeatureList.sTabStripRedesign.isEnabled()
+                && !mModelSelectorButton.isVisible() && LocalizationUtils.isLayoutRtl()) {
+            // Use fade_medium for TSR left fade when RTL and model selector button not
+            // visible.
+            leftFadeDrawable = R.drawable.tab_strip_fade_medium_tsr;
+        } else {
+            leftFadeDrawable = mTabStripFadeShort;
+        }
+        return leftFadeDrawable;
+    }
+
+    public int getRightFadeDrawable() {
+        int rightFadeDrawable;
+        if (mModelSelectorButton.isVisible() && !LocalizationUtils.isLayoutRtl()) {
+            rightFadeDrawable = mTabStripFadeLong;
+        } else if (ChromeFeatureList.sTabStripRedesign.isEnabled()
+                && !mModelSelectorButton.isVisible() && !LocalizationUtils.isLayoutRtl()) {
+            // Use fade_medium for TSR right fade when model selector button not visible.
+            rightFadeDrawable = R.drawable.tab_strip_fade_medium_tsr;
+        } else {
+            rightFadeDrawable = mTabStripFadeShort;
+        }
+        return rightFadeDrawable;
+    }
+
+    @VisibleForTesting
+    void setModelSelectorButtonVisibleForTesting(boolean isVisible) {
+        mModelSelectorButton.setVisible(isVisible);
     }
 
     /** Update the title cache for the available tabs in the model. */

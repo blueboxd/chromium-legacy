@@ -25,7 +25,6 @@
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
-#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/content_constants.h"
@@ -78,32 +77,15 @@ void RecursivelyGenerateFrameEntries(
   blink::EncodePageState(page_state, &data);
   DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
 
+  // Attempt to find an existing FrameNavigationEntry from `context`, only if it
+  // matches by ISN, URL, and target. Note that it is possible for other values
+  // to still diverge between `entry` and `state` when those match (see
+  // https://crbug.com/1354634), but these values are considered sufficient to
+  // treat the FrameNavigationEntry as shared in future sessions.
   GURL state_url(state.url_string.value_or(std::u16string()));
   scoped_refptr<FrameNavigationEntry> entry = context->GetFrameNavigationEntry(
       state.item_sequence_number,
       state.target ? base::UTF16ToUTF8(*state.target) : "", state_url);
-
-  // TODO(crbug.com/1354634): We are seeing cases where initiator_origin differs
-  // between `state` and the matching shared FNE found above. We should diagnose
-  // how this is happening and either handle or prevent this case. These crash
-  // keys will help show whether the ISN is a special case, and how the origins
-  // differ (e.g., if one is missing or just has a different nonce).
-  if (entry) {
-    SCOPED_CRASH_KEY_NUMBER("RestoreMatchingFNE", "state_isn",
-                            state.item_sequence_number);
-    SCOPED_CRASH_KEY_NUMBER("RestoreMatchingFNE", "entry_isn",
-                            entry->item_sequence_number());
-    SCOPED_CRASH_KEY_STRING64("RestoreMatchingFNE", "state_initiator",
-                              state.initiator_origin.has_value()
-                                  ? state.initiator_origin->GetDebugString()
-                                  : "none");
-    SCOPED_CRASH_KEY_STRING64("RestoreMatchingFNE", "entry_initiator",
-                              entry->initiator_origin().has_value()
-                                  ? entry->initiator_origin()->GetDebugString()
-                                  : "none");
-    DCHECK(entry->initiator_origin() == state.initiator_origin)
-        << "Unexpected difference in initiator_origin across matching FNEs.";
-  }
 
   if (!entry) {
     absl::optional<GURL> initiator_base_url;
@@ -124,7 +106,6 @@ void RecursivelyGenerateFrameEntries(
         state.initiator_origin, initiator_base_url, std::vector<GURL>(),
         blink::PageState::CreateFromEncodedData(data), "GET", -1,
         nullptr /* blob_url_loader_factory */,
-        nullptr /* web_bundle_navigation_info */,
         nullptr /* subresource_web_bundle_navigation_info */,
         // TODO(https://crbug.com/1140393): We should restore the policy
         // container.
@@ -430,7 +411,6 @@ NavigationEntryImpl::NavigationEntryImpl(
               "GET",
               -1,
               std::move(blob_url_loader_factory),
-              nullptr /* web_bundle_navigation_info */,
               nullptr /* subresource_web_bundle_navigation_info */,
               nullptr /* policy_container_policies */,
               false /* protect_url_in_navigation_api */))),
@@ -937,8 +917,6 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           std::string(),
 #endif
           false /* is_browser_initiated */,
-          GURL() /* web_bundle_physical_url */,
-          GURL() /* base_url_override_for_web_bundle */,
           ukm::kInvalidSourceId /* document_ukm_source_id */, frame_policy,
           std::vector<std::string>() /* force_enabled_origin_trials */,
           false /* origin_agent_cluster */,
@@ -1027,7 +1005,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     const std::string& method,
     int64_t post_id,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
     std::unique_ptr<SubresourceWebBundleNavigationInfo>
         subresource_web_bundle_navigation_info,
     std::unique_ptr<PolicyContainerPolicies> policy_container_policies) {
@@ -1060,7 +1037,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
         std::move(source_site_instance), url, origin, referrer,
         initiator_origin, initiator_base_url, redirect_chain, page_state,
         method, post_id, std::move(blob_url_loader_factory),
-        std::move(web_bundle_navigation_info),
         std::move(subresource_web_bundle_navigation_info),
         std::move(policy_container_policies), protect_url_in_navigation_api);
     return;
@@ -1097,7 +1073,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
           url, origin, referrer, initiator_origin, initiator_base_url,
           redirect_chain, page_state, method, post_id,
           std::move(blob_url_loader_factory),
-          std::move(web_bundle_navigation_info),
           std::move(subresource_web_bundle_navigation_info),
           std::move(policy_container_policies), protect_url_in_navigation_api);
       return;
@@ -1112,7 +1087,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       navigation_api_key, site_instance, std::move(source_site_instance), url,
       origin, referrer, initiator_origin, initiator_base_url, redirect_chain,
       page_state, method, post_id, std::move(blob_url_loader_factory),
-      std::move(web_bundle_navigation_info),
       std::move(subresource_web_bundle_navigation_info),
       std::move(policy_container_policies), protect_url_in_navigation_api);
   parent_node->children.push_back(

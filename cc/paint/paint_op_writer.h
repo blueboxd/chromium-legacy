@@ -5,9 +5,13 @@
 #ifndef CC_PAINT_PAINT_OP_WRITER_H_
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
+#include <memory>
+
 #include "base/bits.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
+#include "base/numerics/checked_math.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
@@ -33,36 +37,143 @@ class CC_PAINT_EXPORT PaintOpWriter {
  public:
   // The SerializeOptions passed to the writer must set the required fields
   // if it can be used for serializing images, paint records or text blobs.
+  // If `enable_security_constraints` is false, `memory` must be aligned to
+  // kMaxAlignment, and AllocateAlignedBuffer() is the preferred way to
+  // allocate `memory`. Otherwise `memory` can be allocated in any way that can
+  // ensure kDefaultAlignment. See BufferAlignment() for more details.
+  // If `size` is not enough to contain serialized data, the buffer won't
+  // overflow, but Write() will be silent no-ops.
   PaintOpWriter(void* memory,
                 size_t size,
                 const PaintOp::SerializeOptions& options,
                 bool enable_security_constraints = false);
   ~PaintOpWriter();
 
+  static std::unique_ptr<char, base::AlignedFreeDeleter> AllocateAlignedBuffer(
+      size_t size) {
+    return std::unique_ptr<char, base::AlignedFreeDeleter>(
+        static_cast<char*>(base::AlignedAlloc(size, kMaxAlignment)));
+  }
+
   const PaintOp::SerializeOptions& options() const { return *options_; }
 
-  // Type and serialized_size fit in HeaderBytes, using 1 byte and 3 bytes,
+  // Type and serialized_size fit in kHeaderBytes, using 1 byte and 3 bytes,
   // respectively. Note that serialized_size in the header is different from
   // PaintOp::aligned_size because serialized data may have different byte
   // format and serialization of reference data fields may be make
   // serialized_size much bigger than PaintOp::aligned_size.
-  static size_t constexpr HeaderBytes() { return sizeof(uint32_t); }
+  static constexpr size_t kHeaderBytes = sizeof(uint32_t);
   static constexpr size_t kMaxSerializedSize = (1u << 24) - 1;
 
-  // Round up each field to 4 bytes. This is not technically perfect alignment,
-  // but it is about 30% faster to post-align each write to 4 bytes than it is
-  // to pre-align memory to the correct alignment.
-  // The whole serialized PaintOp is aligned to PaintOpBuffer::kPaintOpAlign.
-  // TODO(wangxianzhu): Revisit the kPaintOpAlign requirement for serialization.
-  static size_t constexpr Alignment() { return alignof(uint32_t); }
+  // The start/end of the buffer for a serialized PaintOp must be aligned to
+  // BufferAlignment() which is the maximum alignment of all serialized fields,
+  // to ensure the alignment padding of any field to be constant.
+  //
+  // When enable_security_constraints is true, we won't serialize PaintRecords
+  // or images that require alignments greater than kDefaultAlignment. We can't
+  // require larger alignment because the buffer may be a part of another
+  // buffer (e.g. mojom data) for which the caller can't control the alignment.
+  //
+  // When enable_security_constraints is false, the alignment is 16 which is
+  // the maximum alignment requirement of particular types of pixmaps (see
+  // image_transfer_data_cache.cc).
+  static constexpr size_t BufferAlignment(bool enable_security_constraints) {
+    return enable_security_constraints ? kDefaultAlignment : kMaxAlignment;
+  }
+  static constexpr size_t kMaxAlignment = 16;
+  size_t BufferAlignment() const {
+    return BufferAlignment(enable_security_constraints_);
+  }
 
-  static size_t GetFlattenableSize(const SkFlattenable* flattenable);
-  static size_t GetImageSize(const PaintImage& image);
-  static size_t GetRecordSize(const PaintRecord* record);
+  // Round up each field to 4 bytes by default. This is not technically perfect
+  // alignment, but it is about 30% faster to post-align each write to 4 bytes
+  // than it is to pre-align memory to the correct alignment.
+  // A field can also use a larger alignment by calling AlignMemory().
+  static constexpr size_t kDefaultAlignment = alignof(uint32_t);
 
-  // Called after serializing data of a PaintOp. Returns the serialized size
-  // of the PaintOp aligned to PaintOpBuffer::kPaintOpAlign, or 0 on any errors.
-  size_t Finish(uint8_t type);
+ private:
+  template <typename T>
+  static constexpr size_t SerializedSizeSimple() {
+    static_assert(!std::is_pointer_v<T>);
+    return base::bits::AlignUp(sizeof(T), kDefaultAlignment);
+  }
+  // size_t is always serialized as uint64_t to make the serialized result
+  // portable between 32bit and 64bit processes.
+  template <>
+  constexpr size_t SerializedSizeSimple<size_t>() {
+    return base::bits::AlignUp(sizeof(uint64_t), kDefaultAlignment);
+  }
+
+ public:
+  // SerializedSize() returns the maximum serialized size of the given type or
+  // the given parameter. For a buffer to contain serialization of multiple
+  // data, the size can be the accumulated results of SerializedSize() of each
+  // data. When possible, the parameterized version should be used to make it
+  // easier to keep serialized size calculation in sync with serialization and
+  // deserialization, and make it possible to allow dynamic sizing for some
+  // data types (see the specialized/overloaded functions).
+  template <typename T>
+  static constexpr size_t SerializedSize() {
+    static_assert(std::is_arithmetic_v<T> || std::is_enum_v<T>);
+    return SerializedSizeSimple<T>();
+  }
+  template <typename T>
+  static constexpr size_t SerializedSize(const T& data) {
+    return SerializedSizeSimple<T>();
+  }
+  static size_t SerializedSize(const PaintImage& image);
+  static size_t SerializedSize(const PaintRecord& record);
+
+  // Serialization of raw/smart pointers is not supported by default.
+  template <typename T>
+  static inline size_t SerializedSize(const T* p);
+  template <typename T>
+  static inline size_t SerializedSize(const std::unique_ptr<T>& p);
+  template <typename T>
+  static inline size_t SerializedSize(const scoped_refptr<T>& p);
+  template <typename T>
+  static inline size_t SerializedSize(const raw_ptr<T>& p);
+
+  template <typename T>
+  static inline size_t SerializedSize(T* p) {
+    return SerializedSize(static_cast<const T*>(p));
+  }
+  static size_t SerializedSize(const SkFlattenable* flattenable);
+  static size_t SerializedSize(const SkColorSpace* color_space);
+  static size_t SerializedSize(const PaintFilter* filter);
+
+  template <typename T>
+  static size_t SerializedSize(const absl::optional<T>& o) {
+    if (o) {
+      return (base::CheckedNumeric<size_t>(SerializedSize<bool>()) +
+              SerializedSize<T>(*o))
+          .ValueOrDie();
+    }
+    return SerializedSize<bool>();
+  }
+
+  // Size of serialized (size_t, bytes).
+  static size_t SerializedSizeOfBytes(size_t num_bytes) {
+    return (base::CheckedNumeric<size_t>(SerializedSize<size_t>()) +
+            base::bits::AlignUp(num_bytes, kDefaultAlignment))
+        .ValueOrDie();
+  }
+  // Size of serialized (size_t, elements>
+  template <typename T>
+  static size_t SerializedSizeOfElements(const T* elements, size_t count) {
+    return (SerializedSize<size_t>() +
+            base::CheckedNumeric<size_t>(count) * SerializedSize(*elements))
+        .ValueOrDie();
+  }
+
+  // These two functions should be called before and after (respectively)
+  // serializing the data of a PaintOp. These functions should not be called
+  // if this PaintOpWriter is used to write specific data instead of a whole
+  // PaintOp.
+  void ReserveOpHeader();
+  // Returns the serialized size (aligned to BufferAlignment()) of the PaintOp,
+  // or 0 on any errors.
+  size_t FinishOp(uint8_t type);
 
   static void WriteHeaderForTesting(void* memory,
                                     uint8_t type,
@@ -71,8 +182,17 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // Write a sequence of arbitrary bytes.
   void WriteData(size_t bytes, const void* input);
 
+  // Returns the size of successfully written data, including paddings for
+  // alignment.
   size_t size() const { return valid_ ? size_ - remaining_bytes_ : 0u; }
 
+  // Writes a size_t. The return value can be used when the size is unknown
+  // before writing some data:
+  //   uint64_t* memory = WriteSize(0u);
+  //   size_t data_size = WriteSomeData();
+  //   *memory = data_size;
+  // Note that size_t is always serialized as uint64_t to make the serialized
+  // result portable between 32bit and 64bit processes.
   uint64_t* WriteSize(size_t size);
 
   void Write(SkScalar data);
@@ -120,13 +240,19 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   void Write(bool data) { Write(static_cast<uint8_t>(data)); }
 
-  // Aligns the memory to the given alignment.
+  // Aligns the memory to the given `alignment` which must be within the range
+  // of [kDefaultAlignment, BufferAlignment()].
   void AlignMemory(size_t alignment);
 
-  void AssertAlignment(size_t alignment) {
+  static void AssertAlignment(const volatile void* memory, size_t alignment) {
 #if DCHECK_IS_ON()
-    uintptr_t memory = reinterpret_cast<uintptr_t>(memory_.get());
-    DCHECK_EQ(base::bits::AlignUp(memory, alignment), memory);
+    uintptr_t uintptr = reinterpret_cast<uintptr_t>(memory);
+    DCHECK_EQ(uintptr, base::bits::AlignUp(uintptr, alignment));
+#endif
+  }
+  void AssertFieldAlignment() {
+#if DCHECK_IS_ON()
+    AssertAlignment(memory_.get(), kDefaultAlignment);
 #endif
   }
 

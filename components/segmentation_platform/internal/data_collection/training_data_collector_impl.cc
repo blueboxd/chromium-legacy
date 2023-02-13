@@ -174,6 +174,7 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
         const auto& output =
             segment_info.model_metadata().training_outputs().outputs(
                 hash_index.second);
+        all_segments_for_training_.insert(segment.first);
         // If tensor length is 0, the output is for immediate collection.
         if (output.uma_output().uma_feature().tensor_length() != 0) {
           continuous_collection_segments_.insert(segment.first);
@@ -185,6 +186,7 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
     // Cache the histograms as outputs of training data, which needs to be
     // immediately reported when the histogram is recorded.
     for (int i = 0; i < training_config.observation_trigger_size(); i++) {
+      all_segments_for_training_.insert(segment.first);
       const auto& trigger = training_config.observation_trigger(i);
       if (trigger.has_uma_trigger() &&
           trigger.uma_trigger().has_uma_feature()) {
@@ -369,6 +371,10 @@ void TrainingDataCollectorImpl::OnDecisionTime(
     proto::SegmentId id,
     scoped_refptr<InputContext> input_context,
     DecisionType type) {
+  if (all_segments_for_training_.count(id) == 0) {
+    return;
+  }
+
   const TrainingDataCache::RequestId request_id =
       training_cache_->GenerateNextId();
 
@@ -497,8 +503,10 @@ TrainingDataCollectorImpl::ComputeDecisionTiming(
   const auto& training_config =
       info.model_metadata().training_outputs().trigger_config();
   auto type = training_config.decision_type();
-  bool is_periodic = (type == proto::TrainingOutputs::TriggerConfig::PERIODIC);
   base::Time current_time = clock_->Now();
+
+  // Default for unset decision type is periodic type.
+  bool is_periodic = (type != proto::TrainingOutputs::TriggerConfig::ONDEMAND);
 
   // Check for delay triggers in the config.
   absl::optional<uint64_t> delay_sec;
@@ -557,8 +565,8 @@ base::Time TrainingDataCollectorImpl::ComputeObservationTiming(
   const auto& training_config =
       info.model_metadata().training_outputs().trigger_config();
   base::Time current_time = clock_->Now();
-  bool is_periodic = (training_config.decision_type() ==
-                      proto::TrainingOutputs::TriggerConfig::PERIODIC);
+  bool is_periodic = (training_config.decision_type() !=
+                      proto::TrainingOutputs::TriggerConfig::ONDEMAND);
   bool flexible_observation_period =
       training_config.use_flexible_observation_time();
 

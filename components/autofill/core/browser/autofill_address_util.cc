@@ -84,9 +84,13 @@ std::vector<ExtendedAddressUiComponent> ConvertAddressUiComponents(
   base::ranges::transform(
       addressinput_components, std::back_inserter(components),
       [&country](const ::i18n::addressinput::AddressUiComponent& component) {
-        return ExtendedAddressUiComponent(
-            std::move(component),
-            /*is_required=*/country.IsAddressFieldRequired(component.field));
+        // The component's field property may not be initialized if the
+        // component is literal, so it should not be used to avoid
+        // memory sanitizer's errors (`use-of-uninitialized-value`).
+        bool is_required = component.literal.empty()
+                               ? country.IsAddressFieldRequired(component.field)
+                               : false;
+        return ExtendedAddressUiComponent(std::move(component), is_required);
       });
 
   return components;

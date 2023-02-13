@@ -64,9 +64,18 @@ const char kFresnelBaseUrl[] = "https://crosfresnel-pa.googleapis.com";
 const char kDeviceActiveControllerPsmDeviceActiveSecretIsSet[] =
     "Ash.DeviceActiveController.PsmDeviceActiveSecretIsSet";
 
+// Count the number of devices that are testimage builds.
+const char kDeviceActiveControllerIsTestImageDevice[] =
+    "Ash.DeviceActiveController.IsTestImageDevice";
+
 void RecordPsmDeviceActiveSecretIsSet(bool is_set) {
   base::UmaHistogramBoolean(kDeviceActiveControllerPsmDeviceActiveSecretIsSet,
                             is_set);
+}
+
+void RecordIsTestImageDevice(bool is_test_image) {
+  base::UmaHistogramBoolean(kDeviceActiveControllerIsTestImageDevice,
+                            is_test_image);
 }
 
 class PsmDelegateImpl : public PsmDelegateInterface {
@@ -101,6 +110,8 @@ void DeviceActivityController::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDeviceActiveLastKnown28DayActivePingTimestamp, unix_epoch);
   registry->RegisterTimePref(
       prefs::kDeviceActiveChurnCohortMonthlyPingTimestamp, unix_epoch);
+  registry->RegisterIntegerPref(prefs::kDeviceActiveLastKnownChurnActiveStatus,
+                                0);
 }
 
 // static
@@ -167,7 +178,20 @@ DeviceActivityController::DeviceActivityController(
 
   DCHECK(local_state);
   DCHECK(!g_ash_device_activity_controller);
+
   g_ash_device_activity_controller = this;
+
+  // Halt if device is a testimage/unknown channel.
+  if (chrome_passed_device_params.chromeos_channel ==
+      version_info::Channel::UNKNOWN) {
+    RecordIsTestImageDevice(true);
+    LOG(ERROR) << "Halt - Client should enter device active reporting logic. "
+               << "Unknown and test image channels should not be counted as "
+               << "legitimate device counts.";
+    return;
+  } else {
+    RecordIsTestImageDevice(false);
+  }
 
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
@@ -248,10 +272,10 @@ void DeviceActivityController::OnMachineStatisticsLoaded(
       std::make_unique<PsmDelegateImpl>()));
 
   da_client_network_ = std::make_unique<DeviceActivityClient>(
-      NetworkHandler::Get()->network_state_handler(), url_loader_factory,
-      std::make_unique<base::RepeatingTimer>(), kFresnelBaseUrl,
-      google_apis::GetFresnelAPIKey(), std::move(use_cases),
-      chrome_first_run_time_);
+      local_state, NetworkHandler::Get()->network_state_handler(),
+      url_loader_factory, std::make_unique<base::RepeatingTimer>(),
+      kFresnelBaseUrl, google_apis::GetFresnelAPIKey(), chrome_first_run_time_,
+      std::move(use_cases));
 }
 
 void DeviceActivityController::Stop() {

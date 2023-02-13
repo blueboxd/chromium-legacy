@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/omaha_attributes_handler.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/profile_util.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
@@ -341,14 +342,16 @@ void ExtensionService::OnExternalProviderUpdateComplete(
   external_install_manager_->UpdateExternalExtensionAlert();
 }
 
-ExtensionService::ExtensionService(Profile* profile,
-                                   const base::CommandLine* command_line,
-                                   const base::FilePath& install_directory,
-                                   ExtensionPrefs* extension_prefs,
-                                   Blocklist* blocklist,
-                                   bool autoupdate_enabled,
-                                   bool extensions_enabled,
-                                   base::OneShotEvent* ready)
+ExtensionService::ExtensionService(
+    Profile* profile,
+    const base::CommandLine* command_line,
+    const base::FilePath& install_directory,
+    const base::FilePath& unpacked_install_directory,
+    ExtensionPrefs* extension_prefs,
+    Blocklist* blocklist,
+    bool autoupdate_enabled,
+    bool extensions_enabled,
+    base::OneShotEvent* ready)
     : Blocklist::Observer(blocklist),
       command_line_(command_line),
       profile_(profile),
@@ -365,6 +368,7 @@ ExtensionService::ExtensionService(Profile* profile,
       registry_(ExtensionRegistry::Get(profile)),
       pending_extension_manager_(profile),
       install_directory_(install_directory),
+      unpacked_install_directory_(unpacked_install_directory),
       extensions_enabled_(extensions_enabled),
       ready_(ready),
       shared_module_service_(new SharedModuleService(profile_)),
@@ -1696,13 +1700,26 @@ void ExtensionService::OnExtensionInstalled(
                               extension->location());
   }
 
+  bool is_user_profile =
+      extensions::profile_util::ProfileCanUseNonComponentExtensions(profile_);
+
   if (!registry_->GetInstalledExtension(extension->id())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType", extension->GetType(),
                               100);
+    if (is_user_profile) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType.User",
+                                extension->GetType(), 100);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType.NonUser",
+                                extension->GetType(), 100);
+    }
+    // TODO(crbug.com/1383740): Should split as well, but linked to suffix
+    // SideloadWipeout:
+    // //tools/metrics/histograms/metadata/histogram_suffixes_list.xml.
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location());
     // TODO(crbug.com/1383740): Address Install metrics below in a follow-up CL.
-    RecordPermissionMessagesHistogram(extension, "Install", false);
+    RecordPermissionMessagesHistogram(extension, "Install", is_user_profile);
   }
 
   const Extension::State initial_state =

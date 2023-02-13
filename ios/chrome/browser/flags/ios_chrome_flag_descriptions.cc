@@ -379,6 +379,14 @@ const char kFeedBackgroundRefreshDescription[] =
     "Schedules a feed background refresh after some minimum period of time has "
     "passed after the last refresh.";
 
+const char kFeedForegroundRefreshName[] = "Enable feed foreground refresh";
+const char kFeedForegroundRefreshDescription[] =
+    "Foreground refresh has two variations. The first is when the Feed is "
+    "refreshed after the user ends a Feed session, but the app is still in the "
+    "foreground (e.g., user switches tabs, user navigates away from Feed in "
+    "current tab). The second is when the Feed is refreshed at the moment the "
+    "app is backgrounding (e.g., extended execution time).";
+
 const char kFillingAcrossAffiliatedWebsitesName[] =
     "Fill passwords across affiliated websites.";
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
@@ -734,11 +742,6 @@ const char kSafeBrowsingRealTimeLookupName[] = "Enable real-time Safe Browsing";
 const char kSafeBrowsingRealTimeLookupDescription[] =
     "When enabled, navigation URLs are checked using real-time queries to Safe "
     "Browsing servers, subject to an opt-in preference.";
-
-const char kSaveSessionTabsToSeparateFilesName[] =
-    "Enable save tabs to separate files";
-const char kSaveSessionTabsToSeparateFilesDescription[] =
-    "When enabled, each Tab is saved in a separate file.";
 
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =

@@ -18,6 +18,9 @@ namespace safe_browsing {
 // for example to control how often collection should occur.
 BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
 
+// Adds page load token to client safe browsing report.
+BASE_DECLARE_FEATURE(kAddPageLoadTokenToClientSafeBrowsingReport);
+
 // Killswitch for client side phishing detection. Since client side models are
 // run on a large fraction of navigations, crashes due to the model are very
 // impactful, even if only a small fraction of users have a bad version of the
@@ -177,10 +180,6 @@ BASE_DECLARE_FEATURE(kRealTimeUrlLookupForEnterpriseAllowlistBypass);
 // new triggers
 BASE_DECLARE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger);
 
-// Controls whether Client Safe Browsing Reports are sent with a GAIA-tied token
-// for Enhanced Safe Browsing users
-BASE_DECLARE_FEATURE(kSafeBrowsingCsbrrWithToken);
-
 // Controls whether we are disabling consumer download checks for users using
 // the enterprise download checks.
 BASE_DECLARE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise);
@@ -208,6 +207,13 @@ BASE_DECLARE_FEATURE(kSevenZipEvaluationEnabled);
 // The feature is only set by Finch so that we can differentiate between
 // default and control groups of the experiment.
 BASE_DECLARE_FEATURE(kSimplifiedUrlDisplay);
+
+// Controls whether the download inspection timeout is applied over the entire
+// request, or just the network communication.
+BASE_DECLARE_FEATURE(kStrictDownloadTimeout);
+
+// Specifies the duration of the timeout, in milliseconds.
+extern const base::FeatureParam<int> kStrictDownloadTimeoutMilliseconds;
 
 // Controls the daily quota for the suspicious site trigger.
 BASE_DECLARE_FEATURE(kSuspiciousSiteTriggerQuotaFeature);

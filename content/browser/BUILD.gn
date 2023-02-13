@@ -2666,7 +2666,7 @@ source_set("browser") {
         "//sandbox/mac:seatbelt_extension",
       ]
       frameworks += [ "CoreMedia.framework" ]
-      weak_frameworks = [ "ScreenCaptureKit.framework" ]
+      weak_frameworks += [ "ScreenCaptureKit.framework" ]
     }
     if (is_chromeos_lacros) {
       sources += [

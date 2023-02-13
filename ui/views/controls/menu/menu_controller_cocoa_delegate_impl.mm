@@ -104,20 +104,20 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
       NSRect dest_rect = NSMakeRect(0, 0, badge_size.width, badge_size.height);
       [badge_image lockFocus];
       NSRect badge_frame = NSInsetRect(
-          dest_rect, views::NewBadge::kNewBadgeHorizontalMargin, 0);
+          dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
       NSBezierPath* rounded_badge_rect = [NSBezierPath
           bezierPathWithRoundedRect:badge_frame
-                            xRadius:views::NewBadge::kNewBadgeCornerRadius
-                            yRadius:views::NewBadge::kNewBadgeCornerRadius];
+                            xRadius:views::BadgePainter::kBadgeCornerRadius
+                            yRadius:views::BadgePainter::kBadgeCornerRadius];
       NSColor* badge_color = skia::SkColorToSRGBNSColor(
           color_provider->GetColor(ui::kColorButtonBackgroundProminent));
       [badge_color set];
       [rounded_badge_rect fill];
 
       NSPoint badge_text_location = NSMakePoint(
-          NSMinX(badge_frame) + views::NewBadge::kNewBadgeInternalPadding,
+          NSMinX(badge_frame) + views::BadgePainter::kBadgeInternalPadding,
           NSMinY(badge_frame) +
-              views::NewBadge::kNewBadgeInternalPaddingTopMac);
+              views::BadgePainter::kBadgeInternalPaddingTopMac);
       [badge_attr_string drawAtPoint:badge_text_location];
       [badge_image unlockFocus];
       return [badge_image retain];

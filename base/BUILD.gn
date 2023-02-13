@@ -2090,6 +2090,7 @@ component("base") {
       "synchronization/waitable_event_mac.cc",
       "system/sys_info_apple.mm",
       "threading/platform_thread_mac.mm",
+      "threading/atomic.c",
       "time/time_mac.mm",
     ]
   }
